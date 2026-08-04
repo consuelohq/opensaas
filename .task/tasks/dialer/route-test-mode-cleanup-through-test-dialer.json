@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/route-test-mode-cleanup-through-test-dialer",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1769,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1769",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1769",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1769/route-test-mode-cleanup-through-test-dialer",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1769",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1769/route-test-mode-cleanup-through-test-dialer",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-route-test-mode-cleanup-through-test-dialer",
+  "taskSession": "tsk_b7fa580f291a",
+  "tmuxSession": "opensaas-dialer-route-test-mode-cleanup-through-test-dialer-b7fa580f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-route-test-mode-cleanup-through-test-dialer/.task/dialer/route-test-mode-cleanup-through-test-dialer/session.json",
+  "createdAt": "2026-08-04T20:05:36.656Z"
+}

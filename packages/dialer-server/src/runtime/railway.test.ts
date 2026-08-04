@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'bun:test';
 import { Effect } from 'effect';
-import type { ParallelTelemetryRecord } from '@consuelo/dialer';
+import {
+  RedisParallelStore,
+  type Dialer,
+  type ParallelTelemetryRecord,
+} from '@consuelo/dialer';
 
 import {
   LeadConnectorConfig,
@@ -14,6 +18,7 @@ import { recordLeadConnectorAttemptTelemetry } from './lead-connector-learning';
 import {
   createRailwayDialerApplicationLayers,
   createRailwayLeadConnectorApplicationLayer,
+  selectProviderDialerForGroup,
 } from './railway';
 
 class MemoryRedis {
@@ -261,6 +266,58 @@ describe('LeadConnector dialer learning', () => {
 });
 
 describe('Railway dialer-server runtime composition', () => {
+  it('selects the test dialer for follow-up operations on test-mode groups', async () => {
+    const redis = new MemoryRedis();
+    const parallelStore = new RedisParallelStore(redis);
+    const liveDialer = { parallel: {} } as unknown as Dialer;
+    const testDialer = { parallel: {} } as unknown as Dialer;
+    await parallelStore.setGroup(
+      'group-test',
+      JSON.stringify({ providerMode: 'twilio-test' }),
+      60,
+    );
+
+    const selected = await selectProviderDialerForGroup(
+      { liveDialer, testDialer, parallelStore },
+      'group-test',
+    );
+
+    expect(selected).toBe(testDialer);
+  });
+
+  it('keeps existing groups without a provider mode on the live dialer', async () => {
+    const redis = new MemoryRedis();
+    const parallelStore = new RedisParallelStore(redis);
+    const liveDialer = { parallel: {} } as unknown as Dialer;
+    const testDialer = { parallel: {} } as unknown as Dialer;
+    await parallelStore.setGroup('group-live', JSON.stringify({}), 60);
+
+    const selected = await selectProviderDialerForGroup(
+      { liveDialer, testDialer, parallelStore },
+      'group-live',
+    );
+
+    expect(selected).toBe(liveDialer);
+  });
+
+  it('fails closed when a test-mode group outlives its test credentials', async () => {
+    const redis = new MemoryRedis();
+    const parallelStore = new RedisParallelStore(redis);
+    const liveDialer = { parallel: {} } as unknown as Dialer;
+    await parallelStore.setGroup(
+      'group-test',
+      JSON.stringify({ providerMode: 'twilio-test' }),
+      60,
+    );
+
+    await expect(
+      selectProviderDialerForGroup(
+        { liveDialer, testDialer: null, parallelStore },
+        'group-test',
+      ),
+    ).rejects.toThrow('Provider test credentials are not configured');
+  });
+
   it('composes durable LeadConnector configuration and encrypted installation storage', async () => {
     const redis = new MemoryRedis();
     const database = createDatabase();

@@ -48,6 +48,7 @@ describe('Twilio provider test mode', () => {
         workspaceId: 'workspace-test',
         queueId: 'queue-test',
         userId: 'user-test',
+        callMode: 'twilio-test',
         targets: [{ contactId: 'contact-test', phone: '+15550100000' }],
         callerIds: [TWILIO_TEST_FROM_NUMBER],
       },
@@ -56,6 +57,7 @@ describe('Twilio provider test mode', () => {
 
     expect(request.fromNumbers).toEqual([TWILIO_TEST_FROM_NUMBER]);
     expect(request.dialerSessionId).toBe('session-test');
+    expect(request.providerMode).toBe('twilio-test');
     expect(request.statusCallbackUrl).toBe(
       'https://dialer.example.test/webhooks/twilio/status',
     );

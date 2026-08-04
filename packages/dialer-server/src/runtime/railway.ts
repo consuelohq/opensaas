@@ -18,6 +18,7 @@ import {
   type DialerTargetRepositoryService,
   type ParallelCompatibilityRuntimeService,
   type ParallelDialProfile,
+  type ParallelProviderMode,
   type ParallelTelemetryRecord,
   type RedisParallelClient,
 } from '@consuelo/dialer';
@@ -434,8 +435,51 @@ const createDialerRuntime = (
         )
       : null;
   testDialer?.withCallerIdLock(lockService);
-  return { publicUrl, liveDialer, testDialer, lockService };
+  return { publicUrl, liveDialer, testDialer, lockService, parallelStore };
 };
+
+type ProviderDialerSelectionRuntime = Pick<
+  ReturnType<typeof createDialerRuntime>,
+  'liveDialer' | 'testDialer' | 'parallelStore'
+>;
+
+const readProviderModeForGroup = (
+  runtime: ProviderDialerSelectionRuntime,
+  groupId: string,
+): Promise<ParallelProviderMode> =>
+  runtime.parallelStore.getGroup(groupId).then((raw) => {
+    if (!raw) return 'live';
+    const parsed = JSON.parse(raw) as { providerMode?: unknown };
+    if (parsed.providerMode === undefined || parsed.providerMode === 'live') {
+      return 'live';
+    }
+    if (parsed.providerMode === 'twilio-test') return 'twilio-test';
+    throw new Error('Parallel group has an invalid provider mode');
+  });
+
+export const selectProviderDialerForGroup = (
+  runtime: ProviderDialerSelectionRuntime,
+  groupId: string,
+): Promise<Dialer> =>
+  readProviderModeForGroup(runtime, groupId).then((providerMode) => {
+    if (providerMode === 'live') return runtime.liveDialer;
+    if (!runtime.testDialer) {
+      throw new Error('Provider test credentials are not configured');
+    }
+    return runtime.testDialer;
+  });
+
+const selectProviderDialerForCall = (
+  runtime: ProviderDialerSelectionRuntime,
+  callSid: string,
+): Promise<Dialer> =>
+  runtime.parallelStore
+    .getCallMapping(callSid)
+    .then((groupId) =>
+      groupId
+        ? selectProviderDialerForGroup(runtime, groupId)
+        : runtime.liveDialer,
+    );
 
 export const createRailwayDialerApplicationLayers = async (
   environment: RailwayEnvironment,
@@ -761,7 +805,9 @@ export const createRailwayDialerApplicationLayers = async (
         ),
       terminateGroup: (groupId) =>
         tryEffect('terminate-group', () =>
-          runtime.liveDialer.parallel.terminateGroup(groupId),
+          selectProviderDialerForGroup(runtime, groupId).then((dialer) =>
+            dialer.parallel.terminateGroup(groupId),
+          ),
         ),
       validateRequirements: (current, required) => ({
         valid: current >= required,
@@ -771,10 +817,12 @@ export const createRailwayDialerApplicationLayers = async (
       }),
       handleStatusCallback: (input) =>
         tryEffect('handle-status-callback', () =>
-          runtime.liveDialer.parallel.handleStatusCallback(
-            input.callSid,
-            input.callStatus,
-            input.answeredBy,
+          selectProviderDialerForCall(runtime, input.callSid).then((dialer) =>
+            dialer.parallel.handleStatusCallback(
+              input.callSid,
+              input.callStatus,
+              input.answeredBy,
+            ),
           ),
         ),
       getGroupIdForCall: (callSid) =>
@@ -783,31 +831,35 @@ export const createRailwayDialerApplicationLayers = async (
         ),
       getGroup: (groupId) =>
         tryEffect('get-group', () =>
-          runtime.liveDialer.parallel.getGroup(groupId),
+          selectProviderDialerForGroup(runtime, groupId).then((dialer) =>
+            dialer.parallel.getGroup(groupId),
+          ),
         ),
       getReleasableNumbers: (group) =>
         runtime.liveDialer.parallel.getReleasableNumbers(group),
       getGroupForWorkspace: (groupId, workspaceId) =>
         tryEffect('get-group-for-workspace', () =>
-          runtime.liveDialer.parallel.getGroupForWorkspace(
-            groupId,
-            workspaceId,
+          selectProviderDialerForGroup(runtime, groupId).then((dialer) =>
+            dialer.parallel.getGroupForWorkspace(groupId, workspaceId),
           ),
         ),
       generateCustomerTwiml: (callSid) =>
         tryEffect('generate-customer-twiml', () =>
-          runtime.liveDialer.parallel.generateCustomerTwiml(callSid),
+          selectProviderDialerForCall(runtime, callSid).then((dialer) =>
+            dialer.parallel.generateCustomerTwiml(callSid),
+          ),
         ),
       terminateGroupForWorkspace: (groupId, workspaceId) =>
         tryEffect('terminate-group-for-workspace', () =>
-          runtime.liveDialer.parallel.terminateGroupForWorkspace(
-            groupId,
-            workspaceId,
+          selectProviderDialerForGroup(runtime, groupId).then((dialer) =>
+            dialer.parallel.terminateGroupForWorkspace(groupId, workspaceId),
           ),
         ),
       retryPendingCleanup: (groupId) =>
         tryEffect('retry-pending-cleanup', () =>
-          runtime.liveDialer.parallel.retryPendingCleanup(groupId),
+          selectProviderDialerForGroup(runtime, groupId).then((dialer) =>
+            dialer.parallel.retryPendingCleanup(groupId),
+          ),
         ),
       claimTelemetryEmission: (groupId) =>
         tryEffect('claim-telemetry-emission', () =>

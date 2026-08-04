@@ -254,6 +254,8 @@ export type ParallelAmdPolicy = 'human-only' | 'human-or-unknown';
 
 export type ParallelTerminationPolicy = 'winner-take-all';
 
+export type ParallelProviderMode = 'live' | 'twilio-test';
+
 export type ParallelDialProfile = {
   id: ProfileKey;
   fanout: number;
@@ -333,6 +335,7 @@ export type ParallelCleanupFailure = {
 export type ParallelGroup = {
   groupId: string;
   dialerSessionId?: string;
+  providerMode?: ParallelProviderMode;
   conferenceName: string;
   status: ParallelGroupStatus;
   winnerSid: string | null;
@@ -354,6 +357,7 @@ export type ParallelGroup = {
 export interface ParallelDialOptions {
   workspaceId: string;
   dialerSessionId?: string;
+  providerMode?: ParallelProviderMode;
   customerNumbers: string[];
   queueId: string;
   contactIds?: string[];

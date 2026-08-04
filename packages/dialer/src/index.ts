@@ -199,6 +199,7 @@ export type {
   AmdResult,
   ParallelAmdPolicy,
   ParallelTerminationPolicy,
+  ParallelProviderMode,
   ParallelDialProfile,
   ProfileKey,
   ProfilePosterior,

@@ -1,5 +1,5 @@
 import type { ParallelGroup } from '../types';
-import { hydrateParallelGroup } from './parallel-group';
+import { createParallelGroup, hydrateParallelGroup } from './parallel-group';
 
 const createGroup = (): ParallelGroup => ({
   groupId: 'group-1',
@@ -51,5 +51,29 @@ describe('hydrateParallelGroup', () => {
     expect(hydrated.cleanupFailures).toEqual(persisted.cleanupFailures);
     expect(hydrated.cleanupFailures).not.toBe(persisted.cleanupFailures);
     expect(hydrated.cleanupFailures[0]).not.toBe(persisted.cleanupFailures[0]);
+  });
+});
+
+describe('createParallelGroup', () => {
+  it('persists the provider mode that owns follow-up operations', () => {
+    const group = createParallelGroup(
+      'group-test',
+      {
+        workspaceId: 'workspace-1',
+        dialerSessionId: 'session-1',
+        providerMode: 'twilio-test',
+        customerNumbers: ['+15550100000'],
+        queueId: 'queue-1',
+        contactIds: ['contact-1'],
+        userId: 'user-1',
+        fromNumbers: ['+15005550006'],
+        statusCallbackUrl: 'https://dialer.example.test/status',
+        customerTwimlUrl: 'https://dialer.example.test/twiml',
+        profile: createGroup().profile,
+      },
+      '2026-08-04T20:00:00.000Z',
+    );
+
+    expect(group.providerMode).toBe('twilio-test');
   });
 });
