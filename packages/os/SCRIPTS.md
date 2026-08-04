@@ -204,6 +204,7 @@ if you see slop, fix it before pushing. a clean diff is a fast review.
 after finishing a task, ask: "did i discover anything non-obvious?" if yes, write it to the nearest AGENTS.md:
 
 - **project-wide** → root `AGENTS.md`
+- **stream-wide product/architecture context** → update both `packages/os/streams/<area>/AGENTS.md` and `packages/workspace/streams/<area>/AGENTS.md`
 - **package-specific** → `packages/foo/AGENTS.md`
 - **feature-specific** → `src/auth/AGENTS.md`
 
@@ -776,11 +777,13 @@ bad: bun run stream:sync
 
 ### stream:context — show stream context
 
-shows recent PRs, divergence from main, and current state of a stream.
+shows the selected stream's durable `AGENTS.md` instructions first, followed by decisions, worktrees, task PRs, workpads, commits, and divergence. JSON includes an explicit `instructions` object; a missing file is a valid optional empty state.
+
+OS reads `packages/os/streams/<area>/AGENTS.md`; Workspace reads the byte-identical mirror under `packages/workspace/streams/<area>/AGENTS.md`. Dialer instructions are also synchronized during install/update to visible `~/Consuelo/Steering/dialer-AGENTS.md`, never hidden `~/.consuelo`.
 
 ```bash
 bun run stream:context -- --area dialer
-bun run stream:context -- --json
+bun run stream:context -- --area dialer --json
 ```
 
 ---

@@ -70,6 +70,7 @@ describe('OS steering execution recording', () => {
     fs.writeFileSync(path.join(steeringDir, 'system_prompt.md'), '# Local system prompt\n\nlocal system body\n');
     fs.writeFileSync(path.join(steeringDir, 'decision.md'), '# Local decision\n\nlocal decision body\n');
     fs.writeFileSync(path.join(steeringDir, 'operator-notes.md'), '# Operator notes\n\noperator notes body\n');
+    fs.writeFileSync(path.join(steeringDir, 'dialer-AGENTS.md'), '# Consuelo Dialer agent instructions\n\nunique dialer steering marker\n');
     fs.writeFileSync(path.join(steeringDir, 'steering.md'), '# Legacy steering\n\nlegacy body must be ignored\n');
 
     const { first, second } = runOsSnippet<{ first: string; second: string }>(home, `
@@ -86,6 +87,8 @@ describe('OS steering execution recording', () => {
     expect(first).toContain('local system body');
     expect(first).toContain('# operator-notes.md');
     expect(first).toContain('operator notes body');
+    expect(first).toContain('# dialer-AGENTS.md');
+    expect(first.match(/unique dialer steering marker/g)).toHaveLength(1);
     expect(first).not.toContain('# decision.md');
     expect(first).not.toContain('local decision body');
     expect(first).not.toContain('legacy body must be ignored');
