@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3fe1f7ca7343",
+  "tmuxSession": "opensaas-dialer-implement-queue-first-leadconnector-dialer-exper-3fe1f7ca",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/implement-queue-first-leadconnector-dialer-experience",
+  "branch": "task/dialer/implement-queue-first-leadconnector-dialer-experience",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-queue-first-leadconnector-dialer-experience",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-queue-first-leadconnector-dialer-experience",
+  "prNumber": 1777,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1777",
+  "createdAt": "2026-08-04T22:27:18.737Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-queue-first-leadconnector-dialer-experience/.task/dialer/implement-queue-first-leadconnector-dialer-experience/session.json"
+}

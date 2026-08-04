@@ -145,6 +145,37 @@ export const createLeadConnectorAuthenticatedRoutes = (
     },
   );
 
+  routes.post(
+    '/v1/integrations/leadconnector/queues/preview',
+    async (context) => {
+      try {
+        const body = await readJsonObject(context.req.raw);
+        if (!body) return invalidRequestResponse(context);
+        const pipelineId = readOptionalString(body.pipelineId);
+        const stageId = readOptionalString(body.stageId);
+        if (!pipelineId || !stageId) {
+          return invalidRequestResponse(
+            context,
+            'Pipeline and stage are required',
+          );
+        }
+        const identity = context.get('identity');
+        const result = await runApplicationEffect(
+          application.resolveQueueCandidates({
+            workspaceId: identity.workspaceId,
+            pipelineId,
+            stageId,
+          }),
+        );
+        return result.ok
+          ? context.json(result.value)
+          : leadConnectorErrorResponse(context, result.error);
+      } catch (error: unknown) {
+        return leadConnectorErrorResponse(context, error);
+      }
+    },
+  );
+
   routes.get('/v1/integrations/leadconnector/pipelines', async (context) => {
     try {
       const identity = context.get('identity');

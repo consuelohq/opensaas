@@ -34,6 +34,7 @@ const createDependencies = (): DialerServerDependencies => ({
     listContacts: () => Effect.die('not used'),
     searchOpportunities: () => Effect.die('not used'),
     listPipelines: () => Effect.die('not used'),
+    resolveQueueCandidates: () => Effect.die('not used'),
     recordDisposition: () => Effect.die('not used'),
     exchangeEmbedBootstrap: mock(() => Effect.succeed(principal)),
     validateEmbedIdentity: mock(() => Effect.succeed(true)),

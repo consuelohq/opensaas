@@ -1,7 +1,10 @@
 import type { LeadConnectorEmbedApi } from './api-client.js';
 import type { LeadConnectorAgentVoice } from './agent-voice.js';
 import { EmbedSessionExpiredError } from './api-client.js';
-import type { LeadConnectorClickToCallTarget } from './protocol.js';
+import {
+  normalizeClickToCallTarget,
+  type LeadConnectorClickToCallTarget,
+} from './protocol.js';
 import {
   createInitialEmbedState,
   isTerminalEmbedSession,
@@ -23,6 +26,7 @@ export const createLeadConnectorEmbedController = (input: {
   let state = input.initialState ?? createInitialEmbedState();
   let activeVoiceSessionId: string | null = null;
   let activeRecordSessionId: string | null = null;
+  let resourceRefresh: Promise<void> | null = null;
   const listeners = new Set<(state: LeadConnectorEmbedState) => void>();
 
   const publish = (): void => {
@@ -84,25 +88,46 @@ export const createLeadConnectorEmbedController = (input: {
     });
   };
 
-  const loadResources = async (): Promise<void> => {
-    try {
-      const resources = await run(() =>
-        Promise.all([
-          input.api.listContacts({ limit: 50 }),
-          input.api.searchOpportunities({ limit: 100 }),
-          input.api.listPipelines(),
-        ]).then(([contacts, opportunities, pipelines]) => ({
-          contacts: contacts.contacts,
-          contactTotal: contacts.total,
-          opportunities: opportunities.opportunities,
-          opportunityTotal: opportunities.total,
-          pipelines,
-        })),
-      );
-      if (resources) dispatch({ type: 'RESOURCES_LOADED', ...resources });
-    } catch (error: unknown) {
-      reportUnexpectedFailure(error);
+  const activeResourcePhases = new Set<LeadConnectorEmbedState['phase']>([
+    'starting',
+    'dialing',
+    'ringing',
+    'connected',
+    'paused',
+    'wrapping-up',
+  ]);
+
+  const refreshResources = (options: { force?: boolean } = {}): Promise<void> => {
+    if (!state.sessionToken) return Promise.resolve();
+    if (!options.force && activeResourcePhases.has(state.phase)) {
+      return Promise.resolve();
     }
+    if (resourceRefresh) return resourceRefresh;
+    dispatch({ type: 'RESOURCES_REFRESH_STARTED' });
+    resourceRefresh = (async () => {
+      try {
+        const resources = await run(() =>
+          Promise.all([
+            input.api.listContacts({ limit: 50 }),
+            input.api.searchOpportunities({ limit: 100 }),
+            input.api.listPipelines(),
+          ]).then(([contacts, opportunities, pipelines]) => ({
+            contacts: contacts.contacts,
+            contactTotal: contacts.total,
+            opportunities: opportunities.opportunities,
+            opportunityTotal: opportunities.total,
+            pipelines,
+          })),
+        );
+        if (resources) dispatch({ type: 'RESOURCES_LOADED', ...resources });
+      } catch (error: unknown) {
+        reportUnexpectedFailure(error);
+      } finally {
+        dispatch({ type: 'RESOURCES_REFRESH_FINISHED' });
+        resourceRefresh = null;
+      }
+    })();
+    return resourceRefresh;
   };
 
   const loadCallOperations = async (): Promise<void> => {
@@ -118,6 +143,115 @@ export const createLeadConnectorEmbedController = (input: {
         })),
       );
       if (calls) dispatch({ type: 'CALLS_LOADED', ...calls });
+    } catch (error: unknown) {
+      reportUnexpectedFailure(error);
+    }
+  };
+
+  const startCall = async (
+    strategy: 'single' | 'predictive',
+  ): Promise<void> => {
+    try {
+      if (state.selectedTargets.length === 0) {
+        dispatch({
+          type: 'FAILED',
+          code: 'TARGET_REQUIRED',
+          message:
+            state.setup.mode === 'queue'
+              ? 'Choose a callable pipeline stage'
+              : 'Select a callable contact or enter a phone number',
+          recoverable: true,
+        });
+        return;
+      }
+      const queueMode =
+        state.selectedQueue !== null ||
+        (strategy === 'predictive' && state.selectedTargets.length > 1);
+      const effectiveStrategy = queueMode ? strategy : 'single';
+      dispatch({ type: 'START_REQUESTED', strategy: effectiveStrategy });
+      await input.voice.prepare();
+      const targets = queueMode
+        ? state.selectedTargets
+        : state.selectedTargets.slice(0, 1);
+      const request = queueMode
+        ? {
+            source: 'queue',
+            ...(state.selectedQueue
+              ? {
+                  queueId: `${state.selectedQueue.pipelineId}:${state.selectedQueue.stageId}`,
+                  pipelineId: state.selectedQueue.pipelineId,
+                  stageId: state.selectedQueue.stageId,
+                }
+              : {}),
+            selectionStrategy: effectiveStrategy,
+            requestedFanout:
+              effectiveStrategy === 'single'
+                ? 1
+                : state.selectedQueue
+                  ? state.setup.requestedFanout
+                  : Math.min(3, targets.length),
+            preferLocalPresence: state.setup.preferLocalPresence,
+            ...(state.setup.callerIdNumber
+              ? { callerIdNumber: state.setup.callerIdNumber }
+              : {}),
+            targetPhones: targets.map((target) => target.phone),
+            contactIds: targets
+              .map((target) => target.contactId)
+              .filter((value): value is string => value !== null),
+          }
+        : (() => {
+            const target = targets[0];
+            const opportunity = state.opportunities.find(
+              (item) => item.id === target?.opportunityId,
+            );
+            return {
+              source: 'direct',
+              selectionStrategy: 'single',
+              requestedFanout: 1,
+              preferLocalPresence: state.setup.preferLocalPresence,
+              ...(state.setup.callerIdNumber
+                ? { callerIdNumber: state.setup.callerIdNumber }
+                : {}),
+              targetPhone: target?.phone,
+              contactId: target?.contactId ?? undefined,
+              contactName: target?.name ?? undefined,
+              opportunityId: opportunity?.id,
+              pipelineId: opportunity?.pipelineId ?? undefined,
+              stageId: opportunity?.stageId ?? undefined,
+              opportunitySnapshot: opportunity
+                ? {
+                    id: opportunity.id,
+                    status: opportunity.status,
+                    monetaryValue: opportunity.monetaryValue,
+                    pipelineId: opportunity.pipelineId,
+                    stageId: opportunity.stageId,
+                  }
+                : undefined,
+            };
+          })();
+      const result = await run(() => input.api.startCallSession(request));
+      if (!result) return;
+      const statusId = result.providerGroupId ?? result.sessionId;
+      activeVoiceSessionId = statusId;
+      activeRecordSessionId = result.sessionId;
+      try {
+        await input.voice.connect(statusId);
+        const ready = await run(() => input.api.markAgentReady(statusId));
+        if (!ready) {
+          disconnectVoice();
+          await input.api.terminateCallSession(statusId).catch(() => undefined);
+          return;
+        }
+        if (ready.remainingCleanup > 0) {
+          throw new Error('Agent conference did not become ready');
+        }
+      } catch (error: unknown) {
+        disconnectVoice();
+        await input.api.terminateCallSession(statusId).catch(() => undefined);
+        throw error;
+      }
+      const session = await run(() => input.api.getCallSession(statusId));
+      if (session) projectSession(session);
     } catch (error: unknown) {
       reportUnexpectedFailure(error);
     }
@@ -143,12 +277,16 @@ export const createLeadConnectorEmbedController = (input: {
           token: session.token,
           expiresAt: session.expiresAt,
         });
-        await Promise.all([loadResources(), loadCallOperations()]);
+        await Promise.all([
+          refreshResources({ force: true }),
+          loadCallOperations(),
+        ]);
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
       }
     },
-    loadResources,
+    loadResources: () => refreshResources({ force: true }),
+    refreshResources,
     loadCallOperations,
     loadMoreCallHistory: async (): Promise<void> => {
       try {
@@ -232,6 +370,42 @@ export const createLeadConnectorEmbedController = (input: {
         reportUnexpectedFailure(error);
       }
     },
+    updateSetup: (setup: Partial<LeadConnectorEmbedState['setup']>) =>
+      dispatch({ type: 'SETUP_CHANGED', setup }),
+    selectQueue: async (selection: {
+      pipelineId: string;
+      stageId: string;
+    }): Promise<void> => {
+      try {
+        const preview = await run(() =>
+          input.api.resolveQueueCandidates(selection),
+        );
+        if (!preview) return;
+        const targets = preview.candidates.flatMap((candidate) => {
+          const target = normalizeClickToCallTarget({
+            phone: candidate.phone,
+            contactId: candidate.contactId,
+            name: candidate.contactName,
+            opportunityId: candidate.opportunityId,
+          });
+          return target ? [target] : [];
+        });
+        dispatch({
+          type: 'QUEUE_SELECTED',
+          queue: {
+            pipelineId: preview.pipelineId,
+            pipelineName: preview.pipelineName,
+            stageId: preview.stageId,
+            stageName: preview.stageName,
+            opportunityTotal: preview.opportunityTotal,
+            callableTotal: preview.callableTotal,
+          },
+          targets,
+        });
+      } catch (error: unknown) {
+        reportUnexpectedFailure(error);
+      }
+    },
     selectTarget: (target: LeadConnectorClickToCallTarget) => {
       state = selectEmbedTarget(state, target);
       publish();
@@ -240,89 +414,12 @@ export const createLeadConnectorEmbedController = (input: {
       state = removeEmbedTarget(state, dedupeKey);
       publish();
     },
-    startCall: async (strategy: 'single' | 'predictive'): Promise<void> => {
-      try {
-        if (state.selectedTargets.length === 0) {
-          dispatch({
-            type: 'FAILED',
-            code: 'TARGET_REQUIRED',
-            message: 'Select at least one callable target',
-            recoverable: true,
-          });
-          return;
-        }
-        dispatch({ type: 'START_REQUESTED', strategy });
-        await input.voice.prepare();
-        const targets =
-          strategy === 'single'
-            ? state.selectedTargets.slice(0, 1)
-            : state.selectedTargets;
-        const request =
-          strategy === 'single'
-            ? (() => {
-                const target = targets[0];
-                const opportunity = state.opportunities.find(
-                  (item) => item.id === target?.opportunityId,
-                );
-                return {
-                  source: 'direct',
-                  selectionStrategy: 'single',
-                  requestedFanout: 1,
-                  targetPhone: target?.phone,
-                  contactId: target?.contactId ?? undefined,
-                  contactName: target?.name ?? undefined,
-                  opportunityId: opportunity?.id,
-                  pipelineId: opportunity?.pipelineId ?? undefined,
-                  stageId: opportunity?.stageId ?? undefined,
-                  opportunitySnapshot: opportunity
-                    ? {
-                        id: opportunity.id,
-                        status: opportunity.status,
-                        monetaryValue: opportunity.monetaryValue,
-                        pipelineId: opportunity.pipelineId,
-                        stageId: opportunity.stageId,
-                      }
-                    : undefined,
-                };
-              })()
-            : {
-                source: 'queue',
-                selectionStrategy: 'predictive',
-                requestedFanout: targets.length,
-                targetPhones: targets.map((target) => target.phone),
-                contactIds: targets
-                  .map((target) => target.contactId)
-                  .filter((value): value is string => value !== null),
-              };
-        const result = await run(() => input.api.startCallSession(request));
-        if (!result) return;
-        const statusId = result.providerGroupId ?? result.sessionId;
-        activeVoiceSessionId = statusId;
-        activeRecordSessionId = result.sessionId;
-        try {
-          await input.voice.connect(statusId);
-          const ready = await run(() => input.api.markAgentReady(statusId));
-          if (!ready) {
-            disconnectVoice();
-            await input.api
-              .terminateCallSession(statusId)
-              .catch(() => undefined);
-            return;
-          }
-          if (ready.remainingCleanup > 0) {
-            throw new Error('Agent conference did not become ready');
-          }
-        } catch (error: unknown) {
-          disconnectVoice();
-          await input.api.terminateCallSession(statusId).catch(() => undefined);
-          throw error;
-        }
-        const session = await run(() => input.api.getCallSession(statusId));
-        if (session) projectSession(session);
-      } catch (error: unknown) {
-        reportUnexpectedFailure(error);
-      }
+    startConfiguredCall: async (): Promise<void> => {
+      const strategy =
+        state.setup.mode === 'single' ? 'single' : state.setup.callingMode;
+      await startCall(strategy);
     },
+    startCall,
     refreshSession: async (): Promise<void> => {
       try {
         const sessionId = state.activeSessionId;
@@ -391,7 +488,10 @@ export const createLeadConnectorEmbedController = (input: {
         if (result?.recorded) {
           activeRecordSessionId = null;
           dispatch({ type: 'DISPOSITION_SUBMITTED' });
-          await loadCallOperations();
+          await Promise.all([
+            loadCallOperations(),
+            refreshResources({ force: true }),
+          ]);
         }
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
@@ -403,6 +503,11 @@ export const createLeadConnectorEmbedController = (input: {
       message: string;
       recoverable: boolean;
     }) => dispatch({ type: 'FAILED', ...inputValue }),
+    returnHome: () => {
+      activeRecordSessionId = null;
+      disconnectVoice();
+      dispatch({ type: 'RETURN_HOME' });
+    },
     reset: () => dispatch({ type: 'RESET' }),
   };
 };

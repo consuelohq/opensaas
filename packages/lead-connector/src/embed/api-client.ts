@@ -2,6 +2,7 @@ import type {
   LeadConnectorContact,
   LeadConnectorOpportunity,
   LeadConnectorPipeline,
+  LeadConnectorQueuePreview,
 } from '../contracts/index.js';
 import type {
   EmbedAdminCall,
@@ -117,6 +118,14 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
       request<{ pipelines: LeadConnectorPipeline[] }>(
         '/v1/integrations/leadconnector/pipelines',
       ).then((result) => result.pipelines),
+    resolveQueueCandidates: (input: {
+      pipelineId: string;
+      stageId: string;
+    }) =>
+      request<LeadConnectorQueuePreview>(
+        '/v1/integrations/leadconnector/queues/preview',
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
     startCallSession: (input: Record<string, unknown>) =>
       request<{
         sessionId: string;

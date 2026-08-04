@@ -506,9 +506,11 @@ export const createRailwayDialerApplicationLayers = async (
     );
 
     const targets: DialerTargetRepositoryService = {
-      resolveInputQueueId: ({ workspaceId, input }) =>
+      resolveInputQueueId: ({ workspaceId, userId, input }) =>
         syncEffect('resolve-input-queue', () => {
-          const queueId = input.queueId ?? `leadconnector:${randomUUID()}`;
+          const queueId = input.queueId
+            ? `leadconnector:${userId}:${input.queueId}`
+            : `leadconnector:${userId}:${randomUUID()}`;
           const phones = input.targetPhones ?? [];
           const contactIds = input.contactIds ?? [];
           const selected = phones.map((phone, index) => ({
@@ -605,9 +607,9 @@ export const createRailwayDialerApplicationLayers = async (
           if (input.callMode === 'mock') {
             const configured = [...safeFrom];
             return configured.length > 0
-              ? configured.slice(0, input.targetCount)
+              ? configured.slice(0, input.targets.length)
               : Array.from(
-                  { length: input.targetCount },
+                  { length: input.targets.length },
                   (_, index) => `+141555501${String(index).padStart(2, '0')}`,
                 );
           }
@@ -631,7 +633,7 @@ export const createRailwayDialerApplicationLayers = async (
           const numbers = yield* tryEffect('list-caller-ids', () =>
             runtime.liveDialer.listNumbers(),
           );
-          const available: string[] = [];
+          const available = [];
           for (const number of numbers) {
             const phone = normalizePhone(number.phoneNumber);
             if (safeFrom.size > 0 && !safeFrom.has(phone)) continue;
@@ -640,10 +642,40 @@ export const createRailwayDialerApplicationLayers = async (
                 runtime.lockService.isNumberAvailable(phone),
               )
             ) {
-              available.push(phone);
+              available.push({ ...number, phoneNumber: phone });
             }
           }
-          return available.slice(0, input.targetCount);
+          if (!input.preferLocalPresence) {
+            return available
+              .slice(0, input.targets.length)
+              .map((number) => number.phoneNumber);
+          }
+          const selected: string[] = [];
+          const remaining = [...available];
+          for (const target of input.targets) {
+            if (remaining.length === 0) break;
+            const resolution = yield* tryEffect('resolve-local-presence', () =>
+              runtime.liveDialer.resolveCallerId(
+                {
+                  to: target.phone,
+                  from: '',
+                  localPresence: true,
+                },
+                {
+                  numbers: remaining,
+                  primaryNumber: remaining.find((number) => number.isPrimary),
+                },
+              ),
+            );
+            const resolved = resolution.callerIdNumber;
+            if (!resolved) continue;
+            selected.push(resolved);
+            const index = remaining.findIndex(
+              (number) => number.phoneNumber === normalizePhone(resolved),
+            );
+            if (index >= 0) remaining.splice(index, 1);
+          }
+          return selected;
         }),
       initiateProviderCalls: (input) =>
         Effect.gen(function* () {

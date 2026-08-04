@@ -6,6 +6,7 @@ import {
   listLeadConnectorPipelines,
   processLeadConnectorWebhook,
   recordLeadConnectorDisposition,
+  resolveLeadConnectorQueueCandidates,
   searchLeadConnectorOpportunities,
   validateLeadConnectorEmbedIdentity,
   type LeadConnectorClockService,
@@ -52,6 +53,8 @@ export const createEffectLeadConnectorApplication = (
     searchLeadConnectorOpportunities(input).pipe(Effect.provide(layer)),
   listPipelines: (workspaceId) =>
     listLeadConnectorPipelines(workspaceId).pipe(Effect.provide(layer)),
+  resolveQueueCandidates: (input) =>
+    resolveLeadConnectorQueueCandidates(input).pipe(Effect.provide(layer)),
   recordDisposition: (input) =>
     recordLeadConnectorDisposition(input).pipe(Effect.provide(layer)),
   exchangeEmbedBootstrap: (input) =>

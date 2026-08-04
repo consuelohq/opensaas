@@ -33,6 +33,18 @@ const createDependencies = (): DialerServerDependencies => ({
     searchOpportunities: mock(() =>
       Effect.succeed({ opportunities: [], total: 0 }),
     ),
+    resolveQueueCandidates: mock(() =>
+      Effect.succeed({
+        pipelineId: 'pipeline-1',
+        pipelineName: 'Marketing Pipeline',
+        stageId: 'stage-1',
+        stageName: 'Hot Lead',
+        opportunityTotal: 2,
+        callableTotal: 1,
+        truncated: false,
+        candidates: [],
+      }),
+    ),
     listPipelines: mock(() => Effect.succeed([])),
     recordDisposition: mock(() => Effect.succeed({ recorded: true as const })),
     exchangeEmbedBootstrap: mock(() =>
@@ -109,6 +121,21 @@ describe('dialer-server embed and LeadConnector resources', () => {
         })
       ).status,
     ).toBe(200);
+    expect(
+      (
+        await app.request(
+          '/v1/integrations/leadconnector/queues/preview',
+          {
+            method: 'POST',
+            headers: auth,
+            body: JSON.stringify({
+              pipelineId: 'pipeline-1',
+              stageId: 'stage-1',
+            }),
+          },
+        )
+      ).status,
+    ).toBe(200);
     expect(dependencies.leadConnector?.listContacts).toHaveBeenCalledWith({
       workspaceId: 'workspace-1',
       query: 'Ada',
@@ -125,6 +152,13 @@ describe('dialer-server embed and LeadConnector resources', () => {
     expect(dependencies.leadConnector?.listPipelines).toHaveBeenCalledWith(
       'workspace-1',
     );
+    expect(
+      dependencies.leadConnector?.resolveQueueCandidates,
+    ).toHaveBeenCalledWith({
+      workspaceId: 'workspace-1',
+      pipelineId: 'pipeline-1',
+      stageId: 'stage-1',
+    });
   });
 
   it('writes a disposition through the provider application without provider logic in the route', async () => {

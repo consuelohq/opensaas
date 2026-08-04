@@ -47,6 +47,23 @@ const createApi = () =>
       ],
       total: 144,
     })),
+    resolveQueueCandidates: mock(async () => ({
+      pipelineId: 'pipeline-1',
+      pipelineName: 'Sales',
+      stageId: 'stage-1',
+      stageName: 'Qualified',
+      opportunityTotal: 5,
+      callableTotal: 5,
+      truncated: false,
+      candidates: Array.from({ length: 5 }, (_, index) => ({
+        opportunityId: `opportunity-${index + 1}`,
+        contactId: `contact-${index + 1}`,
+        contactName: `Contact ${index + 1}`,
+        phone: `+1555010012${index + 3}`,
+        status: 'open',
+        monetaryValue: null,
+      })),
+    })),
     listPipelines: mock(async () => [
       {
         id: 'pipeline-1',
@@ -160,6 +177,7 @@ describe('LeadConnector embed controller', () => {
       source: 'direct',
       selectionStrategy: 'single',
       requestedFanout: 1,
+      preferLocalPresence: true,
       targetPhone: '+15550100123',
       contactId: 'contact-1',
       contactName: 'Test Contact',
@@ -196,7 +214,7 @@ describe('LeadConnector embed controller', () => {
       note: 'Follow up',
       tags: ['called'],
     });
-    expect(controller.getState().phase).toBe('completed');
+    expect(controller.getState().phase).toBe('ready');
   });
 
   it('disconnects the browser agent exactly once when a refreshed session becomes terminal', async () => {
@@ -367,9 +385,143 @@ describe('LeadConnector embed controller', () => {
       source: 'queue',
       selectionStrategy: 'predictive',
       requestedFanout: 2,
+      preferLocalPresence: true,
       targetPhones: ['+15550100123', '+15550100124'],
       contactIds: ['contact-1', 'contact-2'],
     });
+  });
+
+  it('starts a selected GHL stage as one predictive queue with fanout independent from candidate count', async () => {
+    const api = createApi();
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    await controller.selectQueue({
+      pipelineId: 'pipeline-1',
+      stageId: 'stage-1',
+    });
+    controller.updateSetup({
+      callingMode: 'predictive',
+      requestedFanout: 3,
+      preferLocalPresence: true,
+    });
+
+    await controller.startConfiguredCall();
+
+    expect(api.resolveQueueCandidates).toHaveBeenCalledWith({
+      pipelineId: 'pipeline-1',
+      stageId: 'stage-1',
+    });
+    expect(controller.getState()).toMatchObject({
+      selectedQueue: {
+        pipelineName: 'Sales',
+        stageName: 'Qualified',
+        opportunityTotal: 5,
+        callableTotal: 5,
+      },
+      setup: { requestedFanout: 3, preferLocalPresence: true },
+    });
+    expect(api.startCallSession).toHaveBeenCalledWith({
+      source: 'queue',
+      queueId: 'pipeline-1:stage-1',
+      selectionStrategy: 'predictive',
+      requestedFanout: 3,
+      preferLocalPresence: true,
+      targetPhones: [
+        '+15550100123',
+        '+15550100124',
+        '+15550100125',
+        '+15550100126',
+        '+15550100127',
+      ],
+      contactIds: [
+        'contact-1',
+        'contact-2',
+        'contact-3',
+        'contact-4',
+        'contact-5',
+      ],
+      pipelineId: 'pipeline-1',
+      stageId: 'stage-1',
+    });
+  });
+
+  it('coalesces idle background resource refreshes and skips refresh while a call is active', async () => {
+    const api = createApi();
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    api.listContacts.mockClear();
+    api.searchOpportunities.mockClear();
+    api.listPipelines.mockClear();
+
+    let release: (() => void) | undefined;
+    api.listContacts = mock(
+      () =>
+        new Promise((resolve) => {
+          release = () =>
+            resolve({ contacts: [], total: 0, nextCursor: null });
+        }),
+    );
+    const first = controller.refreshResources();
+    const second = controller.refreshResources();
+    expect(api.listContacts).toHaveBeenCalledTimes(1);
+    release?.();
+    await Promise.all([first, second]);
+
+    const connectedController = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice: createVoice(),
+      initialState: {
+        ...controller.getState(),
+        phase: 'connected',
+        activeSessionId: 'group-1',
+      },
+    });
+    const connectedApi = createApi();
+    const activeController = createLeadConnectorEmbedController({
+      api: connectedApi,
+      voice: createVoice(),
+      initialState: connectedController.getState(),
+    });
+    await activeController.refreshResources();
+    expect(connectedApi.listContacts).not.toHaveBeenCalled();
+    expect(connectedApi.searchOpportunities).not.toHaveBeenCalled();
+    expect(connectedApi.listPipelines).not.toHaveBeenCalled();
+  });
+
+  it('returns to the configured home after disposition without reauthentication', async () => {
+    const api = createApi();
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    const target = normalizeClickToCallTarget({
+      phone: '+15550100123',
+      contactId: 'contact-1',
+      name: 'Test Contact',
+    });
+    controller.selectTarget(target!);
+    await controller.startCall('single');
+    await controller.hangUp();
+    await controller.submitDisposition({ disposition: 'connected' });
+
+    expect(controller.getState()).toMatchObject({
+      phase: 'ready',
+      sessionToken: 'embed-token',
+      contactTotal: 73,
+      opportunityTotal: 144,
+      setup: { mode: 'single', requestedFanout: 1 },
+      activeSessionId: null,
+      callSession: null,
+      selectedTargets: [],
+    });
+    expect(api.createEmbedSession).toHaveBeenCalledTimes(1);
   });
 
   it('expires and reauthenticates without retaining the expired browser token', async () => {

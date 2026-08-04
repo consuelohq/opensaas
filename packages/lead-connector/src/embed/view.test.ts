@@ -230,12 +230,13 @@ describe('LeadConnector embed view', () => {
     const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
 
     expect(html).toContain('data-surface="admin"');
-    expect(html).toContain('Operator workspace');
-    expect(html).toContain('data-field="search"');
-    expect(html).toContain('Test Contact');
-    expect(html).toContain('data-action="select-contact"');
-    expect(html).toContain('Test Opportunity');
-    expect(html).toContain('data-action="select-opportunity"');
+    expect(html).toContain('Who do you want to call?');
+    expect(html).toContain('Choose list');
+    expect(html).toContain('Single dial');
+    expect(html).toContain('Marketing Pipeline');
+    expect(html).toContain('New Lead');
+    expect(html).toContain('Active calls');
+    expect(html).toContain('Call history');
     expect(html).toContain('Connection and browser checks');
     expect(html).not.toContain('will appear here');
     expect(html).not.toContain('will be added');
@@ -253,14 +254,14 @@ describe('LeadConnector embed view', () => {
     const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
 
     expect(html).toContain(
-      '<span>Contacts available</span><strong>73</strong>',
+      '<div><dt>Contacts</dt><dd>73</dd></div>',
     );
     expect(html).toContain(
-      '<span>Opportunities available</span><strong>144</strong>',
+      '<div><dt>Opportunities</dt><dd>144</dd></div>',
     );
   });
 
-  it('renders callable contacts and opportunities in a ready overlay', () => {
+  it('renders the mature queue-first call setup in a ready overlay', () => {
     const state = reduceEmbedState(
       reduceEmbedState(createInitialEmbedState(), {
         type: 'AUTHENTICATED',
@@ -286,24 +287,43 @@ describe('LeadConnector embed view', () => {
             id: 'opportunity-1',
             name: 'Test Opportunity',
             contactId: 'contact-1',
-            pipelineId: null,
-            stageId: null,
+            pipelineId: 'pipeline-1',
+            stageId: 'stage-1',
             status: 'open',
             monetaryValue: null,
           },
         ],
         opportunityTotal: 1,
-        pipelines: [],
+        pipelines: [
+          {
+            id: 'pipeline-1',
+            name: 'Marketing Pipeline',
+            stages: [
+              { id: 'stage-1', name: 'New Lead', position: 0 },
+              { id: 'stage-2', name: 'Hot Lead', position: 1 },
+            ],
+          },
+        ],
       },
     );
 
     const html = renderLeadConnectorEmbed(state, { surface: 'overlay' });
-    expect(html).toContain('Choose someone to call');
-    expect(html).toContain('data-field="search"');
-    expect(html).toContain('Test Contact');
-    expect(html).toContain('data-action="select-contact"');
-    expect(html).toContain('Test Opportunity');
-    expect(html).toContain('data-action="select-opportunity"');
+    expect(html).toContain('Who do you want to call?');
+    expect(html).toContain('Choose a list or dial a single number.');
+    expect(html).toContain('data-action="setup-queue"');
+    expect(html).toContain('data-action="setup-single"');
+    expect(html).toContain('Choose list');
+    expect(html).toContain('Single dial');
+    expect(html).toContain('Marketing Pipeline');
+    expect(html).toContain('New Lead');
+    expect(html).toContain('Hot Lead');
+    expect(html).toContain('Prefer local presence calling');
+    expect(html).toContain('Predictive Dialer (recommended)');
+    expect(html).toContain('Single (one call at a time)');
+    expect(html).toContain('Number of lines');
+    expect(html).not.toContain('Choose someone to call');
+    expect(html).not.toContain('<h3>Deals</h3>');
+    expect(html).not.toContain('AI coaching');
   });
 
   it('renders only target confirmation and next actions before a call starts', () => {
@@ -355,6 +375,50 @@ describe('LeadConnector embed view', () => {
     expect(html).toContain('2 other lines ended');
     expect(html).toContain('data-action="hang-up"');
     expect(html).not.toContain('data-action="start-single"');
+    expect(html).not.toContain('data-form="disposition"');
+  });
+
+
+  it('returns a no-winner batch to the dialer without requiring a disposition', () => {
+    let state = reduceEmbedState(createInitialEmbedState(), {
+      type: 'AUTHENTICATED',
+      token: 'embed-token',
+      expiresAt: '2026-08-05T00:00:00.000Z',
+    });
+    state = reduceEmbedState(state, {
+      type: 'QUEUE_SELECTED',
+      queue: {
+        pipelineId: 'pipeline-1',
+        pipelineName: 'Marketing Pipeline',
+        stageId: 'stage-1',
+        stageName: 'Hot Lead',
+        opportunityTotal: 3,
+        callableTotal: 3,
+      },
+      targets: selectedState().selectedTargets,
+    });
+    state = reduceEmbedState(state, {
+      type: 'SESSION_UPDATED',
+      session: {
+        groupId: 'group-1',
+        status: 'completed',
+        winnerSid: null,
+        winner: null,
+        calls: [
+          {
+            callSid: 'call-1',
+            contactId: 'contact-1',
+            customerNumber: '+15550100123',
+            status: 'completed',
+            position: 1,
+          },
+        ],
+      },
+    });
+
+    const html = renderLeadConnectorEmbed(state, { surface: 'overlay' });
+    expect(html).toContain('No human answer');
+    expect(html).toContain('data-action="return-home"');
     expect(html).not.toContain('data-form="disposition"');
   });
 
