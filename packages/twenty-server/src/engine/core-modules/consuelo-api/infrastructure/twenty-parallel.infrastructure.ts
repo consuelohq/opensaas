@@ -23,9 +23,9 @@ import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/servic
 import { ParallelPosteriorStore } from 'src/engine/core-modules/consuelo-api/services/parallel-posterior.store';
 import { ParallelStrategyResolverService } from 'src/engine/core-modules/consuelo-api/services/parallel-strategy-resolver.service';
 
-interface ActiveCallerIdLockService {
+type ActiveCallerIdLockService = {
   refreshLock(phoneNumber: string, expectedCallSid: string): Promise<boolean>;
-}
+};
 
 export class TwentyParallelInfrastructure {
   private readonly logger = new Logger(TwentyParallelInfrastructure.name);

@@ -63,6 +63,15 @@ if redis.call('GET', key) ~= token then return 0 end
 return redis.call('DEL', key)
 `;
 
+const RENEW_LOCK_SCRIPT = `
+-- renew-lock
+local key = KEYS[1]
+local token = ARGV[1]
+local ttl = tonumber(ARGV[2])
+if redis.call('GET', key) ~= token then return 0 end
+return redis.call('PEXPIRE', key, ttl)
+`;
+
 export class RedisParallelStore implements ParallelStore {
   private readonly prefix: string;
   private readonly lockTtlMs: number;
@@ -191,20 +200,55 @@ export class RedisParallelStore implements ParallelStore {
       }
       await new Promise((resolve) => setTimeout(resolve, this.lockRetryMs));
     }
+    let renewalError: unknown;
+    let activeRenewal: Promise<void> | undefined;
+    const renewalIntervalMs = Math.max(1, Math.floor(this.lockTtlMs / 3));
+    const renewalTimer = setInterval(() => {
+      if (activeRenewal || renewalError) return;
+      activeRenewal = this.redis
+        .eval(RENEW_LOCK_SCRIPT, 1, key, token, String(this.lockTtlMs))
+        .then((renewed) => {
+          if (renewed !== 1) {
+            renewalError = new Error('Lost ownership of parallel group lock');
+          }
+        })
+        .catch((err: unknown) => {
+          renewalError = err;
+        })
+        .finally(() => {
+          activeRenewal = undefined;
+        });
+    }, renewalIntervalMs);
     try {
-      return await operation();
+      const result = await operation();
+      clearInterval(renewalTimer);
+      await activeRenewal;
+      if (renewalError) throw renewalError;
+      return result;
     } finally {
+      clearInterval(renewalTimer);
+      await activeRenewal;
       await this.redis.eval(RELEASE_LOCK_SCRIPT, 1, key, token);
     }
   }
 
   deleteGroup(groupId: string): Promise<void> {
     return this.getGroup(groupId).then((raw) => {
-      const calls = raw
-        ? (JSON.parse(raw) as ParallelGroup).calls.map((call) =>
-            this.callKey(call.callSid),
-          )
-        : [];
+      let calls: string[] = [];
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as Partial<ParallelGroup>;
+          calls = Array.isArray(parsed.calls)
+            ? parsed.calls.flatMap((call) =>
+                typeof call?.callSid === 'string'
+                  ? [this.callKey(call.callSid)]
+                  : [],
+              )
+            : [];
+        } catch {
+          calls = [];
+        }
+      }
       return this.redis
         .del(this.groupKey(groupId), this.winnerKey(groupId), ...calls)
         .then(() => undefined);

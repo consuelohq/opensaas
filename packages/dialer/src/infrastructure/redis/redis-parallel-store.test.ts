@@ -5,25 +5,49 @@ import type { ParallelGroup } from '../../types';
 
 class FakeRedis {
   readonly values = new Map<string, string>();
+  readonly expirations = new Map<string, number>();
+
+  private expireIfNeeded(key: string): void {
+    const expiresAt = this.expirations.get(key);
+    if (expiresAt !== undefined && expiresAt <= Date.now()) {
+      this.values.delete(key);
+      this.expirations.delete(key);
+    }
+  }
 
   async set(
     key: string,
     value: string,
     ...args: unknown[]
   ): Promise<string | null> {
+    this.expireIfNeeded(key);
     const nx = args.includes('NX');
     if (nx && this.values.has(key)) return null;
     this.values.set(key, value);
+    const pxIndex = args.indexOf('PX');
+    const exIndex = args.indexOf('EX');
+    if (pxIndex >= 0) {
+      this.expirations.set(key, Date.now() + Number(args[pxIndex + 1]));
+    } else if (exIndex >= 0) {
+      this.expirations.set(key, Date.now() + Number(args[exIndex + 1]) * 1_000);
+    } else {
+      this.expirations.delete(key);
+    }
     return 'OK';
   }
 
   async get(key: string): Promise<string | null> {
+    this.expireIfNeeded(key);
     return this.values.get(key) ?? null;
   }
 
   async del(...keys: string[]): Promise<number> {
     let removed = 0;
-    for (const key of keys) removed += this.values.delete(key) ? 1 : 0;
+    for (const key of keys) {
+      this.expireIfNeeded(key);
+      removed += this.values.delete(key) ? 1 : 0;
+      this.expirations.delete(key);
+    }
     return removed;
   }
 
@@ -58,8 +82,14 @@ class FakeRedis {
       return 1;
     }
     if (script.includes('release-lock')) {
-      if (this.values.get(keys[0]) !== values[0]) return 0;
+      if ((await this.get(keys[0])) !== values[0]) return 0;
       this.values.delete(keys[0]);
+      this.expirations.delete(keys[0]);
+      return 1;
+    }
+    if (script.includes('renew-lock')) {
+      if ((await this.get(keys[0])) !== values[0]) return 0;
+      this.expirations.set(keys[0], Date.now() + Number(values[1]));
       return 1;
     }
     return 0;
@@ -155,5 +185,46 @@ describe('RedisParallelStore', () => {
       }),
     ]);
     expect(maximum).toBe(1);
+  });
+
+  it('renews an owned group lock while a long operation is running', async () => {
+    const redis = new FakeRedis();
+    const store = new RedisParallelStore(redis, {
+      lockRetryMs: 1,
+      lockTimeoutMs: 500,
+      lockTtlMs: 50,
+    });
+    let active = 0;
+    let maximum = 0;
+
+    await Promise.all([
+      store.withGroupLock(group.groupId, async () => {
+        active += 1;
+        maximum = Math.max(maximum, active);
+        await Bun.sleep(180);
+        active -= 1;
+      }),
+      (async () => {
+        await Bun.sleep(80);
+        await store.withGroupLock(group.groupId, async () => {
+          active += 1;
+          maximum = Math.max(maximum, active);
+          active -= 1;
+        });
+      })(),
+    ]);
+
+    expect(maximum).toBe(1);
+  });
+
+  it('deletes known group keys when the persisted group JSON is malformed', async () => {
+    const redis = new FakeRedis();
+    const store = new RedisParallelStore(redis);
+    await store.setGroup(group.groupId, '{malformed', 60);
+    await store.setWinnerIfAbsent(group.groupId, 'call-1', 60);
+
+    await expect(store.deleteGroup(group.groupId)).resolves.toBeUndefined();
+    expect(await store.getGroup(group.groupId)).toBeNull();
+    expect(await store.getWinner(group.groupId)).toBeNull();
   });
 });
