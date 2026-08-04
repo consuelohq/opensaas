@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_60964991a1fc",
+  "tmuxSession": "opensaas-dialer-deploy-merged-leadconnector-dialer-to-ghl-sandbo-60964991",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/deploy-merged-leadconnector-dialer-to-ghl-sandbox",
+  "branch": "task/dialer/deploy-merged-leadconnector-dialer-to-ghl-sandbox",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-deploy-merged-leadconnector-dialer-to-ghl-sandbox",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-deploy-merged-leadconnector-dialer-to-ghl-sandbox",
+  "prNumber": 1775,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1775",
+  "createdAt": "2026-08-04T21:08:46.182Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-deploy-merged-leadconnector-dialer-to-ghl-sandbox/.task/dialer/deploy-merged-leadconnector-dialer-to-ghl-sandbox/session.json"
+}

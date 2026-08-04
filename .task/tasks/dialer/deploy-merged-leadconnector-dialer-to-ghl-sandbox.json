@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/deploy-merged-leadconnector-dialer-to-ghl-sandbox",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1775,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1775",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1775",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1775/deploy-merged-leadconnector-dialer-to-ghl-sandbox",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1775",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1775/deploy-merged-leadconnector-dialer-to-ghl-sandbox",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-deploy-merged-leadconnector-dialer-to-ghl-sandbox",
+  "taskSession": "tsk_60964991a1fc",
+  "tmuxSession": "opensaas-dialer-deploy-merged-leadconnector-dialer-to-ghl-sandbo-60964991",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-deploy-merged-leadconnector-dialer-to-ghl-sandbox/.task/dialer/deploy-merged-leadconnector-dialer-to-ghl-sandbox/session.json",
+  "createdAt": "2026-08-04T21:08:46.184Z"
+}
