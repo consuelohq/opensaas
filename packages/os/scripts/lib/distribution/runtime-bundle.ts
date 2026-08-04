@@ -129,6 +129,7 @@ const REQUIRED_RUNTIME_INPUTS = [
   'steering/system_prompt.md',
   'steering/decision.md',
   'streams/tools/AGENTS.md',
+  'streams/dialer/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',
 ] as const;

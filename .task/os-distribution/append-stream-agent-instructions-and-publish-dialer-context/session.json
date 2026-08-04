@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c0352ad06862",
+  "tmuxSession": "opensaas-os-distribution-append-stream-agent-instructions-and-publish-dia-c0352ad0",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/append-stream-agent-instructions-and-publish-dialer-context",
+  "branch": "task/os-distribution/append-stream-agent-instructions-and-publish-dialer-context",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-append-stream-agent-instructions-and-publish-dialer-context",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-append-stream-agent-instructions-and-publish-dialer-context",
+  "prNumber": 1767,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1767",
+  "createdAt": "2026-08-04T19:38:17.781Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-append-stream-agent-instructions-and-publish-dialer-context/.task/os-distribution/append-stream-agent-instructions-and-publish-dialer-context/session.json"
+}

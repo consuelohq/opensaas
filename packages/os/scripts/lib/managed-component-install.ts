@@ -16,9 +16,10 @@ import {
   type ManagedComponentProvenance,
   type ManagedComponentSource,
 } from './managed-components';
+import { reconcileVisibleDialerSteering } from './visible-dialer-steering';
 
 export type ManagedComponentProvisionAction = {
-  type: 'create_file' | 'seed_skill' | 'seed_tool';
+  type: 'create_file' | 'seed_skill' | 'seed_tool' | 'seed_steering';
   path: string;
   status: 'planned' | 'created' | 'preserved' | 'updated' | 'skipped';
   message: string;
@@ -366,6 +367,8 @@ export function provisionManagedComponentIndexes(input: {
 
   const legacy = legacyEntries(input.home);
   actions.push(...legacy.actions);
+  const userRoot = input.userRoot ?? path.join(os.homedir(), 'Consuelo');
+  actions.push(reconcileVisibleDialerSteering({ userRoot, dryRun: input.dryRun }));
   const sourceBundle = runtimeBundleIdentity(upstream);
   const componentsRoot = path.join(input.home, 'components');
   const skillsIndexPath = path.join(componentsRoot, 'installed-skills.json');
@@ -403,7 +406,6 @@ export function provisionManagedComponentIndexes(input: {
   }, null, 2)}\n`, { mode: 0o600 });
 
   const previous = readExistingState(input.home);
-  const userRoot = input.userRoot ?? path.join(os.homedir(), 'Consuelo');
   let state = buildManagedComponentUpdateState({
     generatedAt: input.generatedAt,
     sourceBundle,
