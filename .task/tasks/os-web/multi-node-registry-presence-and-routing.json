@@ -1,0 +1,12 @@
+{
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/multi-node-registry-presence-and-routing",
+  "baseBranch": "stream/os-web",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1581,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1581",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-multi-node-registry-presence-and-routing",
+  "createdAt": "2026-07-23T03:15:55.213Z"
+}

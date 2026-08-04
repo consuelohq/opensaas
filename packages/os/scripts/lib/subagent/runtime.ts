@@ -656,8 +656,52 @@ async function executeGrokSubagent(
     });
   }
 
-  const prompt = subagentInstruction(input);
+  const help = readCommandHelp(grok, ['--help'], context.env);
+  if (
+    input.policy === 'read' &&
+    (
+      !help?.includes('--permission-mode') ||
+      !help.includes('--max-turns') ||
+      !help.includes('--deny')
+    )
+  ) {
+    return subagentToolResult(entry, context, {
+      ...input,
+      status: 'not_supported',
+      command: [grok, '--help'],
+      stdout: '',
+      stderr: 'grok read policy requires auto permission mode, mutation denies, and bounded turns',
+      exitCode: 1,
+      audit: input.audit,
+      ok: true,
+      code: 'OK',
+      message: 'grok provider cannot enforce the requested read policy',
+    });
+  }
+
+  const prompt = [
+    subagentInstruction(input),
+    ...(input.policy === 'read'
+      ? ['Read-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context.']
+      : []),
+  ].join('\n\n');
   const args = ['--no-auto-update'];
+  if (input.policy === 'read') {
+    args.push(
+      '--permission-mode',
+      'auto',
+      '--max-turns',
+      '32',
+      '--deny',
+      'Edit',
+      '--deny',
+      'Write',
+      '--deny',
+      'Bash',
+    );
+    if (help?.includes('--no-memory')) args.push('--no-memory');
+    if (help?.includes('--no-subagents')) args.push('--no-subagents');
+  }
   if (config.model) args.push('--model', config.model);
   args.push('-p', prompt);
   args.push('--output-format', input.outputFormat === 'json' ? 'json' : 'text');
@@ -671,7 +715,12 @@ async function executeGrokSubagent(
     env: context.env,
     timeoutMs: input.timeoutMs,
   });
-  const status: SubagentStatus = run.timedOut ? 'timed_out' : run.exitCode === 0 ? 'completed' : 'failed';
+  const completionFailure = !run.timedOut && run.exitCode === 0
+    ? grokCompletionFailure(run.stdout)
+    : undefined;
+  const completed = !run.timedOut && run.exitCode === 0 && !completionFailure;
+  const status: SubagentStatus = run.timedOut ? 'timed_out' : completed ? 'completed' : 'failed';
+  const stderr = [run.stderr.trim(), completionFailure].filter(Boolean).join('\n');
   return subagentToolResult(entry, context, {
     ...input,
     status,
@@ -681,17 +730,49 @@ async function executeGrokSubagent(
       cwd: input.cwd,
       traceId: context.traceId,
       stdout: run.stdout,
-      stderr: run.stderr,
+      stderr,
       taskSession: input.audit.taskSession,
       branch: input.audit.branch,
     }),
-    exitCode: run.exitCode,
+    exitCode: completed ? 0 : 1,
     durationMs: elapsedMs(started, context.options.now),
     audit: { ...input.audit, rawShellUsed: true },
-    ok: run.exitCode === 0 && !run.timedOut,
-    code: run.timedOut ? 'TIMEOUT' : run.exitCode === 0 ? 'OK' : 'COMMAND_FAILED',
-    message: run.timedOut ? 'grok provider timed out' : run.exitCode === 0 ? 'grok provider completed' : 'grok provider failed',
+    ok: completed,
+    code: run.timedOut ? 'TIMEOUT' : completed ? 'OK' : 'COMMAND_FAILED',
+    message: run.timedOut
+      ? 'grok provider timed out'
+      : completed
+        ? 'grok provider completed'
+        : completionFailure || 'grok provider failed',
   });
+}
+
+function grokCompletionFailure(stdout: string): string | undefined {
+  const trimmed = stdout.trim();
+  if (!trimmed) return 'grok provider exited without a final message';
+
+  let value: Record<string, unknown>;
+  try {
+    value = JSON.parse(trimmed) as Record<string, unknown>;
+  } catch {
+    return undefined;
+  }
+
+  const stopReason = stringValue(value.stopReason);
+  if (stopReason) {
+    const normalized = stopReason.replace(/[^a-z]/gi, '').toLowerCase();
+    if (!['endturn', 'completed', 'stop'].includes(normalized)) {
+      return `grok provider ended with stop reason ${stopReason}`;
+    }
+  }
+
+  const finalMessage =
+    stringValue(value.finalMessage) ||
+    stringValue(value.message) ||
+    stringValue(value.text) ||
+    stringValue(value.output);
+  if (!finalMessage?.trim()) return 'grok provider exited without a final message';
+  return undefined;
 }
 
 function subagentToolResult(

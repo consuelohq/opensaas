@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/os-web/authenticated-launcher-workspace-links-and-gtm/workpad.md",
+    ".task/subagent-runs/trc_275cc8a0e6ef-grok/stdout.log",
+    ".task/subagent-runs/trc_275cc8a0e6ef-grok/summary.json",
+    "packages/os/plans/consuelo-os-foundation/environment-registry.md",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
+    "packages/os/plans/consuelo-os-foundation/workers/15-launcher-gtm-routing.md",
+    "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/lib/subagent/runtime.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-24T17:22:02.785Z"
+}

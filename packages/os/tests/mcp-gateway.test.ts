@@ -18,6 +18,8 @@ import {
   resolveMcpGatewayRequiredScope,
 } from '../scripts/lib/mcp-gateway';
 import { handleRequest } from '../scripts/server/app';
+import { createMcpRoutes } from '../scripts/server/routes/mcp';
+import { resolveMcpRequestSession } from '../scripts/server/services/mcp-session';
 import { removeSafeTempDir } from './safe-temp-cleanup';
 
 type JsonObject = Record<string, unknown>;
@@ -92,7 +94,7 @@ afterEach(() => {
 describe('MCP gateway credential lifecycle', () => {
   it('stores scoped credential metadata without raw credential material', () => {
     const config = createConfig();
-    const token = issueMcpToken(config, ['route:/mcp:read', 'tool:get_raw_steering:read']);
+    const token = issueMcpToken(config, ['route:/mcp:read', 'tool:status:read']);
     const storedToken = storedTokenRecord(config, token);
     const [status] = listAgentAppCredentialStatuses({ config });
     const directStatus = getAgentAppCredentialStatus({ config, tokenId: token.tokenId });
@@ -534,6 +536,162 @@ describe('MCP gateway adapter', () => {
 });
 
 describe('MCP gateway server route', () => {
+  it('should keep unissued MCP session ids in the authenticated credential bucket', () => {
+    const request = new Request('http://127.0.0.1:46321/mcp', {
+      headers: {
+        authorization: 'Bearer secret-value',
+        'x-consuelo-workspace-id': 'workspace-test',
+      },
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'call',
+      method: 'tools/call',
+      params: { name: 'get_steering', arguments: {} },
+    });
+
+    const first = resolveMcpRequestSession(new Request(request, {
+      headers: {
+        ...Object.fromEntries(request.headers),
+        'mcp-session-id': 'unissued-session-alpha',
+      },
+    }), body);
+    const second = resolveMcpRequestSession(new Request(request, {
+      headers: {
+        ...Object.fromEntries(request.headers),
+        'mcp-session-id': 'unissued-session-beta',
+      },
+    }), body);
+
+    expect(first.callerKey).toBe(second.callerKey);
+    expect(first.callerKey).not.toContain('secret-value');
+  });
+
+  it('should isolate steering guards between authenticated MCP sessions', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const callerKeys: string[] = [];
+    const app = createMcpRoutes({
+      getSteering: async (callerKey) => {
+        callerKeys.push(callerKey);
+        return '# OS steering';
+      },
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+
+    const initializeSession = async (nonce: string): Promise<string> => {
+      const body = JSON.stringify({
+        jsonrpc: '2.0',
+        id: nonce,
+        method: 'initialize',
+        params: {
+          protocolVersion: '2025-03-26',
+          capabilities: {},
+          clientInfo: { name: nonce, version: '1.0.0' },
+        },
+      });
+      const signed = signMachineRequest({
+        config,
+        token,
+        method: 'POST',
+        path: '/mcp',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce,
+      });
+      const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+        method: 'POST',
+        headers: signed.headers,
+        body,
+      }));
+      expect(response.status).toBe(200);
+      const sessionId = response.headers.get('mcp-session-id');
+      expect(sessionId).toMatch(/^[a-zA-Z0-9._~-]{8,128}$/);
+      return sessionId!;
+    };
+
+    const callSteering = async (sessionId: string, nonce: string) => {
+      const body = JSON.stringify({
+        jsonrpc: '2.0',
+        id: nonce,
+        method: 'tools/call',
+        params: { name: 'get_steering', arguments: {} },
+      });
+      const signed = signMachineRequest({
+        config,
+        token,
+        method: 'POST',
+        path: '/mcp',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce,
+      });
+      const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+        method: 'POST',
+        headers: {
+          ...signed.headers,
+          'mcp-session-id': sessionId,
+        },
+        body,
+      }));
+      expect(response.status).toBe(200);
+    };
+
+    const sessionAlpha = await initializeSession('nonce-initialize-alpha');
+    const sessionBeta = await initializeSession('nonce-initialize-beta');
+
+    await callSteering(sessionAlpha, 'nonce-session-alpha-1');
+    await callSteering(sessionBeta, 'nonce-session-beta-1');
+    await callSteering(
+      sessionAlpha,
+      'nonce-session-alpha-2',
+    );
+
+    expect(callerKeys).toHaveLength(3);
+    expect(callerKeys[0]).not.toBe(callerKeys[1]);
+    expect(callerKeys[0]).toBe(callerKeys[2]);
+    expect(callerKeys.join('')).not.toContain(token.bearerToken);
+  });
+
+  it('should issue an MCP session id when an authenticated client initializes', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'initialize-session',
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-03-26',
+        capabilities: {},
+        clientInfo: { name: 'session-test', version: '1.0.0' },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-initialize-session',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: signed.headers,
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('mcp-session-id')).toMatch(
+      /^[a-zA-Z0-9._~-]{8,128}$/,
+    );
+  });
+
   it('should serve the two OS facade tools through the signed MCP endpoint', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);

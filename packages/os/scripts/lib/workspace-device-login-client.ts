@@ -40,11 +40,18 @@ export type DeviceAccessTokenPollResult =
 export type RequestWorkspaceDeviceCodeInput = {
   clientId: string;
   scope: string[];
+  workspaceId?: string;
   workspaceName?: string;
   workspaceSlug?: string;
   workspaceHost?: string;
   nodeId?: string;
   nodeName?: string;
+  /**
+   * Declares that this enrolment re-registers an existing node id under a new device key, which is
+   * what reinstalling a machine produces. Registration still rejects a thumbprint mismatch without
+   * it, so this expresses intent rather than granting anything.
+   */
+  nodeIdentityReplacement?: boolean;
   deviceKeyPair?: WorkspaceDeviceKeyPair;
   fetchImpl?: DeviceLoginFetch;
   now?: string;
@@ -206,8 +213,26 @@ async function createDeviceProof(input: {
 }
 
 async function readJson(fetchImpl: DeviceLoginFetch, url: string, init: RequestInit): Promise<Record<string, unknown>> {
-  const response = await fetchImpl(url, init);
-  const json = asRecord(await response.json());
+  let response: Response;
+  try {
+    response = await fetchImpl(url, init);
+  } catch (error: unknown) {
+    // The URL can carry a device code, so report the failure without echoing the request.
+    throw new Error(
+      `device login endpoint is unreachable: ${error instanceof Error ? error.message : 'network error'}`,
+    );
+  }
+
+  let json: Record<string, unknown>;
+  try {
+    json = asRecord(await response.json());
+  } catch (_error: unknown) {
+    // A non-JSON body is usually an edge error page. Surface the status rather than the body,
+    // which is untrusted and may be large.
+    throw new Error(
+      `device login endpoint returned a non-JSON response (HTTP ${response.status})`,
+    );
+  }
 
   if (!response.ok && !json.error) {
     throw new Error(`device login endpoint returned HTTP ${response.status}`);
@@ -226,11 +251,17 @@ export async function requestWorkspaceDeviceCode(
     device_public_key_jwk: deviceKeyPair.publicKeyJwk,
     device_key_algorithm: deviceKeyPair.algorithm,
   });
+  if (input.workspaceId) body.set('workspace_id', input.workspaceId);
   if (input.workspaceName) body.set('workspace_name', input.workspaceName);
   if (input.workspaceSlug) body.set('workspace_slug', input.workspaceSlug);
   if (input.workspaceHost) body.set('workspace_host', input.workspaceHost);
   if (input.nodeId) body.set('node_id', input.nodeId);
   if (input.nodeName) body.set('node_name', input.nodeName);
+  // Declared only when re-enrolling an existing node id whose device key changed, which is what a
+  // reinstall produces. Registration still fails closed without it.
+  if (input.nodeIdentityReplacement) {
+    body.set('node_identity_replacement', 'true');
+  }
 
   try {
     const json = await readJson(input.fetchImpl ?? defaultFetch, CONSUELO_DEVICE_CODE_URL, {

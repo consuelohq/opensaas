@@ -1,0 +1,19 @@
+{
+  "area": "os-native",
+  "stream": "stream/os-native",
+  "taskBranch": "task/os-native/audit-macos-native-wave-before-main",
+  "baseBranch": "stream/os-native",
+  "sourceBranch": "stream/os-native",
+  "startFrom": "stream",
+  "prNumber": 1667,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1667",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1667",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1667/audit-macos-native-wave-before-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1667",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1667/audit-macos-native-wave-before-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-audit-macos-native-wave-before-main",
+  "taskSession": "tsk_2884c981b637",
+  "tmuxSession": "opensaas-os-native-audit-macos-native-wave-before-main-2884c981",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-audit-macos-native-wave-before-main/.task/os-native/audit-macos-native-wave-before-main/session.json",
+  "createdAt": "2026-07-27T02:26:05.235Z"
+}

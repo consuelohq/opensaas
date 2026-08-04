@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_60891d97bfc2",
+  "tmuxSession": "opensaas-os-web-multi-node-registry-presence-and-routing-60891d97",
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/multi-node-registry-presence-and-routing",
+  "branch": "task/os-web/multi-node-registry-presence-and-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-multi-node-registry-presence-and-routing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-multi-node-registry-presence-and-routing",
+  "prNumber": 1581,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1581",
+  "createdAt": "2026-07-23T02:50:42.516Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-multi-node-registry-presence-and-routing/.task/os-web/multi-node-registry-presence-and-routing/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1230e4254219",
+  "tmuxSession": "opensaas-os-web-audit-launcher-traces-web-wave-before-main-1230e425",
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/audit-launcher-traces-web-wave-before-main",
+  "branch": "task/os-web/audit-launcher-traces-web-wave-before-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-audit-launcher-traces-web-wave-before-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-audit-launcher-traces-web-wave-before-main",
+  "prNumber": 1649,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1649",
+  "createdAt": "2026-07-25T01:10:12.297Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-audit-launcher-traces-web-wave-before-main/.task/os-web/audit-launcher-traces-web-wave-before-main/session.json"
+}

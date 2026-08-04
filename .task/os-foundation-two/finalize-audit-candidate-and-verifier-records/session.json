@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2dc3529fb53e",
+  "tmuxSession": "opensaas-os-foundation-two-finalize-audit-candidate-and-verifier-records-2dc3529f",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/finalize-audit-candidate-and-verifier-records",
+  "branch": "task/os-foundation-two/finalize-audit-candidate-and-verifier-records",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-finalize-audit-candidate-and-verifier-records",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-finalize-audit-candidate-and-verifier-records",
+  "prNumber": 1679,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1679",
+  "createdAt": "2026-07-27T19:10:07.728Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-finalize-audit-candidate-and-verifier-records/.task/os-foundation-two/finalize-audit-candidate-and-verifier-records/session.json"
+}

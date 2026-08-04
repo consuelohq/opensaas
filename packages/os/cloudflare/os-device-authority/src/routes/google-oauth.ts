@@ -1,7 +1,8 @@
 import type { Hono } from 'hono';
 
 import { TTL_MS } from '../constants';
-import { methodNotAllowed, page, text } from '../http';
+import { json, methodNotAllowed, page, text } from '../http';
+import { normalizeAuthReturnPath } from '../security/web-auth-contract';
 import type { DeviceAuthorityRuntime } from '../types';
 import { rand } from '../utils';
 import {
@@ -19,6 +20,7 @@ import {
 } from '../services/grants';
 import { registerApprovedWorkspaceRoute } from '../services/connectors';
 import { finishMcpOAuthGoogleCallback } from '../services/mcp-oauth';
+import { completeWebGoogleLogin } from './web-auth';
 
 async function handleGoogleOAuthRequest(
   request: Request,
@@ -45,6 +47,27 @@ async function handleGoogleOAuthRequest(
             error: 'Google approval is not configured yet.',
           }),
           { status: 503 },
+        );
+      }
+      if (url.searchParams.get('purpose') === 'web') {
+        const state = rand('web_state', 24);
+        const nonce = rand('web_nonce', 24);
+        await input.store.putWebOAuthState({
+          state,
+          nonce,
+          returnPath: normalizeAuthReturnPath(
+            url.searchParams.get('return_to'),
+          ),
+          expiresAt: now() + TTL_MS,
+        });
+        return Response.redirect(
+          googleAuthRedirect({
+            origin,
+            clientId: google.clientId,
+            state,
+            nonce,
+          }),
+          302,
         );
       }
       const code = url.searchParams.get('user_code') ?? '';
@@ -107,6 +130,33 @@ async function handleGoogleOAuthRequest(
           googleRedirectUri: redirectUri(origin),
           nowMs: now(),
         });
+      }
+      const webOAuthState = stateValue
+        ? await input.store.byWebOAuthState(stateValue)
+        : undefined;
+      if (authCode && webOAuthState) {
+        await input.store.delWebOAuthState(stateValue);
+        if (now() >= webOAuthState.expiresAt) {
+          return json({ error: 'invalid_login' }, { status: 400 });
+        }
+        try {
+          const identity = await googleIdentity({
+            code: authCode,
+            origin,
+            clientId: google.clientId,
+            clientSecret: google.clientSecret,
+            fetchImpl,
+            expectedNonce: webOAuthState.nonce,
+          });
+          return await completeWebGoogleLogin({
+            runtime,
+            accountId: `google:${identity.sub}`,
+            email: identity.email,
+            returnPath: webOAuthState.returnPath,
+          });
+        } catch {
+          return json({ error: 'invalid_login' }, { status: 400 });
+        }
       }
       const oauthState = await input.store.byOAuthState(stateValue);
       if (!stateValue || !authCode || !oauthState)
@@ -172,6 +222,7 @@ async function handleGoogleOAuthRequest(
       if (existingWorkspace) {
         assignGrantWorkspace({
           grant,
+          workspaceId: existingWorkspace.workspaceId,
           workspaceSlug: existingWorkspace.workspaceSlug,
           workspaceHost: existingWorkspace.workspaceHost,
         });

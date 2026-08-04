@@ -120,6 +120,7 @@ type EdgeRouteSeedContract = {
     baseDomain?: string;
     connectorId?: string;
     tunnelOriginUrl?: string;
+    publishedSiteIds?: string[];
   }) => WorkspaceRouteRecord & { updatedAt: string };
 };
 
@@ -166,7 +167,7 @@ type InstallPublisherContract = {
     workspaceSlug: string;
     workspaceHost: string;
     now?: string;
-  }) => { versionId: string; routeSql: string; verifyUrl: string; verifiedUrls: string[]; snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string }> };
+  }) => { versionId: string; routeSql: string; verifyUrl: string; verifiedUrls: string[]; snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string }> };
   publishWorkspaceEdgeSnapshot: (input: {
     home: string;
     workspaceId: string;
@@ -175,7 +176,7 @@ type InstallPublisherContract = {
     now?: string;
     commandRunner?: (command: { argv: string[]; cwd?: string }) => Promise<{ exitCode: number; stdout: string; stderr: string }>;
     fetchImpl?: (url: string, init?: RequestInit) => Promise<Response>;
-  }) => Promise<{ status: 'succeeded'; verifyUrl: string; verifiedUrls: string[]; versionId: string; snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string }> }>;
+  }) => Promise<{ status: 'succeeded'; verifyUrl: string; verifiedUrls: string[]; versionId: string; snapshots: Array<{ siteId: string; snapshotKey: string; snapshotPath: string; verifyUrl: string; contentHash: string }> }>;
 };
 
 const forbiddenBrowserLeakPattern = /local trace db|local-trace-db|local agent|local-agent|cloud runner|cloud-runner|trace file|trace-store-file|raw internal service|raw-trace-service|implementation path|implementationPath|backend target|backendTarget|directBackendTarget|tunnelOriginUrl|upstreamUrl|sqlite|\.db/i;
@@ -319,7 +320,28 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
     owner: 'consuelo-os-cloud',
     status: 'active',
     routes: [
-      { surface: 'sites', pathPrefix: '/', auth: 'public', status: 'active', target: siteSnapshotTarget('launcher') },
+      {
+        surface: 'os',
+        pathPrefix: '/gtm',
+        auth: 'workspace-session',
+        status: 'active',
+        target: {
+          kind: 'os-connector',
+          connectorId: 'connector_internal',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
+        },
+      },
+      {
+        surface: 'sites',
+        pathPrefix: '/',
+        auth: 'workspace-session',
+        status: 'active',
+        target: {
+          ...siteSnapshotTarget('launcher'),
+          cachePolicy: 'private-preview',
+        },
+      },
       { surface: 'sites', pathPrefix: '/artifacts', auth: 'public', status: 'active', target: siteSnapshotTarget('artifacts') },
       { surface: 'sites', pathPrefix: '/traces', auth: 'public', status: 'active', target: siteSnapshotTarget('traces') },
       { surface: 'sites', pathPrefix: '/tracing', auth: 'public', status: 'active', target: siteSnapshotTarget('traces') },
@@ -356,6 +378,31 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
 }
 
 contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integration', () => {
+  it('should keep the integrated route fixture aligned with the authenticated launcher and GTM contract', () => {
+    const record = integratedRouteRecord();
+
+    expect(record.routes.find((route) => route.pathPrefix === '/')).toMatchObject({
+      surface: 'sites',
+      auth: 'workspace-session',
+      target: {
+        kind: 'site-snapshot',
+        siteId: 'launcher',
+        cachePolicy: 'private-preview',
+      },
+    });
+    expect(record.routes.find((route) => route.pathPrefix === '/gtm')).toMatchObject({
+      surface: 'os',
+      auth: 'workspace-session',
+      target: {
+        kind: 'os-connector',
+        connectorId: 'connector_internal',
+      },
+    });
+    expect(
+      record.routes.findIndex((route) => route.pathPrefix === '/gtm'),
+    ).toBeLessThan(record.routes.findIndex((route) => route.pathPrefix === '/'));
+  });
+
   it('should seed workspace routes with Trace as a Site shell and Gateway as the data boundary when connector inputs exist', async () => {
     const seed = await importModule<EdgeRouteSeedContract>('scripts/lib/workspace-edge-route-seed.ts');
 
@@ -366,16 +413,28 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       baseDomain: 'consuelohq.com',
       connectorId: 'connector_internal',
       tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
+      publishedSiteIds: [
+        'launcher',
+        'artifacts',
+        'traces',
+        'diffs',
+        'docs',
+        'configuration',
+        'tools',
+        'environments',
+        'secrets',
+      ],
     });
 
     const traceRoute = record.routes.find((route) => route.pathPrefix === '/observability');
+    const gtmRoute = record.routes.find((route) => route.pathPrefix === '/gtm');
     const mcpRoute = record.routes.find((route) => route.pathPrefix === '/mcp');
     const gatewayRoutes = record.routes.filter((route) => route.target.kind === 'consuelo-gateway-service');
 
     expect(record.routes.find((route) => route.pathPrefix === '/')).toMatchObject({
       surface: 'sites',
-      auth: 'public',
-      target: { kind: 'site-snapshot' },
+      auth: 'workspace-session',
+      target: { kind: 'site-snapshot', cachePolicy: 'private-preview' },
     });
     expect(traceRoute).toMatchObject({
       surface: 'sites',
@@ -399,6 +458,12 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       surface: 'os',
       target: { kind: 'os-connector', connectorId: 'connector_internal' },
     });
+    expect(gtmRoute).toMatchObject({
+      surface: 'os',
+      auth: 'workspace-session',
+      target: { kind: 'os-connector', connectorId: 'connector_internal' },
+    });
+    expect(record.routes.indexOf(gtmRoute!)).toBeLessThan(record.routes.findIndex((route) => route.pathPrefix === '/'));
     expect(record.routes.some((route) => route.pathPrefix === '/observability' && route.target.kind === 'os-connector')).toBe(false);
     expect(record.routes.some((route) => route.pathPrefix === '/traces' && route.target.kind === 'os-connector')).toBe(false);
     expect(gatewayRoutes.map((route) => route.target).filter((target): target is ConsueloGatewayServiceTarget => target.kind === 'consuelo-gateway-service')).toEqual(expect.arrayContaining([
@@ -899,11 +964,22 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
       commandRunner: async () => ({ exitCode: 0, stdout: 'ok', stderr: '' }),
       fetchImpl: async (url) => {
         verificationUrls.push(url);
+        if (url === expectedPlan.verifyUrl) {
+          return Response.json(
+            { error: 'workspace_session_required' },
+            { status: 401 },
+          );
+        }
+        const snapshot = expectedPlan.snapshots.find(
+          (candidate) => candidate.verifyUrl === url,
+        );
+        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
         return new Response('<!doctype html><title>Trace shell</title><main>Hosted Trace Site shell</main>', {
           status: 200,
           headers: {
             'x-consuelo-edge-cache-authority': 'sites-snapshot',
             'x-consuelo-sites-cache': 'miss',
+            'x-consuelo-site-content-hash': snapshot.contentHash,
             'x-consuelo-site-version': expectedPlan.versionId,
           },
         });

@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/repository-architecture/repository-product-boundary-audit",
+  "base": "origin/main",
+  "headSha": "248ab3bf58a4cba32970b4bb7065bd9e9211ce6f",
+  "changeHash": "81aae03bf4c4a3dbda2b95a2eddfa3d447e8a6634a3a4f6794cfc732cf0b8808",
+  "changedFiles": [],
+  "verifiedAt": "2026-07-22T21:50:03.155Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/repository-architecture/repository-product-boundary-audit/current.json",
+        ".task/repository-architecture/repository-product-boundary-audit/evidence-log.json",
+        ".task/repository-architecture/repository-product-boundary-audit/read-log.json",
+        ".task/repository-architecture/repository-product-boundary-audit/session.json",
+        ".task/repository-architecture/repository-product-boundary-audit/verify.json",
+        ".task/repository-architecture/repository-product-boundary-audit/workpad.md",
+        ".task/tasks/repository-architecture/repository-product-boundary-audit.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

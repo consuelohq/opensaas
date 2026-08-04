@@ -109,6 +109,7 @@ export async function centralMcpProxyRequest(input: {
     headers.delete('x-consuelo-edge-timestamp');
     headers.delete('x-consuelo-edge-nonce');
     headers.delete('x-consuelo-connector-id');
+    headers.delete('x-consuelo-node-id');
 
     headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
     headers.set('x-consuelo-hostname', input.resolution.hostname);
@@ -120,6 +121,9 @@ export async function centralMcpProxyRequest(input: {
         'x-consuelo-connector-id',
         input.resolution.target.connectorId,
       );
+      if (input.resolution.nodeId) {
+        headers.set('x-consuelo-node-id', input.resolution.nodeId);
+      }
     }
 
     const internalSigningSecret = input.internalSigningSecret?.trim();
@@ -198,12 +202,16 @@ export async function proxyCentralMcpRequest(input: {
     }
 
     const inboundUrl = new URL(input.request.url);
+    const requestedNodeId =
+      input.request.headers.get('x-consuelo-node-id')?.trim() || undefined;
     const resolution = await createWorkspaceCloudflareD1RouteRegistry(
       input.routeRegistry,
     ).resolve({
       host: stored.workspaceHost,
       path: inboundUrl.pathname,
       method: input.request.method,
+      ...(requestedNodeId ? { nodeId: requestedNodeId } : {}),
+      nowMs: input.nowMs,
     });
     if (resolution.allowed === false) {
       return centralMcpSafeError({

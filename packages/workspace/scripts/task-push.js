@@ -88,6 +88,7 @@ function printHelp() {
   writeStdout('  --files-json <json>    explicit JSON array of {path, content, deleted?} objects');
   writeStdout('  --area <name>          select task by area');
   writeStdout('  --branch <name>        select exact task branch');
+  writeStdout('  --task-session <id>    select exact task session');
   writeStdout('  --pr <number-or-url>          select task by pr number');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
@@ -152,6 +153,9 @@ function parseArgs(argv) {
       case '--branch':
         args.branch = value;
         break;
+      case '--task-session':
+        args.taskSession = value;
+        break;
       case '--pr':
       case '--github':
         args.prNumber = resolvePrRefNumber(value);
@@ -198,7 +202,7 @@ function parseArgs(argv) {
 }
 
 function hasExplicitTaskSelector(args) {
-  return Boolean(args.area || args.branch || args.prNumber !== undefined);
+  return Boolean(args.area || args.branch || args.taskSession || args.prNumber !== undefined);
 }
 
 function getSelectedTaskContext(args, startDirectory) {
@@ -207,6 +211,7 @@ function getSelectedTaskContext(args, startDirectory) {
     area: args.area || null,
     branch: args.branch || null,
     prNumber: args.prNumber === undefined ? null : args.prNumber,
+    taskSession: args.taskSession || null,
   });
 
   if (selected.error) {

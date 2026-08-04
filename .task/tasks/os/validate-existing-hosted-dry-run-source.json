@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/validate-existing-hosted-dry-run-source",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1740,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1740",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1740",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1740/validate-existing-hosted-dry-run-source",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1740",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1740/validate-existing-hosted-dry-run-source",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-validate-existing-hosted-dry-run-source",
+  "taskSession": "tsk_5e8fe613de1d",
+  "tmuxSession": "opensaas-os-validate-existing-hosted-dry-run-source-5e8fe613",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-validate-existing-hosted-dry-run-source/.task/os/validate-existing-hosted-dry-run-source/session.json",
+  "createdAt": "2026-07-29T16:07:03.195Z"
+}

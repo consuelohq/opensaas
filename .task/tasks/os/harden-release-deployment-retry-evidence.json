@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/harden-release-deployment-retry-evidence",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1734,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1734",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1734",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1734/harden-release-deployment-retry-evidence",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1734",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1734/harden-release-deployment-retry-evidence",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-harden-release-deployment-retry-evidence",
+  "taskSession": "tsk_c1319e029bd1",
+  "tmuxSession": "opensaas-os-harden-release-deployment-retry-evidence-c1319e02",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-harden-release-deployment-retry-evidence/.task/os/harden-release-deployment-retry-evidence/session.json",
+  "createdAt": "2026-07-29T09:32:20.250Z"
+}

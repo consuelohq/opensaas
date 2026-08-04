@@ -22,14 +22,14 @@ describe('Consuelo OS compact hosted daemon output', () => {
   test('hosted bootstrap uses subtle loading dots for slow quiet steps', () => {
     expect(bootstrap).toContain('run_with_loading_dots()');
     expect(bootstrap).toContain('loading_message="$1"');
-    expect(bootstrap).toContain('download_source_archive()');
-    expect(bootstrap).toContain('run_with_loading_dots "Downloading Consuelo OS source" download_source_archive');
+    expect(bootstrap).toContain('verify_runtime_release()');
+    expect(bootstrap).toContain('install_verified_runtime()');
     expect(bootstrap).toContain('run_with_loading_dots "setting up background service" install_daemons_quiet');
   });
 
   test('runtime dependency install keeps Bun output visible', () => {
     expect(bootstrap).toContain('Installing Consuelo OS runtime dependencies...');
-    expect(bootstrap).toContain('(cd "$os_dir" && "$BUN_BIN" install)');
+    expect(bootstrap).toContain('"$BUN_BIN" install --frozen-lockfile --production');
     expect(bootstrap).not.toContain('run_with_loading_dots "Installing Consuelo OS runtime dependencies');
   });
 

@@ -16,6 +16,7 @@ import {
   writeYamlConfig,
 } from './consuelo-home';
 import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
+import { createConnectorOriginHostname } from './connector-origin-hostname';
 import {
   configureLocalAgents,
   detectLocalAgents,
@@ -25,17 +26,30 @@ import {
   type LocalAgentConfigRecord,
   type LocalAgentDetection,
 } from './local-agent-connectivity';
+import {
+  ensureNodeEncryptionKey,
+  nodeEncryptionKeyPath,
+} from './node-encryption-key-file';
+import { reconcileManagedUserContent } from './managed-user-content';
 import { getDefaultSelectedSkillNames } from './onboarding-skills';
+import { provisionManagedComponentIndexes } from './managed-component-install';
+import {
+  renderWorkspaceCloudflaredSystemdUnit,
+  renderWorkspaceNodeHeartbeatSystemdUnits,
+} from './platforms/linux';
 import {
   createGatewaySecurityConfig,
   getAgentAppCredentialStatus,
   issueAgentAppToken,
+  type AgentAppCredentialStatus,
   updateAgentAppTokenScopes,
+  PLACEHOLDER_WORKSPACE_ID,
 } from './security-gateway';
 import { materializeSites as materializeRuntimeSites } from './sites';
 import { validateBundledSkills } from './skills';
 import { STANDARD_OS_MCP_SCOPES } from './tool-scope-authorization';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
+import { PLACEHOLDER_NODE_ID } from './unenrolled-placeholder-identity';
 
 export type OsMode = 'local' | 'cloud';
 export type { AgentName, AgentConnectionStatus } from './local-agent-connectivity';
@@ -64,6 +78,10 @@ export type WorkspaceBootstrap = {
   nodeName?: string;
   nodeRole?: 'home' | 'member';
   nodeStatus?: 'created' | 'reconnected';
+  nodePublicKeyJwk?: string;
+  nodeSigningKeyJwk?: string;
+  nodeCapabilities?: string[];
+  authorityOrigin?: string;
   connectorBootstrapToken?: string;
   cloudflareTunnelToken?: string;
 };
@@ -105,6 +123,7 @@ export type OsConfig = {
 
 export type ProvisionOptions = {
   home?: string;
+  userHome?: string;
   mode?: OsMode;
   port?: number;
   dryRun?: boolean;
@@ -112,6 +131,7 @@ export type ProvisionOptions = {
   artifactStorage?: 'local';
   connectAgents?: AgentName[];
   workspaceBootstrap?: WorkspaceBootstrap;
+  platform?: NodeJS.Platform | string;
 };
 export type ProvisionAction = {
   type:
@@ -123,9 +143,10 @@ export type ProvisionAction = {
     | 'seed_steering'
     | 'seed_skill'
     | 'seed_tool'
-    | 'seed_operator';
+    | 'seed_operator'
+    | 'remove_file';
   path: string;
-  status: 'planned' | 'created' | 'preserved' | 'updated' | 'skipped';
+  status: 'planned' | 'created' | 'preserved' | 'updated' | 'skipped' | 'removed';
   message: string;
 };
 
@@ -151,25 +172,17 @@ export type DoctorResult = {
 
 const REQUIRED_DIRS = [
   'agents',
-  'skills',
-  'tools',
-  'scripts',
-  'src',
-  'tooling',
-  'manifests',
-  'hooks',
+  'components',
   'artifacts',
   'pages',
   'sites',
   'logs',
   'runs',
   'cache',
-  'steering',
   'bin',
   'tmp',
   'runtime',
   'runtime/releases',
-  'runtime/current',
   'node',
   'node/keys',
   'node/security',
@@ -192,30 +205,17 @@ const REQUIRED_GENERATED_SECURITY_FILES = [
 ] as const;
 const LEGACY_DEFAULT_PORT = 8960;
 const DEFAULT_PORT = 46321;
+const DEFAULT_INGRESS_PORT = 46320;
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
-const REPO_ROOT = path.resolve(PACKAGE_ROOT, '..', '..');
-
-function resolveBundledOperatorRoot(): string {
-  const packageOperatorRoot = path.join(PACKAGE_ROOT, 'operator');
-  if (fs.existsSync(packageOperatorRoot)) return packageOperatorRoot;
-  return path.join(REPO_ROOT, 'operator');
-}
-
 const BUNDLED_SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
-const BUNDLED_STEERING_ROOT = path.join(PACKAGE_ROOT, 'steering');
-const BUNDLED_STREAMS_ROOT = path.join(PACKAGE_ROOT, 'streams');
-const BUNDLED_OPERATOR_ROOT = resolveBundledOperatorRoot();
-const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'tool.manifest.json');
-const PRODUCT_PACKAGE_DIRS = ['scripts', 'src', 'tooling', 'manifests', 'hooks'] as const;
-const PRODUCT_PACKAGE_FILES = ['package.json', 'bun.lock'] as const;
+const BUNDLED_TOOL_MANIFEST_PATH = path.join(PACKAGE_ROOT, 'manifests', 'generated', 'tool.manifest.json');
 const SKILL_METADATA_FILE = '.consuelo-skill.json';
 const SKILLS_REGISTRY_FILE = 'skills.json';
 const TOOL_METADATA_FILE = '.consuelo-tool.json';
 const TOOL_REGISTRY_FILE = 'tools.json';
 const TOOL_DEFINITION_FILE = 'tool.json';
-const DEFAULT_STEERING_FILES = ['system_prompt.md', 'decision.md'] as const;
 
 const COMPACT_SKILL_FIELDS = [
   'name',
@@ -437,132 +437,6 @@ function writeYamlConfigIfMissing(input: {
   if (!exists) writeYamlConfig(input.path, input.value, input.dryRun);
 }
 
-function seedBundledStreams(
-  home: string,
-  dryRun: boolean,
-): ProvisionAction[] {
-  const sourcePath = path.join(BUNDLED_STREAMS_ROOT, 'tools', 'AGENTS.md');
-  const targetPath = path.join(home, 'streams', 'tools', 'AGENTS.md');
-  if (!fs.existsSync(sourcePath)) {
-    throw new Error(
-      `${sourcePath}: required Tools stream instructions are missing`,
-    );
-  }
-
-  const targetExists = fs.existsSync(targetPath);
-  const actions: ProvisionAction[] = [
-    {
-      type: 'seed_stream',
-      path: targetPath,
-      status: targetExists ? 'preserved' : dryRun ? 'planned' : 'created',
-      message: targetExists
-        ? 'user stream instructions preserved'
-        : 'Tools stream instructions installed',
-    },
-  ];
-  if (!dryRun && !targetExists) {
-    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-    fs.copyFileSync(sourcePath, targetPath);
-  }
-  return actions;
-}
-
-function samePath(left: string, right: string): boolean {
-  return path.resolve(left) === path.resolve(right);
-}
-
-function materializeProductPackageRoot(home: string, dryRun: boolean): ProvisionAction[] {
-  const actions: ProvisionAction[] = [];
-  const installedInPlace = samePath(PACKAGE_ROOT, home);
-
-  for (const dir of PRODUCT_PACKAGE_DIRS) {
-    const sourcePath = path.join(PACKAGE_ROOT, dir);
-    const targetPath = path.join(home, dir);
-    if (!fs.existsSync(sourcePath)) {
-      throw new Error(`${sourcePath}: required OS package directory is missing`);
-    }
-
-    const targetExists = fs.existsSync(targetPath);
-    actions.push({
-      type: 'create_dir',
-      path: targetPath,
-      status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
-      message: installedInPlace ? 'package directory already at OS root' : 'package directory materialized',
-    });
-
-    if (dryRun || installedInPlace) continue;
-    fs.rmSync(targetPath, { recursive: true, force: true });
-    fs.cpSync(sourcePath, targetPath, { recursive: true, force: true });
-  }
-
-  for (const file of PRODUCT_PACKAGE_FILES) {
-    const sourcePath = path.join(PACKAGE_ROOT, file);
-    const targetPath = path.join(home, file);
-    if (!fs.existsSync(sourcePath)) {
-      throw new Error(`${sourcePath}: required OS package file is missing`);
-    }
-
-    const targetExists = fs.existsSync(targetPath);
-    actions.push({
-      type: 'create_file',
-      path: targetPath,
-      status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
-      message: installedInPlace ? 'package file already at OS root' : 'package file materialized',
-    });
-
-    if (dryRun || installedInPlace) continue;
-    fs.copyFileSync(sourcePath, targetPath);
-  }
-
-  return actions;
-}
-
-function materializeOperator(home: string, dryRun: boolean): ProvisionAction[] {
-  const targetPath = path.join(home, 'operator');
-  const installedInPlace = samePath(BUNDLED_OPERATOR_ROOT, targetPath);
-  if (!fs.existsSync(BUNDLED_OPERATOR_ROOT)) {
-    throw new Error(`${BUNDLED_OPERATOR_ROOT}: required operator directory is missing`);
-  }
-
-  const targetExists = fs.existsSync(targetPath);
-  const actions: ProvisionAction[] = [{
-    type: 'seed_operator',
-    path: targetPath,
-    status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
-    message: installedInPlace ? 'operator directory already at OS root' : 'operator prompts materialized',
-  }];
-
-  if (!dryRun && !installedInPlace && !targetExists) {
-    fs.cpSync(BUNDLED_OPERATOR_ROOT, targetPath, { recursive: true, force: true });
-  }
-
-  return actions;
-}
-
-function seedBundledSteering(home: string, dryRun: boolean): ProvisionAction[] {
-  const targetRoot = path.join(home, 'steering');
-  const installedInPlace = samePath(BUNDLED_STEERING_ROOT, targetRoot);
-  const actions: ProvisionAction[] = [];
-
-  for (const fileName of DEFAULT_STEERING_FILES) {
-    const sourcePath = path.join(BUNDLED_STEERING_ROOT, fileName);
-    const targetPath = path.join(targetRoot, fileName);
-    if (!fs.existsSync(sourcePath)) throw new Error(`${sourcePath}: required steering file is missing`);
-    const targetExists = fs.existsSync(targetPath);
-    actions.push({
-      type: 'seed_steering',
-      path: targetPath,
-      status: targetExists || installedInPlace ? 'preserved' : dryRun ? 'planned' : 'created',
-      message: targetExists || installedInPlace ? 'local steering file preserved' : 'default steering file installed',
-    });
-    if (dryRun || targetExists || installedInPlace) continue;
-    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-    fs.copyFileSync(sourcePath, targetPath);
-  }
-
-  return actions;
-}
-
 export function createDefaultConfig(
   home: string,
   mode: OsMode,
@@ -590,6 +464,161 @@ function materializeSites(input: {
   return { actions: result.actions };
 }
 
+const VISIBLE_USER_DIRS = [
+  'Artifacts',
+  'Projects',
+  'Sites',
+  'Skills',
+  'Tools',
+  'Steering',
+] as const;
+
+function materializeVisibleUserRoot(input: {
+  userRoot: string;
+  dryRun: boolean;
+}): ProvisionAction[] {
+  const actions: ProvisionAction[] = [];
+  for (const directory of VISIBLE_USER_DIRS) {
+    const targetPath = path.join(input.userRoot, directory);
+    const exists = fs.existsSync(targetPath);
+    actions.push({
+      type: 'create_dir',
+      path: targetPath,
+      status: exists ? 'preserved' : input.dryRun ? 'planned' : 'created',
+      message: exists
+        ? 'visible user-owned directory preserved'
+        : 'visible user-owned directory created',
+    });
+    if (!input.dryRun) fs.mkdirSync(targetPath, { recursive: true });
+  }
+
+  const toolManifest = readBundledToolManifest();
+  const skillsIndexSource = path.join(PACKAGE_ROOT, 'skills', 'skills.json');
+  if (input.dryRun) {
+    return [
+      ...actions,
+      ...['Steering/system.md', 'Steering/example-steering.md', 'Tools/TOOLS.md', 'Skills/skills.json'].map(
+        (relative) => ({
+          type: 'create_file' as const,
+          path: path.join(input.userRoot, ...relative.split('/')),
+          status: 'planned' as const,
+          message: 'managed user content planned',
+        }),
+      ),
+    ];
+  }
+
+  // Shared with the update path so an existing user who never reinstalls still receives this.
+  // The steering body must be passed here too: without it a fresh install writes the "could not be
+  // read" fallback as the example, even though the bundled steering is sitting right there.
+  const steeringSource = path.join(
+    PACKAGE_ROOT,
+    'steering',
+    'system_prompt.md',
+  );
+  const reconciled = reconcileManagedUserContent({
+    userRoot: input.userRoot,
+    tools: toolManifest.tools,
+    skillsIndex: fs.existsSync(skillsIndexSource)
+      ? fs.readFileSync(skillsIndexSource, 'utf8')
+      : undefined,
+    steeringBody: fs.existsSync(steeringSource)
+      ? fs.readFileSync(steeringSource, 'utf8')
+      : undefined,
+  });
+  for (const action of reconciled) {
+    actions.push({
+      type: 'create_file',
+      path: action.path,
+      status: action.status === 'unchanged' ? 'preserved' : action.status,
+      message: `managed user content (${action.ownership})`,
+    });
+  }
+  return actions;
+}
+
+function materializeLifecycleCommand(
+  home: string,
+  dryRun: boolean,
+): ProvisionAction[] {
+  const commandPath = path.join(home, 'bin', 'consuelo');
+  const source = [
+    '#!/usr/bin/env bash',
+    'set -euo pipefail',
+    'OS_HOME="${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"',
+    'BUN_EXECUTABLE="${BUN_BIN:-}"',
+    'PACKAGE_ROOT="${CONSUELO_OS_PACKAGE_ROOT:-}"',
+    'if [ -f "$OS_HOME/.env" ]; then',
+    '  while IFS= read -r line || [ -n "$line" ]; do',
+    '    case "$line" in',
+    '      BUN_BIN=*) [ -n "$BUN_EXECUTABLE" ] || BUN_EXECUTABLE="${line#BUN_BIN=}" ;;',
+    '      CONSUELO_OS_PACKAGE_ROOT=*) [ -n "$PACKAGE_ROOT" ] || PACKAGE_ROOT="${line#CONSUELO_OS_PACKAGE_ROOT=}" ;;',
+    '    esac',
+    '  done < "$OS_HOME/.env"',
+    'fi',
+    'LIFECYCLE_SCRIPT=""',
+    'if [ -n "$PACKAGE_ROOT" ] && [ -f "$PACKAGE_ROOT/scripts/lifecycle.ts" ]; then',
+    '  LIFECYCLE_SCRIPT="$PACKAGE_ROOT/scripts/lifecycle.ts"',
+    'elif [ -f "$OS_HOME/runtime/current/scripts/lifecycle.ts" ]; then',
+    '  LIFECYCLE_SCRIPT="$OS_HOME/runtime/current/scripts/lifecycle.ts"',
+    'fi',
+    'if [ ! -f "$LIFECYCLE_SCRIPT" ]; then',
+    '  echo "OS lifecycle runtime is not installed. Run: curl -fsSL https://install.consuelohq.com/os | bash" >&2',
+    '  exit 1',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ]; then',
+    '  BUN_EXECUTABLE="$(command -v bun || true)"',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ] || [ ! -x "$BUN_EXECUTABLE" ]; then',
+    '  echo "OS lifecycle runtime cannot find the Bun executable. Re-run the installer to repair it." >&2',
+    '  exit 1',
+    'fi',
+    'if [ "$#" -eq 0 ]; then',
+    '  set -- status',
+    'fi',
+    'COMMAND="$1"',
+    'shift',
+    '# Commands that are not lifecycle operations run their own script. Without this, `consuelo',
+    '# secrets` and `consuelo login` reach the lifecycle CLI, which does not know them, and the',
+    '# documented invocations fail with an unknown-command error.',
+    'RUNTIME_DIR="$(dirname "$LIFECYCLE_SCRIPT")"',
+    'case "$COMMAND" in',
+    '  secrets|login)',
+    '    STANDALONE="$RUNTIME_DIR/$COMMAND.ts"',
+    '    if [ ! -f "$STANDALONE" ]; then',
+    '      echo "OS command $COMMAND is not present in this runtime. Run: consuelo update" >&2',
+    '      exit 1',
+    '    fi',
+    '    export CONSUELO_HOME="$OS_HOME"',
+    '    exec "$BUN_EXECUTABLE" "$STANDALONE" "$@"',
+    '    ;;',
+    'esac',
+    'exec "$BUN_EXECUTABLE" "$LIFECYCLE_SCRIPT" "$COMMAND" --home "$OS_HOME" "$@"',
+    '',
+  ].join('\n');
+  const existing = fs.existsSync(commandPath)
+    ? fs.readFileSync(commandPath, 'utf8')
+    : null;
+  const status = existing === source
+    ? 'preserved'
+    : dryRun
+      ? 'planned'
+      : existing === null
+        ? 'created'
+        : 'updated';
+  if (!dryRun && existing !== source) {
+    fs.mkdirSync(path.dirname(commandPath), { recursive: true });
+    fs.writeFileSync(commandPath, source, { mode: 0o755 });
+    fs.chmodSync(commandPath, 0o755);
+  }
+  return [{
+    type: 'create_file',
+    path: commandPath,
+    status,
+    message: 'OS lifecycle command installed',
+  }];
+}
+
 const escapeXml = (value: string): string =>
   value
     .replaceAll('&', '&amp;')
@@ -603,6 +632,7 @@ function renderCloudflaredLaunchdPlist(input: {
   programArguments: string[];
   keepAlive: boolean;
   runAtLoad: boolean;
+  startIntervalSeconds?: number;
   standardOutPath: string;
   standardErrorPath: string;
 }): string {
@@ -625,6 +655,12 @@ function renderCloudflaredLaunchdPlist(input: {
     `  <${input.keepAlive ? 'true' : 'false'}/>`,
     '  <key>RunAtLoad</key>',
     `  <${input.runAtLoad ? 'true' : 'false'}/>`,
+    ...(input.startIntervalSeconds
+      ? [
+          '  <key>StartInterval</key>',
+          `  <integer>${input.startIntervalSeconds}</integer>`,
+        ]
+      : []),
     '  <key>StandardOutPath</key>',
     `  <string>${escapeXml(input.standardOutPath)}</string>`,
     '  <key>StandardErrorPath</key>',
@@ -650,6 +686,16 @@ function renderGatewayAuthSmokeScript(input: {
   ].join('\n');
 }
 
+function isActiveUnexpiredCredential(
+  credential: AgentAppCredentialStatus | null,
+): credential is AgentAppCredentialStatus {
+  const expiresAt = credential ? Date.parse(credential.expiresAt) : Number.NaN;
+  return (
+    credential?.status === 'active' &&
+    Number.isFinite(expiresAt) &&
+    expiresAt > Date.now()
+  );
+}
 
 function materializeChatGptMcpConnection(input: {
   home: string;
@@ -673,7 +719,7 @@ function materializeChatGptMcpConnection(input: {
       config: input.config,
       tokenId: existing.tokenId,
     });
-    if (credential?.status === 'active') {
+    if (isActiveUnexpiredCredential(credential)) {
       updateAgentAppTokenScopes({
         config: input.config,
         tokenId: existing.tokenId,
@@ -682,11 +728,17 @@ function materializeChatGptMcpConnection(input: {
       if (
         existing.url !== CHATGPT_MCP_URL ||
         existing.localUrl !== localUrl ||
+        existing.auth !== 'oauth' ||
+        existing.localAuth !== 'bearer' ||
         JSON.stringify(existing.scopes) !== JSON.stringify(scopes)
       ) {
         writeJsonFile(targetPath, {
           ...existing,
+          // Migrate connection files written before the auth kinds were separated, which claimed
+          // bearer auth for an endpoint that only accepts OAuth.
+          auth: 'oauth',
           url: CHATGPT_MCP_URL,
+          localAuth: 'bearer',
           localUrl,
           scopes,
           updatedAt: nowIso(),
@@ -713,8 +765,13 @@ function materializeChatGptMcpConnection(input: {
   writeJsonFile(targetPath, {
     version: 1,
     kind: 'consuelo-chatgpt-mcp-connection',
-    auth: 'bearer',
+    // The central endpoint is a router: it authenticates the user with OAuth and resolves their
+    // workspace from the Google account, so every user installs the same URL. It does not accept
+    // node-issued gateway bearers, so advertising `auth: bearer` for it produced a connection file
+    // that could never authenticate. The bearer below is loopback-only and is labelled as such.
+    auth: 'oauth',
     url: CHATGPT_MCP_URL,
+    localAuth: 'bearer',
     localUrl: `http://127.0.0.1:${input.port}/mcp`,
     tokenId: token.tokenId,
     bearerToken: token.bearerToken,
@@ -731,94 +788,372 @@ function materializeChatGptMcpConnection(input: {
   }];
 }
 
+function materializeLocalAgentMcpCredentials(input: {
+  home: string;
+  config: ReturnType<typeof createGatewaySecurityConfig>;
+  agentNames: AgentName[];
+  port: number;
+}): ProvisionAction[] {
+  const targetPath = path.join(input.home, 'security', 'generated', 'local-agent-mcp.json');
+  const scopes = [...STANDARD_OS_MCP_SCOPES];
+  const existing = readJsonFile<JsonObject>(targetPath);
+  const existingAgents = isJsonObject(existing?.agents) ? existing.agents : {};
+  const localUrl = `http://127.0.0.1:${input.port}/mcp`;
+  const agents: Record<string, { tokenId: string; bearerToken: string }> = {};
+
+  for (const agentName of [...new Set(input.agentNames)]) {
+    const candidate = existingAgents[agentName];
+    if (
+      isJsonObject(candidate) &&
+      typeof candidate.tokenId === 'string' &&
+      typeof candidate.bearerToken === 'string'
+    ) {
+      const status = getAgentAppCredentialStatus({
+        config: input.config,
+        tokenId: candidate.tokenId,
+      });
+      if (
+        isActiveUnexpiredCredential(status) &&
+        status.callerId === `local-agent:${agentName}` &&
+        status.appId === agentName
+      ) {
+        updateAgentAppTokenScopes({
+          config: input.config,
+          tokenId: candidate.tokenId,
+          scopes,
+        });
+        agents[agentName] = {
+          tokenId: candidate.tokenId,
+          bearerToken: candidate.bearerToken,
+        };
+        continue;
+      }
+    }
+
+    const token = issueAgentAppToken({
+      config: input.config,
+      callerId: `local-agent:${agentName}`,
+      appId: agentName,
+      subjectId: `local-agent:${agentName}`,
+      deviceId: `local-agent:${agentName}`,
+      connectorId: 'connector_local_agent_mcp',
+      connectionId: `connection_local_agent_${agentName}`,
+      scopes,
+      expiresInSeconds: 60 * 60 * 24 * 365,
+    });
+    if (!token.bearerToken) {
+      throw new Error(`Local agent MCP token was not issued for ${agentName}`);
+    }
+    agents[agentName] = {
+      tokenId: token.tokenId,
+      bearerToken: token.bearerToken,
+    };
+  }
+
+  const existingCreatedAt = typeof existing?.createdAt === 'string'
+    ? existing.createdAt
+    : nowIso();
+  const semanticDocument = {
+    version: 1,
+    kind: 'consuelo-local-agent-mcp-credentials',
+    localUrl,
+    agents,
+  };
+  const existingSemanticDocument = existing
+    ? {
+        version: existing.version,
+        kind: existing.kind,
+        localUrl: existing.localUrl,
+        agents: existing.agents,
+      }
+    : null;
+  const changed = JSON.stringify(existingSemanticDocument) !== JSON.stringify(semanticDocument);
+
+  if (changed) {
+    writeJsonFile(targetPath, {
+      ...semanticDocument,
+      createdAt: existingCreatedAt,
+      updatedAt: nowIso(),
+    }, false);
+  }
+  if (fs.existsSync(targetPath)) fs.chmodSync(targetPath, 0o600);
+
+  return [{
+    type: 'create_file',
+    path: targetPath,
+    status: existing ? changed ? 'updated' : 'preserved' : 'created',
+    message: changed
+      ? 'local agent MCP credentials configured'
+      : 'local agent MCP credentials preserved',
+  }];
+}
+
 function materializeWorkspaceConnectorBootstrap(input: {
   nodeHome: string;
   runtimeHome: string;
+  userHome: string;
   port: number;
   dryRun: boolean;
+  platform: NodeJS.Platform | string;
   workspaceBootstrap: WorkspaceBootstrap;
 }): ProvisionAction[] {
   const actions: ProvisionAction[] = [];
 
-  if (input.workspaceBootstrap.connectorTransport !== 'cloudflare-tunnel') {
-    return actions;
-  }
+  if (input.workspaceBootstrap.connectorTransport === 'cloudflare-tunnel') {
+    const plan = planWorkspaceConnectorTransport({
+      home: input.nodeHome,
+      connectorId: input.workspaceBootstrap.connectorId,
+      workspaceHost: input.workspaceBootstrap.workspaceHost,
+      localPort: input.port,
+      transport: 'cloudflare-tunnel',
+      cloudflareTunnelToken: input.workspaceBootstrap.cloudflareTunnelToken,
+      cloudflaredBin:
+        process.env.CLOUDFLARED_BIN ??
+        path.join(input.runtimeHome, 'bin', 'cloudflared'),
+    });
 
-  const plan = planWorkspaceConnectorTransport({
-    home: input.nodeHome,
-    connectorId: input.workspaceBootstrap.connectorId,
-    workspaceHost: input.workspaceBootstrap.workspaceHost,
-    localPort: input.port,
-    transport: 'cloudflare-tunnel',
-    cloudflareTunnelToken: input.workspaceBootstrap.cloudflareTunnelToken,
-    cloudflaredBin: process.env.CLOUDFLARED_BIN ?? path.join(input.runtimeHome, 'bin', 'cloudflared'),
-  });
+    const localServiceUrl = `http://127.0.0.1:${input.port}`;
+    if (plan.localServiceUrl !== localServiceUrl) {
+      throw new Error('Cloudflare connector must target the managed Caddy ingress.');
+    }
 
-  if (plan.tokenPath) {
+    if (plan.tokenPath) {
+      actions.push({
+        type: 'create_file',
+        path: plan.tokenPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'cloudflared tunnel token file configured',
+      });
+      if (!input.dryRun) {
+        fs.mkdirSync(path.dirname(plan.tokenPath), { recursive: true });
+        fs.writeFileSync(
+          plan.tokenPath,
+          `${input.workspaceBootstrap.cloudflareTunnelToken ?? ''}\n`,
+          { mode: 0o600 },
+        );
+      }
+    }
+
+    if (plan.launchd && input.platform === 'linux') {
+      const unit = renderWorkspaceCloudflaredSystemdUnit({
+        runtimeHome: input.runtimeHome,
+        userHome: input.userHome,
+        connectorId: input.workspaceBootstrap.connectorId,
+        programArguments: plan.launchd.programArguments,
+      });
+      actions.push({
+        type: 'create_file',
+        path: unit.unitPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'cloudflared systemd service configured',
+      });
+      if (!input.dryRun) {
+        fs.mkdirSync(unit.systemdUserDir, { recursive: true, mode: 0o700 });
+        fs.writeFileSync(unit.unitPath, unit.service, { mode: 0o600 });
+      }
+    } else if (plan.launchd) {
+      const legacyPlistPath = path.join(
+        input.nodeHome,
+        'security',
+        'generated',
+        'com.consuelo.os.cloudflared.plist',
+      );
+      const plistPath = path.join(
+        input.nodeHome,
+        'security',
+        'generated',
+        `${plan.launchd.label}.plist`,
+      );
+      actions.push({
+        type: 'create_file',
+        path: plistPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'cloudflared launchd service configured',
+      });
+      if (!input.dryRun) {
+        fs.mkdirSync(path.dirname(plistPath), { recursive: true });
+        if (fs.existsSync(legacyPlistPath) && legacyPlistPath !== plistPath) {
+          fs.rmSync(legacyPlistPath, { force: true });
+        }
+        fs.writeFileSync(plistPath, renderCloudflaredLaunchdPlist(plan.launchd), {
+          mode: 0o600,
+        });
+      }
+    }
+
+    const smokePath = path.join(
+      input.runtimeHome,
+      'bin',
+      'smoke-gateway-auth',
+    );
     actions.push({
       type: 'create_file',
-      path: plan.tokenPath,
+      path: smokePath,
       status: input.dryRun ? 'planned' : 'created',
-      message: 'cloudflared tunnel token file configured',
+      message: 'gateway auth smoke command configured',
     });
     if (!input.dryRun) {
-      fs.mkdirSync(path.dirname(plan.tokenPath), { recursive: true });
+      fs.mkdirSync(path.dirname(smokePath), { recursive: true });
       fs.writeFileSync(
-        plan.tokenPath,
-        `${input.workspaceBootstrap.cloudflareTunnelToken ?? ''}\n`,
-        { mode: 0o600 },
+        smokePath,
+        renderGatewayAuthSmokeScript({
+          home: input.runtimeHome,
+          workspaceHost: input.workspaceBootstrap.workspaceHost,
+        }),
+        { mode: 0o755 },
       );
+      fs.chmodSync(smokePath, 0o755);
     }
   }
 
-  if (plan.launchd) {
-    const legacyPlistPath = path.join(
+  if (
+    input.workspaceBootstrap.nodeId &&
+    input.workspaceBootstrap.nodePublicKeyJwk &&
+    input.workspaceBootstrap.nodeSigningKeyJwk
+  ) {
+    const heartbeatConfigPath = path.join(
       input.nodeHome,
       'security',
       'generated',
-      'com.consuelo.os.cloudflared.plist',
+      'workspace-node-heartbeat.json',
     );
-    const plistPath = path.join(
+    const safeNodeId = input.workspaceBootstrap.nodeId.replace(
+      /[^a-zA-Z0-9.-]+/g,
+      '-',
+    );
+    const heartbeatLabel = `com.consuelo.os.node-heartbeat.${safeNodeId}`;
+    const heartbeatScriptPath = path.join(
+      input.runtimeHome,
+      'runtime',
+      'current',
+      'scripts',
+      'workspace-node-heartbeat.ts',
+    );
+    const connectorHealthUrl = new URL(
+      '/health',
+      `https://${createConnectorOriginHostname({
+        connectorId: input.workspaceBootstrap.connectorId,
+        baseDomain:
+          process.env.CONSUELO_CONNECTOR_ORIGIN_BASE_DOMAIN ??
+          'consuelohq.com',
+      })}`,
+    ).toString();
+    const heartbeatLogPath = path.join(
       input.nodeHome,
-      'security',
-      'generated',
-      `${plan.launchd.label}.plist`,
+      'logs',
+      'workspace-node-heartbeat.log',
     );
-    actions.push({
-      type: 'create_file',
-      path: plistPath,
-      status: input.dryRun ? 'planned' : 'created',
-      message: 'cloudflared launchd service configured',
-    });
-    if (!input.dryRun) {
-      fs.mkdirSync(path.dirname(plistPath), { recursive: true });
-      if (fs.existsSync(legacyPlistPath) && legacyPlistPath !== plistPath) {
-        fs.rmSync(legacyPlistPath, { force: true });
-      }
-      fs.writeFileSync(plistPath, renderCloudflaredLaunchdPlist(plan.launchd), {
-        mode: 0o600,
+    // Mint the node's credential-encryption key before the heartbeat config is written, so the
+    // first heartbeat already carries the public half and a setup surface can seal to this node
+    // without waiting for a second cycle. Idempotent: an existing key is reused, never rotated,
+    // because rotating here would orphan every credential already sealed to this node.
+    const nodeEncryptionKey = input.dryRun
+      ? undefined
+      : ensureNodeEncryptionKey({
+          nodeHome: input.nodeHome,
+          workspaceId: input.workspaceBootstrap.workspaceId,
+          nodeId: input.workspaceBootstrap.nodeId,
+        });
+    if (nodeEncryptionKey || input.dryRun) {
+      actions.push({
+        type: 'create_file',
+        path: nodeEncryptionKeyPath(input.nodeHome),
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'node credential encryption key configured',
       });
     }
-  }
-
-  const smokePath = path.join(input.runtimeHome, 'bin', 'smoke-gateway-auth');
-  actions.push({
-    type: 'create_file',
-    path: smokePath,
-    status: input.dryRun ? 'planned' : 'created',
-    message: 'gateway auth smoke command configured',
-  });
-  if (!input.dryRun) {
-    fs.mkdirSync(path.dirname(smokePath), { recursive: true });
-    fs.writeFileSync(
-      smokePath,
-      renderGatewayAuthSmokeScript({
-        home: input.runtimeHome,
-        workspaceHost: input.workspaceBootstrap.workspaceHost,
-      }),
-      { mode: 0o755 },
+    writeJsonFile(
+      heartbeatConfigPath,
+      {
+        authorityOrigin:
+          input.workspaceBootstrap.authorityOrigin ??
+          'https://os.consuelohq.com',
+        osHome: input.runtimeHome,
+        workspaceId: input.workspaceBootstrap.workspaceId,
+        nodeId: input.workspaceBootstrap.nodeId,
+        connectorStatus: 'disconnected',
+        connectorHealthUrl,
+        capabilities: [
+          ...(input.workspaceBootstrap.nodeCapabilities ?? ['mcp', 'tools']),
+        ].sort(),
+        publicKeyJwk: input.workspaceBootstrap.nodePublicKeyJwk,
+        signingKeyJwk: input.workspaceBootstrap.nodeSigningKeyJwk,
+        // Public half only. This is what lets the control plane relay a sealed credential to this
+        // node without ever being able to open it.
+        ...(nodeEncryptionKey
+          ? { encryptionPublicKeyJwk: nodeEncryptionKey.publicKeyJwk }
+          : {}),
+      },
+      input.dryRun,
     );
-    fs.chmodSync(smokePath, 0o755);
+    actions.push({
+      type: 'create_file',
+      path: heartbeatConfigPath,
+      status: input.dryRun ? 'planned' : 'created',
+      message: 'workspace node heartbeat config configured',
+    });
+    if (input.platform === 'linux') {
+      const units = renderWorkspaceNodeHeartbeatSystemdUnits({
+        runtimeHome: input.runtimeHome,
+        userHome: input.userHome,
+        bunExecutable: process.execPath,
+        heartbeatScriptPath,
+        heartbeatConfigPath,
+      });
+      if (!input.dryRun) {
+        fs.mkdirSync(units.systemdUserDir, { recursive: true, mode: 0o700 });
+        fs.writeFileSync(units.servicePath, units.service, { mode: 0o600 });
+        fs.writeFileSync(units.timerPath, units.timer, { mode: 0o600 });
+      }
+      actions.push(
+        {
+          type: 'create_file',
+          path: units.servicePath,
+          status: input.dryRun ? 'planned' : 'created',
+          message: 'workspace node heartbeat systemd service configured',
+        },
+        {
+          type: 'create_file',
+          path: units.timerPath,
+          status: input.dryRun ? 'planned' : 'created',
+          message: 'workspace node heartbeat systemd timer configured',
+        },
+      );
+    } else if (input.platform === 'darwin') {
+      const heartbeatPlistPath = path.join(
+        input.nodeHome,
+        'security',
+        'generated',
+        `${heartbeatLabel}.plist`,
+      );
+      if (!input.dryRun) {
+        fs.mkdirSync(path.dirname(heartbeatPlistPath), { recursive: true });
+        fs.writeFileSync(
+          heartbeatPlistPath,
+          renderCloudflaredLaunchdPlist({
+            label: heartbeatLabel,
+            programArguments: [
+              process.execPath,
+              heartbeatScriptPath,
+              '--config',
+              heartbeatConfigPath,
+            ],
+            keepAlive: false,
+            runAtLoad: true,
+            startIntervalSeconds: 30,
+            standardOutPath: heartbeatLogPath,
+            standardErrorPath: heartbeatLogPath,
+          }),
+          { mode: 0o600 },
+        );
+      }
+      actions.push({
+        type: 'create_file',
+        path: heartbeatPlistPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'workspace node heartbeat launchd service configured',
+      });
+    }
   }
 
   return actions;
@@ -829,8 +1164,11 @@ export function loadOsConfig(home?: string): OsConfig | null {
   return readJsonFile<OsConfig>(path.join(resolvedHome, 'config.json'));
 }
 
-export function detectAgents(home?: string): AgentDetection[] {
-  return detectLocalAgents({ home: resolveOsHome(home), userHome: os.homedir() });
+export function detectAgents(
+  home?: string,
+  userHome: string = os.homedir(),
+): AgentDetection[] {
+  return detectLocalAgents({ home: resolveOsHome(home), userHome });
 }
 
 function isJsonObject(value: unknown): value is JsonObject {
@@ -1125,9 +1463,10 @@ function toolWrapperScript(entry: CanonicalToolEntry): string {
   const description = entry.description ?? 'Consuelo OS tool.';
   const quotedName = shellSingleQuote(toolName);
   const jsonName = shellSingleQuote(JSON.stringify(toolName));
+  const runnerScript = entry.kind === 'facade-tool' ? 'tool-runner.ts' : 'os.ts';
   const runner = entry.kind === 'facade-tool'
-    ? `exec bun ./scripts/tool-runner.ts ${quotedName} "$INPUT"`
-    : `exec bun ./scripts/os.ts call "$(printf '{"name":%s,"input":%s}' ${jsonName} "$INPUT")"`;
+    ? `exec "$BUN_EXECUTABLE" "$PACKAGE_ROOT/scripts/tool-runner.ts" ${quotedName} "$INPUT"`
+    : `exec "$BUN_EXECUTABLE" "$PACKAGE_ROOT/scripts/os.ts" call "$(printf '{"name":%s,"input":%s}' ${jsonName} "$INPUT")"`;
 
   return [
     '#!/usr/bin/env bash',
@@ -1135,8 +1474,31 @@ function toolWrapperScript(entry: CanonicalToolEntry): string {
     `TOOL_NAME=${quotedName}`,
     `TOOL_DESCRIPTION=${shellSingleQuote(description)}`,
     'OS_HOME="${CONSUELO_OS_HOME:-${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}}"',
-    'if [ ! -f "$OS_HOME/package.json" ] || [ ! -f "$OS_HOME/scripts/tool-runner.ts" ]; then',
-    '  printf "%s\\n" "error: Consuelo OS package root not found. Set CONSUELO_OS_HOME." >&2',
+    'BUN_EXECUTABLE="${BUN_BIN:-}"',
+    'PACKAGE_ROOT="${CONSUELO_OS_PACKAGE_ROOT:-}"',
+    'if [ -f "$OS_HOME/.env" ]; then',
+    '  while IFS= read -r line || [ -n "$line" ]; do',
+    '    case "$line" in',
+    '      BUN_BIN=*) [ -n "$BUN_EXECUTABLE" ] || BUN_EXECUTABLE="${line#BUN_BIN=}" ;;',
+    '      CONSUELO_OS_PACKAGE_ROOT=*) [ -n "$PACKAGE_ROOT" ] || PACKAGE_ROOT="${line#CONSUELO_OS_PACKAGE_ROOT=}" ;;',
+    '    esac',
+    '  done < "$OS_HOME/.env"',
+    'fi',
+    `if [ -n "$PACKAGE_ROOT" ] && [ -f "$PACKAGE_ROOT/scripts/${runnerScript}" ]; then`,
+    '  :',
+    `elif [ -f "$OS_HOME/runtime/current/scripts/${runnerScript}" ]; then`,
+    '  PACKAGE_ROOT="$OS_HOME/runtime/current"',
+    `elif [ -f "$OS_HOME/scripts/${runnerScript}" ]; then`,
+    '  PACKAGE_ROOT="$OS_HOME"',
+    'else',
+    '  printf "%s\\n" "error: Consuelo OS immutable runtime is not installed." >&2',
+    '  exit 1',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ]; then',
+    '  BUN_EXECUTABLE="$(command -v bun || true)"',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ] || [ ! -x "$BUN_EXECUTABLE" ]; then',
+    '  printf "%s\\n" "error: Consuelo OS cannot find the Bun executable. Re-run the installer." >&2',
     '  exit 1',
     'fi',
     'if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then',
@@ -1150,7 +1512,7 @@ function toolWrapperScript(entry: CanonicalToolEntry): string {
     'else',
     "  INPUT='{}'",
     'fi',
-    'cd "$OS_HOME"',
+    'cd "$PACKAGE_ROOT"',
     runner,
     '',
   ].join('\n');
@@ -1284,11 +1646,14 @@ export function provisionLocalOs(
   options: ProvisionOptions = {},
 ): ProvisionResult {
   const home = resolveOsHome(options.home);
+  const userHome = path.resolve(options.userHome ?? os.homedir());
   const layout = resolveConsueloHomeLayout(home);
   const configPath = path.join(home, 'config.json');
   const dbPath = layout.nodeDbPath;
   const dryRun = Boolean(options.dryRun);
   const actions: ProvisionAction[] = [];
+  const requestedAgentNames = options.connectAgents ?? [];
+  const userRoot = path.join(userHome, 'Consuelo');
 
   for (const dir of [
     home,
@@ -1304,10 +1669,8 @@ export function provisionLocalOs(
     if (!dryRun) fs.mkdirSync(dir, { recursive: true });
   }
 
-  actions.push(...materializeProductPackageRoot(home, dryRun));
-  actions.push(...materializeOperator(home, dryRun));
-  actions.push(...seedBundledSteering(home, dryRun));
-  actions.push(...seedBundledStreams(home, dryRun));
+  actions.push(...materializeVisibleUserRoot({ userRoot, dryRun }));
+  actions.push(...materializeLifecycleCommand(home, dryRun));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {
@@ -1345,14 +1708,14 @@ export function provisionLocalOs(
         workspaceHost: workspaceBootstrap.workspaceHost,
       }
     : existingIdentity ?? {
-        workspaceId: 'local-consuelo-os',
+        workspaceId: PLACEHOLDER_WORKSPACE_ID,
         workspaceSlug: 'local',
         workspaceHost: 'local.consuelohq.com',
       };
   const nodeId = workspaceBootstrap?.nodeId ??
     workspaceBootstrap?.connectorId ??
     existingIdentity?.node?.nodeId ??
-    'local';
+    PLACEHOLDER_NODE_ID;
   const nodeName = workspaceBootstrap?.nodeName ??
     existingIdentity?.node?.nodeName ??
     (os.hostname() || 'local');
@@ -1461,6 +1824,7 @@ export function provisionLocalOs(
       workspaceSlug: workspaceIdentity.workspaceSlug,
       workspaceHost: workspaceIdentity.workspaceHost,
       upstreamPort: gatewayPort,
+      ingressPort: DEFAULT_INGRESS_PORT,
     });
     actions.push(...materializeChatGptMcpConnection({
       home: layout.nodeDir,
@@ -1468,6 +1832,20 @@ export function provisionLocalOs(
       port: gatewayPort,
       dryRun,
     }));
+    const credentialAgentNames = [...new Set([
+      ...(config.agents ?? [])
+        .filter((agent) => agent.status === 'configured' || agent.status === 'verified')
+        .map((agent) => agent.name),
+      ...requestedAgentNames,
+    ])];
+    if (credentialAgentNames.length > 0) {
+      actions.push(...materializeLocalAgentMcpCredentials({
+        home: layout.nodeDir,
+        config: gatewayConfig,
+        agentNames: credentialAgentNames,
+        port: gatewayPort,
+      }));
+    }
     config.security = {
       auth: {
         kind: 'consuelo-generated',
@@ -1506,13 +1884,15 @@ export function provisionLocalOs(
     status: securityStatus(generatedCaddyfilePathExists),
     message: 'generated Caddy gateway config written',
   });
-  if (workspaceBootstrap?.cloudflareTunnelToken) {
+  if (workspaceBootstrap) {
     actions.push(
       ...materializeWorkspaceConnectorBootstrap({
         nodeHome: layout.nodeDir,
         runtimeHome: home,
-        port: gatewayPort,
+        userHome,
+        port: DEFAULT_INGRESS_PORT,
         dryRun,
+        platform: options.platform ?? process.platform,
         workspaceBootstrap,
       }),
     );
@@ -1523,20 +1903,24 @@ export function provisionLocalOs(
     getDefaultSelectedSkillNames(),
   );
   config.artifactStorage = options.artifactStorage ?? config.artifactStorage;
-  actions.push(...seedBundledSkills(home, dryRun, config.selectedSkills));
-  actions.push(...seedBundledTools(home, dryRun));
+  actions.push(...provisionManagedComponentIndexes({
+    home,
+    selectedSkills: config.selectedSkills,
+    dryRun,
+    generatedAt: nowIso(),
+    userRoot,
+  }));
 
-  const requestedAgentNames = options.connectAgents ?? [];
   const agentConfiguration = requestedAgentNames.length > 0
     ? configureLocalAgents({
         home,
-        userHome: os.homedir(),
+        userHome,
         agentNames: requestedAgentNames,
         dryRun,
         persist: false,
       })
     : (() => {
-        const agents = detectAgents(home);
+        const agents = detectAgents(home, userHome);
         return {
           agents,
           records: toLocalAgentConfigRecords(agents),
@@ -1558,7 +1942,7 @@ export function provisionLocalOs(
     configPath,
     dbPath,
     actions,
-    agents: dryRun ? agentConfiguration.agents : detectAgents(home),
+    agents: dryRun ? agentConfiguration.agents : detectAgents(home, userHome),
   };
 }
 
@@ -1609,7 +1993,7 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         'scripts/task-intent.js',
         'hooks/intent.js',
         'hooks/dispatcher.js',
-        'manifests/workflow-bundles.json',
+        'workflows/generated/workflow-bundles.json',
       ],
     },
     {
@@ -1622,9 +2006,16 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
       ],
     },
   ] as const;
+  const activeRuntimeRoot = fs.existsSync(
+    path.join(resolvedHome, 'runtime', 'current', 'scripts', 'os.ts'),
+  )
+    ? path.join(resolvedHome, 'runtime', 'current')
+    : PACKAGE_ROOT;
 
   for (const group of runtimeModuleGroups) {
-    const missing = group.files.filter((file) => !fs.existsSync(path.join(resolvedHome, file)));
+    const missing = group.files.filter(
+      (file) => !fs.existsSync(path.join(activeRuntimeRoot, file)),
+    );
     checks.push({
       name: group.name,
       status: missing.length === 0 ? 'connected' : 'unhealthy',
@@ -1678,27 +2069,6 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
         : `${skillIssues.length} bundled skill issue(s)`,
   });
 
-  try {
-    const { executeCall } = await import('../os');
-    const result = await executeCall({
-      name: 'daily-revenue-brief',
-      traceId: `trc_doctor_${Date.now().toString(36)}`,
-    });
-    checks.push({
-      name: 'daily-revenue-brief',
-      status: result.ok && result.artifacts?.length ? 'connected' : 'unhealthy',
-      message: result.ok
-        ? 'skill created a local artifact'
-        : (result.error?.message ?? 'skill failed'),
-    });
-  } catch (error: unknown) {
-    checks.push({
-      name: 'daily-revenue-brief',
-      status: 'unhealthy',
-      message: error instanceof Error ? error.message : 'skill failed',
-    });
-  }
-
   for (const agent of detectAgents(resolvedHome)) {
     checks.push({
       name: agent.label,
@@ -1744,6 +2114,3 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     ok: basicChecksHealthy && isCapabilitySetHealthy(capabilities),
   };
 }
-
-
-

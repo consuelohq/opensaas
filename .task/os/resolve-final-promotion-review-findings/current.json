@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-final-promotion-review-findings",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1720,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1720",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1720",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1720/resolve-final-promotion-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1720",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1720/resolve-final-promotion-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-final-promotion-review-findings",
+  "taskSession": "tsk_36c2cfebbeef",
+  "tmuxSession": "opensaas-os-resolve-final-promotion-review-findings-36c2cfeb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-final-promotion-review-findings/.task/os/resolve-final-promotion-review-findings/session.json",
+  "createdAt": "2026-07-29T06:43:25.505Z"
+}

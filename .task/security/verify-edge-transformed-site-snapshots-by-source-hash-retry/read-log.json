@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/tests/install-edge-site-publisher.test.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+  ],
+  "updatedAt": "2026-07-28T03:43:56.256Z"
+}

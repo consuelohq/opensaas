@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import manifestJson from '../manifests/tool.manifest.json';
+import manifestJson from '../manifests/generated/tool.manifest.json';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 import type { ToolManifestEntry } from './lib/facade/types';
 
@@ -116,7 +116,7 @@ function renderDocs(): string {
   const lines = [
     '# Consuelo OS typed tools',
     '',
-    'This file is the human-readable tool catalog for the Consuelo OS facade. It is generated from `packages/os/manifests/tool.manifest.json`, so tool additions and schema changes update this reference through the generator.',
+    'This file is the human-readable tool catalog for the Consuelo OS facade. It is generated from `packages/os/manifests/generated/tool.manifest.json`, so tool additions and schema changes update this reference through the generator.',
     '',
     'The workspace app exposes two MCP entrypoints:',
     '',

@@ -3,8 +3,14 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { Effect } from 'effect';
 
-import manifestJson from '../../../manifests/tool.manifest.json';
+import manifestJson from '../../../manifests/generated/tool.manifest.json';
+import {
+  executeDeploymentFacade,
+  type DeploymentFacadeInput,
+} from '../../../tools/deployment-provider/facade';
+import { redactDeploymentTraceInput } from '../../../tools/deployment-provider/redaction';
 
 import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
@@ -13,6 +19,7 @@ import { logToolExecution } from './logger';
 import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
 import { getInputSchema } from './schemas';
 import { executeCodeCall } from '../code-call/runtime';
+import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
 import type { CodeCallInput } from '../code-call/types';
 import { executeSubagent } from '../subagent/runtime';
 import type {
@@ -150,7 +157,12 @@ export async function executeTool<TData = unknown>(
 ): Promise<ToolResult<TData>> {
   const startedAt = (options.now || Date.now)();
   const traceId = createTraceId(options.randomUUID);
-  const cwd = resolveGitRoot(options.cwd || process.cwd());
+  // An MCP call supplies no cwd, and the server process runs from the immutable runtime release,
+  // which is not a repository. Falling straight through to process.cwd() left every repo-aware
+  // facade tool unable to find a git root. Prefer the workspace's configured project checkout.
+  const cwd = resolveGitRoot(
+    options.cwd || resolveActiveWorkspaceProjectCwd() || process.cwd(),
+  );
   const env = options.env || process.env;
   const runner = options.runner || defaultRunner;
   const requestId = typeof input.requestId === 'string' ? input.requestId : undefined;
@@ -721,6 +733,7 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
 
   return input;
 }
+
 async function executeInternalTool<TData>(
   entry: ToolManifestEntry,
   input: ToolInput,
@@ -769,6 +782,51 @@ async function executeInternalTool<TData>(
       env: context.env,
     });
     return result;
+  }
+
+  if (internal === 'deployment') {
+    const deploymentInput = {
+      ...input,
+      tool: entry.name,
+    } as DeploymentFacadeInput;
+    const outcome = await Effect.runPromise(Effect.either(executeDeploymentFacade(deploymentInput)));
+    const result = outcome._tag === 'Right'
+      ? createToolResult({
+        ok: true,
+        code: 'OK',
+        message: `${entry.name} completed`,
+        data: outcome.right,
+        durationMs: elapsedMs(context.startedAt, context.options.now),
+        traceId: context.traceId,
+        requestId: context.requestId,
+        now: context.options.now,
+      })
+      : createToolResult({
+        ok: false,
+        code: outcome.left.code,
+        message: outcome.left.message,
+        data: {
+          provider: outcome.left.provider,
+          operation: outcome.left.operation,
+          ...(outcome.left.diagnostics ? { diagnostics: outcome.left.diagnostics } : {}),
+          ...(outcome.left.approval ? { approval: outcome.left.approval } : {}),
+          ...(outcome.left.recovery ? { recovery: outcome.left.recovery } : {}),
+        },
+        stderr: '',
+        exitCode: 1,
+        durationMs: elapsedMs(context.startedAt, context.options.now),
+        traceId: context.traceId,
+        requestId: context.requestId,
+        now: context.options.now,
+      });
+    const traceInput = redactDeploymentTraceInput(entry.name, context.rawInput);
+    const resolvedTraceInput = redactDeploymentTraceInput(entry.name, input);
+    logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
+      input: traceInput,
+      resolvedInput: resolvedTraceInput,
+      env: context.env,
+    });
+    return result as ToolResult<TData>;
   }
 
   if (internal === 'subagent') {

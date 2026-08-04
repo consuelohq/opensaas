@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-release-plan-apply-immutable-tags",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1735,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1735",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1735",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1735/reconcile-release-plan-apply-immutable-tags",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1735",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1735/reconcile-release-plan-apply-immutable-tags",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-release-plan-apply-immutable-tags",
+  "taskSession": "tsk_c81bea446920",
+  "tmuxSession": "opensaas-os-reconcile-release-plan-apply-immutable-tags-c81bea44",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-release-plan-apply-immutable-tags/.task/os/reconcile-release-plan-apply-immutable-tags/session.json",
+  "createdAt": "2026-07-29T09:52:06.775Z"
+}

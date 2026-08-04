@@ -1,20 +1,23 @@
 ---
 import { Icon } from 'astro-icon/components';
 import { siteLinks } from '../../data/site-links';
+import { osSiteHeaderLinks } from '../../data/site-navigation';
 
-const cloudHref = 'https://os.consuelohq.com';
+const [consueloLink, docsLink, pricingLink, cloudLink] = osSiteHeaderLinks.desktop;
+const [mobileDocsLink, mobileCloudLink] = osSiteHeaderLinks.mobile;
 ---
 
 <header class="os-header" data-os-header>
-  <nav class="os-header__desktop" aria-label="Primary">
-    <a class="os-header__side-link" href={siteLinks.docs}>DOCS</a>
+  <nav class="os-header__desktop" aria-label={osSiteHeaderLinks.primaryAriaLabel}>
+    <a class="os-header__desktop-link" href={consueloLink.href}>{consueloLink.label}</a>
+    <a class="os-header__desktop-link" href={docsLink.href}>{docsLink.label}</a>
 
     <div class="os-header__identity">
-      <a class="os-header__wordmark" href="/" aria-label="Consuelo OS home">
+      <a class="os-header__wordmark" href="/" aria-label={osSiteHeaderLinks.wordmarkAriaLabel}>
         <span>CONSUELO</span>
         <span>OS</span>
       </a>
-      <div class="os-header__socials" aria-label="Community links">
+      <div class="os-header__socials" aria-label={osSiteHeaderLinks.communityAriaLabel}>
         <a href={siteLinks.discord} target="_blank" rel="noreferrer" aria-label="Discord">
           <Icon name="tabler:brand-discord-filled" />
         </a>
@@ -24,17 +27,18 @@ const cloudHref = 'https://os.consuelohq.com';
       </div>
     </div>
 
-    <a class="os-header__side-link" href={cloudHref}>CLOUD</a>
+    <a class="os-header__desktop-link" href={pricingLink.href}>{pricingLink.label}</a>
+    <a class="os-header__desktop-link" href={cloudLink.href}>{cloudLink.label}</a>
   </nav>
 
-  <nav class="os-header__mobile" aria-label="Mobile primary">
-    <a class="os-header__side-link" href={siteLinks.docs}>DOCS</a>
+  <nav class="os-header__mobile" aria-label={osSiteHeaderLinks.mobilePrimaryAriaLabel}>
+    <a class="os-header__side-link" href={mobileDocsLink.href}>{mobileDocsLink.label}</a>
     <div class="os-header__mobile-identity">
-      <a class="os-header__mobile-wordmark" href="/" aria-label="Consuelo OS home">
+      <a class="os-header__mobile-wordmark" href="/" aria-label={osSiteHeaderLinks.wordmarkAriaLabel}>
         <span>CONSUELO</span>
         <span>OS</span>
       </a>
-      <div class="os-header__socials os-header__mobile-socials" aria-label="Community links">
+      <div class="os-header__socials os-header__mobile-socials" aria-label={osSiteHeaderLinks.communityAriaLabel}>
         <a href={siteLinks.discord} target="_blank" rel="noreferrer" aria-label="Discord">
           <Icon name="tabler:brand-discord-filled" />
         </a>
@@ -43,7 +47,7 @@ const cloudHref = 'https://os.consuelohq.com';
         </a>
       </div>
     </div>
-    <a class="os-header__side-link" href={cloudHref}>CLOUD</a>
+    <a class="os-header__side-link" href={mobileCloudLink.href}>{mobileCloudLink.label}</a>
   </nav>
 </header>
 
@@ -62,15 +66,22 @@ const cloudHref = 'https://os.consuelohq.com';
 
   .os-header__desktop {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: 1fr 1fr 1.25fr 1fr 1fr;
     align-items: start;
+    gap: 1rem;
     width: min(100%, 90rem);
     margin: 0 auto;
     padding: clamp(1.8rem, 4vw, 3.5rem) clamp(1.5rem, 4.8vw, 4rem);
+    text-align: center;
   }
 
-  .os-header__desktop > :last-child {
-    justify-self: end;
+  .os-header__desktop-link {
+    padding-block: 0.1rem;
+    font-family: var(--site-font-mono);
+    font-size: clamp(0.72rem, 0.95vw, 0.86rem);
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    line-height: 1;
   }
 
   .os-header__side-link {

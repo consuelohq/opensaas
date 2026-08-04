@@ -144,10 +144,24 @@ jobs:
             echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN"
             exit 1
           fi
+          if [ -z "${CONSUELO_OS_RELEASE_R2_BUCKET:-}" ]; then
+            echo "::error::Missing GitHub Actions variable CONSUELO_OS_RELEASE_R2_BUCKET"
+            exit 1
+          fi
+          if [ -z "${CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS:-}" ] &&
+             { [ -z "${CONSUELO_OS_RELEASE_SIGNING_KEY_ID:-}" ] ||
+               [ -z "${CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY:-}" ]; }; then
+            echo "::error::Missing OS release trust anchors (CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS or signing key id + public key)"
+            exit 1
+          fi
           bun run os:release
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
+          CONSUELO_OS_RELEASE_SIGNING_KEY_ID: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_KEY_ID }}
+          CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY }}
+          CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS: ${{ vars.CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS }}
 
       - name: Migrate managed OS MCP connector-origin WAF class
         if: github.event_name == 'workflow_dispatch' && inputs.migrate_mcp_origin_waf

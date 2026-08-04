@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b269dd8d83f1",
+  "tmuxSession": "opensaas-os-refine-homepage-hero-rotating-assistant-copy-b269dd8d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refine-homepage-hero-rotating-assistant-copy",
+  "branch": "task/os/refine-homepage-hero-rotating-assistant-copy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-homepage-hero-rotating-assistant-copy",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-homepage-hero-rotating-assistant-copy",
+  "prNumber": 1741,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1741",
+  "createdAt": "2026-07-29T16:44:37.638Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-homepage-hero-rotating-assistant-copy/.task/os/refine-homepage-hero-rotating-assistant-copy/session.json"
+}

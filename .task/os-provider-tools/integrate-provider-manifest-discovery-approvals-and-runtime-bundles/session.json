@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e782b1f08285",
+  "tmuxSession": "opensaas-os-provider-tools-integrate-provider-manifest-discovery-approvals--e782b1f0",
+  "area": "os-provider-tools",
+  "stream": "stream/os-provider-tools",
+  "taskBranch": "task/os-provider-tools/integrate-provider-manifest-discovery-approvals-and-runtime-bundles",
+  "branch": "task/os-provider-tools/integrate-provider-manifest-discovery-approvals-and-runtime-bundles",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-integrate-provider-manifest-discovery-approvals-and-runtime-bundles",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-integrate-provider-manifest-discovery-approvals-and-runtime-bundles",
+  "prNumber": 1602,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1602",
+  "createdAt": "2026-07-23T20:39:37.660Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-integrate-provider-manifest-discovery-approvals-and-runtime-bundles/.task/os-provider-tools/integrate-provider-manifest-discovery-approvals-and-runtime-bundles/session.json"
+}

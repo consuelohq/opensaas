@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e72fe1489158",
+  "tmuxSession": "opensaas-os-distribution-automatic-versioning-release-channels-e72fe148",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/automatic-versioning-release-channels",
+  "branch": "task/os-distribution/automatic-versioning-release-channels",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-automatic-versioning-release-channels",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-automatic-versioning-release-channels",
+  "prNumber": 1579,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1579",
+  "createdAt": "2026-07-23T01:49:44.074Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-automatic-versioning-release-channels/.task/os-distribution/automatic-versioning-release-channels/session.json"
+}

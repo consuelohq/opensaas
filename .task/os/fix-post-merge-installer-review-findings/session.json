@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e165fb96f643",
+  "tmuxSession": "opensaas-os-fix-post-merge-installer-review-findings-e165fb96",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-post-merge-installer-review-findings",
+  "branch": "task/os/fix-post-merge-installer-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-post-merge-installer-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-post-merge-installer-review-findings",
+  "prNumber": 1745,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1745",
+  "createdAt": "2026-07-29T21:43:02.051Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-post-merge-installer-review-findings/.task/os/fix-post-merge-installer-review-findings/session.json"
+}
