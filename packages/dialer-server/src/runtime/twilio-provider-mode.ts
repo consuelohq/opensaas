@@ -15,6 +15,7 @@ type ProviderGroupInput = {
   sessionId: string;
   queueId: string;
   userId: string;
+  callMode: ProviderCallMode;
   targets: Array<{ contactId: string; phone: string }>;
   callerIds: string[];
 };
@@ -73,6 +74,7 @@ export const buildProviderGroupOptions = (
 ): ParallelDialOptions => ({
   workspaceId: input.workspaceId,
   dialerSessionId: input.sessionId,
+  providerMode: input.callMode === 'twilio-test' ? 'twilio-test' : 'live',
   customerNumbers: input.targets.map((target) => target.phone),
   queueId: input.queueId,
   contactIds: input.targets.map((target) => target.contactId),

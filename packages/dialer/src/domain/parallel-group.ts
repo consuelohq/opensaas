@@ -13,6 +13,7 @@ export const createParallelGroup = (
 ): ParallelGroup => ({
   groupId,
   dialerSessionId: options.dialerSessionId,
+  providerMode: options.providerMode,
   conferenceName: `${groupId}_${options.queueId}`,
   status: 'dialing',
   winnerSid: null,
