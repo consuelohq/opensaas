@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/redact-provider-stacks-before-observability",
+  "events": [
+    {
+      "id": "5f5fa376-2da2-48eb-951e-27c4b8bde739",
+      "occurred_at": "2026-08-04T20:34:26.533Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/dialer/redact-provider-stacks-before-observability/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/redact-provider-stacks-before-observability",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/redact-provider-stacks-before-observability"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-04T20:34:26.671Z"
+}

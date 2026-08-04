@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/redact-provider-stacks-before-observability",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1773,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1773",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1773",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1773/redact-provider-stacks-before-observability",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1773",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1773/redact-provider-stacks-before-observability",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-redact-provider-stacks-before-observability",
+  "taskSession": "tsk_5f56a17736c1",
+  "tmuxSession": "opensaas-dialer-redact-provider-stacks-before-observability-5f56a177",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-redact-provider-stacks-before-observability/.task/dialer/redact-provider-stacks-before-observability/session.json",
+  "createdAt": "2026-08-04T20:30:05.757Z"
+}
