@@ -57,6 +57,7 @@ function createRuntimeSource(root: string): string {
     'steering/system_prompt.md': '# Fixture system prompt\n',
     'steering/decision.md': '# Fixture decision process\n',
     'streams/tools/AGENTS.md': '# Fixture tools stream\n',
+    'streams/dialer/AGENTS.md': '# Fixture dialer stream\n',
     'skills/task/SKILL.md': '# Fixture task skill\n',
     'skills/task/skill.json': '{"name":"task","entrypoint":"SKILL.md"}\n',
   };

@@ -191,6 +191,7 @@ function installFixture(input: {
   mkdirSync(visibleSteering, { recursive: true });
   writeFileSync(join(visibleSteering, 'alpha.md'), '# Alpha user steering\n\nalpha body\n');
   writeFileSync(join(visibleSteering, 'zeta.md'), '# Zeta user steering\n\nzeta body\n');
+  writeFileSync(join(visibleSteering, 'dialer-AGENTS.md'), '# Consuelo Dialer agent instructions\n\nunique dialer steering marker\n');
   writeFileSync(join(visibleSteering, 'decision.md'), 'visible decision must not appear\n');
   writeFileSync(join(visibleSteering, 'steering.md'), 'legacy steering must not appear\n');
 
@@ -476,7 +477,12 @@ describe('installed runtime steering context', () => {
     const prefix = '# alpha.md\n\n';
     const start = steering.indexOf(prefix);
     expect(start).toBeGreaterThanOrEqual(0);
-    const renderedFile = steering.slice(start + prefix.length);
+    const contentStart = start + prefix.length;
+    const nextFile = steering.indexOf('\n\n# ', contentStart);
+    const renderedFile = steering.slice(
+      contentStart,
+      nextFile === -1 ? undefined : nextFile,
+    );
 
     expect(renderedFile).toContain('[truncated to fit the steering output budget]');
     expect(renderedFile.length).toBeLessThanOrEqual(6_000);
