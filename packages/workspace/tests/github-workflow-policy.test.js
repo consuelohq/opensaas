@@ -131,6 +131,17 @@ describe('GitHub workflow policy', () => {
     );
   });
 
+  test('runs Docker Compose CI with the pgvector PostgreSQL image required by migrations', () => {
+    const dockerComposeWorkflow = readFileSync(
+      join(workflowDir, 'ci-test-docker-compose.yaml'),
+      'utf8',
+    );
+
+    expect(dockerComposeWorkflow).toContain(
+      `yq eval '.services.db.image = "pgvector/pgvector:pg16"' -i docker-compose.yml`,
+    );
+  });
+
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),
