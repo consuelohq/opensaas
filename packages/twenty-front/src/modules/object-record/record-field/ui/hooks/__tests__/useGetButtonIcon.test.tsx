@@ -44,7 +44,10 @@ describe('useGetButtonIcon', () => {
     });
 
     const PhoneIcon = result.current;
-    expect(PhoneIcon).toBeDefined();
+
+    if (PhoneIcon === undefined) {
+      throw new Error('Expected a phone action icon');
+    }
 
     const { container } = render(<PhoneIcon />);
     expect(container.querySelector('path')).toHaveAttribute(
