@@ -112,6 +112,15 @@ describe('GitHub workflow policy', () => {
       '- name: Resolve OS test comparison SHAs\n        uses: nrwl/nx-set-shas@v4',
     );
     expect(osDistributionWorkflow).toContain(
+      '- uses: actions/checkout@v4\n        with:\n          fetch-depth: 0',
+    );
+    expect(osDistributionWorkflow).toContain(
+      'NATIVE_TEST_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}',
+    );
+    expect(osDistributionWorkflow).toContain(
+      'NATIVE_TEST_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}',
+    );
+    expect(osDistributionWorkflow).toContain(
       'run: node packages/workspace/scripts/ci/run-changed-os-native-tests.mjs',
     );
     expect(osDistributionWorkflow).toContain(

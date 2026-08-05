@@ -40,12 +40,34 @@ const readOption = (args, name) => {
   return value;
 };
 
+const normalizeGitRef = (value) => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+
+  if (normalized.length === 0 || /^0+$/.test(normalized)) {
+    return undefined;
+  }
+
+  return normalized;
+};
+
 export const parseCliArguments = (args, env = process.env) => ({
   base:
-    readOption(args, '--base') ??
-    env.NX_BASE ??
-    (env.GITHUB_BASE_REF ? `origin/${env.GITHUB_BASE_REF}` : undefined),
-  head: readOption(args, '--head') ?? env.NX_HEAD ?? 'HEAD',
+    normalizeGitRef(readOption(args, '--base')) ??
+    normalizeGitRef(env.NATIVE_TEST_BASE) ??
+    normalizeGitRef(env.NX_BASE) ??
+    normalizeGitRef(
+      env.GITHUB_BASE_REF ? `origin/${env.GITHUB_BASE_REF}` : undefined,
+    ) ??
+    'HEAD^1',
+  head:
+    normalizeGitRef(readOption(args, '--head')) ??
+    normalizeGitRef(env.NATIVE_TEST_HEAD) ??
+    normalizeGitRef(env.NX_HEAD) ??
+    'HEAD',
   listOnly: args.includes('--list'),
 });
 

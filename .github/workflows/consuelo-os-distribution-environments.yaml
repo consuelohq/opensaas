@@ -71,6 +71,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Resolve OS test comparison SHAs
         uses: nrwl/nx-set-shas@v4
@@ -135,6 +137,9 @@ jobs:
           Remove-Item -LiteralPath packages/os/native/windows-service/obj -Recurse -Force -ErrorAction SilentlyContinue
 
       - name: Run selected native distribution contracts
+        env:
+          NATIVE_TEST_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          NATIVE_TEST_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node packages/workspace/scripts/ci/run-changed-os-native-tests.mjs
 
       - name: Probe the native runner

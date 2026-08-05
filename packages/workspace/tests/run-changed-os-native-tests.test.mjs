@@ -23,6 +23,38 @@ test('parseCliArguments resolves comparison SHAs', () => {
   );
 });
 
+test('parseCliArguments uses event SHAs when nx-set-shas leaves the base empty', () => {
+  assert.deepEqual(
+    parseCliArguments([], {
+      NATIVE_TEST_BASE: 'pull-request-base-sha',
+      NATIVE_TEST_HEAD: 'pull-request-head-sha',
+      NX_BASE: '',
+      NX_HEAD: 'merge-commit-sha',
+    }),
+    {
+      base: 'pull-request-base-sha',
+      head: 'pull-request-head-sha',
+      listOnly: false,
+    },
+  );
+});
+
+test('parseCliArguments ignores zero SHAs and falls back to fetched Git history', () => {
+  assert.deepEqual(
+    parseCliArguments([], {
+      NATIVE_TEST_BASE: '0000000000000000000000000000000000000000',
+      NATIVE_TEST_HEAD: '',
+      NX_BASE: '',
+      NX_HEAD: '',
+    }),
+    {
+      base: 'HEAD^1',
+      head: 'HEAD',
+      listOnly: false,
+    },
+  );
+});
+
 test('filterRelevantNativeFiles keeps only OS native-test ownership paths', () => {
   assert.deepEqual(
     filterRelevantNativeFiles([
