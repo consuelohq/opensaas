@@ -5,6 +5,7 @@ import {
   FRONTEND_LINT_PROJECTS,
   groupChangedFrontendFiles,
   parseCliArguments,
+  validateFrontendLintConfigs,
 } from '../scripts/ci/lint-changed-frontend-files.mjs';
 
 test('parseCliArguments prefers explicit SHAs', () => {
@@ -82,5 +83,14 @@ test('frontend lint projects have unique roots and configs', () => {
   assert.equal(
     new Set(FRONTEND_LINT_PROJECTS.map(({ config }) => config)).size,
     FRONTEND_LINT_PROJECTS.length,
+  );
+});
+
+test('validateFrontendLintConfigs reports the config that failed to import', async () => {
+  await assert.rejects(
+    validateFrontendLintConfigs([
+      { config: 'packages/twenty-front/missing-eslint.config.mjs' },
+    ]),
+    /Unable to import frontend ESLint config packages\/twenty-front\/missing-eslint\.config\.mjs:/,
   );
 });

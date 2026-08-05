@@ -333,6 +333,14 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 - 2026-08-05 17:13:09 `review.run`: passed — OK
 - 2026-08-05 17:13:11 `review.run`: passed — OK
 - 2026-08-05 17:31:12 `review.run`: passed — OK
+- 2026-08-05 18:45:22 `review.run`: passed — OK
+- 2026-08-05 18:45:22 `review.run`: passed — OK
+- 2026-08-05 18:45:22 `review.run`: passed — OK
+- 2026-08-05 18:47:37 `review.run`: passed — OK
+- 2026-08-05 18:48:59 `review.run`: passed — OK
+- 2026-08-05 18:48:59 `review.run`: passed — OK
+- 2026-08-05 18:48:59 `review.run`: passed — OK
+- 2026-08-05 18:49:13 `review.run`: passed — OK
 
 ## key decisions
 
@@ -554,8 +562,11 @@ bun run task:finish
 - `packages/lead-connector/src/embed/main.ts`
 - `packages/lead-connector/src/embed/state-machine.ts`
 - `packages/lead-connector/src/embed/view.ts`
+- `packages/workspace/scripts/ci/lint-changed-frontend-files.mjs`
 - `packages/workspace/scripts/review.js`
 - `packages/workspace/senior-engineer.md`
+- `packages/workspace/tests/github-workflow-policy.test.js`
+- `packages/workspace/tests/lint-changed-frontend-files.test.mjs`
 
 ## strict review remediation and revalidation
 
@@ -741,3 +752,46 @@ bun run task:finish
 - Reattaching through `task.start` refreshed four task metadata files and replaced the durable workpad with a blank template. The four exact metadata paths were recovered byte-for-byte from committed HEAD using task-scoped Bun reads/writes; no reset, clean, broad restore, stash mutation, or worktree recreation was used.
 - Current objective: preserve the final changed-file frontend lint lane in a separate safety commit, validate it against the real Nx lint targets, rerun strict review/full verify, push, require green CI, merge to `stream/dialer`, then deploy and verify Railway, Cloudflare, Marketplace, and authenticated non-mutating GHL surfaces.
 - Safety boundaries remain active: no live call, redial, recording, transcription stream, transfer, Stripe mutation, Twilio number mutation, mutating webhook replay, or destructive database operation.
+
+
+### Wait cycle: surviving changed-file lint process
+
+- Start time (UTC): 2026-08-05T18:38:56Z.
+- Wait reason: the first exact changed-file lint invocation lost its HTTP transport response and spawned four identical process trees. Three duplicate trees were terminated by exact PID; the oldest tree rooted at PID 13177 is preserved and progressing through the real Nx lint targets.
+- Duration / attempts: poll every 20 seconds for up to 12 attempts.
+- Resume action: inspect the exact process tree rooted at PID 13177 immediately after each timed wait.
+- Expected signal: the root and all descendants exit. Because the original transport lost the exit envelope, process completion alone will not be counted as a pass.
+- Fallback: after the surviving tree exits, run one lock-guarded durable lint runner that writes its exit code and bounded log to /tmp; do not infer success from disappearance.
+
+- 2026-08-05T18:40:29Z wait observation: the preserved original lint tree exited, but its lost transport envelope remained non-evidence.
+- Lock-guarded durable rerun `/tmp/ghl-d6deb641-changed-front-lint.status.json` finished at 2026-08-05T18:41:54Z with exit code 0. Unit tests: 4 passed. Selection: exactly `packages/twenty-front/eslint.config.mjs`, `packages/twenty-ui/eslint.config.mjs`, and `packages/twenty-shared/eslint.config.mjs`. Each passed its real Nx `:lint:ci` target with cache disabled. Trace: `trc_11d2e56c70ec`.
+- Workflow validation passed: GitHub workflow policy 4/4, changed-workflow security checker reported zero findings, `ci-front.yaml` parsed with 10 jobs and a 10-step `front-task`, all five touched ESLint configs imported under Node, and `git diff --check` passed. Trace: `trc_0c0ca6288672`.
+- Safety commit: `d6deb641de9fa83a09773c711d30cbef47bce154` (`ci(front): lint only changed frontend files`).
+
+### Wait cycle: strict review after lost transport
+
+- Start time (UTC): 2026-08-05T18:45:23Z.
+- Wait reason: strict review lost its HTTP response and the facade spawned four identical process trees. Three duplicate trees were terminated by exact PID; the oldest tree rooted at PID 29652 remains active.
+- Duration / attempts: inspect every 20-30 seconds while performing independent read-only checks, for a maximum of 10 minutes.
+- Resume action: inspect PID 29652 and task review/evidence state.
+- Expected signal: the surviving process exits and a durable review result/evidence record identifies success or findings.
+- Fallback: if the process exits without durable result, run one lock-guarded review command that writes JSON and exit status to /tmp; do not infer success from process disappearance.
+
+- 2026-08-05T18:47:38Z correction: terminated the surviving `--all` review because the durable workpad already established that `--all` reviews unrelated repository files. The replacement typed call used strict changed-file scope against `origin/stream/dialer`.
+- The corrected typed review call also lost its HTTP response and spawned four identical trees. Three duplicates were terminated by exact PID; the preserved oldest tree later exited without a retrievable result. No pass/failure is inferred.
+- Fallback: one lock-guarded durable strict changed-file review is being launched with `bun run review -- --base origin/stream/dialer --strict --no-tests --json`; status/stdout/stderr are persisted under `/tmp/ghl-d6deb641-strict-review.*`.
+
+### Wait cycle: changed-file lint after review remediation
+
+- Start time (UTC): 2026-08-05T18:51:46Z.
+- Wait reason: the corrected CI script and its new import-failure test are running through the real cache-disabled changed-file Nx lint lane.
+- Poll interval / maximum: 15 seconds / 8 attempts.
+- Resume action: read `/tmp/ghl-reviewfix-changed-front-lint.status.json` and bounded log tail.
+- Expected signal: `state=finished`, exit code 0, 5 unit tests passed, and all selected Nx lint targets passed.
+- Fallback: stop on nonzero and inspect the exact project/file failure; do not weaken lint rules or thresholds.
+
+- 2026-08-05T18:49:42Z durable strict changed-file review completed with exit code 0 and two task-owned findings in `packages/workspace/scripts/ci/lint-changed-frontend-files.mjs` (missing local error boundaries at the config-import and main async paths). Three unrelated typecheck failures were classified pre-existing. Status/output: `/tmp/ghl-d6deb641-strict-review.status.json`, `/tmp/ghl-d6deb641-strict-review.stdout.json`.
+- Remediation: both async paths now catch unknown failures and add the failing config/operation context. A focused unit test proves import failures identify the exact ESLint config.
+- Post-remediation focused checks: script syntax passed; 5/5 unit tests passed; `git diff --check` passed. Trace: `trc_36b06f180b52`.
+- Post-remediation durable changed-file lint finished at 2026-08-05T18:52:44Z with exit code 0. All three selected config files passed their actual cache-disabled Nx lint targets; 5/5 unit tests passed. Status/log: `/tmp/ghl-reviewfix-changed-front-lint.status.json`, `/tmp/ghl-reviewfix-changed-front-lint.log`; trace `trc_fe5743b3725c`.
+- The sleep facade returned an HTTP 502 during the timed wait; durable runner state was inspected immediately and provided the recorded result. No duplicate lint run was started.

@@ -54,7 +54,8 @@
     "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs",
     "packages/workspace/scripts/review.js",
     "packages/workspace/senior-engineer.md",
+    "packages/workspace/tests/github-workflow-policy.test.js",
     "packages/workspace/tests/lint-changed-frontend-files.test.mjs"
   ],
-  "updatedAt": "2026-08-05T18:36:03.984Z"
+  "updatedAt": "2026-08-05T18:50:38.693Z"
 }

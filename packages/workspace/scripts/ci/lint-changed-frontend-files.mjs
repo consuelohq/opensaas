@@ -138,9 +138,19 @@ const chunk = (items, size) => {
   return chunks;
 };
 
-export const validateFrontendLintConfigs = async () => {
-  for (const { config } of FRONTEND_LINT_PROJECTS) {
-    await import(pathToFileURL(path.resolve(config)).href);
+export const validateFrontendLintConfigs = async (
+  projects = FRONTEND_LINT_PROJECTS,
+) => {
+  for (const { config } of projects) {
+    try {
+      await import(pathToFileURL(path.resolve(config)).href);
+    } catch (error) {
+      throw new Error(
+        `Unable to import frontend ESLint config ${config}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   }
 };
 
@@ -179,36 +189,44 @@ export const lintChangedFrontendFiles = (groups) => {
 };
 
 export const main = async () => {
-  const options = parseCliArguments(process.argv.slice(2));
-  await validateFrontendLintConfigs();
-  const files = getChangedFrontendFiles(options);
-  const groups = groupChangedFrontendFiles(files);
+  try {
+    const options = parseCliArguments(process.argv.slice(2));
+    await validateFrontendLintConfigs();
+    const files = getChangedFrontendFiles(options);
+    const groups = groupChangedFrontendFiles(files);
 
-  if (groups.length === 0) {
-    process.stdout.write('No changed frontend files require linting.\n');
-    return;
-  }
+    if (groups.length === 0) {
+      process.stdout.write('No changed frontend files require linting.\n');
+      return;
+    }
 
-  if (options.listOnly) {
-    process.stdout.write(
-      `${JSON.stringify(
-        groups.map(
-          ({ project, root, config, maxWarnings, files: groupFiles }) => ({
-            project,
-            root,
-            config,
-            maxWarnings,
-            files: groupFiles,
-          }),
-        ),
-        null,
-        2,
-      )}\n`,
+    if (options.listOnly) {
+      process.stdout.write(
+        `${JSON.stringify(
+          groups.map(
+            ({ project, root, config, maxWarnings, files: groupFiles }) => ({
+              project,
+              root,
+              config,
+              maxWarnings,
+              files: groupFiles,
+            }),
+          ),
+          null,
+          2,
+        )}\n`,
+      );
+      return;
+    }
+
+    lintChangedFrontendFiles(groups);
+  } catch (error) {
+    throw new Error(
+      `Changed frontend lint failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     );
-    return;
   }
-
-  lintChangedFrontendFiles(groups);
 };
 
 const isMain =
