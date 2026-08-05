@@ -53,7 +53,61 @@ export type DialerServerStartCallCommand = Omit<
       pipelineId?: string | null;
       stageId?: string | null;
     };
+    recordingEnabled?: boolean;
+    transcriptionEnabled?: boolean;
   };
+};
+
+export type DialerTransferStatus =
+  | 'initiating'
+  | 'consulting'
+  | 'completed'
+  | 'cancelled'
+  | 'failed';
+
+export type DialerTransferResult = {
+  success: boolean;
+  transferId: string;
+  transferCallSid?: string;
+  conferenceSid?: string;
+  status: DialerTransferStatus;
+  error?: string;
+};
+
+export type DialerTransferApplication = {
+  initiate: (input: {
+    workspaceId: string;
+    userId: string;
+    sessionId: string;
+    type: 'cold' | 'warm';
+    to: string;
+  }) => Effect.Effect<DialerTransferResult, DialerApplicationError>;
+  getStatus: (input: {
+    workspaceId: string;
+    userId: string;
+    sessionId: string;
+    transferId: string;
+  }) => Effect.Effect<DialerTransferResult, DialerApplicationError>;
+  complete: (input: {
+    workspaceId: string;
+    userId: string;
+    sessionId: string;
+    transferId: string;
+  }) => Effect.Effect<DialerTransferResult, DialerApplicationError>;
+  cancel: (input: {
+    workspaceId: string;
+    userId: string;
+    sessionId: string;
+    transferId: string;
+  }) => Effect.Effect<DialerTransferResult, DialerApplicationError>;
+  processStatusCallback: (input: {
+    transferId: string;
+    callSid: string;
+    callStatus: string;
+  }) => Effect.Effect<
+    { received: true; status: DialerTransferStatus },
+    DialerApplicationError
+  >;
 };
 
 export type DialerServerApplication = {
@@ -91,6 +145,10 @@ export type DialerServerApplication = {
       dialerSessionId: string | null;
     } | null,
     DialerApplicationError
+  >;
+  startCallRecording?: (input: { callSid: string }) => Effect.Effect<
+    { recordingSid: string; status: string },
+    DialerApplicationError | Error
   >;
 };
 
@@ -172,6 +230,7 @@ export type LeadConnectorServerApplication = {
 
 export type DialerServerDependencies = {
   application: DialerServerApplication;
+  transfers?: DialerTransferApplication;
   callOperations?: ReturnType<typeof createCallOperationsApplication>;
   authenticate: (request: Request) => Promise<DialerIdentity | null>;
   verifyTwilioSignature: (input: TwilioSignatureInput) => Promise<boolean>;

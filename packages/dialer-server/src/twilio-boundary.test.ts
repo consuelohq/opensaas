@@ -112,6 +112,10 @@ describe('Twilio webhook boundary', () => {
     );
     dependencies.commercial = {
       catalog: () => Effect.die('unused'),
+      createCheckout: () => Effect.die('unused'),
+      createBillingPortal: () => Effect.die('unused'),
+      previewBillingChange: () => Effect.die('unused'),
+      applyBillingChange: () => Effect.die('unused'),
       dashboard: () => Effect.die('unused'),
       updateTeam: () => Effect.die('unused'),
       assignNumber: () => Effect.die('unused'),
@@ -140,6 +144,103 @@ describe('Twilio webhook boundary', () => {
       sessionId: 'session-1',
       providerCallId: 'CA_FINAL',
       status: 'completed',
+    });
+  });
+
+  it('verifies recording callbacks and persists provider metadata without trusting callback tenant fields', async () => {
+    const dependencies = createDependencies();
+    const recordCallRecordingStatus = mock(() => Effect.void);
+    dependencies.callOperations = {
+      recordCallRecordingStatus,
+    } as unknown as NonNullable<DialerServerDependencies['callOperations']>;
+    const rawBody =
+      'CallSid=CA_RECORDING&RecordingSid=RE_ONE&RecordingStatus=completed&RecordingDuration=42&RecordingUrl=https%3A%2F%2Fapi.twilio.test%2Frecording&workspaceId=attacker';
+    const response = await createDialerServer(dependencies).fetch(
+      new Request(
+        'http://internal.test/webhooks/twilio/recording-status',
+        {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+            'x-forwarded-host': 'dialer.example.test',
+            'x-forwarded-proto': 'https',
+            'x-twilio-signature': 'signature',
+          },
+          body: rawBody,
+        },
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(dependencies.verifyTwilioSignature).toHaveBeenCalledWith({
+      contentType: 'application/x-www-form-urlencoded',
+      params: {
+        CallSid: 'CA_RECORDING',
+        RecordingSid: 'RE_ONE',
+        RecordingStatus: 'completed',
+        RecordingDuration: '42',
+        RecordingUrl: 'https://api.twilio.test/recording',
+        workspaceId: 'attacker',
+      },
+      rawBody,
+      signature: 'signature',
+      url: 'https://dialer.example.test/webhooks/twilio/recording-status',
+    });
+    expect(recordCallRecordingStatus).toHaveBeenCalledWith({
+      providerCallId: 'CA_RECORDING',
+      recordingSid: 'RE_ONE',
+      recordingStatus: 'completed',
+      recordingDurationSeconds: 42,
+      recordingUrl: 'https://api.twilio.test/recording',
+    });
+  });
+
+  it('verifies transfer callbacks and resolves the transfer only from the signed transfer id', async () => {
+    const dependencies = createDependencies();
+    const processStatusCallback = mock(() =>
+      Effect.succeed({ received: true as const, status: 'consulting' as const }),
+    );
+    dependencies.transfers = {
+      initiate: () => Effect.die('unused'),
+      getStatus: () => Effect.die('unused'),
+      complete: () => Effect.die('unused'),
+      cancel: () => Effect.die('unused'),
+      processStatusCallback,
+    };
+    const rawBody = 'CallSid=CA_TRANSFER&CallStatus=answered&workspaceId=attacker';
+    const response = await createDialerServer(dependencies).fetch(
+      new Request(
+        'http://internal.test/webhooks/twilio/transfer-status?transfer_id=transfer-one',
+        {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+            'x-forwarded-host': 'dialer.example.test',
+            'x-forwarded-proto': 'https',
+            'x-twilio-signature': 'signature',
+          },
+          body: rawBody,
+        },
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(dependencies.verifyTwilioSignature).toHaveBeenCalledWith({
+      contentType: 'application/x-www-form-urlencoded',
+      params: {
+        CallSid: 'CA_TRANSFER',
+        CallStatus: 'answered',
+        workspaceId: 'attacker',
+      },
+      rawBody,
+      signature: 'signature',
+      url:
+        'https://dialer.example.test/webhooks/twilio/transfer-status?transfer_id=transfer-one',
+    });
+    expect(processStatusCallback).toHaveBeenCalledWith({
+      transferId: 'transfer-one',
+      callSid: 'CA_TRANSFER',
+      callStatus: 'answered',
     });
   });
 

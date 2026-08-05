@@ -113,5 +113,110 @@ export const createCallSessionRoutes = (
     }
   });
 
+  if (dependencies.transfers) {
+    routes.post('/v1/call-sessions/:sessionId/transfers', async (context) => {
+      try {
+        const input = await readJsonObject(context.req.raw);
+        const type = input?.type === 'cold' || input?.type === 'warm'
+          ? input.type
+          : null;
+        const to = typeof input?.to === 'string' ? input.to.trim() : '';
+        if (!type || !/^\+[1-9]\d{7,14}$/.test(to)) {
+          return context.json(
+            {
+              error: {
+                code: 'INVALID_TRANSFER_REQUEST',
+                message: 'A valid E.164 target and transfer type are required',
+                retryable: false,
+              },
+            },
+            400,
+          );
+        }
+        const identity = context.get('identity');
+        const result = await runApplicationEffect(
+          dependencies.transfers!.initiate({
+            workspaceId: identity.workspaceId,
+            userId: identity.userId,
+            sessionId: context.req.param('sessionId'),
+            type,
+            to,
+          }),
+        );
+        return result.ok
+          ? context.json(result.value, 201)
+          : dialerErrorResponse(context, result.error);
+      } catch (error: unknown) {
+        return dialerErrorResponse(context, error);
+      }
+    });
+
+    routes.get(
+      '/v1/call-sessions/:sessionId/transfers/:transferId',
+      async (context) => {
+        try {
+          const identity = context.get('identity');
+          const result = await runApplicationEffect(
+            dependencies.transfers!.getStatus({
+              workspaceId: identity.workspaceId,
+              userId: identity.userId,
+              sessionId: context.req.param('sessionId'),
+              transferId: context.req.param('transferId'),
+            }),
+          );
+          return result.ok
+            ? context.json(result.value)
+            : dialerErrorResponse(context, result.error);
+        } catch (error: unknown) {
+          return dialerErrorResponse(context, error);
+        }
+      },
+    );
+
+    routes.post(
+      '/v1/call-sessions/:sessionId/transfers/:transferId/complete',
+      async (context) => {
+        try {
+          const identity = context.get('identity');
+          const result = await runApplicationEffect(
+            dependencies.transfers!.complete({
+              workspaceId: identity.workspaceId,
+              userId: identity.userId,
+              sessionId: context.req.param('sessionId'),
+              transferId: context.req.param('transferId'),
+            }),
+          );
+          return result.ok
+            ? context.json(result.value)
+            : dialerErrorResponse(context, result.error);
+        } catch (error: unknown) {
+          return dialerErrorResponse(context, error);
+        }
+      },
+    );
+
+    routes.post(
+      '/v1/call-sessions/:sessionId/transfers/:transferId/cancel',
+      async (context) => {
+        try {
+          const identity = context.get('identity');
+          const result = await runApplicationEffect(
+            dependencies.transfers!.cancel({
+              workspaceId: identity.workspaceId,
+              userId: identity.userId,
+              sessionId: context.req.param('sessionId'),
+              transferId: context.req.param('transferId'),
+            }),
+          );
+          return result.ok
+            ? context.json(result.value)
+            : dialerErrorResponse(context, result.error);
+        } catch (error: unknown) {
+          return dialerErrorResponse(context, error);
+        }
+      },
+    );
+  }
+
   return routes;
 };

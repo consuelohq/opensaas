@@ -36,6 +36,7 @@ import {
   type LeadConnectorDatabase,
 } from '@consuelo/lead-connector';
 import { Effect, Layer } from 'effect';
+import type StripeSdk from 'stripe';
 
 import type { DialerApplicationLayers } from '../application';
 import { createStripeCommercialBilling } from '../billing/stripe';
@@ -43,6 +44,8 @@ import { createCallOperationsApplication } from '../call-operations/application'
 import { createCommercialApplication } from '../commercial/application';
 import { initializeCommercialPersistence } from '../commercial/persistence';
 import { createTwilioCommercialNumberProvider } from '../numbers/commercial-provider';
+import { createTransferApplication } from '../transfers/application';
+import { createPostgresTransferRepository } from '../transfers/persistence';
 import { createGroqSpeechToTextProvider } from '../call-operations/groq';
 import {
   createPostgresCallOperationsRepository,
@@ -438,6 +441,48 @@ export const createRailwayCommercialApplication = async (
     }
     const billing = createStripeCommercialBilling({
       client: {
+        customers: {
+          create: async (parameters, options) => {
+            const customer = await stripe.customers.create(
+              parameters as StripeSdk.CustomerCreateParams,
+              options as StripeSdk.RequestOptions | undefined,
+            );
+            return { id: customer.id };
+          },
+        },
+        checkout: {
+          sessions: {
+            create: async (parameters, options) => {
+              const session = await stripe.checkout.sessions.create(
+                parameters as StripeSdk.Checkout.SessionCreateParams,
+                options as StripeSdk.RequestOptions | undefined,
+              );
+              return { id: session.id, url: session.url };
+            },
+          },
+        },
+        billingPortal: {
+          sessions: {
+            create: async (parameters) => {
+              const session = await stripe.billingPortal.sessions.create(
+                parameters as unknown as StripeSdk.BillingPortal.SessionCreateParams,
+              );
+              return { id: session.id, url: session.url };
+            },
+          },
+        },
+        invoices: {
+          createPreview: async (parameters) => {
+            const preview = await stripe.invoices.createPreview(
+              parameters as StripeSdk.InvoiceCreatePreviewParams,
+            );
+            return {
+              amount_due: preview.amount_due,
+              currency: preview.currency,
+              period_end: preview.period_end,
+            };
+          },
+        },
         subscriptions: {
           retrieve: async (subscriptionId) => {
             const subscription =
@@ -529,6 +574,9 @@ export const createRailwayCommercialApplication = async (
       database: sqlClient,
       catalog: loadDialerPlanCatalog(environment),
       billing,
+      billingReturnUrl: (
+        environment.DIALER_BILLING_RETURN_URL ?? `${publicUrl}/admin`
+      ).replace(/\/$/, ''),
       numbers,
       usage: {
         getCompletion: async (providerCallId) => {
@@ -643,6 +691,39 @@ const selectProviderDialerForCall = (
         : runtime.liveDialer,
     );
 
+export const createRailwayTransferApplication = async (
+  environment: RailwayEnvironment,
+  resources: RailwayRuntimeResources = {},
+) => {
+  try {
+    const shared = resources.database && resources.redis
+      ? null
+      : await createSharedResources(environment);
+    const database = resources.database ?? shared!.database;
+    const redis = resources.redis ?? shared!.redis;
+    await initializeCallOperationsPersistence(database);
+    const runtime = createDialerRuntime(environment, redis);
+    const repository = createPostgresTransferRepository(database);
+    const publicUrl = required(environment, 'DIALER_SERVER_PUBLIC_URL');
+    if (!publicUrl.startsWith('https://')) {
+      throw new Error('DIALER_SERVER_PUBLIC_URL must use HTTPS');
+    }
+    return createTransferApplication({
+      loadGroup: (groupId, workspaceId) =>
+        selectProviderDialerForGroup(runtime, groupId).then((dialer) =>
+          dialer.parallel.getGroupForWorkspace(groupId, workspaceId),
+        ),
+      selectDialer: (groupId) =>
+        selectProviderDialerForGroup(runtime, groupId),
+      repository,
+      publicUrl,
+      generateId: () => 'transfer_' + randomUUID(),
+    });
+  } catch (cause: unknown) {
+    throw new Error('Transfer runtime composition failed', { cause });
+  }
+};
+
 export const createRailwayDialerApplicationLayers = async (
   environment: RailwayEnvironment,
   resources: RailwayRuntimeResources = {},
@@ -657,6 +738,15 @@ export const createRailwayDialerApplicationLayers = async (
       await initializeLeadConnectorDialerLearning(database);
     }
     const runtime = createDialerRuntime(environment, redis);
+    const publicUrl = required(environment, 'DIALER_SERVER_PUBLIC_URL').replace(
+      /\/$/,
+      '',
+    );
+    if (!publicUrl.startsWith('https://')) {
+      throw new Error('DIALER_SERVER_PUBLIC_URL must use HTTPS');
+    }
+    const recordingStatusCallbackUrl =
+      publicUrl + '/webhooks/twilio/recording-status';
     const pendingQueues = new Map<string, CallableTarget[]>();
     const safeTo = safeNumbers(
       environment,
@@ -1033,6 +1123,14 @@ export const createRailwayDialerApplicationLayers = async (
         current,
         missing: Math.max(0, required - current),
       }),
+      startCallRecording: ({ callSid }) =>
+        tryEffect('start-call-recording', async () => {
+          const dialer = await selectProviderDialerForCall(runtime, callSid);
+          return dialer.startCallRecording({
+            callSid,
+            recordingStatusCallbackUrl,
+          });
+        }),
       handleStatusCallback: (input) =>
         tryEffect('handle-status-callback', () =>
           selectProviderDialerForCall(runtime, input.callSid).then((dialer) =>
@@ -1134,3 +1232,5 @@ export const createCallOperationsApplicationRuntime =
   createRailwayCallOperationsApplication;
 export const createCommercialApplicationRuntime =
   createRailwayCommercialApplication;
+export const createTransferApplicationRuntime =
+  createRailwayTransferApplication;

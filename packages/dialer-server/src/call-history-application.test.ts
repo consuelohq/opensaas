@@ -12,7 +12,10 @@ import type {
   DialerServerStartCallCommand,
 } from './contracts';
 
-const createBaseApplication = (events: string[]): DialerServerApplication => ({
+const createBaseApplication = (
+  events: string[],
+  options: { recordingFails?: boolean } = {},
+): DialerServerApplication => ({
   startCallSession: (command) =>
     Effect.sync(() => {
       events.push(`carrier:${command.sessionId}`);
@@ -36,6 +39,8 @@ const createBaseApplication = (events: string[]): DialerServerApplication => ({
           {
             callSid: 'CA-1',
             contactId: 'contact-1',
+    recordingEnabled: true,
+    transcriptionEnabled: true,
             customerNumber: '+15550100001',
             callerId: '+15550100002',
             status: 'queued',
@@ -71,11 +76,19 @@ const createBaseApplication = (events: string[]): DialerServerApplication => ({
       workspaceId: 'workspace-1',
       dialerSessionId: 'session-1',
     }),
+  startCallRecording: ({ callSid }) =>
+    options.recordingFails
+      ? Effect.fail(new Error('recording provider unavailable'))
+      : Effect.sync(() => {
+          events.push(`recording:${callSid}`);
+          return { recordingSid: 'RE-1', status: 'in-progress' };
+        }),
 });
 
 const createCallOperations = (events: string[]) => {
   const sessions: CallSessionSummary[] = [];
   let providerContextReads = 0;
+  let recordingClaimed = false;
   const repository: CallOperationsRepositoryService = {
     resolveTranscriptionSettings: () =>
       Effect.succeed({ enabled: true, language: 'en', retentionDays: 30 }),
@@ -105,6 +118,26 @@ const createCallOperations = (events: string[]) => {
     getCallTranscript: () => Effect.succeed([]),
     recordDisposition: () => Effect.void,
     setCrmSyncStatus: () => Effect.void,
+    claimCallRecording: ({ providerCallId }) =>
+      Effect.sync(() => {
+        events.push(`recording-claim:${providerCallId}`);
+        if (providerCallId !== 'CA-1' || recordingClaimed) return null;
+        recordingClaimed = true;
+        return {
+          workspaceId: 'workspace-1',
+          sessionId: 'session-1',
+          providerCallId,
+        };
+      }),
+    setCallRecordingStarted: ({ recordingSid }) =>
+      Effect.sync(() => {
+        events.push(`recording-started:${recordingSid}`);
+      }),
+    setCallRecordingFailed: ({ failureCode }) =>
+      Effect.sync(() => {
+        events.push(`recording-failed:${failureCode}`);
+      }),
+    recordCallRecordingStatus: () => Effect.void,
   };
   return {
     application: createCallOperationsApplication({
@@ -156,6 +189,59 @@ describe('call-history dialer application', () => {
     expect(events[2]).toBe('persist:dialing');
     expect(callOperations.sessions).toHaveLength(2);
     expect(callOperations.sessions[1]?.calls).toHaveLength(1);
+  });
+
+  it('persists plan-derived media entitlements and starts recording once only after a human connection', async () => {
+    const events: string[] = [];
+    const callOperations = createCallOperations(events);
+    const application = createCallHistoryDialerApplication(
+      createBaseApplication(events),
+      callOperations.application,
+    );
+
+    await Effect.runPromise(application.startCallSession(command));
+    expect(callOperations.sessions[0]).toMatchObject({
+      recordingEnabled: true,
+      transcriptionEnabled: true,
+    });
+
+    await Effect.runPromise(
+      application.processTwilioStatus({
+        callSid: 'CA-1',
+        callStatus: 'in-progress',
+        answeredBy: 'human',
+      }),
+    );
+    await Effect.runPromise(
+      application.processTwilioStatus({
+        callSid: 'CA-1',
+        callStatus: 'in-progress',
+        answeredBy: 'human',
+      }),
+    );
+
+    expect(events.filter((event) => event === 'recording:CA-1')).toHaveLength(1);
+    expect(events).toContain('recording-started:RE-1');
+  });
+
+  it('does not break the connected call when recording startup fails', async () => {
+    const events: string[] = [];
+    const callOperations = createCallOperations(events);
+    const application = createCallHistoryDialerApplication(
+      createBaseApplication(events, { recordingFails: true }),
+      callOperations.application,
+    );
+
+    await expect(
+      Effect.runPromise(
+        application.processTwilioStatus({
+          callSid: 'CA-1',
+          callStatus: 'in-progress',
+          answeredBy: 'human',
+        }),
+      ),
+    ).resolves.toEqual({ received: true, groupId: 'group-1' });
+    expect(events).toContain('recording-failed:RECORDING_START_FAILED');
   });
 
   it('uses conference-owned workspace and session context for stream opt-in', async () => {

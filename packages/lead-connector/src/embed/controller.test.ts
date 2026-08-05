@@ -128,6 +128,9 @@ const createApi = () =>
         paymentGraceDays: 7,
       },
       subscription: null,
+      subscriptionItems: [],
+      billingSummary: null,
+      billingSummaryError: null,
       seats: [],
       numbers: [],
       usage: {},
@@ -137,6 +140,47 @@ const createApi = () =>
     provisionCommercialNumber: mock(async () => ({ provisioned: true as const })),
     assignCommercialNumber: mock(async () => ({ assigned: true as const })),
     releaseCommercialNumber: mock(async () => ({ released: true as const })),
+    createCommercialCheckout: mock(async () => ({
+      id: 'cs_checkout_one',
+      url: 'https://checkout.stripe.test/session-one',
+    })),
+    createCommercialBillingPortal: mock(async () => ({
+      id: 'bps_portal_one',
+      url: 'https://billing.stripe.test/session-one',
+    })),
+    previewCommercialBillingChange: mock(async () => ({
+      amountDue: 4200,
+      currency: 'usd',
+      prorationDate: 1_786_000_000,
+    })),
+    applyCommercialBillingChange: mock(async () => ({
+      updated: true as const,
+      pendingWebhook: true as const,
+    })),
+    initiateCallTransfer: mock(async () => ({
+      success: true as const,
+      transferId: 'transfer-one',
+      transferCallSid: 'CA_transfer_one',
+      conferenceSid: 'CF_one',
+      status: 'initiating' as const,
+    })),
+    getCallTransferStatus: mock(async () => ({
+      success: true as const,
+      transferId: 'transfer-one',
+      transferCallSid: 'CA_transfer_one',
+      conferenceSid: 'CF_one',
+      status: 'consulting' as const,
+    })),
+    completeCallTransfer: mock(async () => ({
+      success: true as const,
+      transferId: 'transfer-one',
+      status: 'completed' as const,
+    })),
+    cancelCallTransfer: mock(async () => ({
+      success: true as const,
+      transferId: 'transfer-one',
+      status: 'cancelled' as const,
+    })),
     startCallSession: mock(async () => ({
       sessionId: 'session-1',
       providerGroupId: 'group-1',
@@ -588,6 +632,105 @@ describe('LeadConnector embed controller', () => {
       selectedTargets: [],
     });
     expect(api.createEmbedSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens server-owned billing sessions and drives a real warm transfer lifecycle', async () => {
+    const api = createApi();
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+      surface: 'admin',
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+
+    expect(
+      await controller.createCheckout({
+        single: 2,
+        standard: 1,
+        power: 0,
+        additionalNumber: 1,
+      }),
+    ).toBe('https://checkout.stripe.test/session-one');
+    expect(api.createCommercialCheckout).toHaveBeenCalledWith({
+      quantities: {
+        single: 2,
+        standard: 1,
+        power: 0,
+        additionalNumber: 1,
+      },
+    });
+    expect(await controller.openBillingPortal()).toBe(
+      'https://billing.stripe.test/session-one',
+    );
+
+    const quantities = {
+      single: 2,
+      standard: 1,
+      power: 0,
+      additionalNumber: 1,
+    };
+    await controller.previewBillingChange(quantities);
+    expect(controller.getState().commercialBillingPreview).toEqual({
+      quantities,
+      amountDue: 4200,
+      currency: 'usd',
+      prorationDate: 1_786_000_000,
+    });
+    await controller.applyBillingChange({
+      quantities,
+      prorationDate: 1_786_000_000,
+    });
+    expect(api.applyCommercialBillingChange).toHaveBeenCalledWith({
+      quantities,
+      prorationDate: 1_786_000_000,
+    });
+    expect(controller.getState().commercialBillingPreview).toBeNull();
+
+    const target = normalizeClickToCallTarget({
+      phone: '+15550100123',
+      contactId: 'contact-1',
+      name: 'Test Contact',
+    });
+    controller.selectTarget(target!);
+    await controller.startCall('single');
+    await controller.initiateTransfer({ type: 'warm', to: '+15550100111' });
+
+    expect(api.initiateCallTransfer).toHaveBeenCalledWith('group-1', {
+      type: 'warm',
+      to: '+15550100111',
+    });
+    expect(controller.getState().transfer).toEqual({
+      status: 'initiating',
+      type: 'warm',
+      target: '+15550100111',
+      transferId: 'transfer-one',
+      transferCallSid: 'CA_transfer_one',
+      conferenceSid: 'CF_one',
+    });
+    expect(api.getCallTransferStatus).not.toHaveBeenCalled();
+
+    await controller.refreshSession();
+    expect(api.getCallTransferStatus).toHaveBeenCalledWith(
+      'group-1',
+      'transfer-one',
+    );
+    expect(controller.getState().transfer.status).toBe('consulting');
+
+    await controller.completeTransfer();
+    expect(api.completeCallTransfer).toHaveBeenCalledWith(
+      'group-1',
+      'transfer-one',
+    );
+    expect(controller.getState().transfer.status).toBe('completed');
+
+    await controller.initiateTransfer({ type: 'warm', to: '+15550100112' });
+    await controller.refreshSession();
+    await controller.cancelTransfer();
+    expect(api.cancelCallTransfer).toHaveBeenCalledWith(
+      'group-1',
+      'transfer-one',
+    );
+    expect(controller.getState().transfer.status).toBe('cancelled');
   });
 
   it('expires and reauthenticates without retaining the expired browser token', async () => {

@@ -7,7 +7,10 @@ import {
 } from '../application';
 import type { createCallOperationsApplication } from '../call-operations/application';
 import type { CommercialRouteDependencies } from '../routes/commercial';
-import type { DialerServerDependencies } from '../contracts';
+import type {
+  DialerServerDependencies,
+  DialerTransferApplication,
+} from '../contracts';
 import { runApplicationEffect } from '../effect-runner';
 import {
   createEffectLeadConnectorApplication,
@@ -34,6 +37,9 @@ type RuntimeModule = {
   createCommercialApplicationRuntime?: (
     environment: DialerServerEnvironment,
   ) => Promise<CommercialRouteDependencies> | CommercialRouteDependencies;
+  createTransferApplicationRuntime?: (
+    environment: DialerServerEnvironment,
+  ) => Promise<DialerTransferApplication> | DialerTransferApplication;
 };
 
 export type DialerServerRuntimeConfig = {
@@ -98,6 +104,9 @@ export async function loadDialerServerRuntime(
     }
     const commercial = commercialEnabled
       ? await imported.createCommercialApplicationRuntime!(environment)
+      : undefined;
+    const transfers = imported.createTransferApplicationRuntime
+      ? await imported.createTransferApplicationRuntime(environment)
       : undefined;
     const leadConnectorLayer = imported.createLeadConnectorApplicationLayer
       ? await imported.createLeadConnectorApplicationLayer(environment)
@@ -164,6 +173,7 @@ export async function loadDialerServerRuntime(
           : createEffectDialerApplication(layers),
         callOperations,
         commercial,
+        transfers,
         authenticate,
         issueEmbedSession: embedSessions.issue,
         leadConnector,

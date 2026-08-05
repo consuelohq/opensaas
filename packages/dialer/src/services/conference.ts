@@ -505,6 +505,41 @@ export class ConferenceService {
     }
   }
 
+  /** Start recording the connected provider call leg. */
+  async startCallRecording(input: {
+    callSid: string;
+    recordingStatusCallbackUrl: string;
+  }): Promise<{ recordingSid: string; status: string }> {
+    try {
+      const client = await this.getClient();
+      const recording = await client
+        .calls(input.callSid)
+        .recordings.create({
+          recordingChannels: 'dual',
+          recordingTrack: 'both',
+          trim: 'do-not-trim',
+          recordingStatusCallback: input.recordingStatusCallbackUrl,
+          recordingStatusCallbackMethod: 'POST',
+          recordingStatusCallbackEvent: [
+            'in-progress',
+            'completed',
+            'absent',
+          ],
+        });
+      return {
+        recordingSid: recording.sid,
+        status: recording.status,
+      };
+    } catch (err: unknown) {
+      Sentry.captureException(err, {
+        extra: { callSid: input.callSid },
+      });
+      const message =
+        err instanceof Error ? err.message : 'Start recording failed';
+      throw new Error(message);
+    }
+  }
+
   /** Get a recording by SID */
   async getRecording(
     recordingSid: string,

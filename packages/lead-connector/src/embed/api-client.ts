@@ -124,6 +124,48 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
       request<EmbedCommercialCallerContext>('/v1/commercial/caller'),
     getCommercialDashboard: () =>
       request<EmbedCommercialDashboard>('/v1/commercial/admin'),
+    createCommercialCheckout: (input: {
+      quantities: {
+        single: number;
+        standard: number;
+        power: number;
+        additionalNumber: number;
+      };
+    }) =>
+      request<{ id: string; url: string }>(
+        '/v1/commercial/billing/checkout',
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
+    createCommercialBillingPortal: () =>
+      request<{ id: string; url: string }>(
+        '/v1/commercial/billing/portal',
+        { method: 'POST', body: '{}' },
+      ),
+    previewCommercialBillingChange: (input: {
+      quantities: {
+        single: number;
+        standard: number;
+        power: number;
+        additionalNumber: number;
+      };
+    }) =>
+      request<{ amountDue: number; currency: string; prorationDate: number }>(
+        '/v1/commercial/billing/preview',
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
+    applyCommercialBillingChange: (input: {
+      quantities: {
+        single: number;
+        standard: number;
+        power: number;
+        additionalNumber: number;
+      };
+      prorationDate: number;
+    }) =>
+      request<{ updated: true; pendingWebhook: true }>(
+        '/v1/commercial/billing/apply',
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
     updateCommercialTeam: (
       assignments: Array<{
         userId: string;
@@ -199,6 +241,52 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
     terminateCallSession: (sessionId: string) =>
       request<{ groupId: string; status: 'completed' }>(
         `/v1/call-sessions/${encodeURIComponent(sessionId)}/terminate`,
+        { method: 'POST' },
+      ),
+    initiateCallTransfer: (
+      sessionId: string,
+      input: { type: 'cold' | 'warm'; to: string },
+    ) =>
+      request<{
+        success: boolean;
+        transferId: string;
+        transferCallSid?: string;
+        conferenceSid?: string;
+        status: 'initiating' | 'consulting' | 'completed' | 'cancelled' | 'failed';
+        error?: string;
+      }>(
+        `/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers`,
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
+    getCallTransferStatus: (sessionId: string, transferId: string) =>
+      request<{
+        success: boolean;
+        transferId: string;
+        transferCallSid?: string;
+        conferenceSid?: string;
+        status: 'initiating' | 'consulting' | 'completed' | 'cancelled' | 'failed';
+        error?: string;
+      }>(
+        `/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers/${encodeURIComponent(transferId)}`,
+      ),
+    completeCallTransfer: (sessionId: string, transferId: string) =>
+      request<{
+        success: boolean;
+        transferId: string;
+        status: 'completed' | 'failed';
+        error?: string;
+      }>(
+        `/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers/${encodeURIComponent(transferId)}/complete`,
+        { method: 'POST' },
+      ),
+    cancelCallTransfer: (sessionId: string, transferId: string) =>
+      request<{
+        success: boolean;
+        transferId: string;
+        status: 'cancelled' | 'failed';
+        error?: string;
+      }>(
+        `/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers/${encodeURIComponent(transferId)}/cancel`,
         { method: 'POST' },
       ),
     listActiveCalls: () =>

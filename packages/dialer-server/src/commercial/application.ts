@@ -1,8 +1,7 @@
-import { Effect } from 'effect';
+import { Effect, Schedule } from 'effect';
 
 import {
   processInstallationUninstall as processInstallationUninstallEffect,
-  projectSubscriptionItems,
   resolveBillingAccess,
 } from '../billing/application';
 import type { createStripeCommercialBilling } from '../billing/stripe';
@@ -93,6 +92,9 @@ const positiveLimit = (value: unknown): number => {
 const metadataWorkspaceId = (object: CommercialRecord): string =>
   stringValue(record(object.metadata).workspaceId);
 
+const metadataPayerId = (object: CommercialRecord): string =>
+  stringValue(record(object.metadata).payerId);
+
 const subscriptionReference = (object: CommercialRecord): string => {
   const direct = stringValue(object.subscription);
   if (direct) return direct;
@@ -111,16 +113,221 @@ const billingPeriod = (now: Date) => {
   return { start: start.toISOString(), end: end.toISOString() };
 };
 
+type CommercialBillingQuantities = Record<DialerPlanCode, number> & {
+  additionalNumber: number;
+};
+
+const nonNegativeQuantity = (value: unknown): number => {
+  const quantity = Number(value ?? 0);
+  if (!Number.isSafeInteger(quantity) || quantity < 0 || quantity > 10_000) {
+    throw new Error('INVALID_BILLING_QUANTITY');
+  }
+  return quantity;
+};
+
+const billingQuantities = (body: unknown): CommercialBillingQuantities => {
+  const quantities = record(record(body).quantities);
+  const result = {
+    single: nonNegativeQuantity(quantities.single),
+    standard: nonNegativeQuantity(quantities.standard),
+    power: nonNegativeQuantity(quantities.power),
+    additionalNumber: nonNegativeQuantity(quantities.additionalNumber),
+  };
+  if (result.single + result.standard + result.power < 1) {
+    throw new Error('BILLING_SEAT_REQUIRED');
+  }
+  return result;
+};
+
+const billingItems = (
+  catalog: DialerPlanCatalog,
+  quantities: CommercialBillingQuantities,
+): Array<{
+  code: DialerPlanCode | 'additional-number';
+  priceId: string;
+  quantity: number;
+}> => {
+  const items: Array<{
+    code: DialerPlanCode | 'additional-number';
+    priceId: string;
+    quantity: number;
+  }> = (['single', 'standard', 'power'] as const)
+    .filter((code) => quantities[code] > 0)
+    .map((code) => ({
+      code,
+      priceId: catalog.plans[code].stripePriceId,
+      quantity: quantities[code],
+    }));
+  if (quantities.additionalNumber > 0) {
+    items.push({
+      code: 'additional-number' as const,
+      priceId: catalog.additionalNumberStripePriceId,
+      quantity: quantities.additionalNumber,
+    });
+  }
+  return items;
+};
+
+const itemCodeForPrice = (
+  catalog: DialerPlanCatalog,
+  priceId: string,
+): DialerPlanCode | 'additional-number' => {
+  for (const code of ['single', 'standard', 'power'] as const) {
+    if (catalog.plans[code].stripePriceId === priceId) return code;
+  }
+  if (catalog.additionalNumberStripePriceId === priceId) {
+    return 'additional-number';
+  }
+  throw new Error('UNKNOWN_STRIPE_PRICE');
+};
+
 export const createCommercialApplication = (input: {
   database: CommercialSqlClient;
   catalog: DialerPlanCatalog;
   billing?: CommercialBilling;
+  billingReturnUrl?: string;
   numbers?: CommercialNumberProvider;
   usage?: CommercialUsageProvider;
   now?: () => Date;
 }): CommercialRouteDependencies => {
   const persistence = createCommercialPersistence(input.database);
   const now = input.now ?? (() => new Date());
+
+  const requireBilling = (): CommercialBilling => {
+    if (!input.billing) throw new Error('BILLING_PROVIDER_UNAVAILABLE');
+    return input.billing;
+  };
+
+  const requireBillingReturnUrl = (): string => {
+    const value = input.billingReturnUrl?.trim();
+    if (!value) throw new Error('BILLING_RETURN_URL_UNAVAILABLE');
+    return value.replace(/\/$/, '');
+  };
+
+  const getWorkspaceSubscription = async (workspaceId: string) => {
+    const result = await input.database.query(
+      'SELECT provider_customer_id, provider_subscription_id, status FROM dialer_workspace_subscriptions WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    const current = record(result.rows[0]);
+    return {
+      customerId: stringValue(current.provider_customer_id) || null,
+      subscriptionId: stringValue(current.provider_subscription_id) || null,
+      status: stringValue(current.status) || null,
+    };
+  };
+
+  const getOrCreateBillingCustomer = async (
+    payerId: string,
+    workspaceId: string,
+  ): Promise<string> => {
+    const existing = await input.database.query(
+      'SELECT provider_customer_id FROM dialer_billing_accounts WHERE payer_user_id = $1',
+      [payerId],
+    );
+    const existingId = stringValue(record(existing.rows[0]).provider_customer_id);
+    if (existingId) return existingId;
+
+    const created = await Effect.runPromise(
+      requireBilling().createCustomer({ payerId, workspaceId }),
+    );
+    const saved = await input.database.query(
+      'INSERT INTO dialer_billing_accounts (payer_user_id, provider_customer_id) VALUES ($1, $2) ON CONFLICT (payer_user_id) DO UPDATE SET updated_at = now() RETURNING provider_customer_id',
+      [payerId, created.id],
+    );
+    const resolvedId = stringValue(record(saved.rows[0]).provider_customer_id);
+    if (!resolvedId) throw new Error('BILLING_CUSTOMER_NOT_PERSISTED');
+    return resolvedId;
+  };
+
+  const loadConfirmedInventory = async (workspaceId: string) => {
+    const result = await input.database.query(
+      'SELECT item_code, quantity FROM dialer_workspace_subscription_items WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    const purchased: Record<DialerPlanCode, number> = {
+      single: 0,
+      standard: 0,
+      power: 0,
+    };
+    let additionalNumberQuantity = 0;
+    for (const row of result.rows) {
+      const item = record(row);
+      const code = stringValue(item.item_code);
+      const quantity = nonNegativeQuantity(item.quantity);
+      if (code === 'single' || code === 'standard' || code === 'power') {
+        purchased[code] = quantity;
+      } else if (code === 'additional-number') {
+        additionalNumberQuantity = quantity;
+      }
+    }
+    const paidSeatQuantity = purchased.single + purchased.standard + purchased.power;
+    if (paidSeatQuantity === 0) {
+      purchased[input.catalog.trial.planCode] = input.catalog.trial.maxSeats;
+    }
+    return {
+      purchased,
+      paid: paidSeatQuantity > 0,
+      numberCapacity:
+        paidSeatQuantity > 0
+          ? paidSeatQuantity * input.catalog.includedNumbersPerSeat + additionalNumberQuantity
+          : input.catalog.trial.maxNumbers,
+    };
+  };
+
+  const ensureBillingQuantitiesCoverResources = async (
+    workspaceId: string,
+    quantities: CommercialBillingQuantities,
+  ): Promise<void> => {
+    const [seatCounts, activeNumbers] = await Promise.all([
+      input.database.query(
+        `SELECT plan_code, COUNT(*)::integer AS quantity
+         FROM dialer_team_seats
+         WHERE workspace_id = $1 AND status = 'active'
+         GROUP BY plan_code`,
+        [workspaceId],
+      ),
+      input.database.query(
+        `SELECT COUNT(*)::integer AS quantity
+         FROM dialer_phone_numbers
+         WHERE workspace_id = $1 AND status = 'active'`,
+        [workspaceId],
+      ),
+    ]);
+    for (const row of seatCounts.rows) {
+      const count = record(row);
+      const code = planCode(count.plan_code);
+      const assigned = Number(count.quantity ?? 0);
+      if (quantities[code] < assigned) {
+        throw new Error('SUBSCRIPTION_BELOW_ASSIGNED_SEATS');
+      }
+    }
+    const seatQuantity =
+      quantities.single + quantities.standard + quantities.power;
+    const numberCapacity =
+      seatQuantity * input.catalog.includedNumbersPerSeat +
+      quantities.additionalNumber;
+    const activeNumberQuantity = Number(
+      record(activeNumbers.rows[0]).quantity ?? 0,
+    );
+    if (numberCapacity < activeNumberQuantity) {
+      throw new Error('SUBSCRIPTION_BELOW_ACTIVE_NUMBERS');
+    }
+  };
+
+  const ensureNumberInventory = async (workspaceId: string): Promise<void> => {
+    const [inventory, active] = await Promise.all([
+      loadConfirmedInventory(workspaceId),
+      input.database.query(
+        "SELECT COUNT(*)::integer AS quantity FROM dialer_phone_numbers WHERE workspace_id = $1 AND status = 'active'",
+        [workspaceId],
+      ),
+    ]);
+    const activeQuantity = Number(record(active.rows[0]).quantity ?? 0);
+    if (activeQuantity >= inventory.numberCapacity) {
+      throw new Error('NUMBER_INVENTORY_EXHAUSTED');
+    }
+  };
 
   const subscriptionIdForWorkspace = async (
     workspaceId: string,
@@ -147,69 +354,6 @@ export const createCommercialApplication = (input: {
     const workspaceId = stringValue(record(result.rows[0]).workspace_id);
     if (!workspaceId) throw new Error('STRIPE_WORKSPACE_NOT_FOUND');
     return workspaceId;
-  };
-
-  const reconcileWorkspaceSubscription = async (
-    workspaceId: string,
-  ): Promise<void> => {
-    const [seatResult, numberResult] = await Promise.all([
-      input.database.query(
-        `SELECT user_id, plan_code
-         FROM dialer_team_seats
-         WHERE workspace_id = $1 AND status = 'active'`,
-        [workspaceId],
-      ),
-      input.database.query(
-        `SELECT COUNT(*)::integer AS quantity
-         FROM dialer_phone_numbers
-         WHERE workspace_id = $1 AND status = 'active'`,
-        [workspaceId],
-      ),
-    ]);
-    const seats = seatResult.rows.map((row) => {
-      const candidate = record(row);
-      return {
-        userId: stringValue(candidate.user_id),
-        planCode: planCode(candidate.plan_code),
-      };
-    });
-    const activeNumberQuantity = Number(
-      record(numberResult.rows[0]).quantity ?? 0,
-    );
-    const includedNumberQuantity =
-      seats.length * input.catalog.includedNumbersPerSeat;
-    const items = projectSubscriptionItems({
-      catalog: input.catalog,
-      seats,
-      additionalNumberQuantity: Math.max(
-        0,
-        activeNumberQuantity - includedNumberQuantity,
-      ),
-    });
-    const subscriptionId = await subscriptionIdForWorkspace(workspaceId);
-    if (subscriptionId) {
-      if (!input.billing) throw new Error('BILLING_PROVIDER_UNAVAILABLE');
-      await Effect.runPromise(
-        input.billing.reconcileSubscription({
-          subscriptionId,
-          workspaceId,
-          items,
-        }),
-      );
-    }
-    await input.database.query(
-      `DELETE FROM dialer_workspace_subscription_items
-       WHERE workspace_id = $1`,
-      [workspaceId],
-    );
-    for (const item of items) {
-      await input.database.query(
-        `INSERT INTO dialer_workspace_subscription_items (
-           workspace_id, item_code, provider_price_id, quantity
-         ) VALUES ($1, $2, $3, $4)`,
-        [workspaceId, item.code, item.priceId, item.quantity],
-      );
-    }
   };
 
   const validateAssignment = async (
@@ -389,11 +533,26 @@ export const createCommercialApplication = (input: {
   ) => {
     await validateAssignment(workspaceId, userId, phoneNumber);
     const updated = await input.database.query(
-      `UPDATE dialer_phone_numbers
-       SET user_id = $2, updated_at = now()
-       WHERE workspace_id = $1 AND phone_number = $3 AND status = 'active'
-         AND (user_id IS NULL OR user_id = $2)
-       RETURNING phone_number, user_id`,
+      `UPDATE dialer_phone_numbers AS target
+       SET user_id = $2,
+           slot_type = COALESCE(
+             target.slot_type,
+             CASE WHEN EXISTS (
+               SELECT 1
+               FROM dialer_phone_numbers AS existing
+               WHERE existing.workspace_id = $1
+                 AND existing.user_id = $2
+                 AND existing.phone_number <> $3
+                 AND existing.status = 'active'
+                 AND existing.slot_type = 'included'
+             ) THEN 'additional' ELSE 'included' END
+           ),
+           updated_at = now()
+       WHERE target.workspace_id = $1
+         AND target.phone_number = $3
+         AND target.status = 'active'
+         AND (target.user_id IS NULL OR target.user_id = $2)
+       RETURNING phone_number, user_id, slot_type`,
       [workspaceId, userId, phoneNumber],
     );
     if ((updated.rowCount ?? updated.rows.length) !== 1) {
@@ -403,6 +562,97 @@ export const createCommercialApplication = (input: {
 
   return {
     catalog: () => Effect.succeed(toSafeDialerPlanCatalog(input.catalog)),
+    createCheckout: (identity, body) =>
+      effectQuery(async () => {
+        requireAdmin(identity, 'billing.manage');
+        const billing = requireBilling();
+        const quantities = billingQuantities(body);
+        const subscription = await getWorkspaceSubscription(identity.workspaceId);
+        if (
+          subscription.subscriptionId &&
+          !['canceled', 'incomplete_expired'].includes(subscription.status ?? '')
+        ) {
+          throw new Error('SUBSCRIPTION_ALREADY_EXISTS');
+        }
+        const customerId = await getOrCreateBillingCustomer(
+          identity.userId,
+          identity.workspaceId,
+        );
+        const returnUrl = requireBillingReturnUrl();
+        return Effect.runPromise(
+          billing.createCheckoutSession({
+            workspaceId: identity.workspaceId,
+            payerId: identity.userId,
+            customerId,
+            items: billingItems(input.catalog, quantities),
+            successUrl: returnUrl + '?billing=success',
+            cancelUrl: returnUrl + '?billing=cancelled',
+          }),
+        );
+      }),
+    createBillingPortal: (identity) =>
+      effectQuery(async () => {
+        requireAdmin(identity, 'billing.manage');
+        const subscription = await getWorkspaceSubscription(identity.workspaceId);
+        if (!subscription.customerId) {
+          throw new Error('BILLING_CUSTOMER_NOT_FOUND');
+        }
+        return Effect.runPromise(
+          requireBilling().createPortalSession({
+            customerId: subscription.customerId,
+            returnUrl: requireBillingReturnUrl(),
+          }),
+        );
+      }),
+    previewBillingChange: (identity, body) =>
+      effectQuery(async () => {
+        requireAdmin(identity, 'billing.manage');
+        const subscription = await getWorkspaceSubscription(identity.workspaceId);
+        if (!subscription.customerId || !subscription.subscriptionId) {
+          throw new Error('BILLING_SUBSCRIPTION_NOT_FOUND');
+        }
+        const quantities = billingQuantities(body);
+        await ensureBillingQuantitiesCoverResources(
+          identity.workspaceId,
+          quantities,
+        );
+        const prorationDate = Math.floor(now().getTime() / 1_000);
+        return Effect.runPromise(
+          requireBilling().previewSubscriptionChange({
+            customerId: subscription.customerId,
+            subscriptionId: subscription.subscriptionId,
+            items: billingItems(input.catalog, quantities),
+            prorationDate,
+          }),
+        );
+      }),
+    applyBillingChange: (identity, body) =>
+      effectQuery(async () => {
+        requireAdmin(identity, 'billing.manage');
+        const subscription = await getWorkspaceSubscription(identity.workspaceId);
+        if (!subscription.subscriptionId) {
+          throw new Error('BILLING_SUBSCRIPTION_NOT_FOUND');
+        }
+        const bodyRecord = record(body);
+        const quantities = billingQuantities(body);
+        await ensureBillingQuantitiesCoverResources(
+          identity.workspaceId,
+          quantities,
+        );
+        const prorationDate = Number(bodyRecord.prorationDate);
+        if (!Number.isSafeInteger(prorationDate) || prorationDate <= 0) {
+          throw new Error('INVALID_PRORATION_DATE');
+        }
+        await Effect.runPromise(
+          requireBilling().reconcileSubscription({
+            subscriptionId: subscription.subscriptionId,
+            workspaceId: identity.workspaceId,
+            items: billingItems(input.catalog, quantities),
+            prorationDate,
+          }),
+        );
+        return { updated: true as const, pendingWebhook: true as const };
+      }),
     callerContext: (identity) => effectQuery(() => loadCallerContext(identity)),
     authorizeCall: (identity, body) =>
       effectQuery(async () => {
@@ -428,17 +678,30 @@ export const createCommercialApplication = (input: {
         if (callerIdNumber && !caller.callerIds.includes(callerIdNumber)) {
           throw new Error('CALLER_ID_NOT_ASSIGNED');
         }
-        return { ...bodyRecord, requestedFanout };
+        return {
+          ...bodyRecord,
+          requestedFanout,
+          recordingEnabled: caller.recordings,
+          transcriptionEnabled: caller.transcripts,
+        };
       }),
     dashboard: (identity) =>
       effectQuery(async () => {
         requireAdmin(identity, 'seats.manage');
-        const [subscription, seats, numbers, usage] = await Promise.all([
+        const [subscription, subscriptionItems, seats, numbers, usage] =
+          await Promise.all([
           input.database.query(
             `SELECT status, payment_failed_at, cancel_at_period_end,
                     provider_customer_id, provider_subscription_id
              FROM dialer_workspace_subscriptions
              WHERE workspace_id = $1`,
+            [identity.workspaceId],
+          ),
+          input.database.query(
+            `SELECT item_code, provider_price_id, quantity
+             FROM dialer_workspace_subscription_items
+             WHERE workspace_id = $1
+             ORDER BY item_code`,
             [identity.workspaceId],
           ),
           input.database.query(
@@ -463,10 +726,36 @@ export const createCommercialApplication = (input: {
             [identity.workspaceId],
           ),
         ]);
+        const subscriptionRow = record(subscription.rows[0]);
+        const customerId = stringValue(subscriptionRow.provider_customer_id);
+        const subscriptionId = stringValue(
+          subscriptionRow.provider_subscription_id,
+        );
+        let billingSummary: {
+          amountDue: number;
+          currency: string;
+          periodEnd: number | null;
+        } | null = null;
+        let billingSummaryError: string | null = null;
+        if (input.billing && customerId && subscriptionId) {
+          try {
+            billingSummary = await Effect.runPromise(
+              input.billing.getUpcomingInvoiceSummary({
+                customerId,
+                subscriptionId,
+              }),
+            );
+          } catch {
+            billingSummaryError = 'Upcoming invoice is temporarily unavailable';
+          }
+        }
         return {
           workspaceId: identity.workspaceId,
           catalog: toSafeDialerPlanCatalog(input.catalog),
           subscription: subscription.rows[0] ?? null,
+          subscriptionItems: subscriptionItems.rows,
+          billingSummary,
+          billingSummaryError,
           seats: seats.rows,
           numbers: numbers.rows,
           usage: usage.rows[0] ?? {
@@ -488,16 +777,11 @@ export const createCommercialApplication = (input: {
           if (!userId) throw new Error('INVALID_SEAT_USER');
           return { userId, planCode: planCode(candidateRecord.planCode) };
         });
-        const requested: Record<DialerPlanCode, number> = {
-          single: 0,
-          standard: 0,
-          power: 0,
-        };
-        for (const assignment of assignments) requested[assignment.planCode] += 1;
+        const inventory = await loadConfirmedInventory(identity.workspaceId);
         validateSeatInventory({
-          purchased: requested,
+          purchased: inventory.purchased,
           assignments,
-          requested,
+          requested: inventory.purchased,
         });
         for (const assignment of assignments) {
           await Effect.runPromise(
@@ -515,7 +799,6 @@ export const createCommercialApplication = (input: {
              AND NOT (user_id = ANY($2::text[]))`,
           [identity.workspaceId, assignments.map(({ userId }) => userId)],
         );
-        await reconcileWorkspaceSubscription(identity.workspaceId);
         return { updated: true, assignments };
       }),
     assignNumber: (identity, body) =>
@@ -558,6 +841,7 @@ export const createCommercialApplication = (input: {
         const userId = stringValue(bodyRecord.userId);
         if (!userId) throw new Error('INVALID_NUMBER_ASSIGNMENT');
         const phoneNumber = e164(bodyRecord.phoneNumber);
+        await ensureNumberInventory(identity.workspaceId);
         await validateAssignment(identity.workspaceId, userId, phoneNumber);
         const provisioned = await input.numbers.provision({
           workspaceId: identity.workspaceId,
@@ -568,7 +852,6 @@ export const createCommercialApplication = (input: {
           userId,
           provisioned.phoneNumber,
         );
-        await reconcileWorkspaceSubscription(identity.workspaceId);
         return { provisioned: true, ...provisioned, userId };
       }),
     releaseNumber: (identity, body) =>
@@ -576,12 +859,99 @@ export const createCommercialApplication = (input: {
         requireAdmin(identity, 'numbers.manage');
         if (!input.numbers) throw new Error('NUMBER_PROVIDER_UNAVAILABLE');
         const phoneNumber = e164(record(body).phoneNumber);
+        const numberResult = await input.database.query(
+          `SELECT phone_number, user_id, slot_type, status
+           FROM dialer_phone_numbers
+           WHERE workspace_id = $1 AND phone_number = $2 AND status = 'active'`,
+          [identity.workspaceId, phoneNumber],
+        );
+        const number = record(numberResult.rows[0]);
+        const slotType = stringValue(number.slot_type);
+        if (slotType !== 'included' && slotType !== 'additional') {
+          throw new Error('NUMBER_SLOT_NOT_FOUND');
+        }
+
+        let addOnAdjustment:
+          | {
+              subscriptionId: string;
+              items: Array<{
+                code: DialerPlanCode | 'additional-number';
+                priceId: string;
+                quantity: number;
+              }>;
+            }
+          | null = null;
+        if (slotType === 'additional') {
+          const [subscription, itemResult] = await Promise.all([
+            getWorkspaceSubscription(identity.workspaceId),
+            input.database.query(
+              `SELECT item_code, provider_price_id, quantity
+               FROM dialer_workspace_subscription_items
+               WHERE workspace_id = $1
+               ORDER BY item_code`,
+              [identity.workspaceId],
+            ),
+          ]);
+          if (!subscription.subscriptionId) {
+            throw new Error('BILLING_SUBSCRIPTION_NOT_FOUND');
+          }
+          const items = itemResult.rows
+            .map((row) => {
+              const item = record(row);
+              const code = stringValue(item.item_code);
+              const priceId = stringValue(item.provider_price_id);
+              const quantity = nonNegativeQuantity(item.quantity);
+              if (
+                !priceId ||
+                !['single', 'standard', 'power', 'additional-number'].includes(
+                  code,
+                )
+              ) {
+                throw new Error('INVALID_CONFIRMED_SUBSCRIPTION_ITEM');
+              }
+              return {
+                code: code as DialerPlanCode | 'additional-number',
+                priceId,
+                quantity:
+                  code === 'additional-number' ? Math.max(0, quantity - 1) : quantity,
+              };
+            })
+            .filter((item) => item.quantity > 0);
+          const confirmedAddOn = itemResult.rows.find(
+            (row) => stringValue(record(row).item_code) === 'additional-number',
+          );
+          if (nonNegativeQuantity(record(confirmedAddOn).quantity) < 1) {
+            throw new Error('ADDITIONAL_NUMBER_INVENTORY_MISSING');
+          }
+          addOnAdjustment = {
+            subscriptionId: subscription.subscriptionId,
+            items,
+          };
+        }
+
         const result = await input.numbers.release({
           workspaceId: identity.workspaceId,
           phoneNumber,
         });
-        await reconcileWorkspaceSubscription(identity.workspaceId);
-        return { ...result, phoneNumber };
+        if (addOnAdjustment) {
+          const billing = requireBilling();
+          await Effect.runPromise(
+            billing
+              .reconcileSubscription({
+                subscriptionId: addOnAdjustment.subscriptionId,
+                workspaceId: identity.workspaceId,
+                items: addOnAdjustment.items,
+                prorationDate: Math.floor(now().getTime() / 1_000),
+              })
+              .pipe(Effect.retry(Schedule.recurs(2))),
+          );
+        }
+        return {
+          ...result,
+          phoneNumber,
+          slotType,
+          pendingWebhook: addOnAdjustment !== null,
+        };
       }),
     processStripeWebhook: ({ rawBody, signature }) =>
       effectQuery(async () => {
@@ -613,10 +983,11 @@ export const createCommercialApplication = (input: {
         if (!claimed) return { received: true as const, duplicate: true };
 
         if (event.type.startsWith('customer.subscription.')) {
-          const status =
-            event.type === 'customer.subscription.deleted'
-              ? 'canceled'
-              : stringValue(object.status) || 'active';
+          const deleted = event.type === 'customer.subscription.deleted';
+          const status = deleted
+            ? 'canceled'
+            : stringValue(object.status) || 'active';
+          const customerId = stringValue(object.customer) || null;
           await input.database.query(
             `INSERT INTO dialer_workspace_subscriptions (
                workspace_id, provider_customer_id, provider_subscription_id,
@@ -630,12 +1001,56 @@ export const createCommercialApplication = (input: {
                  updated_at = now()`,
             [
               workspaceId,
-              stringValue(object.customer) || null,
+              customerId,
               providerSubscriptionId,
               status,
               booleanValue(object.cancel_at_period_end),
             ],
           );
+          const payerId = metadataPayerId(object);
+          if (payerId && customerId) {
+            await input.database.query(
+              `INSERT INTO dialer_billing_accounts (
+                 payer_user_id, provider_customer_id
+               ) VALUES ($1, $2)
+               ON CONFLICT (payer_user_id) DO UPDATE
+               SET updated_at = now()`,
+              [payerId, customerId],
+            );
+          }
+          await input.database.query(
+            `DELETE FROM dialer_workspace_subscription_items
+             WHERE workspace_id = $1`,
+            [workspaceId],
+          );
+          if (!deleted) {
+            const providerItems = record(object.items).data;
+            if (!Array.isArray(providerItems)) {
+              throw new Error('STRIPE_SUBSCRIPTION_ITEMS_REQUIRED');
+            }
+            for (const candidate of providerItems) {
+              const item = record(candidate);
+              const providerItemId = stringValue(item.id);
+              const priceId = stringValue(record(item.price).id);
+              const quantity = nonNegativeQuantity(item.quantity);
+              if (!providerItemId || !priceId) {
+                throw new Error('INVALID_STRIPE_SUBSCRIPTION_ITEM');
+              }
+              await input.database.query(
+                `INSERT INTO dialer_workspace_subscription_items (
+                   workspace_id, item_code, provider_item_id,
+                   provider_price_id, quantity
+                 ) VALUES ($1, $2, $3, $4, $5)`,
+                [
+                  workspaceId,
+                  itemCodeForPrice(input.catalog, priceId),
+                  providerItemId,
+                  priceId,
+                  quantity,
+                ],
+              );
+            }
+          }
         }
         if (event.type === 'invoice.payment_failed') {
           await input.database.query(

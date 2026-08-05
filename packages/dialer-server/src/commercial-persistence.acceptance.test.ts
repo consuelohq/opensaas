@@ -39,6 +39,7 @@ describe('commercial persistence contracts', () => {
 
     for (const relation of [
       'dialer_plan_catalog',
+      'dialer_billing_accounts',
       'dialer_workspace_subscriptions',
       'dialer_workspace_subscription_items',
       'dialer_team_seats',
@@ -71,7 +72,12 @@ describe('commercial persistence contracts', () => {
       module.COMMERCIAL_SCHEMA_STATEMENTS.length * 2,
     );
     for (const [statement] of query.mock.calls) {
-      expect(String(statement).toLowerCase()).toContain('if not exists');
+      const normalized = String(statement).toLowerCase();
+      expect(
+        normalized.includes('if not exists') ||
+          (normalized.includes('slot_type is null') &&
+            normalized.includes('update dialer_phone_numbers')),
+      ).toBe(true);
     }
   });
 

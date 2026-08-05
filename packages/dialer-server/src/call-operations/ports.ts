@@ -89,6 +89,30 @@ export type CallOperationsRepositoryService = {
     status: 'synced' | 'failed';
     errorCode?: string;
   }) => Effect.Effect<void, DialerApplicationError>;
+  claimCallRecording: (input: {
+    providerCallId: string;
+  }) => Effect.Effect<
+    { workspaceId: string; sessionId: string; providerCallId: string } | null,
+    DialerApplicationError
+  >;
+  setCallRecordingStarted: (input: {
+    workspaceId: string;
+    sessionId: string;
+    recordingSid: string;
+    status: string;
+  }) => Effect.Effect<void, DialerApplicationError>;
+  setCallRecordingFailed: (input: {
+    workspaceId: string;
+    sessionId: string;
+    failureCode: string;
+  }) => Effect.Effect<void, DialerApplicationError>;
+  recordCallRecordingStatus: (input: {
+    providerCallId: string;
+    recordingSid: string;
+    recordingStatus: string;
+    recordingUrl?: string;
+    recordingDurationSeconds?: number;
+  }) => Effect.Effect<void, DialerApplicationError>;
 };
 
 export type SpeechToTextRequest = {

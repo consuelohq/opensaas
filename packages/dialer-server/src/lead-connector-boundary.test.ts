@@ -215,6 +215,10 @@ describe('dialer-server LeadConnector boundary', () => {
     );
     dependencies.commercial = {
       catalog: () => Effect.die('unused'),
+      createCheckout: () => Effect.die('unused'),
+      createBillingPortal: () => Effect.die('unused'),
+      previewBillingChange: () => Effect.die('unused'),
+      applyBillingChange: () => Effect.die('unused'),
       dashboard: () => Effect.die('unused'),
       updateTeam: () => Effect.die('unused'),
       assignNumber: () => Effect.die('unused'),
@@ -239,7 +243,7 @@ describe('dialer-server LeadConnector boundary', () => {
     expect(response.status).toBe(200);
     expect(operations).toEqual(['commercial:uninstall-1', 'disable-installation']);
     expect(
-      dependencies.commercial.processInstallationUninstall,
+      dependencies.commercial!.processInstallationUninstall,
     ).toHaveBeenCalledWith({
       id: 'uninstall-1',
       workspaceId: 'workspace-1',

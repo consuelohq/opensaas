@@ -27,6 +27,28 @@ const boot = async () => {
         usage: { connectedMinutes: 0 },
       }),
     ),
+    createCheckout: mock((_identity: Identity, _body: unknown) =>
+      Effect.succeed({
+        id: 'cs_checkout_one',
+        url: 'https://checkout.stripe.test/session-one',
+      }),
+    ),
+    createBillingPortal: mock((_identity: Identity) =>
+      Effect.succeed({
+        id: 'bps_portal_one',
+        url: 'https://billing.stripe.test/session-one',
+      }),
+    ),
+    previewBillingChange: mock((_identity: Identity, _body: unknown) =>
+      Effect.succeed({
+        amountDue: 4200,
+        currency: 'usd',
+        prorationDate: 1_786_000_000,
+      }),
+    ),
+    applyBillingChange: mock((_identity: Identity, _body: unknown) =>
+      Effect.succeed({ updated: true, pendingWebhook: true }),
+    ),
     updateTeam: mock((_identity: Identity, _body: unknown) =>
       Effect.succeed({ updated: true }),
     ),
@@ -102,6 +124,45 @@ describe('commercial HTTP routes', () => {
     expect(dependencies.assignNumber.mock.calls[0]?.[0]).toEqual(identity);
   });
 
+  it('binds hosted billing, proration preview, and confirmed subscription changes to the authenticated workspace', async () => {
+    const { app, dependencies } = await boot();
+    const attackerBody = {
+      workspaceId: 'attacker-workspace',
+      payerId: 'attacker-payer',
+      quantities: { single: 2, standard: 1, power: 0, additionalNumber: 1 },
+      returnUrl: 'https://attacker.test/steal',
+      prorationDate: 1_786_000_000,
+    };
+    const checkout = await app.request('/v1/commercial/billing/checkout', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(attackerBody),
+    });
+    const portal = await app.request('/v1/commercial/billing/portal', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(attackerBody),
+    });
+    const preview = await app.request('/v1/commercial/billing/preview', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(attackerBody),
+    });
+    const apply = await app.request('/v1/commercial/billing/apply', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(attackerBody),
+    });
+
+    expect([checkout.status, portal.status, preview.status, apply.status]).toEqual([
+      200, 200, 200, 200,
+    ]);
+    expect(dependencies.createCheckout).toHaveBeenCalledWith(identity, attackerBody);
+    expect(dependencies.createBillingPortal).toHaveBeenCalledWith(identity, attackerBody);
+    expect(dependencies.previewBillingChange).toHaveBeenCalledWith(identity, attackerBody);
+    expect(dependencies.applyBillingChange).toHaveBeenCalledWith(identity, attackerBody);
+  });
+
   it('normalizes typed application failures into the project error envelope', async () => {
     const module = await import('./routes/commercial.ts');
     const app = new Hono<{ Variables: { identity: Identity } }>();
@@ -114,6 +175,12 @@ describe('commercial HTTP routes', () => {
       module.createCommercialRoutes({
         catalog: () => Effect.succeed({}),
         dashboard: () => Effect.succeed({}),
+        createCheckout: () => Effect.succeed({ id: 'cs', url: 'https://example.test' }),
+        createBillingPortal: () => Effect.succeed({ id: 'bps', url: 'https://example.test' }),
+        previewBillingChange: () =>
+          Effect.succeed({ amountDue: 0, currency: 'usd', prorationDate: 1 }),
+        applyBillingChange: () =>
+          Effect.succeed({ updated: true, pendingWebhook: true }),
         updateTeam: () => Effect.fail(new Error('FORBIDDEN')),
         assignNumber: () => Effect.fail(new Error('NUMBER_LIMIT_REACHED')),
         searchNumbers: () => Effect.succeed({ numbers: [] }),

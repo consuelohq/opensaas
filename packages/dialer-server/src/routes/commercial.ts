@@ -10,6 +10,22 @@ export type CommercialRouteDependencies = {
   dashboard: (
     identity: CommercialIdentity,
   ) => Effect.Effect<unknown, unknown>;
+  createCheckout: (
+    identity: CommercialIdentity,
+    body: unknown,
+  ) => Effect.Effect<unknown, unknown>;
+  createBillingPortal: (
+    identity: CommercialIdentity,
+    body: unknown,
+  ) => Effect.Effect<unknown, unknown>;
+  previewBillingChange: (
+    identity: CommercialIdentity,
+    body: unknown,
+  ) => Effect.Effect<unknown, unknown>;
+  applyBillingChange: (
+    identity: CommercialIdentity,
+    body: unknown,
+  ) => Effect.Effect<unknown, unknown>;
   callerContext?: (
     identity: CommercialIdentity,
   ) => Effect.Effect<unknown, unknown>;
@@ -127,6 +143,22 @@ export const createCommercialRoutes = (
       }
     };
 
+  app.post(
+    '/v1/commercial/billing/checkout',
+    mutation(dependencies.createCheckout),
+  );
+  app.post(
+    '/v1/commercial/billing/portal',
+    mutation(dependencies.createBillingPortal),
+  );
+  app.post(
+    '/v1/commercial/billing/preview',
+    mutation(dependencies.previewBillingChange),
+  );
+  app.post(
+    '/v1/commercial/billing/apply',
+    mutation(dependencies.applyBillingChange),
+  );
   app.patch('/v1/commercial/team', mutation(dependencies.updateTeam));
   app.post(
     '/v1/commercial/numbers/assign',

@@ -243,6 +243,21 @@ describe('LeadConnector browser architecture and branding', () => {
     );
   });
 
+  it('wires progressive commercial billing forms and confirmation actions to the controller', () => {
+    const source = readFileSync(join(embedRoot, 'main.ts'), 'utf8');
+    expect(source).toContain(
+      "form.dataset.form === 'commercial-billing-checkout'",
+    );
+    expect(source).toContain(
+      "form.dataset.form === 'commercial-billing-change'",
+    );
+    expect(source).toContain('controller.previewBillingChange(quantities)');
+    expect(source).toContain("action === 'apply-billing-change'");
+    expect(source).toContain('controller.applyBillingChange({');
+    expect(source).toContain("action === 'cancel-billing-preview'");
+    expect(source).toContain('controller.clearBillingPreview()');
+  });
+
   it('restarts the trusted parent bootstrap exchange when authentication is retried', () => {
     const source = readFileSync(
       join(embedRoot, 'main.ts'),

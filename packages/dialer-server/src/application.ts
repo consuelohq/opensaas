@@ -75,6 +75,8 @@ export const createCallHistoryDialerApplication = (
         selectionStrategy: command.input.selectionStrategy,
         requestedFanout: command.input.requestedFanout,
         actualFanout: 0,
+        recordingEnabled: command.input.recordingEnabled === true,
+        transcriptionEnabled: command.input.transcriptionEnabled === true,
         queueId: command.input.queueId ?? undefined,
         contactId: command.input.contactId ?? undefined,
         contactName: command.input.contactName,
@@ -118,6 +120,8 @@ export const createCallHistoryDialerApplication = (
             selectionStrategy: result.selectionStrategy,
             requestedFanout: result.requestedFanout,
             actualFanout: result.actualFanout,
+            recordingEnabled: command.input.recordingEnabled === true,
+            transcriptionEnabled: command.input.transcriptionEnabled === true,
             queueId: result.queueId,
             contactId: result.calls[0]?.contactId,
             contactName: command.input.contactName,
@@ -143,19 +147,60 @@ export const createCallHistoryDialerApplication = (
     processTwilioStatus: (input) =>
       application.processTwilioStatus(input).pipe(
         Effect.flatMap((result) =>
-          preserveCallFlow(
-            'persist-call-transition',
-            callOperations.recordCallLegTransition({
-              providerCallId: input.callSid,
-              status: input.callStatus,
-              ...(input.answeredBy ? { amdResult: input.answeredBy } : {}),
-              ...(input.callDuration &&
-              Number.isFinite(Number(input.callDuration))
-                ? { durationSeconds: Number(input.callDuration) }
-                : {}),
-            }),
-            undefined,
-          ).pipe(Effect.as(result)),
+          Effect.gen(function* () {
+            yield* preserveCallFlow(
+              'persist-call-transition',
+              callOperations.recordCallLegTransition({
+                providerCallId: input.callSid,
+                status: input.callStatus,
+                ...(input.answeredBy ? { amdResult: input.answeredBy } : {}),
+                ...(input.callDuration &&
+                Number.isFinite(Number(input.callDuration))
+                  ? { durationSeconds: Number(input.callDuration) }
+                  : {}),
+              }),
+              undefined,
+            );
+            if (input.answeredBy === 'human' && application.startCallRecording) {
+              const recording = yield* preserveCallFlow(
+                'claim-call-recording',
+                callOperations.claimCallRecording({
+                  providerCallId: input.callSid,
+                }),
+                null,
+              );
+              if (recording) {
+                yield* application
+                  .startCallRecording({ callSid: input.callSid })
+                  .pipe(
+                    Effect.flatMap((started) =>
+                      preserveCallFlow(
+                        'persist-call-recording-started',
+                        callOperations.setCallRecordingStarted({
+                          workspaceId: recording.workspaceId,
+                          sessionId: recording.sessionId,
+                          recordingSid: started.recordingSid,
+                          status: started.status,
+                        }),
+                        undefined,
+                      ),
+                    ),
+                    Effect.catchAll(() =>
+                      preserveCallFlow(
+                        'persist-call-recording-failed',
+                        callOperations.setCallRecordingFailed({
+                          workspaceId: recording.workspaceId,
+                          sessionId: recording.sessionId,
+                          failureCode: 'RECORDING_START_FAILED',
+                        }),
+                        undefined,
+                      ),
+                    ),
+                  );
+              }
+            }
+            return result;
+          }),
         ),
       ),
     generateTwilioCustomerTwiml: (input) =>
@@ -218,6 +263,11 @@ export const createEffectDialerApplication = (
     markParallelAgentReady({ groupId: sessionId, workspaceId }).pipe(
       Effect.provide(layers.parallelLayer),
     ),
+  startCallRecording: ({ callSid }) =>
+    Effect.gen(function* () {
+      const runtime = yield* ParallelCompatibilityRuntime;
+      return yield* runtime.startCallRecording({ callSid });
+    }).pipe(Effect.provide(layers.parallelLayer)),
   resolveTwilioCallContext: ({ callSid }) =>
     Effect.gen(function* () {
       const runtime = yield* ParallelCompatibilityRuntime;

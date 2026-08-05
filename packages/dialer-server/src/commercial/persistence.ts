@@ -15,6 +15,12 @@ export const COMMERCIAL_SCHEMA_STATEMENTS = [
     configuration jsonb NOT NULL,
     updated_at timestamptz NOT NULL DEFAULT now()
   )`,
+  `CREATE TABLE IF NOT EXISTS dialer_billing_accounts (
+    payer_user_id text PRIMARY KEY,
+    provider_customer_id text NOT NULL UNIQUE,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  )`,
   `CREATE TABLE IF NOT EXISTS dialer_workspace_subscriptions (
     workspace_id text PRIMARY KEY,
     provider_customer_id text,
@@ -51,11 +57,28 @@ export const COMMERCIAL_SCHEMA_STATEMENTS = [
     phone_number text NOT NULL,
     user_id text,
     provider_number_id text UNIQUE,
+    slot_type text CHECK (slot_type IN ('included', 'additional')),
     status text NOT NULL CHECK (status IN ('active', 'released')),
     updated_at timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (workspace_id, phone_number),
     UNIQUE (workspace_id, user_id, phone_number)
   )`,
+  `ALTER TABLE dialer_phone_numbers
+    ADD COLUMN IF NOT EXISTS slot_type text`,
+  `WITH ranked AS (
+      SELECT workspace_id, phone_number,
+             row_number() OVER (
+               PARTITION BY workspace_id, user_id
+               ORDER BY updated_at, phone_number
+             ) AS position
+      FROM dialer_phone_numbers
+      WHERE status = 'active' AND user_id IS NOT NULL AND slot_type IS NULL
+    )
+    UPDATE dialer_phone_numbers AS number
+    SET slot_type = CASE WHEN ranked.position = 1 THEN 'included' ELSE 'additional' END
+    FROM ranked
+    WHERE number.workspace_id = ranked.workspace_id
+      AND number.phone_number = ranked.phone_number`,
   `CREATE TABLE IF NOT EXISTS dialer_usage_events (
     workspace_id text NOT NULL,
     source_type text NOT NULL,

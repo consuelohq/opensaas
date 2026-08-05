@@ -148,6 +148,8 @@ export const createTwilioCommercialNumberProvider = (input: {
          ) VALUES ($1, $2, $3, 'active')
          ON CONFLICT (workspace_id, phone_number) DO UPDATE
          SET provider_number_id = EXCLUDED.provider_number_id,
+             user_id = NULL,
+             slot_type = NULL,
              status = 'active',
              updated_at = now()`,
         [request.workspaceId, number.phoneNumber, number.sid],

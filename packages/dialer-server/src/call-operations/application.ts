@@ -560,6 +560,26 @@ export const createCallOperationsApplication = (input: {
       status: 'synced' | 'failed';
       errorCode?: string;
     }) => input.repository.setCrmSyncStatus(request),
+    claimCallRecording: (request: { providerCallId: string }) =>
+      input.repository.claimCallRecording(request),
+    setCallRecordingStarted: (request: {
+      workspaceId: string;
+      sessionId: string;
+      recordingSid: string;
+      status: string;
+    }) => input.repository.setCallRecordingStarted(request),
+    setCallRecordingFailed: (request: {
+      workspaceId: string;
+      sessionId: string;
+      failureCode: string;
+    }) => input.repository.setCallRecordingFailed(request),
+    recordCallRecordingStatus: (request: {
+      providerCallId: string;
+      recordingSid: string;
+      recordingStatus: string;
+      recordingUrl?: string;
+      recordingDurationSeconds?: number;
+    }) => input.repository.recordCallRecordingStatus(request),
     attachTranscriptionStream: (request: {
       providerCallId: string;
       twiml: string;

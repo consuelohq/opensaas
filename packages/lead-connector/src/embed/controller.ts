@@ -80,6 +80,39 @@ export const createLeadConnectorEmbedController = (input: {
     dispatch({ type: 'SESSION_UPDATED', session });
   };
 
+  const projectTransferStatus = (result: Awaited<
+    ReturnType<LeadConnectorEmbedApi['getCallTransferStatus']>
+  >): void => {
+    const transferType = state.transfer.type;
+    const target = state.transfer.target;
+    if (!transferType || !target) return;
+    if (!result.success || result.status === 'failed') {
+      dispatch({
+        type: 'TRANSFER_FAILED',
+        code: 'TRANSFER_FAILED',
+        message: result.error ?? 'Transfer failed',
+      });
+      return;
+    }
+    if (result.status === 'completed') {
+      dispatch({ type: 'TRANSFER_COMPLETED' });
+      return;
+    }
+    if (result.status === 'cancelled') {
+      dispatch({ type: 'TRANSFER_CANCELLED' });
+      return;
+    }
+    dispatch({
+      type: 'TRANSFER_INITIATED',
+      status: result.status,
+      transferType,
+      target,
+      transferId: result.transferId,
+      transferCallSid: result.transferCallSid,
+      conferenceSid: result.conferenceSid,
+    });
+  };
+
   const reportUnexpectedFailure = (error: unknown): void => {
     dispatch({
       type: 'FAILED',
@@ -314,6 +347,59 @@ export const createLeadConnectorEmbedController = (input: {
     refreshResources,
     loadCallOperations,
     loadCommercial,
+    createCheckout: async (quantities: {
+      single: number;
+      standard: number;
+      power: number;
+      additionalNumber: number;
+    }): Promise<string | null> => {
+      const result = await run(() =>
+        input.api.createCommercialCheckout({ quantities }),
+      );
+      return result?.url ?? null;
+    },
+    openBillingPortal: async (): Promise<string | null> => {
+      const result = await run(() => input.api.createCommercialBillingPortal());
+      return result?.url ?? null;
+    },
+    previewBillingChange: async (quantities: {
+      single: number;
+      standard: number;
+      power: number;
+      additionalNumber: number;
+    }) => {
+      const preview = await run(() =>
+        input.api.previewCommercialBillingChange({ quantities }),
+      );
+      if (preview) {
+        dispatch({
+          type: 'COMMERCIAL_BILLING_PREVIEWED',
+          quantities,
+          preview,
+        });
+      }
+      return preview;
+    },
+    clearBillingPreview: (): void => {
+      dispatch({ type: 'COMMERCIAL_BILLING_PREVIEW_CLEARED' });
+    },
+    applyBillingChange: async (inputValue: {
+      quantities: {
+        single: number;
+        standard: number;
+        power: number;
+        additionalNumber: number;
+      };
+      prorationDate: number;
+    }): Promise<void> => {
+      const result = await run(() =>
+        input.api.applyCommercialBillingChange(inputValue),
+      );
+      if (result) {
+        dispatch({ type: 'COMMERCIAL_BILLING_PREVIEW_CLEARED' });
+        await loadCommercial();
+      }
+    },
     saveSeat: async (inputValue: {
       userId: string;
       planCode: 'single' | 'standard' | 'power';
@@ -511,12 +597,111 @@ export const createLeadConnectorEmbedController = (input: {
       await startCall(strategy);
     },
     startCall,
+    initiateTransfer: async (inputValue: {
+      type: 'cold' | 'warm';
+      to: string;
+    }): Promise<void> => {
+      const sessionId = state.activeSessionId;
+      const target = inputValue.to.trim();
+      if (!sessionId) {
+        dispatch({
+          type: 'FAILED',
+          code: 'CALL_SESSION_REQUIRED',
+          message: 'A connected call is required to transfer',
+          recoverable: true,
+        });
+        return;
+      }
+      if (!/^\+[1-9]\d{7,14}$/.test(target)) {
+        dispatch({
+          type: 'FAILED',
+          code: 'INVALID_TRANSFER_TARGET',
+          message: 'Enter a valid E.164 transfer number',
+          recoverable: true,
+        });
+        return;
+      }
+      dispatch({
+        type: 'TRANSFER_STARTED',
+        transferType: inputValue.type,
+        target,
+      });
+      const result = await run(() =>
+        input.api.initiateCallTransfer(sessionId, {
+          type: inputValue.type,
+          to: target,
+        }),
+      );
+      if (!result) return;
+      projectTransferStatus(result);
+    },
+    completeTransfer: async (): Promise<void> => {
+      const sessionId = state.activeSessionId;
+      const transferId = state.transfer.transferId;
+      if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
+        dispatch({
+          type: 'FAILED',
+          code: 'WARM_TRANSFER_REQUIRED',
+          message: 'A warm consultation is required to complete transfer',
+          recoverable: true,
+        });
+        return;
+      }
+      const result = await run(() =>
+        input.api.completeCallTransfer(sessionId, transferId),
+      );
+      if (!result) return;
+      if (!result.success) {
+        dispatch({
+          type: 'FAILED',
+          code: 'TRANSFER_FAILED',
+          message: result.error ?? 'Transfer completion failed',
+          recoverable: true,
+        });
+        return;
+      }
+      dispatch({ type: 'TRANSFER_COMPLETED' });
+    },
+    cancelTransfer: async (): Promise<void> => {
+      const sessionId = state.activeSessionId;
+      const transferId = state.transfer.transferId;
+      if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
+        dispatch({
+          type: 'FAILED',
+          code: 'WARM_TRANSFER_REQUIRED',
+          message: 'A warm consultation is required to cancel transfer',
+          recoverable: true,
+        });
+        return;
+      }
+      const result = await run(() =>
+        input.api.cancelCallTransfer(sessionId, transferId),
+      );
+      if (!result) return;
+      if (!result.success) {
+        dispatch({
+          type: 'FAILED',
+          code: 'TRANSFER_FAILED',
+          message: result.error ?? 'Transfer cancellation failed',
+          recoverable: true,
+        });
+        return;
+      }
+      dispatch({ type: 'TRANSFER_CANCELLED' });
+    },
     refreshSession: async (): Promise<void> => {
       try {
         const sessionId = state.activeSessionId;
         if (!sessionId) return;
         const session = await run(() => input.api.getCallSession(sessionId));
         if (session) projectSession(session);
+        const transferId = state.transfer.transferId;
+        if (state.transfer.status === 'initiating' && transferId) {
+          const transfer = await run(() =>
+            input.api.getCallTransferStatus(sessionId, transferId),
+          );
+          if (transfer) projectTransferStatus(transfer);
+        }
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
       }

@@ -41,6 +41,71 @@ const commercialState = (): LeadConnectorEmbedState => ({
   callerIds: ['+15550100001', '+15550100002'],
 } as LeadConnectorEmbedState);
 
+const commercialAdminState = (
+  subscription: Record<string, unknown> | null,
+): LeadConnectorEmbedState => ({
+  ...commercialState(),
+  commercialDashboard: {
+    workspaceId: 'workspace-one',
+    catalog: {
+      plans: {
+        single: {
+          code: 'single',
+          priceCents: 5900,
+          maxNumbersPerSeat: 1,
+          includedMinutes: 1388,
+          predictive: false,
+          recordings: false,
+          transcripts: false,
+        },
+        standard: {
+          code: 'standard',
+          priceCents: 9900,
+          maxNumbersPerSeat: 3,
+          includedMinutes: null,
+          predictive: true,
+          recordings: true,
+          transcripts: true,
+        },
+        power: {
+          code: 'power',
+          priceCents: 15900,
+          maxNumbersPerSeat: 10,
+          includedMinutes: null,
+          predictive: true,
+          recordings: true,
+          transcripts: true,
+        },
+      },
+      trial: {
+        includedMinutes: 500,
+        maxSeats: 1,
+        maxNumbers: 1,
+        planCode: 'standard',
+      },
+      additionalNumberPriceCents: 199,
+      includedNumbersPerSeat: 1,
+      paymentGraceDays: 3,
+    },
+    subscription,
+    subscriptionItems: subscription
+      ? [
+          { item_code: 'single', quantity: 2 },
+          { item_code: 'additional-number', quantity: 1 },
+        ]
+      : [],
+    billingSummary: subscription
+      ? { amountDue: 12_198, currency: 'usd', periodEnd: 1_788_600_000 }
+      : null,
+    billingSummaryError: null,
+    seats: [{ user_id: 'user-one', plan_code: 'single', status: 'active' }],
+    numbers: [
+      { phone_number: '+15550100001', user_id: 'user-one', status: 'active' },
+    ],
+    usage: { connected_minutes: 42, provider_cost_micros: 9000 },
+  },
+});
+
 describe('commercial LeadConnector surfaces', () => {
   it('keeps calling controls out of admin and exposes commercial management sections', () => {
     const html = renderLeadConnectorEmbed(commercialState(), {
@@ -54,6 +119,82 @@ describe('commercial LeadConnector surfaces', () => {
     expect(html).toContain('Billing');
     expect(html).not.toContain('Who do you want to call?');
     expect(html).not.toContain('data-action="start-call"');
+  });
+
+  it('renders progressive Checkout, subscription-change, invoice, payment, and cancellation billing states', () => {
+    const trialHtml = renderLeadConnectorEmbed(commercialAdminState(null), {
+      surface: 'admin',
+    });
+    expect(trialHtml).toContain('data-form="commercial-billing-checkout"');
+    expect(trialHtml).toContain('Start paid plan');
+    expect(trialHtml).not.toContain('data-form="commercial-billing-change"');
+
+    const active = commercialAdminState({
+      status: 'active',
+      cancel_at_period_end: false,
+      payment_failed_at: null,
+    });
+    const activeHtml = renderLeadConnectorEmbed(active, { surface: 'admin' });
+    expect(activeHtml).toContain('data-form="commercial-billing-change"');
+    const activeDocument = new JSDOM(activeHtml).window.document;
+    expect(
+      activeDocument
+        .querySelector<HTMLInputElement>('input[name="single"]')
+        ?.getAttribute('value'),
+    ).toBe('2');
+    expect(
+      activeDocument
+        .querySelector<HTMLInputElement>('input[name="additionalNumber"]')
+        ?.getAttribute('value'),
+    ).toBe('1');
+    expect(activeHtml).toContain('Upcoming invoice');
+    expect(activeHtml).toContain('$121.98');
+    expect(activeHtml).toContain('1 additional number');
+    expect(activeHtml).toContain('Payment methods, invoices, and cancellation');
+    expect(activeHtml).toContain('data-action="manage-billing"');
+
+    const previewHtml = renderLeadConnectorEmbed(
+      {
+        ...active,
+        commercialBillingPreview: {
+          quantities: {
+            single: 2,
+            standard: 1,
+            power: 0,
+            additionalNumber: 1,
+          },
+          amountDue: 4200,
+          currency: 'usd',
+          prorationDate: 1_786_000_000,
+        },
+      },
+      { surface: 'admin' },
+    );
+    expect(previewHtml).toContain('Proration preview');
+    expect(previewHtml).toContain('$42.00');
+    expect(previewHtml).toContain('data-action="apply-billing-change"');
+    expect(previewHtml).toContain('data-action="cancel-billing-preview"');
+
+    const recoveryHtml = renderLeadConnectorEmbed(
+      commercialAdminState({
+        status: 'past_due',
+        cancel_at_period_end: false,
+        payment_failed_at: '2026-08-04T00:00:00.000Z',
+      }),
+      { surface: 'admin' },
+    );
+    expect(recoveryHtml).toContain('Payment recovery');
+    expect(recoveryHtml).toContain('3-day grace');
+
+    const cancellationHtml = renderLeadConnectorEmbed(
+      commercialAdminState({
+        status: 'active',
+        cancel_at_period_end: true,
+        payment_failed_at: null,
+      }),
+      { surface: 'admin' },
+    );
+    expect(cancellationHtml).toContain('Cancellation scheduled');
   });
 
   it('renders the overlay as a focused calling surface with accessible comboboxes and no promotional header', () => {
@@ -77,10 +218,10 @@ describe('commercial LeadConnector surfaces', () => {
     expect(document.querySelectorAll('[role="listbox"]').length).toBeGreaterThanOrEqual(2);
   });
 
-  it('provides connected-call warm and cold transfer controls in the overlay', () => {
-    const html = renderLeadConnectorEmbed({
+  it('renders an actionable transfer form and only exposes complete or cancel during a warm consultation', () => {
+    const connected = {
       ...commercialState(),
-      phase: 'connected',
+      phase: 'connected' as const,
       callSession: {
         groupId: 'group-one',
         status: 'connected',
@@ -88,12 +229,34 @@ describe('commercial LeadConnector surfaces', () => {
         winner: null,
         calls: [],
       },
-    }, { surface: 'overlay' });
+    };
+    const idleHtml = renderLeadConnectorEmbed(connected, { surface: 'overlay' });
 
-    expect(html).toContain('data-action="warm-transfer"');
-    expect(html).toContain('data-action="cold-transfer"');
-    expect(html).toContain('data-action="complete-transfer"');
-    expect(html).toContain('data-action="cancel-transfer"');
+    expect(idleHtml).toContain('data-form=\"transfer\"');
+    expect(idleHtml).toContain('name=\"to\"');
+    expect(idleHtml).toContain('name=\"type\"');
+    expect(idleHtml).toContain('data-action=\"initiate-transfer\"');
+    expect(idleHtml).not.toContain('data-action=\"complete-transfer\"');
+    expect(idleHtml).not.toContain('data-action=\"cancel-transfer\"');
+
+    const consultingHtml = renderLeadConnectorEmbed(
+      {
+        ...connected,
+        transfer: {
+          status: 'consulting',
+          type: 'warm',
+          target: '+15550100111',
+          transferId: 'transfer-one',
+          transferCallSid: 'CA_transfer_one',
+          conferenceSid: 'CF_one',
+        },
+      },
+      { surface: 'overlay' },
+    );
+    expect(consultingHtml).toContain('Warm consultation');
+    expect(consultingHtml).toContain('data-action=\"complete-transfer\"');
+    expect(consultingHtml).toContain('data-action=\"cancel-transfer\"');
+    expect(consultingHtml).not.toContain('data-action=\"initiate-transfer\"');
   });
 
   it('soft Home reset preserves authenticated resources, caller identity, and setup', () => {

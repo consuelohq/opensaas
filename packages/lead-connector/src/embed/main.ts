@@ -160,6 +160,40 @@ controller.subscribe((state) => {
   updateRefresh();
 });
 
+const openHostedBilling = async (operation: () => Promise<string | null>): Promise<void> => {
+  const popup = window.open('about:blank', '_blank');
+  if (popup) popup.opener = null;
+  const url = await operation();
+  if (!url) {
+    popup?.close();
+    return;
+  }
+  if (popup) popup.location.href = url;
+  else window.location.assign(url);
+};
+
+const currentBillingQuantities = () => {
+  const dashboard = controller.getState().commercialDashboard;
+  const quantities = { single: 0, standard: 0, power: 0, additionalNumber: 0 };
+  for (const seat of dashboard?.seats ?? []) {
+    const code = String(seat.plan_code ?? seat.planCode ?? '');
+    if (code === 'single' || code === 'standard' || code === 'power') {
+      quantities[code] += 1;
+    }
+  }
+  if (quantities.single + quantities.standard + quantities.power === 0) {
+    quantities.single = 1;
+  }
+  return quantities;
+};
+
+const billingQuantitiesFromFormData = (data: FormData) => ({
+  single: Number(data.get('single') ?? 0),
+  standard: Number(data.get('standard') ?? 0),
+  power: Number(data.get('power') ?? 0),
+  additionalNumber: Number(data.get('additionalNumber') ?? 0),
+});
+
 const readElement = (target: EventTarget | null): HTMLElement | null =>
   target instanceof HTMLElement
     ? target.closest<HTMLElement>('[data-action]')
@@ -198,6 +232,28 @@ root.addEventListener('click', (event) => {
   if (action === 'resume') controller.resume();
   if (action === 'stop') void controller.stop();
   if (action === 'hang-up') void controller.hangUp();
+  if (action === 'complete-transfer') void controller.completeTransfer();
+  if (action === 'cancel-transfer') void controller.cancelTransfer();
+  if (action === 'apply-billing-change') {
+    const preview = controller.getState().commercialBillingPreview;
+    if (preview) {
+      void controller.applyBillingChange({
+        quantities: preview.quantities,
+        prorationDate: preview.prorationDate,
+      });
+    }
+  }
+  if (action === 'cancel-billing-preview') {
+    controller.clearBillingPreview();
+  }
+  if (action === 'manage-billing') {
+    const hasSubscription = controller.getState().commercialDashboard?.subscription !== null;
+    void openHostedBilling(() =>
+      hasSubscription
+        ? controller.openBillingPortal()
+        : controller.createCheckout(currentBillingQuantities()),
+    );
+  }
   if (action === 'select-call' && actionElement.dataset.callId) {
     void controller.selectCall(actionElement.dataset.callId);
   }
@@ -331,6 +387,22 @@ root.addEventListener('submit', (event) => {
         | 'standard'
         | 'power',
     });
+    return;
+  }
+  if (form.dataset.form === 'transfer') {
+    const to = String(data.get('to') ?? '').trim();
+    const type = data.get('type') === 'cold' ? 'cold' : 'warm';
+    void controller.initiateTransfer({ type, to });
+    return;
+  }
+  if (form.dataset.form === 'commercial-billing-checkout') {
+    const quantities = billingQuantitiesFromFormData(data);
+    void openHostedBilling(() => controller.createCheckout(quantities));
+    return;
+  }
+  if (form.dataset.form === 'commercial-billing-change') {
+    const quantities = billingQuantitiesFromFormData(data);
+    void controller.previewBillingChange(quantities);
     return;
   }
   if (form.dataset.form === 'commercial-number-search') {

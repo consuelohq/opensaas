@@ -262,6 +262,24 @@ const renderWrapUp = (state: LeadConnectorEmbedState): string => {
     </section>`;
 };
 
+const renderTransferControls = (state: LeadConnectorEmbedState): string => {
+  if (state.transfer.status === 'consulting' && state.transfer.type === 'warm') {
+    return '<div class="transfer-controls transfer-controls--consulting" aria-label="Warm transfer consultation"><p><strong>Warm consultation</strong><span>' +
+      maskPhone(state.transfer.target ?? '') +
+      '</span></p><button type="button" class="button button--primary" data-action="complete-transfer">Complete transfer</button><button type="button" class="button button--secondary" data-action="cancel-transfer">Cancel transfer</button></div>';
+  }
+  if (state.transfer.status === 'initiating') {
+    return '<div class="transfer-controls" role="status">Starting transfer\u2026</div>';
+  }
+  const outcome =
+    state.transfer.status === 'completed'
+      ? '<p class="transfer-outcome">Transfer completed.</p>'
+      : state.transfer.status === 'cancelled'
+        ? '<p class="transfer-outcome">Transfer cancelled. Customer restored.</p>'
+        : '';
+  return outcome + '<form class="transfer-controls" data-form="transfer" aria-label="Transfer controls"><label>Transfer number<input name="to" type="tel" inputmode="tel" autocomplete="tel" placeholder="+15551234567" pattern="\\+[1-9][0-9]{7,14}" required /></label><label>Transfer type<select name="type"><option value="warm">Warm consultation</option><option value="cold">Cold transfer</option></select></label><button type="submit" class="button button--secondary" data-action="initiate-transfer">Start transfer</button></form>';
+};
+
 const renderOverlayStage = (state: LeadConnectorEmbedState): string => {
   if (state.phase === 'failed') return renderError(state);
   if (['booting', 'authenticating'].includes(state.phase)) {
@@ -303,7 +321,7 @@ const renderOverlayStage = (state: LeadConnectorEmbedState): string => {
     const loserCount = state.callLegs.filter(
       (leg) => leg.role === 'loser',
     ).length;
-    return `<section class="overlay-stage overlay-stage--connected"><div class="connection-badge">Connected</div><div class="winner-card"><p class="eyebrow">Winner</p><h1>${targetLabel(target ?? state.selectedTargets[0])}</h1><p>${winner ? maskPhone(winner.customerNumber) : 'Private number'}</p></div>${loserCount ? `<p class="loser-summary">${loserCount} other ${loserCount === 1 ? 'line' : 'lines'} ended</p>` : ''}<div class="transfer-controls" aria-label="Transfer controls"><button type="button" class="button button--secondary" data-action="warm-transfer">Warm transfer</button><button type="button" class="button button--secondary" data-action="cold-transfer">Cold transfer</button><button type="button" class="button button--secondary" data-action="complete-transfer">Complete transfer</button><button type="button" class="button button--secondary" data-action="cancel-transfer">Cancel transfer</button></div><button type="button" class="button button--danger" data-action="hang-up">Hang up</button></section>`;
+    return `<section class="overlay-stage overlay-stage--connected"><div class="connection-badge">Connected</div><div class="winner-card"><p class="eyebrow">Winner</p><h1>${targetLabel(target ?? state.selectedTargets[0])}</h1><p>${winner ? maskPhone(winner.customerNumber) : 'Private number'}</p></div>${loserCount ? `<p class="loser-summary">${loserCount} other ${loserCount === 1 ? 'line' : 'lines'} ended</p>` : ''}${renderTransferControls(state)}<button type="button" class="button button--danger" data-action="hang-up">Hang up</button></section>`;
   }
   if (state.phase === 'paused') {
     return `<section class="overlay-stage"><div class="stage-heading"><p class="eyebrow">Queue paused</p><h1>Calling is paused</h1><p>The active queue is preserved.</p></div><div class="split-actions"><button type="button" class="button button--primary" data-action="resume">Resume</button><button type="button" class="button button--secondary" data-action="stop">Stop queue</button></div></section>`;
@@ -454,7 +472,28 @@ const commercialValue = (
   camel: string,
 ): unknown => value?.[snake] ?? value?.[camel];
 
-const money = (cents: number): string => `$${(cents / 100).toFixed(2)}`;
+const money = (cents: number): string => '$' + (cents / 100).toFixed(2);
+
+const commercialQuantity = (
+  items: Array<Record<string, unknown>>,
+  code: string,
+): number => {
+  const item = items.find(
+    (candidate) => String(candidate.item_code ?? candidate.itemCode ?? '') === code,
+  );
+  const quantity = Number(item?.quantity ?? 0);
+  return Number.isSafeInteger(quantity) && quantity >= 0 ? quantity : 0;
+};
+
+const billingDate = (seconds: number | null): string => {
+  if (!seconds) return 'the next billing date';
+  return new Date(seconds * 1_000).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+};
 
 const renderCommercialAdmin = (state: LeadConnectorEmbedState): string => {
   const dashboard = state.commercialDashboard;
@@ -513,12 +552,73 @@ const renderCommercialAdmin = (state: LeadConnectorEmbedState): string => {
       return `<li><strong>${escapeHtml(phaseLabel(code))}</strong><span>${money(plan.priceCents)}/seat · ${plan.maxNumbersPerSeat} line${plan.maxNumbersPerSeat === 1 ? '' : 's'} · ${plan.includedMinutes ?? 'Unlimited'} minutes</span></li>`;
     })
     .join('');
+  const quantities = {
+    single: commercialQuantity(dashboard.subscriptionItems, 'single'),
+    standard: commercialQuantity(dashboard.subscriptionItems, 'standard'),
+    power: commercialQuantity(dashboard.subscriptionItems, 'power'),
+    additionalNumber: commercialQuantity(
+      dashboard.subscriptionItems,
+      'additional-number',
+    ),
+  };
+  const hasSubscription = dashboard.subscription !== null;
+  const cancelAtPeriodEnd = Boolean(
+    commercialValue(
+      dashboard.subscription,
+      'cancel_at_period_end',
+      'cancelAtPeriodEnd',
+    ),
+  );
+  const paymentFailedAt = String(
+    commercialValue(
+      dashboard.subscription,
+      'payment_failed_at',
+      'paymentFailedAt',
+    ) ?? '',
+  );
+  const paymentRecovery =
+    hasSubscription &&
+    (subscriptionStatus === 'past_due' ||
+      subscriptionStatus === 'unpaid' ||
+      paymentFailedAt.length > 0);
+  const recurringCents =
+    quantities.single * dashboard.catalog.plans.single.priceCents +
+    quantities.standard * dashboard.catalog.plans.standard.priceCents +
+    quantities.power * dashboard.catalog.plans.power.priceCents +
+    quantities.additionalNumber *
+      dashboard.catalog.additionalNumberPriceCents;
+  const quantityFields = `
+    <label>Single seats<input name="single" type="number" min="0" step="1" value="${quantities.single}" /></label>
+    <label>Standard seats<input name="standard" type="number" min="0" step="1" value="${hasSubscription ? quantities.standard : Math.max(1, quantities.standard)}" /></label>
+    <label>Power seats<input name="power" type="number" min="0" step="1" value="${quantities.power}" /></label>
+    <label>Additional numbers<input name="additionalNumber" type="number" min="0" step="1" value="${quantities.additionalNumber}" /></label>`;
+  const preview = state.commercialBillingPreview;
+  const previewPanel = preview
+    ? `<section class="billing-preview" role="status"><p class="eyebrow">Proration preview</p><h3>Due now: ${money(preview.amountDue)}</h3><p>Stripe calculated this amount for the exact confirmed change. The subscription remains unchanged until you confirm.</p><div class="button-row"><button type="button" class="button button--primary" data-action="apply-billing-change">Confirm change</button><button type="button" class="button button--secondary" data-action="cancel-billing-preview">Cancel</button></div></section>`
+    : '';
+  const plansCard = hasSubscription
+    ? `<article class="operator-panel commercial-card" data-admin-section="plans"><p class="eyebrow">${escapeHtml(phaseLabel(subscriptionStatus))}</p><h2>Plans</h2><ul class="commercial-list">${plans}</ul><form data-form="commercial-billing-change" class="billing-quantity-form">${quantityFields}<button type="submit" class="button button--secondary">Preview subscription change</button></form>${previewPanel}</article>`
+    : `<article class="operator-panel commercial-card" data-admin-section="plans"><p class="eyebrow">Free trial</p><h2>Plans</h2><ul class="commercial-list">${plans}</ul><p>Trial: ${dashboard.catalog.trial.includedMinutes} minutes, ${dashboard.catalog.trial.maxSeats} seat, ${dashboard.catalog.trial.maxNumbers} number.</p><form data-form="commercial-billing-checkout" class="billing-quantity-form">${quantityFields}<button type="submit" class="button button--primary">Start paid plan</button></form></article>`;
+  const statusPanel = cancelAtPeriodEnd
+    ? `<div class="billing-state billing-state--warning" role="status"><strong>Cancellation scheduled</strong><p>Access remains active through the current paid period. Use the billing portal to resume or review the cancellation date.</p></div>`
+    : paymentRecovery
+      ? `<div class="billing-state billing-state--warning" role="status"><strong>Payment recovery</strong><p>Update the payment method during the ${dashboard.catalog.paymentGraceDays}-day grace period to avoid call suspension.</p></div>`
+      : hasSubscription
+        ? '<div class="billing-state billing-state--success" role="status"><strong>Subscription active</strong><p>Confirmed Stripe quantities are applied to seat and number inventory.</p></div>'
+        : '<div class="billing-state" role="status"><strong>Free trial</strong><p>Choose paid quantities in Plans to open secure Stripe Checkout.</p></div>';
+  const upcomingInvoice = dashboard.billingSummary
+    ? `<div class="billing-summary"><p class="eyebrow">Upcoming invoice</p><strong>${money(dashboard.billingSummary.amountDue)}</strong><span>Estimated for ${escapeHtml(billingDate(dashboard.billingSummary.periodEnd))}</span></div>`
+    : dashboard.billingSummaryError
+      ? `<p class="resource-empty">${escapeHtml(dashboard.billingSummaryError)}</p>`
+      : '';
+  const addOnLabel = `${quantities.additionalNumber} additional number${quantities.additionalNumber === 1 ? '' : 's'}`;
+  const billingCard = `<article class="operator-panel commercial-card" data-admin-section="billing"><p class="eyebrow">Subscription</p><h2>Billing</h2>${statusPanel}${upcomingInvoice}<dl><div><dt>Recurring plan total</dt><dd>${money(recurringCents)}/month</dd></div><div><dt>Add-on breakdown</dt><dd>${escapeHtml(addOnLabel)} · ${money(quantities.additionalNumber * dashboard.catalog.additionalNumberPriceCents)}/month</dd></div></dl>${hasSubscription ? '<p>Payment methods, invoices, and cancellation are managed securely in Stripe.</p><button type="button" class="button button--secondary" data-action="manage-billing">Open billing portal</button>' : '<p>No payment method is stored until secure Checkout is completed.</p>'}</article>`;
   return `<section class="commercial-admin-grid" aria-label="Commercial dialer administration">
-    <article class="operator-panel commercial-card" data-admin-section="plans"><p class="eyebrow">${escapeHtml(phaseLabel(subscriptionStatus))}</p><h2>Plans</h2><ul class="commercial-list">${plans}</ul><p>Trial: ${dashboard.catalog.trial.includedMinutes} minutes, ${dashboard.catalog.trial.maxSeats} seat, ${dashboard.catalog.trial.maxNumbers} number.</p><button type="button" class="button button--secondary" data-action="manage-billing">Upgrade or change</button></article>
+    ${plansCard}
     <article class="operator-panel commercial-card" data-admin-section="team"><p class="eyebrow">${dashboard.seats.length} assigned</p><h2>Team</h2><table><thead><tr><th>User</th><th>Tier</th><th>Status</th></tr></thead><tbody>${seats || '<tr><td colspan="3">No paid seats assigned.</td></tr>'}</tbody></table><form data-form="commercial-seat"><label>Provider user ID<input name="userId" required /></label><label>Tier<select name="planCode"><option value="single">Single</option><option value="standard">Standard</option><option value="power">Power</option></select></label><button type="submit" class="button button--secondary">Save seat</button></form></article>
     <article class="operator-panel commercial-card" data-admin-section="phone-numbers"><p class="eyebrow">${dashboard.numbers.filter((number) => String(commercialValue(number, 'status', 'status')) === 'active').length} active</p><h2>Phone numbers</h2><table><thead><tr><th>Number</th><th>User</th><th>Status</th><th></th></tr></thead><tbody>${numbers || '<tr><td colspan="4">No numbers provisioned.</td></tr>'}</tbody></table><form data-form="commercial-number-search"><label>Area code or digits<input name="query" inputmode="numeric" required /></label><label>Assign to user<input name="userId" value="${escapeHtml(state.commercialNumberTargetUserId)}" required /></label><button type="submit" class="button button--secondary">Search available numbers</button></form><ul class="commercial-number-results">${searchResults}</ul></article>
     <article class="operator-panel commercial-card" data-admin-section="usage"><p class="eyebrow">Current period</p><h2>Usage</h2><dl><div><dt>Connected minutes</dt><dd>${connectedMinutes}</dd></div><div><dt>Provider cost</dt><dd>${money(Math.round(providerCostMicros / 10_000))}</dd></div></dl></article>
-    <article class="operator-panel commercial-card" data-admin-section="billing"><p class="eyebrow">Subscription</p><h2>Billing</h2><p>Status: ${escapeHtml(phaseLabel(subscriptionStatus))}</p><p>${dashboard.catalog.paymentGraceDays}-day recovery grace after a failed payment.</p><button type="button" class="button button--secondary" data-action="manage-billing">Manage billing</button></article>
+    ${billingCard}
   </section>`;
 };
 
