@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2533,
-    "mappedTestCount": 2459,
-    "unmappedTestCount": 74,
-    "ruleCount": 34,
-    "explicitRuleCount": 15,
+    "testFileCount": 2534,
+    "mappedTestCount": 2461,
+    "unmappedTestCount": 73,
+    "ruleCount": 35,
+    "explicitRuleCount": 16,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
       "packages/os/tests": 185,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 52,
+      "packages/workspace/tests": 53,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -627,7 +627,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 441,
+      "test": 442,
       "spec": 152,
       "other": 7,
       "tests-dir": 6,
@@ -902,6 +902,56 @@
       "critical": true,
       "exclusive": true,
       "reason": "Removal of the obsolete metering package from the deployed artifact manifest must retain the canonical Artifacts boundary without selecting unrelated OS suites.",
+      "origin": "explicit"
+    },
+    {
+      "id": "native-os-workflow-contract",
+      "source": [
+        ".github/workflows/consuelo-os-distribution-environments.yaml",
+        "packages/workspace/scripts/ci/run-changed-os-native-tests.mjs",
+        "packages/workspace/tests/run-changed-os-native-tests.test.mjs",
+        "packages/workspace/tests/github-workflow-policy.test.js",
+        "packages/os/tests/windows-platform.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ]
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ]
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests.",
       "origin": "explicit"
     },
     {
@@ -13976,6 +14026,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/run-changed-os-native-tests.test.mjs",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/stream-lifecycle.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -14138,7 +14193,6 @@
     "packages/workspace/tests/fs-search.test.ts",
     "packages/workspace/tests/git-diff.test.ts",
     "packages/workspace/tests/github-pr-reviews.test.ts",
-    "packages/workspace/tests/github-workflow-policy.test.js",
     "packages/workspace/tests/github.test.ts",
     "packages/workspace/tests/pr-links.test.js",
     "packages/workspace/tests/pr-ref.test.js",

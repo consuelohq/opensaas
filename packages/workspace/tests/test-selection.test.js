@@ -161,6 +161,26 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses the focused native OS workflow contracts for Windows workflow assertions', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/windows-platform.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('native-os-workflow-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'native OS selector tests',
+      'native Windows workflow contracts',
+      'GitHub workflow policy tests',
+      'changed GitHub workflow security checks',
+    ]);
+  });
+
   it('uses the API package Jest configuration for API changes', () => {
     const result = run([
       'check',

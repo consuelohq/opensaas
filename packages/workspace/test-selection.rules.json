@@ -261,6 +261,55 @@
       "reason": "Removal of the obsolete metering package from the deployed artifact manifest must retain the canonical Artifacts boundary without selecting unrelated OS suites."
     },
     {
+      "id": "native-os-workflow-contract",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        ".github/workflows/consuelo-os-distribution-environments.yaml",
+        "packages/workspace/scripts/ci/run-changed-os-native-tests.mjs",
+        "packages/workspace/tests/run-changed-os-native-tests.test.mjs",
+        "packages/workspace/tests/github-workflow-policy.test.js",
+        "packages/os/tests/windows-platform.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ]
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ]
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ]
+        }
+      ],
+      "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests."
+    },
+    {
       "id": "dialer-package",
       "critical": true,
       "source": [
