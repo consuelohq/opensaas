@@ -132,6 +132,55 @@ export type EmbedFailure = {
   recoverable: boolean;
 };
 
+export type EmbedCommercialCallerContext = {
+  planCode: 'single' | 'standard' | 'power';
+  trial: boolean;
+  callerIds: string[];
+  connectedMinutes: number;
+  remainingMinutes: number | null;
+  lineOptions: number[];
+  predictive: boolean;
+  recordings: boolean;
+  transcripts: boolean;
+  canStartCall: boolean;
+  denialCode: string | null;
+  billing: {
+    state: string;
+    graceEndsAt: string | null;
+  };
+};
+
+export type EmbedCommercialDashboard = {
+  workspaceId: string;
+  catalog: {
+    plans: Record<
+      'single' | 'standard' | 'power',
+      {
+        code: string;
+        priceCents: number;
+        maxNumbersPerSeat: number;
+        includedMinutes: number | null;
+        predictive: boolean;
+        recordings: boolean;
+        transcripts: boolean;
+      }
+    >;
+    trial: {
+      includedMinutes: number;
+      maxSeats: number;
+      maxNumbers: number;
+      planCode: string;
+    };
+    additionalNumberPriceCents: number;
+    includedNumbersPerSeat: number;
+    paymentGraceDays: number;
+  };
+  subscription: Record<string, unknown> | null;
+  seats: Array<Record<string, unknown>>;
+  numbers: Array<Record<string, unknown>>;
+  usage: Record<string, unknown>;
+};
+
 export type LeadConnectorEmbedState = {
   phase: LeadConnectorEmbedPhase;
   resumePhase: LeadConnectorEmbedPhase | null;
@@ -142,6 +191,11 @@ export type LeadConnectorEmbedState = {
   opportunities: LeadConnectorOpportunity[];
   opportunityTotal: number;
   pipelines: LeadConnectorPipeline[];
+  callerIds: string[];
+  commercialCaller: EmbedCommercialCallerContext | null;
+  commercialDashboard: EmbedCommercialDashboard | null;
+  commercialNumberSearchResults: Array<Record<string, unknown>>;
+  commercialNumberTargetUserId: string;
   filters: EmbedFilters;
   setup: EmbedDialerSetup;
   selectedQueue: EmbedQueueSelection | null;
@@ -173,6 +227,19 @@ export type EmbedStateEvent =
   | { type: 'FILTERS_CHANGED'; filters: Partial<EmbedFilters> }
   | { type: 'RESOURCES_REFRESH_STARTED' }
   | { type: 'RESOURCES_REFRESH_FINISHED' }
+  | {
+      type: 'COMMERCIAL_CALLER_LOADED';
+      caller: EmbedCommercialCallerContext;
+    }
+  | {
+      type: 'COMMERCIAL_DASHBOARD_LOADED';
+      dashboard: EmbedCommercialDashboard;
+    }
+  | {
+      type: 'COMMERCIAL_NUMBER_SEARCHED';
+      numbers: Array<Record<string, unknown>>;
+      userId: string;
+    }
   | { type: 'SETUP_CHANGED'; setup: Partial<EmbedDialerSetup> }
   | {
       type: 'QUEUE_SELECTED';
@@ -217,6 +284,11 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
   opportunities: [],
   opportunityTotal: 0,
   pipelines: [],
+  callerIds: [],
+  commercialCaller: null,
+  commercialDashboard: null,
+  commercialNumberSearchResults: [],
+  commercialNumberTargetUserId: '',
   filters: { query: '', pipelineId: null, stageId: null },
   setup: {
     mode: 'queue',
@@ -308,6 +380,39 @@ export const reduceEmbedState = (
       return { ...state, resourcesRefreshing: true };
     case 'RESOURCES_REFRESH_FINISHED':
       return { ...state, resourcesRefreshing: false };
+    case 'COMMERCIAL_CALLER_LOADED': {
+      const lineOptions = event.caller.lineOptions.filter(
+        (line): line is 1 | 2 | 3 => line === 1 || line === 2 || line === 3,
+      );
+      const requestedFanout = lineOptions.includes(state.setup.requestedFanout)
+        ? state.setup.requestedFanout
+        : (lineOptions.at(-1) ?? 1);
+      return {
+        ...state,
+        callerIds: event.caller.callerIds,
+        commercialCaller: event.caller,
+        setup: {
+          ...state.setup,
+          callingMode: event.caller.predictive
+            ? state.setup.callingMode
+            : 'single',
+          requestedFanout: event.caller.predictive ? requestedFanout : 1,
+          callerIdNumber:
+            state.setup.callerIdNumber &&
+            event.caller.callerIds.includes(state.setup.callerIdNumber)
+              ? state.setup.callerIdNumber
+              : null,
+        },
+      };
+    }
+    case 'COMMERCIAL_DASHBOARD_LOADED':
+      return { ...state, commercialDashboard: event.dashboard };
+    case 'COMMERCIAL_NUMBER_SEARCHED':
+      return {
+        ...state,
+        commercialNumberSearchResults: event.numbers,
+        commercialNumberTargetUserId: event.userId,
+      };
     case 'SETUP_CHANGED': {
       const setup = { ...state.setup, ...event.setup };
       if (setup.mode === 'single' || setup.callingMode === 'single') {

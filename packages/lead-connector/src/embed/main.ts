@@ -4,6 +4,7 @@ import { createLeadConnectorEmbedApi } from './api-client.js';
 import { createLeadConnectorAgentVoice } from './agent-voice.js';
 import { resolveLeadConnectorContactName } from './contact-label.js';
 import { createLeadConnectorEmbedController } from './controller.js';
+import { createCombobox } from './combobox.js';
 import {
   LEAD_CONNECTOR_PARENT_ORIGINS,
   createLeadConnectorParentBridge,
@@ -20,7 +21,7 @@ document.body.dataset.surface = surface;
 
 const api = createLeadConnectorEmbedApi({ baseUrl: window.location.origin });
 const voice = createLeadConnectorAgentVoice({ getToken: api.getVoiceToken });
-const controller = createLeadConnectorEmbedController({ api, voice });
+const controller = createLeadConnectorEmbedController({ api, voice, surface });
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 let resourceTimer: ReturnType<typeof setInterval> | null = null;
 let bootstrapTimer: ReturnType<typeof setTimeout> | null = null;
@@ -108,8 +109,54 @@ const updateRefresh = (): void => {
   }
 };
 
+const mountComboboxes = (): void => {
+  for (const comboboxRoot of root.querySelectorAll<HTMLElement>(
+    '[data-combobox-field]',
+  )) {
+    const field = comboboxRoot.dataset.comboboxField;
+    const options = [
+      ...comboboxRoot.querySelectorAll<HTMLElement>('[role="option"]'),
+    ].map((option) => ({
+      value: option.dataset.comboboxValue ?? '',
+      label: option.textContent?.trim() ?? '',
+    }));
+    createCombobox({
+      root: comboboxRoot,
+      options,
+      value: comboboxRoot.dataset.comboboxValue || null,
+      onChange: (value) => {
+        if (field === 'queue') {
+          const [pipelineId, stageId] = value.split(':');
+          if (pipelineId && stageId) {
+            void controller.selectQueue({ pipelineId, stageId });
+          }
+        }
+        if (field === 'caller-id') {
+          controller.updateSetup({ callerIdNumber: value || null });
+        }
+        if (field === 'calling-mode') {
+          controller.updateSetup({
+            callingMode: value === 'single' ? 'single' : 'predictive',
+          });
+        }
+        if (field === 'line-count') {
+          const requestedFanout = Number(value);
+          if (
+            requestedFanout === 1 ||
+            requestedFanout === 2 ||
+            requestedFanout === 3
+          ) {
+            controller.updateSetup({ requestedFanout });
+          }
+        }
+      },
+    });
+  }
+};
+
 controller.subscribe((state) => {
   root.innerHTML = renderLeadConnectorEmbed(state, { surface });
+  mountComboboxes();
   updateRefresh();
 });
 
@@ -133,7 +180,9 @@ root.addEventListener('click', (event) => {
   if (action === 'setup-single') {
     controller.updateSetup({ mode: 'single', callingMode: 'single', requestedFanout: 1 });
   }
-  if (action === 'refresh-resources') void controller.refreshResources();
+  if (action === 'refresh' || action === 'refresh-resources') {
+    void controller.refreshResources();
+  }
   if (action === 'return-home') controller.returnHome();
   if (action === 'start-configured') void controller.startConfiguredCall();
   if (action === 'select-single-number') {
@@ -154,6 +203,18 @@ root.addEventListener('click', (event) => {
   }
   if (action === 'load-more-history') {
     void controller.loadMoreCallHistory();
+  }
+  if (action === 'release-number' && actionElement.dataset.phoneNumber) {
+    void controller.releaseNumber(actionElement.dataset.phoneNumber);
+  }
+  if (action === 'provision-number' && actionElement.dataset.phoneNumber) {
+    const userId = controller.getState().commercialNumberTargetUserId;
+    if (userId) {
+      void controller.provisionNumber({
+        userId,
+        phoneNumber: actionElement.dataset.phoneNumber,
+      });
+    }
   }
   if (action === 'remove-target' && actionElement.dataset.dedupeKey) {
     controller.removeTarget(actionElement.dataset.dedupeKey);
@@ -259,10 +320,31 @@ root.addEventListener('input', (event) => {
 
 root.addEventListener('submit', (event) => {
   const form = event.target;
-  if (!(form instanceof HTMLFormElement) || form.dataset.form !== 'disposition')
-    return;
+  if (!(form instanceof HTMLFormElement)) return;
   event.preventDefault();
   const data = new FormData(form);
+  if (form.dataset.form === 'commercial-seat') {
+    void controller.saveSeat({
+      userId: String(data.get('userId') ?? '').trim(),
+      planCode: String(data.get('planCode') ?? 'single') as
+        | 'single'
+        | 'standard'
+        | 'power',
+    });
+    return;
+  }
+  if (form.dataset.form === 'commercial-number-search') {
+    const query = String(data.get('query') ?? '').trim();
+    const userId = String(data.get('userId') ?? '').trim();
+    if (query && userId) {
+      void controller.searchNumbers({
+        ...( /^\d{3}$/.test(query) ? { areaCode: query } : { contains: query }),
+        userId,
+      });
+    }
+    return;
+  }
+  if (form.dataset.form !== 'disposition') return;
   const tags = String(data.get('tags') ?? '')
     .split(',')
     .map((tag) => tag.trim())
@@ -275,7 +357,7 @@ root.addEventListener('submit', (event) => {
 });
 
 const refreshIdleResources = (): void => {
-  void controller.refreshResources();
+  void Promise.all([controller.refreshResources(), controller.loadCommercial()]);
 };
 
 const handleVisibility = (): void => {

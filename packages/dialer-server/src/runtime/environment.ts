@@ -6,6 +6,7 @@ import {
   createEffectDialerApplication,
 } from '../application';
 import type { createCallOperationsApplication } from '../call-operations/application';
+import type { CommercialRouteDependencies } from '../routes/commercial';
 import type { DialerServerDependencies } from '../contracts';
 import { runApplicationEffect } from '../effect-runner';
 import {
@@ -30,6 +31,9 @@ type RuntimeModule = {
   ) =>
     | Promise<ReturnType<typeof createCallOperationsApplication>>
     | ReturnType<typeof createCallOperationsApplication>;
+  createCommercialApplicationRuntime?: (
+    environment: DialerServerEnvironment,
+  ) => Promise<CommercialRouteDependencies> | CommercialRouteDependencies;
 };
 
 export type DialerServerRuntimeConfig = {
@@ -84,6 +88,16 @@ export async function loadDialerServerRuntime(
     const layers = await imported.createDialerApplicationLayers(environment);
     const callOperations = imported.createCallOperationsApplicationRuntime
       ? await imported.createCallOperationsApplicationRuntime(environment)
+      : undefined;
+    const commercialEnabled =
+      environment.DIALER_COMMERCIAL_ENABLED?.trim().toLowerCase() === 'true';
+    if (commercialEnabled && !imported.createCommercialApplicationRuntime) {
+      throw new Error(
+        'Runtime module must export createCommercialApplicationRuntime when commercial dialer is enabled',
+      );
+    }
+    const commercial = commercialEnabled
+      ? await imported.createCommercialApplicationRuntime!(environment)
       : undefined;
     const leadConnectorLayer = imported.createLeadConnectorApplicationLayer
       ? await imported.createLeadConnectorApplicationLayer(environment)
@@ -149,6 +163,7 @@ export async function loadDialerServerRuntime(
             )
           : createEffectDialerApplication(layers),
         callOperations,
+        commercial,
         authenticate,
         issueEmbedSession: embedSessions.issue,
         leadConnector,

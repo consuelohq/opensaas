@@ -21,12 +21,14 @@ export type LeadConnectorEmbedController = ReturnType<
 export const createLeadConnectorEmbedController = (input: {
   api: LeadConnectorEmbedApi;
   voice: LeadConnectorAgentVoice;
+  surface?: 'admin' | 'overlay';
   initialState?: LeadConnectorEmbedState;
 }) => {
   let state = input.initialState ?? createInitialEmbedState();
   let activeVoiceSessionId: string | null = null;
   let activeRecordSessionId: string | null = null;
   let resourceRefresh: Promise<void> | null = null;
+  let commercialRefresh: Promise<void> | null = null;
   const listeners = new Set<(state: LeadConnectorEmbedState) => void>();
 
   const publish = (): void => {
@@ -146,6 +148,28 @@ export const createLeadConnectorEmbedController = (input: {
     } catch (error: unknown) {
       reportUnexpectedFailure(error);
     }
+  };
+
+  const loadCommercial = (): Promise<void> => {
+    if (!state.sessionToken) return Promise.resolve();
+    if (commercialRefresh) return commercialRefresh;
+    commercialRefresh = (async () => {
+      try {
+        const caller = await run(() => input.api.getCommercialCallerContext());
+        if (caller) dispatch({ type: 'COMMERCIAL_CALLER_LOADED', caller });
+        if ((input.surface ?? 'overlay') === 'admin') {
+          const dashboard = await run(() => input.api.getCommercialDashboard());
+          if (dashboard) {
+            dispatch({ type: 'COMMERCIAL_DASHBOARD_LOADED', dashboard });
+          }
+        }
+      } catch (error: unknown) {
+        reportUnexpectedFailure(error);
+      } finally {
+        commercialRefresh = null;
+      }
+    })();
+    return commercialRefresh;
   };
 
   const startCall = async (
@@ -280,6 +304,7 @@ export const createLeadConnectorEmbedController = (input: {
         await Promise.all([
           refreshResources({ force: true }),
           loadCallOperations(),
+          loadCommercial(),
         ]);
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
@@ -288,6 +313,72 @@ export const createLeadConnectorEmbedController = (input: {
     loadResources: () => refreshResources({ force: true }),
     refreshResources,
     loadCallOperations,
+    loadCommercial,
+    saveSeat: async (inputValue: {
+      userId: string;
+      planCode: 'single' | 'standard' | 'power';
+    }): Promise<void> => {
+      const existing: Array<{
+        userId: string;
+        planCode: 'single' | 'standard' | 'power';
+      }> = state.commercialDashboard?.seats.flatMap((seat) => {
+        const userId = String(seat.user_id ?? seat.userId ?? '');
+        const candidatePlan = String(seat.plan_code ?? seat.planCode ?? '');
+        return userId &&
+          (candidatePlan === 'single' ||
+            candidatePlan === 'standard' ||
+            candidatePlan === 'power')
+          ? [{ userId, planCode: candidatePlan }]
+          : [];
+      }) ?? [];
+      const assignments = [
+        ...existing.filter(({ userId }) => userId !== inputValue.userId),
+        inputValue,
+      ];
+      const result = await run(() => input.api.updateCommercialTeam(assignments));
+      if (result) await loadCommercial();
+    },
+    searchNumbers: async (inputValue: {
+      areaCode?: string;
+      contains?: string;
+      userId: string;
+    }): Promise<void> => {
+      const { userId: _userId, ...search } = inputValue;
+      const result = await run(() =>
+        input.api.searchCommercialNumbers({ ...search, limit: 10 }),
+      );
+      if (result) {
+        dispatch({
+          type: 'COMMERCIAL_NUMBER_SEARCHED',
+          numbers: result.numbers,
+          userId: inputValue.userId,
+        });
+      }
+    },
+    provisionNumber: async (inputValue: {
+      userId: string;
+      phoneNumber: string;
+    }): Promise<void> => {
+      const result = await run(() =>
+        input.api.provisionCommercialNumber(inputValue),
+      );
+      if (result) await loadCommercial();
+    },
+    assignNumber: async (inputValue: {
+      userId: string;
+      phoneNumber: string;
+    }): Promise<void> => {
+      const result = await run(() =>
+        input.api.assignCommercialNumber(inputValue),
+      );
+      if (result) await loadCommercial();
+    },
+    releaseNumber: async (phoneNumber: string): Promise<void> => {
+      const result = await run(() =>
+        input.api.releaseCommercialNumber(phoneNumber),
+      );
+      if (result) await loadCommercial();
+    },
     loadMoreCallHistory: async (): Promise<void> => {
       try {
         const cursor = state.callHistoryCursor;

@@ -70,6 +70,16 @@ const clickToCallSource = readFileSync(
   ),
   'utf8',
 ).trim();
+const clickToCallCss = readFileSync(
+  join(
+    packageRoot,
+    'src',
+    'embed',
+    'public',
+    'consuelo-lead-connector-click-to-call.css',
+  ),
+  'utf8',
+).trim();
 if (clickToCallSource.toLowerCase().includes('</script>')) {
   throw new Error('Click-to-call source cannot contain a closing script tag');
 }
@@ -79,4 +89,33 @@ writeFileSync(
     'consuelo-lead-connector-click-to-call.marketplace.html',
   ),
   `<script>\n${clickToCallSource}\n</script>\n`,
+);
+const marketplaceArtifacts = {
+  javascript: 'consuelo-lead-connector-click-to-call.marketplace.js',
+  css: 'consuelo-lead-connector-click-to-call.marketplace.css',
+};
+writeFileSync(
+  join(outputDirectory, marketplaceArtifacts.javascript),
+  `${clickToCallSource}\n`,
+);
+writeFileSync(
+  join(outputDirectory, marketplaceArtifacts.css),
+  `${clickToCallCss}\n`,
+);
+writeFileSync(
+  join(outputDirectory, 'build-marker.json'),
+  `${JSON.stringify(
+    {
+      buildMarker: 'consuelo-lead-connector-commercial-v1',
+      marketplace: marketplaceArtifacts,
+      hashes: {
+        javascript: createHash('sha256')
+          .update(clickToCallSource)
+          .digest('hex'),
+        css: createHash('sha256').update(clickToCallCss).digest('hex'),
+      },
+    },
+    null,
+    2,
+  )}\n`,
 );

@@ -4,7 +4,7 @@ import { Effect } from 'effect';
 import { createDialerServer } from './app';
 import type { DialerServerDependencies } from './contracts';
 
-const createDependencies = () =>
+const createDependencies = (): DialerServerDependencies =>
   ({
     application: {
       startCallSession: mock(() => Effect.die('unused')),
@@ -31,7 +31,7 @@ const createDependencies = () =>
     },
     authenticate: mock(async () => null),
     verifyTwilioSignature: mock(async () => true),
-  }) satisfies DialerServerDependencies;
+  });
 
 describe('Twilio webhook boundary', () => {
   it('verifies form callbacks against the exact forwarded public URL and parsed form fields', async () => {
@@ -99,6 +99,50 @@ describe('Twilio webhook boundary', () => {
     });
   });
 
+  it('records authoritative usage only after a tenant-bound terminal provider callback', async () => {
+    const dependencies = createDependencies();
+    dependencies.application.resolveTwilioCallContext = mock(() =>
+      Effect.succeed({
+        workspaceId: 'workspace-1',
+        dialerSessionId: 'session-1',
+      }),
+    );
+    const recordProviderCompletion = mock(() =>
+      Effect.succeed({ duplicate: false }),
+    );
+    dependencies.commercial = {
+      catalog: () => Effect.die('unused'),
+      dashboard: () => Effect.die('unused'),
+      updateTeam: () => Effect.die('unused'),
+      assignNumber: () => Effect.die('unused'),
+      searchNumbers: () => Effect.die('unused'),
+      provisionNumber: () => Effect.die('unused'),
+      releaseNumber: () => Effect.die('unused'),
+      processStripeWebhook: () => Effect.die('unused'),
+      processInstallationUninstall: () => Effect.die('unused'),
+      recordProviderCompletion,
+    };
+
+    const response = await createDialerServer(dependencies).fetch(
+      new Request('https://dialer.test/webhooks/twilio/status', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'signature',
+        },
+        body: 'CallSid=CA_FINAL&CallStatus=completed',
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(recordProviderCompletion).toHaveBeenCalledWith({
+      workspaceId: 'workspace-1',
+      sessionId: 'session-1',
+      providerCallId: 'CA_FINAL',
+      status: 'completed',
+    });
+  });
+
   it('preserves provider-owned TwiML fields and returns XML', async () => {
     const dependencies = createDependencies();
     const body =
@@ -156,7 +200,7 @@ describe('Twilio webhook boundary', () => {
 
   it('rejects invalid signatures without invoking application behavior', async () => {
     const dependencies = createDependencies();
-    dependencies.verifyTwilioSignature.mockImplementation(async () => false);
+    dependencies.verifyTwilioSignature = mock(async () => false);
     const response = await createDialerServer(dependencies).fetch(
       new Request('https://dialer.test/webhooks/twilio/status', {
         method: 'POST',
@@ -173,7 +217,7 @@ describe('Twilio webhook boundary', () => {
 
   it('requires a valid provider signature before a Media Stream upgrade', async () => {
     const dependencies = createDependencies();
-    dependencies.verifyTwilioSignature.mockImplementation(async () => false);
+    dependencies.verifyTwilioSignature = mock(async () => false);
     const response = await createDialerServer(dependencies).fetch(
       new Request('https://dialer.test/webhooks/twilio/media', {
         headers: {

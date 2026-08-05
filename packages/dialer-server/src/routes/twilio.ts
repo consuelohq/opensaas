@@ -27,12 +27,36 @@ export const createTwilioRoutes = (dependencies: DialerServerDependencies) => {
           'CallSid and CallStatus are required',
         );
       }
+      const callContext = dependencies.application.resolveTwilioCallContext
+        ? await runApplicationEffect(
+            dependencies.application.resolveTwilioCallContext({
+              callSid: input.callSid,
+            }),
+          )
+        : null;
+      if (callContext && !callContext.ok) {
+        return dialerErrorResponse(context, callContext.error);
+      }
       const result = await runApplicationEffect(
         dependencies.application.processTwilioStatus(input),
       );
-      return result.ok
-        ? context.json(result.value)
-        : dialerErrorResponse(context, result.error);
+      if (!result.ok) return dialerErrorResponse(context, result.error);
+      if (
+        dependencies.commercial &&
+        callContext?.ok &&
+        callContext.value?.dialerSessionId
+      ) {
+        const usage = await runApplicationEffect(
+          dependencies.commercial.recordProviderCompletion({
+            workspaceId: callContext.value.workspaceId,
+            sessionId: callContext.value.dialerSessionId,
+            providerCallId: input.callSid,
+            status: input.callStatus,
+          }),
+        );
+        if (!usage.ok) return dialerErrorResponse(context, usage.error);
+      }
+      return context.json(result.value);
     } catch (error: unknown) {
       return dialerErrorResponse(context, error);
     }

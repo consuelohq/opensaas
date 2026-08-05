@@ -36,13 +36,21 @@ export const createCallSessionRoutes = (
       const input = await readJsonObject(context.req.raw);
       if (!input) return invalidRequestResponse(context);
       const identity = context.get('identity');
+      const authorizedInput = dependencies.commercial?.authorizeCall
+        ? await runApplicationEffect(
+            dependencies.commercial.authorizeCall(identity, input),
+          )
+        : null;
+      if (authorizedInput && !authorizedInput.ok) {
+        return dialerErrorResponse(context, authorizedInput.error);
+      }
       const result = await runApplicationEffect(
         dependencies.application.startCallSession({
           workspaceId: identity.workspaceId,
           userId: identity.userId,
           installationId: identity.installationId,
           locationId: identity.locationId,
-          input: input as never,
+          input: (authorizedInput?.ok ? authorizedInput.value : input) as never,
         }),
       );
       return result.ok

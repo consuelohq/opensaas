@@ -230,7 +230,6 @@ export default [
       'packages/contacts/**/*.ts',
       'packages/analytics/**/*.ts',
       'packages/sdk/**/*.ts',
-      'packages/metering/**/*.ts',
       'packages/logger/**/*.ts',
     ],
     rules: {

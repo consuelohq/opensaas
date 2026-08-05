@@ -38,13 +38,18 @@ import {
 import { Effect, Layer } from 'effect';
 
 import type { DialerApplicationLayers } from '../application';
+import { createStripeCommercialBilling } from '../billing/stripe';
 import { createCallOperationsApplication } from '../call-operations/application';
+import { createCommercialApplication } from '../commercial/application';
+import { initializeCommercialPersistence } from '../commercial/persistence';
+import { createTwilioCommercialNumberProvider } from '../numbers/commercial-provider';
 import { createGroqSpeechToTextProvider } from '../call-operations/groq';
 import {
   createPostgresCallOperationsRepository,
   initializeCallOperationsPersistence,
 } from '../call-operations/persistence';
 import type { LeadConnectorApplicationLayer } from '../lead-connector-application';
+import { loadDialerPlanCatalog } from '../plans/catalog';
 import {
   buildProviderGroupOptions,
   resolveProviderCallerId,
@@ -392,6 +397,163 @@ export const createRailwayCallOperationsApplication = async (
   }
 };
 
+export const createRailwayCommercialApplication = async (
+  environment: RailwayEnvironment,
+  resources: RailwayRuntimeResources = {},
+) => {
+  try {
+    const shared = resources.database
+      ? null
+      : await createSharedResources(environment);
+    const database = resources.database ?? shared!.database;
+    const sqlClient = {
+      query: async (sql: string, parameters?: readonly unknown[]) => {
+        const result = (await database.query(sql, parameters)) as {
+          rows: unknown[];
+          rowCount?: number | null;
+        };
+        return {
+          rows: result.rows,
+          ...(result.rowCount === null || result.rowCount === undefined
+            ? {}
+            : { rowCount: result.rowCount }),
+        };
+      },
+    };
+    await Effect.runPromise(initializeCommercialPersistence(sqlClient));
+    const [{ default: Stripe }, { default: twilio }] = await Promise.all([
+      import('stripe'),
+      import('twilio'),
+    ]);
+    const stripe = new Stripe(required(environment, 'STRIPE_SECRET_KEY'));
+    const masterAccountSid = required(environment, 'TWILIO_ACCOUNT_SID');
+    const masterAuthToken = required(environment, 'TWILIO_AUTH_TOKEN');
+    const masterTwilio = twilio(masterAccountSid, masterAuthToken);
+    const publicUrl = required(
+      environment,
+      'DIALER_SERVER_PUBLIC_URL',
+    ).replace(/\/$/, '');
+    if (!publicUrl.startsWith('https://')) {
+      throw new Error('DIALER_SERVER_PUBLIC_URL must use HTTPS');
+    }
+    const billing = createStripeCommercialBilling({
+      client: {
+        subscriptions: {
+          retrieve: async (subscriptionId) => {
+            const subscription =
+              await stripe.subscriptions.retrieve(subscriptionId);
+            if ('deleted' in subscription && subscription.deleted) {
+              throw new Error('STRIPE_SUBSCRIPTION_DELETED');
+            }
+            return {
+              id: subscription.id,
+              items: {
+                data: subscription.items.data.map((item) => ({
+                  id: item.id,
+                  price: { id: item.price.id },
+                })),
+              },
+            };
+          },
+          update: (subscriptionId, parameters, options) =>
+            stripe.subscriptions.update(
+              subscriptionId,
+              parameters,
+              options,
+            ),
+        },
+        webhooks: {
+          constructEvent: (rawBody, signature, secret) => {
+            const event = stripe.webhooks.constructEvent(
+              rawBody,
+              signature,
+              secret,
+            );
+            return { id: event.id, type: event.type, data: event.data };
+          },
+        },
+      },
+      webhookSecret: required(environment, 'STRIPE_WEBHOOK_SECRET'),
+    });
+    const numbers = createTwilioCommercialNumberProvider({
+      database: sqlClient,
+      publicUrl,
+      createSubaccount: (friendlyName) =>
+        masterTwilio.api.v2010.accounts.create({ friendlyName }),
+      accountClient: (accountSid) => {
+        const client = twilio(masterAccountSid, masterAuthToken, {
+          accountSid,
+        });
+        const incomingPhoneNumbers = Object.assign(
+          (providerNumberId: string) => ({
+            remove: () => client.incomingPhoneNumbers(providerNumberId).remove(),
+          }),
+          {
+            create: async (request: {
+              phoneNumber: string;
+              friendlyName: string;
+              voiceUrl: string;
+              voiceMethod: 'POST';
+            }) => {
+              const created = await client.incomingPhoneNumbers.create(request);
+              return { sid: created.sid, phoneNumber: created.phoneNumber };
+            },
+          },
+        );
+        return {
+          availablePhoneNumbers: (country: string) => ({
+            local: {
+              list: async (request: {
+                areaCode?: number;
+                contains?: string;
+                limit: number;
+              }) => {
+                const available = await client
+                  .availablePhoneNumbers(country)
+                  .local.list(request);
+                return available.map((number) => ({
+                  phoneNumber: number.phoneNumber,
+                  friendlyName: number.friendlyName,
+                  locality: number.locality,
+                  region: number.region,
+                  rateCenter: number.rateCenter,
+                }));
+              },
+            },
+          }),
+          incomingPhoneNumbers,
+        };
+      },
+    });
+    return createCommercialApplication({
+      database: sqlClient,
+      catalog: loadDialerPlanCatalog(environment),
+      billing,
+      numbers,
+      usage: {
+        getCompletion: async (providerCallId) => {
+          const call = await masterTwilio.calls(providerCallId).fetch();
+          const customerConnectedSeconds = Math.max(
+            0,
+            Number(call.duration ?? 0),
+          );
+          const providerPrice = Number(call.price ?? 0);
+          return {
+            customerConnectedSeconds,
+            agentConnectedSeconds: 0,
+            providerCostMicros: Number.isFinite(providerPrice)
+              ? Math.round(Math.abs(providerPrice) * 1_000_000)
+              : 0,
+            occurredAt: (call.dateUpdated ?? new Date()).toISOString(),
+          };
+        },
+      },
+    });
+  } catch (cause: unknown) {
+    throw new Error('Commercial dialer runtime composition failed', { cause });
+  }
+};
+
 const safeNumbers = (
   environment: RailwayEnvironment,
   key: string,
@@ -630,9 +792,33 @@ export const createRailwayDialerApplicationLayers = async (
             }
             return [normalized];
           }
-          const numbers = yield* tryEffect('list-caller-ids', () =>
-            runtime.liveDialer.listNumbers(),
-          );
+          const commercialEnabled =
+            environment.DIALER_COMMERCIAL_ENABLED?.trim().toLowerCase() ===
+            'true';
+          const numbers = commercialEnabled && database
+            ? yield* tryEffect('list-commercial-caller-ids', async () => {
+                const result = await database.query<{
+                  phone_number: string;
+                  provider_number_id: string | null;
+                }>(
+                  `SELECT phone_number, provider_number_id
+                   FROM dialer_phone_numbers
+                   WHERE workspace_id = $1 AND user_id = $2
+                     AND status = 'active'
+                   ORDER BY phone_number`,
+                  [input.workspaceId, input.userId],
+                );
+                return result.rows.map((number) => ({
+                  phoneNumber: number.phone_number,
+                  areaCode: number.phone_number.slice(2, 5),
+                  isPrimary: false,
+                  isActive: true,
+                  twilioSid: number.provider_number_id ?? '',
+                }));
+              })
+            : yield* tryEffect('list-caller-ids', () =>
+                runtime.liveDialer.listNumbers(),
+              );
           const available = [];
           for (const number of numbers) {
             const phone = normalizePhone(number.phoneNumber);
@@ -946,3 +1132,5 @@ export const createLeadConnectorApplicationLayer =
   createRailwayLeadConnectorApplicationLayer;
 export const createCallOperationsApplicationRuntime =
   createRailwayCallOperationsApplication;
+export const createCommercialApplicationRuntime =
+  createRailwayCommercialApplication;

@@ -43,6 +43,8 @@ export type LeadConnectorEmbedIdentity = {
   userId: string;
   installationId: string;
   locationId: string;
+  role: string;
+  contextType: 'agency' | 'location';
 };
 
 export type LeadConnectorHttpMethod = 'DELETE' | 'GET' | 'POST' | 'PUT';
@@ -115,6 +117,7 @@ export type LeadConnectorWebhookEventType =
   | 'contact.created'
   | 'contact.deleted'
   | 'contact.updated'
+  | 'installation.uninstalled'
   | 'opportunity.created'
   | 'opportunity.deleted'
   | 'opportunity.updated';

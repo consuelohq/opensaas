@@ -7,6 +7,8 @@ import type {
 import type {
   EmbedAdminCall,
   EmbedCallSession,
+  EmbedCommercialCallerContext,
+  EmbedCommercialDashboard,
   EmbedTranscriptSegment,
 } from './state-machine.js';
 
@@ -118,6 +120,51 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
       request<{ pipelines: LeadConnectorPipeline[] }>(
         '/v1/integrations/leadconnector/pipelines',
       ).then((result) => result.pipelines),
+    getCommercialCallerContext: () =>
+      request<EmbedCommercialCallerContext>('/v1/commercial/caller'),
+    getCommercialDashboard: () =>
+      request<EmbedCommercialDashboard>('/v1/commercial/admin'),
+    updateCommercialTeam: (
+      assignments: Array<{
+        userId: string;
+        planCode: 'single' | 'standard' | 'power';
+      }>,
+    ) =>
+      request<{ updated: true }>('/v1/commercial/team', {
+        method: 'PATCH',
+        body: JSON.stringify({ assignments }),
+      }),
+    searchCommercialNumbers: (input: {
+      areaCode?: string;
+      contains?: string;
+      country?: string;
+      limit?: number;
+    }) =>
+      request<{ numbers: Array<Record<string, unknown>> }>(
+        '/v1/commercial/numbers/search',
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
+    provisionCommercialNumber: (input: {
+      userId: string;
+      phoneNumber: string;
+    }) =>
+      request<{ provisioned: true }>('/v1/commercial/numbers/provision', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    assignCommercialNumber: (input: {
+      userId: string;
+      phoneNumber: string;
+    }) =>
+      request<{ assigned: true }>('/v1/commercial/numbers/assign', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    releaseCommercialNumber: (phoneNumber: string) =>
+      request<{ released: true }>('/v1/commercial/numbers/release', {
+        method: 'POST',
+        body: JSON.stringify({ phoneNumber }),
+      }),
     resolveQueueCandidates: (input: {
       pipelineId: string;
       stageId: string;

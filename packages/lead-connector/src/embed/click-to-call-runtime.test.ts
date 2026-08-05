@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { JSDOM } from 'jsdom';
 
 const asset = readFileSync(
-  'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+  join(import.meta.dir, 'public', 'consuelo-lead-connector-click-to-call.js'),
   'utf8',
 );
 const embedOrigin =

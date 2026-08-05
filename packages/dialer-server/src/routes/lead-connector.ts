@@ -81,6 +81,28 @@ export const createLeadConnectorPublicRoutes = (
         application.processWebhook({ rawBody, headers }),
       );
       if (!result.ok) return leadConnectorErrorResponse(context, result.error);
+      if (result.value.event?.type === 'installation.uninstalled') {
+        if (dependencies.commercial) {
+          const appId = result.value.event.data.appId;
+          const commercialResult = await runApplicationEffect(
+            dependencies.commercial.processInstallationUninstall({
+              id: result.value.event.id,
+              workspaceId: result.value.event.workspaceId,
+              locationId: result.value.event.locationId,
+              appId: typeof appId === 'string' ? appId : null,
+            }),
+          );
+          if (!commercialResult.ok) {
+            return dialerErrorResponse(context, commercialResult.error);
+          }
+        }
+        const disabled = await runApplicationEffect(
+          application.disableInstallation(result.value.workspaceId),
+        );
+        if (!disabled.ok) {
+          return leadConnectorErrorResponse(context, disabled.error);
+        }
+      }
       return context.json({
         received: true,
         duplicate: result.value.duplicate,

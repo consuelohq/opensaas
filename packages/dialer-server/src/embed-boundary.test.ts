@@ -27,6 +27,7 @@ const createDependencies = (): DialerServerDependencies => ({
     beginOAuth: () => Effect.die('not used'),
     completeOAuth: () => Effect.die('not used'),
     processWebhook: () => Effect.die('not used'),
+    disableInstallation: () => Effect.die('not used'),
     listContacts: mock(() =>
       Effect.succeed({ contacts: [], total: 0, nextCursor: null }),
     ),
@@ -53,6 +54,8 @@ const createDependencies = (): DialerServerDependencies => ({
         userId: 'provider-user-1',
         installationId: 'installation-1',
         locationId: 'location-1',
+        role: 'admin',
+        contextType: 'location' as const,
       }),
     ),
     validateEmbedIdentity: mock(() => Effect.succeed(true)),
@@ -85,6 +88,8 @@ describe('dialer-server embed and LeadConnector resources', () => {
       userId: 'provider-user-1',
       installationId: 'installation-1',
       locationId: 'location-1',
+      role: 'admin',
+      contextType: 'location',
     });
   });
 

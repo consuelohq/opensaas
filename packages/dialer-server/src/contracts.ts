@@ -23,12 +23,15 @@ import type {
 import type { Effect } from 'effect';
 
 import type { createCallOperationsApplication } from './call-operations/application';
+import type { CommercialRouteDependencies } from './routes/commercial';
 
 export type DialerIdentity = {
   workspaceId: string;
   userId: string;
   installationId?: string;
   locationId?: string;
+  role?: string;
+  contextType?: 'agency' | 'location';
 };
 
 export type DialerServerStartCallCommand = Omit<
@@ -117,6 +120,9 @@ export type LeadConnectorServerApplication = {
     rawBody: string;
     headers: Record<string, string | undefined>;
   }) => Effect.Effect<LeadConnectorWebhookProcessResult, LeadConnectorError>;
+  disableInstallation: (
+    workspaceId: string,
+  ) => Effect.Effect<{ disabled: true }, LeadConnectorError>;
   listContacts: (input: {
     workspaceId: string;
     query?: string;
@@ -174,4 +180,5 @@ export type DialerServerDependencies = {
     identity: LeadConnectorEmbedIdentity,
   ) => Promise<{ token: string; expiresAt: string }>;
   leadConnector?: LeadConnectorServerApplication;
+  commercial?: CommercialRouteDependencies;
 };
