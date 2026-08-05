@@ -489,12 +489,56 @@ function renderToolPanels(): string {
         </section>`;
 }
 
-function renderPlannedPanel(page: 'secrets'): string {
+// Metadata only. There is deliberately no value column and no reveal control: a credential
+// leaves the sealed store only through the broker, which runs an operation and returns its result.
+function secretsClientScript(): string {
   return `
-      <section class="state-panel" aria-live="polite">
-        <strong>Secret connections are not available yet</strong>
-        <p class="muted">This route is ready for the credential broker. Never paste a credential into an agent conversation.</p>
-      </section>`;
+    const byId = (id) => document.getElementById(id);
+    const setHidden = (id, value) => { const element = byId(id); if (element) element.hidden = value; };
+    const escapeHtml = (value) => String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('\\'', '&#39;');
+    fetch('/gateway/secrets/bindings', { headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('secrets unavailable')))
+      .then((payload) => {
+        const bindings = Array.isArray(payload && payload.bindings) ? payload.bindings : [];
+        const rows = byId('secret-rows');
+        if (rows) {
+          rows.innerHTML = bindings.length
+            ? bindings.map((binding) => '<tr><td>' + escapeHtml(binding.bindingId) + '</td><td>' + escapeHtml(binding.nodeId) + '</td><td>' + escapeHtml(binding.status) + '</td><td>' + escapeHtml(binding.updatedAt) + '</td></tr>').join('')
+            : '<tr><td colspan="4" class="empty">No credentials are connected yet.</td></tr>';
+        }
+        const summary = byId('secret-summary');
+        if (summary) summary.textContent = bindings.length + (bindings.length === 1 ? ' binding' : ' bindings');
+        setHidden('secret-loading', true);
+        setHidden('secret-content', false);
+      })
+      .catch(() => {
+        setHidden('secret-loading', true);
+        setHidden('secret-error', false);
+      });
+  `;
+}
+
+function renderSecretsContent(): string {
+  return `
+      <section id="secret-loading" class="state-panel" aria-live="polite">
+        <strong>Loading secret connections</strong>
+        <p class="muted">Checking your workspace session and node connection.</p>
+      </section>
+      <section id="secret-error" class="state-panel" aria-live="polite" hidden>
+        <strong>Secret connections unavailable</strong>
+        <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
+      </section>
+      <div id="secret-content" hidden>
+        <section class="panel-section">
+          <header class="panel-header"><h2>Connected credentials</h2><p id="secret-summary" class="muted">0 bindings</p></header>
+          <p class="muted">Values are never returned to this page or to an agent. Never paste a credential into an agent conversation.</p>
+          <div class="table-wrap"><table><thead><tr><th>Binding</th><th>Node</th><th>Status</th><th>Updated</th></tr></thead><tbody id="secret-rows"></tbody></table></div>
+        </section>
+      </div>`;
 }
 
 function renderEnvironmentContent(): string {
@@ -553,12 +597,12 @@ export function renderConfigurationSite(page: ConfigurationPageId = 'configurati
     ? renderHydratedContent(page)
     : page === 'environments'
       ? renderEnvironmentContent()
-      : renderPlannedPanel(page);
+      : renderSecretsContent();
   const clientScript = requiresConfigurationSnapshot
     ? configurationClientScript()
     : page === 'environments'
       ? environmentClientScript()
-      : '';
+      : secretsClientScript();
 
   return `<!doctype html>
 <html lang="en">

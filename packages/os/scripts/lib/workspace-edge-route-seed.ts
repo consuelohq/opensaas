@@ -222,7 +222,7 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/traces/events',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -234,7 +234,7 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/traces',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -249,7 +249,7 @@ const buildConfigurationGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/configuration/overlay',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -261,7 +261,7 @@ const buildConfigurationGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/configuration',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -273,7 +273,7 @@ const buildConfigurationGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/settings/overlay',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -285,7 +285,7 @@ const buildConfigurationGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/settings',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -300,7 +300,7 @@ const buildEnvironmentGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/environments/upsert',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -312,7 +312,7 @@ const buildEnvironmentGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/environments/delete',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -324,7 +324,7 @@ const buildEnvironmentGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/environments',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -335,11 +335,27 @@ const buildEnvironmentGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   },
 ];
 
+// Read-only: the Secrets surface lists which bindings exist, never their values.
+const buildSecretsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/secrets',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'secrets-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/secrets/*',
+      publicSiteRouteFamily: '/secrets/*',
+    },
+  },
+];
+
 const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/artifacts',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -440,6 +456,7 @@ export const createWorkspaceEdgeRouteSeedRecord = (
     ...buildConfigurationGatewayRoutes(),
     ...buildEnvironmentGatewayRoutes(),
     ...buildArtifactsGatewayRoutes(),
+    ...buildSecretsGatewayRoutes(),
     ...buildLegacyArtifactRedirectRoutes(),
   ];
 
