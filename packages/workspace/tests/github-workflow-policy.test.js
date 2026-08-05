@@ -167,11 +167,14 @@ describe('GitHub workflow policy', () => {
     const dependencyBuild =
       'npx nx run-many --target=build --projects=@consuelo/logger,@consuelo/coaching,@consuelo/contacts,@consuelo/dialer,@consuelo/agent';
     const dependencyBuildIndex = serverWorkflow.indexOf(dependencyBuild);
+    const bunSetupIndex = serverWorkflow.indexOf('uses: oven-sh/setup-bun@v2');
     const typecheckIndex = serverWorkflow.indexOf(
       '- name: Server / Run lint & typecheck',
     );
 
+    expect(bunSetupIndex).toBeGreaterThan(-1);
     expect(dependencyBuildIndex).toBeGreaterThan(-1);
+    expect(typecheckIndex).toBeGreaterThan(bunSetupIndex);
     expect(typecheckIndex).toBeGreaterThan(dependencyBuildIndex);
   });
 
