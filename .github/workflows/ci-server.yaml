@@ -71,10 +71,7 @@ jobs:
       - name: Build Consuelo backend workspace dependencies
         run: npx nx run-many --target=build --projects=@consuelo/logger,@consuelo/coaching,@consuelo/contacts,@consuelo/dialer,@consuelo/agent
       - name: Server / Run lint & typecheck
-        uses: ./.github/actions/nx-affected
-        with:
-          tag: scope:backend
-          tasks: lint,typecheck
+        run: node packages/workspace/scripts/ci/run-changed-server-task.mjs
       - name: Server / Write .env
         run: npx nx reset:env twenty-server
       - name: Server / Build

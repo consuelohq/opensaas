@@ -382,6 +382,37 @@
       "reason": "Coaching package changes must emit the declaration artifact advertised by package.json so clean consumers can typecheck."
     },
     {
+      "id": "server-ci-task-contract",
+      "critical": true,
+      "source": [
+        ".github/workflows/ci-server.yaml",
+        "packages/workspace/scripts/ci/run-changed-server-task.mjs",
+        "packages/workspace/tests/run-changed-server-task.test.mjs",
+        "packages/workspace/tests/github-workflow-policy.test.js",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/test-selection.registry.json"
+      ],
+      "tests": [
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ]
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        }
+      ],
+      "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation."
+    },
+    {
       "id": "api-package",
       "critical": true,
       "source": [

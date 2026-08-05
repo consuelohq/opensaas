@@ -169,7 +169,7 @@ describe('GitHub workflow policy', () => {
     const dependencyBuildIndex = serverWorkflow.indexOf(dependencyBuild);
     const bunSetupIndex = serverWorkflow.indexOf('uses: oven-sh/setup-bun@v2');
     const typecheckIndex = serverWorkflow.indexOf(
-      '- name: Server / Run lint & typecheck',
+      'node packages/workspace/scripts/ci/run-changed-server-task.mjs',
     );
 
     expect(bunSetupIndex).toBeGreaterThan(-1);

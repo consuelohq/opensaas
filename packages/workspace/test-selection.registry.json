@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2535,
-    "mappedTestCount": 2462,
+    "testFileCount": 2536,
+    "mappedTestCount": 2463,
     "unmappedTestCount": 73,
-    "ruleCount": 36,
-    "explicitRuleCount": 17,
+    "ruleCount": 37,
+    "explicitRuleCount": 18,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
       "packages/os/tests": 185,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 53,
+      "packages/workspace/tests": 54,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -628,7 +628,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 443,
+      "test": 444,
       "spec": 152,
       "other": 7,
       "tests-dir": 6,
@@ -1029,6 +1029,38 @@
       ],
       "critical": true,
       "reason": "Coaching package changes must emit the declaration artifact advertised by package.json so clean consumers can typecheck.",
+      "origin": "explicit"
+    },
+    {
+      "id": "server-ci-task-contract",
+      "source": [
+        ".github/workflows/ci-server.yaml",
+        "packages/workspace/scripts/ci/run-changed-server-task.mjs",
+        "packages/workspace/tests/run-changed-server-task.test.mjs",
+        "packages/workspace/tests/github-workflow-policy.test.js",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/test-selection.registry.json"
+      ],
+      "tests": [
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ]
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
       "origin": "explicit"
     },
     {
@@ -14052,6 +14084,11 @@
     },
     {
       "path": "packages/workspace/tests/run-changed-os-native-tests.test.mjs",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/run-changed-server-task.test.mjs",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
