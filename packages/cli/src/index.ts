@@ -16,6 +16,7 @@ import { registerDeploy } from './commands/deploy.js';
 import { registerDev } from './commands/dev.js';
 import { registerMigrate } from './commands/migrate.js';
 import { registerOs } from './commands/os.js';
+import { registerUpdate } from './commands/update.js';
 import { analyticsCommand } from './commands/analytics.js';
 import { statusCommand, registerStatus } from './commands/status.js';
 import { loadConfig } from './config.js';
@@ -62,12 +63,20 @@ program
     }
   })
   .action(async () => {
-    const config = loadConfig();
-    const isConfigured = config.twilioAccountSid || config.managed;
-    if (isConfigured) {
-      await statusCommand();
-    } else {
-      await initCommand({});
+    try {
+      const config = loadConfig();
+      const isConfigured = config.twilioAccountSid || config.managed;
+      if (isConfigured) {
+        await statusCommand();
+      } else {
+        await initCommand({});
+      }
+    } catch (err: unknown) {
+      handleCommandError(err, {
+        code: 'CLI_ERROR',
+        friendlyMessage: 'consuelo failed — check your configuration and try again',
+        command: 'consuelo',
+      });
     }
   });
 
@@ -78,11 +87,19 @@ program
   .option('--yes', 'non-interactive mode with sensible defaults')
   .option('--template <type>', 'project template (full, minimal, api-only)')
   .action(async (opts) => {
-    await initCommand({
-      managed: opts.managed,
-      yes: opts.yes,
-      template: opts.template,
-    });
+    try {
+      await initCommand({
+        managed: opts.managed,
+        yes: opts.yes,
+        template: opts.template,
+      });
+    } catch (err: unknown) {
+      handleCommandError(err, {
+        code: 'CLI_ERROR',
+        friendlyMessage: 'init failed — check your configuration and try again',
+        command: 'init',
+      });
+    }
   });
 
 program
@@ -106,6 +123,7 @@ registerDev(program);
 registerMigrate(program);
 registerStatus(program);
 registerOs(program);
+registerUpdate(program);
 
 // twenty-sdk platform commands (auth, app, entity, function)
 try {
