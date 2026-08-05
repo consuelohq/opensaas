@@ -142,6 +142,23 @@ describe('GitHub workflow policy', () => {
     );
   });
 
+  test('uses available hosted runners for the Server and Front build pipelines', () => {
+    const serverWorkflow = readFileSync(
+      join(workflowDir, 'ci-server.yaml'),
+      'utf8',
+    );
+    const frontWorkflow = readFileSync(
+      join(workflowDir, 'ci-front.yaml'),
+      'utf8',
+    );
+
+    expect(serverWorkflow).not.toContain('runs-on: ubuntu-latest-8-cores');
+    expect(frontWorkflow).not.toContain('runs-on: ubuntu-latest-8-cores');
+    expect(serverWorkflow).toContain('server-setup:\n    needs: changed-files-check');
+    expect(frontWorkflow).toContain('front-sb-build:\n    needs: changed-files-check');
+    expect(frontWorkflow).toContain('front-build:\n    needs: changed-files-check');
+  });
+
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),
