@@ -101,6 +101,27 @@ describe('GitHub workflow policy', () => {
       '- name: Run ${{ matrix.task }} task\n        uses: ./.github/actions/nx-affected',
     );
   });
+
+  test('scopes native OS distribution tests to relevant changed files', () => {
+    const osDistributionWorkflow = readFileSync(
+      join(workflowDir, 'consuelo-os-distribution-environments.yaml'),
+      'utf8',
+    );
+
+    expect(osDistributionWorkflow).toContain(
+      '- name: Resolve OS test comparison SHAs\n        uses: nrwl/nx-set-shas@v4',
+    );
+    expect(osDistributionWorkflow).toContain(
+      'run: node packages/workspace/scripts/ci/run-changed-os-native-tests.mjs',
+    );
+    expect(osDistributionWorkflow).toContain(
+      'packages/workspace/tests/run-changed-os-native-tests.test.mjs',
+    );
+    expect(osDistributionWorkflow).not.toContain(
+      'working-directory: packages/os\n        run: bun x vitest run tests/distribution --testTimeout 15000',
+    );
+  });
+
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),
