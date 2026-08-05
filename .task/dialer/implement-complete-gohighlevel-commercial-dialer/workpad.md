@@ -321,6 +321,7 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 - 2026-08-05 06:03:49 `review.run`: passed — OK
 - 2026-08-05 06:04:20 `verify`: failed — COMMAND_FAILED
 - 2026-08-05 06:07:00 `review.run`: passed — OK
+- 2026-08-05 06:08:01 `verify`: passed — OK
 
 ## key decisions
 
@@ -556,7 +557,11 @@ bun run task:finish
 - The first full verify run was non-publish-valid because it surfaced two related mechanical findings in the touched Twilio conference service: a top-level peer type import and one async polling boundary. Verify trace `trc_eeff988b8cf5`.
 - Replaced the top-level peer import with an erased type query, retained lazy runtime `await import('twilio')`, normalized the polling error boundary, and reran dialer typecheck, 26 focused conference tests, and build successfully; trace `trc_5d28b41456ea`.
 - Strict review after the verify remediation again passes with zero findings; trace `trc_c884bfca0584`.
-- Remaining gates: commit this verify remediation, rerun full publish-valid verify, refetch/sync `stream/dialer`, rerun affected post-sync gates, publish PR #1782, merge, deploy Railway/Cloudflare/Marketplace, and complete authenticated non-mutating GHL browser verification.
+- Verify remediation commit `aa9ffd51e21a6c6e604f9fadfe0c0cc427cc8788` is the final reviewed product-code HEAD.
+- Full verify against current `origin/stream/dialer` passed with `publishValid: true`, strict review passed, and database guardrails passed; trace `trc_b357997640d6`.
+- Refetch confirmed `origin/stream/dialer` remains `39dbe8c38c55ca0e4c4b2eb2e2a72c937212a26d`; task is zero behind and six commits ahead. Typed `task.ensureSynced` returned `synced: true`; trace `trc_f6eaf4a229c6`.
+- The required single typed `task.push` attempt failed before mutation because its `--changed` implementation requires local and remote task SHAs to match; local `aa9ffd51` versus remote `850799e8`. Exact failure trace: `trc_fc63e05a0bc2`. This is the tooling gap requiring the scoped normal non-force Git push fallback.
+- Remaining gates: commit task metadata/verify evidence, push normally without force, verify PR head, merge PR #1782, deploy Railway/Cloudflare/Marketplace, and complete authenticated non-mutating GHL browser verification.
 
 - 2026-08-05 06:03:08 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
 
@@ -564,3 +569,5 @@ bun run task:finish
 - 2026-08-05 06:06:21 apply-patch: `packages/dialer/src/services/conference.ts`
 
 - 2026-08-05 06:07:24 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
+
+- 2026-08-05 06:10:11 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
