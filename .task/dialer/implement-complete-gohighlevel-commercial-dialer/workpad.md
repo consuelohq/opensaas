@@ -315,13 +315,6 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 
 ## workspace-owned: validation evidence
 
-- 2026-08-05 06:08:01 `verify`: passed — OK
-- 2026-08-05 06:25:21 `review.run`: passed — OK
-- 2026-08-05 06:25:23 `review.run`: passed — OK
-- 2026-08-05 06:26:43 `review.run`: passed — OK
-- 2026-08-05 06:27:07 `verify`: passed — OK
-- 2026-08-05 17:11:41 `review.run`: passed — OK
-- 2026-08-05 17:11:41 `review.run`: passed — OK
 - 2026-08-05 17:11:41 `review.run`: passed — OK
 - 2026-08-05 17:12:49 `review.run`: passed — OK
 - 2026-08-05 17:13:09 `review.run`: passed — OK
@@ -345,6 +338,13 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 - 2026-08-05 19:16:11 `review.run`: passed — OK
 - 2026-08-05 19:16:12 `review.run`: passed — OK
 - 2026-08-05 19:16:12 `review.run`: passed — OK
+- 2026-08-05 19:17:58 `verify`: passed — OK
+- 2026-08-05 19:17:58 `verify`: passed — OK
+- 2026-08-05 19:17:58 `verify`: passed — OK
+- 2026-08-05 19:19:35 `verify`: failed — COMMAND_FAILED
+- 2026-08-05 19:23:37 `review.run`: passed — OK
+- 2026-08-05 19:23:37 `review.run`: passed — OK
+- 2026-08-05 19:23:38 `review.run`: passed — OK
 
 ## key decisions
 
@@ -577,6 +577,7 @@ bun run task:finish
 - `packages/workspace/tests/github-workflow-policy.test.js`
 - `packages/workspace/tests/lint-changed-frontend-files.test.mjs`
 - `packages/workspace/tests/test-selection.test.js`
+- `packages/workspace/tests/verification.test.js`
 
 ## strict review remediation and revalidation
 
@@ -865,3 +866,19 @@ bun run task:finish
 - The verifier-selected base is now propagated dynamically through `NX_BASE` and `BASE_REF`; no repository rule hardcodes `stream/dialer`.
 
 - Strict changed-file review after selector correction passed with zero task-owned issues, zero blockers, and zero failed suites; three unrelated typecheck failures remain classified pre-existing. Trace: `trc_3a5ac7eda461`.
+
+### Wait cycle: final committed full verify at 6efdfc50f7
+
+- Start time (UTC): 2026-08-05T19:16:31Z.
+- Typed verifier lost its transport response and spawned four identical trees. Duplicate roots 65703, 65972, and 66256 plus exact descendants were terminated; oldest root 65452 is preserved.
+- Poll interval / maximum: 30 seconds / 20 attempts.
+- Resume action: inspect root 65452 and require a new verify stamp for head `6efdfc50f7845c9fa7853f7684c8ec23946a3b78`, base `origin/stream/dialer`, mode `full`, and `publishValid: true`.
+- Fallback: if the preserved process exits without a current stamp, run one lock-guarded canonical verifier with durable output; do not infer completion.
+
+- The preserved typed verifier exited without updating the stale verification stamp. No result was inferred. Canonical lock-guarded fallback started at 2026-08-05T19:20:07.314Z with command `bun run verify -- --base origin/stream/dialer --json --quiet`; durable state is `/tmp/ghl-6efdfc50-final-publish-verify.status.json` and `/tmp/ghl-6efdfc50-final-publish-verify.log`.
+
+- Canonical full verify at `6efdfc50` recorded exit code 1 because its nested review redundantly ran five broad affected-project suites; three unrelated config-only package suites failed despite the authoritative nine-suite registry passing. DB guard passed. The verifier review phase is now semantic/static only (`--no-tests`), while the existing mandatory test-selection phase remains the sole test executor. Durable failure: `/tmp/ghl-6efdfc50-final-publish-verify.status.json`, `/tmp/ghl-6efdfc50-final-publish-verify.log`; trace `trc_b4e15a5e0267`.
+
+- Verifier duplicate-test remediation focused gate passed: verifier syntax; 4 verification tests; 13 selector tests; 6 OS artifact tests; diff check. The verification test recursive cleanup is bounded to directories created via `mkdtemp` under the system temp directory. Trace: `trc_885b42dbee48`.
+- Full selector coverage now contains the workspace publish-gate verification suite plus the existing nine exact suites; trace `trc_8047e2d7a21e`.
+- Strict changed-file review after the verifier correction passed with zero task-owned issues, zero blockers, and zero failed suites; three unrelated typecheck findings remain pre-existing. Trace: `trc_a3067e0a5670`.
