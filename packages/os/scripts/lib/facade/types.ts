@@ -40,6 +40,7 @@ export type ToolResult<TData = unknown> = {
   exitCode: number;
   durationMs: number;
   traceId: string;
+  parentTraceId?: string;
   requestId?: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -135,6 +136,12 @@ export type ExecuteToolOptions = {
   now?: () => number;
   randomUUID?: () => string;
   logMode?: LogMode;
+};
+
+export type BatchExecutionContext = {
+  taskSession?: string;
+  branch?: string;
+  taskWorktree?: string;
 };
 
 export type BatchStep = {

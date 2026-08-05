@@ -1269,6 +1269,162 @@ describe('batch facade tool', () => {
     expect(plans).toHaveLength(1);
   });
 
+  it('inherits the outer task session for sequential child tools', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-session-'));
+    const taskSession = 'tsk_batch_session';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('batch', {
+        taskSession,
+        steps: [
+          { tool: 'fs.read', input: { path: 'packages/os/package.json' } },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+        branchResolver: ({ explicitBranch }) => explicitBranch
+          ? { ok: true as const, branch: explicitBranch, source: 'explicit' }
+          : {
+              ok: false as const,
+              code: 'AMBIGUOUS_TASK_SELECTION' as const,
+              message: 'missing inherited batch context',
+              candidates: [],
+            },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.completed).toBe(1);
+      expect(result.data.results[0].parentTraceId).toBe(result.traceId);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toContain(TEST_BRANCH);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('accepts a session id, task id, metadata id, or branch as the outer batch handle', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-session-alias-'));
+    const metadata = {
+      taskSession: 'tsk_batch_alias',
+      taskId: 'task_batch_alias',
+      id: 'meta_batch_alias',
+      branch: TEST_BRANCH,
+      worktree: tempRoot,
+    };
+    const plans: CommandPlan[] = [];
+
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(
+        join(tempRoot, '.task', 'session.json'),
+        JSON.stringify(metadata, null, 2),
+      );
+
+      for (const taskSession of [
+        metadata.taskSession,
+        metadata.taskId,
+        metadata.id,
+        metadata.branch,
+      ]) {
+        const result = await executeTool('batch', {
+          taskSession,
+          steps: [
+            { tool: 'fs.read', input: { path: 'packages/os/package.json' } },
+          ],
+        }, {
+          ...stableOptions(successfulRunner(), plans),
+          cwd: tempRoot,
+          currentTask: null,
+          candidates: [],
+        });
+
+        expect(result.ok).toBe(true);
+        expect(result.data.results[0].parentTraceId).toBe(result.traceId);
+      }
+
+      expect(plans).toHaveLength(4);
+      expect(plans.every((plan) => plan.args.includes(TEST_BRANCH))).toBe(true);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('inherits task context for parallel child tools', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-parallel-session-'));
+    const taskSession = 'tsk_batch_parallel_session';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('batch', {
+        taskSession,
+        steps: [
+          { tool: 'fs.read', input: { path: 'packages/os/package.json' }, parallel: true },
+          { tool: 'fs.read', input: { path: 'packages/cli/package.json' }, parallel: true },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+        branchResolver: ({ explicitBranch }) => explicitBranch
+          ? { ok: true as const, branch: explicitBranch, source: 'explicit' }
+          : {
+              ok: false as const,
+              code: 'AMBIGUOUS_TASK_SELECTION' as const,
+              message: 'missing inherited batch context',
+              candidates: [],
+            },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(2);
+      expect(plans.every((plan) => plan.args.includes(TEST_BRANCH))).toBe(true);
+      expect(result.data.results.every((child) => child.parentTraceId === result.traceId)).toBe(true);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects child task context that conflicts with the outer batch', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-conflict-'));
+    const taskSession = 'tsk_batch_conflict';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('batch', {
+        taskSession,
+        steps: [
+          {
+            tool: 'fs.read',
+            input: {
+              branch: 'task/workspace-agents/other',
+              path: 'packages/os/package.json',
+            },
+          },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.data.completed).toBe(1);
+      expect(result.data.results[0].code).toBe('VALIDATION_ERROR');
+      expect(result.data.results[0].message).toContain('conflicts with the outer batch task context');
+      expect(plans).toHaveLength(0);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('validates BatchInput step shape', () => {
     const schema = getInputSchema('BatchInput');
 
