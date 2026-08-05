@@ -315,12 +315,6 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 
 ## workspace-owned: validation evidence
 
-- 2026-08-05 05:52:06 `review.run`: passed — OK
-- 2026-08-05 05:52:07 `review.run`: passed — OK
-- 2026-08-05 06:00:23 `review.run`: passed — OK
-- 2026-08-05 06:03:49 `review.run`: passed — OK
-- 2026-08-05 06:04:20 `verify`: failed — COMMAND_FAILED
-- 2026-08-05 06:07:00 `review.run`: passed — OK
 - 2026-08-05 06:08:01 `verify`: passed — OK
 - 2026-08-05 06:25:21 `review.run`: passed — OK
 - 2026-08-05 06:25:23 `review.run`: passed — OK
@@ -341,6 +335,16 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 - 2026-08-05 18:48:59 `review.run`: passed — OK
 - 2026-08-05 18:48:59 `review.run`: passed — OK
 - 2026-08-05 18:49:13 `review.run`: passed — OK
+- 2026-08-05 18:54:37 `review.run`: passed — OK
+- 2026-08-05 18:54:38 `review.run`: passed — OK
+- 2026-08-05 18:54:38 `review.run`: passed — OK
+- 2026-08-05 18:59:52 `verify`: passed — OK
+- 2026-08-05 18:59:52 `verify`: passed — OK
+- 2026-08-05 18:59:52 `verify`: passed — OK
+- 2026-08-05 19:01:05 `verify`: failed — COMMAND_FAILED
+- 2026-08-05 19:16:11 `review.run`: passed — OK
+- 2026-08-05 19:16:12 `review.run`: passed — OK
+- 2026-08-05 19:16:12 `review.run`: passed — OK
 
 ## key decisions
 
@@ -562,11 +566,17 @@ bun run task:finish
 - `packages/lead-connector/src/embed/main.ts`
 - `packages/lead-connector/src/embed/state-machine.ts`
 - `packages/lead-connector/src/embed/view.ts`
+- `packages/os/tests/artifacts-legacy-contract.test.ts`
+- `packages/workspace/scripts/ci/check-github-workflows.cjs`
 - `packages/workspace/scripts/ci/lint-changed-frontend-files.mjs`
 - `packages/workspace/scripts/review.js`
+- `packages/workspace/scripts/test-selection.js`
+- `packages/workspace/scripts/verify.js`
 - `packages/workspace/senior-engineer.md`
+- `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/github-workflow-policy.test.js`
 - `packages/workspace/tests/lint-changed-frontend-files.test.mjs`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## strict review remediation and revalidation
 
@@ -795,3 +805,63 @@ bun run task:finish
 - Post-remediation focused checks: script syntax passed; 5/5 unit tests passed; `git diff --check` passed. Trace: `trc_36b06f180b52`.
 - Post-remediation durable changed-file lint finished at 2026-08-05T18:52:44Z with exit code 0. All three selected config files passed their actual cache-disabled Nx lint targets; 5/5 unit tests passed. Status/log: `/tmp/ghl-reviewfix-changed-front-lint.status.json`, `/tmp/ghl-reviewfix-changed-front-lint.log`; trace `trc_fe5743b3725c`.
 - The sleep facade returned an HTTP 502 during the timed wait; durable runner state was inspected immediately and provided the recorded result. No duplicate lint run was started.
+
+### Wait cycle: final package and focused matrix at 9e4c1a8daf
+
+- Start time (UTC): 2026-08-05T18:55:56.864Z.
+- Preflight: 64 exact test files (16 dialer, 26 dialer-server, 21 LeadConnector, 1 CI-script unit test) scanned for executable destructive Git/filesystem/SQL/deploy literals; zero hits. Trace: `trc_9abc42c4c1ef`.
+- Wait reason: sequential cache-disabled typecheck/full-test/build gates for dialer, dialer-server, LeadConnector, the CI-script unit suite, and the exact 28-file commercial matrix are running once.
+- Poll interval / maximum: 30 seconds / 20 attempts.
+- Resume action: inspect `/tmp/ghl-9e4c1a8-final-package-matrix.status.json` and bounded `/tmp/ghl-9e4c1a8-final-package-matrix.log` tail.
+- Expected signal: all 11 commands exit 0; package counts remain 174/122/105 and focused count is recorded without failure.
+- Fallback: stop at the first nonzero command, inspect exact output, and remediate only the responsible contract.
+
+- Final committed strict review at `9e4c1a8dafbfdd9e0f3ba4cbe1d3bd6c7f69d35b` passed with zero task-owned issues, zero blockers, and zero failed test suites; three repository typecheck failures were classified pre-existing. Trace: `trc_24cadc7555be`.
+- Final package/focused matrix completed at 2026-08-05T18:56:25Z with all 11 commands exit 0: dialer typecheck/build and 174 tests; dialer-server typecheck/production build and 122 tests; LeadConnector typecheck/embed build and 105 tests; CI lint helper 5 tests; focused commercial matrix 183 tests across 28 files. Status/log: `/tmp/ghl-9e4c1a8-final-package-matrix.status.json`, `/tmp/ghl-9e4c1a8-final-package-matrix.log`; trace `trc_857a0674c217`.
+- Final static scan against `origin/stream/dialer`: 101 changed text files scanned; zero secret findings, zero forbidden generated paths, zero suspicious binary artifacts, and zero untracked files. The sole executable summary entry is the intentional deletion of obsolete `scripts/run-dev-1024.sh`, originally removed in safety checkpoint `850799e8`; the script solely referenced the removed metering workflow/package and has no live repository references. Traces: `trc_13978f4a08c8`, `trc_03a833d0b1f8`.
+
+### Wait cycle: full publish verifier after lost transport
+
+- Start time (UTC): 2026-08-05T18:58:18Z.
+- Wait reason: typed full verify lost its HTTP response and spawned four identical verifier trees. Duplicate roots 46859, 47279, and 47619 plus their exact descendants were terminated; oldest root 46531 is preserved.
+- Poll interval / maximum: 20 seconds / 20 attempts.
+- Resume action: inspect the preserved process tree and the task `verify.json` modification time/content after each wait.
+- Expected signal: preserved tree exits and the stamp records explicit base `origin/stream/dialer`, current HEAD `9e4c1a8dafbfdd9e0f3ba4cbe1d3bd6c7f69d35b`, mode `full`, and `publishValid: true`.
+- Fallback: if the process exits without a current valid stamp, run one lock-guarded canonical verifier with durable status/log; do not infer success from process disappearance.
+
+### Wait cycle: durable final full verify at 9e4c1a8daf
+
+- Start time (UTC): 2026-08-05T19:01:26.760Z.
+- Wait reason: the preserved typed verifier exited without writing a current stamp; canonical full verify is running once with explicit stream base and durable exit/log files.
+- Command: `bun run verify -- --base origin/stream/dialer --json --quiet`.
+- Poll interval / maximum: 30 seconds / 20 attempts.
+- Resume action: read `/tmp/9e4c1a8-final-verify-stream-base.status.json`, bounded `/tmp/9e4c1a8-final-verify-stream-base.log`, and require the task verify stamp to match current HEAD/base.
+- Expected signal: exit 0, `publishValid: true`, `mode: full`, head `9e4c1a8dafbfdd9e0f3ba4cbe1d3bd6c7f69d35b`, base `origin/stream/dialer`.
+- Fallback: stop publication and inspect the named review/test/database gate on nonzero, parse failure, or stale stamp.
+
+### Wait cycle: full selected-suite run after exclusive-rule correction
+
+- Start time (UTC): 2026-08-05T19:08:25.958Z.
+- Selection proof: 110 changed files map to 11 suites. Exact frontend config/workflow files are owned by `frontend-lint-config-contract`; no twenty-front, twenty-ui, or eslint-rules whole-project suite is selected for config-only changes. Runtime-source mixed-file unit proof preserves broader project selection. Traces: `trc_710a71bf6ebf`, `trc_410f97d7ecaf`.
+- Destructive-literal preflight: product/workspace targets already had zero executable hits. 261 OS test files produced one negative recursive-delete validator fixture; its assertion requires the validation error and does not execute the command. Trace: `trc_796c785e1cab`.
+- Wait reason: execute the exact registry-selected suite set once with cache disabled and 10-minute per-suite ceiling.
+- Poll interval / maximum: 30 seconds / 25 attempts.
+- Resume action: inspect `/tmp/ghl-test-selection-exclusive-full-run.status.json` and parsed `/tmp/ghl-test-selection-exclusive-full-run.log`.
+- Expected signal: exit 0, zero failed suites, all 11 selected suites passed.
+- Fallback: inspect the exact failed suite; do not broaden, weaken, or skip functional coverage.
+
+### Wait cycle: corrected final nine-suite selection
+
+- Start time (UTC): 2026-08-05T19:12:09.346Z.
+- Selector remediation: exclusive exact-file ownership prevents config-only and obsolete-manifest edits from selecting unrelated whole-project suites; runtime files still select broad project coverage. Auto package commands now use valid Bun argv order, explicit package rules suppress duplicates, and suite processes receive the caller-selected base through `NX_BASE` and `BASE_REF`.
+- Focused proof: 13 selector tests and 6 OS artifact contract tests passed; full branch selects exactly 9 suites. Trace: `trc_c639301f8454`.
+- Wait reason: run all 9 selected suites once with cache disabled.
+- Poll interval / maximum: 30 seconds / 20 attempts.
+- Resume action: inspect `/tmp/ghl-final-nine-selected-suites.status.json` and parse `/tmp/ghl-final-nine-selected-suites.log`.
+- Expected signal: exit 0 and zero failed suites.
+
+- Corrected final selection completed at 2026-08-05T19:13:33Z with exit code 0: all 9 selected suites passed, including 13 selector tests, 5 lint-helper tests, 4 workflow-policy tests, workflow security, real changed-file Nx lint, 6 OS artifact tests, and the 174/122/105 commercial package suites. Status/log: `/tmp/ghl-final-nine-selected-suites.status.json`, `/tmp/ghl-final-nine-selected-suites.log`; trace `trc_c10b2d31b603`.
+- An earlier diagnostic selected-suite run exposed that auto package commands used invalid Bun argv ordering and only printed help. The selector now emits `bun run --cwd <package> test`; explicitly covered package roots suppress duplicate auto suites. Exact tests prove the command contract.
+- The verifier-selected base is now propagated dynamically through `NX_BASE` and `BASE_REF`; no repository rule hardcodes `stream/dialer`.
+
+- Strict changed-file review after selector correction passed with zero task-owned issues, zero blockers, and zero failed suites; three unrelated typecheck failures remain classified pre-existing. Trace: `trc_3a5ac7eda461`.

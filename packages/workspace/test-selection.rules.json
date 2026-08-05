@@ -185,6 +185,76 @@
       "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior."
     },
     {
+      "id": "frontend-lint-config-contract",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        ".github/workflows/ci-front.yaml",
+        "eslint.config.mjs",
+        "packages/eslint-rules/eslint.config.react.mjs",
+        "packages/twenty-front/eslint.config.mjs",
+        "packages/twenty-shared/eslint.config.mjs",
+        "packages/twenty-ui/eslint.config.mjs",
+        "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs",
+        "packages/workspace/tests/lint-changed-frontend-files.test.mjs"
+      ],
+      "tests": [
+        {
+          "name": "changed frontend lint helper tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/lint-changed-frontend-files.test.mjs"
+          ]
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ]
+        },
+        {
+          "name": "changed frontend files lint",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs"
+          ]
+        }
+      ],
+      "reason": "Frontend lint configuration and workflow-only changes must validate their exact configs, workflow policy, and changed-file lint lane without selecting unrelated full application test targets."
+    },
+    {
+      "id": "obsolete-metering-artifact-contract",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/artifacts-design.ts",
+        "packages/os/tests/artifacts-legacy-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS artifact manifest contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/artifacts-legacy-contract.test.ts"
+          ]
+        }
+      ],
+      "reason": "Removal of the obsolete metering package from the deployed artifact manifest must retain the canonical Artifacts boundary without selecting unrelated OS suites."
+    },
+    {
       "id": "dialer-package",
       "critical": true,
       "source": ["packages/dialer/**"],

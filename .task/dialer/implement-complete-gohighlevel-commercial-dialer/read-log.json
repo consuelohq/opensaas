@@ -51,11 +51,17 @@
     "packages/lead-connector/src/embed/main.ts",
     "packages/lead-connector/src/embed/state-machine.ts",
     "packages/lead-connector/src/embed/view.ts",
+    "packages/os/tests/artifacts-legacy-contract.test.ts",
+    "packages/workspace/scripts/ci/check-github-workflows.cjs",
     "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs",
     "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
     "packages/workspace/senior-engineer.md",
+    "packages/workspace/test-selection.rules.json",
     "packages/workspace/tests/github-workflow-policy.test.js",
-    "packages/workspace/tests/lint-changed-frontend-files.test.mjs"
+    "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
+    "packages/workspace/tests/test-selection.test.js"
   ],
-  "updatedAt": "2026-08-05T18:50:38.693Z"
+  "updatedAt": "2026-08-05T19:10:42.776Z"
 }
