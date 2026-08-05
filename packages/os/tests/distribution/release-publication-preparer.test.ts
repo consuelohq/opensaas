@@ -54,6 +54,7 @@ function createRuntimeSource(root: string): string {
     'manifests/generated/core.manifest.json': '{"version":1,"kind":"consuelo-os-core-manifest","tools":[]}\n',
     'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',
     'steering/system_prompt.md': '# Fixture system prompt\n',
+    'steering/root-agent-instructions.md': '# Fixture root agent instructions\n',
     'steering/decision.md': '# Fixture decision process\n',
     'streams/tools/AGENTS.md': '# Fixture tools stream\n',
     'streams/dialer/AGENTS.md': '# Fixture dialer stream\n',

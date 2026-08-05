@@ -67,12 +67,21 @@ export function reconcileManagedUserContentForRelease(input: {
   const steeringBody = fs.existsSync(steeringPath)
     ? fs.readFileSync(steeringPath, 'utf8')
     : undefined;
+  const rootAgentInstructionsPath = path.join(
+    input.releasePath,
+    'steering',
+    'root-agent-instructions.md',
+  );
+  const rootAgentInstructionsBody = fs.existsSync(rootAgentInstructionsPath)
+    ? fs.readFileSync(rootAgentInstructionsPath, 'utf8')
+    : undefined;
 
   return reconcileManagedUserContent({
     userRoot,
     tools,
     skillsIndex,
     steeringBody,
+    rootAgentInstructionsBody,
   });
 }
 

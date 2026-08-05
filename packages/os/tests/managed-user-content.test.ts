@@ -6,6 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   reconcileManagedUserContent,
+  ROOT_AGENT_INSTRUCTION_FILES,
+  rootAgentInstructionsTemplate,
   USER_SYSTEM_EXAMPLE,
   USER_SYSTEM_PROMPT,
 } from '../scripts/lib/managed-user-content';
@@ -67,9 +69,32 @@ describe('managed user content', () => {
       expect(actions.every((action) => action.status === 'created')).toBe(true);
     });
 
+    it('creates byte-identical root agent instructions from one canonical template', () => {
+      const actions = reconcile();
+      const [agentsFile, claudeFile] = ROOT_AGENT_INSTRUCTION_FILES;
+      const agents = read(agentsFile);
+      const claude = read(claudeFile);
+
+      expect(agents).toBe(rootAgentInstructionsTemplate());
+      expect(claude).toBe(agents);
+      expect(agents).toContain('# OS Steering Instructions Rewrite');
+      expect(agents).toContain("Call OS's `get_steering` tool exactly once");
+      expect(
+        actions.filter((action) =>
+          ROOT_AGENT_INSTRUCTION_FILES.some((file) => action.path.endsWith(file)),
+        ),
+      ).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ ownership: 'update-clean', status: 'created' }),
+          expect.objectContaining({ ownership: 'update-clean', status: 'created' }),
+        ]),
+      );
+    });
+
     it('writes everything owner-only', () => {
       reconcile();
       for (const file of [
+        ...ROOT_AGENT_INSTRUCTION_FILES.map((fileName) => at(fileName)),
         at('Steering', USER_SYSTEM_PROMPT),
         at('Steering', USER_SYSTEM_EXAMPLE),
         at('Tools', 'TOOLS.md'),
@@ -132,6 +157,28 @@ describe('managed user content', () => {
 
       expect(read('Steering', USER_SYSTEM_PROMPT)).toBe(
         '# Mine\n\nAlways use tabs.\n',
+      );
+    });
+
+    it('repairs both root agent instruction files from the canonical bytes', () => {
+      reconcile();
+      for (const fileName of ROOT_AGENT_INSTRUCTION_FILES) {
+        fs.writeFileSync(at(fileName), '# stale local instructions\n');
+      }
+
+      const actions = reconcile();
+      const [agentsFile, claudeFile] = ROOT_AGENT_INSTRUCTION_FILES;
+      expect(read(agentsFile)).toBe(rootAgentInstructionsTemplate());
+      expect(read(claudeFile)).toBe(read(agentsFile));
+      expect(
+        actions.filter((action) =>
+          ROOT_AGENT_INSTRUCTION_FILES.some((file) => action.path.endsWith(file)),
+        ),
+      ).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ ownership: 'update-clean', status: 'updated' }),
+          expect.objectContaining({ ownership: 'update-clean', status: 'updated' }),
+        ]),
       );
     });
 
@@ -202,6 +249,21 @@ describe('managed user content', () => {
   });
 
   describe('reconciling against a release directory', () => {
+    it('uses the candidate release root instructions for both agent file names', () => {
+      const candidateInstructions = '# Candidate release agent instructions\n';
+      fs.mkdirSync(path.join(releasePath, 'steering'), { recursive: true });
+      fs.writeFileSync(
+        path.join(releasePath, 'steering', 'root-agent-instructions.md'),
+        candidateInstructions,
+      );
+
+      reconcileManagedUserContentForRelease({ releasePath, userRoot });
+
+      const [agentsFile, claudeFile] = ROOT_AGENT_INSTRUCTION_FILES;
+      expect(read(agentsFile)).toBe(candidateInstructions);
+      expect(read(claudeFile)).toBe(candidateInstructions);
+    });
+
     it('reproduces the release steering as the example', () => {
       writeRelease(['t'], ['task']);
       fs.mkdirSync(path.join(releasePath, 'steering'), { recursive: true });

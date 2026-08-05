@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/install-consuelo-root-agent-instructions",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1784,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1784",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1784",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1784/install-consuelo-root-agent-instructions",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1784",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1784/install-consuelo-root-agent-instructions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-consuelo-root-agent-instructions",
+  "taskSession": "tsk_a05568f1058e",
+  "tmuxSession": "opensaas-os-distribution-install-consuelo-root-agent-instructions-a05568f1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-consuelo-root-agent-instructions/.task/os-distribution/install-consuelo-root-agent-instructions/session.json",
+  "createdAt": "2026-08-05T02:44:04.453Z"
+}

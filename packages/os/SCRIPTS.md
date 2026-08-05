@@ -1538,6 +1538,8 @@ bun run install:local -- --connect-agent codex
 
 The installer creates the approved `~/.consuelo` home shape by default, preserves existing files and identity, initializes managed databases and folders, and can record detected agent connections. New installs do not materialize the legacy `~/.consuelo/os` runtime path.
 
+Visible user content is reconciled on both install and release activation. `~/Consuelo/AGENTS.md` and `~/Consuelo/CLAUDE.md` are update-clean aliases generated from the same bundled `steering/root-agent-instructions.md`, so agent hosts receive identical OS bootstrap instructions. User-owned `~/Consuelo/Steering/system.md` remains preserve-custom and is never overwritten on update.
+
 ---
 
 ### doctor - local OS health check

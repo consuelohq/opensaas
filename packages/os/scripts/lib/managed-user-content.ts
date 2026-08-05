@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Reconciles the visible `~/Consuelo` content that must exist on every node.
@@ -21,6 +22,15 @@ import path from 'node:path';
 
 export const USER_SYSTEM_PROMPT = 'system.md';
 export const USER_SYSTEM_EXAMPLE = 'example-system.md';
+export const ROOT_AGENT_INSTRUCTION_FILES = ['AGENTS.md', 'CLAUDE.md'] as const;
+
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const packageRoot = path.resolve(currentDir, '..', '..');
+const rootAgentInstructionsPath = path.join(
+  packageRoot,
+  'steering',
+  'root-agent-instructions.md',
+);
 
 export type ManagedUserContentAction = {
   path: string;
@@ -60,6 +70,10 @@ const refresh = (file: string, contents: string): ManagedUserContentAction => {
     status: existing === null ? 'created' : 'updated',
   };
 };
+
+export function rootAgentInstructionsTemplate(): string {
+  return fs.readFileSync(rootAgentInstructionsPath, 'utf8');
+}
 
 export function userSystemPromptTemplate(): string {
   return [
@@ -170,8 +184,16 @@ export function reconcileManagedUserContent(input: {
   skillsIndex?: string;
   /** The bundled steering, reproduced verbatim as the example. */
   steeringBody?: string;
+  /** Candidate-release root agent instructions; current runtime source is the fallback. */
+  rootAgentInstructionsBody?: string;
 }): ManagedUserContentAction[] {
   const actions: ManagedUserContentAction[] = [];
+  const rootAgentInstructions =
+    input.rootAgentInstructionsBody ?? rootAgentInstructionsTemplate();
+
+  for (const fileName of ROOT_AGENT_INSTRUCTION_FILES) {
+    actions.push(refresh(path.join(input.userRoot, fileName), rootAgentInstructions));
+  }
 
   actions.push(
     seedOnce(

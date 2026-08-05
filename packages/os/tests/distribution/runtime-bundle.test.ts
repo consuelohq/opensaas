@@ -50,6 +50,7 @@ const requiredFixtureFiles: Record<string, string> = {
     '{"version":1,"kind":"consuelo-os-core-manifest","tools":[]}\n',
   'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',
   'steering/system_prompt.md': '# Fixture system prompt\n',
+  'steering/root-agent-instructions.md': '# Fixture root agent instructions\n',
   'streams/tools/AGENTS.md': '# Fixture tools stream\n',
   'streams/dialer/AGENTS.md': '# Fixture dialer stream\n',
   'skills/task/SKILL.md': '# Fixture task skill\n',

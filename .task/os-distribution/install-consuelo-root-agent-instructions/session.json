@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a05568f1058e",
+  "tmuxSession": "opensaas-os-distribution-install-consuelo-root-agent-instructions-a05568f1",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/install-consuelo-root-agent-instructions",
+  "branch": "task/os-distribution/install-consuelo-root-agent-instructions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-consuelo-root-agent-instructions",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-consuelo-root-agent-instructions",
+  "prNumber": 1784,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1784",
+  "createdAt": "2026-08-05T02:44:04.452Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-consuelo-root-agent-instructions/.task/os-distribution/install-consuelo-root-agent-instructions/session.json"
+}

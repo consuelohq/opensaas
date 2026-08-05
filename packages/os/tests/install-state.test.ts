@@ -483,13 +483,44 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'hooks'))).toBe(false);
     expect(existsSync(join(tempHome, 'bin', 'browser.open'))).toBe(true);
     expect(existsSync(join(tempHome, 'steering'))).toBe(false);
-    expect(first.actions.some((action: { type: string }) => action.type === 'seed_steering')).toBe(false);
+    expect(
+      first.actions.some(
+        (action: { type: string; path: string; status: string }) =>
+          action.type === 'seed_steering' &&
+          action.path.endsWith(join('Steering', 'dialer-AGENTS.md')) &&
+          action.status === 'created',
+      ),
+    ).toBe(true);
     expect(first.actions.some((action: { path: string }) => action.path.endsWith(join('steering', 'decision.md')))).toBe(false);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'create_file' && action.path.endsWith(join('components', 'installed-skills.json')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('bin', 'status')) && action.status === 'created')).toBe(true);
     for (const dir of ['Artifacts', 'Projects', 'Sites', 'Skills', 'Tools', 'Steering']) {
       expect(existsSync(join(tempUserHome, 'Consuelo', dir))).toBe(true);
     }
+    const rootAgentsPath = join(tempUserHome, 'Consuelo', 'AGENTS.md');
+    const rootClaudePath = join(tempUserHome, 'Consuelo', 'CLAUDE.md');
+    const rootAgents = readFileSync(rootAgentsPath, 'utf8');
+    expect(rootAgents).toContain('# OS Steering Instructions Rewrite');
+    expect(readFileSync(rootClaudePath, 'utf8')).toBe(rootAgents);
+    expect(
+      first.actions.filter(
+        (action: { path: string; type: string; status: string; message?: string }) =>
+          [rootAgentsPath, rootClaudePath].includes(action.path),
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'create_file',
+          status: 'created',
+          message: 'managed user content (update-clean)',
+        }),
+        expect.objectContaining({
+          type: 'create_file',
+          status: 'created',
+          message: 'managed user content (update-clean)',
+        }),
+      ]),
+    );
     expect(existsSync(join(tempUserHome, 'Consuelo', 'Scripts'))).toBe(false);
     expect(existsSync(join(tempUserHome, 'Consuelo', 'Skills', 'task', 'SKILL.md'))).toBe(true);
     // BUILT_INS.md was renamed to TOOLS.md, which also documents how to view and edit tools.
@@ -568,7 +599,14 @@ describe('local OS install state', () => {
       process.stdout.write(JSON.stringify(result));
     `));
     expect(second.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'preserved')).toBe(true);
-    expect(second.actions.some((action: { type: string }) => action.type === 'seed_steering')).toBe(false);
+    expect(
+      second.actions.some(
+        (action: { type: string; path: string; status: string }) =>
+          action.type === 'seed_steering' &&
+          action.path.endsWith(join('Steering', 'dialer-AGENTS.md')) &&
+          action.status === 'preserved',
+      ),
+    ).toBe(true);
     expect(readFileSync(userSteeringPath, 'utf8')).toContain('user-owned preferences');
     expect(existsSync(join(tempHome, 'steering'))).toBe(false);
   });
