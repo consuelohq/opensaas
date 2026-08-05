@@ -1,5 +1,7 @@
 import { Effect } from 'effect';
 
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+
 type QueryResult = { rows: unknown[]; rowCount?: number };
 
 export type CommercialSqlClient = {
@@ -163,28 +165,32 @@ export const createCommercialPersistence = (client: CommercialSqlClient) => ({
   }) =>
     Effect.tryPromise({
       try: async () => {
-        const result = await client.query(
-          `INSERT INTO dialer_provider_webhook_events (
-            workspace_id, source, source_id, status, attempt_count
-          ) VALUES ($1, $2, $3, 'processing', 1)
-          ON CONFLICT (source, source_id) DO UPDATE
-          SET status = 'processing',
-              attempt_count = dialer_provider_webhook_events.attempt_count + 1,
-              claimed_at = now(),
-              completed_at = NULL,
-              last_error_code = NULL
-          WHERE dialer_provider_webhook_events.workspace_id = EXCLUDED.workspace_id
-            AND (
-              dialer_provider_webhook_events.status = 'failed'
-              OR (
-                dialer_provider_webhook_events.status = 'processing'
-                AND dialer_provider_webhook_events.claimed_at < now() - interval '5 minutes'
+        try {
+          const result = await client.query(
+            `INSERT INTO dialer_provider_webhook_events (
+              workspace_id, source, source_id, status, attempt_count
+            ) VALUES ($1, $2, $3, 'processing', 1)
+            ON CONFLICT (source, source_id) DO UPDATE
+            SET status = 'processing',
+                attempt_count = dialer_provider_webhook_events.attempt_count + 1,
+                claimed_at = now(),
+                completed_at = NULL,
+                last_error_code = NULL
+            WHERE dialer_provider_webhook_events.workspace_id = EXCLUDED.workspace_id
+              AND (
+                dialer_provider_webhook_events.status = 'failed'
+                OR (
+                  dialer_provider_webhook_events.status = 'processing'
+                  AND dialer_provider_webhook_events.claimed_at < now() - interval '5 minutes'
+                )
               )
-            )
-          RETURNING true AS inserted`,
-          [input.workspaceId, input.source, input.sourceId],
-        );
-        return (result.rowCount ?? result.rows.length) > 0;
+            RETURNING true AS inserted`,
+            [input.workspaceId, input.source, input.sourceId],
+          );
+          return (result.rowCount ?? result.rows.length) > 0;
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
       },
       catch: (cause) => cause,
     }),
@@ -195,13 +201,17 @@ export const createCommercialPersistence = (client: CommercialSqlClient) => ({
   }) =>
     Effect.tryPromise({
       try: async () => {
-        await client.query(
-          `UPDATE dialer_provider_webhook_events
-           SET status = 'completed', completed_at = now(), last_error_code = NULL
-           WHERE workspace_id = $1 AND source = $2 AND source_id = $3
-             AND status = 'processing'`,
-          [input.workspaceId, input.source, input.sourceId],
-        );
+        try {
+          await client.query(
+            `UPDATE dialer_provider_webhook_events
+             SET status = 'completed', completed_at = now(), last_error_code = NULL
+             WHERE workspace_id = $1 AND source = $2 AND source_id = $3
+               AND status = 'processing'`,
+            [input.workspaceId, input.source, input.sourceId],
+          );
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
       },
       catch: (cause) => cause,
     }),
@@ -213,13 +223,17 @@ export const createCommercialPersistence = (client: CommercialSqlClient) => ({
   }) =>
     Effect.tryPromise({
       try: async () => {
-        await client.query(
-          `UPDATE dialer_provider_webhook_events
-           SET status = 'failed', completed_at = NULL, last_error_code = $4
-           WHERE workspace_id = $1 AND source = $2 AND source_id = $3
-             AND status = 'processing'`,
-          [input.workspaceId, input.source, input.sourceId, input.errorCode],
-        );
+        try {
+          await client.query(
+            `UPDATE dialer_provider_webhook_events
+             SET status = 'failed', completed_at = NULL, last_error_code = $4
+             WHERE workspace_id = $1 AND source = $2 AND source_id = $3
+               AND status = 'processing'`,
+            [input.workspaceId, input.source, input.sourceId, input.errorCode],
+          );
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
       },
       catch: (cause) => cause,
     }),
@@ -230,30 +244,38 @@ export const createCommercialPersistence = (client: CommercialSqlClient) => ({
   }) =>
     Effect.tryPromise({
       try: async () => {
-        await client.query(
-          `INSERT INTO dialer_team_seats (
-            workspace_id, user_id, plan_code, status
-          ) VALUES ($1, $2, $3, 'active')
-          ON CONFLICT (workspace_id, user_id) DO UPDATE
-          SET plan_code = EXCLUDED.plan_code,
-              status = 'active',
-              updated_at = now()`,
-          [input.workspaceId, input.userId, input.planCode],
-        );
+        try {
+          await client.query(
+            `INSERT INTO dialer_team_seats (
+              workspace_id, user_id, plan_code, status
+            ) VALUES ($1, $2, $3, 'active')
+            ON CONFLICT (workspace_id, user_id) DO UPDATE
+            SET plan_code = EXCLUDED.plan_code,
+                status = 'active',
+                updated_at = now()`,
+            [input.workspaceId, input.userId, input.planCode],
+          );
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
       },
       catch: (cause) => cause,
     }),
   listActiveNumbersForUser: (workspaceId: string, userId: string) =>
     Effect.tryPromise({
       try: async () => {
-        const result = await client.query(
-          `SELECT phone_number, provider_number_id
-          FROM dialer_phone_numbers
-          WHERE workspace_id = $1 AND user_id = $2 AND status = 'active'
-          ORDER BY phone_number`,
-          [workspaceId, userId],
-        );
-        return result.rows;
+        try {
+          const result = await client.query(
+            `SELECT phone_number, provider_number_id
+            FROM dialer_phone_numbers
+            WHERE workspace_id = $1 AND user_id = $2 AND status = 'active'
+            ORDER BY phone_number`,
+            [workspaceId, userId],
+          );
+          return result.rows;
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
       },
       catch: (cause) => cause,
     }),

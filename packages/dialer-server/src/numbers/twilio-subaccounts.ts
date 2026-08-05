@@ -1,5 +1,7 @@
 import { Effect } from 'effect';
 
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+
 export type TwilioAccountsClient = {
   api: {
     accounts: {
@@ -14,8 +16,12 @@ export const createTwilioSubaccountProvider = (
   createSubaccount: (input: { friendlyName: string }) =>
     Effect.tryPromise({
       try: async () => {
-        const account = await client.api.accounts.create(input);
-        return { id: account.sid };
+        try {
+          const account = await client.api.accounts.create(input);
+          return { id: account.sid };
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
       },
       catch: (cause) => cause,
     }),

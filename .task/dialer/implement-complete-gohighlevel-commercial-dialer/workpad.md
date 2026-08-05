@@ -315,7 +315,9 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 
 ## workspace-owned: validation evidence
 
-- none yet
+- 2026-08-05 05:52:06 `review.run`: passed — OK
+- 2026-08-05 05:52:07 `review.run`: passed — OK
+- 2026-08-05 06:00:23 `review.run`: passed — OK
 
 ## key decisions
 
@@ -538,8 +540,15 @@ bun run task:finish
 - `packages/lead-connector/src/embed/view.ts`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-08-05 05:46:08 apply-patch: `packages/dialer-server/src/commercial/persistence.ts`
-- 2026-08-05 05:46:08 apply-patch: `packages/dialer-server/src/commercial/application.ts`
-- 2026-08-05 05:46:08 apply-patch: `packages/dialer-server/src/commercial-application.acceptance.test.ts`
+- 2026-08-05 06:01:45 apply-patch: `packages/dialer-server/src/commercial.acceptance.test.ts`
 
-- 2026-08-05 05:49:41 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
+## strict review remediation and revalidation
+
+- Initial strict review completed with 71 blocking static findings: 70 async error-boundary findings and one direct phone-comparison finding. The first review transport attempt returned an explicit HTTP 502 before recording findings; the clean retry returned the complete finding set.
+- Added shared non-Error normalization boundaries while preserving existing typed `Error` identity, wrapped every flagged asynchronous provider/application boundary, and normalized assigned/selected number comparisons before capacity and ownership decisions.
+- Strict `review.run` now passes with `yourIssues: 0`, `blockingIssues: 0`, `mustFixTotal: 0`, and no failed test suites; trace `trc_424da42f6c32`.
+- Cache-disabled post-remediation package gate: dialer-server typecheck exit 0, 122 tests passed, production build exit 0; LeadConnector typecheck exit 0, 105 tests passed, embed build exit 0; trace `trc_55959c6846a7`.
+- Post-remediation focused commercial matrix preflight found zero destructive executable/credential literals; 183 tests passed across 28 files, with `git diff --check`, generated-artifact scan, and secret scan all clean; trace `trc_09f205bc3a27`.
+- Remaining gates: commit this review remediation, rerun strict review from committed HEAD, run full publish-valid verify, refetch/sync `stream/dialer`, rerun affected post-sync gates, publish PR #1782, merge, deploy Railway/Cloudflare/Marketplace, and complete authenticated non-mutating GHL browser verification.
+
+- 2026-08-05 06:03:08 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`

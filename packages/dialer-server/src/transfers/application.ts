@@ -14,6 +14,8 @@ import type {
   DialerTransferResult,
 } from '../contracts';
 
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+
 export type PersistedTransferStatus =
   | 'initiating'
   | 'consulting'
@@ -158,16 +160,20 @@ const requireConference = async (
   dialer: TransferDialer,
   group: ParallelGroup,
 ) => {
-  const conferenceSid = await dialer.findConferenceSid(group.conferenceName);
-  if (!conferenceSid) {
-    throw requestError('CONFERENCE_NOT_FOUND', 'Live conference was not found');
+  try {
+    const conferenceSid = await dialer.findConferenceSid(group.conferenceName);
+    if (!conferenceSid) {
+      throw requestError('CONFERENCE_NOT_FOUND', 'Live conference was not found');
+    }
+    const participants = await dialer.listParticipants(conferenceSid);
+    const agent = participants.find((participant) => participant.label === 'agent');
+    if (!agent) {
+      throw requestError('AGENT_NOT_FOUND', 'Live agent participant was not found');
+    }
+    return { conferenceSid, agent };
+  } catch (cause: unknown) {
+    throw normalizeAsyncError(cause);
   }
-  const participants = await dialer.listParticipants(conferenceSid);
-  const agent = participants.find((participant) => participant.label === 'agent');
-  if (!agent) {
-    throw requestError('AGENT_NOT_FOUND', 'Live agent participant was not found');
-  }
-  return { conferenceSid, agent };
 };
 
 const transferEventId = (
@@ -204,270 +210,290 @@ export const createTransferApplication = (
 ): DialerTransferApplication => ({
   initiate: (command) =>
     effect('initiate-transfer', async () => {
-      const group = requireOwnedConnectedGroup(
-        await input.loadGroup(command.sessionId, command.workspaceId),
-        command,
-      );
-      const winner = requireWinner(group);
-      const dialer = await input.selectDialer(group.groupId);
-      const { agent } = await requireConference(dialer, group);
-      const transferId = input.generateId();
-      const base: PersistedTransfer = {
-        workspaceId: command.workspaceId,
-        sessionId: group.dialerSessionId!,
-        transferId,
-        groupId: group.groupId,
-        type: command.type,
-        target: command.to,
-        status: 'initiating',
-        conferenceSid: null,
-        transferCallSid: null,
-      };
-      await record(input.repository, {
-        ...base,
-        eventType: 'transfer_initiated',
-      });
-      const provider = await dialer.initiateTransfer({
-        callSid: agent.callSid,
-        conferenceName: group.conferenceName,
-        to: command.to,
-        from: winner.fromNumber,
-        type: command.type,
-        userId: command.userId,
-        statusCallbackUrl:
-          input.publicUrl.replace(/\/$/, '') +
-          '/webhooks/twilio/transfer-status',
-        transferId,
-      });
-      if (!provider.success) {
+      try {
+        const group = requireOwnedConnectedGroup(
+          await input.loadGroup(command.sessionId, command.workspaceId),
+          command,
+        );
+        const winner = requireWinner(group);
+        const dialer = await input.selectDialer(group.groupId);
+        const { agent } = await requireConference(dialer, group);
+        const transferId = input.generateId();
+        const base: PersistedTransfer = {
+          workspaceId: command.workspaceId,
+          sessionId: group.dialerSessionId!,
+          transferId,
+          groupId: group.groupId,
+          type: command.type,
+          target: command.to,
+          status: 'initiating',
+          conferenceSid: null,
+          transferCallSid: null,
+        };
         await record(input.repository, {
           ...base,
-          status: 'failed',
+          eventType: 'transfer_initiated',
+        });
+        const provider = await dialer.initiateTransfer({
+          callSid: agent.callSid,
+          conferenceName: group.conferenceName,
+          to: command.to,
+          from: winner.fromNumber,
+          type: command.type,
+          userId: command.userId,
+          statusCallbackUrl:
+            input.publicUrl.replace(/\/$/, '') +
+            '/webhooks/twilio/transfer-status',
+          transferId,
+        });
+        if (!provider.success) {
+          await record(input.repository, {
+            ...base,
+            status: 'failed',
+            conferenceSid: provider.conferenceSid ?? null,
+            transferCallSid: provider.transferCallSid ?? null,
+            eventType: 'transfer_failed',
+            error: provider.error ?? 'Transfer failed',
+          });
+          return publicResult(transferId, 'failed', provider);
+        }
+        const status = command.type === 'warm' ? 'initiating' : 'completed';
+        await record(input.repository, {
+          ...base,
+          status,
           conferenceSid: provider.conferenceSid ?? null,
           transferCallSid: provider.transferCallSid ?? null,
-          eventType: 'transfer_failed',
-          error: provider.error ?? 'Transfer failed',
+          eventType:
+            command.type === 'warm'
+              ? 'transfer_dialing'
+              : 'transfer_completed',
         });
-        return publicResult(transferId, 'failed', provider);
+        return publicResult(transferId, status, provider);
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
       }
-      const status = command.type === 'warm' ? 'initiating' : 'completed';
-      await record(input.repository, {
-        ...base,
-        status,
-        conferenceSid: provider.conferenceSid ?? null,
-        transferCallSid: provider.transferCallSid ?? null,
-        eventType:
-          command.type === 'warm'
-            ? 'transfer_dialing'
-            : 'transfer_completed',
-      });
-      return publicResult(transferId, status, provider);
     }),
   getStatus: (command) =>
     effect('get-transfer-status', async () => {
-      const group = requireOwnedGroup(
-        await input.loadGroup(command.sessionId, command.workspaceId),
-        command,
-      );
-      const transfer = await input.repository.getTransfer({
-        workspaceId: command.workspaceId,
-        sessionId: group.dialerSessionId!,
-        transferId: command.transferId,
-      });
-      if (!transfer || transfer.groupId !== group.groupId) {
-        throw requestError('TRANSFER_NOT_FOUND', 'Transfer was not found');
+      try {
+        const group = requireOwnedGroup(
+          await input.loadGroup(command.sessionId, command.workspaceId),
+          command,
+        );
+        const transfer = await input.repository.getTransfer({
+          workspaceId: command.workspaceId,
+          sessionId: group.dialerSessionId!,
+          transferId: command.transferId,
+        });
+        if (!transfer || transfer.groupId !== group.groupId) {
+          throw requestError('TRANSFER_NOT_FOUND', 'Transfer was not found');
+        }
+        return publicResult(command.transferId, transfer.status, {
+          success: transfer.status !== 'failed',
+          ...(transfer.transferCallSid
+            ? { transferCallSid: transfer.transferCallSid }
+            : {}),
+          ...(transfer.conferenceSid
+            ? { conferenceSid: transfer.conferenceSid }
+            : {}),
+        });
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
       }
-      return publicResult(command.transferId, transfer.status, {
-        success: transfer.status !== 'failed',
-        ...(transfer.transferCallSid
-          ? { transferCallSid: transfer.transferCallSid }
-          : {}),
-        ...(transfer.conferenceSid
-          ? { conferenceSid: transfer.conferenceSid }
-          : {}),
-      });
     }),
   complete: (command) =>
     effect('complete-transfer', async () => {
-      const group = requireOwnedConnectedGroup(
-        await input.loadGroup(command.sessionId, command.workspaceId),
-        command,
-      );
-      const transfer = await input.repository.getTransfer({
-        workspaceId: command.workspaceId,
-        sessionId: group.dialerSessionId!,
-        transferId: command.transferId,
-      });
-      if (
-        !transfer ||
-        transfer.groupId !== group.groupId ||
-        transfer.type !== 'warm' ||
-        transfer.status !== 'consulting' ||
-        !transfer.conferenceSid
-      ) {
-        throw requestError(
-          'WARM_TRANSFER_NOT_FOUND',
-          'An active warm consultation was not found',
+      try {
+        const group = requireOwnedConnectedGroup(
+          await input.loadGroup(command.sessionId, command.workspaceId),
+          command,
         );
-      }
-      const dialer = await input.selectDialer(group.groupId);
-      const { agent } = await requireConference(dialer, group);
-      const provider = await dialer.completeTransfer(
-        transfer.conferenceSid,
-        agent.callSid,
-      );
-      const status = provider.success ? 'completed' : 'failed';
-      await record(input.repository, {
-        ...transfer,
-        status,
-        eventType: provider.success
-          ? 'transfer_completed'
-          : 'transfer_failed',
-        ...(provider.error ? { error: provider.error } : {}),
-      });
-      return publicResult(command.transferId, status, provider);
-    }),
-  cancel: (command) =>
-    effect('cancel-transfer', async () => {
-      const group = requireOwnedConnectedGroup(
-        await input.loadGroup(command.sessionId, command.workspaceId),
-        command,
-      );
-      const transfer = await input.repository.getTransfer({
-        workspaceId: command.workspaceId,
-        sessionId: group.dialerSessionId!,
-        transferId: command.transferId,
-      });
-      if (
-        !transfer ||
-        transfer.groupId !== group.groupId ||
-        transfer.type !== 'warm' ||
-        transfer.status !== 'consulting' ||
-        !transfer.conferenceSid ||
-        !transfer.transferCallSid
-      ) {
-        throw requestError(
-          'WARM_TRANSFER_NOT_FOUND',
-          'An active warm consultation was not found',
+        const transfer = await input.repository.getTransfer({
+          workspaceId: command.workspaceId,
+          sessionId: group.dialerSessionId!,
+          transferId: command.transferId,
+        });
+        if (
+          !transfer ||
+          transfer.groupId !== group.groupId ||
+          transfer.type !== 'warm' ||
+          transfer.status !== 'consulting' ||
+          !transfer.conferenceSid
+        ) {
+          throw requestError(
+            'WARM_TRANSFER_NOT_FOUND',
+            'An active warm consultation was not found',
+          );
+        }
+        const dialer = await input.selectDialer(group.groupId);
+        const { agent } = await requireConference(dialer, group);
+        const provider = await dialer.completeTransfer(
+          transfer.conferenceSid,
+          agent.callSid,
         );
-      }
-      const dialer = await input.selectDialer(group.groupId);
-      const provider = await dialer.cancelTransfer(
-        transfer.conferenceSid,
-        transfer.transferCallSid,
-      );
-      const status = provider.success ? 'cancelled' : 'failed';
-      await record(input.repository, {
-        ...transfer,
-        status,
-        eventType: provider.success
-          ? 'transfer_cancelled'
-          : 'transfer_failed',
-        ...(provider.error ? { error: provider.error } : {}),
-      });
-      return publicResult(command.transferId, status, provider);
-    }),
-  processStatusCallback: (command) =>
-    effect('process-transfer-status', async () => {
-      const transfer = await input.repository.getTransferById(command.transferId);
-      if (!transfer) {
-        throw requestError(
-          'TRANSFER_NOT_FOUND',
-          'Transfer was not found for provider callback',
-        );
-      }
-      if (
-        transfer.transferCallSid &&
-        transfer.transferCallSid !== command.callSid
-      ) {
-        throw requestError(
-          'TRANSFER_CALL_MISMATCH',
-          'Transfer provider call does not match persisted state',
-        );
-      }
-      if (
-        transfer.status === 'completed' ||
-        transfer.status === 'cancelled' ||
-        transfer.status === 'failed'
-      ) {
-        return { received: true as const, status: transfer.status };
-      }
-
-      const providerStatus = command.callStatus.trim().toLowerCase();
-      if (providerStatus === 'answered' || providerStatus === 'in-progress') {
-        const status = transfer.type === 'warm' ? 'consulting' : 'completed';
+        const status = provider.success ? 'completed' : 'failed';
         await record(input.repository, {
           ...transfer,
           status,
-          eventType:
-            transfer.type === 'warm'
-              ? 'transfer_consulting'
-              : 'transfer_completed',
+          eventType: provider.success
+            ? 'transfer_completed'
+            : 'transfer_failed',
+          ...(provider.error ? { error: provider.error } : {}),
         });
-        return { received: true as const, status };
+        return publicResult(command.transferId, status, provider);
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
       }
-
-      const terminal = new Set([
-        'busy',
-        'canceled',
-        'cancelled',
-        'completed',
-        'failed',
-        'no-answer',
-      ]);
-      if (!terminal.has(providerStatus)) {
-        return { received: true as const, status: transfer.status };
-      }
-
-      if (transfer.type === 'warm' && transfer.conferenceSid) {
-        const dialer = await input.selectDialer(transfer.groupId);
-        const participants = await dialer.listParticipants(
-          transfer.conferenceSid,
+    }),
+  cancel: (command) =>
+    effect('cancel-transfer', async () => {
+      try {
+        const group = requireOwnedConnectedGroup(
+          await input.loadGroup(command.sessionId, command.workspaceId),
+          command,
         );
-        const target = participants.find(
-          (participant) =>
-            participant.callSid === transfer.transferCallSid ||
-            participant.label === 'transfer-target',
-        );
-        const customer = participants.find(
-          (participant) => participant.label === 'customer',
-        );
-        if (target && transfer.transferCallSid) {
-          const cancelled = await dialer.cancelTransfer(
-            transfer.conferenceSid,
-            transfer.transferCallSid,
+        const transfer = await input.repository.getTransfer({
+          workspaceId: command.workspaceId,
+          sessionId: group.dialerSessionId!,
+          transferId: command.transferId,
+        });
+        if (
+          !transfer ||
+          transfer.groupId !== group.groupId ||
+          transfer.type !== 'warm' ||
+          transfer.status !== 'consulting' ||
+          !transfer.conferenceSid ||
+          !transfer.transferCallSid
+        ) {
+          throw requestError(
+            'WARM_TRANSFER_NOT_FOUND',
+            'An active warm consultation was not found',
           );
-          if (!cancelled.success && customer?.hold) {
+        }
+        const dialer = await input.selectDialer(group.groupId);
+        const provider = await dialer.cancelTransfer(
+          transfer.conferenceSid,
+          transfer.transferCallSid,
+        );
+        const status = provider.success ? 'cancelled' : 'failed';
+        await record(input.repository, {
+          ...transfer,
+          status,
+          eventType: provider.success
+            ? 'transfer_cancelled'
+            : 'transfer_failed',
+          ...(provider.error ? { error: provider.error } : {}),
+        });
+        return publicResult(command.transferId, status, provider);
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    }),
+  processStatusCallback: (command) =>
+    effect('process-transfer-status', async () => {
+      try {
+        const transfer = await input.repository.getTransferById(command.transferId);
+        if (!transfer) {
+          throw requestError(
+            'TRANSFER_NOT_FOUND',
+            'Transfer was not found for provider callback',
+          );
+        }
+        if (
+          transfer.transferCallSid &&
+          transfer.transferCallSid !== command.callSid
+        ) {
+          throw requestError(
+            'TRANSFER_CALL_MISMATCH',
+            'Transfer provider call does not match persisted state',
+          );
+        }
+        if (
+          transfer.status === 'completed' ||
+          transfer.status === 'cancelled' ||
+          transfer.status === 'failed'
+        ) {
+          return { received: true as const, status: transfer.status };
+        }
+
+        const providerStatus = command.callStatus.trim().toLowerCase();
+        if (providerStatus === 'answered' || providerStatus === 'in-progress') {
+          const status = transfer.type === 'warm' ? 'consulting' : 'completed';
+          await record(input.repository, {
+            ...transfer,
+            status,
+            eventType:
+              transfer.type === 'warm'
+                ? 'transfer_consulting'
+                : 'transfer_completed',
+          });
+          return { received: true as const, status };
+        }
+
+        const terminal = new Set([
+          'busy',
+          'canceled',
+          'cancelled',
+          'completed',
+          'failed',
+          'no-answer',
+        ]);
+        if (!terminal.has(providerStatus)) {
+          return { received: true as const, status: transfer.status };
+        }
+
+        if (transfer.type === 'warm' && transfer.conferenceSid) {
+          const dialer = await input.selectDialer(transfer.groupId);
+          const participants = await dialer.listParticipants(
+            transfer.conferenceSid,
+          );
+          const target = participants.find(
+            (participant) =>
+              participant.callSid === transfer.transferCallSid ||
+              participant.label === 'transfer-target',
+          );
+          const customer = participants.find(
+            (participant) => participant.label === 'customer',
+          );
+          if (target && transfer.transferCallSid) {
+            const cancelled = await dialer.cancelTransfer(
+              transfer.conferenceSid,
+              transfer.transferCallSid,
+            );
+            if (!cancelled.success && customer?.hold) {
+              await dialer.holdParticipant(
+                transfer.conferenceSid,
+                customer.callSid,
+                false,
+              );
+            }
+          } else if (customer?.hold) {
             await dialer.holdParticipant(
               transfer.conferenceSid,
               customer.callSid,
               false,
             );
           }
-        } else if (customer?.hold) {
-          await dialer.holdParticipant(
-            transfer.conferenceSid,
-            customer.callSid,
-            false,
-          );
         }
-      }
 
-      const status =
-        transfer.type === 'cold' && providerStatus === 'completed'
-          ? 'completed'
-          : 'failed';
-      await record(input.repository, {
-        ...transfer,
-        status,
-        eventType:
-          status === 'completed'
-            ? 'transfer_completed'
-            : 'transfer_failed',
-        ...(status === 'failed'
-          ? { error: 'Provider status: ' + providerStatus }
-          : {}),
-      });
-      return { received: true as const, status };
+        const status =
+          transfer.type === 'cold' && providerStatus === 'completed'
+            ? 'completed'
+            : 'failed';
+        await record(input.repository, {
+          ...transfer,
+          status,
+          eventType:
+            status === 'completed'
+              ? 'transfer_completed'
+              : 'transfer_failed',
+          ...(status === 'failed'
+            ? { error: 'Provider status: ' + providerStatus }
+            : {}),
+        });
+        return { received: true as const, status };
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
     }),
 });

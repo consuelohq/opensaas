@@ -64,6 +64,8 @@ import {
 } from './lead-connector-learning';
 import { rankPredictiveLeadConnectorTargets } from './predictive-target-ranking';
 
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+
 export type RailwayEnvironment = Record<string, string | undefined>;
 
 export type RailwayRedisClient = RedisParallelClient;
@@ -411,16 +413,20 @@ export const createRailwayCommercialApplication = async (
     const database = resources.database ?? shared!.database;
     const sqlClient = {
       query: async (sql: string, parameters?: readonly unknown[]) => {
-        const result = (await database.query(sql, parameters)) as {
-          rows: unknown[];
-          rowCount?: number | null;
-        };
-        return {
-          rows: result.rows,
-          ...(result.rowCount === null || result.rowCount === undefined
-            ? {}
-            : { rowCount: result.rowCount }),
-        };
+        try {
+          const result = (await database.query(sql, parameters)) as {
+            rows: unknown[];
+            rowCount?: number | null;
+          };
+          return {
+            rows: result.rows,
+            ...(result.rowCount === null || result.rowCount === undefined
+              ? {}
+              : { rowCount: result.rowCount }),
+          };
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
       },
     };
     await Effect.runPromise(initializeCommercialPersistence(sqlClient));
@@ -443,62 +449,82 @@ export const createRailwayCommercialApplication = async (
       client: {
         customers: {
           create: async (parameters, options) => {
-            const customer = await stripe.customers.create(
-              parameters as StripeSdk.CustomerCreateParams,
-              options as StripeSdk.RequestOptions | undefined,
-            );
-            return { id: customer.id };
+            try {
+              const customer = await stripe.customers.create(
+                parameters as StripeSdk.CustomerCreateParams,
+                options as StripeSdk.RequestOptions | undefined,
+              );
+              return { id: customer.id };
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
           },
         },
         checkout: {
           sessions: {
             create: async (parameters, options) => {
-              const session = await stripe.checkout.sessions.create(
-                parameters as StripeSdk.Checkout.SessionCreateParams,
-                options as StripeSdk.RequestOptions | undefined,
-              );
-              return { id: session.id, url: session.url };
+              try {
+                const session = await stripe.checkout.sessions.create(
+                  parameters as StripeSdk.Checkout.SessionCreateParams,
+                  options as StripeSdk.RequestOptions | undefined,
+                );
+                return { id: session.id, url: session.url };
+              } catch (cause: unknown) {
+                throw normalizeAsyncError(cause);
+              }
             },
           },
         },
         billingPortal: {
           sessions: {
             create: async (parameters) => {
-              const session = await stripe.billingPortal.sessions.create(
-                parameters as unknown as StripeSdk.BillingPortal.SessionCreateParams,
-              );
-              return { id: session.id, url: session.url };
+              try {
+                const session = await stripe.billingPortal.sessions.create(
+                  parameters as unknown as StripeSdk.BillingPortal.SessionCreateParams,
+                );
+                return { id: session.id, url: session.url };
+              } catch (cause: unknown) {
+                throw normalizeAsyncError(cause);
+              }
             },
           },
         },
         invoices: {
           createPreview: async (parameters) => {
-            const preview = await stripe.invoices.createPreview(
-              parameters as StripeSdk.InvoiceCreatePreviewParams,
-            );
-            return {
-              amount_due: preview.amount_due,
-              currency: preview.currency,
-              period_end: preview.period_end,
-            };
+            try {
+              const preview = await stripe.invoices.createPreview(
+                parameters as StripeSdk.InvoiceCreatePreviewParams,
+              );
+              return {
+                amount_due: preview.amount_due,
+                currency: preview.currency,
+                period_end: preview.period_end,
+              };
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
           },
         },
         subscriptions: {
           retrieve: async (subscriptionId) => {
-            const subscription =
-              await stripe.subscriptions.retrieve(subscriptionId);
-            if ('deleted' in subscription && subscription.deleted) {
-              throw new Error('STRIPE_SUBSCRIPTION_DELETED');
+            try {
+              const subscription =
+                await stripe.subscriptions.retrieve(subscriptionId);
+              if ('deleted' in subscription && subscription.deleted) {
+                throw new Error('STRIPE_SUBSCRIPTION_DELETED');
+              }
+              return {
+                id: subscription.id,
+                items: {
+                  data: subscription.items.data.map((item) => ({
+                    id: item.id,
+                    price: { id: item.price.id },
+                  })),
+                },
+              };
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
             }
-            return {
-              id: subscription.id,
-              items: {
-                data: subscription.items.data.map((item) => ({
-                  id: item.id,
-                  price: { id: item.price.id },
-                })),
-              },
-            };
           },
           update: (subscriptionId, parameters, options) =>
             stripe.subscriptions.update(
@@ -540,8 +566,12 @@ export const createRailwayCommercialApplication = async (
               voiceUrl: string;
               voiceMethod: 'POST';
             }) => {
-              const created = await client.incomingPhoneNumbers.create(request);
-              return { sid: created.sid, phoneNumber: created.phoneNumber };
+              try {
+                const created = await client.incomingPhoneNumbers.create(request);
+                return { sid: created.sid, phoneNumber: created.phoneNumber };
+              } catch (cause: unknown) {
+                throw normalizeAsyncError(cause);
+              }
             },
           },
         );
@@ -553,16 +583,20 @@ export const createRailwayCommercialApplication = async (
                 contains?: string;
                 limit: number;
               }) => {
-                const available = await client
-                  .availablePhoneNumbers(country)
-                  .local.list(request);
-                return available.map((number) => ({
-                  phoneNumber: number.phoneNumber,
-                  friendlyName: number.friendlyName,
-                  locality: number.locality,
-                  region: number.region,
-                  rateCenter: number.rateCenter,
-                }));
+                try {
+                  const available = await client
+                    .availablePhoneNumbers(country)
+                    .local.list(request);
+                  return available.map((number) => ({
+                    phoneNumber: number.phoneNumber,
+                    friendlyName: number.friendlyName,
+                    locality: number.locality,
+                    region: number.region,
+                    rateCenter: number.rateCenter,
+                  }));
+                } catch (cause: unknown) {
+                  throw normalizeAsyncError(cause);
+                }
               },
             },
           }),
@@ -580,20 +614,24 @@ export const createRailwayCommercialApplication = async (
       numbers,
       usage: {
         getCompletion: async (providerCallId) => {
-          const call = await masterTwilio.calls(providerCallId).fetch();
-          const customerConnectedSeconds = Math.max(
-            0,
-            Number(call.duration ?? 0),
-          );
-          const providerPrice = Number(call.price ?? 0);
-          return {
-            customerConnectedSeconds,
-            agentConnectedSeconds: 0,
-            providerCostMicros: Number.isFinite(providerPrice)
-              ? Math.round(Math.abs(providerPrice) * 1_000_000)
-              : 0,
-            occurredAt: (call.dateUpdated ?? new Date()).toISOString(),
-          };
+          try {
+            const call = await masterTwilio.calls(providerCallId).fetch();
+            const customerConnectedSeconds = Math.max(
+              0,
+              Number(call.duration ?? 0),
+            );
+            const providerPrice = Number(call.price ?? 0);
+            return {
+              customerConnectedSeconds,
+              agentConnectedSeconds: 0,
+              providerCostMicros: Number.isFinite(providerPrice)
+                ? Math.round(Math.abs(providerPrice) * 1_000_000)
+                : 0,
+              occurredAt: (call.dateUpdated ?? new Date()).toISOString(),
+            };
+          } catch (cause: unknown) {
+            throw normalizeAsyncError(cause);
+          }
         },
       },
     });
@@ -887,25 +925,29 @@ export const createRailwayDialerApplicationLayers = async (
             'true';
           const numbers = commercialEnabled && database
             ? yield* tryEffect('list-commercial-caller-ids', async () => {
-                const result = await database.query<{
-                  phone_number: string;
-                  provider_number_id: string | null;
-                }>(
-                  `SELECT phone_number, provider_number_id
-                   FROM dialer_phone_numbers
-                   WHERE workspace_id = $1 AND user_id = $2
-                     AND status = 'active'
-                   ORDER BY phone_number`,
-                  [input.workspaceId, input.userId],
-                );
-                return result.rows.map((number) => ({
-                  phoneNumber: number.phone_number,
-                  areaCode: number.phone_number.slice(2, 5),
-                  isPrimary: false,
-                  isActive: true,
-                  twilioSid: number.provider_number_id ?? '',
-                }));
-              })
+            try {
+              const result = await database.query<{
+                phone_number: string;
+                provider_number_id: string | null;
+              }>(
+                `SELECT phone_number, provider_number_id
+                 FROM dialer_phone_numbers
+                 WHERE workspace_id = $1 AND user_id = $2
+                   AND status = 'active'
+                 ORDER BY phone_number`,
+                [input.workspaceId, input.userId],
+              );
+              return result.rows.map((number) => ({
+                phoneNumber: number.phone_number,
+                areaCode: number.phone_number.slice(2, 5),
+                isPrimary: false,
+                isActive: true,
+                twilioSid: number.provider_number_id ?? '',
+              }));
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
+          })
             : yield* tryEffect('list-caller-ids', () =>
                 runtime.liveDialer.listNumbers(),
               );
@@ -1125,11 +1167,15 @@ export const createRailwayDialerApplicationLayers = async (
       }),
       startCallRecording: ({ callSid }) =>
         tryEffect('start-call-recording', async () => {
-          const dialer = await selectProviderDialerForCall(runtime, callSid);
-          return dialer.startCallRecording({
-            callSid,
-            recordingStatusCallbackUrl,
-          });
+          try {
+            const dialer = await selectProviderDialerForCall(runtime, callSid);
+            return dialer.startCallRecording({
+              callSid,
+              recordingStatusCallbackUrl,
+            });
+          } catch (cause: unknown) {
+            throw normalizeAsyncError(cause);
+          }
         }),
       handleStatusCallback: (input) =>
         tryEffect('handle-status-callback', () =>

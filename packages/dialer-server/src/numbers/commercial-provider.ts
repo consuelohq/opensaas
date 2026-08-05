@@ -3,6 +3,8 @@ import { Effect } from 'effect';
 import type { CommercialSqlClient } from '../commercial/persistence';
 import { ensureWorkspaceTelephonyAccount } from './telephony-account';
 
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+
 type AvailableNumber = {
   phoneNumber: string;
   friendlyName?: string | null;
@@ -74,40 +76,52 @@ export const createTwilioCommercialNumberProvider = (input: {
         repository: {
           get: (candidateWorkspaceId) =>
             queryEffect(async () => {
-              const result = await input.database.query(
-                `SELECT workspace_id, provider_account_id
-                 FROM dialer_workspace_telephony_accounts
-                 WHERE workspace_id = $1 AND status = 'active'`,
-                [candidateWorkspaceId],
-              );
-              const row = result.rows[0] as
-                | { workspace_id?: unknown; provider_account_id?: unknown }
-                | undefined;
-              return typeof row?.provider_account_id === 'string'
-                ? {
-                    workspaceId: String(row.workspace_id),
-                    providerAccountId: row.provider_account_id,
-                  }
-                : null;
+              try {
+                const result = await input.database.query(
+                  `SELECT workspace_id, provider_account_id
+                   FROM dialer_workspace_telephony_accounts
+                   WHERE workspace_id = $1 AND status = 'active'`,
+                  [candidateWorkspaceId],
+                );
+                const row = result.rows[0] as
+                  | { workspace_id?: unknown; provider_account_id?: unknown }
+                  | undefined;
+                return typeof row?.provider_account_id === 'string'
+                  ? {
+                      workspaceId: String(row.workspace_id),
+                      providerAccountId: row.provider_account_id,
+                    }
+                  : null;
+              } catch (cause: unknown) {
+                throw normalizeAsyncError(cause);
+              }
             }),
           save: (account) =>
             queryEffect(async () => {
-              await input.database.query(
-                `INSERT INTO dialer_workspace_telephony_accounts (
-                   workspace_id, provider_account_id, status
-                 ) VALUES ($1, $2, $3)
-                 ON CONFLICT (workspace_id) DO UPDATE
-                 SET provider_account_id = EXCLUDED.provider_account_id,
-                     status = EXCLUDED.status`,
-                [account.workspaceId, account.providerAccountId, account.status],
-              );
+              try {
+                await input.database.query(
+                  `INSERT INTO dialer_workspace_telephony_accounts (
+                     workspace_id, provider_account_id, status
+                   ) VALUES ($1, $2, $3)
+                   ON CONFLICT (workspace_id) DO UPDATE
+                   SET provider_account_id = EXCLUDED.provider_account_id,
+                       status = EXCLUDED.status`,
+                  [account.workspaceId, account.providerAccountId, account.status],
+                );
+              } catch (cause: unknown) {
+                throw normalizeAsyncError(cause);
+              }
             }),
         },
         provider: {
           createSubaccount: ({ friendlyName }) =>
             queryEffect(async () => {
-              const account = await input.createSubaccount(friendlyName);
-              return { id: account.sid };
+              try {
+                const account = await input.createSubaccount(friendlyName);
+                return { id: account.sid };
+              } catch (cause: unknown) {
+                throw normalizeAsyncError(cause);
+              }
             }),
         },
       }),
@@ -168,35 +182,39 @@ export const createTwilioCommercialNumberProvider = (input: {
       return { phoneNumber: number.phoneNumber, providerNumberId: number.sid };
     },
     release: async (request) => {
-      const result = await input.database.query(
-        `SELECT n.provider_number_id, a.provider_account_id
-         FROM dialer_phone_numbers n
-         JOIN dialer_workspace_telephony_accounts a
-           ON a.workspace_id = n.workspace_id AND a.status = 'active'
-         WHERE n.workspace_id = $1 AND n.phone_number = $2
-           AND n.status = 'active'`,
-        [request.workspaceId, request.phoneNumber],
-      );
-      const row = result.rows[0] as
-        | { provider_number_id?: unknown; provider_account_id?: unknown }
-        | undefined;
-      if (
-        typeof row?.provider_number_id !== 'string' ||
-        typeof row.provider_account_id !== 'string'
-      ) {
-        throw new Error('NUMBER_NOT_FOUND');
+      try {
+        const result = await input.database.query(
+          `SELECT n.provider_number_id, a.provider_account_id
+           FROM dialer_phone_numbers n
+           JOIN dialer_workspace_telephony_accounts a
+             ON a.workspace_id = n.workspace_id AND a.status = 'active'
+           WHERE n.workspace_id = $1 AND n.phone_number = $2
+             AND n.status = 'active'`,
+          [request.workspaceId, request.phoneNumber],
+        );
+        const row = result.rows[0] as
+          | { provider_number_id?: unknown; provider_account_id?: unknown }
+          | undefined;
+        if (
+          typeof row?.provider_number_id !== 'string' ||
+          typeof row.provider_account_id !== 'string'
+        ) {
+          throw new Error('NUMBER_NOT_FOUND');
+        }
+        await input
+          .accountClient(row.provider_account_id)
+          .incomingPhoneNumbers(row.provider_number_id)
+          .remove();
+        await input.database.query(
+          `UPDATE dialer_phone_numbers
+           SET status = 'released', user_id = NULL, updated_at = now()
+           WHERE workspace_id = $1 AND phone_number = $2`,
+          [request.workspaceId, request.phoneNumber],
+        );
+        return { released: true };
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
       }
-      await input
-        .accountClient(row.provider_account_id)
-        .incomingPhoneNumbers(row.provider_number_id)
-        .remove();
-      await input.database.query(
-        `UPDATE dialer_phone_numbers
-         SET status = 'released', user_id = NULL, updated_at = now()
-         WHERE workspace_id = $1 AND phone_number = $2`,
-        [request.workspaceId, request.phoneNumber],
-      );
-      return { released: true };
     },
   };
 };

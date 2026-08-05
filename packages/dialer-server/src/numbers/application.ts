@@ -2,20 +2,31 @@ type CallerIdSelection =
   | { kind: 'automatic' }
   | { kind: 'explicit'; phoneNumber: string };
 
+const normalizePhone = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length === 10) return `+1${digits}`;
+  return digits.length > 0 ? `+${digits}` : '';
+};
+
 export const resolveEffectiveLineCount = (input: {
   requestedLines: number;
   planMaximum: number;
   activeAssignedNumbers: string[];
   callerIdSelection: CallerIdSelection;
 }) => {
-  const callerIds = [...new Set(input.activeAssignedNumbers)];
+  const callerIds = [
+    ...new Set(input.activeAssignedNumbers.map(normalizePhone).filter(Boolean)),
+  ];
   if (input.callerIdSelection.kind === 'explicit') {
-    if (!callerIds.includes(input.callerIdSelection.phoneNumber)) {
+    const selectedPhoneNumber = normalizePhone(
+      input.callerIdSelection.phoneNumber,
+    );
+    if (!callerIds.includes(selectedPhoneNumber)) {
       throw new Error('CALLER_ID_NOT_ASSIGNED');
     }
     return {
       lineCount: Math.min(1, input.requestedLines, input.planMaximum),
-      callerIds: [input.callerIdSelection.phoneNumber],
+      callerIds: [selectedPhoneNumber],
     };
   }
   const lineCount = Math.max(
@@ -42,8 +53,10 @@ export const validateNumberAssignment = (input: {
       assignment.workspaceId === input.workspaceId &&
       assignment.status === 'active',
   );
+  const requestedPhoneNumber = normalizePhone(input.phoneNumber);
   const existing = active.find(
-    (assignment) => assignment.phoneNumber === input.phoneNumber,
+    (assignment) =>
+      normalizePhone(assignment.phoneNumber) === requestedPhoneNumber,
   );
   if (existing?.userId && existing.userId !== input.seatUserId) {
     throw new Error('NUMBER_ALREADY_ASSIGNED');
@@ -51,7 +64,7 @@ export const validateNumberAssignment = (input: {
   const ownedCount = new Set(
     active
       .filter((assignment) => assignment.userId === input.seatUserId)
-      .map((assignment) => assignment.phoneNumber),
+      .map((assignment) => normalizePhone(assignment.phoneNumber)),
   ).size;
   if (!existing && ownedCount >= input.planMaximum) {
     throw new Error('NUMBER_LIMIT_REACHED');

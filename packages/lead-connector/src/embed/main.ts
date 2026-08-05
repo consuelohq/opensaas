@@ -13,6 +13,8 @@ import {
 import { resolveLeadConnectorSurface } from './surface.js';
 import { renderLeadConnectorEmbed } from './view.js';
 
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+
 const root = document.querySelector<HTMLElement>('#app');
 if (!root) throw new Error('LeadConnector embed root is missing');
 
@@ -161,15 +163,19 @@ controller.subscribe((state) => {
 });
 
 const openHostedBilling = async (operation: () => Promise<string | null>): Promise<void> => {
-  const popup = window.open('about:blank', '_blank');
-  if (popup) popup.opener = null;
-  const url = await operation();
-  if (!url) {
-    popup?.close();
-    return;
+  try {
+    const popup = window.open('about:blank', '_blank');
+    if (popup) popup.opener = null;
+    const url = await operation();
+    if (!url) {
+      popup?.close();
+      return;
+    }
+    if (popup) popup.location.href = url;
+    else window.location.assign(url);
+  } catch (cause: unknown) {
+    throw normalizeAsyncError(cause);
   }
-  if (popup) popup.location.href = url;
-  else window.location.assign(url);
 };
 
 const currentBillingQuantities = () => {

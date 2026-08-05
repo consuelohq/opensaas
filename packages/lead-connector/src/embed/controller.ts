@@ -14,6 +14,8 @@ import {
   type LeadConnectorEmbedState,
 } from './state-machine.js';
 
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+
 export type LeadConnectorEmbedController = ReturnType<
   typeof createLeadConnectorEmbedController
 >;
@@ -353,14 +355,22 @@ export const createLeadConnectorEmbedController = (input: {
       power: number;
       additionalNumber: number;
     }): Promise<string | null> => {
-      const result = await run(() =>
-        input.api.createCommercialCheckout({ quantities }),
-      );
-      return result?.url ?? null;
+      try {
+        const result = await run(() =>
+          input.api.createCommercialCheckout({ quantities }),
+        );
+        return result?.url ?? null;
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
     },
     openBillingPortal: async (): Promise<string | null> => {
-      const result = await run(() => input.api.createCommercialBillingPortal());
-      return result?.url ?? null;
+      try {
+        const result = await run(() => input.api.createCommercialBillingPortal());
+        return result?.url ?? null;
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
     },
     previewBillingChange: async (quantities: {
       single: number;
@@ -368,17 +378,21 @@ export const createLeadConnectorEmbedController = (input: {
       power: number;
       additionalNumber: number;
     }) => {
-      const preview = await run(() =>
-        input.api.previewCommercialBillingChange({ quantities }),
-      );
-      if (preview) {
-        dispatch({
-          type: 'COMMERCIAL_BILLING_PREVIEWED',
-          quantities,
-          preview,
-        });
+      try {
+        const preview = await run(() =>
+          input.api.previewCommercialBillingChange({ quantities }),
+        );
+        if (preview) {
+          dispatch({
+            type: 'COMMERCIAL_BILLING_PREVIEWED',
+            quantities,
+            preview,
+          });
+        }
+        return preview;
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
       }
-      return preview;
     },
     clearBillingPreview: (): void => {
       dispatch({ type: 'COMMERCIAL_BILLING_PREVIEW_CLEARED' });
@@ -392,53 +406,65 @@ export const createLeadConnectorEmbedController = (input: {
       };
       prorationDate: number;
     }): Promise<void> => {
-      const result = await run(() =>
-        input.api.applyCommercialBillingChange(inputValue),
-      );
-      if (result) {
-        dispatch({ type: 'COMMERCIAL_BILLING_PREVIEW_CLEARED' });
-        await loadCommercial();
+      try {
+        const result = await run(() =>
+          input.api.applyCommercialBillingChange(inputValue),
+        );
+        if (result) {
+          dispatch({ type: 'COMMERCIAL_BILLING_PREVIEW_CLEARED' });
+          await loadCommercial();
+        }
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
       }
     },
     saveSeat: async (inputValue: {
       userId: string;
       planCode: 'single' | 'standard' | 'power';
     }): Promise<void> => {
-      const existing: Array<{
-        userId: string;
-        planCode: 'single' | 'standard' | 'power';
-      }> = state.commercialDashboard?.seats.flatMap((seat) => {
-        const userId = String(seat.user_id ?? seat.userId ?? '');
-        const candidatePlan = String(seat.plan_code ?? seat.planCode ?? '');
-        return userId &&
-          (candidatePlan === 'single' ||
-            candidatePlan === 'standard' ||
-            candidatePlan === 'power')
-          ? [{ userId, planCode: candidatePlan }]
-          : [];
-      }) ?? [];
-      const assignments = [
-        ...existing.filter(({ userId }) => userId !== inputValue.userId),
-        inputValue,
-      ];
-      const result = await run(() => input.api.updateCommercialTeam(assignments));
-      if (result) await loadCommercial();
+      try {
+        const existing: Array<{
+          userId: string;
+          planCode: 'single' | 'standard' | 'power';
+        }> = state.commercialDashboard?.seats.flatMap((seat) => {
+          const userId = String(seat.user_id ?? seat.userId ?? '');
+          const candidatePlan = String(seat.plan_code ?? seat.planCode ?? '');
+          return userId &&
+            (candidatePlan === 'single' ||
+              candidatePlan === 'standard' ||
+              candidatePlan === 'power')
+            ? [{ userId, planCode: candidatePlan }]
+            : [];
+        }) ?? [];
+        const assignments = [
+          ...existing.filter(({ userId }) => userId !== inputValue.userId),
+          inputValue,
+        ];
+        const result = await run(() => input.api.updateCommercialTeam(assignments));
+        if (result) await loadCommercial();
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
     },
     searchNumbers: async (inputValue: {
       areaCode?: string;
       contains?: string;
       userId: string;
     }): Promise<void> => {
-      const { userId: _userId, ...search } = inputValue;
-      const result = await run(() =>
-        input.api.searchCommercialNumbers({ ...search, limit: 10 }),
-      );
-      if (result) {
-        dispatch({
-          type: 'COMMERCIAL_NUMBER_SEARCHED',
-          numbers: result.numbers,
-          userId: inputValue.userId,
-        });
+      try {
+        const { userId: _userId, ...search } = inputValue;
+        const result = await run(() =>
+          input.api.searchCommercialNumbers({ ...search, limit: 10 }),
+        );
+        if (result) {
+          dispatch({
+            type: 'COMMERCIAL_NUMBER_SEARCHED',
+            numbers: result.numbers,
+            userId: inputValue.userId,
+          });
+        }
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
       }
     },
     provisionNumber: async (inputValue: {
@@ -601,66 +627,74 @@ export const createLeadConnectorEmbedController = (input: {
       type: 'cold' | 'warm';
       to: string;
     }): Promise<void> => {
-      const sessionId = state.activeSessionId;
-      const target = inputValue.to.trim();
-      if (!sessionId) {
+      try {
+        const sessionId = state.activeSessionId;
+        const target = inputValue.to.trim();
+        if (!sessionId) {
+          dispatch({
+            type: 'FAILED',
+            code: 'CALL_SESSION_REQUIRED',
+            message: 'A connected call is required to transfer',
+            recoverable: true,
+          });
+          return;
+        }
+        if (!/^\+[1-9]\d{7,14}$/.test(target)) {
+          dispatch({
+            type: 'FAILED',
+            code: 'INVALID_TRANSFER_TARGET',
+            message: 'Enter a valid E.164 transfer number',
+            recoverable: true,
+          });
+          return;
+        }
         dispatch({
-          type: 'FAILED',
-          code: 'CALL_SESSION_REQUIRED',
-          message: 'A connected call is required to transfer',
-          recoverable: true,
+          type: 'TRANSFER_STARTED',
+          transferType: inputValue.type,
+          target,
         });
-        return;
+        const result = await run(() =>
+          input.api.initiateCallTransfer(sessionId, {
+            type: inputValue.type,
+            to: target,
+          }),
+        );
+        if (!result) return;
+        projectTransferStatus(result);
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
       }
-      if (!/^\+[1-9]\d{7,14}$/.test(target)) {
-        dispatch({
-          type: 'FAILED',
-          code: 'INVALID_TRANSFER_TARGET',
-          message: 'Enter a valid E.164 transfer number',
-          recoverable: true,
-        });
-        return;
-      }
-      dispatch({
-        type: 'TRANSFER_STARTED',
-        transferType: inputValue.type,
-        target,
-      });
-      const result = await run(() =>
-        input.api.initiateCallTransfer(sessionId, {
-          type: inputValue.type,
-          to: target,
-        }),
-      );
-      if (!result) return;
-      projectTransferStatus(result);
     },
     completeTransfer: async (): Promise<void> => {
-      const sessionId = state.activeSessionId;
-      const transferId = state.transfer.transferId;
-      if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
-        dispatch({
-          type: 'FAILED',
-          code: 'WARM_TRANSFER_REQUIRED',
-          message: 'A warm consultation is required to complete transfer',
-          recoverable: true,
-        });
-        return;
+      try {
+        const sessionId = state.activeSessionId;
+        const transferId = state.transfer.transferId;
+        if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
+          dispatch({
+            type: 'FAILED',
+            code: 'WARM_TRANSFER_REQUIRED',
+            message: 'A warm consultation is required to complete transfer',
+            recoverable: true,
+          });
+          return;
+        }
+        const result = await run(() =>
+          input.api.completeCallTransfer(sessionId, transferId),
+        );
+        if (!result) return;
+        if (!result.success) {
+          dispatch({
+            type: 'FAILED',
+            code: 'TRANSFER_FAILED',
+            message: result.error ?? 'Transfer completion failed',
+            recoverable: true,
+          });
+          return;
+        }
+        dispatch({ type: 'TRANSFER_COMPLETED' });
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
       }
-      const result = await run(() =>
-        input.api.completeCallTransfer(sessionId, transferId),
-      );
-      if (!result) return;
-      if (!result.success) {
-        dispatch({
-          type: 'FAILED',
-          code: 'TRANSFER_FAILED',
-          message: result.error ?? 'Transfer completion failed',
-          recoverable: true,
-        });
-        return;
-      }
-      dispatch({ type: 'TRANSFER_COMPLETED' });
     },
     cancelTransfer: async (): Promise<void> => {
       const sessionId = state.activeSessionId;

@@ -808,6 +808,27 @@ describe('workspace Twilio accounts and user-owned number capacity', () => {
     ).toEqual({ lineCount: 1, callerIds: ['+15550100002'] });
   });
 
+  it('normalizes assigned and explicitly selected phone numbers before capacity checks', async () => {
+    const module =
+      await loadModule<NumbersModule>('./numbers/application.ts');
+
+    expect(
+      module.resolveEffectiveLineCount({
+        requestedLines: 3,
+        planMaximum: 3,
+        activeAssignedNumbers: [
+          '(555) 010-0001',
+          '+1 555 010 0001',
+          '555.010.0002',
+        ],
+        callerIdSelection: {
+          kind: 'explicit',
+          phoneNumber: '+1 (555) 010-0002',
+        },
+      }),
+    ).toEqual({ lineCount: 1, callerIds: ['+15550100002'] });
+  });
+
   it('prevents cross-user number sharing and plan-limit overflow', async () => {
     const module =
       await loadModule<NumbersModule>('./numbers/application.ts');
@@ -826,7 +847,7 @@ describe('workspace Twilio accounts and user-owned number capacity', () => {
         seatUserId: 'user-b',
         planMaximum: 3,
         existingAssignments,
-        phoneNumber: '+15550100001',
+        phoneNumber: '(555) 010-0001',
       }),
     ).toThrow('NUMBER_ALREADY_ASSIGNED');
     expect(() =>

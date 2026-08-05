@@ -4,6 +4,8 @@ import type {
   TransferRepository,
 } from './application';
 
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+
 export type TransferDatabase = {
   query: <TRow>(
     text: string,
@@ -72,29 +74,41 @@ export const createPostgresTransferRepository = (
   database: TransferDatabase,
 ): TransferRepository => ({
   recordEvent: async (input) => {
-    await database.query(
-      'INSERT INTO dialer_call_events (id, workspace_id, session_id, event_type, metadata) VALUES ($1, $2, $3, $4, $5::jsonb) ON CONFLICT (workspace_id, id) DO NOTHING',
-      [
-        input.id,
-        input.workspaceId,
-        input.sessionId,
-        input.eventType,
-        JSON.stringify(metadata(input)),
-      ],
-    );
+    try {
+      await database.query(
+        'INSERT INTO dialer_call_events (id, workspace_id, session_id, event_type, metadata) VALUES ($1, $2, $3, $4, $5::jsonb) ON CONFLICT (workspace_id, id) DO NOTHING',
+        [
+          input.id,
+          input.workspaceId,
+          input.sessionId,
+          input.eventType,
+          JSON.stringify(metadata(input)),
+        ],
+      );
+    } catch (cause: unknown) {
+      throw normalizeAsyncError(cause);
+    }
   },
   getTransfer: async ({ workspaceId, sessionId, transferId }) => {
-    const result = await database.query<TransferRow>(
-      "SELECT workspace_id, session_id, event_type, metadata FROM dialer_call_events WHERE workspace_id = $1 AND session_id = $2 AND metadata ->> 'transferId' = $3 ORDER BY created_at DESC, id DESC LIMIT 1",
-      [workspaceId, sessionId, transferId],
-    );
-    return mapTransfer(result.rows[0]);
+    try {
+      const result = await database.query<TransferRow>(
+        "SELECT workspace_id, session_id, event_type, metadata FROM dialer_call_events WHERE workspace_id = $1 AND session_id = $2 AND metadata ->> 'transferId' = $3 ORDER BY created_at DESC, id DESC LIMIT 1",
+        [workspaceId, sessionId, transferId],
+      );
+      return mapTransfer(result.rows[0]);
+    } catch (cause: unknown) {
+      throw normalizeAsyncError(cause);
+    }
   },
   getTransferById: async (transferId) => {
-    const result = await database.query<TransferRow>(
-      "SELECT workspace_id, session_id, event_type, metadata FROM dialer_call_events WHERE metadata ->> 'transferId' = $1 ORDER BY created_at DESC, id DESC LIMIT 1",
-      [transferId],
-    );
-    return mapTransfer(result.rows[0]);
+    try {
+      const result = await database.query<TransferRow>(
+        "SELECT workspace_id, session_id, event_type, metadata FROM dialer_call_events WHERE metadata ->> 'transferId' = $1 ORDER BY created_at DESC, id DESC LIMIT 1",
+        [transferId],
+      );
+      return mapTransfer(result.rows[0]);
+    } catch (cause: unknown) {
+      throw normalizeAsyncError(cause);
+    }
   },
 });
