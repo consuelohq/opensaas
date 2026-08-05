@@ -191,7 +191,6 @@ describe('Twilio webhook boundary', () => {
       recordingSid: 'RE_ONE',
       recordingStatus: 'completed',
       recordingDurationSeconds: 42,
-      recordingUrl: 'https://api.twilio.test/recording',
     });
   });
 

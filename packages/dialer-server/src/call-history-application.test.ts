@@ -39,8 +39,6 @@ const createBaseApplication = (
           {
             callSid: 'CA-1',
             contactId: 'contact-1',
-    recordingEnabled: true,
-    transcriptionEnabled: true,
             customerNumber: '+15550100001',
             callerId: '+15550100002',
             status: 'queued',
@@ -108,6 +106,8 @@ const createCallOperations = (events: string[]) => {
           id: session.id,
           workspaceId: session.workspaceId,
           status: session.status,
+          recordingEnabled: session.recordingEnabled,
+          transcriptionEnabled: session.transcriptionEnabled,
           calls: session.calls,
         });
       }),
@@ -166,6 +166,8 @@ const command: DialerServerStartCallCommand = {
     source: 'direct',
     selectionStrategy: 'single',
     requestedFanout: 1,
+    recordingEnabled: true,
+    transcriptionEnabled: true,
     targetPhone: '+15550100001',
     contactId: 'contact-1',
   },

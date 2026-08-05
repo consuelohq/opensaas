@@ -398,6 +398,72 @@ describe('commercial application billing and inventory authority', () => {
     expect(provision).not.toHaveBeenCalled();
   });
 
+  it('allocates included number slots from confirmed workspace seats instead of per-user history', async () => {
+    const updates: Array<{ sql: string; parameters: readonly unknown[] }> = [];
+    const query = mock(async (sql: string, parameters: readonly unknown[] = []) => {
+      if (sql.includes('SELECT plan_code')) {
+        return { rows: [{ plan_code: 'standard' }] };
+      }
+      if (sql.includes('SELECT workspace_id, user_id, phone_number, status')) {
+        return {
+          rows: [
+            {
+              workspace_id: 'workspace-one',
+              user_id: 'user-one',
+              phone_number: '+15550100001',
+              status: 'active',
+            },
+            {
+              workspace_id: 'workspace-one',
+              user_id: null,
+              phone_number: '+15550100002',
+              status: 'active',
+            },
+          ],
+        };
+      }
+      if (sql.includes('SELECT item_code, quantity')) {
+        return { rows: [{ item_code: 'standard', quantity: 2 }] };
+      }
+      if (sql.includes('UPDATE dialer_phone_numbers AS target')) {
+        updates.push({ sql, parameters });
+        return {
+          rows: [
+            {
+              phone_number: '+15550100002',
+              user_id: 'user-one',
+              slot_type: 'included',
+            },
+          ],
+          rowCount: 1,
+        };
+      }
+      throw new Error('Unexpected query: ' + sql);
+    });
+    const application = createCommercialApplication({
+      database: { query },
+      catalog,
+      billing: createBilling(),
+      billingReturnUrl: 'https://app.test/admin',
+    });
+
+    await expect(
+      Effect.runPromise(
+        application.assignNumber(admin('workspace-one'), {
+          userId: 'user-one',
+          phoneNumber: '+15550100002',
+        }),
+      ),
+    ).resolves.toMatchObject({ assigned: true });
+    expect(updates[0]?.parameters).toEqual([
+      'workspace-one',
+      'user-one',
+      '+15550100002',
+      2,
+    ]);
+    expect(updates[0]?.sql).toContain("slot_type = 'included'");
+  });
+
   it('rejects subscription downgrades below assigned seats or active number slots before Stripe', async () => {
     const query = mock(async (sql: string) => {
       if (sql.includes('FROM dialer_workspace_subscriptions')) {
@@ -646,5 +712,83 @@ describe('commercial application billing and inventory authority', () => {
       ['workspace-one', 'single', 'si_single', 'price_single', 2],
       ['workspace-one', 'additional-number', 'si_number', 'price_number', 3],
     ]);
+  });
+
+  it('marks a failed Stripe projection retryable and completes the same signed event on retry', async () => {
+    let eventStatus: 'new' | 'processing' | 'failed' | 'completed' = 'new';
+    let failFirstItemInsert = true;
+    const query = mock(async (sql: string) => {
+      if (sql.includes('INSERT INTO dialer_provider_webhook_events')) {
+        if (eventStatus === 'completed' || eventStatus === 'processing') {
+          return { rows: [], rowCount: 0 };
+        }
+        eventStatus = 'processing';
+        return { rows: [{ inserted: true }], rowCount: 1 };
+      }
+      if (
+        sql.includes('UPDATE dialer_provider_webhook_events') &&
+        sql.includes("status = 'failed'")
+      ) {
+        eventStatus = 'failed';
+        return { rows: [], rowCount: 1 };
+      }
+      if (
+        sql.includes('UPDATE dialer_provider_webhook_events') &&
+        sql.includes("status = 'completed'")
+      ) {
+        eventStatus = 'completed';
+        return { rows: [], rowCount: 1 };
+      }
+      if (sql.includes('INSERT INTO dialer_workspace_subscription_items')) {
+        if (failFirstItemInsert) {
+          failFirstItemInsert = false;
+          throw new Error('DATABASE_TEMPORARILY_UNAVAILABLE');
+        }
+        return { rows: [], rowCount: 1 };
+      }
+      return { rows: [], rowCount: 1 };
+    });
+    const billing = createBilling();
+    billing.constructWebhookEvent.mockImplementation(() => ({
+      id: 'evt_retryable_subscription',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_retryable',
+          customer: 'cus_retryable',
+          status: 'active',
+          metadata: { workspaceId: 'workspace-one' },
+          items: {
+            data: [
+              {
+                id: 'si_retryable',
+                quantity: 1,
+                price: { id: 'price_single' },
+              },
+            ],
+          },
+        },
+      },
+    }));
+    const application = createCommercialApplication({
+      database: { query },
+      catalog,
+      billing,
+      billingReturnUrl: 'https://app.test/admin',
+    });
+
+    await expect(
+      Effect.runPromise(
+        application.processStripeWebhook({ rawBody: '{}', signature: 'sig' }),
+      ),
+    ).rejects.toThrow('DATABASE_TEMPORARILY_UNAVAILABLE');
+    expect(String(eventStatus)).toBe('failed');
+
+    await expect(
+      Effect.runPromise(
+        application.processStripeWebhook({ rawBody: '{}', signature: 'sig' }),
+      ),
+    ).resolves.toEqual({ received: true, duplicate: false });
+    expect(String(eventStatus)).toBe('completed');
   });
 });

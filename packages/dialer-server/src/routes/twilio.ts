@@ -93,9 +93,6 @@ export const createTwilioRoutes = (dependencies: DialerServerDependencies) => {
           providerCallId: callSid,
           recordingSid,
           recordingStatus,
-          ...(verified.params.RecordingUrl
-            ? { recordingUrl: verified.params.RecordingUrl }
-            : {}),
           ...(Number.isFinite(duration) && duration >= 0
             ? { recordingDurationSeconds: duration }
             : {}),

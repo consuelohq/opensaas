@@ -92,10 +92,68 @@ started: 2026-08-05
 
 ## current status
 
-- Read-only discovery complete enough to define the acceptance contract.
-- Task worktree is isolated from unrelated dirty root `.tmp` artifacts.
-- No production code or acceptance tests changed yet.
-- No carrier call, recording/transcription request, live billing mutation, or provider number purchase occurred.
+- Existing task session `tsk_48c5ee4031d8`, PR #1782, branch, worktree, local/remote SHAs, staged/unstaged/untracked state, stash, and completion-commit history were inspected before continuation edits.
+- Original uncommitted implementation was preserved in local commit `8d4b735f29723adf0968aef6b918443fc4e5150e` with the intended message `feat(dialer): complete commercial billing transfers and media lifecycle`; the remote task branch remains at safety checkpoint `850799e8b906b8a331c27c463710a8a1026778fc` until publish validation completes.
+- Backup stash `db21a819b2f50d16adb95589141345944545c29a` (`checkpoint-before-fast-forward-2026-08-04`) was inspected and remains untouched. No task-specific backup patch was located in the searched task/handoff/temp paths; no candidate patch was applied, deleted, or overwritten.
+- Commercial implementation and remediation are complete locally: authoritative Stripe projection/recovery, retry-safe provider events, workspace-level included/add-on number allocation, provider compensation, server-owned transfer/media resolution, transfer rollback/restoration, plan-controlled media, signed callbacks, and no raw recording URL persistence.
+- All cache-disabled package typechecks, full tests, builds, and the explicit focused commercial matrix are green. Strict review, full publish-valid verify, final stream sync, push, merge, deployments, Marketplace read-back, and authenticated GHL browser smoke remain pending.
+- No carrier call, automatic redial, recording, transcription stream, live warm/cold transfer, Stripe mutation, provider number purchase/release/reassignment, mutating webhook replay, or destructive database operation has occurred.
+
+## continuation validation evidence
+
+### Preservation and recovery
+
+- Worktree: `/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-complete-gohighlevel-commercial-dialer`.
+- Branch: `task/dialer/implement-complete-gohighlevel-commercial-dialer`.
+- Safety commit: `8d4b735f29723adf0968aef6b918443fc4e5150e`.
+- Pre-continuation remote SHA: `850799e8b906b8a331c27c463710a8a1026778fc`.
+- Safety-commit command path: task-scoped `code.call`, Bun `spawnSync`, explicit `git add -- <files>`, `git diff --cached --check`, and `git commit -m <intended message>`; exit code 0.
+- Prohibited commands were not used: no `git reset`, `git clean`, force push, broad restore, stash mutation, or worktree recreation.
+
+### Remediation completed after the safety commit
+
+- Removed raw recording URL ingestion, public projection, and new-schema persistence; only provider recording SID, status, and duration remain.
+- Added retryable `processing/completed/failed` provider-event lifecycle for Stripe, uninstall, and final usage projection, including stale-processing reclamation and failed-event retry.
+- Made usage inserts idempotent when completion acknowledgement fails after data persistence.
+- Added Twilio-number rollback when provider purchase succeeds but local persistence fails.
+- Added cold-transfer target rollback and warm-transfer customer restoration when provider steps fail.
+- Corrected included/add-on number classification to use confirmed workspace seat inventory rather than per-user assignment history.
+- Persisted plan-derived recording/transcription flags and exposed transcription entitlement in the durable call summary.
+
+### Exact final package commands
+
+All commands ran with `CI=1` and `NX_SKIP_NX_CACHE=true` through task-scoped `code.call` and Bun argv arrays.
+
+- `bun run --cwd packages/dialer typecheck` — exit 0.
+- `bun test packages/dialer/src` — exit 0; 174 passed, 0 failed.
+- `bun run --cwd packages/dialer build` — exit 0.
+- `bun run --cwd packages/dialer-server typecheck` — exit 0.
+- `bun test packages/dialer-server/src` — exit 0; 121 passed, 0 failed.
+- `bun run --cwd packages/dialer-server build` — exit 0.
+- `bun run --cwd packages/lead-connector typecheck` — exit 0.
+- `bun test packages/lead-connector/src` — exit 0; 105 passed, 0 failed.
+- `bun run --cwd packages/lead-connector build` — exit 0.
+- Full package-matrix trace: `trc_319157b3118e`.
+
+### Explicit focused commercial command
+
+- Preflight scanned all 28 selected test files for executable destructive Git, filesystem, database, live Stripe, and credential literals. The first detector safely aborted on a prose-only test title; the refined executable/credential detector found zero hits before test execution.
+- `bun test packages/dialer/src/services/conference.spec.ts packages/dialer-server/src/commercial.acceptance.test.ts packages/dialer-server/src/commercial-application.acceptance.test.ts packages/dialer-server/src/commercial-persistence.acceptance.test.ts packages/dialer-server/src/commercial-providers.acceptance.test.ts packages/dialer-server/src/commercial-routes.acceptance.test.ts packages/dialer-server/src/transfer-application.acceptance.test.ts packages/dialer-server/src/transfer-routes.acceptance.test.ts packages/dialer-server/src/transfer-persistence.acceptance.test.ts packages/dialer-server/src/call-history-application.test.ts packages/dialer-server/src/call-operations/application.test.ts packages/dialer-server/src/call-operations/persistence.test.ts packages/dialer-server/src/twilio-boundary.test.ts packages/dialer-server/src/calls.contract.test.ts packages/dialer-server/src/app.contract.test.ts packages/dialer-server/src/lead-connector-boundary.test.ts packages/dialer-server/src/lifecycle.integration.test.ts packages/lead-connector/src/commercial-webhook.acceptance.test.ts packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts packages/lead-connector/src/embed/controller.test.ts packages/lead-connector/src/embed/state-machine.test.ts packages/lead-connector/src/embed/view.test.ts packages/lead-connector/src/embed/click-to-call-runtime.test.ts packages/lead-connector/src/embed/cloudflare-worker.test.ts packages/lead-connector/src/embed/embed-build.contract.test.ts packages/lead-connector/src/embed/architecture.contract.test.ts packages/lead-connector/src/deployment/custom-menu.test.ts packages/lead-connector/src/deployment/commercial-artifacts.test.ts` — exit 0; 182 passed, 0 failed; trace `trc_cb3a3f26443b`.
+
+### Static safety checks
+
+- `git diff --check` — exit 0.
+- No untracked files or generated/build artifacts are present in the worktree diff.
+- Changed-file secret scan found no live Stripe keys, webhook secrets, GitHub tokens, private keys, or assigned Twilio auth tokens.
+- `recordingUrl` / `recording_url` appears only in a negative persistence assertion proving the field is absent.
+- Obsolete metering strings appear only in negative repository contract assertions.
+
+### Remaining release risks and gates
+
+- Strict `review.run` and full publish-valid `verify` have not yet run against the remediation commit.
+- The branch must be re-fetched and synced if `stream/dialer` advances, followed by affected post-sync gates.
+- PR #1782 still references the remote safety checkpoint until the typed push/fallback publish step completes.
+- Railway, Cloudflare, Marketplace, and authenticated GHL browser verification are separate pending deployments; a GitHub merge alone updates none of them.
 
 ## discovery
 
@@ -431,6 +489,7 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-handoffs/consuelo-ghl-commercial-dialer-agent-prompt.md`
 - `node_modules/twilio/lib/rest/api/v2010/account/call/recording.d.ts`
 - `packages/dialer-server/src/app.ts`
 - `packages/dialer-server/src/application.ts`
@@ -465,6 +524,7 @@ bun run task:finish
 - `packages/dialer/src/dialer.ts`
 - `packages/dialer/src/errors/dialer-errors.ts`
 - `packages/dialer/src/ports/parallel-compatibility.ts`
+- `packages/dialer/src/services/conference.spec.ts`
 - `packages/dialer/src/services/conference.ts`
 - `packages/dialer/src/types.ts`
 - `packages/lead-connector/src/embed/agent-voice.ts`
@@ -477,3 +537,9 @@ bun run task:finish
 - `packages/lead-connector/src/embed/state-machine.ts`
 - `packages/lead-connector/src/embed/view.ts`
 - `packages/workspace/senior-engineer.md`
+
+- 2026-08-05 05:46:08 apply-patch: `packages/dialer-server/src/commercial/persistence.ts`
+- 2026-08-05 05:46:08 apply-patch: `packages/dialer-server/src/commercial/application.ts`
+- 2026-08-05 05:46:08 apply-patch: `packages/dialer-server/src/commercial-application.acceptance.test.ts`
+
+- 2026-08-05 05:49:41 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`

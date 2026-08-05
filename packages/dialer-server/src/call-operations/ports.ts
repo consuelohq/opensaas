@@ -110,7 +110,6 @@ export type CallOperationsRepositoryService = {
     providerCallId: string;
     recordingSid: string;
     recordingStatus: string;
-    recordingUrl?: string;
     recordingDurationSeconds?: number;
   }) => Effect.Effect<void, DialerApplicationError>;
 };

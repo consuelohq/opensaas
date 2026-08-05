@@ -134,26 +134,37 @@ export const createTwilioCommercialNumberProvider = (input: {
     },
     provision: async (request) => {
       const account = await ensureAccount(request.workspaceId);
-      const number = await input
-        .accountClient(account.providerAccountId)
-        .incomingPhoneNumbers.create({
+      const accountClient = input.accountClient(account.providerAccountId);
+      const number = await accountClient.incomingPhoneNumbers.create({
           phoneNumber: request.phoneNumber,
           friendlyName: `Consuelo ${request.workspaceId}`,
           voiceUrl: `${input.publicUrl}/webhooks/twilio/customer-twiml`,
           voiceMethod: 'POST',
         });
-      await input.database.query(
-        `INSERT INTO dialer_phone_numbers (
-           workspace_id, phone_number, provider_number_id, status
-         ) VALUES ($1, $2, $3, 'active')
-         ON CONFLICT (workspace_id, phone_number) DO UPDATE
-         SET provider_number_id = EXCLUDED.provider_number_id,
-             user_id = NULL,
-             slot_type = NULL,
-             status = 'active',
-             updated_at = now()`,
-        [request.workspaceId, number.phoneNumber, number.sid],
-      );
+      try {
+        await input.database.query(
+          `INSERT INTO dialer_phone_numbers (
+             workspace_id, phone_number, provider_number_id, status
+           ) VALUES ($1, $2, $3, 'active')
+           ON CONFLICT (workspace_id, phone_number) DO UPDATE
+           SET provider_number_id = EXCLUDED.provider_number_id,
+               user_id = NULL,
+               slot_type = NULL,
+               status = 'active',
+               updated_at = now()`,
+          [request.workspaceId, number.phoneNumber, number.sid],
+        );
+      } catch (cause: unknown) {
+        try {
+          await accountClient.incomingPhoneNumbers(number.sid).remove();
+        } catch (rollbackCause: unknown) {
+          throw new AggregateError(
+            [cause, rollbackCause],
+            'NUMBER_PERSISTENCE_AND_ROLLBACK_FAILED',
+          );
+        }
+        throw cause;
+      }
       return { phoneNumber: number.phoneNumber, providerNumberId: number.sid };
     },
     release: async (request) => {

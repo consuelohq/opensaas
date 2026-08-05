@@ -83,6 +83,11 @@ export const processInstallationUninstall = (input: {
   };
   repository: {
     claimWebhookEvent: (eventId: string) => Effect.Effect<boolean, unknown>;
+    completeWebhookEvent: (eventId: string) => Effect.Effect<void, unknown>;
+    failWebhookEvent: (
+      eventId: string,
+      errorCode: string,
+    ) => Effect.Effect<void, unknown>;
     getWorkspaceSubscriptionId: (
       workspaceId: string,
     ) => Effect.Effect<string | null, unknown>;
@@ -101,17 +106,29 @@ export const processInstallationUninstall = (input: {
     const claimed = yield* input.repository.claimWebhookEvent(input.event.id);
     if (!claimed) return { duplicate: true, cancellationScheduled: false };
 
-    yield* input.repository.disableInstallation({
-      workspaceId: input.event.workspaceId,
-      locationId: input.event.locationId,
-    });
-    const subscriptionId =
-      yield* input.repository.getWorkspaceSubscriptionId(
-        input.event.workspaceId,
-      );
-    if (!subscriptionId) {
-      return { duplicate: false, cancellationScheduled: false };
-    }
-    yield* input.stripe.scheduleCancellationAtPeriodEnd(subscriptionId);
-    return { duplicate: false, cancellationScheduled: true };
+    return yield* Effect.gen(function* () {
+      const subscriptionId =
+        yield* input.repository.getWorkspaceSubscriptionId(
+          input.event.workspaceId,
+        );
+      if (subscriptionId) {
+        yield* input.stripe.scheduleCancellationAtPeriodEnd(subscriptionId);
+      }
+      yield* input.repository.disableInstallation({
+        workspaceId: input.event.workspaceId,
+        locationId: input.event.locationId,
+      });
+      yield* input.repository.completeWebhookEvent(input.event.id);
+      return {
+        duplicate: false,
+        cancellationScheduled: subscriptionId !== null,
+      };
+    }).pipe(
+      Effect.tapError(() =>
+        input.repository.failWebhookEvent(
+          input.event.id,
+          'INSTALLATION_UNINSTALL_FAILED',
+        ),
+      ),
+    );
   });

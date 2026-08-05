@@ -129,6 +129,11 @@ type BillingModule = {
       claimWebhookEvent: (
         eventId: string,
       ) => Effect.Effect<boolean, never>;
+      completeWebhookEvent: (eventId: string) => Effect.Effect<void, never>;
+      failWebhookEvent: (
+        eventId: string,
+        errorCode: string,
+      ) => Effect.Effect<void, never>;
       getWorkspaceSubscriptionId: (
         workspaceId: string,
       ) => Effect.Effect<string | null, never>;
@@ -188,6 +193,15 @@ type UsageModule = {
         workspaceId: string,
         sourceId: string,
       ) => Effect.Effect<boolean, never>;
+      completeSource: (
+        workspaceId: string,
+        sourceId: string,
+      ) => Effect.Effect<void, never>;
+      failSource: (
+        workspaceId: string,
+        sourceId: string,
+        errorCode: string,
+      ) => Effect.Effect<void, never>;
       insertUsageEvent: (
         event: ReturnType<
           UsageModule['createUsageEventFromProviderCompletion']
@@ -584,6 +598,11 @@ describe('Stripe subscription projection, grace, and uninstall', () => {
             claimed.add(eventId);
             return true;
           }),
+        completeWebhookEvent: () => Effect.void,
+        failWebhookEvent: (eventId: string) =>
+          Effect.sync(() => {
+            claimed.delete(eventId);
+          }),
         getWorkspaceSubscriptionId: () =>
           Effect.succeed<string | null>('sub_test_workspace_1'),
         disableInstallation: ({
@@ -680,6 +699,11 @@ describe('authoritative usage lifecycle', () => {
             if (claimed.has(key)) return false;
             claimed.add(key);
             return true;
+          }),
+        completeSource: () => Effect.void,
+        failSource: (workspaceId: string, sourceId: string) =>
+          Effect.sync(() => {
+            claimed.delete(`${workspaceId}:${sourceId}`);
           }),
         insertUsageEvent: (
           event: ReturnType<

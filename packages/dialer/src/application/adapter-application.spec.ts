@@ -136,6 +136,8 @@ const parallelRuntime = (
   }),
   handleStatusCallback: () => Effect.void,
   getGroupIdForCall: () => Effect.succeed(null),
+  startCallRecording: () =>
+    Effect.succeed({ recordingSid: 'RE_test', status: 'in-progress' }),
   getGroup: () => Effect.succeed(null),
   getReleasableNumbers: () => [],
   getGroupForWorkspace: () => Effect.succeed(null),

@@ -360,8 +360,18 @@ export class ConferenceService {
             statusCallback,
           },
         );
-
-      await this.removeParticipant(conferenceSid, options.callSid);
+      try {
+        await this.removeParticipant(conferenceSid, options.callSid);
+      } catch (cause: unknown) {
+        try {
+          await this.removeParticipant(conferenceSid, transferCallSid);
+        } catch (rollbackCause: unknown) {
+          throw new Error('COLD_TRANSFER_AND_ROLLBACK_FAILED', {
+            cause: { operation: cause, rollback: rollbackCause },
+          });
+        }
+        throw cause;
+      }
       return {
         success: true,
         transferCallSid,
@@ -399,27 +409,39 @@ export class ConferenceService {
       await this.holdParticipant(conferenceSid, customer.callSid, true);
 
       // add the transfer target
-      const client = await this.getClient();
-      const statusCallback = this.appendTransferId(
-        options.statusCallbackUrl,
-        options.transferId,
-      );
+      let participant: { callSid: string };
+      try {
+        const client = await this.getClient();
+        const statusCallback = this.appendTransferId(
+          options.statusCallbackUrl,
+          options.transferId,
+        );
 
-      const participant = await client
-        .conferences(conferenceSid)
-        .participants.create({
-          to: options.to,
-          from: options.from,
-          endConferenceOnExit: false,
-          label: 'transfer-target',
-          statusCallback,
-          statusCallbackEvent: [
-            'initiated',
-            'ringing',
-            'answered',
-            'completed',
-          ],
-        });
+        participant = await client
+          .conferences(conferenceSid)
+          .participants.create({
+            to: options.to,
+            from: options.from,
+            endConferenceOnExit: false,
+            label: 'transfer-target',
+            statusCallback,
+            statusCallbackEvent: [
+              'initiated',
+              'ringing',
+              'answered',
+              'completed',
+            ],
+          });
+      } catch (cause: unknown) {
+        try {
+          await this.holdParticipant(conferenceSid, customer.callSid, false);
+        } catch (rollbackCause: unknown) {
+          throw new Error('WARM_TRANSFER_AND_RESTORE_FAILED', {
+            cause: { operation: cause, rollback: rollbackCause },
+          });
+        }
+        throw cause;
+      }
 
       return {
         success: true,
@@ -482,8 +504,6 @@ export class ConferenceService {
     transferCallSid: string,
   ): Promise<TransferResult> {
     try {
-      await this.removeParticipant(conferenceSid, transferCallSid);
-
       const participants = await this.listParticipants(conferenceSid);
       const customer = participants.find((p) => p.label === 'customer');
       if (!customer) {
@@ -493,6 +513,7 @@ export class ConferenceService {
             'CUSTOMER_NOT_FOUND: transfer cancelled but customer not found to unhold',
         };
       }
+      await this.removeParticipant(conferenceSid, transferCallSid);
       if (customer.hold) {
         await this.holdParticipant(conferenceSid, customer.callSid, false);
       }

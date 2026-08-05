@@ -5,6 +5,7 @@ import {
   createStripeCommercialBilling,
   type StripeCommercialClient,
 } from './billing/stripe';
+import { createTwilioCommercialNumberProvider } from './numbers/commercial-provider';
 import { createTwilioSubaccountProvider } from './numbers/twilio-subaccounts';
 
 describe('commercial provider adapters', () => {
@@ -271,5 +272,54 @@ describe('commercial provider adapters', () => {
       ),
     ).toEqual({ id: 'AC_subaccount_one' });
     expect(create).toHaveBeenCalledWith({ friendlyName: 'Workspace one' });
+  });
+
+  it('releases a newly purchased provider number when local persistence fails', async () => {
+    const remove = mock(async () => true);
+    const create = mock(async () => ({
+      sid: 'PN_number_one',
+      phoneNumber: '+15550100001',
+    }));
+    const incomingPhoneNumbers = Object.assign(
+      (_sid: string) => ({ remove }),
+      { create },
+    );
+    const query = mock(async (sql: string) => {
+      if (sql.includes('dialer_workspace_telephony_accounts')) {
+        return {
+          rows: [
+            {
+              workspace_id: 'workspace-one',
+              provider_account_id: 'AC_workspace_one',
+            },
+          ],
+          rowCount: 1,
+        };
+      }
+      if (sql.includes('INSERT INTO dialer_phone_numbers')) {
+        throw new Error('DATABASE_UNAVAILABLE');
+      }
+      return { rows: [], rowCount: 0 };
+    });
+    const provider = createTwilioCommercialNumberProvider({
+      database: { query },
+      createSubaccount: async () => ({ sid: 'unused' }),
+      accountClient: () => ({
+        availablePhoneNumbers: () => ({
+          local: { list: async () => [] },
+        }),
+        incomingPhoneNumbers,
+      }),
+      publicUrl: 'https://dialer.example.test',
+    });
+
+    await expect(
+      provider.provision({
+        workspaceId: 'workspace-one',
+        phoneNumber: '+15550100001',
+      }),
+    ).rejects.toThrow('DATABASE_UNAVAILABLE');
+    expect(remove).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledTimes(1);
   });
 });

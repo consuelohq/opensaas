@@ -57,7 +57,6 @@ const SCHEMA_STATEMENTS = [
     recording_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     recording_status TEXT,
     recording_sid TEXT,
-    recording_url TEXT,
     recording_duration_seconds INTEGER,
     recording_failure_code TEXT,
     transcription_enabled BOOLEAN NOT NULL DEFAULT FALSE,
@@ -78,7 +77,6 @@ const SCHEMA_STATEMENTS = [
   `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_enabled BOOLEAN NOT NULL DEFAULT FALSE`,
   `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_status TEXT`,
   `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_sid TEXT`,
-  `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_url TEXT`,
   `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_duration_seconds INTEGER`,
   `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_failure_code TEXT`,
   `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS transcription_enabled BOOLEAN NOT NULL DEFAULT FALSE`,
@@ -194,7 +192,6 @@ type SessionRow = {
   recording_enabled?: boolean;
   recording_status?: CallSessionSummary['recordingStatus'];
   recording_sid?: string | null;
-  recording_url?: string | null;
   recording_duration_seconds?: number | string | null;
   transcription_enabled?: boolean;
   transcript_status?: CallSessionSummary['transcriptStatus'];
@@ -306,13 +303,13 @@ const mapSession = (
     recordingEnabled: row.recording_enabled === true,
     recordingStatus: row.recording_status ?? null,
     recordingSid: row.recording_sid ?? null,
-    recordingUrl: row.recording_url ?? null,
     recordingDurationSeconds: numberOrNull(row.recording_duration_seconds),
     transcriptStatus: row.transcript_status ?? null,
     transcriptProvider: row.transcript_provider ?? null,
     transcriptModel: row.transcript_model ?? null,
     transcriptLanguage: row.transcript_language ?? null,
     transcriptRetentionDays: numberOrNull(row.transcript_retention_days),
+    transcriptionEnabled: row.transcription_enabled === true,
     opportunity: opportunitySnapshot(row.opportunity_snapshot),
     startedAt,
     answeredAt: isoOrNull(row.answered_at),
@@ -965,8 +962,7 @@ export const createPostgresCallOperationsRepository = (
       `UPDATE dialer_call_sessions AS sessions
        SET recording_sid = $2,
            recording_status = $3,
-           recording_url = COALESCE($4, recording_url),
-           recording_duration_seconds = COALESCE($5, recording_duration_seconds),
+           recording_duration_seconds = COALESCE($4, recording_duration_seconds),
            recording_failure_code = CASE WHEN $3 IN ('failed', 'absent') THEN UPPER($3) ELSE NULL END,
            updated_at = NOW()
        FROM dialer_call_legs AS legs
@@ -977,7 +973,6 @@ export const createPostgresCallOperationsRepository = (
         request.providerCallId,
         request.recordingSid,
         request.recordingStatus,
-        request.recordingUrl ?? null,
         request.recordingDurationSeconds ?? null,
       ],
     ).pipe(Effect.asVoid),

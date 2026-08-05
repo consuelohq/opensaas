@@ -577,7 +577,6 @@ export const createCallOperationsApplication = (input: {
       providerCallId: string;
       recordingSid: string;
       recordingStatus: string;
-      recordingUrl?: string;
       recordingDurationSeconds?: number;
     }) => input.repository.recordCallRecordingStatus(request),
     attachTranscriptionStream: (request: {

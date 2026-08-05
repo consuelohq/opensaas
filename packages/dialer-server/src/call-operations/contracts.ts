@@ -111,10 +111,10 @@ export type CallSessionSummary = {
   transcriptModel?: string | null;
   transcriptLanguage?: string | null;
   transcriptRetentionDays?: number | null;
+  transcriptionEnabled?: boolean;
   recordingEnabled?: boolean;
   recordingStatus?: 'pending' | 'starting' | 'in-progress' | 'completed' | 'absent' | 'failed' | null;
   recordingSid?: string | null;
-  recordingUrl?: string | null;
   recordingDurationSeconds?: number | null;
   opportunity?: OpportunitySnapshot | null;
   startedAt?: string | null;

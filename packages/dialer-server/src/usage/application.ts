@@ -36,6 +36,15 @@ export const recordFinalProviderUsage = (input: {
       workspaceId: string,
       sourceId: string,
     ) => Effect.Effect<boolean, unknown>;
+    completeSource: (
+      workspaceId: string,
+      sourceId: string,
+    ) => Effect.Effect<void, unknown>;
+    failSource: (
+      workspaceId: string,
+      sourceId: string,
+      errorCode: string,
+    ) => Effect.Effect<void, unknown>;
     insertUsageEvent: (
       event: ReturnType<typeof createUsageEventFromProviderCompletion>,
     ) => Effect.Effect<void, unknown>;
@@ -48,9 +57,25 @@ export const recordFinalProviderUsage = (input: {
       input.completion.providerCallId,
     );
     if (claimed) {
-      yield* input.repository.insertUsageEvent(
-        createUsageEventFromProviderCompletion(input.completion),
-      );
+      yield* input.repository
+        .insertUsageEvent(
+          createUsageEventFromProviderCompletion(input.completion),
+        )
+        .pipe(
+          Effect.tap(() =>
+            input.repository.completeSource(
+              input.completion.workspaceId,
+              input.completion.providerCallId,
+            ),
+          ),
+          Effect.tapError(() =>
+            input.repository.failSource(
+              input.completion.workspaceId,
+              input.completion.providerCallId,
+              'USAGE_PERSISTENCE_FAILED',
+            ),
+          ),
+        );
     }
     yield* input.releaseResources();
     return { duplicate: !claimed };

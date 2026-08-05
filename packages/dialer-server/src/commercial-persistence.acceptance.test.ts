@@ -17,6 +17,17 @@ type PersistenceModule = {
       source: string;
       sourceId: string;
     }) => Effect.Effect<boolean, unknown>;
+    completeProviderEvent: (input: {
+      workspaceId: string;
+      source: string;
+      sourceId: string;
+    }) => Effect.Effect<void, unknown>;
+    failProviderEvent: (input: {
+      workspaceId: string;
+      source: string;
+      sourceId: string;
+      errorCode: string;
+    }) => Effect.Effect<void, unknown>;
     saveSeatAssignment: (input: {
       workspaceId: string;
       userId: string;
@@ -123,5 +134,10 @@ describe('commercial persistence contracts', () => {
         call.sql.includes('dialer_provider_webhook_events'),
       )?.sql.toLowerCase(),
     ).toContain('on conflict');
+    expect(
+      calls.find((call) =>
+        call.sql.includes('dialer_provider_webhook_events'),
+      )?.sql.toLowerCase(),
+    ).toContain("status = 'failed'");
   });
 });

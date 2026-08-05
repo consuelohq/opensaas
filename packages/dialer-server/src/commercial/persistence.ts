@@ -65,17 +65,34 @@ export const COMMERCIAL_SCHEMA_STATEMENTS = [
   )`,
   `ALTER TABLE dialer_phone_numbers
     ADD COLUMN IF NOT EXISTS slot_type text`,
-  `WITH ranked AS (
-      SELECT workspace_id, phone_number,
+  `WITH capacities AS (
+      SELECT workspace_id,
+             GREATEST(
+               1,
+               COALESCE(SUM(quantity) FILTER (
+                 WHERE item_code IN ('single', 'standard', 'power')
+               ), 0)
+             )::integer AS included_capacity
+      FROM dialer_workspace_subscription_items
+      GROUP BY workspace_id
+    ), ranked AS (
+      SELECT number.workspace_id, number.phone_number,
              row_number() OVER (
-               PARTITION BY workspace_id, user_id
-               ORDER BY updated_at, phone_number
-             ) AS position
-      FROM dialer_phone_numbers
-      WHERE status = 'active' AND user_id IS NOT NULL AND slot_type IS NULL
+               PARTITION BY number.workspace_id
+               ORDER BY number.updated_at, number.phone_number
+             ) AS position,
+             COALESCE(capacities.included_capacity, 1) AS included_capacity
+      FROM dialer_phone_numbers AS number
+      LEFT JOIN capacities ON capacities.workspace_id = number.workspace_id
+      WHERE number.status = 'active'
+        AND number.user_id IS NOT NULL
+        AND number.slot_type IS NULL
     )
     UPDATE dialer_phone_numbers AS number
-    SET slot_type = CASE WHEN ranked.position = 1 THEN 'included' ELSE 'additional' END
+    SET slot_type = CASE
+      WHEN ranked.position <= ranked.included_capacity THEN 'included'
+      ELSE 'additional'
+    END
     FROM ranked
     WHERE number.workspace_id = ranked.workspace_id
       AND number.phone_number = ranked.phone_number`,
@@ -96,10 +113,22 @@ export const COMMERCIAL_SCHEMA_STATEMENTS = [
     workspace_id text NOT NULL,
     source text NOT NULL CHECK (source <> ''),
     source_id text NOT NULL,
+    status text NOT NULL DEFAULT 'processing' CHECK (status IN ('processing', 'completed', 'failed')),
+    attempt_count integer NOT NULL DEFAULT 1 CHECK (attempt_count > 0),
     claimed_at timestamptz NOT NULL DEFAULT now(),
+    completed_at timestamptz,
+    last_error_code text,
     PRIMARY KEY (workspace_id, source, source_id),
     UNIQUE (source, source_id)
   )`,
+  `ALTER TABLE dialer_provider_webhook_events
+    ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'processing'`,
+  `ALTER TABLE dialer_provider_webhook_events
+    ADD COLUMN IF NOT EXISTS attempt_count integer NOT NULL DEFAULT 1`,
+  `ALTER TABLE dialer_provider_webhook_events
+    ADD COLUMN IF NOT EXISTS completed_at timestamptz`,
+  `ALTER TABLE dialer_provider_webhook_events
+    ADD COLUMN IF NOT EXISTS last_error_code text`,
   `CREATE TABLE IF NOT EXISTS dialer_installation_lifecycle_events (
     workspace_id text NOT NULL,
     location_id text NOT NULL,
@@ -136,13 +165,61 @@ export const createCommercialPersistence = (client: CommercialSqlClient) => ({
       try: async () => {
         const result = await client.query(
           `INSERT INTO dialer_provider_webhook_events (
-            workspace_id, source, source_id
-          ) VALUES ($1, $2, $3)
-          ON CONFLICT DO NOTHING
+            workspace_id, source, source_id, status, attempt_count
+          ) VALUES ($1, $2, $3, 'processing', 1)
+          ON CONFLICT (source, source_id) DO UPDATE
+          SET status = 'processing',
+              attempt_count = dialer_provider_webhook_events.attempt_count + 1,
+              claimed_at = now(),
+              completed_at = NULL,
+              last_error_code = NULL
+          WHERE dialer_provider_webhook_events.workspace_id = EXCLUDED.workspace_id
+            AND (
+              dialer_provider_webhook_events.status = 'failed'
+              OR (
+                dialer_provider_webhook_events.status = 'processing'
+                AND dialer_provider_webhook_events.claimed_at < now() - interval '5 minutes'
+              )
+            )
           RETURNING true AS inserted`,
           [input.workspaceId, input.source, input.sourceId],
         );
         return (result.rowCount ?? result.rows.length) > 0;
+      },
+      catch: (cause) => cause,
+    }),
+  completeProviderEvent: (input: {
+    workspaceId: string;
+    source: string;
+    sourceId: string;
+  }) =>
+    Effect.tryPromise({
+      try: async () => {
+        await client.query(
+          `UPDATE dialer_provider_webhook_events
+           SET status = 'completed', completed_at = now(), last_error_code = NULL
+           WHERE workspace_id = $1 AND source = $2 AND source_id = $3
+             AND status = 'processing'`,
+          [input.workspaceId, input.source, input.sourceId],
+        );
+      },
+      catch: (cause) => cause,
+    }),
+  failProviderEvent: (input: {
+    workspaceId: string;
+    source: string;
+    sourceId: string;
+    errorCode: string;
+  }) =>
+    Effect.tryPromise({
+      try: async () => {
+        await client.query(
+          `UPDATE dialer_provider_webhook_events
+           SET status = 'failed', completed_at = NULL, last_error_code = $4
+           WHERE workspace_id = $1 AND source = $2 AND source_id = $3
+             AND status = 'processing'`,
+          [input.workspaceId, input.source, input.sourceId, input.errorCode],
+        );
       },
       catch: (cause) => cause,
     }),

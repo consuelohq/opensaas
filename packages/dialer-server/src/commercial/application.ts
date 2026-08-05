@@ -29,6 +29,10 @@ import {
 
 type CommercialRecord = Record<string, unknown>;
 type CommercialBilling = ReturnType<typeof createStripeCommercialBilling>;
+type CommercialApplication = CommercialRouteDependencies & {
+  callerContext: NonNullable<CommercialRouteDependencies['callerContext']>;
+  authorizeCall: NonNullable<CommercialRouteDependencies['authorizeCall']>;
+};
 
 export type CommercialUsageProvider = {
   getCompletion: (providerCallId: string) => Promise<{
@@ -189,7 +193,7 @@ export const createCommercialApplication = (input: {
   numbers?: CommercialNumberProvider;
   usage?: CommercialUsageProvider;
   now?: () => Date;
-}): CommercialRouteDependencies => {
+}): CommercialApplication => {
   const persistence = createCommercialPersistence(input.database);
   const now = input.now ?? (() => new Date());
 
@@ -265,13 +269,16 @@ export const createCommercialApplication = (input: {
     if (paidSeatQuantity === 0) {
       purchased[input.catalog.trial.planCode] = input.catalog.trial.maxSeats;
     }
+    const includedNumberQuantity =
+      paidSeatQuantity > 0
+        ? paidSeatQuantity * input.catalog.includedNumbersPerSeat
+        : input.catalog.trial.maxNumbers;
     return {
       purchased,
       paid: paidSeatQuantity > 0,
-      numberCapacity:
-        paidSeatQuantity > 0
-          ? paidSeatQuantity * input.catalog.includedNumbersPerSeat + additionalNumberQuantity
-          : input.catalog.trial.maxNumbers,
+      includedNumberQuantity,
+      additionalNumberQuantity,
+      numberCapacity: includedNumberQuantity + additionalNumberQuantity,
     };
   };
 
@@ -531,21 +538,23 @@ export const createCommercialApplication = (input: {
     userId: string,
     phoneNumber: string,
   ) => {
-    await validateAssignment(workspaceId, userId, phoneNumber);
+    const [, inventory] = await Promise.all([
+      validateAssignment(workspaceId, userId, phoneNumber),
+      loadConfirmedInventory(workspaceId),
+    ]);
     const updated = await input.database.query(
       `UPDATE dialer_phone_numbers AS target
        SET user_id = $2,
            slot_type = COALESCE(
              target.slot_type,
-             CASE WHEN EXISTS (
-               SELECT 1
+             CASE WHEN (
+               SELECT COUNT(*)
                FROM dialer_phone_numbers AS existing
                WHERE existing.workspace_id = $1
-                 AND existing.user_id = $2
                  AND existing.phone_number <> $3
                  AND existing.status = 'active'
                  AND existing.slot_type = 'included'
-             ) THEN 'additional' ELSE 'included' END
+             ) < $4 THEN 'included' ELSE 'additional' END
            ),
            updated_at = now()
        WHERE target.workspace_id = $1
@@ -553,7 +562,7 @@ export const createCommercialApplication = (input: {
          AND target.status = 'active'
          AND (target.user_id IS NULL OR target.user_id = $2)
        RETURNING phone_number, user_id, slot_type`,
-      [workspaceId, userId, phoneNumber],
+      [workspaceId, userId, phoneNumber, inventory.includedNumberQuantity],
     );
     if ((updated.rowCount ?? updated.rows.length) !== 1) {
       throw new Error('NUMBER_NOT_AVAILABLE');
@@ -973,16 +982,18 @@ export const createCommercialApplication = (input: {
             ? await workspaceForSubscription(providerSubscriptionId)
             : '');
         if (!workspaceId) throw new Error('STRIPE_WORKSPACE_NOT_FOUND');
+        const providerEvent = {
+          workspaceId,
+          source: 'stripe',
+          sourceId: event.id,
+        };
         const claimed = await Effect.runPromise(
-          persistence.claimProviderEvent({
-            workspaceId,
-            source: 'stripe',
-            sourceId: event.id,
-          }),
+          persistence.claimProviderEvent(providerEvent),
         );
         if (!claimed) return { received: true as const, duplicate: true };
 
-        if (event.type.startsWith('customer.subscription.')) {
+        try {
+          if (event.type.startsWith('customer.subscription.')) {
           const deleted = event.type === 'customer.subscription.deleted';
           const status = deleted
             ? 'canceled'
@@ -1051,8 +1062,8 @@ export const createCommercialApplication = (input: {
               );
             }
           }
-        }
-        if (event.type === 'invoice.payment_failed') {
+          }
+          if (event.type === 'invoice.payment_failed') {
           await input.database.query(
             `UPDATE dialer_workspace_subscriptions
              SET status = 'past_due', payment_failed_at = COALESCE(payment_failed_at, $2),
@@ -1060,16 +1071,28 @@ export const createCommercialApplication = (input: {
              WHERE workspace_id = $1`,
             [workspaceId, now().toISOString()],
           );
-        }
-        if (event.type === 'invoice.paid') {
+          }
+          if (event.type === 'invoice.paid') {
           await input.database.query(
             `UPDATE dialer_workspace_subscriptions
              SET status = 'active', payment_failed_at = NULL, updated_at = now()
              WHERE workspace_id = $1`,
             [workspaceId],
           );
+          }
+          await Effect.runPromise(
+            persistence.completeProviderEvent(providerEvent),
+          );
+          return { received: true as const, duplicate: false };
+        } catch (cause: unknown) {
+          await Effect.runPromise(
+            persistence.failProviderEvent({
+              ...providerEvent,
+              errorCode: 'STRIPE_EVENT_PROCESSING_FAILED',
+            }),
+          ).catch(() => undefined);
+          throw cause;
         }
-        return { received: true as const, duplicate: false };
       }),
     processInstallationUninstall: (event) => {
       const billing = input.billing;
@@ -1089,6 +1112,19 @@ export const createCommercialApplication = (input: {
               workspaceId: event.workspaceId,
               source: 'leadconnector.installation',
               sourceId: eventId,
+            }),
+          completeWebhookEvent: (eventId) =>
+            persistence.completeProviderEvent({
+              workspaceId: event.workspaceId,
+              source: 'leadconnector.installation',
+              sourceId: eventId,
+            }),
+          failWebhookEvent: (eventId, errorCode) =>
+            persistence.failProviderEvent({
+              workspaceId: event.workspaceId,
+              source: 'leadconnector.installation',
+              sourceId: eventId,
+              errorCode,
             }),
           getWorkspaceSubscriptionId: (workspaceId) =>
             effectQuery(() => subscriptionIdForWorkspace(workspaceId)),
@@ -1148,13 +1184,27 @@ export const createCommercialApplication = (input: {
                   source: 'twilio.usage',
                   sourceId,
                 }),
+              completeSource: (workspaceId, sourceId) =>
+                persistence.completeProviderEvent({
+                  workspaceId,
+                  source: 'twilio.usage',
+                  sourceId,
+                }),
+              failSource: (workspaceId, sourceId, errorCode) =>
+                persistence.failProviderEvent({
+                  workspaceId,
+                  source: 'twilio.usage',
+                  sourceId,
+                  errorCode,
+                }),
               insertUsageEvent: (usageEvent) =>
                 effectQuery(async () => {
                   await input.database.query(
                     `INSERT INTO dialer_usage_events (
                        workspace_id, source_type, source_id, user_id, seat_id,
                        metric, quantity, provider_cost_micros, occurred_at, payload
-                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)`,
+                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
+                     ON CONFLICT (workspace_id, source_type, source_id) DO NOTHING`,
                     [
                       usageEvent.workspaceId,
                       usageEvent.sourceType,
