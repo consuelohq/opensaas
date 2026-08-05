@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { render, renderHook } from '@testing-library/react';
 import { type ReactNode } from 'react';
 import { RecoilRoot } from 'recoil';
 
@@ -38,11 +38,19 @@ describe('useGetButtonIcon', () => {
     expect(result.current).toBeUndefined();
   });
 
-  it('should return icon pencil', () => {
+  it('should return the phone action icon for a phone field', () => {
     const { result } = renderHook(() => useGetButtonIcon(), {
       wrapper: PhoneWrapper,
     });
-    expect(result.current).toEqual(IconPencil);
+
+    const PhoneIcon = result.current;
+    expect(PhoneIcon).toBeDefined();
+
+    const { container } = render(<PhoneIcon />);
+    expect(container.querySelector('path')).toHaveAttribute(
+      'd',
+      'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2',
+    );
   });
 
   it('should return iconPencil for relation field', () => {
