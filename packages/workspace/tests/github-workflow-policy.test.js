@@ -171,11 +171,15 @@ describe('GitHub workflow policy', () => {
     const typecheckIndex = serverWorkflow.indexOf(
       'node packages/workspace/scripts/ci/run-changed-server-task.mjs',
     );
+    const graphqlIndex = serverWorkflow.indexOf(
+      'node packages/workspace/scripts/ci/run-changed-server-task.mjs --graphql',
+    );
 
     expect(bunSetupIndex).toBeGreaterThan(-1);
     expect(dependencyBuildIndex).toBeGreaterThan(-1);
     expect(typecheckIndex).toBeGreaterThan(bunSetupIndex);
     expect(typecheckIndex).toBeGreaterThan(dependencyBuildIndex);
+    expect(graphqlIndex).toBeGreaterThan(typecheckIndex);
   });
 
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {

@@ -9,6 +9,12 @@ export const SERVER_TASK_ROOTS = [
   'packages/twenty-front/src/generated-metadata',
 ];
 
+export const GRAPHQL_GENERATION_ROOTS = [
+  'packages/twenty-server',
+  'packages/twenty-front/src/generated',
+  'packages/twenty-front/src/generated-metadata',
+];
+
 export const SERVER_CONFIG_ONLY_FILES = new Set([
   'packages/twenty-shared/eslint.config.mjs',
 ]);
@@ -36,6 +42,7 @@ export const parseCliArguments = (args, env = process.env) => ({
     (env.GITHUB_BASE_REF ? `origin/${env.GITHUB_BASE_REF}` : undefined),
   head: readOption(args, '--head') ?? env.NX_HEAD ?? 'HEAD',
   listOnly: args.includes('--list'),
+  graphql: args.includes('--graphql'),
 });
 
 const run = (command, args, options = {}) => {
@@ -68,6 +75,20 @@ export const filterServerTaskFiles = (files) =>
     ),
   ].sort();
 
+export const filterGraphqlGenerationFiles = (files) =>
+  [
+    ...new Set(
+      files
+        .map((file) => file.trim())
+        .filter(Boolean)
+        .filter((file) =>
+          GRAPHQL_GENERATION_ROOTS.some(
+            (root) => file === root || file.startsWith(`${root}/`),
+          ),
+        ),
+    ),
+  ].sort();
+
 export const getChangedServerTaskFiles = ({ base, head }) => {
   if (!base) {
     throw new Error(
@@ -95,6 +116,35 @@ export const getChangedServerTaskFiles = ({ base, head }) => {
   }
 
   return filterServerTaskFiles((result.stdout ?? '').split('\n'));
+};
+
+export const getChangedGraphqlGenerationFiles = ({ base, head }) => {
+  if (!base) {
+    throw new Error(
+      'Unable to resolve the GraphQL generation base. Pass --base or provide NX_BASE/GITHUB_BASE_REF.',
+    );
+  }
+
+  const result = run(
+    'git',
+    [
+      'diff',
+      '--name-only',
+      '--diff-filter=ACDMRTUXB',
+      base,
+      head,
+      '--',
+      ...GRAPHQL_GENERATION_ROOTS,
+    ],
+    { capture: true },
+  );
+
+  if (result.status !== 0) {
+    process.stderr.write(result.stderr ?? '');
+    throw new Error(`git diff failed with exit code ${result.status}`);
+  }
+
+  return filterGraphqlGenerationFiles((result.stdout ?? '').split('\n'));
 };
 
 export const buildNxArguments = ({ files }) => [
@@ -138,12 +188,84 @@ export const runChangedServerTask = (files, runCommand = run) => {
   }
 };
 
+export const runGraphqlGenerationCheck = (files, runCommand = run) => {
+  if (files.length === 0) {
+    process.stdout.write(
+      'No changed Twenty server schema files require GraphQL generation.\n',
+    );
+    return;
+  }
+
+  const commands = [
+    ['npx', ['--no-install', 'nx', 'run', 'twenty-front:graphql:generate']],
+    [
+      'npx',
+      [
+        '--no-install',
+        'nx',
+        'run',
+        'twenty-front:graphql:generate',
+        '--configuration=metadata',
+      ],
+    ],
+    [
+      'git',
+      [
+        'diff',
+        '--quiet',
+        '--',
+        'packages/twenty-front/src/generated',
+        'packages/twenty-front/src/generated-metadata',
+      ],
+    ],
+  ];
+
+  for (const [command, args] of commands) {
+    const result = runCommand(command, args, {
+      env: {
+        ...process.env,
+        NX_DAEMON: 'false',
+        NX_SKIP_NX_CACHE: 'true',
+      },
+    });
+
+    if (result.status !== 0) {
+      if (command === 'git') {
+        runCommand(
+          'git',
+          [
+            'diff',
+            '--',
+            'packages/twenty-front/src/generated',
+            'packages/twenty-front/src/generated-metadata',
+          ],
+          {},
+        );
+        throw new Error(
+          'GraphQL schema changes detected. Regenerate and commit the GraphQL outputs.',
+        );
+      }
+
+      throw new Error(
+        `GraphQL generation failed with exit code ${result.status}`,
+      );
+    }
+  }
+};
+
 export const main = () => {
   const options = parseCliArguments(process.argv.slice(2));
-  const files = getChangedServerTaskFiles(options);
+  const files = options.graphql
+    ? getChangedGraphqlGenerationFiles(options)
+    : getChangedServerTaskFiles(options);
 
   if (options.listOnly) {
     process.stdout.write(`${JSON.stringify({ files }, null, 2)}\n`);
+    return;
+  }
+
+  if (options.graphql) {
+    runGraphqlGenerationCheck(files);
     return;
   }
 
