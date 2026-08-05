@@ -1,153 +1,97 @@
-import { execSync } from 'node:child_process';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import type { Command } from 'commander';
-import { log, success, error, info } from '../output.js';
-import { captureError } from '../sentry.js';
 
-const CLI_PACKAGE_NAME = '@consuelo/cli';
-
-const getInstalledVersion = (): string => {
-  try {
-    const pkgPath = require.resolve(`${CLI_PACKAGE_NAME}/package.json`);
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-    return pkg.version;
-  } catch (err: unknown) {
-    captureError(err, { command: 'update', step: 'getInstalledVersion' });
-    return 'unknown';
-  }
+export type OsUpdateOptions = {
+  channel?: string;
+  check?: boolean;
+  yes?: boolean;
+  json?: boolean;
+  quiet?: boolean;
 };
 
-const getLatestVersion = (): string | null => {
-  try {
-    const result = execSync(`npm view ${CLI_PACKAGE_NAME} version --json`, {
-      encoding: 'utf-8',
-      timeout: 10000,
-    });
-    const parsed = JSON.parse(result) as string;
-    return parsed.trim();
-  } catch (err: unknown) {
-    captureError(err, { command: 'update', step: 'getLatestVersion' });
-    return null;
-  }
+export type OsUpdateInvocation = {
+  command: string;
+  args: string[];
+  home: string;
 };
 
-const isLocalDev = (): boolean => {
-  try {
-    const cliPath = require.resolve(CLI_PACKAGE_NAME);
-    const realPath = fs.realpathSync(cliPath);
-    const stat = fs.lstatSync(path.dirname(cliPath));
-    if (stat.isSymbolicLink()) return true;
-    if (realPath.includes('/packages/cli')) return true;
-    if (process.env.CONSUELO_DEV === 'true') return true;
-    return false;
-  } catch (err: unknown) {
-    captureError(err, { command: 'update', step: 'isLocalDev' });
-    return false;
-  }
+type BuildInvocationDependencies = {
+  home?: string;
+  env?: NodeJS.ProcessEnv;
+  commandExists?: (path: string) => boolean;
 };
 
-const rebuildLocal = async (): Promise<boolean> => {
-  const cliPath = require.resolve(CLI_PACKAGE_NAME);
-  const cliDir = path.dirname(cliPath);
-  const srcDir = path.resolve(cliDir, '..', 'src');
-
-  if (!fs.existsSync(srcDir)) {
-    error('could not find CLI source directory');
-    return false;
-  }
-
-  info('rebuilding CLI from source...');
-
-  try {
-    execSync('npx tsc', {
-      cwd: path.resolve(srcDir, '..'),
-      stdio: 'pipe',
-      timeout: 60000,
-    });
-    return true;
-  } catch (err: unknown) {
-    captureError(err, { command: 'update' });
-    return false;
-  }
+type UpdateCommandDependencies = BuildInvocationDependencies & {
+  spawn?: typeof spawnSync;
 };
 
-const updateFromNpm = async (): Promise<boolean> => {
-  info('updating CLI from npm...');
+export function buildOsUpdateInvocation(
+  options: OsUpdateOptions,
+  dependencies: BuildInvocationDependencies = {},
+): OsUpdateInvocation {
+  const env = dependencies.env ?? process.env;
+  const home = dependencies.home
+    ?? env.CONSUELO_HOME
+    ?? env.CONSUELO_OS_HOME
+    ?? join(homedir(), '.consuelo');
+  const command = join(home, 'bin', 'consuelo');
+  const commandExists = dependencies.commandExists ?? existsSync;
 
-  try {
-    execSync(`npm install -g ${CLI_PACKAGE_NAME}@latest`, {
-      stdio: 'inherit',
-      timeout: 120000,
-    });
-    return true;
-  } catch (err: unknown) {
-    captureError(err, { command: 'update' });
-    return false;
-  }
-};
-
-export const updateCommand = async (): Promise<void> => {
-  try {
-  const currentVersion = getInstalledVersion();
-  log(`current version: ${currentVersion}`);
-
-  if (isLocalDev()) {
-    info('local development mode detected');
-
-    const rebuilt = await rebuildLocal();
-    if (rebuilt) {
-      success('CLI rebuilt successfully');
-    } else {
-      error('rebuild failed — check the TypeScript errors above');
-      log('run `cd packages/cli && npx tsc` to see full error output');
-      process.exit(1);
-    }
-    return;
+  if (!commandExists(command)) {
+    throw new Error(
+      `Consuelo OS is not installed at ${command}. Install or repair it from https://install.consuelohq.com/os`,
+    );
   }
 
-  const latestVersion = getLatestVersion();
+  const args = ['update'];
+  if (options.channel) args.push('--channel', options.channel);
+  if (options.check) args.push('--check');
+  if (options.yes) args.push('--yes');
+  if (options.json) args.push('--json');
+  if (options.quiet) args.push('--quiet');
 
-  if (!latestVersion) {
-    error('could not check for updates — npm registry unavailable');
-    log('try again later or run: npm install -g @consuelo/cli@latest');
-    process.exit(1);
-  }
+  return { command, args, home };
+}
 
-  log(`latest version: ${latestVersion}`);
+export function updateCommand(
+  options: OsUpdateOptions = {},
+  dependencies: UpdateCommandDependencies = {},
+): number {
+  const invocation = buildOsUpdateInvocation(options, dependencies);
+  const spawn = dependencies.spawn ?? spawnSync;
+  const result = spawn(invocation.command, invocation.args, {
+    env: {
+      ...(dependencies.env ?? process.env),
+      CONSUELO_HOME: invocation.home,
+    },
+    stdio: 'inherit',
+  });
 
-  if (currentVersion === latestVersion) {
-    success('already on the latest version');
-    return;
-  }
+  if (result.error) throw result.error;
+  return typeof result.status === 'number' ? result.status : 1;
+}
 
-  const updated = await updateFromNpm();
-
-  if (updated) {
-    success(`updated to ${latestVersion}`);
-    log('run `consuelo --version` to verify');
-  } else {
-    error('update failed');
-    log('try manually: npm install -g @consuelo/cli@latest');
-    process.exit(1);
-  }
-  } catch (err: unknown) {
-    captureError(err, { command: 'update' });
-    error(err instanceof Error ? err.message : 'unexpected error during update');
-    process.exit(1);
-  }
-};
-
-export const registerUpdate = (program: Command): void => {
+export function registerUpdate(program: Command): void {
   program
     .command('update')
-    .description('update the CLI to the latest version')
-    .action(async () => {
-      try {
-        await updateCommand();
-      } catch (err: unknown) {
-        captureError(err, { command: 'update' });
-        process.exit(1);
-      }
+    .description('update Consuelo OS to the latest release on the active channel')
+    .option('--channel <channel>', 'override the release channel for this update')
+    .option('--check', 'check whether an update is available without installing it')
+    .option('-y, --yes', 'install without an interactive confirmation')
+    .allowUnknownOption(false)
+    .action((options: OsUpdateOptions, command: Command) => {
+      const globalOptions = command.optsWithGlobals() as {
+        json?: boolean;
+        quiet?: boolean;
+      };
+      const exitCode = updateCommand({
+        ...options,
+        json: globalOptions.json,
+        quiet: globalOptions.quiet,
+      });
+      if (exitCode !== 0) process.exitCode = exitCode;
     });
-};
+}

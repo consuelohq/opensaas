@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-batch-child-task-session-propagation",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1787,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1787",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1787",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1787/fix-batch-child-task-session-propagation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1787",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1787/fix-batch-child-task-session-propagation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-batch-child-task-session-propagation",
+  "taskSession": "tsk_e6e09f96c481",
+  "tmuxSession": "opensaas-os-fix-batch-child-task-session-propagation-e6e09f96",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-batch-child-task-session-propagation/.task/os/fix-batch-child-task-session-propagation/session.json",
+  "createdAt": "2026-08-05T18:37:07.933Z"
+}
