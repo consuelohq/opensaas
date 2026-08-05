@@ -1,6 +1,7 @@
 {
   "files": [
     ".github/workflows/ci-front.yaml",
+    ".github/workflows/ci-shared.yaml",
     ".task/dialer/implement-complete-gohighlevel-commercial-dialer/verify.json",
     ".task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md",
     ".task/dialer/redesign-embedded-dialer-operator-surfaces/workpad.md",
@@ -75,5 +76,5 @@
     "packages/workspace/tests/test-selection.test.js",
     "packages/workspace/tests/verification.test.js"
   ],
-  "updatedAt": "2026-08-05T19:42:24.100Z"
+  "updatedAt": "2026-08-05T19:55:38.322Z"
 }

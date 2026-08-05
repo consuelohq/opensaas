@@ -315,9 +315,6 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 
 ## workspace-owned: validation evidence
 
-- 2026-08-05 17:13:11 `review.run`: passed — OK
-- 2026-08-05 17:31:12 `review.run`: passed — OK
-- 2026-08-05 18:45:22 `review.run`: passed — OK
 - 2026-08-05 18:45:22 `review.run`: passed — OK
 - 2026-08-05 18:45:22 `review.run`: passed — OK
 - 2026-08-05 18:47:37 `review.run`: passed — OK
@@ -345,6 +342,9 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 - 2026-08-05 19:43:56 `review.run`: passed — OK
 - 2026-08-05 19:43:56 `review.run`: passed — OK
 - 2026-08-05 19:43:56 `review.run`: passed — OK
+- 2026-08-05 20:01:02 `review.run`: passed — OK
+- 2026-08-05 20:01:02 `review.run`: passed — OK
+- 2026-08-05 20:01:02 `review.run`: passed — OK
 
 ## key decisions
 
@@ -519,6 +519,7 @@ bun run task:finish
 ## workspace-owned: files read
 
 - `.github/workflows/ci-front.yaml`
+- `.github/workflows/ci-shared.yaml`
 - `/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-handoffs/consuelo-ghl-commercial-dialer-agent-prompt.md`
 - `node_modules/twilio/index.d.ts`
 - `node_modules/twilio/lib/rest/api/v2010/account/call/recording.d.ts`
@@ -927,3 +928,42 @@ bun run task:finish
 - A duplicate deleted-file fixture caused one expected unit-test failure during development and was corrected by de-duplicating selector inputs; no production command or remote mutation occurred. Trace: `trc_7271db36ecb8`.
 
 - Strict changed-file review for the frontend typecheck remediation passed with zero task-owned issues, zero blockers, and zero failed suites; three broad project typecheck failures were classified pre-existing. Trace: `trc_6fb7a9fe92a7`.
+
+### Wait cycle: full publish verify at fa55a0fb74
+
+- Start time (UTC): 2026-08-05T19:44:38.117Z.
+- Stream refresh: `origin/stream/dialer` remains `39dbe8c38c55ca0e4c4b2eb2e2a72c937212a26d`; task is 0 behind / 21 ahead. Trace: `trc_73bff858e2dc`.
+- Command: `bun run verify -- --base origin/stream/dialer --json --quiet`.
+- Wait reason: regenerate the authoritative publish stamp from committed HEAD `fa55a0fb748cb18a0411965d0f70d1f8712101b8` after the GitHub frontend typecheck remediation.
+- Poll interval / maximum: 30 seconds / 20 attempts.
+- Resume action: inspect `/tmp/ghl-fa55a0f-final-publish-verify.status.json`, `/tmp/ghl-fa55a0f-final-publish-verify.log`, and the task verify stamp.
+- Expected signal: exit 0, mode full, publishValid true, head `fa55a0fb748cb18a0411965d0f70d1f8712101b8`, base `origin/stream/dialer`.
+- Fallback: stop publication on any mismatch; do not start a duplicate verifier.
+
+- Final canonical full verify at `fa55a0fb748cb18a0411965d0f70d1f8712101b8` completed at 2026-08-05T19:47:45.543Z with exit code 0. The authoritative stamp records base `origin/stream/dialer`, mode `full`, `publishValid: true`, strict review passed, 10/10 selected suites passed, and the database guard passed with zero findings. Durable status/log: `/tmp/ghl-fa55a0f-final-publish-verify.status.json`, `/tmp/ghl-fa55a0f-final-publish-verify.log`; trace `trc_a2d3ec4a7d52`.
+
+### Wait cycle: replacement GitHub CI at fa55a0fb74
+
+- Start time (UTC): 2026-08-05T19:49:14.481Z.
+- Wait reason: PR #1782 now points to verified head `fa55a0fb748cb18a0411965d0f70d1f8712101b8`; 17 of 20 initial checks were pending and none failed.
+- Poll interval / maximum: 15 seconds / 120 attempts.
+- Resume action: inspect `/tmp/pr-1782-ci-monitor-fa55a0f.status.json` and `/tmp/pr-1782-ci-monitor-fa55a0f.log.jsonl`.
+- Expected signal: head unchanged, zero failed checks, zero pending checks.
+- Fallback: stop immediately on first failure/head mismatch and inspect that exact job; merge remains blocked.
+
+### Read-only production baselines before merge
+
+- Railway project `consuelo`, environment `production`, service `dialer-server` (service ID `f97bc786-ba06-44e7-a854-3294ac857c06`) was linked locally without changing remote configuration. Current deployment `88780e81-de48-475c-bf8b-ce80cce8b294` is `SUCCESS`, created 2026-08-04T23:22:10Z, image digest `sha256:d00673ad1ab36bc4615ac50b16f595cdba2d23dda00cfe385bf2a619eefb5f04`, domain `dialer-server-production-8f36.up.railway.app`.
+- Railway pre-deploy probes: `/health` 200 with the expected service/status payload; unauthenticated commercial admin and signed Stripe/Twilio callback boundaries returned 401; incomplete embed session returned 400. Last 24 hours produced two parsed log entries, zero relevant provider/commercial messages, and zero errors. Traces: `trc_846d093096fe`, `trc_3d5af258e651`.
+- Cloudflare Worker `consuelo-lead-connector-embed` currently serves version `32be6e3c-fb9e-43cb-a544-becd428652d4` at 100%. `/`, `/admin`, and `/overlay` return the same 523-byte `no-store` application shell, SHA-256 `57fd8427d1b556f8e89be9724bcf41fea7d16297b524a803b656c198f8ab418c`, with content-versioned `main.css?v=267839f7e7020908` and `main.js?v=12755dbea97224fa`. Trace: `trc_16bf9ac7f031`.
+- Authenticated GHL Custom Page `69b77476d898d360744e36bc` targets `https://consuelo-lead-connector-embed.kokayi-90b.workers.dev/admin` and retains iframe permission `clipboard-write;microphone;`. Trace: `trc_5a8c3e148d65`.
+- Authenticated Marketplace module identifiers resolve to app `690cbca9af44827eb89887b1`, version `6a651042f65aa918565593b1`, Custom JS module `01KYGP2NDCSJBA9C3T34PSWD9D`; the exact JS/CSS editor fields and Save control are present. Current installed artifacts are the prior launcher build and will be replaced only after the merged build is generated. Trace: `trc_b1c9eedce7d0`.
+
+### GitHub Shared CI remediation after fa55a0fb74
+
+- GitHub job `92425870569` (`shared-test (typecheck)`) failed without a TypeScript diagnostic: `@consuelo/lead-connector:typecheck` invoked `bun run typecheck`, but the Shared CI environment had no Bun executable. Raw log: `/tmp/pr1782-shared-typecheck-job-92425870569.log`; SHA-256 `2a9d2ca8c721ce663dcd141e420332813ec4bd5afb648de087c5d503f7e7b365`.
+- Complete remediation: Shared CI installs Bun through `oven-sh/setup-bun@v2`, resolves comparison SHAs with `nrwl/nx-set-shas@v4`, sends lint through the strict changed-file lint helper, and sends typecheck/test through the changed-runtime-file Nx selector. This avoids both the missing Bun runtime and the same unrelated root-file expansion that previously selected unchanged frontend baseline errors.
+- Durable validation `/tmp/ghl-shared-ci-fix-validation.status.json` completed at 2026-08-05T19:58:51.967Z with all 10 commands exit 0: 11 helper tests, 6 workflow policy tests, real changed-file Nx lint, exact typecheck/test selection, registry generation, 13 selector tests, changed-workflow security, both workflow YAML parses, and `git diff --check`. Log: `/tmp/ghl-shared-ci-fix-validation.log`; trace `trc_41e47c7529be`.
+- A transport loss spawned four identical read-only lint trees during an earlier combined validation. Exact process roots and descendants were terminated before the durable single-run validation; no repository or remote mutation resulted.
+
+- Strict changed-file review for the Shared CI remediation passed with zero task-owned findings, zero blockers, and zero failed suites; three broad project typecheck findings remain classified pre-existing. Trace: `trc_bed064ffac1f`.

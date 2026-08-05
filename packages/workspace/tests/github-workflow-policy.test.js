@@ -79,6 +79,28 @@ describe('GitHub workflow policy', () => {
     );
   });
 
+  test('installs Bun and scopes shared tasks to changed frontend files', () => {
+    const sharedWorkflow = readFileSync(
+      join(workflowDir, 'ci-shared.yaml'),
+      'utf8',
+    );
+
+    const bunIndex = sharedWorkflow.indexOf('uses: oven-sh/setup-bun@v2');
+    const shaIndex = sharedWorkflow.indexOf('uses: nrwl/nx-set-shas@v4');
+    const selectorIndex = sharedWorkflow.indexOf(
+      'run: node packages/workspace/scripts/ci/run-changed-frontend-task.mjs --task ${{ matrix.task }}',
+    );
+
+    expect(bunIndex).toBeGreaterThan(-1);
+    expect(shaIndex).toBeGreaterThan(bunIndex);
+    expect(selectorIndex).toBeGreaterThan(shaIndex);
+    expect(sharedWorkflow).toContain(
+      'run: node packages/workspace/scripts/ci/lint-changed-frontend-files.mjs',
+    );
+    expect(sharedWorkflow).not.toContain(
+      '- name: Run ${{ matrix.task }} task\n        uses: ./.github/actions/nx-affected',
+    );
+  });
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),
