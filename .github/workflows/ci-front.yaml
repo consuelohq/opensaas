@@ -172,7 +172,14 @@ jobs:
         with:
           tag: scope:frontend
           tasks: reset:env
+      - name: Resolve lint comparison SHAs
+        if: matrix.task == 'lint'
+        uses: nrwl/nx-set-shas@v4
+      - name: Lint changed frontend files
+        if: matrix.task == 'lint'
+        run: node packages/workspace/scripts/ci/lint-changed-frontend-files.mjs
       - name: Run ${{ matrix.task }} task
+        if: matrix.task != 'lint'
         uses: ./.github/actions/nx-affected
         with:
           tag: scope:frontend

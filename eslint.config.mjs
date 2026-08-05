@@ -12,7 +12,7 @@ import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 import jsoncParser from 'jsonc-eslint-parser';
 
 const twentyRules = await nxPlugin.loadWorkspaceRules(
-  'packages/twenty-eslint-rules',
+  'packages/eslint-rules',
 );
 
 export default [

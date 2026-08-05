@@ -729,3 +729,15 @@ bun run task:finish
 
 - 2026-08-05T17:44:24.913Z replacement Linux CI failed before executing LeadConnector tests: `@consuelo/lead-connector:test` returned `command not found: bun` in front-task job 92391216254 (run 31030799478). The workflow installed Node/Yarn only while Nx selected the Bun-backed LeadConnector test/typecheck target. Twenty-front tests never started. Job log retrieval trace: `trc_aff06f67efab`.
 - Remediation: add the repository-standard `oven-sh/setup-bun@v2` step to the `front-task` job only. No test behavior, coverage threshold, or product implementation is changed.
+
+
+## 2026-08-05 continuation from 0780b3398e
+
+- Reattached to existing PR #1782 and task session `tsk_48c5ee4031d8`; no replacement branch, task, or implementation was created.
+- Preservation snapshot: worktree `/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-complete-gohighlevel-commercial-dialer`; branch and remote both at `0780b3398e858c9532909f391804ac7296370177`; no staged files; the final CI lint repair remains unstaged/untracked.
+- Completion commit `8d4b735f29723adf0968aef6b918443fc4e5150e` already exists with the intended message, so no duplicate completion commit will be created.
+- Backup stash `db21a819b2f50d16adb95589141345944545c29a` and patch `/tmp/consuelo-commercial-dialer-post-checkpoint.patch` (SHA-256 `ddd8cc07d66c47f5d72401ef9262f5a76d3a79c9ae4c7be015088480c52846cd`) were inspected read-only and remain untouched.
+- A nested batch lost task routing and made no changes (trace `trc_36a42a6780ef`); direct task-scoped calls are used for continuation.
+- Reattaching through `task.start` refreshed four task metadata files and replaced the durable workpad with a blank template. The four exact metadata paths were recovered byte-for-byte from committed HEAD using task-scoped Bun reads/writes; no reset, clean, broad restore, stash mutation, or worktree recreation was used.
+- Current objective: preserve the final changed-file frontend lint lane in a separate safety commit, validate it against the real Nx lint targets, rerun strict review/full verify, push, require green CI, merge to `stream/dialer`, then deploy and verify Railway, Cloudflare, Marketplace, and authenticated non-mutating GHL surfaces.
+- Safety boundaries remain active: no live call, redial, recording, transcription stream, transfer, Stripe mutation, Twilio number mutation, mutating webhook replay, or destructive database operation.

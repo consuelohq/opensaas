@@ -1,5 +1,6 @@
 {
   "files": [
+    ".github/workflows/ci-front.yaml",
     ".task/dialer/implement-complete-gohighlevel-commercial-dialer/verify.json",
     ".task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md",
     "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-handoffs/consuelo-ghl-commercial-dialer-agent-prompt.md",
@@ -50,8 +51,10 @@
     "packages/lead-connector/src/embed/main.ts",
     "packages/lead-connector/src/embed/state-machine.ts",
     "packages/lead-connector/src/embed/view.ts",
+    "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs",
     "packages/workspace/scripts/review.js",
-    "packages/workspace/senior-engineer.md"
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/tests/lint-changed-frontend-files.test.mjs"
   ],
-  "updatedAt": "2026-08-05T16:44:25.889Z"
+  "updatedAt": "2026-08-05T18:36:03.984Z"
 }
