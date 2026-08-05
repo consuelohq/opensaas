@@ -182,6 +182,23 @@ describe('GitHub workflow policy', () => {
     expect(graphqlIndex).toBeGreaterThan(typecheckIndex);
   });
 
+  test('installs Bun before the Server unit-test job runs Bun package tests', () => {
+    const serverWorkflow = readFileSync(
+      join(workflowDir, 'ci-server.yaml'),
+      'utf8',
+    );
+    const serverTest = serverWorkflow.slice(
+      serverWorkflow.indexOf('  server-test:'),
+      serverWorkflow.indexOf('  server-integration-test:'),
+    );
+
+    expect(serverTest).toContain('uses: oven-sh/setup-bun@v2');
+    expect(serverTest).toContain('bun-version: 1.3.14');
+    expect(serverTest.indexOf('uses: oven-sh/setup-bun@v2')).toBeLessThan(
+      serverTest.indexOf('- name: Server / Run Tests'),
+    );
+  });
+
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),
