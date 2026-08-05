@@ -19,6 +19,7 @@ import { logToolExecution } from './logger';
 import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
 import { getInputSchema } from './schemas';
 import { executeCodeCall } from '../code-call/runtime';
+import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
 import type { CodeCallInput } from '../code-call/types';
 import { executeSubagent } from '../subagent/runtime';
 import type {
@@ -156,7 +157,12 @@ export async function executeTool<TData = unknown>(
 ): Promise<ToolResult<TData>> {
   const startedAt = (options.now || Date.now)();
   const traceId = createTraceId(options.randomUUID);
-  const cwd = resolveGitRoot(options.cwd || process.cwd());
+  // An MCP call supplies no cwd, and the server process runs from the immutable runtime release,
+  // which is not a repository. Falling straight through to process.cwd() left every repo-aware
+  // facade tool unable to find a git root. Prefer the workspace's configured project checkout.
+  const cwd = resolveGitRoot(
+    options.cwd || resolveActiveWorkspaceProjectCwd() || process.cwd(),
+  );
   const env = options.env || process.env;
   const runner = options.runner || defaultRunner;
   const requestId = typeof input.requestId === 'string' ? input.requestId : undefined;

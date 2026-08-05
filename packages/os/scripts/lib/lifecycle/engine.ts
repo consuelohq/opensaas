@@ -10,6 +10,10 @@ import {
 import { createLifecycleProgressEmitter } from './diagnostics';
 import { asLifecycleError, lifecycleError } from './errors';
 import { acquireLifecycleLock } from './lock';
+import {
+  ensureNodeEncryptionKeyForHome,
+  reconcileManagedUserContentForRelease,
+} from '../managed-user-content-release';
 import { noOpLifecycleMigrationRunner } from './migrations';
 import { noOpLifecycleRuntimeMaterializer } from './runtime';
 import { resolveLifecyclePaths } from './paths';
@@ -51,6 +55,14 @@ import type {
 } from './types';
 
 export type LifecycleEngineDependencies = {
+  /**
+   * Visible ~/Consuelo root for managed user content.
+   *
+   * Deliberately required from the caller rather than defaulted from os.homedir(). Defaulting made
+   * the engine write into the developer's real home whenever a test constructed it without
+   * isolating HOME. Callers that omit it skip user-content reconciliation entirely.
+   */
+  visibleUserRoot?: string;
   home?: string;
   releaseSource: ReleaseSource;
   trustedReleaseKeys:
@@ -318,6 +330,25 @@ export function createLifecycleEngine(
           version: input.manifest.version,
         },
       );
+      // Reconcile visible user content only once the release is health-accepted.
+      //
+      // Doing this straight after activation wrote the catalog, skills index, and example from a
+      // candidate release that a failed health check would then roll back, leaving user-visible
+      // content describing a runtime the node is no longer running. It deliberately does not sit
+      // behind the optional afterActivate hook, because nothing supplies that hook and it would
+      // silently never run. Failures here must not fail the release: the runtime is already live
+      // and usable without this content.
+      try {
+        if (dependencies.visibleUserRoot) {
+          reconcileManagedUserContentForRelease({
+            releasePath: input.nextReleasePath,
+            userRoot: dependencies.visibleUserRoot,
+          });
+        }
+        ensureNodeEncryptionKeyForHome(home);
+      } catch (_error: unknown) {
+        // Reported by the next doctor run rather than failing an accepted release.
+      }
       clearLifecycleActivationJournal(home);
     } catch (error: unknown) {
       if (dependencies.hooks?.onActivationFailure) {

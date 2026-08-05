@@ -112,10 +112,15 @@ const main = async (): Promise<void> => {
 };
 
 if (import.meta.main) {
-  main().catch((error: unknown) => {
+  // Awaited rather than fire-and-forget. With main().catch(...) the module body completes while
+  // the enrollment poll is still pending, bun drains the event loop and exits 0 mid-poll, and the
+  // operator's authorization lands on a process that is already gone.
+  try {
+    await main();
+  } catch (error: unknown) {
     process.stderr.write(
       `${error instanceof Error ? error.message : String(error)}\n`,
     );
     process.exit(1);
-  });
+  }
 }

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["bun-types"],
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@consuelo/dialer": ["../dialer/src/index.ts"],
+      "@consuelo/lead-connector": ["../lead-connector/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

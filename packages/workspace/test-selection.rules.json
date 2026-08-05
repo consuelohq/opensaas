@@ -96,9 +96,7 @@
     {
       "id": "trace-watch",
       "critical": true,
-      "source": [
-        "packages/os/scripts/trace-watch.ts"
-      ],
+      "source": ["packages/os/scripts/trace-watch.ts"],
       "tests": [
         {
           "name": "OS trace watcher behavior",
@@ -189,34 +187,52 @@
     {
       "id": "dialer-package",
       "critical": true,
-      "source": [
-        "packages/dialer/**"
-      ],
+      "source": ["packages/dialer/**"],
       "tests": [
         {
           "name": "dialer specs",
-          "command": [
-            "bun",
-            "test",
-            "packages/dialer/src"
-          ]
+          "command": ["bun", "test", "packages/dialer/src"]
         }
       ],
       "reason": "Dialer changes are call-path critical and must run package specs."
     },
     {
+      "id": "dialer-server-package",
+      "critical": true,
+      "source": ["packages/dialer-server/**"],
+      "tests": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": ["bun", "test", "packages/dialer-server/src"]
+        }
+      ],
+      "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts."
+    },
+    {
+      "id": "lead-connector-package",
+      "critical": true,
+      "source": ["packages/lead-connector/**"],
+      "tests": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": ["bun", "test", "packages/lead-connector/src"]
+        }
+      ],
+      "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts."
+    },
+    {
       "id": "api-package",
       "critical": true,
-      "source": [
-        "packages/api/**"
-      ],
+      "source": ["packages/api/**"],
       "tests": [
         {
           "name": "api specs",
           "command": [
-            "bun",
-            "test",
-            "packages/api/src"
+            "bunx",
+            "jest",
+            "--config",
+            "packages/api/jest.config.mjs",
+            "--runInBand"
           ]
         }
       ],
@@ -233,12 +249,7 @@
       "tests": [
         {
           "name": "twenty-server affected test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server"
-          ]
+          "command": ["npx", "nx", "test", "twenty-server"]
         }
       ],
       "reason": "Server changes have the broadest backend impact and should run the project test target."
@@ -246,18 +257,11 @@
     {
       "id": "twenty-front-project",
       "critical": false,
-      "source": [
-        "packages/twenty-front/**"
-      ],
+      "source": ["packages/twenty-front/**"],
       "tests": [
         {
           "name": "twenty-front test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-front"
-          ]
+          "command": ["npx", "nx", "test", "twenty-front"]
         }
       ],
       "reason": "Frontend package changes should run the project test target."

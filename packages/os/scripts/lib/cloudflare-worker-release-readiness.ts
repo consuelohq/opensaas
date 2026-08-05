@@ -114,7 +114,6 @@ export const deployCloudflareWorker = async (input: {
         'list',
         '--config',
         config.configPath,
-        '--json',
       ],
       cwd: input.cwd,
     });

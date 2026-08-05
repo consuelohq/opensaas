@@ -38,6 +38,21 @@ export type Grant = {
   nodeRole?: WorkspaceNodeRole;
   nodeStatus?: WorkspaceNodeStatus;
   nodeRegistrationVersion?: number;
+  /**
+   * Set only when the operator is deliberately re-enrolling an existing node id whose identity key
+   * has changed, which is what a reinstall produces. Without it a thumbprint mismatch is still
+   * rejected, so this never becomes a silent hijack path.
+   */
+  nodeIdentityReplacement?: boolean;
+  /** Stamped by the control plane when a replacement is accepted. */
+  nodeIdentityRotatedAt?: number;
+  /**
+   * Previous device identity, retained only between accepting a replacement and committing the
+   * approval. Route provisioning runs after the key swap, so without these a provisioning failure
+   * would leave the existing installation unable to authenticate with the key it still holds.
+   */
+  nodeReplacedPublicKeyJwk?: string;
+  nodeReplacedThumbprint?: string;
   nodePlatform?: string;
   nodeArchitecture?: string;
   nodeChannel?: string;

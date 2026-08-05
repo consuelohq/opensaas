@@ -306,12 +306,24 @@ export const activateManagedCloudNodeHeartbeat = async (input: {
   run?: ManagedCloudNodeSystemctlRunner;
 }): Promise<void> => {
   const run = input.run ?? defaultSystemctlRunner;
+  // systemctl --user needs the caller's session bus. A service unit or a detached provisioner
+  // frequently has neither variable set, and systemd then fails with "Failed to connect to bus: No
+  // medium found", which names nothing useful. Derive both from the uid when absent, and never
+  // override a value the caller set deliberately.
+  const runtimeDir =
+    process.env.XDG_RUNTIME_DIR ??
+    (process.getuid ? `/run/user/${process.getuid()}` : undefined);
+  const busAddress =
+    process.env.DBUS_SESSION_BUS_ADDRESS ??
+    (runtimeDir ? `unix:path=${runtimeDir}/bus` : undefined);
   const env = {
     ...process.env,
     CONSUELO_HOME: input.home,
     XDG_CONFIG_HOME:
       process.env.XDG_CONFIG_HOME ??
       join(process.env.HOME ?? input.home, '.config'),
+    ...(runtimeDir ? { XDG_RUNTIME_DIR: runtimeDir } : {}),
+    ...(busAddress ? { DBUS_SESSION_BUS_ADDRESS: busAddress } : {}),
   };
   const commands = [
     ['systemctl', '--user', 'daemon-reload'],
@@ -397,6 +409,12 @@ export const runManagedCloudNodeEnrollment = async (input: {
       nodeId: input.onboarding.nodeId,
       nodeName: input.onboarding.nodeName,
       deviceKeyPair,
+      // Reprovisioning a cloud node mints a fresh device key while the control plane still holds
+      // the previous one for this node id, so registration rejected the mismatch and the node
+      // could never be re-enrolled. Operator-run provisioning of a node the operator already owns
+      // is exactly an identity replacement, and the browser consent in this same flow is what
+      // authorizes it. The control plane still refuses a mismatch without this declaration.
+      nodeIdentityReplacement: true,
     });
     if (requested.status !== 'started') {
       throw new ManagedCloudNodeEnrollmentError(

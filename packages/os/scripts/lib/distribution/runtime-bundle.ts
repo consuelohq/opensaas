@@ -127,6 +127,7 @@ const REQUIRED_RUNTIME_INPUTS = [
   'hooks/dispatcher.js',
   'steering/system_prompt.md',
   'streams/tools/AGENTS.md',
+  'streams/dialer/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',
 ] as const;
@@ -201,6 +202,7 @@ const CUSTOMER_PROVIDER_FILES = new Set([
   'tools/deployment-provider/facade.ts',
   'tools/deployment-provider/process.ts',
   'tools/deployment-provider/redaction.ts',
+  'tools/deployment-provider/schema.ts',
   'tools/deployment-provider/service.ts',
   'tools/deployment-provider/types.ts',
   'tools/deployment-provider/vercel.ts',

@@ -107,15 +107,29 @@ export async function registerGrantNode(input: {
       input.accountId,
       nodeId,
     );
-    if (
-      existingNode &&
+    const identityChanged =
+      existingNode !== undefined &&
       existingNode.devicePublicKeyThumbprint !==
-        input.grant.devicePublicKeyThumbprint
-    ) {
+        input.grant.devicePublicKeyThumbprint;
+    if (identityChanged && input.grant.nodeIdentityReplacement !== true) {
+      // Default stays fail-closed: a mismatched key on an existing node id is a hijack attempt
+      // unless the operator explicitly declared a replacement.
       throw new Error('node identity key does not match the registered node');
     }
+    // Revocation is checked after the identity rule so a revoked node reports as revoked rather
+    // than as a key mismatch, and so a replacement can never resurrect a revoked node.
     if (existingNode?.state === 'revoked') {
       throw new Error('workspace node has been revoked');
+    }
+    if (identityChanged) {
+      // Reaching here means the account owner completed an interactive authorization for a node
+      // they already own and asked to replace its identity, which is exactly what reinstalling a
+      // machine produces. Recording the rotation keeps it visible in the node registry.
+      input.grant.nodeIdentityRotatedAt = input.nowMs;
+      // Retained so the rollback path can put the working key back if route provisioning fails.
+      input.grant.nodeReplacedPublicKeyJwk = existingNode!.devicePublicKeyJwk;
+      input.grant.nodeReplacedThumbprint =
+        existingNode!.devicePublicKeyThumbprint;
     }
     const role =
       existingNode?.role ?? (existingWorkspace?.homeNodeId ? 'member' : 'home');
@@ -152,8 +166,13 @@ export async function registerGrantNode(input: {
         existingNode?.connectorStatus ??
         (existingNode?.lastSeenAt === undefined ? 'disconnected' : 'connected'),
       state: existingNode?.state ?? 'active',
-      devicePublicKeyJwk:
-        existingNode?.devicePublicKeyJwk ?? input.grant.devicePublicKeyJwk,
+      // On an accepted replacement the grant's key is the new identity. Preferring the existing
+      // JWK here would store the new thumbprint beside the old key, and heartbeat verification
+      // reads the stored JWK — so the rotated node would authenticate against a key it no longer
+      // holds and fail every heartbeat.
+      devicePublicKeyJwk: identityChanged
+        ? input.grant.devicePublicKeyJwk
+        : (existingNode?.devicePublicKeyJwk ?? input.grant.devicePublicKeyJwk),
       devicePublicKeyThumbprint: input.grant.devicePublicKeyThumbprint,
       createdAt: existingNode?.createdAt ?? input.nowMs,
       updatedAt: input.nowMs,
@@ -196,6 +215,12 @@ export async function prepareGrantApproval(input: {
       `grant approval preparation failed: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
+}
+
+/** Clears the retained previous identity once the approval has committed. */
+export function clearRetainedReplacedIdentity(grant: Grant): void {
+  delete grant.nodeReplacedPublicKeyJwk;
+  delete grant.nodeReplacedThumbprint;
 }
 
 export async function commitGrantApproval(input: {
@@ -255,6 +280,31 @@ export async function failGrantWorkspaceRouteSetup(input: {
     throw new Error(
       `grant failure persistence failed: ${error instanceof Error ? error.message : String(error)}`,
     );
+  }
+  // A replaced identity must be put back before anything else. The installer that triggered this
+  // gets no bootstrap material either way, but the existing installation keeps working with the
+  // key it still holds instead of being locked out by a half-applied rotation.
+  if (
+    input.grant.nodeReplacedPublicKeyJwk &&
+    input.grant.nodeReplacedThumbprint &&
+    input.grant.accountId &&
+    input.grant.nodeId
+  ) {
+    try {
+      const current = await input.store.byWorkspaceNode(
+        input.grant.accountId,
+        input.grant.nodeId,
+      );
+      if (current) {
+        await input.store.putWorkspaceNode({
+          ...current,
+          devicePublicKeyJwk: input.grant.nodeReplacedPublicKeyJwk,
+          devicePublicKeyThumbprint: input.grant.nodeReplacedThumbprint,
+        });
+      }
+    } catch {
+      // The durable failed grant is authoritative even when rollback cleanup fails.
+    }
   }
   if (
     input.grant.nodeStatus === 'created' &&

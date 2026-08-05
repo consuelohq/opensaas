@@ -143,6 +143,7 @@ export type WorkspaceCloudflareProvisioningClient = {
   putTunnelConfig: (input: {
     tunnelId: string;
     hostname: string;
+    httpHostHeader: string;
     localServiceUrl: string;
   }) => Promise<void>;
   createOrReuseWorkerRouteExclusion: (input: {
@@ -1224,6 +1225,9 @@ export const createCloudflareWorkspaceProvisioningClient = (
                 {
                   hostname: input.hostname,
                   service: input.localServiceUrl,
+                  originRequest: {
+                    httpHostHeader: input.httpHostHeader,
+                  },
                 },
                 { service: 'http_status:404' },
               ],
@@ -1843,6 +1847,7 @@ export const applyWorkspaceCloudflareProvisioning = async (input: {
     await input.cloudflare.putTunnelConfig({
       tunnelId: tunnel.tunnelId,
       hostname: plan.osTunnelHostname,
+      httpHostHeader: plan.workspaceHostname,
       localServiceUrl: plan.cloudflare.localServiceUrl,
     });
 

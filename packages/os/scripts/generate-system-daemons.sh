@@ -3,7 +3,11 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
-generated_dir="$script_dir/generated"
+# Generated plists must not land inside the runtime release: that directory is an immutable,
+# fingerprinted bundle, and writing into it makes every node that has ever started its services
+# report installState "corrupt" because the files are absent from the bundle manifest. This is the
+# same mutable location the cloudflared plist already uses.
+generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-${CONSUELO_HOME:-$HOME/.consuelo}/node/security/generated}"
 env_file="$root_dir/.env"
 mkdir -p "$generated_dir"
 
@@ -160,6 +164,11 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
     <key>WORKSPACE_DAEMON_HOME</key>
     <string>${consuelo_home}</string>
     <key>WORKSPACE_DAEMON_CONSUELO_HOME</key>
+    <string>${consuelo_data_home}</string>
+    <!-- Canonical name. Runtime code reads CONSUELO_HOME; exporting only the WORKSPACE_DAEMON_
+         prefixed form left it unset inside the server process, so anything resolving the OS home
+         from the environment silently fell back to the runtime release directory. -->
+    <key>CONSUELO_HOME</key>
     <string>${consuelo_data_home}</string>
     <key>WORKSPACE_DAEMON_USER</key>
     <string>${consuelo_user}</string>

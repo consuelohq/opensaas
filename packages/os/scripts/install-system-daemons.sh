@@ -47,11 +47,22 @@ caddy_agent_plist="$launch_agent_dir/${caddy_label}.plist"
 portless_agent_plist="$launch_agent_dir/${portless_label}.plist"
 watchdog_agent_plist="$launch_agent_dir/${watchdog_label}.plist"
 availability_agent_plist="$launch_agent_dir/${availability_label}.plist"
-workspace_generated_plist="$script_dir/generated/${workspace_label}.plist"
-caddy_generated_plist="$script_dir/generated/${caddy_label}.plist"
-portless_generated_plist="$script_dir/generated/${portless_label}.plist"
-watchdog_generated_plist="$script_dir/generated/${watchdog_label}.plist"
-availability_generated_plist="$script_dir/generated/${availability_label}.plist"
+# Resolve from the mutable generated directory, falling back to the legacy in-release location so
+# a node installed before the move keeps working until its plists are regenerated.
+system_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_home/node/security/generated}"
+resolve_generated_plist() {
+  local label="$1"
+  if [ -f "$system_generated_dir/${label}.plist" ]; then
+    printf '%s\n' "$system_generated_dir/${label}.plist"
+  else
+    printf '%s\n' "$script_dir/generated/${label}.plist"
+  fi
+}
+workspace_generated_plist="$(resolve_generated_plist "$workspace_label")"
+caddy_generated_plist="$(resolve_generated_plist "$caddy_label")"
+portless_generated_plist="$(resolve_generated_plist "$portless_label")"
+watchdog_generated_plist="$(resolve_generated_plist "$watchdog_label")"
+availability_generated_plist="$(resolve_generated_plist "$availability_label")"
 cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_home/node/security/generated}"
 caddyfile="${CONSUELO_CADDYFILE:-$consuelo_data_home/node/caddy/Caddyfile}"
 caddy_ingress_port="${CONSUELO_CADDY_INGRESS_PORT:-46320}"

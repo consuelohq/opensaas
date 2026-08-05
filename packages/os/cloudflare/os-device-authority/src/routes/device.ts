@@ -98,6 +98,12 @@ async function handleDeviceRequest(
           ? { nodeChannel: p.get('node_channel')!.trim() }
           : {}),
         ...(nodeCapabilities.length > 0 ? { nodeCapabilities } : {}),
+        // A reinstall mints a new device key for an existing node id. The operator declares that
+        // intent here; without it registration still fails closed on the thumbprint mismatch, so
+        // the flag widens nothing on its own.
+        ...(p.get('node_identity_replacement')?.trim() === 'true'
+          ? { nodeIdentityReplacement: true }
+          : {}),
         status: 'pending',
         expiresAt: now() + TTL_MS,
         interval: INTERVAL,

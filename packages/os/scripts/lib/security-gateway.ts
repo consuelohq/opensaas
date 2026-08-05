@@ -20,6 +20,7 @@ import {
   grantsRequiredScope,
   normalizeGrantedScopes,
 } from './tool-scope-authorization';
+import { PLACEHOLDER_WORKSPACE_ID } from './unenrolled-placeholder-identity';
 
 type JsonObject = Record<string, unknown>;
 type SignatureAlgorithm = 'ed25519';
@@ -761,6 +762,12 @@ function requirePrivateUpstream(upstream: {
   }
 }
 
+/**
+ * Workspace id written by install before a node has enrolled. It is not a real workspace; it exists
+ * so a node is usable locally while it waits for authority enrollment to give it a true identity.
+ */
+export { PLACEHOLDER_WORKSPACE_ID };
+
 export function createGatewaySecurityConfig(input: {
   home: string;
   workspaceId: string;
@@ -780,12 +787,25 @@ export function createGatewaySecurityConfig(input: {
   const existing = fs.existsSync(generatedAuthPath)
     ? readStoredAuthFile(generatedAuthPath)
     : null;
-  if (existing && existing.workspaceId !== input.workspaceId) {
+  // A managed cloud node installs before it enrolls. Install deliberately seeds no workspace
+  // identity, so it writes auth under the local placeholder; enrollment then arrives with the real
+  // workspace. Refusing that takeover meant no managed cloud node could ever come online. The
+  // protection that matters — never reusing auth between two real workspaces — is unchanged.
+  const existingIsUnenrolledPlaceholder =
+    existing?.workspaceId === PLACEHOLDER_WORKSPACE_ID;
+  if (
+    existing &&
+    existing.workspaceId !== input.workspaceId &&
+    !existingIsUnenrolledPlaceholder
+  ) {
     throw new Error('existing generated auth belongs to a different workspace');
   }
   const stored: StoredAuthConfig = existing
     ? {
         ...existing,
+        // On a placeholder takeover the record must adopt the real workspace, otherwise the next
+        // call sees the placeholder again and the node never settles on its true identity.
+        workspaceId: input.workspaceId,
         workspaceSlug: input.workspaceSlug,
         workspaceHost: input.workspaceHost,
         tokenIssuer: existing.tokenIssuer || 'consuelo-os-gateway',
@@ -1472,7 +1492,7 @@ export function renderCaddyGatewayConfig(input: {
       'Caddy mTLS cannot be enabled on the plaintext loopback ingress',
     );
   }
-  return `{\n  admin off\n  auto_https off\n}\n\nhttp://127.0.0.1:${ingressPort} {\n  bind 127.0.0.1\n  @workspace_host host ${input.workspaceHost}\n  handle @workspace_host {\n    encode zstd gzip\n    request_body {\n      max_size 4MB\n    }\n    header {\n      -Server\n      X-Content-Type-Options \"nosniff\"\n      Referrer-Policy \"no-referrer\"\n      Permissions-Policy \"camera=(), microphone=(), geolocation=()\"\n    }\n    reverse_proxy ${input.upstream.host}:${input.upstream.port} {\n      header_up -X-Consuelo-Edge-Signature\n      header_up -X-Consuelo-Edge-Cache-Authority\n      header_up -X-Consuelo-Route\n      header_up -X-Consuelo-Surface\n      header_up -X-Consuelo-Connector-Id\n      header_up X-Forwarded-Host {host}\n      header_up X-Forwarded-Proto {scheme}\n      transport http {\n        dial_timeout 5s\n        response_header_timeout 15s\n        read_timeout 60s\n        write_timeout 60s\n      }\n    }\n  }\n  respond \"Misdirected Request\" 421\n}\n`;
+  return `{\n  admin off\n  auto_https off\n}\n\nhttp://:${ingressPort} {\n  bind 127.0.0.1\n  @workspace_host host ${input.workspaceHost}\n  handle @workspace_host {\n    encode zstd gzip\n    request_body {\n      max_size 4MB\n    }\n    header {\n      -Server\n      X-Content-Type-Options \"nosniff\"\n      Referrer-Policy \"no-referrer\"\n      Permissions-Policy \"camera=(), microphone=(), geolocation=()\"\n    }\n    reverse_proxy ${input.upstream.host}:${input.upstream.port} {\n      header_up -X-Consuelo-Edge-Signature\n      header_up -X-Consuelo-Edge-Cache-Authority\n      header_up -X-Consuelo-Route\n      header_up -X-Consuelo-Surface\n      header_up -X-Consuelo-Connector-Id\n      transport http {\n        dial_timeout 5s\n        response_header_timeout 15s\n        read_timeout 60s\n        write_timeout 60s\n      }\n    }\n  }\n  respond \"Misdirected Request\" 421\n}\n`;
 }
 
 export function createPublicRouteRegistry(input: {
