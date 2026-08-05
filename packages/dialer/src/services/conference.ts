@@ -17,6 +17,9 @@ const escapeXml = (str: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
+const errorWithCause = (message: string, cause: unknown): Error =>
+  Object.assign(new Error(message), { cause });
+
 /**
  * Conference + transfer orchestration via Twilio REST API.
  *
@@ -137,7 +140,7 @@ export class ConferenceService {
     } catch (cause: unknown) {
       throw cause instanceof Error
         ? cause
-        : new Error('CONFERENCE_LOOKUP_FAILED', { cause });
+        : errorWithCause('CONFERENCE_LOOKUP_FAILED', cause);
     }
   }
 
@@ -373,8 +376,9 @@ export class ConferenceService {
         try {
           await this.removeParticipant(conferenceSid, transferCallSid);
         } catch (rollbackCause: unknown) {
-          throw new Error('COLD_TRANSFER_AND_ROLLBACK_FAILED', {
-            cause: { operation: cause, rollback: rollbackCause },
+          throw errorWithCause('COLD_TRANSFER_AND_ROLLBACK_FAILED', {
+            operation: cause,
+            rollback: rollbackCause,
           });
         }
         throw cause;
@@ -443,8 +447,9 @@ export class ConferenceService {
         try {
           await this.holdParticipant(conferenceSid, customer.callSid, false);
         } catch (rollbackCause: unknown) {
-          throw new Error('WARM_TRANSFER_AND_RESTORE_FAILED', {
-            cause: { operation: cause, rollback: rollbackCause },
+          throw errorWithCause('WARM_TRANSFER_AND_RESTORE_FAILED', {
+            operation: cause,
+            rollback: rollbackCause,
           });
         }
         throw cause;

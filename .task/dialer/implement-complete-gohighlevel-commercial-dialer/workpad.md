@@ -322,6 +322,8 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 - 2026-08-05 06:04:20 `verify`: failed — COMMAND_FAILED
 - 2026-08-05 06:07:00 `review.run`: passed — OK
 - 2026-08-05 06:08:01 `verify`: passed — OK
+- 2026-08-05 06:25:21 `review.run`: passed — OK
+- 2026-08-05 06:25:23 `review.run`: passed — OK
 
 ## key decisions
 
@@ -563,6 +565,40 @@ bun run task:finish
 - The required single typed `task.push` attempt failed before mutation because its `--changed` implementation requires local and remote task SHAs to match; local `aa9ffd51` versus remote `850799e8`. Exact failure trace: `trc_fc63e05a0bc2`. This is the tooling gap requiring the scoped normal non-force Git push fallback.
 - Remaining gates: commit task metadata/verify evidence, push normally without force, verify PR head, merge PR #1782, deploy Railway/Cloudflare/Marketplace, and complete authenticated non-mutating GHL browser verification.
 
+### GitHub check wait plan
+
+- Wait reason: PR #1782 has the expected remote head `2030a5485bd6cbd12cffa679ecf45fcf453afd8f`, zero failed checks, and 18 queued/pending checks; merge must not treat pending as success.
+- Duration: bounded polling every 20 seconds for at most 30 attempts.
+- Resume action: immediately read `headRefOid`, `state`, `mergeStateStatus`, and `statusCheckRollup` for PR #1782 after each interval.
+- Expected signal: exact expected head, zero failed/cancelled/timed-out checks, and zero queued/in-progress/pending checks.
+- Fallback: stop without merging on any failure or bounded timeout, record the observed checks, and inspect the structured failing/pending state before another action.
+- 2026-08-05T06:11:51Z poll cycle: terminal-attached bounded poll returned an explicit workspace HTTP 502, so it was not classified as success or timeout. Immediate typed GitHub read at 2026-08-05T06:13:20Z confirmed the expected head, zero failed checks, and 11 remaining pending checks out of 42; merge remained blocked.
+- Next wait cycle: 30-second timed wait, then immediate typed PR state read. Expected signal remains zero failed and zero pending checks at exact head `2030a5485bd6cbd12cffa679ecf45fcf453afd8f`; fallback remains stop-and-inspect on failure or continued pending state.
+- 2026-08-05T06:13:43Z wait cycle: typed 30-second wait returned an explicit HTTP 502. The required immediate read at 2026-08-05T06:15:01Z confirmed the expected head, zero failures, and 10 pending checks out of 43; `danger-js` had completed successfully.
+- Next wait cycle: GitHub-native check watcher bounded by 600 seconds. Resume action is an immediate full PR read. Expected signal is watcher success plus zero failed and zero pending checks at the exact expected head. Fallback is to stop on watcher failure/timeout and inspect named check results before any merge.
+- 2026-08-05T06:15:26Z watcher cycle: typed `github pr.checks` with `wait: true` returned immediately and its emitted command omitted the GitHub watch flag, leaving 10 pending and zero failed checks. This is a second tooling gap, not a green signal; trace `trc_8a20cbe337f1`.
+- Next wait cycle: read-only `gh pr checks 1782 --watch --interval 10 --fail-fast` through the typed GitHub raw escape hatch, bounded by 600 seconds. Resume action is an immediate typed full PR read. Expected signal is command exit 0 and zero pending/failed checks at the exact head; fallback is to stop on nonzero/timeout and inspect named checks.
+
+### PR CI failure and remediation
+
+- 2026-08-05T06:16:08Z fail-fast GitHub watcher stopped on Docker Compose CI failure. Failing run: `30980475288`; failing job: `89206333577`; aggregate status check failed because the `test` job failed. Eight other checks were still pending. Typed raw watcher trace: `trc_c2e1674969b3`.
+- Failed-job log inspection showed the Docker `npx nx ...:build` environment rejected three `Error(message, { cause })` calls in `packages/dialer/src/services/conference.ts` and could not resolve `bun:test` / Bun globals while compiling `redis-parallel-store.test.ts`. The same job had successfully installed workspace dependencies and failed at `@consuelo/dialer:build`; this was a task-related compile contract, not an infrastructure-only failure.
+- Remediation:
+  - Replaced ES2022-only `ErrorOptions` construction with an `Object.assign(new Error(message), { cause })` compatibility helper.
+  - Added direct `@types/bun` development ownership to `@consuelo/dialer` and updated `yarn.lock`, so Docker-isolated workspace builds type the existing Bun test source.
+  - Yarn linking changed executable bits on two unrelated launcher files; both were inspected as mode-only changes and restored by exact file path. No broad restore was used.
+- The first combined parity batch returned HTTP 502 while its detached Nx build was still running. Process state was inspected before any retry; no duplicate process was started. The detached process completed, but its lost exit code was not counted as evidence.
+- A separate immutable install check also lost its transport response while the Yarn process remained active. The exact process was observed until completion; because its exit code was lost, it is not counted as a passing gate. The package-manager add command itself exited 0 and produced a consistent manifest/lock diff.
+- Recorded post-remediation gates:
+  - `yarn workspace @consuelo/dialer run typecheck` — exit 0; trace `trc_4c15f9d1c5d1`.
+  - Destructive-literal preflight — zero hits; `bun test packages/dialer/src` — 174 passed, 0 failed; trace `trc_013e760583d3`.
+  - `yarn workspace @consuelo/dialer run build` — exit 0; trace `trc_b1efb0633482`.
+  - `npx nx run @consuelo/dialer:build --skip-nx-cache` — exit 0, including `@consuelo/logger:build`; trace `trc_e639ebc71ffa`.
+  - Dialer-server preflight zero hits, typecheck exit 0, 122 tests passed, production build exit 0; trace `trc_5a61e2fc02a3`.
+  - LeadConnector preflight zero hits, typecheck exit 0, 105 tests passed, embed build exit 0; trace `trc_789e50edf6e2`.
+- Strict review on the CI-remediation diff passed with zero blocking/pre-existing findings and no failed test suites; trace `trc_f8ce8e47aef3`.
+- Remaining CI-remediation gates: clean static checks, separate accurately named commit, full verify from committed HEAD, normal non-force push, and fresh PR check completion before merge.
+
 - 2026-08-05 06:03:08 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
 
 - 2026-08-05 06:05:25 apply-patch: `packages/dialer/src/services/conference.ts`
@@ -571,3 +607,16 @@ bun run task:finish
 - 2026-08-05 06:07:24 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
 
 - 2026-08-05 06:10:11 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
+
+- 2026-08-05 06:11:51 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
+
+- 2026-08-05 06:13:39 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
+
+- 2026-08-05 06:15:16 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
+
+- 2026-08-05 06:15:51 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
+- 2026-08-05 06:17:47 apply-patch: `packages/dialer/src/services/conference.ts`
+
+- 2026-08-05 06:24:54 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
+
+- 2026-08-05 06:25:40 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`

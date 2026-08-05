@@ -4585,6 +4585,7 @@ __metadata:
   resolution: "@consuelo/dialer@workspace:packages/dialer"
   dependencies:
     "@consuelo/logger": "workspace:*"
+    "@types/bun": "npm:^1.3.14"
     effect: "npm:^3.21.3"
     twilio: "npm:^5.12.1"
     typescript: "npm:5.9.2"
@@ -19851,7 +19852,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bun@npm:latest":
+"@types/bun@npm:^1.3.14, @types/bun@npm:latest":
   version: 1.3.14
   resolution: "@types/bun@npm:1.3.14"
   dependencies:
