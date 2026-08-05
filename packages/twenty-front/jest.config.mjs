@@ -51,8 +51,6 @@ const jestConfig = {
     ],
   },
   moduleNameMapper: {
-    '^transliteration$':
-      '<rootDir>/../../node_modules/transliteration/dist/node/src/node/index.js',
     '\\.(jpg|jpeg|png|gif|webp|svg|svg\\?react)$':
       '<rootDir>/__mocks__/imageMockFront.js',
     '\\.css$': '<rootDir>/__mocks__/styleMock.js',
