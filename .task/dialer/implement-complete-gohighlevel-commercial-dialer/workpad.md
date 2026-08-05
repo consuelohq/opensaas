@@ -324,6 +324,8 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 - 2026-08-05 06:08:01 `verify`: passed — OK
 - 2026-08-05 06:25:21 `review.run`: passed — OK
 - 2026-08-05 06:25:23 `review.run`: passed — OK
+- 2026-08-05 06:26:43 `review.run`: passed — OK
+- 2026-08-05 06:27:07 `verify`: passed — OK
 
 ## key decisions
 
@@ -597,7 +599,12 @@ bun run task:finish
   - Dialer-server preflight zero hits, typecheck exit 0, 122 tests passed, production build exit 0; trace `trc_5a61e2fc02a3`.
   - LeadConnector preflight zero hits, typecheck exit 0, 105 tests passed, embed build exit 0; trace `trc_789e50edf6e2`.
 - Strict review on the CI-remediation diff passed with zero blocking/pre-existing findings and no failed test suites; trace `trc_f8ce8e47aef3`.
-- Remaining CI-remediation gates: clean static checks, separate accurately named commit, full verify from committed HEAD, normal non-force push, and fresh PR check completion before merge.
+- Clean static checks passed with the exact expected four-file diff, no generated artifacts, no secret findings, no unintended file-mode changes, and `git diff --check` exit 0; trace `trc_a0418316d2e8`.
+- CI-remediation commit: `1e3f3736c9dc75a9aa33373696d5504d9ededa1b` (`fix(dialer): align Docker build type environment`).
+- Strict review from committed HEAD passed with zero findings; trace `trc_946cce3a457b`.
+- Full verify from committed HEAD passed with `publishValid: true`, strict review passed, and database guardrails passed; trace `trc_670151507ac8`.
+- Refetch confirmed `origin/stream/dialer` remains `39dbe8c38c55ca0e4c4b2eb2e2a72c937212a26d`; task is zero behind and eight commits ahead. The remote task branch remains `2030a5485bd6cbd12cffa679ecf45fcf453afd8f` until the verification-metadata commit and normal non-force push complete; trace `trc_c575209071e8`.
+- Remaining CI-remediation gates: commit the updated verify stamp/workpad, normal non-force push, verify the exact PR head, and require a fully green fresh PR check run before merge.
 
 - 2026-08-05 06:03:08 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
 
@@ -620,3 +627,5 @@ bun run task:finish
 - 2026-08-05 06:24:54 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
 
 - 2026-08-05 06:25:40 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
+
+- 2026-08-05 06:28:35 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
