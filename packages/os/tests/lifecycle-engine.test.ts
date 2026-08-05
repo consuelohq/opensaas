@@ -32,6 +32,7 @@ import {
   createLifecycleEngine,
   inspectLifecycleInstallState,
   loadLifecyclePreferences,
+  writeLifecycleActivationJournal,
   noOpLifecycleMigrationRunner,
   verifySignedReleaseManifest,
   type LifecycleEngine,
@@ -422,6 +423,79 @@ describe('unified lifecycle engine', () => {
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
+  it('keeps check-only updates read-only when an activation journal is present', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    await createEngine({ bundle: bundle110 }).update({ channel: 'dev', yes: true });
+    writeLifecycleActivationJournal({
+      home: tempHome,
+      operationId: 'interrupted-check',
+      previousReleasePath: runtimeReleasePathFor(bundle100),
+      nextReleasePath: runtimeReleasePathFor(bundle110),
+    });
+    const check = createEngine({ bundle: bundle110 });
+
+    await expect(
+      check.update({ channel: 'dev', check: true }),
+    ).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.1.0',
+    });
+
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(true);
+    expect(check.serviceOperations).toEqual([]);
+  });
+
+  it('finalizes an interrupted candidate that is already current and healthy', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    await createEngine({ bundle: bundle110 }).update({ channel: 'dev', yes: true });
+    writeLifecycleActivationJournal({
+      home: tempHome,
+      operationId: 'interrupted-healthy-candidate',
+      previousReleasePath: runtimeReleasePathFor(bundle100),
+      nextReleasePath: runtimeReleasePathFor(bundle110),
+    });
+    const recovery = createEngine({ bundle: bundle110, health: true });
+
+    await expect(recovery.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.1.0',
+    });
+
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+    expect(recovery.serviceOperations).toEqual(['health']);
+  });
+
+  it('re-inspects post-recovery state before applying an interrupted unhealthy candidate', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    await createEngine({ bundle: bundle110 }).update({ channel: 'dev', yes: true });
+    writeLifecycleActivationJournal({
+      home: tempHome,
+      operationId: 'interrupted-unhealthy-candidate',
+      previousReleasePath: runtimeReleasePathFor(bundle100),
+      nextReleasePath: runtimeReleasePathFor(bundle110),
+    });
+    const recovery = createEngine({ bundle: bundle110, health: [false, true] });
+
+    await expect(recovery.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: true,
+      updateAvailable: false,
+      version: '1.1.0',
+    });
+
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+    expect(recovery.serviceOperations).toEqual([
+      'health',
+      'preflight',
+      'restart',
+      'health',
+    ]);
+  });
+
   it('rejects a concurrent update lock without touching current', async () => {
     const initial = createEngine({ bundle: bundle100 });
     await initial.install({ channel: 'dev' });
@@ -781,6 +855,37 @@ describe('unified lifecycle engine', () => {
         installState: 'partial',
         preferences: { channel: 'dev', notifications: { mode: 'on' } },
       }),
+    });
+  });
+
+  it('rejects a synchronous self-hosted update before lifecycle activation', async () => {
+    const engine = createEngine();
+    const update = vi.spyOn(engine, 'update');
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+
+    const exitCode = await runLifecycleCli(
+      ['update', '--channel', 'dev', '--yes', '--json'],
+      {
+        engine,
+        environment: {
+          XPC_SERVICE_NAME: 'com.consuelo.system',
+        },
+        stdout: (value) => stdout.push(value),
+        stderr: (value) => stderr.push(value),
+      },
+    );
+
+    expect(exitCode).toBe(1);
+    expect(update).not.toHaveBeenCalled();
+    expect(stdout).toEqual([]);
+    expect(JSON.parse(stderr.join(''))).toMatchObject({
+      schemaVersion: 1,
+      command: 'update',
+      ok: false,
+      error: {
+        message: expect.stringContaining('separate lifecycle process'),
+      },
     });
   });
 

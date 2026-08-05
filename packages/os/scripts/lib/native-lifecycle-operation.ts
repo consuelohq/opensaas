@@ -11,7 +11,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { spawn, type SpawnOptions } from 'node:child_process';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 
 import { createDefaultLifecycleEngine } from '../lifecycle';
 import type { LifecycleEngine } from './lifecycle';
@@ -91,6 +91,73 @@ const safeMessage = (error: unknown): string => {
   return String(redactLifecycleDetail(message))
     .replace(HOME_PATH, '/Users/[REDACTED]')
     .replace(/(token|secret|password|passphrase)=([^&\s]+)/gi, '$1=[REDACTED]');
+};
+
+const escapeLaunchdXml = (value: string): string =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
+
+const launchdWorkerPlist = (input: {
+  label: string;
+  arguments: string[];
+}): string => {
+  const argumentsXml = input.arguments
+    .map((argument) => `    <string>${escapeLaunchdXml(argument)}</string>`)
+    .join('\n');
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
+    '<plist version="1.0">',
+    '<dict>',
+    '  <key>Label</key>',
+    `  <string>${escapeLaunchdXml(input.label)}</string>`,
+    '  <key>ProgramArguments</key>',
+    '  <array>',
+    argumentsXml,
+    '  </array>',
+    '  <key>RunAtLoad</key>',
+    '  <true/>',
+    '  <key>KeepAlive</key>',
+    '  <false/>',
+    '  <key>LaunchOnlyOnce</key>',
+    '  <true/>',
+    '  <key>ProcessType</key>',
+    '  <string>Background</string>',
+    '  <key>StandardOutPath</key>',
+    '  <string>/dev/null</string>',
+    '  <key>StandardErrorPath</key>',
+    '  <string>/dev/null</string>',
+    '</dict>',
+    '</plist>',
+    '',
+  ].join('\n');
+};
+
+const cleanupLaunchdWorkerPlist = (
+  home: string,
+  environment: NodeJS.ProcessEnv,
+): void => {
+  const plistPath = environment.CONSUELO_LIFECYCLE_LAUNCHD_PLIST?.trim();
+  if (!plistPath) return;
+  const runDirectory = resolve(home, 'run');
+  const resolvedPath = resolve(plistPath);
+  const relativePath = relative(runDirectory, resolvedPath);
+  if (
+    !relativePath ||
+    relativePath.startsWith('..') ||
+    resolve(runDirectory, relativePath) !== resolvedPath
+  ) {
+    return;
+  }
+  try {
+    unlinkSync(resolvedPath);
+  } catch {
+    // Lifecycle completion must not be downgraded by best-effort plist cleanup.
+  }
 };
 
 const isOperationKind = (
@@ -303,6 +370,8 @@ const defaultProcessAlive = (pid: number): boolean => {
 
 export const createDetachedNativeLifecycleOperationLauncher = (input: {
   home: string;
+  platform?: NodeJS.Platform;
+  userId?: number;
   executable?: string;
   scriptPath?: string;
   spawnProcess?: SpawnProcess;
@@ -332,6 +401,9 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
     queuedStaleMs,
     input.pidlessRunningStaleMs ?? 2 * 60 * 60 * 1_000,
   );
+  const useLaunchdIsolation =
+    input.platform === 'darwin' &&
+    Boolean(input.env?.XPC_SERVICE_NAME?.trim());
 
   const readCurrentOperation = ():
     | NativeLifecycleOperationState
@@ -379,21 +451,89 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
         });
       });
       try {
-        const child = spawnProcess(
-          executable,
-          [scriptPath, '--home', input.home, ...operationArguments(operation)],
-          {
-            cwd: resolve(dirname(scriptPath), '..'),
-            detached: true,
-            stdio: 'ignore',
-            env: {
-              ...process.env,
-              ...input.env,
-              CONSUELO_HOME: input.home,
-            },
-          },
-        );
+        const workerArguments = [
+          scriptPath,
+          '--home',
+          input.home,
+          ...operationArguments(operation),
+        ];
+        const effectiveEnvironment = {
+          ...process.env,
+          ...input.env,
+          CONSUELO_HOME: input.home,
+        };
+        let launchdPlistPath: string | undefined;
+        let launchdLabel: string | undefined;
+        let launchdDomain: string | undefined;
+        if (useLaunchdIsolation) {
+          const userId = input.userId ?? process.getuid?.();
+          if (!Number.isSafeInteger(userId) || Number(userId) < 0) {
+            throw new Error('macOS lifecycle isolation requires a valid user id');
+          }
+          launchdLabel = `com.consuelo.lifecycle.${operation.operationId}`;
+          launchdDomain = `gui/${String(userId)}`;
+          launchdPlistPath = join(
+            input.home,
+            'run',
+            `native-lifecycle-${operation.operationId}.plist`,
+          );
+          const launchdArguments = [
+            '/usr/bin/env',
+            `HOME=${effectiveEnvironment.HOME ?? ''}`,
+            `USER=${effectiveEnvironment.USER ?? ''}`,
+            `CONSUELO_HOME=${input.home}`,
+            `BUN_BIN=${executable}`,
+            `CONSUELO_LIFECYCLE_LAUNCHD_LABEL=${launchdLabel}`,
+            `CONSUELO_LIFECYCLE_LAUNCHD_DOMAIN=${launchdDomain}`,
+            `CONSUELO_LIFECYCLE_LAUNCHD_PLIST=${launchdPlistPath}`,
+            ...[
+              'CONSUELO_OS_PORT',
+              'PORT',
+              'CONSUELO_RELEASE_BASE_URL',
+              'CONSUELO_RELEASE_GCP_METADATA_AUTH',
+              'CONSUELO_MANAGED_CLOUD_NODE_ONBOARDING_FILE',
+            ].flatMap((name) => {
+              const value = effectiveEnvironment[name]?.trim();
+              return value ? [`${name}=${value}`] : [];
+            }),
+            executable,
+            ...workerArguments,
+          ];
+          writeFileSync(
+            launchdPlistPath,
+            launchdWorkerPlist({
+              label: launchdLabel,
+              arguments: launchdArguments,
+            }),
+            { mode: 0o600, flag: 'wx' },
+          );
+          chmodSync(launchdPlistPath, 0o600);
+        }
+        const child = useLaunchdIsolation
+          ? spawnProcess(
+              '/bin/launchctl',
+              ['bootstrap', launchdDomain!, launchdPlistPath!],
+              {
+                cwd: resolve(dirname(scriptPath), '..'),
+                detached: false,
+                stdio: 'ignore',
+                env: effectiveEnvironment,
+              },
+            )
+          : spawnProcess(executable, workerArguments, {
+              cwd: resolve(dirname(scriptPath), '..'),
+              detached: true,
+              stdio: 'ignore',
+              env: effectiveEnvironment,
+            });
         const recordLaunchFailure = (error: unknown): void => {
+          if (launchdPlistPath) {
+            try {
+              unlinkSync(launchdPlistPath);
+            } catch {
+              // Operation state carries the launch failure; cleanup is best effort.
+            }
+          }
           store.withLock(() => {
             const current = store.read();
             if (
@@ -544,6 +684,8 @@ export const executeNativeLifecycleOperation = async (input: {
     const message = safeMessage(error);
     write('failed', message);
     throw new Error(message);
+  } finally {
+    cleanupLaunchdWorkerPlist(input.home, process.env);
   }
 };
 
