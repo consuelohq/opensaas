@@ -6,7 +6,8 @@ import type {
   TransferOptions,
   TransferResult,
 } from '../types.js';
-import type TwilioClient from 'twilio';
+
+type TwilioClientInstance = import('twilio').Twilio;
 
 const escapeXml = (str: string): string =>
   str
@@ -23,7 +24,7 @@ const escapeXml = (str: string): string =>
  * can add/remove participants without dropping audio.
  */
 export class ConferenceService {
-  private client: ReturnType<typeof TwilioClient> | null = null;
+  private client: TwilioClientInstance | null = null;
   private credentials: TwilioCredentials;
   private ringingStartTimes = new Map<string, number>();
 
@@ -35,7 +36,7 @@ export class ConferenceService {
     };
   }
 
-  private async getClient(): Promise<ReturnType<typeof TwilioClient>> {
+  private async getClient(): Promise<TwilioClientInstance> {
     if (this.client) return this.client;
     if (!this.credentials.accountSid || !this.credentials.authToken) {
       throw new Error(
@@ -107,31 +108,37 @@ export class ConferenceService {
     conferenceName: string,
     timeoutMs: number = 20000,
   ): Promise<{ sid: string }> {
-    const startTime = Date.now();
-    let delayMs = 500;
-    const maxDelayMs = 2000;
+    try {
+      const startTime = Date.now();
+      let delayMs = 500;
+      const maxDelayMs = 2000;
 
-    while (Date.now() - startTime < timeoutMs) {
-      const conferences = await client.conferences.list({
-        friendlyName: conferenceName,
-        status: 'in-progress',
-        limit: 1,
-      });
+      while (Date.now() - startTime < timeoutMs) {
+        const conferences = await client.conferences.list({
+          friendlyName: conferenceName,
+          status: 'in-progress',
+          limit: 1,
+        });
 
-      if (conferences.length) {
-        return { sid: conferences[0].sid };
+        if (conferences.length) {
+          return { sid: conferences[0].sid };
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        delayMs = Math.min(delayMs * 2, maxDelayMs);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-      delayMs = Math.min(delayMs * 2, maxDelayMs);
+      throw Object.assign(
+        new Error(
+          `Conference "${conferenceName}" not found or not in-progress after ${timeoutMs}ms`,
+        ),
+        { status: 404 },
+      );
+    } catch (cause: unknown) {
+      throw cause instanceof Error
+        ? cause
+        : new Error('CONFERENCE_LOOKUP_FAILED', { cause });
     }
-
-    throw Object.assign(
-      new Error(
-        `Conference "${conferenceName}" not found or not in-progress after ${timeoutMs}ms`,
-      ),
-      { status: 404 },
-    );
   }
 
   /** Dial the customer into the conference via REST API */

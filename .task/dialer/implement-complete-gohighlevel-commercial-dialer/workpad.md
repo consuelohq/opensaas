@@ -318,6 +318,9 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 - 2026-08-05 05:52:06 `review.run`: passed — OK
 - 2026-08-05 05:52:07 `review.run`: passed — OK
 - 2026-08-05 06:00:23 `review.run`: passed — OK
+- 2026-08-05 06:03:49 `review.run`: passed — OK
+- 2026-08-05 06:04:20 `verify`: failed — COMMAND_FAILED
+- 2026-08-05 06:07:00 `review.run`: passed — OK
 
 ## key decisions
 
@@ -492,6 +495,7 @@ bun run task:finish
 ## workspace-owned: files read
 
 - `/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-handoffs/consuelo-ghl-commercial-dialer-agent-prompt.md`
+- `node_modules/twilio/index.d.ts`
 - `node_modules/twilio/lib/rest/api/v2010/account/call/recording.d.ts`
 - `packages/dialer-server/src/app.ts`
 - `packages/dialer-server/src/application.ts`
@@ -538,9 +542,8 @@ bun run task:finish
 - `packages/lead-connector/src/embed/main.ts`
 - `packages/lead-connector/src/embed/state-machine.ts`
 - `packages/lead-connector/src/embed/view.ts`
+- `packages/workspace/scripts/review.js`
 - `packages/workspace/senior-engineer.md`
-
-- 2026-08-05 06:01:45 apply-patch: `packages/dialer-server/src/commercial.acceptance.test.ts`
 
 ## strict review remediation and revalidation
 
@@ -549,6 +552,15 @@ bun run task:finish
 - Strict `review.run` now passes with `yourIssues: 0`, `blockingIssues: 0`, `mustFixTotal: 0`, and no failed test suites; trace `trc_424da42f6c32`.
 - Cache-disabled post-remediation package gate: dialer-server typecheck exit 0, 122 tests passed, production build exit 0; LeadConnector typecheck exit 0, 105 tests passed, embed build exit 0; trace `trc_55959c6846a7`.
 - Post-remediation focused commercial matrix preflight found zero destructive executable/credential literals; 183 tests passed across 28 files, with `git diff --check`, generated-artifact scan, and secret scan all clean; trace `trc_09f205bc3a27`.
-- Remaining gates: commit this review remediation, rerun strict review from committed HEAD, run full publish-valid verify, refetch/sync `stream/dialer`, rerun affected post-sync gates, publish PR #1782, merge, deploy Railway/Cloudflare/Marketplace, and complete authenticated non-mutating GHL browser verification.
+- Review remediation commit `48798ec7319555e8fe4619041fc2c223486e246b` passed strict committed review with zero findings; trace `trc_ef47e3c25799`.
+- The first full verify run was non-publish-valid because it surfaced two related mechanical findings in the touched Twilio conference service: a top-level peer type import and one async polling boundary. Verify trace `trc_eeff988b8cf5`.
+- Replaced the top-level peer import with an erased type query, retained lazy runtime `await import('twilio')`, normalized the polling error boundary, and reran dialer typecheck, 26 focused conference tests, and build successfully; trace `trc_5d28b41456ea`.
+- Strict review after the verify remediation again passes with zero findings; trace `trc_c884bfca0584`.
+- Remaining gates: commit this verify remediation, rerun full publish-valid verify, refetch/sync `stream/dialer`, rerun affected post-sync gates, publish PR #1782, merge, deploy Railway/Cloudflare/Marketplace, and complete authenticated non-mutating GHL browser verification.
 
 - 2026-08-05 06:03:08 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`
+
+- 2026-08-05 06:05:25 apply-patch: `packages/dialer/src/services/conference.ts`
+- 2026-08-05 06:06:21 apply-patch: `packages/dialer/src/services/conference.ts`
+
+- 2026-08-05 06:07:24 apply-patch: `.task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md`

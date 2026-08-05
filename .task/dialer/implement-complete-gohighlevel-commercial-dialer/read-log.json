@@ -1,7 +1,9 @@
 {
   "files": [
+    ".task/dialer/implement-complete-gohighlevel-commercial-dialer/verify.json",
     ".task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md",
     "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-handoffs/consuelo-ghl-commercial-dialer-agent-prompt.md",
+    "node_modules/twilio/index.d.ts",
     "node_modules/twilio/lib/rest/api/v2010/account/call/recording.d.ts",
     "packages/dialer-server/src/app.ts",
     "packages/dialer-server/src/application.ts",
@@ -48,7 +50,8 @@
     "packages/lead-connector/src/embed/main.ts",
     "packages/lead-connector/src/embed/state-machine.ts",
     "packages/lead-connector/src/embed/view.ts",
+    "packages/workspace/scripts/review.js",
     "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-08-05T06:00:41.411Z"
+  "updatedAt": "2026-08-05T06:05:05.662Z"
 }
