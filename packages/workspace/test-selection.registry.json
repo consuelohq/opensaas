@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2445,
-    "mappedTestCount": 2368,
-    "unmappedTestCount": 77,
+    "testFileCount": 2456,
+    "mappedTestCount": 2378,
+    "unmappedTestCount": 78,
     "ruleCount": 32,
     "explicitRuleCount": 13,
     "autoRuleCount": 19,
     "projectCount": 13,
     "packageTestScriptCount": 17,
     "byGroup": {
-      "packages/os/tests": 151,
+      "packages/os/tests": 161,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 53,
       "packages/twenty-sdk/src/cli": 51,
@@ -610,6 +610,7 @@
       "packages/twenty-ui/src/theme/utils": 1,
       "packages/twenty-ui/src/utilities/responsive/hooks": 1,
       "packages/twenty-ui/src/utilities/utils": 1,
+      "packages/workspace/scripts/lib": 1,
       "packages/workspace/tests/audit": 1,
       "packages/workspace/tests/facade": 1,
       "tests": 1
@@ -617,7 +618,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 361,
+      "test": 372,
       "spec": 145,
       "other": 7,
       "tests-dir": 6,
@@ -2238,17 +2239,22 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/dialer-stream-instructions.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/distribution-integration.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/distribution/environment-probe.test.ts",
       "group": "packages/os/tests/distribution",
       "kind": "test"
     },
     {
       "path": "packages/os/tests/distribution/fixture-harness.test.ts",
-      "group": "packages/os/tests/distribution",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/distribution/lifecycle-contract.test.ts",
       "group": "packages/os/tests/distribution",
       "kind": "test"
     },
@@ -2433,6 +2439,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/linux-platform.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/local-agent-connectivity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2453,7 +2464,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/local-os-server-main.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/local-os-server-review-findings.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/macos-platform.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2664,6 +2685,16 @@
     },
     {
       "path": "packages/os/tests/native-lifecycle-client.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/native-lifecycle-endpoint.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/native-lifecycle-operation.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3014,6 +3045,26 @@
     },
     {
       "path": "packages/os/tests/verify-run-state.test.js",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/visible-dialer-steering.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/visible-root-agent-instructions.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/windows-bootstrap-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/windows-platform.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -13373,6 +13424,11 @@
       "kind": "__tests__"
     },
     {
+      "path": "packages/workspace/scripts/lib/stream-instructions.test.ts",
+      "group": "packages/workspace/scripts/lib",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -13678,6 +13734,7 @@
     "packages/documentation/tests/secure.test.ts",
     "packages/documentation/tests/sites.test.ts",
     "packages/documentation/tests/start.test.ts",
+    "packages/workspace/scripts/lib/stream-instructions.test.ts",
     "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
     "packages/workspace/tests/browser-review-contract.test.ts",
     "packages/workspace/tests/browser-service.test.ts",
@@ -14037,7 +14094,8 @@
         "media:test:render": "vitest run tests/media/25-overlay-render.test.ts tests/media/26-sports-science-breakdown.test.ts tests/media/27-export-package.test.ts tests/media/32-screenshot-render.test.ts",
         "media:test:handoff": "vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts",
         "media:test:ingest": "vitest run tests/media/16-source-capture-internal.test.ts tests/media/17-media-ingest-source-capture.test.ts tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts",
-        "media:test:svg": "vitest run tests/media/31-svg-convert.test.ts"
+        "media:test:svg": "vitest run tests/media/31-svg-convert.test.ts",
+        "test:distribution:integration": "bun ./scripts/testing/distribution/integration-runner.ts"
       }
     },
     {

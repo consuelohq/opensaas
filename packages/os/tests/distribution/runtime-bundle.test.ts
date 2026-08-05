@@ -51,6 +51,7 @@ const requiredFixtureFiles: Record<string, string> = {
   'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',
   'steering/system_prompt.md': '# Fixture system prompt\n',
   'steering/decision.md': '# Fixture decision process\n',
+  'steering/root-agent-instructions.md': '# Fixture root agent instructions\n',
   'streams/tools/AGENTS.md': '# Fixture tools stream\n',
   'streams/dialer/AGENTS.md': '# Fixture dialer stream\n',
   'skills/task/SKILL.md': '# Fixture task skill\n',

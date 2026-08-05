@@ -56,6 +56,7 @@ const requiredRuntimePaths = [
   'hooks/dispatcher.js',
   'steering/system_prompt.md',
   'steering/decision.md',
+  'steering/root-agent-instructions.md',
   'streams/tools/AGENTS.md',
   'streams/dialer/AGENTS.md',
   'skills/task/SKILL.md',
