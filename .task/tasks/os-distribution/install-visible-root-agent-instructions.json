@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/install-visible-root-agent-instructions",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1785,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1785",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1785",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1785/install-visible-root-agent-instructions",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1785",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1785/install-visible-root-agent-instructions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-visible-root-agent-instructions",
+  "taskSession": "tsk_52d9009dc59e",
+  "tmuxSession": "opensaas-os-distribution-install-visible-root-agent-instructions-52d9009d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-visible-root-agent-instructions/.task/os-distribution/install-visible-root-agent-instructions/session.json",
+  "createdAt": "2026-08-05T03:09:01.811Z"
+}

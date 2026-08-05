@@ -17,6 +17,7 @@ import {
   type ManagedComponentSource,
 } from './managed-components';
 import { reconcileVisibleDialerSteering } from './visible-dialer-steering';
+import { reconcileVisibleRootAgentInstructions } from './visible-root-agent-instructions';
 
 export type ManagedComponentProvisionAction = {
   type: 'create_file' | 'seed_skill' | 'seed_tool' | 'seed_steering';
@@ -368,6 +369,9 @@ export function provisionManagedComponentIndexes(input: {
   const legacy = legacyEntries(input.home);
   actions.push(...legacy.actions);
   const userRoot = input.userRoot ?? path.join(os.homedir(), 'Consuelo');
+  actions.push(
+    ...reconcileVisibleRootAgentInstructions({ userRoot, dryRun: input.dryRun }),
+  );
   actions.push(reconcileVisibleDialerSteering({ userRoot, dryRun: input.dryRun }));
   const sourceBundle = runtimeBundleIdentity(upstream);
   const componentsRoot = path.join(input.home, 'components');

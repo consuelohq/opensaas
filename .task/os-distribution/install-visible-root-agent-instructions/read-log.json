@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os-distribution/install-visible-root-agent-instructions/workpad.md",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/visible-dialer-steering.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/test-selection.registry.json"
+  ],
+  "updatedAt": "2026-08-05T03:15:16.100Z"
+}

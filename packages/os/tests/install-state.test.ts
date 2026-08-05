@@ -393,6 +393,26 @@ describe('local OS install state', () => {
     expect(readFileSync(join(tempHome, 'steering', 'system_prompt.md'), 'utf8')).toContain('# System Prompt');
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'system_prompt.md')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'decision.md')))).toBe(false);
+    const visibleRoot = join(tempUserHome, 'Consuelo');
+    const rootAgentsPath = join(visibleRoot, 'AGENTS.md');
+    const rootClaudePath = join(visibleRoot, 'CLAUDE.md');
+    const rootAgents = readFileSync(rootAgentsPath, 'utf8');
+    expect(rootAgents).toContain('# OS Steering Instructions Rewrite');
+    expect(readFileSync(rootClaudePath, 'utf8')).toBe(rootAgents);
+    expect(first.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'create_file',
+          path: rootAgentsPath,
+          status: 'created',
+        }),
+        expect.objectContaining({
+          type: 'create_file',
+          path: rootClaudePath,
+          status: 'created',
+        }),
+      ]),
+    );
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'create_file' && action.path.endsWith(join('components', 'installed-skills.json')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('bin', 'status')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_operator' && action.path.endsWith('operator') && action.status === 'created')).toBe(true);
@@ -462,6 +482,20 @@ describe('local OS install state', () => {
     expect(second.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'preserved')).toBe(true);
     expect(second.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'system_prompt.md')) && action.status === 'preserved')).toBe(true);
     expect(second.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_steering' && action.path.endsWith(join('steering', 'decision.md')) && action.status === 'preserved')).toBe(true);
+    expect(second.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'create_file',
+          path: rootAgentsPath,
+          status: 'preserved',
+        }),
+        expect.objectContaining({
+          type: 'create_file',
+          path: rootClaudePath,
+          status: 'preserved',
+        }),
+      ]),
+    );
     expect(readFileSync(join(tempHome, 'steering', 'system_prompt.md'), 'utf8')).toContain('user-owned system prompt');
     expect(readFileSync(join(tempHome, 'steering', 'decision.md'), 'utf8')).toContain('user-owned decision');
   });
