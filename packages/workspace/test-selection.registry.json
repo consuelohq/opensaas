@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2532,
-    "mappedTestCount": 2458,
+    "testFileCount": 2533,
+    "mappedTestCount": 2459,
     "unmappedTestCount": 74,
     "ruleCount": 34,
     "explicitRuleCount": 15,
@@ -13,8 +13,8 @@
     "byGroup": {
       "packages/os/tests": 185,
       "packages/twenty-server/test/integration/graphql/utils": 65,
+      "packages/workspace/tests": 52,
       "packages/twenty-sdk/src/cli": 51,
-      "packages/workspace/tests": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/utils": 31,
@@ -627,7 +627,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 440,
+      "test": 441,
       "spec": 152,
       "other": 7,
       "tests-dir": 6,
@@ -838,7 +838,9 @@
         "packages/twenty-shared/eslint.config.mjs",
         "packages/twenty-ui/eslint.config.mjs",
         "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs",
-        "packages/workspace/tests/lint-changed-frontend-files.test.mjs"
+        "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
+        "packages/workspace/scripts/ci/run-changed-frontend-task.mjs",
+        "packages/workspace/tests/run-changed-frontend-task.test.mjs"
       ],
       "tests": [
         {
@@ -846,7 +848,8 @@
           "command": [
             "node",
             "--test",
-            "packages/workspace/tests/lint-changed-frontend-files.test.mjs"
+            "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
+            "packages/workspace/tests/run-changed-frontend-task.test.mjs"
           ]
         },
         {
@@ -13963,6 +13966,11 @@
     },
     {
       "path": "packages/workspace/tests/review-run-state.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/run-changed-frontend-task.test.mjs",
       "group": "packages/workspace/tests",
       "kind": "test"
     },

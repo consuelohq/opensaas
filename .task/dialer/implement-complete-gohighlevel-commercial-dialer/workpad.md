@@ -315,9 +315,6 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 
 ## workspace-owned: validation evidence
 
-- 2026-08-05 17:11:41 `review.run`: passed — OK
-- 2026-08-05 17:12:49 `review.run`: passed — OK
-- 2026-08-05 17:13:09 `review.run`: passed — OK
 - 2026-08-05 17:13:11 `review.run`: passed — OK
 - 2026-08-05 17:31:12 `review.run`: passed — OK
 - 2026-08-05 18:45:22 `review.run`: passed — OK
@@ -345,6 +342,9 @@ Do not weaken these tests to fit the implementation. If current architecture cha
 - 2026-08-05 19:23:37 `review.run`: passed — OK
 - 2026-08-05 19:23:37 `review.run`: passed — OK
 - 2026-08-05 19:23:38 `review.run`: passed — OK
+- 2026-08-05 19:43:56 `review.run`: passed — OK
+- 2026-08-05 19:43:56 `review.run`: passed — OK
+- 2026-08-05 19:43:56 `review.run`: passed — OK
 
 ## key decisions
 
@@ -518,9 +518,14 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `.github/workflows/ci-front.yaml`
 - `/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-handoffs/consuelo-ghl-commercial-dialer-agent-prompt.md`
 - `node_modules/twilio/index.d.ts`
 - `node_modules/twilio/lib/rest/api/v2010/account/call/recording.d.ts`
+- `packages/dialer-server/Dockerfile`
+- `packages/dialer-server/README.md`
+- `packages/dialer-server/package.json`
+- `packages/dialer-server/railway.json`
 - `packages/dialer-server/src/app.ts`
 - `packages/dialer-server/src/application.ts`
 - `packages/dialer-server/src/billing/application.ts`
@@ -557,6 +562,8 @@ bun run task:finish
 - `packages/dialer/src/services/conference.spec.ts`
 - `packages/dialer/src/services/conference.ts`
 - `packages/dialer/src/types.ts`
+- `packages/lead-connector/README.md`
+- `packages/lead-connector/package.json`
 - `packages/lead-connector/src/embed/agent-voice.ts`
 - `packages/lead-connector/src/embed/api-client.ts`
 - `packages/lead-connector/src/embed/architecture.contract.test.ts`
@@ -566,9 +573,11 @@ bun run task:finish
 - `packages/lead-connector/src/embed/main.ts`
 - `packages/lead-connector/src/embed/state-machine.ts`
 - `packages/lead-connector/src/embed/view.ts`
+- `packages/lead-connector/wrangler.jsonc`
 - `packages/os/tests/artifacts-legacy-contract.test.ts`
 - `packages/workspace/scripts/ci/check-github-workflows.cjs`
 - `packages/workspace/scripts/ci/lint-changed-frontend-files.mjs`
+- `packages/workspace/scripts/lib/verification.js`
 - `packages/workspace/scripts/review.js`
 - `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/scripts/verify.js`
@@ -576,6 +585,7 @@ bun run task:finish
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/github-workflow-policy.test.js`
 - `packages/workspace/tests/lint-changed-frontend-files.test.mjs`
+- `packages/workspace/tests/run-changed-frontend-task.test.mjs`
 - `packages/workspace/tests/test-selection.test.js`
 - `packages/workspace/tests/verification.test.js`
 
@@ -882,3 +892,38 @@ bun run task:finish
 - Verifier duplicate-test remediation focused gate passed: verifier syntax; 4 verification tests; 13 selector tests; 6 OS artifact tests; diff check. The verification test recursive cleanup is bounded to directories created via `mkdtemp` under the system temp directory. Trace: `trc_885b42dbee48`.
 - Full selector coverage now contains the workspace publish-gate verification suite plus the existing nine exact suites; trace `trc_8047e2d7a21e`.
 - Strict changed-file review after the verifier correction passed with zero task-owned issues, zero blockers, and zero failed suites; three unrelated typecheck findings remain pre-existing. Trace: `trc_a3067e0a5670`.
+
+### Wait cycle: final canonical publish verify at bc07d51b66
+
+- Start time (UTC): 2026-08-05T19:24:11.618Z.
+- Command: `bun run verify -- --base origin/stream/dialer --json --quiet`.
+- Wait reason: run semantic/static review, ten exact selected test suites, and database safety guard once from committed HEAD `bc07d51b66deef87681e1298bbce243ac8b4af5a`.
+- Poll interval / maximum: 30 seconds / 20 attempts.
+- Resume action: inspect `/tmp/ghl-bc07d51-final-publish-verify.status.json`, `/tmp/ghl-bc07d51-final-publish-verify.log`, and the task verify stamp.
+- Expected signal: exit 0; mode full; publishValid true; stamp head equals `bc07d51b66deef87681e1298bbce243ac8b4af5a`; base equals `origin/stream/dialer`.
+- Fallback: stop publication on any mismatch; no duplicate verifier will be started.
+
+- Final canonical full verify completed at 2026-08-05T19:27:19.637Z with exit code 0 from committed HEAD `bc07d51b66deef87681e1298bbce243ac8b4af5a`. Stamp: mode `full`, `publishValid: true`, review passed, 10/10 selected suites passed, DB guard passed with zero risks/findings. Durable status/log: `/tmp/ghl-bc07d51-final-publish-verify.status.json`, `/tmp/ghl-bc07d51-final-publish-verify.log`; trace `trc_128beae808b0`.
+- Verification fingerprint excludes `.task/` metadata by repository contract; this evidence note and the generated verify stamp do not alter the verified product change hash or HEAD.
+
+- Required typed `task.push` attempted once after publish-valid verification. It failed before any remote mutation because the facade omits `changed:false`, and `task-push.js` then requires `--changed`, `--files`, or `--files-json`. Exact trace: `trc_777f5ad0d170`; exit 1; stderr preserved in the operation result. Tooling gap recorded; no retry through typed push.
+
+### Wait cycle: GitHub CI for PR #1782 at bc07d51b66
+
+- Start time (UTC): 2026-08-05T19:34:09.461Z.
+- Wait reason: 44 GitHub checks were registered; 15 remained pending and zero had failed.
+- Poll interval / maximum: 15 seconds / 120 attempts.
+- Resume action: inspect `/tmp/pr-1782-ci-monitor-bc07d51.status.json` and `/tmp/pr-1782-ci-monitor-bc07d51.log.jsonl`.
+- Expected signal: PR head remains `bc07d51b66deef87681e1298bbce243ac8b4af5a`, zero failed checks, and zero pending checks.
+- Fallback: stop immediately on head mismatch, monitor error, or first failed check; inspect that exact workflow/job before any merge.
+
+### GitHub frontend typecheck remediation at bc07d51b66
+
+- GitHub run `31039660556`, job `92420836232` (`front-task (typecheck)`) failed on 2026-08-05. Raw job log captured read-only at `/tmp/pr1782-front-typecheck-job-92420836232.log` (SHA-256 `b8a0db1552b03001ca7cf7dbdd58b01f907a95c46bc6adbf43d67e7d3f5e9db4`).
+- The log contained 133 TypeScript errors across 23 `twenty-front` files. None of those files differ from `origin/stream/dialer`; the branch's only `twenty-front` change is `packages/twenty-front/eslint.config.mjs`. Root workspace/package changes caused Nx affected-project expansion into the unrelated full frontend typecheck.
+- Remediation: `packages/workspace/scripts/ci/run-changed-frontend-task.mjs` computes the directly changed files only within frontend project roots, excludes only the exact ESLint config files already owned by the strict config/lint contract, and passes the remaining file list to `nx affected --files`. This preserves dependency propagation for real source additions, modifications, renames, and deletions while preventing unrelated root lockfile/package changes from selecting every frontend project.
+- `ci-front.yaml` now runs `nrwl/nx-set-shas` for all front-task matrix entries, keeps the real changed-file lint lane, and routes typecheck/test through the filtered file selector. The changed-files gate explicitly includes the workflow and both helper scripts/tests.
+- Focused validation: 11 helper tests passed; 5 GitHub workflow policy tests passed; 13 test-selection tests passed; current branch typecheck/test each selected zero runtime frontend files and exited 0; workflow YAML parsed; changed-workflow security checks passed; `git diff --check` passed. Traces: `trc_0bcb6eeef7a3`, `trc_e04740ced556`.
+- A duplicate deleted-file fixture caused one expected unit-test failure during development and was corrected by de-duplicating selector inputs; no production command or remote mutation occurred. Trace: `trc_7271db36ecb8`.
+
+- Strict changed-file review for the frontend typecheck remediation passed with zero task-owned issues, zero blockers, and zero failed suites; three broad project typecheck failures were classified pre-existing. Trace: `trc_6fb7a9fe92a7`.

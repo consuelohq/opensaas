@@ -59,6 +59,26 @@ describe('GitHub workflow policy', () => {
     }
   });
 
+  test('runs typecheck and test from the filtered frontend file set', () => {
+    const frontWorkflow = readFileSync(
+      join(workflowDir, 'ci-front.yaml'),
+      'utf8',
+    );
+
+    expect(frontWorkflow).toContain(
+      '- name: Resolve frontend task comparison SHAs\n        uses: nrwl/nx-set-shas@v4',
+    );
+    expect(frontWorkflow).toContain(
+      'run: node packages/workspace/scripts/ci/run-changed-frontend-task.mjs --task ${{ matrix.task }}',
+    );
+    expect(frontWorkflow).toContain(
+      'packages/workspace/tests/run-changed-frontend-task.test.mjs',
+    );
+    expect(frontWorkflow).not.toContain(
+      '- name: Run ${{ matrix.task }} task\n        if: matrix.task != \'lint\'\n        uses: ./.github/actions/nx-affected',
+    );
+  });
+
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),

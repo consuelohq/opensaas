@@ -29,6 +29,11 @@ jobs:
         packages/twenty-shared/**
         packages/twenty-sdk/**
         !packages/twenty-sdk/package.json
+        .github/workflows/ci-front.yaml
+        packages/workspace/scripts/ci/lint-changed-frontend-files.mjs
+        packages/workspace/scripts/ci/run-changed-frontend-task.mjs
+        packages/workspace/tests/lint-changed-frontend-files.test.mjs
+        packages/workspace/tests/run-changed-frontend-task.test.mjs
   changed-files-check-e2e:
     uses: ./.github/workflows/changed-files.yaml
     with:
@@ -172,18 +177,14 @@ jobs:
         with:
           tag: scope:frontend
           tasks: reset:env
-      - name: Resolve lint comparison SHAs
-        if: matrix.task == 'lint'
+      - name: Resolve frontend task comparison SHAs
         uses: nrwl/nx-set-shas@v4
       - name: Lint changed frontend files
         if: matrix.task == 'lint'
         run: node packages/workspace/scripts/ci/lint-changed-frontend-files.mjs
-      - name: Run ${{ matrix.task }} task
+      - name: Run changed frontend ${{ matrix.task }} task
         if: matrix.task != 'lint'
-        uses: ./.github/actions/nx-affected
-        with:
-          tag: scope:frontend
-          tasks: ${{ matrix.task }}
+        run: node packages/workspace/scripts/ci/run-changed-frontend-task.mjs --task ${{ matrix.task }}
       - name: Save ${{ matrix.task }} cache
         uses: ./.github/actions/save-cache
         with:
