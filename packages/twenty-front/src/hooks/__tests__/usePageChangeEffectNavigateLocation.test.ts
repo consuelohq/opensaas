@@ -76,8 +76,7 @@ const setupMockRecoil = (
     .mockReturnValueOnce(verifyEmailRedirectPath);
 };
 
-// prettier-ignore
-const testCases: {
+type PageChangeTestCase = {
   loc: AppPath;
   isLoggedIn: boolean;
   isWorkspaceSuspended: boolean;
@@ -86,7 +85,24 @@ const testCases: {
   objectNamePluralFromParams?: string;
   objectNamePluralFromMetadata?: string;
   verifyEmailRedirectPath?: string;
-}[] = [
+};
+
+const createOnboardedPathTestCases = (
+  loc: AppPath,
+): PageChangeTestCase[] => [
+  { loc, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.PLAN_REQUIRED, res: AppPath.PlanRequired },
+  { loc, isLoggedIn: true, isWorkspaceSuspended: true, onboardingStatus: OnboardingStatus.COMPLETED, res: getSettingsPath(SettingsPath.Billing) },
+  { loc, isLoggedIn: false, isWorkspaceSuspended: false, onboardingStatus: undefined, res: AppPath.SignInUp },
+  { loc, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.WORKSPACE_ACTIVATION, res: AppPath.CreateWorkspace },
+  { loc, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.PROFILE_CREATION, res: AppPath.CreateProfile },
+  { loc, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.SYNC_EMAIL, res: AppPath.SyncEmails },
+  { loc, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.INVITE_TEAM, res: AppPath.InviteTeam },
+  { loc, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.BOOK_ONBOARDING, res: AppPath.BookCallDecision },
+  { loc, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.COMPLETED, res: undefined },
+];
+
+// prettier-ignore
+const testCases: PageChangeTestCase[] = [
   { loc: AppPath.Verify, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.PLAN_REQUIRED, res: AppPath.PlanRequired },
   { loc: AppPath.Verify, isLoggedIn: true, isWorkspaceSuspended: true, onboardingStatus: OnboardingStatus.COMPLETED, res: getSettingsPath(SettingsPath.Billing) },
   { loc: AppPath.Verify, isLoggedIn: false, isWorkspaceSuspended: false, onboardingStatus: undefined, res: undefined },
@@ -229,6 +245,13 @@ const testCases: {
   { loc: AppPath.Index, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.BOOK_ONBOARDING, res: AppPath.BookCallDecision },
   { loc: AppPath.Index, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.COMPLETED, res: defaultHomePagePath },
 
+  ...createOnboardedPathTestCases(AppPath.Home),
+  ...createOnboardedPathTestCases(AppPath.Agent),
+  ...createOnboardedPathTestCases(AppPath.AgentSkills),
+  ...createOnboardedPathTestCases(AppPath.Skills),
+  ...createOnboardedPathTestCases(AppPath.SkillDetail),
+  ...createOnboardedPathTestCases(AppPath.Status),
+
   { loc: AppPath.TasksPage, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.PLAN_REQUIRED, res: AppPath.PlanRequired },
   { loc: AppPath.TasksPage, isLoggedIn: true, isWorkspaceSuspended: true, onboardingStatus: OnboardingStatus.COMPLETED, res: getSettingsPath(SettingsPath.Billing) },
   { loc: AppPath.TasksPage, isLoggedIn: false, isWorkspaceSuspended: false, onboardingStatus: undefined, res: AppPath.SignInUp },
@@ -348,6 +371,13 @@ describe('usePageChangeEffectNavigateLocation', () => {
 
   describe('tests should be exhaustive', () => {
     it('all location, onboarding status and suspended/not suspended workspace activation status should be tested', () => {
+      const expectedTestedPaths = Object.values(AppPath).filter(
+        (path) => !UNTESTED_APP_PATHS.includes(path),
+      );
+
+      expect(new Set(testCases.map(({ loc }) => loc))).toEqual(
+        new Set(expectedTestedPaths),
+      );
       expect(testCases.length).toEqual(
         (Object.keys(AppPath).length - UNTESTED_APP_PATHS.length) *
           (Object.keys(OnboardingStatus).length +
