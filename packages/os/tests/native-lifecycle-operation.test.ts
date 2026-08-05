@@ -1,4 +1,4 @@
-import { statSync, writeFileSync } from 'node:fs';
+import { readFileSync, statSync, writeFileSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -224,6 +224,71 @@ describe('native lifecycle detached operations', () => {
     await expect(launcher.launch({ kind: 'restart' })).rejects.toThrow(
       'already active',
     );
+  });
+
+  it('bootstraps a one-shot macOS launchd worker when invoked from a LaunchAgent', async () => {
+    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+    temporaryRoots.push(home);
+    const invocations: Array<{
+      command: string;
+      args: string[];
+      options: Record<string, unknown>;
+    }> = [];
+    const launcher = createDetachedNativeLifecycleOperationLauncher({
+      home,
+      executable: '/opt/homebrew/bin/bun',
+      scriptPath: '/runtime/scripts/native-lifecycle-operation.ts',
+      operationId: () => 'native-macos-update',
+      now: () => new Date('2026-07-27T03:00:00.000Z'),
+      platform: 'darwin',
+      userId: 501,
+      env: {
+        HOME: '/Users/tester',
+        USER: 'tester',
+        BUN_BIN: '/opt/homebrew/bin/bun',
+        XPC_SERVICE_NAME: 'com.consuelo.system',
+      },
+      spawnProcess: (command, args, options) => {
+        invocations.push({ command, args, options });
+        return {
+          pid: 4321,
+          unref: () => undefined,
+          once: (_event, _listener) => undefined,
+        };
+      },
+    });
+
+    await launcher.launch({ kind: 'update', targetVersion: '1.5.0' });
+
+    const plistPath = join(
+      home,
+      'run',
+      'native-lifecycle-native-macos-update.plist',
+    );
+
+    expect(invocations).toEqual([
+      {
+        command: '/bin/launchctl',
+        args: [
+          'bootstrap',
+          'gui/501',
+          plistPath,
+        ],
+        options: expect.objectContaining({
+          detached: false,
+          stdio: 'ignore',
+          cwd: '/runtime',
+        }),
+      },
+    ]);
+    const plist = readFileSync(plistPath, 'utf8');
+    expect(plist).toContain('<string>com.consuelo.lifecycle.native-macos-update</string>');
+    expect(plist).toContain('<key>RunAtLoad</key>\n  <true/>');
+    expect(plist).toContain('<key>KeepAlive</key>\n  <false/>');
+    expect(plist).toContain('<key>LaunchOnlyOnce</key>\n  <true/>');
+    expect(plist).toContain('<string>CONSUELO_HOME=' + home + '</string>');
+    expect(plist).toContain('<string>--target-version</string>');
+    expect(plist).toContain('<string>1.5.0</string>');
   });
 
   it('prefers the persisted Bun executable and records early worker exit', async () => {

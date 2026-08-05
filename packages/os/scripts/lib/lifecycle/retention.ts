@@ -20,7 +20,7 @@ import { createRuntimeDirectoryLink } from './runtime-links';
 import { runtimeBundleIdFromDirectoryName } from './runtime-release-path';
 import { verifyInstalledRuntimeRelease } from './state';
 
-type ActivationJournal = {
+export type LifecycleActivationJournal = {
   schemaVersion: 1;
   operationId: string;
   previousReleasePath?: string;
@@ -200,14 +200,16 @@ export function writeLifecycleActivationJournal(input: {
     operationId: input.operationId,
     ...(previousReleasePath ? { previousReleasePath } : {}),
     nextReleasePath,
-  } satisfies ActivationJournal);
+  } satisfies LifecycleActivationJournal);
 }
 
 export function clearLifecycleActivationJournal(home?: string): void {
   rmSync(resolveLifecyclePaths(home).activationJournalPath, { force: true });
 }
 
-function readActivationJournal(home?: string): ActivationJournal | undefined {
+export function readLifecycleActivationJournal(
+  home?: string,
+): LifecycleActivationJournal | undefined {
   const path = resolveLifecyclePaths(home).activationJournalPath;
   if (!existsSync(path)) return undefined;
   let parsed: unknown;
@@ -221,18 +223,18 @@ function readActivationJournal(home?: string): ActivationJournal | undefined {
   if (
     !parsed ||
     typeof parsed !== 'object' ||
-    (parsed as ActivationJournal).schemaVersion !== 1 ||
-    typeof (parsed as ActivationJournal).operationId !== 'string' ||
-    typeof (parsed as ActivationJournal).nextReleasePath !== 'string' ||
-    ((parsed as ActivationJournal).previousReleasePath !== undefined &&
-      typeof (parsed as ActivationJournal).previousReleasePath !== 'string')
+    (parsed as LifecycleActivationJournal).schemaVersion !== 1 ||
+    typeof (parsed as LifecycleActivationJournal).operationId !== 'string' ||
+    typeof (parsed as LifecycleActivationJournal).nextReleasePath !== 'string' ||
+    ((parsed as LifecycleActivationJournal).previousReleasePath !== undefined &&
+      typeof (parsed as LifecycleActivationJournal).previousReleasePath !== 'string')
   ) {
     throw lifecycleError(
       'ROLLBACK_FAILED',
       'activation journal failed validation',
     );
   }
-  return parsed as ActivationJournal;
+  return parsed as LifecycleActivationJournal;
 }
 
 export function recoverInterruptedLifecycleActivation(home?: string): {
@@ -240,7 +242,7 @@ export function recoverInterruptedLifecycleActivation(home?: string): {
   restoredBundleId?: string;
 } {
   const paths = resolveLifecyclePaths(home);
-  const journal = readActivationJournal(paths.home);
+  const journal = readLifecycleActivationJournal(paths.home);
   if (!journal) return { recovered: false };
   try {
     if (journal.previousReleasePath) {
