@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/reconnect-leadconnector-overlay-after-ghl-route-changes",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1781,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1781",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1781",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1781/reconnect-leadconnector-overlay-after-ghl-route-changes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1781",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1781/reconnect-leadconnector-overlay-after-ghl-route-changes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconnect-leadconnector-overlay-after-ghl-route-changes",
+  "taskSession": "tsk_7432ea06579b",
+  "tmuxSession": "opensaas-dialer-reconnect-leadconnector-overlay-after-ghl-route--7432ea06",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconnect-leadconnector-overlay-after-ghl-route-changes/.task/dialer/reconnect-leadconnector-overlay-after-ghl-route-changes/session.json",
+  "createdAt": "2026-08-05T00:01:39.837Z"
+}
