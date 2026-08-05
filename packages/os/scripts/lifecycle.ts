@@ -34,6 +34,7 @@ export type LifecycleCliIo = {
 
 export type LifecycleCliDependencies = Partial<LifecycleCliIo> & {
   engine?: LifecycleEngine;
+  environment?: NodeJS.ProcessEnv;
 };
 
 type ManagedCloudNodeOnboardingDescriptor = {
@@ -594,6 +595,16 @@ export async function runLifecycleCli(
   }
 
   try {
+    const environment = dependencies.environment ?? process.env;
+    if (
+      parsed.command === 'update' &&
+      !parsed.check &&
+      environment.XPC_SERVICE_NAME === 'com.consuelo.system'
+    ) {
+      throw new Error(
+        'Consuelo OS cannot run a synchronous update inside its active daemon process. Run the update from Terminal or through the separate lifecycle process.',
+      );
+    }
     const engine =
       dependencies.engine ??
       createDefaultLifecycleEngine({

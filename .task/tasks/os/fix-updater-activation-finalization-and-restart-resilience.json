@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-updater-activation-finalization-and-restart-resilience",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1790,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1790",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1790",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1790/fix-updater-activation-finalization-and-restart-resilience",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1790",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1790/fix-updater-activation-finalization-and-restart-resilience",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-updater-activation-finalization-and-restart-resilience",
+  "taskSession": "tsk_dadd4267d79f",
+  "tmuxSession": "opensaas-os-fix-updater-activation-finalization-and-restart--dadd4267",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-updater-activation-finalization-and-restart-resilience/.task/os/fix-updater-activation-finalization-and-restart-resilience/session.json",
+  "createdAt": "2026-08-05T22:11:27.297Z"
+}

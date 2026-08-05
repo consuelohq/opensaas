@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_dadd4267d79f",
+  "tmuxSession": "opensaas-os-fix-updater-activation-finalization-and-restart--dadd4267",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-updater-activation-finalization-and-restart-resilience",
+  "branch": "task/os/fix-updater-activation-finalization-and-restart-resilience",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-updater-activation-finalization-and-restart-resilience",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-updater-activation-finalization-and-restart-resilience",
+  "prNumber": 1790,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1790",
+  "createdAt": "2026-08-05T22:11:27.295Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-updater-activation-finalization-and-restart-resilience/.task/os/fix-updater-activation-finalization-and-restart-resilience/session.json"
+}
