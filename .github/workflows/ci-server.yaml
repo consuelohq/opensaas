@@ -64,6 +64,8 @@ jobs:
           key: ${{ env.SERVER_SETUP_CACHE_KEY }}
       - name: Build twenty-shared
         run: npx nx build twenty-shared
+      - name: Build Consuelo backend workspace dependencies
+        run: npx nx run-many --target=build --projects=@consuelo/logger,@consuelo/coaching,@consuelo/contacts,@consuelo/dialer,@consuelo/agent
       - name: Server / Run lint & typecheck
         uses: ./.github/actions/nx-affected
         with:

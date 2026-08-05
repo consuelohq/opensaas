@@ -159,6 +159,22 @@ describe('GitHub workflow policy', () => {
     expect(frontWorkflow).toContain('front-build:\n    needs: changed-files-check');
   });
 
+  test('builds Consuelo backend workspace dependencies before server typecheck', () => {
+    const serverWorkflow = readFileSync(
+      join(workflowDir, 'ci-server.yaml'),
+      'utf8',
+    );
+    const dependencyBuild =
+      'npx nx run-many --target=build --projects=@consuelo/logger,@consuelo/coaching,@consuelo/contacts,@consuelo/dialer,@consuelo/agent';
+    const dependencyBuildIndex = serverWorkflow.indexOf(dependencyBuild);
+    const typecheckIndex = serverWorkflow.indexOf(
+      '- name: Server / Run lint & typecheck',
+    );
+
+    expect(dependencyBuildIndex).toBeGreaterThan(-1);
+    expect(typecheckIndex).toBeGreaterThan(dependencyBuildIndex);
+  });
+
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),
