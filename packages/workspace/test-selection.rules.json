@@ -364,6 +364,24 @@
       "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts."
     },
     {
+      "id": "coaching-package-contract",
+      "critical": true,
+      "source": [
+        "packages/coaching/**"
+      ],
+      "tests": [
+        {
+          "name": "coaching package declaration contract",
+          "command": [
+            "bun",
+            "test",
+            "packages/coaching/package-contract.test.ts"
+          ]
+        }
+      ],
+      "reason": "Coaching package changes must emit the declaration artifact advertised by package.json so clean consumers can typecheck."
+    },
+    {
       "id": "api-package",
       "critical": true,
       "source": [

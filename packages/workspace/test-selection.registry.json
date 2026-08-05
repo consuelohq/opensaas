@@ -2,11 +2,11 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2534,
-    "mappedTestCount": 2461,
+    "testFileCount": 2535,
+    "mappedTestCount": 2462,
     "unmappedTestCount": 73,
-    "ruleCount": 35,
-    "explicitRuleCount": 16,
+    "ruleCount": 36,
+    "explicitRuleCount": 17,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -324,6 +324,7 @@
       "packages/twenty-ui/src/utilities/device": 2,
       "cron_jobs": 1,
       "packages/agent/src/pi-extensions": 1,
+      "packages/coaching": 1,
       "packages/consuelo-core/tests": 1,
       "packages/consuelo-design/scripts": 1,
       "packages/consuelo-design/upstream/open-design/packages/platform/src": 1,
@@ -627,7 +628,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 442,
+      "test": 443,
       "spec": 152,
       "other": 7,
       "tests-dir": 6,
@@ -1009,6 +1010,25 @@
       ],
       "critical": true,
       "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+      "origin": "explicit"
+    },
+    {
+      "id": "coaching-package-contract",
+      "source": [
+        "packages/coaching/**"
+      ],
+      "tests": [
+        {
+          "name": "coaching package declaration contract",
+          "command": [
+            "bun",
+            "test",
+            "packages/coaching/package-contract.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Coaching package changes must emit the declaration artifact advertised by package.json so clean consumers can typecheck.",
       "origin": "explicit"
     },
     {
@@ -1544,6 +1564,11 @@
       "path": "packages/api/src/services/workspace-phone-numbers.spec.ts",
       "group": "packages/api/src/services",
       "kind": "spec"
+    },
+    {
+      "path": "packages/coaching/package-contract.test.ts",
+      "group": "packages/coaching",
+      "kind": "test"
     },
     {
       "path": "packages/consuelo-core/tests/registry.test.ts",
