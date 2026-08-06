@@ -14,7 +14,12 @@ const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/apps#settings/Connectors';
 
 const launcherLinks = {
   guides: [{ label: 'Documentation', href: 'https://docs.consuelohq.com/' }],
-  writing: [{ label: 'Decision loops', href: '/writing/on-decision-loops' }],
+  writing: [
+    {
+      label: 'Decision loops',
+      href: 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/#the-future-interface-is-what-should-we-do-next',
+    },
+  ],
 } as const;
 
 const WORKSPACE_HOSTNAME_PATTERN =
@@ -68,8 +73,15 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-function connectedAgentItems(): string {
-  return '<ul class="agent-list" data-agent-list></ul><p class="muted" data-agent-fallback hidden></p>';
+function agentCountLabel(count: number): string {
+  return `Connected to ${count} local ${count === 1 ? 'agent' : 'agents'}`;
+}
+
+function connectedAgentItems(agents: LauncherLocalAgent[]): string {
+  const items = agents
+    .map((agent) => `<li>${escapeHtml(agent.label)}</li>`)
+    .join('');
+  return `<ul class="agent-list" data-agent-list>${items}</ul><p class="muted" data-agent-fallback hidden></p>`;
 }
 
 function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string {
@@ -79,6 +91,7 @@ function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string
 }
 
 export function renderLauncherOnboarding(options: LauncherOnboardingOptions): string {
+  const localAgents = options.localAgents ?? [];
   const workspaceHostname = normalizeWorkspaceHostname(options.workspaceHostname);
   const escapedMcpUrl = escapeHtml(options.mcpUrl);
 
@@ -138,6 +151,7 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
     .meta-item { display: grid; gap: 6px; }
     .meta-label, .section-title { color: var(--site-color-muted); font-size: 11px; line-height: 1.2; }
     .meta-value, .panel p, li { font-size: 15px; line-height: 1.45; }
+    .meta-value { margin: 0; }
     .panel { border-left: 1px solid var(--site-color-line); background: var(--site-color-panel); padding: clamp(28px, 4vw, 58px); display: flex; flex-direction: column; justify-content: space-between; gap: 52px; }
     .panel-stack { display: grid; gap: 44px; }
     .section { display: grid; gap: 13px; }
@@ -206,8 +220,8 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         </section>
       </div>
       <section class="status" aria-label="Local agents">
-        <p data-agent-count>Checking local agents…</p>
-        ${connectedAgentItems()}
+        <p data-agent-count>${agentCountLabel(localAgents.length)}</p>
+        ${connectedAgentItems(localAgents)}
       </section>
     </aside>
   </main>
@@ -221,8 +235,9 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
       }
     });
 
+    const launcherWorkspaceHost = ${JSON.stringify(workspaceHostname)};
     const workspaceHost = window.location.hostname.toLowerCase();
-    if (/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.consuelohq\.com$/.test(workspaceHost)) {
+    if (launcherWorkspaceHost && workspaceHost === launcherWorkspaceHost) {
       const agentStatusUrl = new URL('https://os.consuelohq.com/workspace/agents');
       agentStatusUrl.searchParams.set('workspace_host', workspaceHost);
       fetch(agentStatusUrl.toString(), {
@@ -265,10 +280,9 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         })
         .catch(() => {
           const countElement = document.querySelector('[data-agent-count]');
-          const listElement = document.querySelector('[data-agent-list]');
           const fallbackElement = document.querySelector('[data-agent-fallback]');
-          if (countElement instanceof HTMLElement) countElement.textContent = 'Local agent status unavailable.';
-          if (listElement instanceof HTMLElement) listElement.replaceChildren();
+          // Keep the server-rendered agent list when a transient status probe fails.
+          if (countElement instanceof HTMLElement) countElement.setAttribute('data-agent-status', 'stale');
           if (fallbackElement instanceof HTMLElement) fallbackElement.hidden = true;
         });
     } else {

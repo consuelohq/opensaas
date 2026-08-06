@@ -54,6 +54,8 @@ describe('workspace node heartbeat client', () => {
         return Response.json({
           nodeId: 'node_member',
           presence: 'online',
+          connectorId: 'connector_member',
+          edgeRequestSigningSecret: 'wen_heartbeat_reconciled_secret',
         });
       },
     });
@@ -62,8 +64,13 @@ describe('workspace node heartbeat client', () => {
     nowMs += 30_000;
     const second = await client.send();
 
-    expect(first).toEqual({ nodeId: 'node_member', presence: 'online' });
-    expect(second).toEqual({ nodeId: 'node_member', presence: 'online' });
+    expect(first).toEqual({
+      nodeId: 'node_member',
+      presence: 'online',
+      connectorId: 'connector_member',
+      edgeRequestSigningSecret: 'wen_heartbeat_reconciled_secret',
+    });
+    expect(second).toEqual(first);
     expect(requests).toHaveLength(2);
     for (const [index, request] of requests.entries()) {
       expect(request.url).toBe('https://os.consuelohq.com/workspace/nodes/heartbeat');

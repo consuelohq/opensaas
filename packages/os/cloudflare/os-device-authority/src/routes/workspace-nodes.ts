@@ -4,6 +4,7 @@ import {
   setDefaultWorkspaceNodeInD1,
   updateWorkspaceNodeTargetInD1,
 } from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
+import { deriveWorkspaceEdgeNodeSecret } from '../../../../scripts/lib/workspace-edge-node-auth';
 import { json } from '../http';
 import { normalizeWorkspaceAgentNames } from '../services/agents';
 import {
@@ -434,7 +435,24 @@ async function handleHeartbeat(
     }
     throw error;
   }
-  return json(safeWorkspaceNode(updated, nowMs), { headers: jsonHeaders });
+  const safeNode = safeWorkspaceNode(updated, nowMs);
+  const connectorId = updated.connectorId?.trim();
+  return json(
+    {
+      ...safeNode,
+      ...(runtime.workspaceEdgeInternalSigningSecret?.trim() && connectorId
+        ? {
+            edgeRequestSigningSecret: deriveWorkspaceEdgeNodeSecret({
+              masterSecret: runtime.workspaceEdgeInternalSigningSecret,
+              workspaceId,
+              nodeId,
+              connectorId,
+            }),
+          }
+        : {}),
+    },
+    { headers: jsonHeaders },
+  );
 }
 
 export function registerWorkspaceNodeRoutes(
