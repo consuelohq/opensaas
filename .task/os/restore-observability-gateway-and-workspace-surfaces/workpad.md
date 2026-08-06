@@ -2,6 +2,7 @@
 
 branch: `task/os/restore-observability-gateway-and-workspace-surfaces`
 stream: `stream/os`
+pr: https://github.com/consuelohq/opensaas/pull/1792
 started: 2026-08-05
 
 ## approved scope
@@ -130,6 +131,10 @@ The focused suite prints an intentional malformed-provenance stack from a passin
 - 2026-08-06 00:40:47 `review.run`: passed — OK
 - 2026-08-06 00:41:16 `checkFiles`: passed — OK
 - 2026-08-06 00:42:02 `review.run`: passed — OK
+- 2026-08-06 00:48:37 `verify`: passed — OK
+- 2026-08-06 00:48:37 `verify`: passed — OK
+- 2026-08-06 00:48:38 `verify`: passed — OK
+- 2026-08-06 00:48:38 `verify`: passed — OK
 
 ## workspace-owned: files read
 
