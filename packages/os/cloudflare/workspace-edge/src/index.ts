@@ -94,6 +94,7 @@ export function createWorkspaceEdgeHandler(
   const router = createWorkspaceCloudflareEdgeRouter({
     registry,
     internalSigningSecret: env.CONSUELO_EDGE_SIGNING_SECRET,
+    nodeSigningMasterSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
     siteSnapshots: { r2: env.SITES_SNAPSHOTS },
     ...(options.fetchUpstream ? { fetchUpstream: options.fetchUpstream } : {}),
     ...(options.now ? { now: options.now } : {}),

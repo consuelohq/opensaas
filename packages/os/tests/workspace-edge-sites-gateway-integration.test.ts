@@ -352,15 +352,15 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
       { surface: 'sites', pathPrefix: '/environments', auth: 'public', status: 'active', target: siteSnapshotTarget('environments') },
       { surface: 'sites', pathPrefix: '/secrets', auth: 'public', status: 'active', target: siteSnapshotTarget('secrets') },
       { surface: 'sites', pathPrefix: '/settings', auth: 'public', status: 'active', target: { kind: 'redirect', location: '/configuration', statusCode: 308 } },
-      { surface: 'sites', pathPrefix: '/gateway/traces/events', auth: 'required', status: 'active', target: gatewayLiveTarget() },
-      { surface: 'sites', pathPrefix: '/gateway/traces', auth: 'required', status: 'active', target: gatewayReadTarget() },
-      { surface: 'sites', pathPrefix: '/gateway/configuration/overlay', auth: 'required', status: 'active', target: gatewayConfigurationWriteTarget() },
-      { surface: 'sites', pathPrefix: '/gateway/configuration', auth: 'required', status: 'active', target: gatewayConfigurationReadTarget() },
-      { surface: 'sites', pathPrefix: '/gateway/settings/overlay', auth: 'required', status: 'active', target: gatewayLegacySettingsWriteTarget() },
-      { surface: 'sites', pathPrefix: '/gateway/settings', auth: 'required', status: 'active', target: gatewayLegacySettingsReadTarget() },
-      { surface: 'sites', pathPrefix: '/gateway/environments/upsert', auth: 'required', status: 'active', target: gatewayEnvironmentWriteTarget() },
-      { surface: 'sites', pathPrefix: '/gateway/environments/delete', auth: 'required', status: 'active', target: gatewayEnvironmentWriteTarget() },
-      { surface: 'sites', pathPrefix: '/gateway/environments', auth: 'required', status: 'active', target: gatewayEnvironmentReadTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/traces/events', auth: 'workspace-session', status: 'active', target: gatewayLiveTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/traces', auth: 'workspace-session', status: 'active', target: gatewayReadTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/configuration/overlay', auth: 'workspace-session', status: 'active', target: gatewayConfigurationWriteTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/configuration', auth: 'workspace-session', status: 'active', target: gatewayConfigurationReadTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/settings/overlay', auth: 'workspace-session', status: 'active', target: gatewayLegacySettingsWriteTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/settings', auth: 'workspace-session', status: 'active', target: gatewayLegacySettingsReadTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/environments/upsert', auth: 'workspace-session', status: 'active', target: gatewayEnvironmentWriteTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/environments/delete', auth: 'workspace-session', status: 'active', target: gatewayEnvironmentWriteTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/environments', auth: 'workspace-session', status: 'active', target: gatewayEnvironmentReadTarget() },
       {
         surface: 'os',
         pathPrefix: '/mcp',
@@ -445,8 +445,10 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       '/',
       '/artifacts',
       '/observability',
+      '/observability/traces',
       '/traces',
       '/tracing',
+      '/trace-burn-intelligence',
       '/diffs',
       '/docs',
       '/configuration',
@@ -512,7 +514,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(`${body}\n${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPattern);
   });
 
-  it('should reject unauthenticated GET /gateway/traces/* requests before returning Gateway service descriptors', async () => {
+  it('should reject unauthenticated GET /gateway/traces/* requests before contacting the node', async () => {
     const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
     const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
     const db = d1.createInMemoryWorkspaceRouteD1();
@@ -522,6 +524,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     const router = edge.createWorkspaceCloudflareEdgeRouter({
       registry: d1.createWorkspaceCloudflareD1RouteRegistry(db),
       internalSigningSecret: 'edge-test-secret',
+      authorizeWorkspaceSession: async () => false,
       fetchUpstream: async (request) => {
         upstreamRequests.push(request);
         return new Response('unexpected raw service route', { status: 599 });
@@ -529,19 +532,18 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     });
 
     const readResponse = await router.fetch(new Request('https://internal.consuelohq.com/gateway/traces/recent?cursor=00000000'));
-    const readBody = (await readResponse.json()) as { error: { code: string } };
+    const readBody = (await readResponse.json()) as { error: string };
     const liveResponse = await router.fetch(new Request('https://internal.consuelohq.com/gateway/traces/events?cursor=00000000'));
-    const liveBody = (await liveResponse.json()) as { error: { code: string } };
+    const liveBody = (await liveResponse.json()) as { error: string };
 
-    expect(readResponse.status).toBe(503);
-    expect(readBody.error.code).toBe('WORKSPACE_EDGE_AUTH_REQUIRED');
-    expect(liveResponse.status).toBe(503);
-    expect(liveBody.error.code).toBe('WORKSPACE_EDGE_AUTH_REQUIRED');
+    expect(readResponse.status).toBe(401);
+    expect(readBody.error).toBe('workspace_session_required');
+    expect(liveResponse.status).toBe(401);
+    expect(liveBody.error).toBe('workspace_session_required');
     expect(upstreamRequests).toHaveLength(0);
-    expect(JSON.stringify([readBody, liveBody])).not.toMatch(forbiddenBrowserLeakPattern);
   });
 
-  it('should resolve internally signed GET /gateway/traces/* requests to Gateway service descriptors without exposing backend targets', async () => {
+  it('proxies authenticated GET /gateway/traces/* requests to the selected node', async () => {
     const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
     const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
     const db = d1.createInMemoryWorkspaceRouteD1();
@@ -551,78 +553,46 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     const router = edge.createWorkspaceCloudflareEdgeRouter({
       registry: d1.createWorkspaceCloudflareD1RouteRegistry(db),
       internalSigningSecret: 'edge-test-secret',
+      authorizeWorkspaceSession: async () => true,
       fetchUpstream: async (request) => {
         upstreamRequests.push(request);
-        return new Response('unexpected raw service route', { status: 599 });
+        if (new URL(request.url).pathname.endsWith('/events')) {
+          return new Response('event: trace\ndata: {"id":"trace-live"}\n\n', {
+            headers: { 'content-type': 'text/event-stream' },
+          });
+        }
+        return Response.json({ ok: true, data: { rows: [{ id: 'trace-read' }] } });
       },
     });
 
     const readPath = '/gateway/traces/recent?cursor=00000000';
     const livePath = '/gateway/traces/events?cursor=00000000';
-    const readTimestamp = String(Date.now());
-    const readNonce = 'test-read-nonce';
     const readResponse = await router.fetch(new Request(`https://internal.consuelohq.com${readPath}`, {
-      headers: {
-        'x-consuelo-edge-timestamp': readTimestamp,
-        'x-consuelo-edge-nonce': readNonce,
-        'x-consuelo-edge-signature': signInternalEdgeRequest({
-          secret: 'edge-test-secret',
-          method: 'GET',
-          pathWithSearch: readPath,
-          workspaceId: 'workspace_internal',
-          surface: 'sites',
-          timestamp: readTimestamp,
-          nonce: readNonce,
-        }),
-      },
+      headers: { cookie: 'consuelo_workspace_session=session-internal' },
     }));
     const readBody = (await readResponse.json()) as Record<string, unknown>;
-    const liveTimestamp = String(Date.now());
-    const liveNonce = 'test-live-nonce';
     const liveResponse = await router.fetch(new Request(`https://internal.consuelohq.com${livePath}`, {
-      headers: {
-        'x-consuelo-edge-timestamp': liveTimestamp,
-        'x-consuelo-edge-nonce': liveNonce,
-        'x-consuelo-edge-signature': signInternalEdgeRequest({
-          secret: 'edge-test-secret',
-          method: 'GET',
-          pathWithSearch: livePath,
-          workspaceId: 'workspace_internal',
-          surface: 'sites',
-          timestamp: liveTimestamp,
-          nonce: liveNonce,
-        }),
-      },
+      headers: { cookie: 'consuelo_workspace_session=session-internal' },
     }));
-    const liveBody = (await liveResponse.json()) as Record<string, unknown>;
 
     expect(readResponse.status).toBe(200);
-    expect(readBody).toMatchObject({
-      ok: true,
-      publicBoundary: 'consuelo-gateway',
-      route: {
-        serviceName: 'trace-sites-read-layer',
-        gatewayServiceName: 'trace-sites-read-layer',
-        gatewayRouteFamily: '/gateway/traces/*',
-        publicSiteRouteFamily: '/observability/*',
-      },
-    });
+    expect(readBody).toMatchObject({ ok: true, data: { rows: [{ id: 'trace-read' }] } });
     expect(liveResponse.status).toBe(200);
-    expect(liveBody).toMatchObject({
-      ok: true,
-      publicBoundary: 'consuelo-gateway',
-      route: {
-        serviceName: 'trace-sites-live-endpoints',
-        gatewayServiceName: 'trace-sites-live-endpoints',
-        gatewayRouteFamily: '/gateway/traces/*',
-        publicSiteRouteFamily: '/observability/*',
-      },
-    });
-    expect(upstreamRequests).toHaveLength(0);
-    expect(JSON.stringify([readBody, liveBody])).not.toMatch(forbiddenBrowserLeakPattern);
+    expect(liveResponse.headers.get('content-type')).toBe('text/event-stream');
+    expect(await liveResponse.text()).toContain('trace-live');
+    expect(upstreamRequests.map((request) => request.url)).toEqual([
+      'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com' + readPath,
+      'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com' + livePath,
+    ]);
+    for (const request of upstreamRequests) {
+      expect(request.headers.get('x-consuelo-workspace-id')).toBe('workspace_internal');
+      expect(request.headers.get('x-consuelo-connector-id')).toBe('connector_internal');
+      expect(request.headers.get('x-consuelo-edge-signature')).toMatch(/^sha256=[0-9a-f]{64}$/);
+    }
+    expect(JSON.stringify(readBody)).not.toMatch(forbiddenBrowserLeakPattern);
   });
 
-  it('should reject unauthenticated /gateway/configuration/* requests before returning Gateway service descriptors', async () => {
+  it('rejects unauthenticated /gateway/configuration/* requests before contacting the node', async () => {
     const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
     const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
     const db = d1.createInMemoryWorkspaceRouteD1();
@@ -632,6 +602,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     const router = edge.createWorkspaceCloudflareEdgeRouter({
       registry: d1.createWorkspaceCloudflareD1RouteRegistry(db),
       internalSigningSecret: 'edge-test-secret',
+      authorizeWorkspaceSession: async () => false,
       fetchUpstream: async (request) => {
         upstreamRequests.push(request);
         return new Response('unexpected raw service route', { status: 599 });
@@ -639,19 +610,18 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     });
 
     const snapshotResponse = await router.fetch(new Request('https://internal.consuelohq.com/gateway/configuration/snapshot'));
-    const snapshotBody = (await snapshotResponse.json()) as { error: { code: string } };
+    const snapshotBody = (await snapshotResponse.json()) as { error: string };
     const overlayResponse = await router.fetch(new Request('https://internal.consuelohq.com/gateway/configuration/overlay', { method: 'POST' }));
-    const overlayBody = (await overlayResponse.json()) as { error: { code: string } };
+    const overlayBody = (await overlayResponse.json()) as { error: string };
 
-    expect(snapshotResponse.status).toBe(503);
-    expect(snapshotBody.error.code).toBe('WORKSPACE_EDGE_AUTH_REQUIRED');
-    expect(overlayResponse.status).toBe(503);
-    expect(overlayBody.error.code).toBe('WORKSPACE_EDGE_AUTH_REQUIRED');
+    expect(snapshotResponse.status).toBe(401);
+    expect(snapshotBody.error).toBe('workspace_session_required');
+    expect(overlayResponse.status).toBe(401);
+    expect(overlayBody.error).toBe('workspace_session_required');
     expect(upstreamRequests).toHaveLength(0);
-    expect(JSON.stringify([snapshotBody, overlayBody])).not.toMatch(forbiddenBrowserLeakPattern);
   });
 
-  it('should resolve internally signed /gateway/configuration/* requests to Gateway service descriptors without exposing backend targets', async () => {
+  it('proxies authenticated /gateway/configuration/* requests to the selected node', async () => {
     const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
     const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
     const db = d1.createInMemoryWorkspaceRouteD1();
@@ -661,131 +631,86 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     const router = edge.createWorkspaceCloudflareEdgeRouter({
       registry: d1.createWorkspaceCloudflareD1RouteRegistry(db),
       internalSigningSecret: 'edge-test-secret',
+      authorizeWorkspaceSession: async () => true,
       fetchUpstream: async (request) => {
         upstreamRequests.push(request);
-        return new Response('unexpected raw service route', { status: 599 });
+        return Response.json({ ok: true, snapshot: { workspace: { workspaceSlug: 'internal' } } });
       },
     });
 
     const snapshotPath = '/gateway/configuration/snapshot';
     const overlayPath = '/gateway/configuration/overlay';
-    const snapshotTimestamp = String(Date.now());
-    const snapshotNonce = 'configuration-snapshot-nonce';
-    const overlayTimestamp = String(Date.now());
-    const overlayNonce = 'configuration-overlay-nonce';
     const snapshotResponse = await router.fetch(new Request(`https://internal.consuelohq.com${snapshotPath}`, {
-      headers: {
-        'x-consuelo-edge-timestamp': snapshotTimestamp,
-        'x-consuelo-edge-nonce': snapshotNonce,
-        'x-consuelo-edge-signature': signInternalEdgeRequest({
-          secret: 'edge-test-secret',
-          method: 'GET',
-          pathWithSearch: snapshotPath,
-          workspaceId: 'workspace_internal',
-          surface: 'sites',
-          timestamp: snapshotTimestamp,
-          nonce: snapshotNonce,
-        }),
-      },
+      headers: { cookie: 'consuelo_workspace_session=session-internal' },
     }));
     const snapshotBody = (await snapshotResponse.json()) as Record<string, unknown>;
     const overlayResponse = await router.fetch(new Request(`https://internal.consuelohq.com${overlayPath}`, {
       method: 'POST',
       headers: {
-        'x-consuelo-edge-timestamp': overlayTimestamp,
-        'x-consuelo-edge-nonce': overlayNonce,
-        'x-consuelo-edge-signature': signInternalEdgeRequest({
-          secret: 'edge-test-secret',
-          method: 'POST',
-          pathWithSearch: overlayPath,
-          workspaceId: 'workspace_internal',
-          surface: 'sites',
-          timestamp: overlayTimestamp,
-          nonce: overlayNonce,
-        }),
+        cookie: 'consuelo_workspace_session=session-internal',
+        'content-type': 'application/json',
       },
+      body: JSON.stringify({ kind: 'tool', name: 'example', enabled: true }),
     }));
     const overlayBody = (await overlayResponse.json()) as Record<string, unknown>;
 
     expect(snapshotResponse.status).toBe(200);
-    expect(snapshotBody).toMatchObject({
-      ok: true,
-      publicBoundary: 'consuelo-gateway',
-      route: {
-        serviceName: 'configuration-sites-read-endpoints',
-        gatewayServiceName: 'configuration-sites-read-endpoints',
-        gatewayRouteFamily: '/gateway/configuration/*',
-        publicSiteRouteFamily: '/configuration/*',
-      },
-    });
+    expect(snapshotBody).toMatchObject({ ok: true, snapshot: { workspace: { workspaceSlug: 'internal' } } });
     expect(overlayResponse.status).toBe(200);
-    expect(overlayBody).toMatchObject({
-      ok: true,
-      publicBoundary: 'consuelo-gateway',
-      route: {
-        serviceName: 'configuration-sites-write-endpoints',
-        gatewayServiceName: 'configuration-sites-write-endpoints',
-        gatewayRouteFamily: '/gateway/configuration/*',
-        publicSiteRouteFamily: '/configuration/*',
-      },
-    });
-    expect(upstreamRequests).toHaveLength(0);
+    expect(overlayBody).toMatchObject({ ok: true });
+    expect(upstreamRequests.map((request) => request.url)).toEqual([
+      'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com' + snapshotPath,
+      'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com' + overlayPath,
+    ]);
+    expect(await upstreamRequests[1].text()).toBe('{"kind":"tool","name":"example","enabled":true}');
     expect(JSON.stringify([snapshotBody, overlayBody])).not.toMatch(forbiddenBrowserLeakPattern);
   });
 
-  it('should protect and resolve signed /gateway/environments/* requests through environment service descriptors', async () => {
+  it('protects and proxies /gateway/environments/* through the selected node', async () => {
     const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
     const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
     const db = d1.createInMemoryWorkspaceRouteD1();
     await d1.migrateWorkspaceRouteD1(db);
     await d1.upsertWorkspaceHostnameInD1(db, integratedRouteRecord());
+    const upstreamRequests: Request[] = [];
+    let authorized = false;
     const router = edge.createWorkspaceCloudflareEdgeRouter({
       registry: d1.createWorkspaceCloudflareD1RouteRegistry(db),
       internalSigningSecret: 'edge-test-secret',
-      fetchUpstream: async () => new Response('unexpected raw service route', { status: 599 }),
+      authorizeWorkspaceSession: async () => authorized,
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
+        return Response.json({ ok: true, snapshot: { environments: [] } });
+      },
     });
 
     const unauthenticated = await router.fetch(new Request('https://internal.consuelohq.com/gateway/environments/snapshot'));
-    expect(unauthenticated.status).toBe(503);
-    await expect(unauthenticated.json()).resolves.toMatchObject({ error: { code: 'WORKSPACE_EDGE_AUTH_REQUIRED' } });
+    expect(unauthenticated.status).toBe(401);
+    await expect(unauthenticated.json()).resolves.toEqual({ error: 'workspace_session_required' });
 
+    authorized = true;
     const cases = [
-      { method: 'GET', path: '/gateway/environments/snapshot', target: gatewayEnvironmentReadTarget() },
-      { method: 'POST', path: '/gateway/environments/upsert', target: gatewayEnvironmentWriteTarget() },
-      { method: 'POST', path: '/gateway/environments/delete', target: gatewayEnvironmentWriteTarget() },
+      { method: 'GET', path: '/gateway/environments/snapshot' },
+      { method: 'POST', path: '/gateway/environments/upsert' },
+      { method: 'POST', path: '/gateway/environments/delete' },
     ] as const;
 
     for (const item of cases) {
-      const timestamp = String(Date.now());
-      const nonce = `environment-${item.method.toLowerCase()}-${item.path.split('/').at(-1)}-nonce`;
       const response = await router.fetch(new Request(`https://internal.consuelohq.com${item.path}`, {
         method: item.method,
-        headers: {
-          'x-consuelo-edge-timestamp': timestamp,
-          'x-consuelo-edge-nonce': nonce,
-          'x-consuelo-edge-signature': signInternalEdgeRequest({
-            secret: 'edge-test-secret',
-            method: item.method,
-            pathWithSearch: item.path,
-            workspaceId: 'workspace_internal',
-            surface: 'sites',
-            timestamp,
-            nonce,
-          }),
-        },
+        headers: { cookie: 'consuelo_workspace_session=session-internal' },
       }));
       expect(response.status).toBe(200);
       await expect(response.json()).resolves.toMatchObject({
         ok: true,
-        publicBoundary: 'consuelo-gateway',
-        route: {
-          serviceName: item.target.serviceName,
-          gatewayServiceName: item.target.serviceName,
-          gatewayRouteFamily: '/gateway/environments/*',
-          publicSiteRouteFamily: '/environments/*',
-        },
+        snapshot: { environments: [] },
       });
     }
+    expect(upstreamRequests.map((request) => new URL(request.url).pathname)).toEqual([
+      '/gateway/environments/snapshot',
+      '/gateway/environments/upsert',
+      '/gateway/environments/delete',
+    ]);
   });
 
   it('should serve first-class Configuration routes from their published Site snapshots instead of the OS connector', async () => {
@@ -990,7 +915,10 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
     expect(expectedPlan.verifyUrl).toBe('https://internal.consuelohq.com/');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/artifacts"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/observability"');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/observability/traces"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/traces"');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/tracing"');
+    expect(expectedPlan.routeSql).toContain('"pathPrefix":"/trace-burn-intelligence"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/diffs"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/docs"');
     expect(expectedPlan.routeSql).toContain('"pathPrefix":"/configuration"');
@@ -1002,7 +930,10 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
       'https://internal.consuelohq.com/',
       'https://internal.consuelohq.com/artifacts',
       'https://internal.consuelohq.com/observability',
+      'https://internal.consuelohq.com/observability/traces',
       'https://internal.consuelohq.com/traces',
+      'https://internal.consuelohq.com/tracing',
+      'https://internal.consuelohq.com/trace-burn-intelligence',
       'https://internal.consuelohq.com/diffs',
       'https://internal.consuelohq.com/docs',
       'https://internal.consuelohq.com/configuration',
@@ -1017,7 +948,10 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
         'https://internal.consuelohq.com/',
         'https://internal.consuelohq.com/artifacts',
         'https://internal.consuelohq.com/observability',
+        'https://internal.consuelohq.com/observability/traces',
         'https://internal.consuelohq.com/traces',
+        'https://internal.consuelohq.com/tracing',
+        'https://internal.consuelohq.com/trace-burn-intelligence',
         'https://internal.consuelohq.com/diffs',
         'https://internal.consuelohq.com/docs',
         'https://internal.consuelohq.com/configuration',

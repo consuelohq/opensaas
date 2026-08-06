@@ -31,6 +31,8 @@ export type WorkspaceNodeHeartbeatConfig = {
 export type WorkspaceNodeHeartbeatResult = {
   nodeId: string;
   presence: 'online' | 'stale' | 'offline';
+  connectorId?: string;
+  edgeRequestSigningSecret?: string;
 };
 
 export type WorkspaceNodeHeartbeatClient = {
@@ -124,6 +126,10 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
   }
   const nodeId = (payload as { nodeId?: unknown }).nodeId;
   const presence = (payload as { presence?: unknown }).presence;
+  const connectorId = (payload as { connectorId?: unknown }).connectorId;
+  const edgeRequestSigningSecret = (
+    payload as { edgeRequestSigningSecret?: unknown }
+  ).edgeRequestSigningSecret;
   if (
     typeof nodeId !== 'string' ||
     !['online', 'stale', 'offline'].includes(String(presence))
@@ -132,9 +138,22 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
       'workspace node heartbeat returned an invalid JSON response',
     );
   }
+  const hasConnector = typeof connectorId === 'string' && connectorId.trim() !== '';
+  const hasSecret =
+    typeof edgeRequestSigningSecret === 'string' &&
+    edgeRequestSigningSecret.trim() !== '';
+  if (hasConnector !== hasSecret) {
+    throw new Error('workspace node heartbeat returned incomplete edge authentication metadata');
+  }
   return {
     nodeId,
     presence: presence as WorkspaceNodeHeartbeatResult['presence'],
+    ...(hasConnector && hasSecret
+      ? {
+          connectorId: connectorId.trim(),
+          edgeRequestSigningSecret: edgeRequestSigningSecret.trim(),
+        }
+      : {}),
   };
 }
 
@@ -206,7 +225,11 @@ export function createWorkspaceNodeHeartbeatClient(input: {
           cause: error,
         });
       }
-      return safeHeartbeatResult(body);
+      const result = safeHeartbeatResult(body);
+      if (result.nodeId !== config.nodeId) {
+        throw new Error('workspace node heartbeat returned a different node identity');
+      }
+      return result;
     },
   };
 }

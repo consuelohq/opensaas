@@ -1,0 +1,71 @@
+---
+const gatewayRoutes = {
+  recent: "/gateway/traces/recent",
+  summary: "/gateway/traces/summary",
+  events: "/gateway/traces/events",
+};
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Traces - Observability</title>
+    <meta name="description" content="Consuelo Observability traces cockpit." />
+  </head>
+  <body class="observability-page">
+    <main
+      class="dashboard"
+      data-observability-app
+      data-feed-url={gatewayRoutes.recent}
+      data-summary-url={gatewayRoutes.summary}
+      data-events-url={gatewayRoutes.events}
+    >
+      <section class="hero">
+        <div>
+          <div class="eyebrow">Observability</div>
+          <h1>Traces</h1>
+          <p>
+            Live traces are the first Observability module. The broader dashboard can grow around this
+            source without renaming the launchable Traces cockpit.
+          </p>
+          <nav aria-label="Observability sections">
+            <a aria-current="page" href="/observability/traces">Traces</a>
+            <span aria-disabled="true">Runs</span>
+            <span aria-disabled="true">Costs</span>
+            <span aria-disabled="true">Failures</span>
+          </nav>
+        </div>
+        <button type="button" data-testid="trace-launcher" data-open-traces>Live traces</button>
+      </section>
+
+      <section aria-label="Observability trace summary">
+        <article><span>Trace rows</span><strong data-kpi="trace-count">0</strong></article>
+        <article><span>Failures</span><strong data-kpi="failure-count">0</strong></article>
+        <article><span>Token burn</span><strong data-kpi="tokens">0</strong></article>
+        <article><span>Estimated cost</span><strong data-kpi="cost">$0.00</strong></article>
+      </section>
+
+      <section class="trace-modal" data-trace-modal aria-label="Traces">
+        <div class="trace-shell" data-mode="list">
+          <header><div class="trace-title">Traces</div><button type="button" data-show-filters>filters</button></header>
+          <input data-search placeholder="Search traces..." aria-label="Search traces" />
+          <div data-trace-rows></div>
+          <aside data-inspector></aside>
+          <footer><span><b data-trace-count>0</b> traces</span><span data-live-state>stale</span></footer>
+        </div>
+      </section>
+    </main>
+    <script is:inline>
+      window.__consueloObservabilityTraces = {
+        routes: {
+          recent: "/gateway/traces/recent",
+          summary: "/gateway/traces/summary",
+          events: "/gateway/traces/events",
+        },
+        motion: "web-animations",
+        module: "traces",
+      };
+    </script>
+  </body>
+</html>

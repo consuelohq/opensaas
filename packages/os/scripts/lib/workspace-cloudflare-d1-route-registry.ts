@@ -31,6 +31,7 @@ export type WorkspaceRouteD1RouteTarget =
         | 'settings-sites-write-endpoints'
         | 'environment-sites-read-endpoints'
         | 'environment-sites-write-endpoints'
+        | 'secrets-sites-read-endpoints'
         | (string & {});
       gatewayRouteFamily: string;
       publicSiteRouteFamily: string;
@@ -57,6 +58,13 @@ export type WorkspaceRouteD1NodeTarget = {
   state: 'active' | 'revoked';
   lastSeenAt: number;
   heartbeatTtlMs: number;
+};
+
+export type WorkspaceRouteD1NodeConnector = {
+  nodeId: string;
+  connectorId: string;
+  connectorStatus: 'connected' | 'disconnected';
+  tunnelOriginUrl: string;
 };
 
 export type WorkspaceRouteD1RecordInput = {
@@ -107,6 +115,7 @@ export type WorkspaceRouteD1Resolution =
       auth: WorkspaceRouteD1Route['auth'];
       auditEvent: 'workspace.hostname.route.allowed';
       nodeId?: string;
+      nodeConnector?: WorkspaceRouteD1NodeConnector;
       target: WorkspaceRouteD1RouteTarget;
     }
   | {
@@ -374,6 +383,15 @@ const connectorTargetForNode = (
   tunnelOriginUrl: target.tunnelOriginUrl,
 });
 
+const nodeConnectorForTarget = (
+  target: WorkspaceRouteD1NodeTarget,
+): WorkspaceRouteD1NodeConnector => ({
+  nodeId: target.nodeId,
+  connectorId: target.connectorId,
+  connectorStatus: target.connectorStatus,
+  tunnelOriginUrl: target.tunnelOriginUrl,
+});
+
 const nodePresence = (
   target: WorkspaceRouteD1NodeTarget,
   nowMs: number,
@@ -562,7 +580,12 @@ export const resolveWorkspaceRouteFromD1 = async (
 
     let target = cloneTarget(route.target);
     let nodeId: string | undefined;
-    if (route.target.kind === 'os-connector' && record.nodeTargets?.length) {
+    let nodeConnector: WorkspaceRouteD1NodeConnector | undefined;
+    const requiresNodeConnector =
+      route.target.kind === 'os-connector' ||
+      route.target.kind === 'consuelo-gateway-service';
+
+    if (requiresNodeConnector && record.nodeTargets?.length) {
       nodeId = input.nodeId?.trim() || record.defaultNodeId;
       const nodeTarget = record.nodeTargets.find(
         (candidate) => candidate.nodeId === nodeId,
@@ -580,7 +603,30 @@ export const resolveWorkspaceRouteFromD1 = async (
       ) {
         return denied({ status: 503, errorCode: 'WORKSPACE_NODE_OFFLINE' });
       }
-      target = connectorTargetForNode(nodeTarget);
+      nodeConnector = nodeConnectorForTarget(nodeTarget);
+      if (route.target.kind === 'os-connector') {
+        target = connectorTargetForNode(nodeTarget);
+      }
+    } else if (route.target.kind === 'consuelo-gateway-service') {
+      const legacyConnectorRoute = record.routes.find(
+        (candidate) => candidate.target.kind === 'os-connector',
+      );
+      if (legacyConnectorRoute?.target.kind !== 'os-connector') {
+        return denied({ status: 404, errorCode: 'WORKSPACE_NODE_NOT_FOUND' });
+      }
+      if (
+        input.requireOnlineNode !== false &&
+        legacyConnectorRoute.target.connectorStatus !== 'connected'
+      ) {
+        return denied({ status: 503, errorCode: 'WORKSPACE_NODE_OFFLINE' });
+      }
+      nodeId = input.nodeId?.trim() || record.defaultNodeId || record.workspaceSlug;
+      nodeConnector = {
+        nodeId,
+        connectorId: legacyConnectorRoute.target.connectorId,
+        connectorStatus: legacyConnectorRoute.target.connectorStatus,
+        tunnelOriginUrl: legacyConnectorRoute.target.tunnelOriginUrl,
+      };
     } else if (
       input.requireOnlineNode !== false &&
       route.target.kind === 'os-connector' &&
@@ -601,6 +647,7 @@ export const resolveWorkspaceRouteFromD1 = async (
       auth: route.auth,
       auditEvent: 'workspace.hostname.route.allowed',
       ...(nodeId ? { nodeId } : {}),
+      ...(nodeConnector ? { nodeConnector } : {}),
       target,
     };
   } catch (error: unknown) {

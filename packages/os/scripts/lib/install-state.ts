@@ -83,6 +83,7 @@ export type WorkspaceBootstrap = {
   nodeCapabilities?: string[];
   authorityOrigin?: string;
   connectorBootstrapToken?: string;
+  edgeRequestSigningSecret?: string;
   cloudflareTunnelToken?: string;
 };
 
@@ -1825,6 +1826,15 @@ export function provisionLocalOs(
       workspaceHost: workspaceIdentity.workspaceHost,
       upstreamPort: gatewayPort,
       ingressPort: DEFAULT_INGRESS_PORT,
+      ...(workspaceBootstrap?.nodeId && workspaceBootstrap.edgeRequestSigningSecret
+        ? {
+            edgeProxy: {
+              nodeId: workspaceBootstrap.nodeId,
+              connectorId: workspaceBootstrap.connectorId,
+              signingSecret: workspaceBootstrap.edgeRequestSigningSecret,
+            },
+          }
+        : {}),
     });
     actions.push(...materializeChatGptMcpConnection({
       home: layout.nodeDir,

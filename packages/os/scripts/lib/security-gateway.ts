@@ -21,6 +21,7 @@ import {
   normalizeGrantedScopes,
 } from './tool-scope-authorization';
 import { PLACEHOLDER_WORKSPACE_ID } from './unenrolled-placeholder-identity';
+import { verifyWorkspaceEdgeNodeRequest } from './workspace-edge-node-auth';
 
 type JsonObject = Record<string, unknown>;
 type SignatureAlgorithm = 'ed25519';
@@ -192,6 +193,15 @@ type StoredNonce = {
   seenAt: string;
 };
 
+type StoredEdgeProxyAuth = {
+  version: 1;
+  nodeId: string;
+  connectorId: string;
+  signingSecret: string;
+  seenNonces: Record<string, string>;
+  updatedAt: string;
+};
+
 type StoredAuthConfig = {
   version: 1;
   kind: 'consuelo-generated';
@@ -204,6 +214,7 @@ type StoredAuthConfig = {
   publicGateway: PublicGatewayMetadata;
   tokens: Record<string, StoredToken>;
   seenNonces: Record<string, StoredNonce>;
+  edgeProxy?: StoredEdgeProxyAuth;
   createdAt: string;
   updatedAt: string;
 };
@@ -776,6 +787,7 @@ export function createGatewaySecurityConfig(input: {
   upstreamPort?: number;
   ingressPort?: number;
   mtls?: { enabled: boolean; caFile: string };
+  edgeProxy?: { nodeId: string; connectorId: string; signingSecret: string };
 }): GatewaySecurityConfig {
   ensureSecurityDirs(input.home);
   const generatedAuthPath = authPathForHome(input.home);
@@ -820,6 +832,24 @@ export function createGatewaySecurityConfig(input: {
           existing.seenNonces,
           existing.updatedAt ?? existing.createdAt ?? nowIso(),
         ),
+        ...(input.edgeProxy
+          ? {
+              edgeProxy: {
+                version: 1 as const,
+                nodeId: input.edgeProxy.nodeId.trim(),
+                connectorId: input.edgeProxy.connectorId.trim(),
+                signingSecret: input.edgeProxy.signingSecret.trim(),
+                seenNonces:
+                  existing.edgeProxy?.nodeId === input.edgeProxy.nodeId.trim() &&
+                  existing.edgeProxy?.connectorId === input.edgeProxy.connectorId.trim()
+                    ? { ...existing.edgeProxy.seenNonces }
+                    : {},
+                updatedAt: nowIso(),
+              },
+            }
+          : existing.edgeProxy
+            ? { edgeProxy: existing.edgeProxy }
+            : {}),
         updatedAt: nowIso(),
       }
     : {
@@ -834,6 +864,18 @@ export function createGatewaySecurityConfig(input: {
         publicGateway,
         tokens: {},
         seenNonces: {},
+        ...(input.edgeProxy
+          ? {
+              edgeProxy: {
+                version: 1 as const,
+                nodeId: input.edgeProxy.nodeId.trim(),
+                connectorId: input.edgeProxy.connectorId.trim(),
+                signingSecret: input.edgeProxy.signingSecret.trim(),
+                seenNonces: {},
+                updatedAt: nowIso(),
+              },
+            }
+          : {}),
         createdAt: nowIso(),
         updatedAt: nowIso(),
       };
@@ -860,6 +902,101 @@ export function loadGatewaySecurityConfig(input: {
     throw new Error('auth config is not Consuelo-generated');
   }
   return toPublicConfig(stored, input.authConfigPath);
+}
+
+export function reconcileGatewayWorkspaceEdgeProxyAuth(input: {
+  authConfigPath: string;
+  workspaceId: string;
+  nodeId: string;
+  connectorId: string;
+  signingSecret: string;
+  now?: string;
+}): boolean {
+  const workspaceId = input.workspaceId.trim();
+  const nodeId = input.nodeId.trim();
+  const connectorId = input.connectorId.trim();
+  const signingSecret = input.signingSecret.trim();
+  if (!workspaceId || !nodeId || !connectorId || !signingSecret) {
+    throw new Error('workspace edge proxy identity and signing secret are required');
+  }
+  const stored = readStoredAuthFile(input.authConfigPath);
+  if (stored.kind !== 'consuelo-generated') {
+    throw new Error('auth config is not Consuelo-generated');
+  }
+  if (stored.workspaceId !== workspaceId) {
+    throw new Error('workspace edge proxy auth belongs to a different workspace');
+  }
+  const existing = stored.edgeProxy;
+  if (
+    existing?.version === 1 &&
+    existing.nodeId === nodeId &&
+    existing.connectorId === connectorId &&
+    existing.signingSecret === signingSecret
+  ) {
+    return false;
+  }
+  const updatedAt = input.now ?? nowIso();
+  stored.edgeProxy = {
+    version: 1,
+    nodeId,
+    connectorId,
+    signingSecret,
+    seenNonces: {},
+    updatedAt,
+  };
+  writeJsonSecure(input.authConfigPath, { ...stored, updatedAt });
+  return true;
+}
+
+export function verifyWorkspaceEdgeProxyRequest(input: {
+  config: GatewaySecurityConfig;
+  method: string;
+  pathWithSearch: string;
+  body: string;
+  headers: Record<string, string>;
+  now: string;
+}): VerificationResult {
+  const stored = readStoredAuth(input.config);
+  const edgeProxy = stored.edgeProxy;
+  if (!edgeProxy || edgeProxy.version !== 1 || !edgeProxy.signingSecret) {
+    return safeError(401, 'EDGE_AUTH_NOT_CONFIGURED', 'Workspace edge authentication is not configured for this node.');
+  }
+  const cutoff = Date.parse(input.now) - MAX_TIMESTAMP_SKEW_MS;
+  for (const [nonce, seenAt] of Object.entries(edgeProxy.seenNonces ?? {})) {
+    const seenMs = Date.parse(seenAt);
+    if (!Number.isFinite(seenMs) || seenMs < cutoff) delete edgeProxy.seenNonces[nonce];
+  }
+  const result = verifyWorkspaceEdgeNodeRequest({
+    signingSecret: edgeProxy.signingSecret,
+    workspaceId: stored.workspaceId,
+    nodeId: edgeProxy.nodeId,
+    connectorId: edgeProxy.connectorId,
+    surface: input.headers['x-consuelo-surface'] ?? '',
+    method: input.method,
+    pathWithSearch: input.pathWithSearch,
+    body: input.body,
+    headers: input.headers,
+    nowMs: Date.parse(input.now),
+    nonceSeen: (nonce) => Boolean(edgeProxy.seenNonces[nonce]),
+  });
+  if (!result.ok) return safeError(result.status, result.code, result.message);
+  edgeProxy.seenNonces[result.nonce] = input.now;
+  edgeProxy.updatedAt = input.now;
+  stored.edgeProxy = edgeProxy;
+  writeStoredAuth(input.config, stored);
+  return {
+    ok: true,
+    caller: {
+      workspaceId: stored.workspaceId,
+      subjectId: 'workspace-edge',
+      deviceId: edgeProxy.nodeId,
+      connectorId: edgeProxy.connectorId,
+      connectionId: `edge:${edgeProxy.connectorId}`,
+      callerId: 'workspace-edge',
+      appId: 'workspace-sites',
+      scopes: ['gateway:proxy'],
+    },
+  };
 }
 
 export function issueAgentAppToken(input: {

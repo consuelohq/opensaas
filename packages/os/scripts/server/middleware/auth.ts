@@ -6,8 +6,10 @@ import {
   loadGatewaySecurityConfig,
   verifyBearerMcpRequest,
   verifyMachineRequest,
+  verifyWorkspaceEdgeProxyRequest,
   type GatewaySecurityConfig,
 } from '../../lib/security-gateway';
+import { hasAnyWorkspaceEdgeNodeHeaders } from '../../lib/workspace-edge-node-auth';
 import { authorizeConsueloOAuthMcpRequest } from '../services/oauth-introspection';
 import { unauthorized, verificationResponse } from './errors';
 
@@ -70,7 +72,8 @@ export function authPreflight(request: Request): Response | null {
       'Generated Consuelo OS auth is required.',
     );
   }
-  if (!hasSignedGatewayHeaders(requestHeaders(request))) {
+  const headers = requestHeaders(request);
+  if (!hasSignedGatewayHeaders(headers) && !hasAnyWorkspaceEdgeNodeHeaders(headers)) {
     return unauthorized(
       'MISSING_SIGNATURE',
       'Signed gateway headers are required.',
@@ -84,6 +87,7 @@ export async function authorizeSignedRequest(input: {
   path: string;
   body: string;
   requiredScope: string;
+  now?: Date;
 }): Promise<Response | null> {
   if (!hasGeneratedAuthConfig()) {
     return unauthorized(
@@ -103,16 +107,26 @@ export async function authorizeSignedRequest(input: {
   }
 
   const headers = requestHeaders(input.request);
-  const result = verifyMachineRequest({
-    config,
-    method: input.request.method,
-    path: input.path,
-    body: input.body,
-    headers,
-    workspaceId: headers['x-consuelo-workspace-id'] ?? '',
-    requiredScope: input.requiredScope,
-    now: new Date().toISOString(),
-  });
+  const now = (input.now ?? new Date()).toISOString();
+  const result = hasAnyWorkspaceEdgeNodeHeaders(headers)
+    ? verifyWorkspaceEdgeProxyRequest({
+        config,
+        method: input.request.method,
+        pathWithSearch: `${new URL(input.request.url).pathname}${new URL(input.request.url).search}`,
+        body: input.body,
+        headers,
+        now,
+      })
+    : verifyMachineRequest({
+        config,
+        method: input.request.method,
+        path: input.path,
+        body: input.body,
+        headers,
+        workspaceId: headers['x-consuelo-workspace-id'] ?? '',
+        requiredScope: input.requiredScope,
+        now,
+      });
 
   return result.ok ? null : verificationResponse(result);
 }
@@ -170,6 +184,7 @@ export async function authorizeBearerMcpRequest(input: {
   request: Request;
   path: string;
   requiredScope: string;
+  now?: Date;
 }): Promise<Response | null> {
   const bearerToken = bearerTokenFromRequest(input.request);
   if (!bearerToken) {

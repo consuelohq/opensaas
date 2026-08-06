@@ -128,7 +128,10 @@ contractDescribe('install edge site publisher', () => {
       'https://internal.consuelohq.com/',
       'https://internal.consuelohq.com/artifacts',
       'https://internal.consuelohq.com/observability',
+      'https://internal.consuelohq.com/observability/traces',
       'https://internal.consuelohq.com/traces',
+      'https://internal.consuelohq.com/tracing',
+      'https://internal.consuelohq.com/trace-burn-intelligence',
       'https://internal.consuelohq.com/diffs',
       'https://internal.consuelohq.com/docs',
       'https://internal.consuelohq.com/configuration',
@@ -136,7 +139,7 @@ contractDescribe('install edge site publisher', () => {
       'https://internal.consuelohq.com/environments',
       'https://internal.consuelohq.com/secrets',
     ]);
-    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'diffs', 'docs', 'configuration', 'tools', 'environments', 'secrets']);
+    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'traces', 'traces', 'traces', 'diffs', 'docs', 'configuration', 'tools', 'environments', 'secrets']);
     expect(first.routeSql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
     expect(first.routeSql).toMatch(/site-snapshot/);
     expect(first.routeSql).toMatch(/internal\.consuelohq\.com/);
@@ -240,7 +243,10 @@ contractDescribe('install edge site publisher', () => {
         'https://internal.consuelohq.com/',
         'https://internal.consuelohq.com/artifacts',
         'https://internal.consuelohq.com/observability',
+        'https://internal.consuelohq.com/observability/traces',
         'https://internal.consuelohq.com/traces',
+        'https://internal.consuelohq.com/tracing',
+        'https://internal.consuelohq.com/trace-burn-intelligence',
         'https://internal.consuelohq.com/diffs',
         'https://internal.consuelohq.com/docs',
         'https://internal.consuelohq.com/configuration',
