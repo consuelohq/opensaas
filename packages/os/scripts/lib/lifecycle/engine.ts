@@ -40,6 +40,7 @@ import {
 } from './state';
 import { removeLifecycleManagedContent } from './uninstall';
 import type {
+  LifecycleConnectorReadiness,
   LifecycleEngine,
   LifecycleHealthAcceptance,
   LifecycleHooks,
@@ -71,6 +72,11 @@ export type LifecycleEngineDependencies = {
     | (() => Record<string, string>);
   service: LifecycleServiceController;
   health: LifecycleHealthAcceptance;
+  /**
+   * Optional end-to-end connector acceptance (public health + authority heartbeat).
+   * When omitted, restart/repair only verify the local process.
+   */
+  connectorReadiness?: LifecycleConnectorReadiness;
   migration?: LifecycleMigrationRunner;
   runtime?: LifecycleRuntimeMaterializer;
   hooks?: LifecycleHooks;
@@ -247,6 +253,30 @@ export function createLifecycleEngine(
     throw lifecycleError('HEALTH_REJECTED', 'runtime health was not accepted', {
       phase: 'health',
     });
+  };
+
+  const acceptConnectorReadiness = async (
+    emit: ReturnType<typeof emitter>,
+  ): Promise<void> => {
+    if (!dependencies.connectorReadiness) return;
+    emit('connector-readiness', {});
+    let ready: boolean;
+    try {
+      ready = await dependencies.connectorReadiness.accept();
+    } catch (error: unknown) {
+      throw asLifecycleError(
+        error,
+        'CONNECTOR_READINESS_FAILED',
+        'connector readiness acceptance failed',
+        'connector-readiness',
+      );
+    }
+    if (ready) return;
+    throw lifecycleError(
+      'CONNECTOR_READINESS_FAILED',
+      'connector path was not ready after service restart (public health + heartbeat)',
+      { phase: 'connector-readiness' },
+    );
   };
 
   const pruneAfterCommit = (
@@ -799,22 +829,61 @@ export function createLifecycleEngine(
           'restart requires an installed Consuelo OS',
         );
       }
-      emit('service-restart', { replySafe: true });
+      if (state.kind === 'valid' && !state.currentReleasePath) {
+        throw lifecycleError(
+          'INSTALL_STATE_INVALID',
+          'restart requires a current runtime release identity',
+        );
+      }
+      const operationId = nextOperationId();
+      // Wait for the local service, then re-assert the ChatGPT/OS connector path.
+      // Reply-safe scheduling is owned by the native lifecycle endpoint (detached op),
+      // not by leaving readiness incomplete.
+      emit('service-restart', { waitForCompletion: true });
       try {
-        await dependencies.service.restart();
+        await dependencies.service.restart({
+          operationId,
+          expectedBundleId:
+            state.kind === 'valid' ? state.currentBundleId : undefined,
+          waitForCompletion: true,
+        });
       } catch (error: unknown) {
         throw asLifecycleError(
           error,
           'SERVICE_RESTART_FAILED',
-          'failed to schedule Consuelo service restart',
+          'failed to restart Consuelo services',
           'service-restart',
         );
       }
-      emit('complete', { changed: true, scheduled: true });
+      await acceptHealth(
+        emit,
+        {
+          operationId,
+          nextReleasePath:
+            state.kind === 'valid' ? state.currentReleasePath : undefined,
+        },
+        state.kind === 'valid'
+          ? {
+              bundleId: state.currentBundleId,
+              version: state.currentVersion,
+            }
+          : undefined,
+      );
+      await acceptConnectorReadiness(emit);
+      emit('complete', {
+        changed: true,
+        scheduled: false,
+        localHealthy: true,
+        connectorReady: Boolean(dependencies.connectorReadiness),
+      });
       return {
         operation: 'restart',
         changed: true,
-        detail: { scheduled: true },
+        detail: {
+          scheduled: false,
+          localHealthy: true,
+          connectorReady: Boolean(dependencies.connectorReadiness),
+        },
       };
     },
 
@@ -903,6 +972,13 @@ export function createLifecycleEngine(
                 message: 'repaired runtime health acceptance failed',
                 phase: 'health',
               });
+              yield* tryPromise({
+                try: () => acceptConnectorReadiness(emit),
+                code: 'CONNECTOR_READINESS_FAILED',
+                message:
+                  'repaired runtime connector readiness failed (public health + heartbeat)',
+                phase: 'connector-readiness',
+              });
               emit('complete', {
                 changed: true,
                 reason: 'runtime dependencies and service state repaired',
@@ -912,7 +988,14 @@ export function createLifecycleEngine(
                 changed: true,
                 version: state.currentVersion,
                 bundleId: state.currentBundleId,
-                detail: { repaired: ['dependencies', 'migrations', 'service'] },
+                detail: {
+                  repaired: [
+                    'dependencies',
+                    'migrations',
+                    'service',
+                    'connector',
+                  ],
+                },
               } satisfies LifecycleOperationResult;
             }),
           );

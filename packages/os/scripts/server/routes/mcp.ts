@@ -10,6 +10,7 @@ import {
   hasSignedGatewayHeaders,
   requestHeaders,
 } from '../middleware/auth';
+import { hasAnyWorkspaceEdgeNodeHeaders } from '../../lib/workspace-edge-node-auth';
 import {
   admitDecodedMcpBody,
   admitRawMcpBody,
@@ -92,18 +93,21 @@ export function createMcpRoutes(
       }
 
       const headers = requestHeaders(request);
-      const denied = hasSignedGatewayHeaders(headers)
-        ? await authorizeSignedRequest({
-            request,
-            path: MCP_PATH,
-            body,
-            requiredScope: mcpScope.requiredScope,
-          })
-        : await authorizeBearerMcpRequest({
-            request,
-            path: MCP_PATH,
-            requiredScope: mcpScope.requiredScope,
-          });
+      // Device-authority ChatGPT traffic is edge-signed (not machine-signed). Route those
+      // through signed verification; fall back to bearer/OAuth for loopback agents.
+      const denied =
+        hasSignedGatewayHeaders(headers) || hasAnyWorkspaceEdgeNodeHeaders(headers)
+          ? await authorizeSignedRequest({
+              request,
+              path: MCP_PATH,
+              body,
+              requiredScope: mcpScope.requiredScope,
+            })
+          : await authorizeBearerMcpRequest({
+              request,
+              path: MCP_PATH,
+              requiredScope: mcpScope.requiredScope,
+            });
       if (denied) return denied;
 
       const session = resolveMcpRequestSession(request, body);

@@ -151,6 +151,18 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
       config,
       fetchImpl: input.fetchImpl,
     });
+    // A single failed public health probe must not immediately mark the node
+    // disconnected in device authority — that drops ChatGPT/OS MCP routing
+    // (WORKSPACE_NODE_OFFLINE) during planned restarts. Skip the beat and let
+    // heartbeat TTL handle sustained outages.
+    if (connectorStatus === 'disconnected') {
+      return {
+        nodeId: config.nodeId,
+        presence: 'offline' as const,
+        skipped: true as const,
+        reason: 'connector_health_failed' as const,
+      };
+    }
     const client = createWorkspaceNodeHeartbeatClient({
       config: { ...config, connectorStatus },
       agents,
@@ -170,7 +182,13 @@ async function main(): Promise<void> {
     parseConfigPath(process.argv.slice(2)),
   );
   process.stdout.write(
-    `${JSON.stringify({ nodeId: result.nodeId, presence: result.presence })}\n`,
+    `${JSON.stringify({
+      nodeId: result.nodeId,
+      presence: result.presence,
+      ...('skipped' in result && result.skipped
+        ? { skipped: true, reason: result.reason }
+        : {}),
+    })}\n`,
   );
 }
 

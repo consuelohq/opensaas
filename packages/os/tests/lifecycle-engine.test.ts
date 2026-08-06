@@ -736,13 +736,17 @@ describe('unified lifecycle engine', () => {
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
-  it('restarts only the service adapter and never invokes onboarding', async () => {
+  it('restarts the service, waits for local health, and never invokes onboarding', async () => {
     writeInstalledIdentity();
     const engine = createEngine();
 
-    await expect(engine.restart()).resolves.toMatchObject({ operation: 'restart', changed: true });
+    await expect(engine.restart()).resolves.toMatchObject({
+      operation: 'restart',
+      changed: true,
+      detail: { scheduled: false, localHealthy: true },
+    });
     expect(engine.onboardingCalls).toBe(0);
-    expect(engine.serviceOperations).toEqual(['restart']);
+    expect(engine.serviceOperations).toEqual(['restart', 'health']);
   });
 
   it('reports reply-safe restart scheduling failures as typed lifecycle errors', async () => {
@@ -1255,7 +1259,7 @@ describe('lifecycle transaction hardening regressions', () => {
     await expect(repair.repair()).resolves.toMatchObject({
       operation: 'repair',
       changed: true,
-      detail: { repaired: ['dependencies', 'migrations', 'service'] },
+      detail: { repaired: ['dependencies', 'migrations', 'service', 'connector'] },
     });
     expect(materialized).toEqual([
       runtimeReleasePathFor(bundle100),

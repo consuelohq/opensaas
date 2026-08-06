@@ -277,6 +277,30 @@ fi
 reset_counter "$local_http_failure_file"
 rm -f "$state_dir/${workspace_label}.degraded"
 
+# Public connector health + authority re-registration. Local PID/HTTP alone is not
+# enough for ChatGPT/OS MCP (device authority requires connected + fresh heartbeat).
+connector_health_url=""
+heartbeat_config="${CONSUELO_HOME:-$HOME/.consuelo}/node/security/generated/workspace-node-heartbeat.json"
+heartbeat_script="$root_dir/scripts/workspace-node-heartbeat.ts"
+if [ -f "$heartbeat_config" ]; then
+  connector_health_url="$(
+    bun -e 'const c=JSON.parse(await Bun.file(process.argv[1]).text()); process.stdout.write(String(c.connectorHealthUrl||"").trim())' \
+      "$heartbeat_config" 2>/dev/null || true
+  )"
+fi
+if [ -n "$connector_health_url" ]; then
+  if ! healthy_http "$connector_health_url"; then
+    log "connector health failed for $connector_health_url; restarting $workspace_label"
+    maybe_restart "$workspace_label" "connector health failed"
+  else
+    if [ -f "$heartbeat_script" ]; then
+      if ! bun "$heartbeat_script" --config "$heartbeat_config" >/dev/null 2>&1; then
+        log "connector heartbeat re-registration failed; will retry next interval"
+      fi
+    fi
+  fi
+fi
+
 if [ -n "$external_health_url" ] && ! healthy_http "$external_health_url"; then
   external_failures="$(increment_counter "$external_failure_file")"
   log "external health failed for $external_health_url (consecutive=$external_failures)"
