@@ -199,6 +199,19 @@ describe('GitHub workflow policy', () => {
     );
   });
 
+  test('allows enough time for Danger dependency installation and execution', () => {
+    const utilsWorkflow = readFileSync(
+      join(workflowDir, 'ci-utils.yaml'),
+      'utf8',
+    );
+    const dangerJob = utilsWorkflow.slice(
+      utilsWorkflow.indexOf('  danger-js:'),
+      utilsWorkflow.indexOf('  congratulate:'),
+    );
+
+    expect(dangerJob).toContain('timeout-minutes: 10');
+  });
+
   test('explicitly allowlists the API breaking-changes workflow write permissions', () => {
     const policy = readFileSync(
       join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),

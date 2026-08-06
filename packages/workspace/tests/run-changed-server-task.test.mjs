@@ -34,6 +34,7 @@ test('filterServerTaskFiles excludes root and config-only triggers', () => {
     filterServerTaskFiles([
       'package.json',
       'yarn.lock',
+      'packages/twenty-server/project.json',
       'packages/twenty-shared/eslint.config.mjs',
       'packages/twenty-server/src/engine/core-modules/health/health.controller.ts',
       'packages/twenty-shared/src/utils/phone.ts',

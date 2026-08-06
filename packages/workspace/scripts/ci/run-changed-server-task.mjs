@@ -16,6 +16,7 @@ export const GRAPHQL_GENERATION_ROOTS = [
 ];
 
 export const SERVER_CONFIG_ONLY_FILES = new Set([
+  'packages/twenty-server/project.json',
   'packages/twenty-shared/eslint.config.mjs',
 ]);
 
