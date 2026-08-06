@@ -388,7 +388,9 @@
         ".github/workflows/ci-server.yaml",
         "packages/workspace/scripts/ci/run-changed-server-task.mjs",
         "packages/workspace/tests/run-changed-server-task.test.mjs",
+        "packages/workspace/tests/typeorm-cli-contract.test.mjs",
         "packages/workspace/tests/github-workflow-policy.test.js",
+        "packages/twenty-server/project.json",
         "packages/workspace/test-selection.rules.json",
         "packages/workspace/test-selection.registry.json"
       ],
@@ -407,6 +409,14 @@
             "bun",
             "test",
             "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
           ]
         }
       ],
