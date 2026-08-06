@@ -88,7 +88,8 @@ export const filterGraphqlGenerationFiles = (files) =>
           GRAPHQL_GENERATION_ROOTS.some(
             (root) => file === root || file.startsWith(`${root}/`),
           ),
-        ),
+        )
+        .filter((file) => !SERVER_CONFIG_ONLY_FILES.has(file)),
     ),
   ].sort();
 

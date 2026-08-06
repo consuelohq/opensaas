@@ -60,6 +60,7 @@ test('filterGraphqlGenerationFiles keeps only server schema and generated files'
     filterGraphqlGenerationFiles([
       'package.json',
       'packages/twenty-shared/src/utils/phone.ts',
+      'packages/twenty-server/project.json',
       'packages/twenty-server/src/engine/api/graphql/schema.ts',
       'packages/twenty-front/src/generated/graphql.ts',
       'packages/twenty-front/src/generated-metadata/graphql.ts',
