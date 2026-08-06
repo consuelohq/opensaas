@@ -6,6 +6,10 @@ import { json } from '../http';
 import type { Store, WorkspaceRouteRegistryBinding } from '../types';
 import { hasGrantedScope, hash } from '../utils';
 import { mcpResourceUrl } from './mcp-oauth';
+import {
+  createWorkspaceEdgeNodeHeaders,
+  deriveWorkspaceEdgeNodeSecret,
+} from '../../../../scripts/lib/workspace-edge-node-auth';
 
 export function bearerToken(request: Request): string | undefined {
   const authorization = request.headers.get('authorization')?.trim() ?? '';
@@ -108,26 +112,65 @@ export async function centralMcpProxyRequest(input: {
     headers.delete('x-consuelo-edge-signature');
     headers.delete('x-consuelo-edge-timestamp');
     headers.delete('x-consuelo-edge-nonce');
+    headers.delete('x-consuelo-edge-body-digest');
+    headers.delete('x-consuelo-edge-auth-version');
     headers.delete('x-consuelo-connector-id');
     headers.delete('x-consuelo-node-id');
+    headers.delete('x-consuelo-device-id');
 
     headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
     headers.set('x-consuelo-hostname', input.resolution.hostname);
     headers.set('x-consuelo-route', input.resolution.route);
     headers.set('x-consuelo-surface', input.resolution.surface);
 
-    if (input.resolution.target.kind === 'os-connector') {
-      headers.set(
-        'x-consuelo-connector-id',
-        input.resolution.target.connectorId,
-      );
-      if (input.resolution.nodeId) {
-        headers.set('x-consuelo-node-id', input.resolution.nodeId);
-      }
+    const connectorId =
+      input.resolution.target.kind === 'os-connector'
+        ? input.resolution.target.connectorId
+        : undefined;
+    const nodeId = input.resolution.nodeId?.trim() || undefined;
+    if (connectorId) {
+      headers.set('x-consuelo-connector-id', connectorId);
+    }
+    if (nodeId) {
+      headers.set('x-consuelo-node-id', nodeId);
+      headers.set('x-consuelo-device-id', nodeId);
     }
 
     const internalSigningSecret = input.internalSigningSecret?.trim();
-    if (internalSigningSecret) {
+    const pathWithSearch = inboundUrl.pathname + inboundUrl.search;
+    const method = input.request.method;
+    const canBufferBody = method !== 'GET' && method !== 'HEAD';
+    // Buffer the body so we can both sign a body digest (node-scoped edge auth)
+    // and forward a reusable request body to the OS connector tunnel.
+    const bodyText = canBufferBody ? await input.request.clone().text() : '';
+
+    if (internalSigningSecret && nodeId && connectorId) {
+      // Sign with the *node-scoped* secret the local OS gateway already stores from
+      // heartbeat. Master-secret signatures never verified on the node, so ChatGPT
+      // traffic relied on a second OAuth introspect that failed mid-session.
+      const nodeSigningSecret = deriveWorkspaceEdgeNodeSecret({
+        masterSecret: internalSigningSecret,
+        workspaceId: input.resolution.workspaceId,
+        nodeId,
+        connectorId,
+      });
+      const edgeHeaders = createWorkspaceEdgeNodeHeaders({
+        signingSecret: nodeSigningSecret,
+        workspaceId: input.resolution.workspaceId,
+        nodeId,
+        connectorId,
+        surface: input.resolution.surface,
+        method,
+        pathWithSearch,
+        body: bodyText,
+        timestamp: String(Date.now()),
+        nonce: crypto.randomUUID(),
+      });
+      for (const [name, value] of Object.entries(edgeHeaders)) {
+        headers.set(name, value);
+      }
+    } else if (internalSigningSecret) {
+      // Legacy fallback when node identity is incomplete.
       const edgeTimestamp = String(Date.now());
       const edgeNonce = crypto.randomUUID();
       headers.set('x-consuelo-edge-timestamp', edgeTimestamp);
@@ -136,8 +179,8 @@ export async function centralMcpProxyRequest(input: {
         'x-consuelo-edge-signature',
         await edgeSignature({
           secret: internalSigningSecret,
-          method: input.request.method,
-          pathWithSearch: inboundUrl.pathname + inboundUrl.search,
+          method,
+          pathWithSearch,
           workspaceId: input.resolution.workspaceId,
           surface: input.resolution.surface,
           timestamp: edgeTimestamp,
@@ -148,12 +191,11 @@ export async function centralMcpProxyRequest(input: {
 
     const init: RequestInit & { duplex?: 'half' } = {
       headers,
-      method: input.request.method,
+      method,
     };
 
-    if (input.request.method !== 'GET' && input.request.method !== 'HEAD') {
-      init.body = input.request.body;
-      init.duplex = 'half';
+    if (canBufferBody) {
+      init.body = bodyText;
     }
 
     return new Request(input.upstreamUrl, init);

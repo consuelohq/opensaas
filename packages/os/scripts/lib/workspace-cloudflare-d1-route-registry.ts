@@ -596,12 +596,16 @@ export const resolveWorkspaceRouteFromD1 = async (
       if (nodeTarget.state === 'revoked') {
         return denied({ status: 404, errorCode: 'WORKSPACE_NODE_REVOKED' });
       }
-      if (
-        input.requireOnlineNode !== false &&
-        (nodeTarget.connectorStatus !== 'connected' ||
-          nodePresence(nodeTarget, input.nowMs ?? Date.now()) !== 'online')
-      ) {
-        return denied({ status: 503, errorCode: 'WORKSPACE_NODE_OFFLINE' });
+      if (input.requireOnlineNode !== false) {
+        const presence = nodePresence(nodeTarget, input.nowMs ?? Date.now());
+        // Accept online + stale. ChatGPT MCP sessions die if we flap to OFFLINE during a
+        // single missed heartbeat (TTL 60s). Stale still means recent presence.
+        if (
+          nodeTarget.connectorStatus !== 'connected' ||
+          (presence !== 'online' && presence !== 'stale')
+        ) {
+          return denied({ status: 503, errorCode: 'WORKSPACE_NODE_OFFLINE' });
+        }
       }
       nodeConnector = nodeConnectorForTarget(nodeTarget);
       if (route.target.kind === 'os-connector') {
