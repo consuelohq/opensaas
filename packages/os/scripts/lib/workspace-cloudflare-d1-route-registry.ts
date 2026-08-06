@@ -829,6 +829,8 @@ export const updateWorkspaceNodeTargetInD1 = async (
   input: {
     hostname: string;
     nodeId: string;
+    connectorId?: string;
+    tunnelOriginUrl?: string;
     connectorStatus?: 'connected' | 'disconnected';
     state?: 'active' | 'revoked';
     lastSeenAt?: number;
@@ -838,6 +840,80 @@ export const updateWorkspaceNodeTargetInD1 = async (
   try {
     const record = await readStoredRecord(db, input.hostname);
     if (!record) return;
+    const existing = (record.nodeTargets ?? []).find(
+      (target) => target.nodeId === input.nodeId,
+    );
+    // Heartbeats used to no-op when nodeTargets was empty (only mapped existing
+    // entries). That left ChatGPT MCP on /mcp permanently 404 because the host
+    // row only had site-snapshot routes. Create the node target + /mcp route on
+    // first heartbeat when we have enough connector identity.
+    if (!existing) {
+      const legacyOs = record.routes.find(
+        (route) => route.target.kind === 'os-connector',
+      );
+      const legacyTarget =
+        legacyOs?.target.kind === 'os-connector' ? legacyOs.target : undefined;
+      const connectorId =
+        input.connectorId?.trim() || legacyTarget?.connectorId || '';
+      const tunnelOriginUrl =
+        input.tunnelOriginUrl?.trim() || legacyTarget?.tunnelOriginUrl || '';
+      if (!connectorId || !tunnelOriginUrl) {
+        return;
+      }
+      const created: WorkspaceRouteD1NodeTarget = {
+        nodeId: input.nodeId,
+        connectorId,
+        connectorStatus: input.connectorStatus ?? 'connected',
+        tunnelOriginUrl,
+        state: input.state ?? 'active',
+        lastSeenAt: input.lastSeenAt ?? Date.now(),
+        heartbeatTtlMs: input.heartbeatTtlMs ?? 60_000,
+      };
+      const osTarget = connectorTargetForNode(created);
+      const existingRouteKeys = new Set(
+        (record.routes ?? []).map(
+          (route) => `${route.surface}:${route.pathPrefix}`,
+        ),
+      );
+      const ensureOsRoute = (
+        pathPrefix: string,
+        auth: 'required' | 'workspace-session' = 'required',
+      ) => {
+        if (existingRouteKeys.has(`os:${pathPrefix}`)) return [];
+        return [
+          {
+            surface: 'os' as const,
+            pathPrefix,
+            auth,
+            status: 'active' as const,
+            target: osTarget,
+          },
+        ];
+      };
+      const routes = [
+        ...record.routes.map((route) =>
+          route.target.kind === 'os-connector'
+            ? { ...route, target: osTarget }
+            : cloneRoute(route),
+        ),
+        ...ensureOsRoute('/mcp'),
+        ...ensureOsRoute('/api'),
+        ...ensureOsRoute('/apps/chatgpt'),
+        ...ensureOsRoute('/artifacts'),
+        ...ensureOsRoute('/diffs'),
+        ...ensureOsRoute('/traces'),
+        ...ensureOsRoute('/tools'),
+        ...ensureOsRoute('/gtm', 'workspace-session'),
+      ];
+      await writeStoredRecord(db, {
+        ...record,
+        defaultNodeId: record.defaultNodeId ?? input.nodeId,
+        nodeTargets: [...(record.nodeTargets ?? []), created],
+        routes,
+        updatedAt: new Date().toISOString(),
+      });
+      return;
+    }
     const nodeTargets = (record.nodeTargets ?? []).map((target) =>
       target.nodeId === input.nodeId
         ? {
