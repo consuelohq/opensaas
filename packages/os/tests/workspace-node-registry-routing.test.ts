@@ -23,6 +23,7 @@ import {
   upsertWorkspaceHostnameInD1,
 } from '../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { createWorkspaceCloudflareEdgeRouter } from '../scripts/lib/workspace-cloudflare-edge-router';
+import { deriveWorkspaceEdgeNodeSecret } from '../scripts/lib/workspace-edge-node-auth';
 import {
   createDevicePublicKeyProof,
   devicePublicKeyThumbprint,
@@ -1096,11 +1097,13 @@ describe('workspace node management and presence', () => {
     await authorizeWorkspace(store, 'workspace-heartbeat-token');
     const routes = createInMemoryWorkspaceRouteD1();
     await seedRoutes(routes, baseNow - 300_000);
+    const workspaceEdgeSigningMasterSecret = 'heartbeat-edge-master-secret';
     const handler = createOsDeviceAuthorityHandler({
       store,
       origin,
       now: () => nowMs,
       workspaceRouteRegistry: routes,
+      workspaceEdgeInternalSigningSecret: workspaceEdgeSigningMasterSecret,
     });
     const body = JSON.stringify({
       workspaceId,
@@ -1130,6 +1133,13 @@ describe('workspace node management and presence', () => {
     await expect(heartbeat.json()).resolves.toMatchObject({
       nodeId: 'node-member',
       presence: 'online',
+      connectorId: 'connector_node_member',
+      edgeRequestSigningSecret: deriveWorkspaceEdgeNodeSecret({
+        masterSecret: workspaceEdgeSigningMasterSecret,
+        workspaceId,
+        nodeId: 'node-member',
+        connectorId: 'connector_node_member',
+      }),
       agents: ['codex', 'opencode'],
     });
     expect(

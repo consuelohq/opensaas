@@ -30,6 +30,7 @@ export type WorkspaceDeviceAuthorizationPollResult =
       nodeRole?: 'home' | 'member';
       nodeStatus?: 'created' | 'reconnected';
       connectorId: string;
+      edgeRequestSigningSecret?: string;
       connectorBootstrapToken: string;
       connectorBootstrapExpiresAt: string;
       cloudflareTunnelToken?: string;

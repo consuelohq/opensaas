@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
 import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
 import { createConnectorOriginHostname } from '../scripts/lib/connector-origin-hostname';
+import { deriveWorkspaceEdgeNodeSecret } from '../scripts/lib/workspace-edge-node-auth';
 import {
   CONSUELO_DEVICE_CODE_URL,
   CONSUELO_DEVICE_VERIFICATION_URL,
@@ -2160,12 +2161,14 @@ describe('os device authority worker', () => {
 
   it('serves hardened GitHub-shaped device auth endpoints on os.consuelohq.com', async () => {
     let currentMs = Date.parse('2026-06-13T00:00:00.000Z');
+    const workspaceEdgeSigningMasterSecret = 'test-workspace-edge-signing-master';
     const handler = createOsDeviceAuthorityHandler({
       ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => currentMs,
       approvalAssertionSecret,
+      workspaceEdgeInternalSigningSecret: workspaceEdgeSigningMasterSecret,
     });
 
     const { codeJson, deviceKeyPair } = await startGrant(handler);
@@ -2307,6 +2310,17 @@ describe('os device authority worker', () => {
     expect(approvedJson.workspace_slug).toBe('testing');
     expect(approvedJson.workspace_host).toBe('testing.consuelohq.com');
     expect(approvedJson.connector_id).toBe('connector_testing');
+    expect(approvedJson.edge_request_signing_secret).toBe(
+      deriveWorkspaceEdgeNodeSecret({
+        masterSecret: workspaceEdgeSigningMasterSecret,
+        workspaceId: String(approvedJson.workspace_id),
+        nodeId: String(approvedJson.node_id),
+        connectorId: 'connector_testing',
+      }),
+    );
+    expect(approvedJson.edge_request_signing_secret).not.toContain(
+      workspaceEdgeSigningMasterSecret,
+    );
     expect(approvedJson.connector_bootstrap_token).toMatch(/^cbt_/);
     expect(approvedJson.access_token).toMatch(/^osat_/);
     expect(approvedJson.device_public_key_thumbprint).toMatch(/^dpk_/);

@@ -251,6 +251,9 @@ export const workspaceBootstrapFromApprovedDeviceGrant = (
     ? 'cloudflare-tunnel'
     : 'websocket-relay',
   connectorBootstrapToken: input.connectorBootstrapToken,
+  ...(input.edgeRequestSigningSecret
+    ? { edgeRequestSigningSecret: input.edgeRequestSigningSecret }
+    : {}),
   ...(input.cloudflareTunnelToken
     ? { cloudflareTunnelToken: input.cloudflareTunnelToken }
     : {}),

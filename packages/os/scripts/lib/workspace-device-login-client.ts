@@ -316,6 +316,7 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
   const nodeRole = stringField(json, 'node_role', 'nodeRole');
   const nodeStatus = stringField(json, 'node_status', 'nodeStatus');
   const connectorBootstrapToken = stringField(json, 'connector_bootstrap_token', 'connectorBootstrapToken');
+  const edgeRequestSigningSecret = stringField(json, 'edge_request_signing_secret', 'edgeRequestSigningSecret');
   const connectorBootstrapExpiresAt = stringField(json, 'connector_bootstrap_expires_at', 'connectorBootstrapExpiresAt');
   const cloudflareTunnelToken = stringField(json, 'cloudflare_tunnel_token', 'cloudflareTunnelToken');
 
@@ -329,6 +330,7 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
     workspaceSlug,
     workspaceHost,
     connectorId,
+    ...(edgeRequestSigningSecret ? { edgeRequestSigningSecret } : {}),
     ...(nodeId ? { nodeId } : {}),
     ...(nodeName ? { nodeName } : {}),
     ...(nodeRole === 'home' || nodeRole === 'member' ? { nodeRole } : {}),

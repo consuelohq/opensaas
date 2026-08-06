@@ -1,3 +1,5 @@
+import { deriveWorkspaceEdgeNodeSecret } from '../../../../scripts/lib/workspace-edge-node-auth';
+
 import {
   BOOTSTRAP_TTL_MS,
   CLOUDFLARE_TUNNEL_TOKEN_KEY,
@@ -326,7 +328,10 @@ export async function failGrantWorkspaceRouteSetup(input: {
   return failureMessage;
 }
 
-export function approvedJson(g: Grant): Record<string, unknown> {
+export function approvedJson(
+  g: Grant,
+  workspaceEdgeSigningMasterSecret?: string,
+): Record<string, unknown> {
   const workspace = grantWorkspace(g);
   const nodeId = g.nodeId ?? workspace.workspaceSlug;
   return {
@@ -340,6 +345,16 @@ export function approvedJson(g: Grant): Record<string, unknown> {
     node_role: g.nodeRole ?? 'home',
     node_status: g.nodeStatus ?? 'created',
     connector_id: connectorIdFromNodeId(nodeId),
+    ...(workspaceEdgeSigningMasterSecret?.trim()
+      ? {
+          edge_request_signing_secret: deriveWorkspaceEdgeNodeSecret({
+            masterSecret: workspaceEdgeSigningMasterSecret,
+            workspaceId: workspace.workspaceId,
+            nodeId,
+            connectorId: connectorIdFromNodeId(nodeId),
+          }),
+        }
+      : {}),
     [CONNECTOR_TOKEN_KEY]: g.connectorToken ?? rand('cbt', 32),
     ...(g.cloudflareTunnelToken
       ? { [CLOUDFLARE_TUNNEL_TOKEN_KEY]: g.cloudflareTunnelToken }

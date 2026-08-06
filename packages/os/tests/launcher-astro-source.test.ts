@@ -17,5 +17,10 @@ describe('launcher Astro source', () => {
     expect(source).toContain('Welcome to Consuelo OS');
     expect(source).toContain('Here is the URL to connect');
     expect(source).toContain('Connect to your cloud agents');
+    expect(source).toContain("{ label: 'Observability', href: '/observability' }");
+    expect(source).toContain("{ label: 'Artifacts', href: '/artifacts' }");
+    expect(source).toContain("{ label: 'Code review', href: '/diffs' }");
+    expect(source).not.toContain('sites.consuelohq.com');
+    expect(source).not.toContain("href: 'https://app.consuelohq.com");
   });
 });

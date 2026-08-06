@@ -52,6 +52,7 @@ describe('launcher onboarding', () => {
     expect(html).toContain('Documentation');
     expect(html).toContain('Writing');
     expect(html).toContain('Decision loops');
+    expect(html).toContain('https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/');
     const sitesIndex = html.indexOf('<h2 class="section-title">Sites</h2>');
     const guidesIndex = html.indexOf('<h2 class="section-title">Guides and Tips</h2>');
     const writingIndex = html.indexOf('<h2 class="section-title">Writing</h2>');
@@ -62,8 +63,8 @@ describe('launcher onboarding', () => {
     expect(configurationIndex).toBeGreaterThan(writingIndex);
     expect(html.indexOf('href="/tools"')).toBeLessThan(html.indexOf('href="/environments"'));
     expect(html.indexOf('href="/environments"')).toBeLessThan(html.indexOf('href="/secrets"'));
-    expect(html).toContain('Checking local agents');
-    expect(html).not.toContain('Connected to 2 local agents');
+    expect(html).toContain('Connected to 3 local agents');
+    expect(html).not.toContain('Checking local agents');
     expect(html).toContain('data-agent-count');
     expect(html).toContain('data-agent-list');
     expect(html).toContain('https://os.consuelohq.com/workspace/agents');
@@ -71,14 +72,16 @@ describe('launcher onboarding', () => {
     expect(html).toContain('window.location.hostname');
     expect(html).toContain('.textContent =');
     expect(html).not.toContain('.innerHTML =');
-    expect(html).not.toContain('<li>Codex</li>');
-    expect(html).not.toContain('<li>OpenCode</li>');
+    expect(html).toContain('<li>Codex</li>');
+    expect(html).toContain('<li>OpenCode</li>');
     expect(html).toContain("payload.state === 'online'");
     expect(html).toContain("payload.state === 'stale'");
     expect(html).toContain("payload.state === 'offline'");
     expect(html).toContain("payload.state === 'never_reported'");
     expect(html).toContain('Local agent status unavailable.');
-    expect(html).not.toContain('<li>Cursor</li>');
+    expect(html).toContain('const launcherWorkspaceHost = \"internal.consuelohq.com\"');
+    expect(html).toContain("countElement.setAttribute('data-agent-status', 'stale')");
+    expect(html).toContain('<li>Cursor</li>');
     expect(html).not.toContain('[GTM]');
     expect(html).not.toContain('[Office]');
     expect(html).not.toContain('[Tracing]');
@@ -92,8 +95,8 @@ describe('launcher onboarding', () => {
       localAgents: [],
     });
 
-    expect(html).toContain('Checking local agents');
-    expect(html).not.toContain('Connected to 0 local agents');
+    expect(html).toContain('Connected to 0 local agents');
+    expect(html).not.toContain('Checking local agents');
     expect(html).toContain('<p class="muted" data-agent-fallback hidden></p>');
     expect(html).not.toContain('No local agents connected yet.');
     expect(html).toContain('data-agent-fallback');

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cdc6d05341af",
+  "tmuxSession": "opensaas-os-restore-observability-gateway-and-workspace-surf-cdc6d053",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-observability-gateway-and-workspace-surfaces",
+  "branch": "task/os/restore-observability-gateway-and-workspace-surfaces",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-observability-gateway-and-workspace-surfaces",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-observability-gateway-and-workspace-surfaces",
+  "prNumber": 1792,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1792",
+  "createdAt": "2026-08-06T00:09:25.701Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-observability-gateway-and-workspace-surfaces/.task/os/restore-observability-gateway-and-workspace-surfaces/session.json"
+}
