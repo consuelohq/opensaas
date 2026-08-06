@@ -174,11 +174,15 @@ describe('GitHub workflow policy', () => {
     const graphqlIndex = serverWorkflow.indexOf(
       'node packages/workspace/scripts/ci/run-changed-server-task.mjs --graphql',
     );
+    const migrationIndex = serverWorkflow.indexOf(
+      'node packages/workspace/scripts/ci/run-changed-server-task.mjs --migrations',
+    );
 
     expect(bunSetupIndex).toBeGreaterThan(-1);
     expect(dependencyBuildIndex).toBeGreaterThan(-1);
     expect(typecheckIndex).toBeGreaterThan(bunSetupIndex);
     expect(typecheckIndex).toBeGreaterThan(dependencyBuildIndex);
+    expect(migrationIndex).toBeGreaterThan(typecheckIndex);
     expect(graphqlIndex).toBeGreaterThan(typecheckIndex);
   });
 

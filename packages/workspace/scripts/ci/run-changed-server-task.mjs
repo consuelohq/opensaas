@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -44,6 +45,7 @@ export const parseCliArguments = (args, env = process.env) => ({
   head: readOption(args, '--head') ?? env.NX_HEAD ?? 'HEAD',
   listOnly: args.includes('--list'),
   graphql: args.includes('--graphql'),
+  migrations: args.includes('--migrations'),
 });
 
 const run = (command, args, options = {}) => {
@@ -254,6 +256,76 @@ export const runGraphqlGenerationCheck = (files, runCommand = run) => {
   }
 };
 
+const defaultListGeneratedMigrationFiles = () =>
+  readdirSync('packages/twenty-server')
+    .filter((file) => file.endsWith('-core-migration-check.ts'))
+    .map((file) => `packages/twenty-server/${file}`);
+
+export const runMigrationGenerationCheck = (
+  files,
+  {
+    runCommand = run,
+    listGeneratedFiles = defaultListGeneratedMigrationFiles,
+    removeGeneratedFile = (file) => rmSync(file, { force: true }),
+  } = {},
+) => {
+  if (files.length === 0) {
+    process.stdout.write(
+      'No changed Twenty server runtime files require migration generation.\n',
+    );
+    return;
+  }
+
+  const result = runCommand(
+    'npx',
+    [
+      '--no-install',
+      'nx',
+      'run',
+      'twenty-server:typeorm',
+      'migration:generate',
+      'core-migration-check',
+      '-d',
+      'src/database/typeorm/core/core.datasource.ts',
+    ],
+    {
+      capture: true,
+      env: {
+        ...process.env,
+        NX_DAEMON: 'false',
+        NX_SKIP_NX_CACHE: 'true',
+      },
+    },
+  );
+
+  const generatedFiles = listGeneratedFiles();
+
+  if (generatedFiles.length === 0) {
+    if (result.stdout) {
+      process.stdout.write(result.stdout);
+    }
+    if (result.stderr) {
+      process.stderr.write(result.stderr);
+    }
+    return;
+  }
+
+  for (const file of generatedFiles) {
+    removeGeneratedFile(file);
+  }
+
+  if (result.stdout) {
+    process.stdout.write(result.stdout);
+  }
+  if (result.stderr) {
+    process.stderr.write(result.stderr);
+  }
+
+  throw new Error(
+    'Unexpected migration files were generated. Please create a proper migration manually.',
+  );
+};
+
 export const main = () => {
   const options = parseCliArguments(process.argv.slice(2));
   const files = options.graphql
@@ -267,6 +339,11 @@ export const main = () => {
 
   if (options.graphql) {
     runGraphqlGenerationCheck(files);
+    return;
+  }
+
+  if (options.migrations) {
+    runMigrationGenerationCheck(files);
     return;
   }
 

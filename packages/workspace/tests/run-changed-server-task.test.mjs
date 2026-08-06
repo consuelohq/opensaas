@@ -7,6 +7,7 @@ import {
   filterServerTaskFiles,
   parseCliArguments,
   runGraphqlGenerationCheck,
+  runMigrationGenerationCheck,
   runChangedServerTask,
 } from '../scripts/ci/run-changed-server-task.mjs';
 
@@ -21,12 +22,17 @@ test('parseCliArguments resolves comparison SHAs', () => {
       head: 'head-sha',
       listOnly: false,
       graphql: false,
+      migrations: false,
     },
   );
 });
 
 test('parseCliArguments selects GraphQL generation mode', () => {
   assert.equal(parseCliArguments(['--graphql'], {}).graphql, true);
+});
+
+test('parseCliArguments selects migration generation mode', () => {
+  assert.equal(parseCliArguments(['--migrations'], {}).migrations, true);
 });
 
 test('filterServerTaskFiles excludes root and config-only triggers', () => {
@@ -160,4 +166,65 @@ test('runGraphqlGenerationCheck generates and verifies committed outputs', () =>
       ],
     ],
   );
+});
+
+test('runMigrationGenerationCheck skips generation without server runtime changes', () => {
+  let called = false;
+
+  runMigrationGenerationCheck([], {
+    runCommand: () => {
+      called = true;
+      return { status: 0 };
+    },
+  });
+
+  assert.equal(called, false);
+});
+
+test('runMigrationGenerationCheck accepts a no-change TypeORM exit', () => {
+  const calls = [];
+
+  runMigrationGenerationCheck(['packages/twenty-server/src/main.ts'], {
+    runCommand: (command, args, options) => {
+      calls.push({ command, args, options });
+      return { status: 1, stdout: 'No changes', stderr: '' };
+    },
+    listGeneratedFiles: () => [],
+  });
+
+  assert.deepEqual(
+    calls.map(({ command, args }) => [command, ...args]),
+    [
+      [
+        'npx',
+        '--no-install',
+        'nx',
+        'run',
+        'twenty-server:typeorm',
+        'migration:generate',
+        'core-migration-check',
+        '-d',
+        'src/database/typeorm/core/core.datasource.ts',
+      ],
+    ],
+  );
+});
+
+test('runMigrationGenerationCheck rejects and removes generated drift', () => {
+  const removed = [];
+
+  assert.throws(
+    () =>
+      runMigrationGenerationCheck(['packages/twenty-server/src/main.ts'], {
+        runCommand: () => ({ status: 0, stdout: 'generated', stderr: '' }),
+        listGeneratedFiles: () => [
+          'packages/twenty-server/123-core-migration-check.ts',
+        ],
+        removeGeneratedFile: (file) => removed.push(file),
+      }),
+    /Unexpected migration files were generated/,
+  );
+  assert.deepEqual(removed, [
+    'packages/twenty-server/123-core-migration-check.ts',
+  ]);
 });
