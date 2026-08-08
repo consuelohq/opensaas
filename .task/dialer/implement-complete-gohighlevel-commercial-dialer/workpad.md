@@ -967,3 +967,128 @@ bun run task:finish
 - A transport loss spawned four identical read-only lint trees during an earlier combined validation. Exact process roots and descendants were terminated before the durable single-run validation; no repository or remote mutation resulted.
 
 - Strict changed-file review for the Shared CI remediation passed with zero task-owned findings, zero blockers, and zero failed suites; three broad project typecheck findings remain classified pre-existing. Trace: `trc_bed064ffac1f`.
+
+
+### 2026-08-08 continuation: Storybook release blockers
+
+- Recovery: the prior temp worktree registration was prunable and its path contained only stale .task metadata. Local branch/commit 86f900fbe1e429c8a1d9d9d65626444aad10f5d7 remained intact and one commit ahead of origin. A replacement isolated worktree was attached without reset, clean, force-push, stash mutation, or deletion of the stale worktree.
+- Pre-edit state: replacement checkout clean; HEAD 86f900fbe1; no staged/unstaged frontend patch.
+- TDD RED contract: current Storybook modules must reproduce at least one observed failure before product edit. Expected failures are unrelated relation metadata resolving listMember, stale CommandMenu Opportunities copy, stale DialPad formatting/key labels, and ambiguous/racy TransferModal interactions.
+- GREEN contract: unrelated relation dropdowns never instantiate the list-member import hook; only opportunity.members mounts the hook path. Story expectations follow production navigation copy/accessibility/format contracts. Transfer stories target exact Start transfer and wait for controlled formatted input before Enter.
+- REFACTOR/POST contract: focused affected stories pass, then all CI-equivalent twenty-front modules Storybook shards pass; touched-file lint/type checks pass; run-changed-server-task regression and workflow-policy tests remain green; git diff --check passes; the previously reviewed product manifest remains byte-identical except the explicitly justified relation component if it belongs to that manifest.
+- Safety: no live telephony, billing, recording, transcription, number mutation, or provider side effect is permitted in these tests.
+
+- Wait cycle start: 2026-08-08T17:29:35.617Z.
+- Wait reason: one preserved Yarn immutable install must finish after the OS transport spawned duplicate installs; duplicate Yarn PIDs 63403, 63481, and 63537 were terminated, oldest PID 63342 preserved.
+- Duration/attempts: poll every 5 seconds for at most 60 attempts.
+- Resume action: immediately verify PID 63342 exited, node_modules/twenty-sdk resolves inside this recovered worktree, and rerun the focused Storybook red cases.
+- Expected signal: preserved install process absent and local workspace dependency link points at this worktree.
+- Fallback: if still running after 5 minutes or dependency link is wrong, stop and inspect install/runtime evidence; do not start another install blindly.
+
+- Dependency wait cycle start: 2026-08-08T17:31:24.585Z.
+- Wait reason: second OS install attempt spawned three Yarn processes; duplicates 64006 and 64086 were terminated, oldest PID 63919 preserved.
+- Duration/attempts: poll every 5 seconds for at most 60 attempts.
+- Resume action: immediately verify PID 63919 exited, vitest exists, and inspect tracked diff.
+- Expected signal: install absent, vitest binary present; only known install-induced executable-bit changes may remain.
+- Fallback: timeout or content changes block testing until inspected; do not start another install.
+
+- Frontend typecheck wait cycle start: 2026-08-08T17:38:39.572Z.
+- Wait reason: the combined OS call lost transport while the single twenty-front typecheck process (PID 69135) remained active.
+- Duration/attempts: poll every 5 seconds for at most 36 attempts.
+- Resume action: immediately verify PID 69135 is absent; because its result envelope was lost, run one durable typecheck command only after exit and capture status/output to /tmp.
+- Expected signal: original process exits; no duplicate typecheck remains.
+- Fallback: if still active after 3 minutes, stop publication work and inspect the process rather than launching another typecheck.
+
+- Storybook dependency-clone wait cycle start: 2026-08-08T17:42:31.534Z.
+- Wait reason: the OS terminal transport spawned four identical APFS clone copies of root node_modules into the isolated worktree. Duplicate cp PIDs 72818, 72872, and 72949 were terminated; oldest PID 72740 is preserved.
+- Duration/attempts: poll every 5 seconds for at most 36 attempts.
+- Resume action: immediately verify PID 72740 exited, Storybook/Vitest binaries exist under the worktree-local node_modules path, and no copy process remains.
+- Expected signal: preserved copy exits successfully enough that required dependency files are present locally; tracked git status remains limited to workpad plus intended frontend patch.
+- Fallback: if copy remains active after 3 minutes or required files are absent, do not run Storybook from the clone; inspect and classify local harness failure.
+
+- Focused Storybook GREEN wait cycle start: 2026-08-08T17:45:38.006Z.
+- Wait reason: a single lock-guarded Vitest Storybook run is active at PID 74580 after OS retries were suppressed by /tmp/ghl-pr1782-focused-storybook-green-v1.lock.
+- Duration/attempts: poll the durable status file every 5 seconds for at most 48 attempts.
+- Resume action: immediately read the status and bounded stdout/stderr tails when written, then classify story assertions versus harness failures.
+- Expected signal: /tmp/ghl-pr1782-focused-storybook-green-v1.status.json with exitCode 0.
+- Fallback: on nonzero, inspect exact failed story/assertion; on bounded timeout, stop this run and classify local harness behavior without launching a duplicate.
+
+- Combined focused Storybook GREEN wait start: 2026-08-08T17:49:12.275Z.
+- Wait reason: one lock-guarded Vitest run for DialPad, TransferModal, and CommandMenu is active at PID 76319; retry attempts are exiting on the lock instead of duplicating work.
+- Duration/attempts: poll every 5 seconds for at most 48 attempts.
+- Resume action: read the v4 durable status and bounded log tails as soon as written.
+- Expected signal: 3 story files pass, 22 tests pass, exitCode 0.
+- Fallback: on nonzero inspect the exact assertion; on timeout terminate only this run and do not launch a duplicate.
+
+- CI-equivalent modules Storybook shard 1/4 wait start: 2026-08-08T17:49:59.747Z.
+- Wait reason: one lock-guarded Nx storybook:test run for modules shard 1/4 owns /tmp/ghl-pr1782-modules-s1-v1.lock.
+- Duration/attempts: poll durable status every 10 seconds for at most 60 attempts.
+- Resume action: read shard status and bounded logs immediately when complete.
+- Expected signal: exitCode 0 for exact Nx modules shard 1/4.
+- Fallback: on failure inspect the exact story; on timeout terminate only this shard process and do not duplicate it.
+
+- CI-equivalent modules Storybook shard 1/4 durable rerun start: 2026-08-08T17:54:12.747Z.
+- Wait reason: the first transport-owned shard lost its status writer after a 502 and was terminated. A self-writing, lock-guarded rerun is active at wrapper PID 78124.
+- Duration/attempts: poll /tmp/ghl-pr1782-modules-s1-v2.status every 10 seconds for at most 60 attempts.
+- Resume action: read exit status and bounded stdout/stderr immediately after status appears.
+- Expected signal: exit 0 for exact Nx modules shard 1/4.
+- Fallback: on nonzero inspect exact failing stories; on timeout terminate only PID from the v2 pid file and do not duplicate.
+
+- CI-equivalent modules Storybook shard 1/4 dependency-corrected rerun start: 2026-08-08T17:56:30.802Z.
+- Wait reason: Vite's prior causal failure was the incomplete outer class-validator install. That tree is preserved outside the worktree; root dependency cache is now shared read-only while twenty-front's workspace twenty-sdk override still resolves to this worktree. Self-writing rerun PID 78947 is active under a new lock.
+- Duration/attempts: poll /tmp/ghl-pr1782-modules-s1-v3.status every 10 seconds for at most 60 attempts.
+- Resume action: read exact exit status and logs as soon as status appears.
+- Expected signal: exit 0 with no class-validator resolution errors.
+- Fallback: on nonzero inspect the first causal error before changing source; on timeout terminate only the v3 pid.
+
+- CI-equivalent modules Storybook shard 1/4 cache-clean rerun start: 2026-08-08T17:59:16.150Z.
+- Wait reason: the dependency-corrected run exposed an ignored Storybook optimizer cache with missing generated chunks. That cache was moved intact outside the worktree; no tracked source was removed. Self-writing rerun PID 79740 is active.
+- Duration/attempts: poll /tmp/ghl-pr1782-modules-s1-v4.status every 10 seconds for at most 60 attempts.
+- Resume action: inspect exact exit status and logs after clean optimizer regeneration.
+- Expected signal: exit 0 and no class-validator/cache ENOENT errors.
+- Fallback: on nonzero classify the first causal error; on timeout terminate only the v4 pid.
+
+- CI-equivalent modules Storybook shard 1/4 exact-local-deps rerun start: 2026-08-08T18:02:29.978Z.
+- Wait reason: the worktree now has a complete APFS-cloned dependency tree whose relative workspace links resolve to this exact checkout; Storybook cache was regenerated from empty. Self-writing shard wrapper PID 80889 is active.
+- Duration/attempts: poll /tmp/ghl-pr1782-modules-s1-v5.status every 10 seconds for at most 60 attempts.
+- Resume action: read exit status and logs when written, then run shards 2/4-4/4 only if this exact lane is healthy.
+- Expected signal: exit 0 for exact Nx modules shard 1/4, with no dependency/cache coverage errors.
+- Fallback: on nonzero inspect first causal error before source edits; on timeout terminate only the v5 pid.
+
+- CI-equivalent modules Storybook shard 1/4 repaired-dependency rerun start: 2026-08-08T18:05:55.563Z.
+- Wait reason: the proven broken package-local class-validator shadow was replaced from the complete matching root cache and a minimal Vite build now resolves it successfully. Self-writing shard wrapper PID 82006 is active from a clean Storybook cache.
+- Duration/attempts: poll /tmp/ghl-pr1782-modules-s1-v6.status every 10 seconds for at most 60 attempts.
+- Resume action: read exit status and exact failures; only proceed to shards 2-4 on a healthy lane.
+- Expected signal: exit 0 for exact Nx modules shard 1/4.
+- Fallback: on nonzero inspect first causal error; on timeout terminate only the v6 pid.
+
+- CI-equivalent Storybook setup rebuild wait start: 2026-08-08T18:09:15.335Z.
+- Wait reason: after repairing the incomplete class-validator shadow, the exact CI dependency build sequence (twenty-shared, twenty-ui, twenty-sdk, then twenty-front reset:env) is running once under /tmp/ghl-pr1782-front-sb-setup-v1.lock.
+- Duration/attempts: poll every 10 seconds for at most 30 attempts.
+- Resume action: immediately require all four setup commands to exit 0, inspect tracked status for generated drift, preserve/clear only ignored Storybook cache, then rerun modules shard 1/4.
+- Expected signal: setup status 0 with no tracked product-file mutation.
+- Fallback: on failure inspect the first failed build; do not edit product files or launch duplicate setup.
+
+- CI-equivalent modules Storybook shard 1/4 post-setup wait start: 2026-08-08T18:09:35.849Z.
+- Wait reason: exact CI dependency builds and reset:env passed with no tracked drift; a clean-cache shard 1/4 rerun is active once under /tmp/ghl-pr1782-modules-s1-v7.lock.
+- Duration/attempts: poll every 10 seconds for at most 60 attempts.
+- Resume action: require shard exit 0 and inspect test counts; only then run shards 2/4, 3/4, and 4/4.
+- Expected signal: exact Nx modules shard 1/4 green, with the repaired stories passing under coverage.
+- Fallback: on nonzero inspect the first causal failure; do not launch a duplicate or change unrelated production code.
+
+- Focused relation Storybook GREEN wait start: 2026-08-08T18:12:59.719Z.
+- Wait reason: prior CI identified exactly two RecordDetailRelationSection and three WidgetRenderer failures caused by unconditional listMember hook resolution; a no-coverage focused run of those two story files is active once under /tmp/ghl-pr1782-relation-focused-v1.lock.
+- Duration/attempts: poll every 5 seconds for at most 48 attempts.
+- Resume action: require both relation story files green and confirm no listMember error remains.
+- Expected signal: exit 0 for both focused files; prior CI failure surface resolved independently of the local coverage/React harness mismatch.
+- Fallback: on nonzero inspect exact story/assertion before any production edit.
+
+
+### Frontend Storybook fix validation summary
+
+- Prior clean GitHub runner evidence (run 31060240386) isolates the release blockers exactly: modules shard 1 had 3 failures (CommandMenu stale `Go to Opportunities`; DialPad 3-digit format and stale keypad ARIA label), shard 2 had 2 RecordDetailRelationSection failures from unconditional `listMember` lookup, shard 3 had 4 TransferModal failures (3 ambiguous transfer-button selectors plus Enter callback), and shard 4 had 3 WidgetRenderer relation failures from the same unconditional `listMember` lookup. No unrelated Storybook assertion failures were present in those shards.
+- Focused Storybook GREEN after the story fixes: DialPad 9/9, TransferModal 8/8, CommandMenu 5/5; 3 files / 22 tests total. Transfer Enter required a valid shared-phone-validator fixture: `5551234567` is intentionally invalid, while `4155551234` normalizes to `+14155551234`. Production transfer behavior was not changed.
+- Relation fix is structural: `useOpenListMemberImportDialog()` now mounts only inside the `opportunity.members` to-many branch, so unrelated relations cannot resolve `listMember` metadata. A later targeted relation Storybook run no longer emitted `listMember` errors but the locally damaged dependency runtime failed globally in Storybook preview with invalid-hook/useEffect errors before story assertions; exact GitHub CI after push is the authoritative coverage-enabled four-shard proof.
+- Local CI-equivalent setup (build twenty-shared, twenty-ui, twenty-sdk; reset:env twenty-front) passes. Coverage-enabled shard execution remains locally non-authoritative because the earlier interrupted Yarn install created package-local dependency shadows and a duplicate React/Emotion runtime; all unrelated stories fail uniformly at preview bootstrap rather than task-owned assertions. These ignored dependency artifacts are not tracked and were preserved outside the worktree when repaired/inspected.
+- Static/regression checks: touched-file ESLint passed; Prettier passed; `git diff --check` passed; `run-changed-server-task.test.mjs` 13/13 passed; GitHub workflow policy 12/12 passed. Full twenty-front typecheck reports 77 existing errors across 23 unrelated files and zero diagnostics in the four touched frontend files.
+- Reviewed product manifest: exactly 84 files, list SHA-256 `30f551fc25e8e74b4e45edc7316e9c26a94ca7583922944a7130f81f877058ce`; zero committed or working-tree byte changes within that set. The relation dropdown file is outside the reviewed 84-file set.
