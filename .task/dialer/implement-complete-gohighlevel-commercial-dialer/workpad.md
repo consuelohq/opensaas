@@ -1104,3 +1104,12 @@ bun run task:finish
 - Front unit GREEN: targeted six-suite run passed 294/294 tests, including the original transliteration parser failure and all five stale suites. Full `nx test twenty-front --coverage=false` then passed 719/719 executed suites, 4,270 tests, and 85 snapshots (1 suite/test intentionally skipped).
 - Resolver fix scope: Jest-only `moduleNameMapper` resolves bare `transliteration` through Node `require.resolve`, avoiding jsdom's browser ESM export condition. Production/browser bundling is unchanged.
 - Final static/regression checks before CI follow-up commit: touched ESLint/Prettier pass, diff-check pass, run-changed-server-task 13/13, workflow policy 12/12, strict review exit 0 with no task-owned findings, reviewed 84-file manifest unchanged at SHA-256 `30f551fc25e8e74b4e45edc7316e9c26a94ca7583922944a7130f81f877058ce`.
+
+
+### Canonical verifier frontend coverage selector fix
+
+- RED on final HEAD `8ecc64f11e`: all twenty-front Jest tests passed (719/719 suites, 4,270 tests), but the explicit `twenty-front-project` selector invoked `npx nx test twenty-front` with default coverage and failed only global coverage thresholds (46.05% statements vs 49.5%, 44.85% lines vs 48%, 37% functions vs 40%). The verifier separately selected the auto-discovered frontend test target with `--coverage=false`, which passed.
+- Root cause: the explicit selector rule was inconsistent with the repository's auto-generated Nx test contract and treated baseline whole-project coverage thresholds as a publication gate only when frontend source happened to change.
+- Fix: explicit `twenty-front-project` now runs `npx nx test twenty-front --coverage=false`; no coverage threshold was lowered, no test was skipped, and production code is untouched. The generated registry was regenerated from the source rules.
+- TDD: added a registry regression asserting the explicit frontend command includes `--coverage=false`; it failed against the prior rule and passes after the rule update. Full test-selection suite 14/14, run-changed-server-task 13/13, workflow policy 12/12. Registry regeneration is byte-idempotent.
+- Publication invariants: strict review exit 0 with no task-owned findings; `git diff --check` passes; reviewed 84-file product manifest remains unchanged at SHA-256 `30f551fc25e8e74b4e45edc7316e9c26a94ca7583922944a7130f81f877058ce`.

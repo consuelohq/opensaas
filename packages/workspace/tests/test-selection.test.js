@@ -71,9 +71,21 @@ describe('test selection registry', () => {
       ),
     ).toBeUndefined();
     expect(
-      registry.rules.find((rule) => rule.id === 'auto:@consuelo/os:package-test')
-        ?.tests[0]?.command,
+      registry.rules.find(
+        (rule) => rule.id === 'auto:@consuelo/os:package-test',
+      )?.tests[0]?.command,
     ).toEqual(['bun', 'run', '--cwd', 'packages/os', 'test']);
+    const explicitTwentyFront = registry.rules.find(
+      (rule) => rule.id === 'twenty-front-project',
+    );
+    expect(explicitTwentyFront?.tests[0]?.command).toEqual([
+      'npx',
+      'nx',
+      'test',
+      'twenty-front',
+      '--coverage=false',
+    ]);
+
     const autoTwentyShared = registry.rules.find(
       (rule) => rule.id === 'auto:twenty-shared:test',
     );

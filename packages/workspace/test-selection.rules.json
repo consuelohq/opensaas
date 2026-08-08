@@ -476,7 +476,8 @@
             "npx",
             "nx",
             "test",
-            "twenty-front"
+            "twenty-front",
+            "--coverage=false"
           ]
         }
       ],
