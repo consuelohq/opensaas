@@ -36,15 +36,23 @@ import {
   type LeadConnectorDatabase,
 } from '@consuelo/lead-connector';
 import { Effect, Layer } from 'effect';
+import type StripeSdk from 'stripe';
 
 import type { DialerApplicationLayers } from '../application';
+import { createStripeCommercialBilling } from '../billing/stripe';
 import { createCallOperationsApplication } from '../call-operations/application';
+import { createCommercialApplication } from '../commercial/application';
+import { initializeCommercialPersistence } from '../commercial/persistence';
+import { createTwilioCommercialNumberProvider } from '../numbers/commercial-provider';
+import { createTransferApplication } from '../transfers/application';
+import { createPostgresTransferRepository } from '../transfers/persistence';
 import { createGroqSpeechToTextProvider } from '../call-operations/groq';
 import {
   createPostgresCallOperationsRepository,
   initializeCallOperationsPersistence,
 } from '../call-operations/persistence';
 import type { LeadConnectorApplicationLayer } from '../lead-connector-application';
+import { loadDialerPlanCatalog } from '../plans/catalog';
 import {
   buildProviderGroupOptions,
   resolveProviderCallerId,
@@ -55,6 +63,8 @@ import {
   recordLeadConnectorAttemptTelemetry,
 } from './lead-connector-learning';
 import { rankPredictiveLeadConnectorTargets } from './predictive-target-ranking';
+
+import { normalizeAsyncError } from '../errors/normalize-async-error';
 
 export type RailwayEnvironment = Record<string, string | undefined>;
 
@@ -392,6 +402,244 @@ export const createRailwayCallOperationsApplication = async (
   }
 };
 
+export const createRailwayCommercialApplication = async (
+  environment: RailwayEnvironment,
+  resources: RailwayRuntimeResources = {},
+) => {
+  try {
+    const shared = resources.database
+      ? null
+      : await createSharedResources(environment);
+    const database = resources.database ?? shared!.database;
+    const sqlClient = {
+      query: async (sql: string, parameters?: readonly unknown[]) => {
+        try {
+          const result = (await database.query(sql, parameters)) as {
+            rows: unknown[];
+            rowCount?: number | null;
+          };
+          return {
+            rows: result.rows,
+            ...(result.rowCount === null || result.rowCount === undefined
+              ? {}
+              : { rowCount: result.rowCount }),
+          };
+        } catch (cause: unknown) {
+          throw normalizeAsyncError(cause);
+        }
+      },
+    };
+    await Effect.runPromise(initializeCommercialPersistence(sqlClient));
+    const [{ default: Stripe }, { default: twilio }] = await Promise.all([
+      import('stripe'),
+      import('twilio'),
+    ]);
+    const stripe = new Stripe(required(environment, 'STRIPE_SECRET_KEY'));
+    const masterAccountSid = required(environment, 'TWILIO_ACCOUNT_SID');
+    const masterAuthToken = required(environment, 'TWILIO_AUTH_TOKEN');
+    const masterTwilio = twilio(masterAccountSid, masterAuthToken);
+    const publicUrl = required(
+      environment,
+      'DIALER_SERVER_PUBLIC_URL',
+    ).replace(/\/$/, '');
+    if (!publicUrl.startsWith('https://')) {
+      throw new Error('DIALER_SERVER_PUBLIC_URL must use HTTPS');
+    }
+    const billing = createStripeCommercialBilling({
+      client: {
+        customers: {
+          create: async (parameters, options) => {
+            try {
+              const customer = await stripe.customers.create(
+                parameters as StripeSdk.CustomerCreateParams,
+                options as StripeSdk.RequestOptions | undefined,
+              );
+              return { id: customer.id };
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
+          },
+        },
+        checkout: {
+          sessions: {
+            create: async (parameters, options) => {
+              try {
+                const session = await stripe.checkout.sessions.create(
+                  parameters as StripeSdk.Checkout.SessionCreateParams,
+                  options as StripeSdk.RequestOptions | undefined,
+                );
+                return { id: session.id, url: session.url };
+              } catch (cause: unknown) {
+                throw normalizeAsyncError(cause);
+              }
+            },
+          },
+        },
+        billingPortal: {
+          sessions: {
+            create: async (parameters) => {
+              try {
+                const session = await stripe.billingPortal.sessions.create(
+                  parameters as unknown as StripeSdk.BillingPortal.SessionCreateParams,
+                );
+                return { id: session.id, url: session.url };
+              } catch (cause: unknown) {
+                throw normalizeAsyncError(cause);
+              }
+            },
+          },
+        },
+        invoices: {
+          createPreview: async (parameters) => {
+            try {
+              const preview = await stripe.invoices.createPreview(
+                parameters as StripeSdk.InvoiceCreatePreviewParams,
+              );
+              return {
+                amount_due: preview.amount_due,
+                currency: preview.currency,
+                period_end: preview.period_end,
+              };
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
+          },
+        },
+        subscriptions: {
+          retrieve: async (subscriptionId) => {
+            try {
+              const subscription =
+                await stripe.subscriptions.retrieve(subscriptionId);
+              if ('deleted' in subscription && subscription.deleted) {
+                throw new Error('STRIPE_SUBSCRIPTION_DELETED');
+              }
+              return {
+                id: subscription.id,
+                items: {
+                  data: subscription.items.data.map((item) => ({
+                    id: item.id,
+                    price: { id: item.price.id },
+                  })),
+                },
+              };
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
+          },
+          update: (subscriptionId, parameters, options) =>
+            stripe.subscriptions.update(
+              subscriptionId,
+              parameters,
+              options,
+            ),
+        },
+        webhooks: {
+          constructEvent: (rawBody, signature, secret) => {
+            const event = stripe.webhooks.constructEvent(
+              rawBody,
+              signature,
+              secret,
+            );
+            return { id: event.id, type: event.type, data: event.data };
+          },
+        },
+      },
+      webhookSecret: required(environment, 'STRIPE_WEBHOOK_SECRET'),
+    });
+    const numbers = createTwilioCommercialNumberProvider({
+      database: sqlClient,
+      publicUrl,
+      createSubaccount: (friendlyName) =>
+        masterTwilio.api.v2010.accounts.create({ friendlyName }),
+      accountClient: (accountSid) => {
+        const client = twilio(masterAccountSid, masterAuthToken, {
+          accountSid,
+        });
+        const incomingPhoneNumbers = Object.assign(
+          (providerNumberId: string) => ({
+            remove: () => client.incomingPhoneNumbers(providerNumberId).remove(),
+          }),
+          {
+            create: async (request: {
+              phoneNumber: string;
+              friendlyName: string;
+              voiceUrl: string;
+              voiceMethod: 'POST';
+            }) => {
+              try {
+                const created = await client.incomingPhoneNumbers.create(request);
+                return { sid: created.sid, phoneNumber: created.phoneNumber };
+              } catch (cause: unknown) {
+                throw normalizeAsyncError(cause);
+              }
+            },
+          },
+        );
+        return {
+          availablePhoneNumbers: (country: string) => ({
+            local: {
+              list: async (request: {
+                areaCode?: number;
+                contains?: string;
+                limit: number;
+              }) => {
+                try {
+                  const available = await client
+                    .availablePhoneNumbers(country)
+                    .local.list(request);
+                  return available.map((number) => ({
+                    phoneNumber: number.phoneNumber,
+                    friendlyName: number.friendlyName,
+                    locality: number.locality,
+                    region: number.region,
+                    rateCenter: number.rateCenter,
+                  }));
+                } catch (cause: unknown) {
+                  throw normalizeAsyncError(cause);
+                }
+              },
+            },
+          }),
+          incomingPhoneNumbers,
+        };
+      },
+    });
+    return createCommercialApplication({
+      database: sqlClient,
+      catalog: loadDialerPlanCatalog(environment),
+      billing,
+      billingReturnUrl: (
+        environment.DIALER_BILLING_RETURN_URL ?? `${publicUrl}/admin`
+      ).replace(/\/$/, ''),
+      numbers,
+      usage: {
+        getCompletion: async (providerCallId) => {
+          try {
+            const call = await masterTwilio.calls(providerCallId).fetch();
+            const customerConnectedSeconds = Math.max(
+              0,
+              Number(call.duration ?? 0),
+            );
+            const providerPrice = Number(call.price ?? 0);
+            return {
+              customerConnectedSeconds,
+              agentConnectedSeconds: 0,
+              providerCostMicros: Number.isFinite(providerPrice)
+                ? Math.round(Math.abs(providerPrice) * 1_000_000)
+                : 0,
+              occurredAt: (call.dateUpdated ?? new Date()).toISOString(),
+            };
+          } catch (cause: unknown) {
+            throw normalizeAsyncError(cause);
+          }
+        },
+      },
+    });
+  } catch (cause: unknown) {
+    throw new Error('Commercial dialer runtime composition failed', { cause });
+  }
+};
+
 const safeNumbers = (
   environment: RailwayEnvironment,
   key: string,
@@ -481,6 +729,39 @@ const selectProviderDialerForCall = (
         : runtime.liveDialer,
     );
 
+export const createRailwayTransferApplication = async (
+  environment: RailwayEnvironment,
+  resources: RailwayRuntimeResources = {},
+) => {
+  try {
+    const shared = resources.database && resources.redis
+      ? null
+      : await createSharedResources(environment);
+    const database = resources.database ?? shared!.database;
+    const redis = resources.redis ?? shared!.redis;
+    await initializeCallOperationsPersistence(database);
+    const runtime = createDialerRuntime(environment, redis);
+    const repository = createPostgresTransferRepository(database);
+    const publicUrl = required(environment, 'DIALER_SERVER_PUBLIC_URL');
+    if (!publicUrl.startsWith('https://')) {
+      throw new Error('DIALER_SERVER_PUBLIC_URL must use HTTPS');
+    }
+    return createTransferApplication({
+      loadGroup: (groupId, workspaceId) =>
+        selectProviderDialerForGroup(runtime, groupId).then((dialer) =>
+          dialer.parallel.getGroupForWorkspace(groupId, workspaceId),
+        ),
+      selectDialer: (groupId) =>
+        selectProviderDialerForGroup(runtime, groupId),
+      repository,
+      publicUrl,
+      generateId: () => 'transfer_' + randomUUID(),
+    });
+  } catch (cause: unknown) {
+    throw new Error('Transfer runtime composition failed', { cause });
+  }
+};
+
 export const createRailwayDialerApplicationLayers = async (
   environment: RailwayEnvironment,
   resources: RailwayRuntimeResources = {},
@@ -495,6 +776,15 @@ export const createRailwayDialerApplicationLayers = async (
       await initializeLeadConnectorDialerLearning(database);
     }
     const runtime = createDialerRuntime(environment, redis);
+    const publicUrl = required(environment, 'DIALER_SERVER_PUBLIC_URL').replace(
+      /\/$/,
+      '',
+    );
+    if (!publicUrl.startsWith('https://')) {
+      throw new Error('DIALER_SERVER_PUBLIC_URL must use HTTPS');
+    }
+    const recordingStatusCallbackUrl =
+      publicUrl + '/webhooks/twilio/recording-status';
     const pendingQueues = new Map<string, CallableTarget[]>();
     const safeTo = safeNumbers(
       environment,
@@ -630,9 +920,37 @@ export const createRailwayDialerApplicationLayers = async (
             }
             return [normalized];
           }
-          const numbers = yield* tryEffect('list-caller-ids', () =>
-            runtime.liveDialer.listNumbers(),
-          );
+          const commercialEnabled =
+            environment.DIALER_COMMERCIAL_ENABLED?.trim().toLowerCase() ===
+            'true';
+          const numbers = commercialEnabled && database
+            ? yield* tryEffect('list-commercial-caller-ids', async () => {
+            try {
+              const result = await database.query<{
+                phone_number: string;
+                provider_number_id: string | null;
+              }>(
+                `SELECT phone_number, provider_number_id
+                 FROM dialer_phone_numbers
+                 WHERE workspace_id = $1 AND user_id = $2
+                   AND status = 'active'
+                 ORDER BY phone_number`,
+                [input.workspaceId, input.userId],
+              );
+              return result.rows.map((number) => ({
+                phoneNumber: number.phone_number,
+                areaCode: number.phone_number.slice(2, 5),
+                isPrimary: false,
+                isActive: true,
+                twilioSid: number.provider_number_id ?? '',
+              }));
+            } catch (cause: unknown) {
+              throw normalizeAsyncError(cause);
+            }
+          })
+            : yield* tryEffect('list-caller-ids', () =>
+                runtime.liveDialer.listNumbers(),
+              );
           const available = [];
           for (const number of numbers) {
             const phone = normalizePhone(number.phoneNumber);
@@ -847,6 +1165,18 @@ export const createRailwayDialerApplicationLayers = async (
         current,
         missing: Math.max(0, required - current),
       }),
+      startCallRecording: ({ callSid }) =>
+        tryEffect('start-call-recording', async () => {
+          try {
+            const dialer = await selectProviderDialerForCall(runtime, callSid);
+            return dialer.startCallRecording({
+              callSid,
+              recordingStatusCallbackUrl,
+            });
+          } catch (cause: unknown) {
+            throw normalizeAsyncError(cause);
+          }
+        }),
       handleStatusCallback: (input) =>
         tryEffect('handle-status-callback', () =>
           selectProviderDialerForCall(runtime, input.callSid).then((dialer) =>
@@ -946,3 +1276,7 @@ export const createLeadConnectorApplicationLayer =
   createRailwayLeadConnectorApplicationLayer;
 export const createCallOperationsApplicationRuntime =
   createRailwayCallOperationsApplication;
+export const createCommercialApplicationRuntime =
+  createRailwayCommercialApplication;
+export const createTransferApplicationRuntime =
+  createRailwayTransferApplication;

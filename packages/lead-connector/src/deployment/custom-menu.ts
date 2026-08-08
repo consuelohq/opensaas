@@ -25,14 +25,14 @@ export const createLeadConnectorCustomMenu = (input: {
     throw new Error('LeadConnector sandbox location is required');
   return {
     title: 'Consuelo Dialer',
-    url: embedUrl.toString(),
+    url: new URL('/admin', embedUrl).toString(),
     icon: { name: 'phone', fontFamily: 'fas' },
     showOnCompany: false,
     showOnLocation: true,
     showToAllLocations: false,
     locations: [locationId],
     openMode: 'iframe',
-    userRole: 'all',
+    userRole: 'admin',
     allowCamera: false,
     allowMicrophone: true,
   };

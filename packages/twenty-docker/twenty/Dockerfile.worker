@@ -25,7 +25,6 @@ COPY ./packages/coaching/package.json /app/packages/coaching/
 COPY ./packages/contacts/package.json /app/packages/contacts/
 COPY ./packages/dialer/package.json /app/packages/dialer/
 COPY ./packages/logger/package.json /app/packages/logger/
-COPY ./packages/metering/package.json /app/packages/metering/
 COPY ./packages/sdk/package.json /app/packages/sdk/
 
 RUN yarn && yarn cache clean && npx nx reset

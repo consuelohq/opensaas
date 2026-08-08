@@ -126,10 +126,81 @@ export type EmbedTranscriptSegment = {
   endMs?: number | null;
 };
 
+export type EmbedTransferState = {
+  status:
+    | 'idle'
+    | 'initiating'
+    | 'consulting'
+    | 'completed'
+    | 'cancelled'
+    | 'failed';
+  type: 'cold' | 'warm' | null;
+  target: string | null;
+  transferId: string | null;
+  transferCallSid: string | null;
+  conferenceSid: string | null;
+};
+
 export type EmbedFailure = {
   code: string;
   message: string;
   recoverable: boolean;
+};
+
+export type EmbedCommercialCallerContext = {
+  planCode: 'single' | 'standard' | 'power';
+  trial: boolean;
+  callerIds: string[];
+  connectedMinutes: number;
+  remainingMinutes: number | null;
+  lineOptions: number[];
+  predictive: boolean;
+  recordings: boolean;
+  transcripts: boolean;
+  canStartCall: boolean;
+  denialCode: string | null;
+  billing: {
+    state: string;
+    graceEndsAt: string | null;
+  };
+};
+
+export type EmbedCommercialDashboard = {
+  workspaceId: string;
+  catalog: {
+    plans: Record<
+      'single' | 'standard' | 'power',
+      {
+        code: string;
+        priceCents: number;
+        maxNumbersPerSeat: number;
+        includedMinutes: number | null;
+        predictive: boolean;
+        recordings: boolean;
+        transcripts: boolean;
+      }
+    >;
+    trial: {
+      includedMinutes: number;
+      maxSeats: number;
+      maxNumbers: number;
+      planCode: string;
+    };
+    additionalNumberPriceCents: number;
+    includedNumbersPerSeat: number;
+    paymentGraceDays: number;
+  };
+  subscription: Record<string, unknown> | null;
+  subscriptionItems: Array<Record<string, unknown>>;
+  billingSummary: {
+    amountDue: number;
+    currency: string;
+    periodEnd: number | null;
+  } | null;
+  billingSummaryError: string | null;
+  seats: Array<Record<string, unknown>>;
+  numbers: Array<Record<string, unknown>>;
+  usage: Record<string, unknown>;
 };
 
 export type LeadConnectorEmbedState = {
@@ -142,6 +213,22 @@ export type LeadConnectorEmbedState = {
   opportunities: LeadConnectorOpportunity[];
   opportunityTotal: number;
   pipelines: LeadConnectorPipeline[];
+  callerIds: string[];
+  commercialCaller: EmbedCommercialCallerContext | null;
+  commercialDashboard: EmbedCommercialDashboard | null;
+  commercialBillingPreview: {
+    quantities: {
+      single: number;
+      standard: number;
+      power: number;
+      additionalNumber: number;
+    };
+    amountDue: number;
+    currency: string;
+    prorationDate: number;
+  } | null;
+  commercialNumberSearchResults: Array<Record<string, unknown>>;
+  commercialNumberTargetUserId: string;
   filters: EmbedFilters;
   setup: EmbedDialerSetup;
   selectedQueue: EmbedQueueSelection | null;
@@ -156,6 +243,7 @@ export type LeadConnectorEmbedState = {
   callHistoryCursor: string | null;
   selectedCallDetail: EmbedAdminCall | null;
   selectedCallTranscript: EmbedTranscriptSegment[];
+  transfer: EmbedTransferState;
   error: EmbedFailure | null;
 };
 
@@ -173,6 +261,30 @@ export type EmbedStateEvent =
   | { type: 'FILTERS_CHANGED'; filters: Partial<EmbedFilters> }
   | { type: 'RESOURCES_REFRESH_STARTED' }
   | { type: 'RESOURCES_REFRESH_FINISHED' }
+  | {
+      type: 'COMMERCIAL_CALLER_LOADED';
+      caller: EmbedCommercialCallerContext;
+    }
+  | {
+      type: 'COMMERCIAL_DASHBOARD_LOADED';
+      dashboard: EmbedCommercialDashboard;
+    }
+  | {
+      type: 'COMMERCIAL_BILLING_PREVIEWED';
+      quantities: {
+        single: number;
+        standard: number;
+        power: number;
+        additionalNumber: number;
+      };
+      preview: { amountDue: number; currency: string; prorationDate: number };
+    }
+  | { type: 'COMMERCIAL_BILLING_PREVIEW_CLEARED' }
+  | {
+      type: 'COMMERCIAL_NUMBER_SEARCHED';
+      numbers: Array<Record<string, unknown>>;
+      userId: string;
+    }
   | { type: 'SETUP_CHANGED'; setup: Partial<EmbedDialerSetup> }
   | {
       type: 'QUEUE_SELECTED';
@@ -184,6 +296,23 @@ export type EmbedStateEvent =
   | { type: 'PAUSED' }
   | { type: 'RESUMED' }
   | { type: 'STOP_REQUESTED' }
+  | {
+      type: 'TRANSFER_STARTED';
+      transferType: 'cold' | 'warm';
+      target: string;
+    }
+  | {
+      type: 'TRANSFER_INITIATED';
+      status: 'initiating' | 'consulting' | 'completed' | 'failed';
+      transferType: 'cold' | 'warm';
+      target: string;
+      transferId: string;
+      transferCallSid?: string;
+      conferenceSid?: string;
+    }
+  | { type: 'TRANSFER_COMPLETED' }
+  | { type: 'TRANSFER_CANCELLED' }
+  | { type: 'TRANSFER_FAILED'; code: string; message: string }
   | { type: 'DISPOSITION_SUBMITTED' }
   | {
       type: 'CALLS_LOADED';
@@ -217,6 +346,12 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
   opportunities: [],
   opportunityTotal: 0,
   pipelines: [],
+  callerIds: [],
+  commercialCaller: null,
+  commercialDashboard: null,
+  commercialBillingPreview: null,
+  commercialNumberSearchResults: [],
+  commercialNumberTargetUserId: '',
   filters: { query: '', pipelineId: null, stageId: null },
   setup: {
     mode: 'queue',
@@ -237,6 +372,14 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
   callHistoryCursor: null,
   selectedCallDetail: null,
   selectedCallTranscript: [],
+  transfer: {
+    status: 'idle',
+    type: null,
+    target: null,
+    transferId: null,
+    transferCallSid: null,
+    conferenceSid: null,
+  },
   error: null,
 });
 
@@ -308,6 +451,50 @@ export const reduceEmbedState = (
       return { ...state, resourcesRefreshing: true };
     case 'RESOURCES_REFRESH_FINISHED':
       return { ...state, resourcesRefreshing: false };
+    case 'COMMERCIAL_CALLER_LOADED': {
+      const lineOptions = event.caller.lineOptions.filter(
+        (line): line is 1 | 2 | 3 => line === 1 || line === 2 || line === 3,
+      );
+      const requestedFanout = lineOptions.includes(state.setup.requestedFanout)
+        ? state.setup.requestedFanout
+        : (lineOptions.at(-1) ?? 1);
+      return {
+        ...state,
+        callerIds: event.caller.callerIds,
+        commercialCaller: event.caller,
+        setup: {
+          ...state.setup,
+          callingMode: event.caller.predictive
+            ? state.setup.callingMode
+            : 'single',
+          requestedFanout: event.caller.predictive ? requestedFanout : 1,
+          callerIdNumber:
+            state.setup.callerIdNumber &&
+            event.caller.callerIds.includes(state.setup.callerIdNumber)
+              ? state.setup.callerIdNumber
+              : null,
+        },
+      };
+    }
+    case 'COMMERCIAL_DASHBOARD_LOADED':
+      return { ...state, commercialDashboard: event.dashboard };
+    case 'COMMERCIAL_BILLING_PREVIEWED':
+      return {
+        ...state,
+        commercialBillingPreview: {
+          quantities: event.quantities,
+          ...event.preview,
+        },
+        error: null,
+      };
+    case 'COMMERCIAL_BILLING_PREVIEW_CLEARED':
+      return { ...state, commercialBillingPreview: null };
+    case 'COMMERCIAL_NUMBER_SEARCHED':
+      return {
+        ...state,
+        commercialNumberSearchResults: event.numbers,
+        commercialNumberTargetUserId: event.userId,
+      };
     case 'SETUP_CHANGED': {
       const setup = { ...state.setup, ...event.setup };
       if (setup.mode === 'single' || setup.callingMode === 'single') {
@@ -368,6 +555,54 @@ export const reduceEmbedState = (
       };
     case 'STOP_REQUESTED':
       return { ...state, phase: 'wrapping-up' };
+    case 'TRANSFER_STARTED':
+      return {
+        ...state,
+        transfer: {
+          status: 'initiating',
+          type: event.transferType,
+          target: event.target,
+          transferId: null,
+          transferCallSid: null,
+          conferenceSid: null,
+        },
+        error: null,
+      };
+    case 'TRANSFER_INITIATED':
+      return {
+        ...state,
+        transfer: {
+          status: event.status,
+          type: event.transferType,
+          target: event.target,
+          transferId: event.transferId,
+          transferCallSid: event.transferCallSid ?? null,
+          conferenceSid: event.conferenceSid ?? null,
+        },
+        error: null,
+      };
+    case 'TRANSFER_COMPLETED':
+      return {
+        ...state,
+        transfer: { ...state.transfer, status: 'completed' },
+        error: null,
+      };
+    case 'TRANSFER_CANCELLED':
+      return {
+        ...state,
+        transfer: { ...state.transfer, status: 'cancelled' },
+        error: null,
+      };
+    case 'TRANSFER_FAILED':
+      return {
+        ...state,
+        transfer: { ...state.transfer, status: 'failed' },
+        error: {
+          code: event.code,
+          message: event.message,
+          recoverable: true,
+        },
+      };
     case 'DISPOSITION_SUBMITTED':
     case 'RETURN_HOME':
       return {
@@ -379,6 +614,14 @@ export const reduceEmbedState = (
         callLegs: [],
         selectedCallDetail: null,
         selectedCallTranscript: [],
+        transfer: {
+          status: 'idle',
+          type: null,
+          target: null,
+          transferId: null,
+          transferCallSid: null,
+          conferenceSid: null,
+        },
         selectedTargets:
           state.setup.mode === 'single' ? [] : state.selectedTargets,
         error: null,
