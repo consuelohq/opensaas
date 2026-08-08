@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom';
 import { i18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
+import type { Call } from '@twilio/voice-sdk';
 import { screen, fireEvent } from '@testing-library/react';
 import { type MutableSnapshot } from 'recoil';
 
@@ -73,7 +74,7 @@ const mockActiveCall = {
   mute: mockMute,
   disconnect: mockDisconnect,
   parameters: { CallSid: 'CA-test-123' },
-};
+} as unknown as Call;
 
 const activeState = (snap: MutableSnapshot) => {
   snap.set(callStateAtom, {
@@ -88,7 +89,7 @@ const activeState = (snap: MutableSnapshot) => {
     transferId: null,
   });
 
-  snap.set(activeCallState, mockActiveCall as any);
+  snap.set(activeCallState, mockActiveCall);
 };
 
 i18n.activate(SOURCE_LOCALE);
