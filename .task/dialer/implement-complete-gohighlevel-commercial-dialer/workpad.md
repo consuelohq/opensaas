@@ -1092,3 +1092,15 @@ bun run task:finish
 - Local CI-equivalent setup (build twenty-shared, twenty-ui, twenty-sdk; reset:env twenty-front) passes. Coverage-enabled shard execution remains locally non-authoritative because the earlier interrupted Yarn install created package-local dependency shadows and a duplicate React/Emotion runtime; all unrelated stories fail uniformly at preview bootstrap rather than task-owned assertions. These ignored dependency artifacts are not tracked and were preserved outside the worktree when repaired/inspected.
 - Static/regression checks: touched-file ESLint passed; Prettier passed; `git diff --check` passed; `run-changed-server-task.test.mjs` 13/13 passed; GitHub workflow policy 12/12 passed. Full twenty-front typecheck reports 77 existing errors across 23 unrelated files and zero diagnostics in the four touched frontend files.
 - Reviewed product manifest: exactly 84 files, list SHA-256 `30f551fc25e8e74b4e45edc7316e9c26a94ca7583922944a7130f81f877058ce`; zero committed or working-tree byte changes within that set. The relation dropdown file is outside the reviewed 84-file set.
+
+
+### Front unit-test resolver regression
+
+- RED: once the frontend runtime component changed, the canonical verifier began running twenty-front unit tests that the prior GitHub job had skipped. Jest/jsdom resolves package export condition `browser`; `transliteration@2.6.1` exposes an ESM browser bundle there, which Jest then rejects as untransformed node_modules syntax. Direct Node resolution correctly selects the package's CJS Node entry.
+- GREEN contract: only Jest resolution for the bare `transliteration` specifier is pinned to Node's own `require.resolve` entry; production/browser bundling is untouched. Formerly failing frontend unit tests must pass before publication.
+
+- Full twenty-front GREEN follow-up contract: five pre-existing/stale suites became visible only because the newly touched runtime relation component causes the CI selector to run the frontend unit target. Fixes are test-only: add real exhaustive coverage for Home/Agent/AgentSkills/Skills/SkillDetail/Status; assert current refresh-token error; provide Lingui test context; include current predictive contactIds/targetPhones; expect the dedicated phone action component. Production behavior remains unchanged.
+
+- Front unit GREEN: targeted six-suite run passed 294/294 tests, including the original transliteration parser failure and all five stale suites. Full `nx test twenty-front --coverage=false` then passed 719/719 executed suites, 4,270 tests, and 85 snapshots (1 suite/test intentionally skipped).
+- Resolver fix scope: Jest-only `moduleNameMapper` resolves bare `transliteration` through Node `require.resolve`, avoiding jsdom's browser ESM export condition. Production/browser bundling is unchanged.
+- Final static/regression checks before CI follow-up commit: touched ESLint/Prettier pass, diff-check pass, run-changed-server-task 13/13, workflow policy 12/12, strict review exit 0 with no task-owned findings, reviewed 84-file manifest unchanged at SHA-256 `30f551fc25e8e74b4e45edc7316e9c26a94ca7583922944a7130f81f877058ce`.

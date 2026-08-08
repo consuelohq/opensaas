@@ -92,7 +92,9 @@ describe('useApolloFactory', () => {
       });
     } catch (error) {
       expect(error).toBeInstanceOf(ApolloError);
-      expect((error as ApolloError).message).toBe('Error message not found.');
+      expect((error as ApolloError).message).toBe(
+        'Refresh token is not defined',
+      );
 
       expect(mockNavigate).toHaveBeenCalled();
       expect(mockNavigate).toHaveBeenCalledWith('/welcome');

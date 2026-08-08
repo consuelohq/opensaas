@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom';
+import { i18n } from '@lingui/core';
+import { I18nProvider } from '@lingui/react';
 import { screen, fireEvent } from '@testing-library/react';
 import { type MutableSnapshot } from 'recoil';
 
@@ -7,6 +9,7 @@ import { InCallControls } from '@/dialer/components/InCallControls';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { activeCallState } from '@/dialer/states/activeCallState';
 import { isMutedState } from '@/dialer/states/isMutedState';
+import { SOURCE_LOCALE } from 'twenty-shared/translations';
 
 // mock useCallTransfer
 const mockInitiateTransfer = jest.fn();
@@ -88,18 +91,30 @@ const activeState = (snap: MutableSnapshot) => {
   snap.set(activeCallState, mockActiveCall as any);
 };
 
+i18n.activate(SOURCE_LOCALE);
+
+const renderInCallControls = (
+  initializeState?: (snap: MutableSnapshot) => void,
+) =>
+  renderWithRecoil(
+    <I18nProvider i18n={i18n}>
+      <InCallControls />
+    </I18nProvider>,
+    { initializeState },
+  );
+
 describe('InCallControls', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should not render when call status is idle', () => {
-    const { container } = renderWithRecoil(<InCallControls />);
+    const { container } = renderInCallControls();
     expect(container.firstChild).toBeNull();
   });
 
   it('should render control buttons when call is active', () => {
-    renderWithRecoil(<InCallControls />, { initializeState: activeState });
+    renderInCallControls(activeState);
 
     expect(screen.getByLabelText('Mute')).toBeInTheDocument();
     expect(screen.getByLabelText('Hold')).toBeInTheDocument();
@@ -109,7 +124,7 @@ describe('InCallControls', () => {
   });
 
   it('should toggle mute when mute button is clicked', () => {
-    renderWithRecoil(<InCallControls />, { initializeState: activeState });
+    renderInCallControls(activeState);
 
     fireEvent.click(screen.getByLabelText('Mute'));
 
@@ -117,7 +132,7 @@ describe('InCallControls', () => {
   });
 
   it('should disconnect call when end button is clicked', () => {
-    renderWithRecoil(<InCallControls />, { initializeState: activeState });
+    renderInCallControls(activeState);
 
     fireEvent.click(screen.getByLabelText('End call'));
 
@@ -125,7 +140,7 @@ describe('InCallControls', () => {
   });
 
   it('should show dial pad when keypad button is clicked', () => {
-    renderWithRecoil(<InCallControls />, { initializeState: activeState });
+    renderInCallControls(activeState);
 
     expect(screen.queryByTestId('dial-pad')).not.toBeInTheDocument();
 
@@ -135,7 +150,7 @@ describe('InCallControls', () => {
   });
 
   it('should show transfer modal when transfer button is clicked', () => {
-    renderWithRecoil(<InCallControls />, { initializeState: activeState });
+    renderInCallControls(activeState);
 
     expect(screen.queryByTestId('transfer-modal')).not.toBeInTheDocument();
 
@@ -159,9 +174,7 @@ describe('InCallControls', () => {
       });
     };
 
-    renderWithRecoil(<InCallControls />, {
-      initializeState: connectingState,
-    });
+    renderInCallControls(connectingState);
 
     expect(screen.getByLabelText('End call')).toBeInTheDocument();
   });
@@ -172,7 +185,7 @@ describe('InCallControls', () => {
       snap.set(isMutedState, true);
     };
 
-    renderWithRecoil(<InCallControls />, { initializeState: mutedState });
+    renderInCallControls(mutedState);
 
     expect(screen.getByLabelText('Unmute')).toBeInTheDocument();
   });
