@@ -7,6 +7,8 @@ import type {
 import type {
   EmbedAdminCall,
   EmbedCallSession,
+  EmbedCommercialCallerContext,
+  EmbedCommercialDashboard,
   EmbedTranscriptSegment,
 } from './state-machine.js';
 
@@ -118,6 +120,93 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
       request<{ pipelines: LeadConnectorPipeline[] }>(
         '/v1/integrations/leadconnector/pipelines',
       ).then((result) => result.pipelines),
+    getCommercialCallerContext: () =>
+      request<EmbedCommercialCallerContext>('/v1/commercial/caller'),
+    getCommercialDashboard: () =>
+      request<EmbedCommercialDashboard>('/v1/commercial/admin'),
+    createCommercialCheckout: (input: {
+      quantities: {
+        single: number;
+        standard: number;
+        power: number;
+        additionalNumber: number;
+      };
+    }) =>
+      request<{ id: string; url: string }>(
+        '/v1/commercial/billing/checkout',
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
+    createCommercialBillingPortal: () =>
+      request<{ id: string; url: string }>(
+        '/v1/commercial/billing/portal',
+        { method: 'POST', body: '{}' },
+      ),
+    previewCommercialBillingChange: (input: {
+      quantities: {
+        single: number;
+        standard: number;
+        power: number;
+        additionalNumber: number;
+      };
+    }) =>
+      request<{ amountDue: number; currency: string; prorationDate: number }>(
+        '/v1/commercial/billing/preview',
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
+    applyCommercialBillingChange: (input: {
+      quantities: {
+        single: number;
+        standard: number;
+        power: number;
+        additionalNumber: number;
+      };
+      prorationDate: number;
+    }) =>
+      request<{ updated: true; pendingWebhook: true }>(
+        '/v1/commercial/billing/apply',
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
+    updateCommercialTeam: (
+      assignments: Array<{
+        userId: string;
+        planCode: 'single' | 'standard' | 'power';
+      }>,
+    ) =>
+      request<{ updated: true }>('/v1/commercial/team', {
+        method: 'PATCH',
+        body: JSON.stringify({ assignments }),
+      }),
+    searchCommercialNumbers: (input: {
+      areaCode?: string;
+      contains?: string;
+      country?: string;
+      limit?: number;
+    }) =>
+      request<{ numbers: Array<Record<string, unknown>> }>(
+        '/v1/commercial/numbers/search',
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
+    provisionCommercialNumber: (input: {
+      userId: string;
+      phoneNumber: string;
+    }) =>
+      request<{ provisioned: true }>('/v1/commercial/numbers/provision', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    assignCommercialNumber: (input: {
+      userId: string;
+      phoneNumber: string;
+    }) =>
+      request<{ assigned: true }>('/v1/commercial/numbers/assign', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    releaseCommercialNumber: (phoneNumber: string) =>
+      request<{ released: true }>('/v1/commercial/numbers/release', {
+        method: 'POST',
+        body: JSON.stringify({ phoneNumber }),
+      }),
     resolveQueueCandidates: (input: {
       pipelineId: string;
       stageId: string;
@@ -152,6 +241,52 @@ export const createLeadConnectorEmbedApi = (options: EmbedApiOptions) => {
     terminateCallSession: (sessionId: string) =>
       request<{ groupId: string; status: 'completed' }>(
         `/v1/call-sessions/${encodeURIComponent(sessionId)}/terminate`,
+        { method: 'POST' },
+      ),
+    initiateCallTransfer: (
+      sessionId: string,
+      input: { type: 'cold' | 'warm'; to: string },
+    ) =>
+      request<{
+        success: boolean;
+        transferId: string;
+        transferCallSid?: string;
+        conferenceSid?: string;
+        status: 'initiating' | 'consulting' | 'completed' | 'cancelled' | 'failed';
+        error?: string;
+      }>(
+        `/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers`,
+        { method: 'POST', body: JSON.stringify(input) },
+      ),
+    getCallTransferStatus: (sessionId: string, transferId: string) =>
+      request<{
+        success: boolean;
+        transferId: string;
+        transferCallSid?: string;
+        conferenceSid?: string;
+        status: 'initiating' | 'consulting' | 'completed' | 'cancelled' | 'failed';
+        error?: string;
+      }>(
+        `/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers/${encodeURIComponent(transferId)}`,
+      ),
+    completeCallTransfer: (sessionId: string, transferId: string) =>
+      request<{
+        success: boolean;
+        transferId: string;
+        status: 'completed' | 'failed';
+        error?: string;
+      }>(
+        `/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers/${encodeURIComponent(transferId)}/complete`,
+        { method: 'POST' },
+      ),
+    cancelCallTransfer: (sessionId: string, transferId: string) =>
+      request<{
+        success: boolean;
+        transferId: string;
+        status: 'cancelled' | 'failed';
+        error?: string;
+      }>(
+        `/v1/call-sessions/${encodeURIComponent(sessionId)}/transfers/${encodeURIComponent(transferId)}/cancel`,
         { method: 'POST' },
       ),
     listActiveCalls: () =>

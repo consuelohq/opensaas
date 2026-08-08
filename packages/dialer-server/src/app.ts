@@ -13,6 +13,10 @@ import {
   createLeadConnectorPublicRoutes,
 } from './routes/lead-connector';
 import { createCallOperationsRoutes } from './routes/calls';
+import {
+  createCommercialPublicRoutes,
+  createCommercialRoutes,
+} from './routes/commercial';
 import { createTwilioRoutes } from './routes/twilio';
 import { createTwilioMediaRoutes } from './routes/twilio-media';
 import { createVoiceRoutes } from './routes/voice';
@@ -21,8 +25,14 @@ export function createDialerServer(dependencies: DialerServerDependencies) {
   const app = new Hono<{ Variables: DialerVariables }>();
   app.route('/', createHealthRoutes());
   app.route('/', createLeadConnectorPublicRoutes(dependencies));
+  if (dependencies.commercial) {
+    app.route('/', createCommercialPublicRoutes(dependencies.commercial));
+  }
   app.route('/', createEmbedRoutes(dependencies));
   app.use('/v1/*', createAuthenticationMiddleware(dependencies));
+  if (dependencies.commercial) {
+    app.route('/', createCommercialRoutes(dependencies.commercial));
+  }
   app.route('/', createCallSessionRoutes(dependencies));
   app.route('/', createCallOperationsRoutes(dependencies));
   app.route('/', createVoiceRoutes(dependencies));

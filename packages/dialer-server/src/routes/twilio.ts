@@ -27,8 +27,116 @@ export const createTwilioRoutes = (dependencies: DialerServerDependencies) => {
           'CallSid and CallStatus are required',
         );
       }
+      const callContext = dependencies.application.resolveTwilioCallContext
+        ? await runApplicationEffect(
+            dependencies.application.resolveTwilioCallContext({
+              callSid: input.callSid,
+            }),
+          )
+        : null;
+      if (callContext && !callContext.ok) {
+        return dialerErrorResponse(context, callContext.error);
+      }
       const result = await runApplicationEffect(
         dependencies.application.processTwilioStatus(input),
+      );
+      if (!result.ok) return dialerErrorResponse(context, result.error);
+      if (
+        dependencies.commercial &&
+        callContext?.ok &&
+        callContext.value?.dialerSessionId
+      ) {
+        const usage = await runApplicationEffect(
+          dependencies.commercial.recordProviderCompletion({
+            workspaceId: callContext.value.workspaceId,
+            sessionId: callContext.value.dialerSessionId,
+            providerCallId: input.callSid,
+            status: input.callStatus,
+          }),
+        );
+        if (!usage.ok) return dialerErrorResponse(context, usage.error);
+      }
+      return context.json(result.value);
+    } catch (error: unknown) {
+      return dialerErrorResponse(context, error);
+    }
+  });
+
+  routes.post('/webhooks/twilio/recording-status', async (context) => {
+    try {
+      const verified = await verifyAndParseTwilioRequest(context, dependencies);
+      if (verified instanceof Response) return verified;
+      const callSid = verified.params.CallSid;
+      const recordingSid = verified.params.RecordingSid;
+      const recordingStatus = verified.params.RecordingStatus;
+      if (!callSid || !recordingSid || !recordingStatus) {
+        return invalidRequestResponse(
+          context,
+          'CallSid, RecordingSid, and RecordingStatus are required',
+        );
+      }
+      if (!dependencies.callOperations) {
+        return context.json(
+          {
+            error: {
+              code: 'CALL_HISTORY_UNAVAILABLE',
+              message: 'Call history runtime is unavailable',
+              retryable: true,
+            },
+          },
+          503,
+        );
+      }
+      const duration = Number(verified.params.RecordingDuration);
+      const result = await runApplicationEffect(
+        dependencies.callOperations.recordCallRecordingStatus({
+          providerCallId: callSid,
+          recordingSid,
+          recordingStatus,
+          ...(Number.isFinite(duration) && duration >= 0
+            ? { recordingDurationSeconds: duration }
+            : {}),
+        }),
+      );
+      return result.ok
+        ? context.json({ received: true })
+        : dialerErrorResponse(context, result.error);
+    } catch (error: unknown) {
+      return dialerErrorResponse(context, error);
+    }
+  });
+
+  routes.post('/webhooks/twilio/transfer-status', async (context) => {
+    try {
+      const verified = await verifyAndParseTwilioRequest(context, dependencies);
+      if (verified instanceof Response) return verified;
+      const transferId = context.req.query('transfer_id');
+      const callSid = verified.params.CallSid;
+      const callStatus = verified.params.CallStatus;
+      if (!transferId || !callSid || !callStatus) {
+        return invalidRequestResponse(
+          context,
+          'transfer_id, CallSid, and CallStatus are required',
+        );
+      }
+      if (!dependencies.transfers) {
+        return context.json(
+          {
+            error: {
+              code: 'TRANSFER_RUNTIME_UNAVAILABLE',
+              message: 'Transfer runtime is unavailable',
+              retryable: true,
+            },
+          },
+          503,
+        );
+      }
+      const result = await runApplicationEffect(
+        dependencies.transfers.processStatusCallback({
+          transferId,
+          callSid,
+          callStatus,
+        }),
       );
       return result.ok
         ? context.json(result.value)

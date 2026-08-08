@@ -85,6 +85,7 @@ export {
   searchLeadConnectorOpportunities,
 } from './application/resources.js';
 export { processLeadConnectorWebhook } from './application/webhooks.js';
+export { disableLeadConnectorInstallation } from './application/installations.js';
 export {
   exchangeLeadConnectorEmbedContext,
   validateLeadConnectorEmbedIdentity,

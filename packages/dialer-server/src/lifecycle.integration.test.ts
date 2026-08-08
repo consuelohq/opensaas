@@ -166,6 +166,8 @@ describe('dialer-server in-memory lifecycle', () => {
       handleStatusCallback: (input) =>
         processProviderCallback(input).pipe(Effect.provide(coreLayer)),
       getGroupIdForCall,
+      startCallRecording: () =>
+        Effect.succeed({ recordingSid: 'RE_test', status: 'in-progress' }),
       getGroup: (groupId) =>
         getCallSession(groupId).pipe(Effect.provide(coreLayer)),
       getReleasableNumbers: (group) =>

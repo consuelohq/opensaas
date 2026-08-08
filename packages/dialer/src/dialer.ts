@@ -309,6 +309,19 @@ export class Dialer {
     return this.conference.muteParticipant(conferenceSid, callSid, muted);
   }
 
+  /** Start recording the connected provider call leg. */
+  async startCallRecording(input: {
+    callSid: string;
+    recordingStatusCallbackUrl: string;
+  }): Promise<{ recordingSid: string; status: string }> {
+    return this.conference.startCallRecording(input);
+  }
+
+  /** Resolve the active provider conference SID by friendly name. */
+  async findConferenceSid(conferenceName: string): Promise<string | null> {
+    return this.conference.findConferenceSid(conferenceName);
+  }
+
   /** List participants in a conference */
   async listParticipants(
     conferenceSid: string,

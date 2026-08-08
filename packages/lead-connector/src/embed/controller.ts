@@ -14,6 +14,8 @@ import {
   type LeadConnectorEmbedState,
 } from './state-machine.js';
 
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+
 export type LeadConnectorEmbedController = ReturnType<
   typeof createLeadConnectorEmbedController
 >;
@@ -21,12 +23,14 @@ export type LeadConnectorEmbedController = ReturnType<
 export const createLeadConnectorEmbedController = (input: {
   api: LeadConnectorEmbedApi;
   voice: LeadConnectorAgentVoice;
+  surface?: 'admin' | 'overlay';
   initialState?: LeadConnectorEmbedState;
 }) => {
   let state = input.initialState ?? createInitialEmbedState();
   let activeVoiceSessionId: string | null = null;
   let activeRecordSessionId: string | null = null;
   let resourceRefresh: Promise<void> | null = null;
+  let commercialRefresh: Promise<void> | null = null;
   const listeners = new Set<(state: LeadConnectorEmbedState) => void>();
 
   const publish = (): void => {
@@ -76,6 +80,39 @@ export const createLeadConnectorEmbedController = (input: {
   ): void => {
     if (isTerminalEmbedSession(session)) disconnectVoice();
     dispatch({ type: 'SESSION_UPDATED', session });
+  };
+
+  const projectTransferStatus = (result: Awaited<
+    ReturnType<LeadConnectorEmbedApi['getCallTransferStatus']>
+  >): void => {
+    const transferType = state.transfer.type;
+    const target = state.transfer.target;
+    if (!transferType || !target) return;
+    if (!result.success || result.status === 'failed') {
+      dispatch({
+        type: 'TRANSFER_FAILED',
+        code: 'TRANSFER_FAILED',
+        message: result.error ?? 'Transfer failed',
+      });
+      return;
+    }
+    if (result.status === 'completed') {
+      dispatch({ type: 'TRANSFER_COMPLETED' });
+      return;
+    }
+    if (result.status === 'cancelled') {
+      dispatch({ type: 'TRANSFER_CANCELLED' });
+      return;
+    }
+    dispatch({
+      type: 'TRANSFER_INITIATED',
+      status: result.status,
+      transferType,
+      target,
+      transferId: result.transferId,
+      transferCallSid: result.transferCallSid,
+      conferenceSid: result.conferenceSid,
+    });
   };
 
   const reportUnexpectedFailure = (error: unknown): void => {
@@ -146,6 +183,28 @@ export const createLeadConnectorEmbedController = (input: {
     } catch (error: unknown) {
       reportUnexpectedFailure(error);
     }
+  };
+
+  const loadCommercial = (): Promise<void> => {
+    if (!state.sessionToken) return Promise.resolve();
+    if (commercialRefresh) return commercialRefresh;
+    commercialRefresh = (async () => {
+      try {
+        const caller = await run(() => input.api.getCommercialCallerContext());
+        if (caller) dispatch({ type: 'COMMERCIAL_CALLER_LOADED', caller });
+        if ((input.surface ?? 'overlay') === 'admin') {
+          const dashboard = await run(() => input.api.getCommercialDashboard());
+          if (dashboard) {
+            dispatch({ type: 'COMMERCIAL_DASHBOARD_LOADED', dashboard });
+          }
+        }
+      } catch (error: unknown) {
+        reportUnexpectedFailure(error);
+      } finally {
+        commercialRefresh = null;
+      }
+    })();
+    return commercialRefresh;
   };
 
   const startCall = async (
@@ -280,6 +339,7 @@ export const createLeadConnectorEmbedController = (input: {
         await Promise.all([
           refreshResources({ force: true }),
           loadCallOperations(),
+          loadCommercial(),
         ]);
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
@@ -288,6 +348,149 @@ export const createLeadConnectorEmbedController = (input: {
     loadResources: () => refreshResources({ force: true }),
     refreshResources,
     loadCallOperations,
+    loadCommercial,
+    createCheckout: async (quantities: {
+      single: number;
+      standard: number;
+      power: number;
+      additionalNumber: number;
+    }): Promise<string | null> => {
+      try {
+        const result = await run(() =>
+          input.api.createCommercialCheckout({ quantities }),
+        );
+        return result?.url ?? null;
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    openBillingPortal: async (): Promise<string | null> => {
+      try {
+        const result = await run(() => input.api.createCommercialBillingPortal());
+        return result?.url ?? null;
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    previewBillingChange: async (quantities: {
+      single: number;
+      standard: number;
+      power: number;
+      additionalNumber: number;
+    }) => {
+      try {
+        const preview = await run(() =>
+          input.api.previewCommercialBillingChange({ quantities }),
+        );
+        if (preview) {
+          dispatch({
+            type: 'COMMERCIAL_BILLING_PREVIEWED',
+            quantities,
+            preview,
+          });
+        }
+        return preview;
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    clearBillingPreview: (): void => {
+      dispatch({ type: 'COMMERCIAL_BILLING_PREVIEW_CLEARED' });
+    },
+    applyBillingChange: async (inputValue: {
+      quantities: {
+        single: number;
+        standard: number;
+        power: number;
+        additionalNumber: number;
+      };
+      prorationDate: number;
+    }): Promise<void> => {
+      try {
+        const result = await run(() =>
+          input.api.applyCommercialBillingChange(inputValue),
+        );
+        if (result) {
+          dispatch({ type: 'COMMERCIAL_BILLING_PREVIEW_CLEARED' });
+          await loadCommercial();
+        }
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    saveSeat: async (inputValue: {
+      userId: string;
+      planCode: 'single' | 'standard' | 'power';
+    }): Promise<void> => {
+      try {
+        const existing: Array<{
+          userId: string;
+          planCode: 'single' | 'standard' | 'power';
+        }> = state.commercialDashboard?.seats.flatMap((seat) => {
+          const userId = String(seat.user_id ?? seat.userId ?? '');
+          const candidatePlan = String(seat.plan_code ?? seat.planCode ?? '');
+          return userId &&
+            (candidatePlan === 'single' ||
+              candidatePlan === 'standard' ||
+              candidatePlan === 'power')
+            ? [{ userId, planCode: candidatePlan }]
+            : [];
+        }) ?? [];
+        const assignments = [
+          ...existing.filter(({ userId }) => userId !== inputValue.userId),
+          inputValue,
+        ];
+        const result = await run(() => input.api.updateCommercialTeam(assignments));
+        if (result) await loadCommercial();
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    searchNumbers: async (inputValue: {
+      areaCode?: string;
+      contains?: string;
+      userId: string;
+    }): Promise<void> => {
+      try {
+        const { userId: _userId, ...search } = inputValue;
+        const result = await run(() =>
+          input.api.searchCommercialNumbers({ ...search, limit: 10 }),
+        );
+        if (result) {
+          dispatch({
+            type: 'COMMERCIAL_NUMBER_SEARCHED',
+            numbers: result.numbers,
+            userId: inputValue.userId,
+          });
+        }
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    provisionNumber: async (inputValue: {
+      userId: string;
+      phoneNumber: string;
+    }): Promise<void> => {
+      const result = await run(() =>
+        input.api.provisionCommercialNumber(inputValue),
+      );
+      if (result) await loadCommercial();
+    },
+    assignNumber: async (inputValue: {
+      userId: string;
+      phoneNumber: string;
+    }): Promise<void> => {
+      const result = await run(() =>
+        input.api.assignCommercialNumber(inputValue),
+      );
+      if (result) await loadCommercial();
+    },
+    releaseNumber: async (phoneNumber: string): Promise<void> => {
+      const result = await run(() =>
+        input.api.releaseCommercialNumber(phoneNumber),
+      );
+      if (result) await loadCommercial();
+    },
     loadMoreCallHistory: async (): Promise<void> => {
       try {
         const cursor = state.callHistoryCursor;
@@ -420,12 +623,119 @@ export const createLeadConnectorEmbedController = (input: {
       await startCall(strategy);
     },
     startCall,
+    initiateTransfer: async (inputValue: {
+      type: 'cold' | 'warm';
+      to: string;
+    }): Promise<void> => {
+      try {
+        const sessionId = state.activeSessionId;
+        const target = inputValue.to.trim();
+        if (!sessionId) {
+          dispatch({
+            type: 'FAILED',
+            code: 'CALL_SESSION_REQUIRED',
+            message: 'A connected call is required to transfer',
+            recoverable: true,
+          });
+          return;
+        }
+        if (!/^\+[1-9]\d{7,14}$/.test(target)) {
+          dispatch({
+            type: 'FAILED',
+            code: 'INVALID_TRANSFER_TARGET',
+            message: 'Enter a valid E.164 transfer number',
+            recoverable: true,
+          });
+          return;
+        }
+        dispatch({
+          type: 'TRANSFER_STARTED',
+          transferType: inputValue.type,
+          target,
+        });
+        const result = await run(() =>
+          input.api.initiateCallTransfer(sessionId, {
+            type: inputValue.type,
+            to: target,
+          }),
+        );
+        if (!result) return;
+        projectTransferStatus(result);
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    completeTransfer: async (): Promise<void> => {
+      try {
+        const sessionId = state.activeSessionId;
+        const transferId = state.transfer.transferId;
+        if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
+          dispatch({
+            type: 'FAILED',
+            code: 'WARM_TRANSFER_REQUIRED',
+            message: 'A warm consultation is required to complete transfer',
+            recoverable: true,
+          });
+          return;
+        }
+        const result = await run(() =>
+          input.api.completeCallTransfer(sessionId, transferId),
+        );
+        if (!result) return;
+        if (!result.success) {
+          dispatch({
+            type: 'FAILED',
+            code: 'TRANSFER_FAILED',
+            message: result.error ?? 'Transfer completion failed',
+            recoverable: true,
+          });
+          return;
+        }
+        dispatch({ type: 'TRANSFER_COMPLETED' });
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    cancelTransfer: async (): Promise<void> => {
+      const sessionId = state.activeSessionId;
+      const transferId = state.transfer.transferId;
+      if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
+        dispatch({
+          type: 'FAILED',
+          code: 'WARM_TRANSFER_REQUIRED',
+          message: 'A warm consultation is required to cancel transfer',
+          recoverable: true,
+        });
+        return;
+      }
+      const result = await run(() =>
+        input.api.cancelCallTransfer(sessionId, transferId),
+      );
+      if (!result) return;
+      if (!result.success) {
+        dispatch({
+          type: 'FAILED',
+          code: 'TRANSFER_FAILED',
+          message: result.error ?? 'Transfer cancellation failed',
+          recoverable: true,
+        });
+        return;
+      }
+      dispatch({ type: 'TRANSFER_CANCELLED' });
+    },
     refreshSession: async (): Promise<void> => {
       try {
         const sessionId = state.activeSessionId;
         if (!sessionId) return;
         const session = await run(() => input.api.getCallSession(sessionId));
         if (session) projectSession(session);
+        const transferId = state.transfer.transferId;
+        if (state.transfer.status === 'initiating' && transferId) {
+          const transfer = await run(() =>
+            input.api.getCallTransferStatus(sessionId, transferId),
+          );
+          if (transfer) projectTransferStatus(transfer);
+        }
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
       }

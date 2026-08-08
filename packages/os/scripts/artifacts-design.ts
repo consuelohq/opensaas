@@ -35,7 +35,6 @@ const DEPLOYED_PACKAGE_MANIFESTS = [
   'packages/contacts/package.json',
   'packages/dialer/package.json',
   'packages/logger/package.json',
-  'packages/metering/package.json',
   'packages/sdk/package.json',
 ] as const;
 

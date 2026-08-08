@@ -185,7 +185,7 @@ describe('LeadConnector embed view', () => {
     expect(resolveLeadConnectorSurface('/overlay')).toBe('overlay');
     expect(resolveLeadConnectorSurface('/overlay/session')).toBe('overlay');
   });
-  it('renders the sidebar route as an operator workspace with callable CRM records', () => {
+  it('renders the sidebar route as a commercial administration workspace', () => {
     const state = reduceEmbedState(
       reduceEmbedState(createInitialEmbedState(), {
         type: 'AUTHENTICATED',
@@ -230,35 +230,38 @@ describe('LeadConnector embed view', () => {
     const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
 
     expect(html).toContain('data-surface="admin"');
-    expect(html).toContain('Who do you want to call?');
-    expect(html).toContain('Choose list');
-    expect(html).toContain('Single dial');
-    expect(html).toContain('Marketing Pipeline');
-    expect(html).toContain('New Lead');
+    expect(html).toContain('Plans');
+    expect(html).toContain('Team');
+    expect(html).toContain('Phone numbers');
+    expect(html).toContain('Usage');
+    expect(html).toContain('Billing');
     expect(html).toContain('Active calls');
     expect(html).toContain('Call history');
-    expect(html).toContain('Connection and browser checks');
+    expect(html).not.toContain('Who do you want to call?');
     expect(html).not.toContain('will appear here');
     expect(html).not.toContain('will be added');
   });
 
-  it('renders API-reported resource totals instead of capped loaded-array lengths', () => {
-    const state = reduceEmbedState(createInitialEmbedState(), {
-      type: 'RESOURCES_LOADED',
-      contacts: [],
-      contactTotal: 73,
-      opportunities: [],
-      opportunityTotal: 144,
-      pipelines: [],
-    });
-    const html = renderLeadConnectorEmbed(state, { surface: 'admin' });
-
-    expect(html).toContain(
-      '<div><dt>Contacts</dt><dd>73</dd></div>',
+  it('preserves API-reported resource totals independently from loaded arrays', () => {
+    const state = reduceEmbedState(
+      reduceEmbedState(createInitialEmbedState(), {
+        type: 'AUTHENTICATED',
+        token: 'embed-token',
+        expiresAt: '2026-08-05T00:00:00.000Z',
+      }),
+      {
+        type: 'RESOURCES_LOADED',
+        contacts: [],
+        contactTotal: 73,
+        opportunities: [],
+        opportunityTotal: 144,
+        pipelines: [],
+      },
     );
-    expect(html).toContain(
-      '<div><dt>Opportunities</dt><dd>144</dd></div>',
-    );
+    expect(state.contactTotal).toBe(73);
+    expect(state.opportunityTotal).toBe(144);
+    expect(state.contacts).toHaveLength(0);
+    expect(state.opportunities).toHaveLength(0);
   });
 
   it('renders the mature queue-first call setup in a ready overlay', () => {

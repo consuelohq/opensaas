@@ -105,19 +105,38 @@ const renderContactRows = (
     .join('');
 };
 
-const renderQueueOptions = (state: LeadConnectorEmbedState): string =>
-  state.pipelines
-    .map(
-      (pipeline) => `<optgroup label="${escapeHtml(pipeline.name)}">${pipeline.stages
-        .map((stage) => {
-          const selected =
-            state.selectedQueue?.pipelineId === pipeline.id &&
-            state.selectedQueue.stageId === stage.id;
-          return `<option value="${escapeHtml(`${pipeline.id}:${stage.id}`)}"${selected ? ' selected' : ''}>${escapeHtml(stage.name)}</option>`;
-        })
-        .join('')}</optgroup>`,
-    )
-    .join('');
+type ComboboxOption = { value: string; label: string };
+
+const renderCombobox = (input: {
+  field: string;
+  label: string;
+  value: string | null;
+  placeholder: string;
+  options: ComboboxOption[];
+  disabled?: boolean;
+}): string => {
+  const id = `combobox-${input.field}`;
+  const selected = input.options.find((option) => option.value === input.value);
+  return `<label class="setup-field setup-field--wide"><span>${escapeHtml(input.label)}</span>
+    <div class="combobox" data-combobox-field="${escapeHtml(input.field)}" data-combobox-value="${escapeHtml(input.value ?? '')}">
+      <button type="button" class="combobox__trigger" role="combobox" aria-controls="${id}-listbox" aria-expanded="false"${input.disabled ? ' disabled' : ''}>${escapeHtml(selected?.label ?? input.placeholder)}</button>
+      <div id="${id}-listbox" class="combobox__listbox" role="listbox" hidden>${input.options
+        .map(
+          (option, index) =>
+            `<button type="button" id="${id}-option-${index}" class="combobox__option" role="option" data-combobox-value="${escapeHtml(option.value)}" aria-selected="${option.value === input.value}">${escapeHtml(option.label)}</button>`,
+        )
+        .join('')}</div>
+    </div>
+  </label>`;
+};
+
+const queueOptions = (state: LeadConnectorEmbedState): ComboboxOption[] =>
+  state.pipelines.flatMap((pipeline) =>
+    pipeline.stages.map((stage) => ({
+      value: `${pipeline.id}:${stage.id}`,
+      label: `${pipeline.name} — ${stage.name}`,
+    })),
+  );
 
 const renderQueueSummary = (state: LeadConnectorEmbedState): string => {
   const queue = state.selectedQueue;
@@ -135,14 +154,19 @@ const renderCallSetup = (
   surface: 'admin' | 'overlay',
 ): string => {
   const queueMode = state.setup.mode === 'queue';
+  const caller = state.commercialCaller;
+  const lineOptions = caller?.lineOptions.length
+    ? caller.lineOptions
+    : [1, 2, 3];
   const canStart =
     state.sessionToken !== null &&
     state.selectedTargets.length > 0 &&
-    (queueMode ? state.selectedQueue !== null : true);
+    (queueMode ? state.selectedQueue !== null : true) &&
+    (caller?.canStartCall ?? true);
   return `<section class="call-setup call-setup--${surface}" aria-label="Call setup">
     <div class="setup-heading">
       <div><p class="eyebrow">Call setup</p><h2>Who do you want to call?</h2><p>Choose a list or dial a single number.</p></div>
-      <button type="button" class="icon-button refresh-button" data-action="refresh-resources" aria-label="Refresh CRM data">${state.resourcesRefreshing ? '↻' : '↻'}</button>
+      <button type="button" class="icon-button refresh-button" data-action="refresh" aria-label="Refresh CRM data">↻</button>
     </div>
     <div class="setup-tabs" role="tablist" aria-label="Call target mode">
       <button type="button" role="tab" aria-selected="${queueMode}" class="setup-tab${queueMode ? ' is-active' : ''}" data-action="setup-queue">Choose list</button>
@@ -151,24 +175,65 @@ const renderCallSetup = (
     <div class="setup-fields">
       ${
         queueMode
-          ? `<label class="setup-field setup-field--wide"><span>Choose list</span><select data-field="queue"><option value="">— Select a pipeline stage —</option>${renderQueueOptions(state)}</select></label>${renderQueueSummary(state)}`
+          ? `${renderCombobox({
+              field: 'queue',
+              label: 'Choose list',
+              value: state.selectedQueue
+                ? `${state.selectedQueue.pipelineId}:${state.selectedQueue.stageId}`
+                : null,
+              placeholder: '— Select a pipeline stage —',
+              options: queueOptions(state),
+            })}${renderQueueSummary(state)}`
           : `<div class="single-dial-panel">
               <label class="setup-field setup-field--wide"><span>Phone number</span><div class="input-action"><input type="tel" data-field="single-phone" placeholder="(555) 555-0123" autocomplete="tel" /><button type="button" class="button button--secondary" data-action="select-single-number">Use number</button></div></label>
               <label class="setup-field setup-field--wide"><span>Find a contact</span><input type="search" data-field="search" value="${escapeHtml(state.filters.query)}" placeholder="Name, email, or phone" autocomplete="off" /></label>
               <div class="single-contact-list">${renderContactRows(state, surface === 'overlay' ? 4 : 8)}</div>
             </div>`
       }
-      <label class="setup-field setup-field--wide"><span>Call from</span><select data-field="caller-id"><option value="">Automatic caller ID</option></select></label>
+      ${renderCombobox({
+        field: 'caller-id',
+        label: 'Call from',
+        value: state.setup.callerIdNumber,
+        placeholder: 'Automatic caller ID',
+        options: [
+          { value: '', label: 'Automatic caller ID' },
+          ...state.callerIds.map((phoneNumber) => ({
+            value: phoneNumber,
+            label: maskPhone(phoneNumber),
+          })),
+        ],
+      })}
       <label class="check-field"><input type="checkbox" data-field="local-presence"${state.setup.preferLocalPresence ? ' checked' : ''} /><span>Prefer local presence calling</span></label>
       ${
         queueMode
-          ? `<label class="setup-field setup-field--wide"><span>Calling mode</span><select data-field="calling-mode"><option value="predictive"${state.setup.callingMode === 'predictive' ? ' selected' : ''}>Predictive Dialer (recommended)</option><option value="single"${state.setup.callingMode === 'single' ? ' selected' : ''}>Single (one call at a time)</option></select></label>
-             <label class="setup-field setup-field--wide"><span>Number of lines</span><select data-field="line-count"${state.setup.callingMode === 'single' ? ' disabled' : ''}><option value="1"${state.setup.requestedFanout === 1 ? ' selected' : ''}>One</option><option value="2"${state.setup.requestedFanout === 2 ? ' selected' : ''}>Two</option><option value="3"${state.setup.requestedFanout === 3 ? ' selected' : ''}>Three</option></select></label>`
+          ? `${renderCombobox({
+              field: 'calling-mode',
+              label: 'Calling mode',
+              value: state.setup.callingMode,
+              placeholder: 'Choose a calling mode',
+              options: [
+                ...(caller?.predictive === false
+                  ? []
+                  : [{ value: 'predictive', label: 'Predictive Dialer (recommended)' }]),
+                { value: 'single', label: 'Single (one call at a time)' },
+              ],
+            })}
+             ${renderCombobox({
+               field: 'line-count',
+               label: 'Number of lines',
+               value: String(state.setup.requestedFanout),
+               placeholder: 'Choose line count',
+               options: lineOptions.map((line) => ({
+                 value: String(line),
+                 label: line === 1 ? 'One' : String(line),
+               })),
+               disabled: state.setup.callingMode === 'single',
+             })}`
           : ''
       }
     </div>
+    ${caller && !caller.canStartCall ? `<p class="notice notice--error" role="status">Calling is unavailable: ${escapeHtml(phaseLabel(caller.denialCode ?? 'commercial access blocked'))}.</p>` : ''}
     <div class="setup-actions">
-      <button type="button" class="button button--secondary" data-action="refresh-resources">Refresh CRM</button>
       <button type="button" class="button button--primary" data-action="start-configured"${canStart ? '' : ' disabled'}>${queueMode && state.selectedQueue ? `Call ${escapeHtml(state.selectedQueue.stageName)}` : queueMode ? 'Start Dialer' : 'Call now'}</button>
     </div>
   </section>`;
@@ -195,6 +260,24 @@ const renderWrapUp = (state: LeadConnectorEmbedState): string => {
         <div class="primary-actions"><button type="button" class="button button--secondary" data-action="return-home">Skip disposition</button><button type="submit" class="button button--primary" data-action="submit-disposition">Save and close</button></div>
       </form>
     </section>`;
+};
+
+const renderTransferControls = (state: LeadConnectorEmbedState): string => {
+  if (state.transfer.status === 'consulting' && state.transfer.type === 'warm') {
+    return '<div class="transfer-controls transfer-controls--consulting" aria-label="Warm transfer consultation"><p><strong>Warm consultation</strong><span>' +
+      maskPhone(state.transfer.target ?? '') +
+      '</span></p><button type="button" class="button button--primary" data-action="complete-transfer">Complete transfer</button><button type="button" class="button button--secondary" data-action="cancel-transfer">Cancel transfer</button></div>';
+  }
+  if (state.transfer.status === 'initiating') {
+    return '<div class="transfer-controls" role="status">Starting transfer\u2026</div>';
+  }
+  const outcome =
+    state.transfer.status === 'completed'
+      ? '<p class="transfer-outcome">Transfer completed.</p>'
+      : state.transfer.status === 'cancelled'
+        ? '<p class="transfer-outcome">Transfer cancelled. Customer restored.</p>'
+        : '';
+  return outcome + '<form class="transfer-controls" data-form="transfer" aria-label="Transfer controls"><label>Transfer number<input name="to" type="tel" inputmode="tel" autocomplete="tel" placeholder="+15551234567" pattern="\\+[1-9][0-9]{7,14}" required /></label><label>Transfer type<select name="type"><option value="warm">Warm consultation</option><option value="cold">Cold transfer</option></select></label><button type="submit" class="button button--secondary" data-action="initiate-transfer">Start transfer</button></form>';
 };
 
 const renderOverlayStage = (state: LeadConnectorEmbedState): string => {
@@ -238,7 +321,7 @@ const renderOverlayStage = (state: LeadConnectorEmbedState): string => {
     const loserCount = state.callLegs.filter(
       (leg) => leg.role === 'loser',
     ).length;
-    return `<section class="overlay-stage overlay-stage--connected"><div class="connection-badge">Connected</div><div class="winner-card"><p class="eyebrow">Winner</p><h1>${targetLabel(target ?? state.selectedTargets[0])}</h1><p>${winner ? maskPhone(winner.customerNumber) : 'Private number'}</p></div>${loserCount ? `<p class="loser-summary">${loserCount} other ${loserCount === 1 ? 'line' : 'lines'} ended</p>` : ''}<button type="button" class="button button--danger" data-action="hang-up">Hang up</button></section>`;
+    return `<section class="overlay-stage overlay-stage--connected"><div class="connection-badge">Connected</div><div class="winner-card"><p class="eyebrow">Winner</p><h1>${targetLabel(target ?? state.selectedTargets[0])}</h1><p>${winner ? maskPhone(winner.customerNumber) : 'Private number'}</p></div>${loserCount ? `<p class="loser-summary">${loserCount} other ${loserCount === 1 ? 'line' : 'lines'} ended</p>` : ''}${renderTransferControls(state)}<button type="button" class="button button--danger" data-action="hang-up">Hang up</button></section>`;
   }
   if (state.phase === 'paused') {
     return `<section class="overlay-stage"><div class="stage-heading"><p class="eyebrow">Queue paused</p><h1>Calling is paused</h1><p>The active queue is preserved.</p></div><div class="split-actions"><button type="button" class="button button--primary" data-action="resume">Resume</button><button type="button" class="button button--secondary" data-action="stop">Stop queue</button></div></section>`;
@@ -383,59 +466,173 @@ const renderAdminCallOperations = (state: LeadConnectorEmbedState): string => `
     <aside class="operator-panel call-operations__detail">${renderCallDetail(state)}</aside>
   </section>`;
 
-const renderAdmin = (state: LeadConnectorEmbedState): string => {
-  const connectionLabel = ['booting', 'authenticating'].includes(state.phase)
-    ? 'Connecting'
-    : state.error
-      ? 'Needs attention'
-      : state.sessionToken
-        ? 'Connected'
-        : 'Waiting for context';
-  const setupVisible = state.phase === 'ready';
-  return `
-    <main class="surface-shell admin-shell" data-surface="admin" data-phase="${escapeHtml(state.phase)}">
-      <header class="operator-header operator-header--setup">
-        <div><p class="eyebrow">Consuelo Dialer</p><h1>Who do you want to call?</h1><p class="lede">Choose a LeadConnector stage as a predictive queue or dial one person directly.</p></div>
-        <span class="status-pill">${escapeHtml(connectionLabel)}</span>
-      </header>
+const commercialValue = (
+  value: Record<string, unknown> | null | undefined,
+  snake: string,
+  camel: string,
+): unknown => value?.[snake] ?? value?.[camel];
 
-      ${renderError(state)}
+const money = (cents: number): string => '$' + (cents / 100).toFixed(2);
 
-      <section class="admin-setup-layout">
-        <article class="operator-panel operator-panel--setup">
-          ${setupVisible ? renderCallSetup(state, 'admin') : renderOverlayStage(state)}
-        </article>
-        <aside class="operator-panel setup-context">
-          <p class="eyebrow">Current setup</p>
-          <h2>${state.selectedQueue ? escapeHtml(state.selectedQueue.stageName) : state.setup.mode === 'single' ? 'Single dial' : 'No list selected'}</h2>
-          <dl class="detail-list">
-            <div><dt>Mode</dt><dd>${state.setup.mode === 'queue' ? escapeHtml(phaseLabel(state.setup.callingMode)) : 'Single'}</dd></div>
-            <div><dt>Lines</dt><dd>${state.setup.mode === 'queue' ? state.setup.requestedFanout : 1}</dd></div>
-            <div><dt>Local presence</dt><dd>${state.setup.preferLocalPresence ? 'Preferred' : 'Off'}</dd></div>
-            <div><dt>CRM refresh</dt><dd>${state.resourcesRefreshing ? 'Refreshing' : 'Live'}</dd></div>
-          </dl>
-        </aside>
-      </section>
-
-      ${renderAdminCallOperations(state)}
-
-      <details class="operator-panel admin-diagnostics">
-        <summary>Connection and browser checks</summary>
-        <dl class="detail-list">
-          <div><dt>CRM session</dt><dd>${state.sessionToken ? 'Authenticated' : connectionLabel}</dd></div>
-          <div><dt>Contacts</dt><dd>${state.contactTotal}</dd></div>
-          <div><dt>Opportunities</dt><dd>${state.opportunityTotal}</dd></div>
-          <div><dt>Pipelines</dt><dd>${state.pipelines.length}</dd></div>
-          <div><dt>Microphone</dt><dd>Checked before calling</dd></div>
-        </dl>
-      </details>
-    </main>
-  `;
+const commercialQuantity = (
+  items: Array<Record<string, unknown>>,
+  code: string,
+): number => {
+  const item = items.find(
+    (candidate) => String(candidate.item_code ?? candidate.itemCode ?? '') === code,
+  );
+  const quantity = Number(item?.quantity ?? 0);
+  return Number.isSafeInteger(quantity) && quantity >= 0 ? quantity : 0;
 };
+
+const billingDate = (seconds: number | null): string => {
+  if (!seconds) return 'the next billing date';
+  return new Date(seconds * 1_000).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+};
+
+const renderCommercialAdmin = (state: LeadConnectorEmbedState): string => {
+  const dashboard = state.commercialDashboard;
+  if (!dashboard) {
+    return `<section class="commercial-admin-grid commercial-loading" aria-live="polite" aria-busy="true">
+      <article class="operator-panel commercial-card"><h2>Plans</h2><p>Loading subscription…</p></article>
+      <article class="operator-panel commercial-card"><h2>Team</h2><p>Loading seat assignments…</p></article>
+      <article class="operator-panel commercial-card"><h2>Phone numbers</h2><p>Loading number inventory…</p></article>
+      <article class="operator-panel commercial-card"><h2>Usage</h2><p>Loading current-period usage…</p></article>
+      <article class="operator-panel commercial-card"><h2>Billing</h2><p>Loading billing status…</p></article>
+    </section>`;
+  }
+  const subscriptionStatus = String(
+    commercialValue(dashboard.subscription, 'status', 'status') ?? 'Free trial',
+  );
+  const seats = dashboard.seats
+    .map((seat) => {
+      const userId = String(commercialValue(seat, 'user_id', 'userId') ?? '');
+      const planCode = String(
+        commercialValue(seat, 'plan_code', 'planCode') ?? 'standard',
+      );
+      const status = String(commercialValue(seat, 'status', 'status') ?? 'active');
+      return `<tr><td>${escapeHtml(userId)}</td><td>${escapeHtml(phaseLabel(planCode))}</td><td>${escapeHtml(phaseLabel(status))}</td></tr>`;
+    })
+    .join('');
+  const numbers = dashboard.numbers
+    .map((number) => {
+      const phoneNumber = String(
+        commercialValue(number, 'phone_number', 'phoneNumber') ?? '',
+      );
+      const userId = String(
+        commercialValue(number, 'user_id', 'userId') ?? 'Unassigned',
+      );
+      const status = String(
+        commercialValue(number, 'status', 'status') ?? 'active',
+      );
+      return `<tr><td>${escapeHtml(maskPhone(phoneNumber))}</td><td>${escapeHtml(userId)}</td><td>${escapeHtml(phaseLabel(status))}</td><td>${status === 'active' ? `<button type="button" class="button button--secondary" data-action="release-number" data-phone-number="${escapeHtml(phoneNumber)}">Release</button>` : ''}</td></tr>`;
+    })
+    .join('');
+  const searchResults = state.commercialNumberSearchResults
+    .map((number) => {
+      const phoneNumber = String(number.phoneNumber ?? number.phone_number ?? '');
+      const location = [number.city, number.state].filter(Boolean).join(', ');
+      return `<li><div><strong>${escapeHtml(maskPhone(phoneNumber))}</strong><span>${escapeHtml(location || 'US local number')} · ${money(dashboard.catalog.additionalNumberPriceCents)}/month when an add-on slot is required</span></div><button type="button" class="button button--secondary" data-action="provision-number" data-phone-number="${escapeHtml(phoneNumber)}">Provision</button></li>`;
+    })
+    .join('');
+  const connectedMinutes = Number(
+    commercialValue(dashboard.usage, 'connected_minutes', 'connectedMinutes') ?? 0,
+  );
+  const providerCostMicros = Number(
+    commercialValue(dashboard.usage, 'provider_cost_micros', 'providerCostMicros') ?? 0,
+  );
+  const plans = (['single', 'standard', 'power'] as const)
+    .map((code) => {
+      const plan = dashboard.catalog.plans[code];
+      return `<li><strong>${escapeHtml(phaseLabel(code))}</strong><span>${money(plan.priceCents)}/seat · ${plan.maxNumbersPerSeat} line${plan.maxNumbersPerSeat === 1 ? '' : 's'} · ${plan.includedMinutes ?? 'Unlimited'} minutes</span></li>`;
+    })
+    .join('');
+  const quantities = {
+    single: commercialQuantity(dashboard.subscriptionItems, 'single'),
+    standard: commercialQuantity(dashboard.subscriptionItems, 'standard'),
+    power: commercialQuantity(dashboard.subscriptionItems, 'power'),
+    additionalNumber: commercialQuantity(
+      dashboard.subscriptionItems,
+      'additional-number',
+    ),
+  };
+  const hasSubscription = dashboard.subscription !== null;
+  const cancelAtPeriodEnd = Boolean(
+    commercialValue(
+      dashboard.subscription,
+      'cancel_at_period_end',
+      'cancelAtPeriodEnd',
+    ),
+  );
+  const paymentFailedAt = String(
+    commercialValue(
+      dashboard.subscription,
+      'payment_failed_at',
+      'paymentFailedAt',
+    ) ?? '',
+  );
+  const paymentRecovery =
+    hasSubscription &&
+    (subscriptionStatus === 'past_due' ||
+      subscriptionStatus === 'unpaid' ||
+      paymentFailedAt.length > 0);
+  const recurringCents =
+    quantities.single * dashboard.catalog.plans.single.priceCents +
+    quantities.standard * dashboard.catalog.plans.standard.priceCents +
+    quantities.power * dashboard.catalog.plans.power.priceCents +
+    quantities.additionalNumber *
+      dashboard.catalog.additionalNumberPriceCents;
+  const quantityFields = `
+    <label>Single seats<input name="single" type="number" min="0" step="1" value="${quantities.single}" /></label>
+    <label>Standard seats<input name="standard" type="number" min="0" step="1" value="${hasSubscription ? quantities.standard : Math.max(1, quantities.standard)}" /></label>
+    <label>Power seats<input name="power" type="number" min="0" step="1" value="${quantities.power}" /></label>
+    <label>Additional numbers<input name="additionalNumber" type="number" min="0" step="1" value="${quantities.additionalNumber}" /></label>`;
+  const preview = state.commercialBillingPreview;
+  const previewPanel = preview
+    ? `<section class="billing-preview" role="status"><p class="eyebrow">Proration preview</p><h3>Due now: ${money(preview.amountDue)}</h3><p>Stripe calculated this amount for the exact confirmed change. The subscription remains unchanged until you confirm.</p><div class="button-row"><button type="button" class="button button--primary" data-action="apply-billing-change">Confirm change</button><button type="button" class="button button--secondary" data-action="cancel-billing-preview">Cancel</button></div></section>`
+    : '';
+  const plansCard = hasSubscription
+    ? `<article class="operator-panel commercial-card" data-admin-section="plans"><p class="eyebrow">${escapeHtml(phaseLabel(subscriptionStatus))}</p><h2>Plans</h2><ul class="commercial-list">${plans}</ul><form data-form="commercial-billing-change" class="billing-quantity-form">${quantityFields}<button type="submit" class="button button--secondary">Preview subscription change</button></form>${previewPanel}</article>`
+    : `<article class="operator-panel commercial-card" data-admin-section="plans"><p class="eyebrow">Free trial</p><h2>Plans</h2><ul class="commercial-list">${plans}</ul><p>Trial: ${dashboard.catalog.trial.includedMinutes} minutes, ${dashboard.catalog.trial.maxSeats} seat, ${dashboard.catalog.trial.maxNumbers} number.</p><form data-form="commercial-billing-checkout" class="billing-quantity-form">${quantityFields}<button type="submit" class="button button--primary">Start paid plan</button></form></article>`;
+  const statusPanel = cancelAtPeriodEnd
+    ? `<div class="billing-state billing-state--warning" role="status"><strong>Cancellation scheduled</strong><p>Access remains active through the current paid period. Use the billing portal to resume or review the cancellation date.</p></div>`
+    : paymentRecovery
+      ? `<div class="billing-state billing-state--warning" role="status"><strong>Payment recovery</strong><p>Update the payment method during the ${dashboard.catalog.paymentGraceDays}-day grace period to avoid call suspension.</p></div>`
+      : hasSubscription
+        ? '<div class="billing-state billing-state--success" role="status"><strong>Subscription active</strong><p>Confirmed Stripe quantities are applied to seat and number inventory.</p></div>'
+        : '<div class="billing-state" role="status"><strong>Free trial</strong><p>Choose paid quantities in Plans to open secure Stripe Checkout.</p></div>';
+  const upcomingInvoice = dashboard.billingSummary
+    ? `<div class="billing-summary"><p class="eyebrow">Upcoming invoice</p><strong>${money(dashboard.billingSummary.amountDue)}</strong><span>Estimated for ${escapeHtml(billingDate(dashboard.billingSummary.periodEnd))}</span></div>`
+    : dashboard.billingSummaryError
+      ? `<p class="resource-empty">${escapeHtml(dashboard.billingSummaryError)}</p>`
+      : '';
+  const addOnLabel = `${quantities.additionalNumber} additional number${quantities.additionalNumber === 1 ? '' : 's'}`;
+  const billingCard = `<article class="operator-panel commercial-card" data-admin-section="billing"><p class="eyebrow">Subscription</p><h2>Billing</h2>${statusPanel}${upcomingInvoice}<dl><div><dt>Recurring plan total</dt><dd>${money(recurringCents)}/month</dd></div><div><dt>Add-on breakdown</dt><dd>${escapeHtml(addOnLabel)} · ${money(quantities.additionalNumber * dashboard.catalog.additionalNumberPriceCents)}/month</dd></div></dl>${hasSubscription ? '<p>Payment methods, invoices, and cancellation are managed securely in Stripe.</p><button type="button" class="button button--secondary" data-action="manage-billing">Open billing portal</button>' : '<p>No payment method is stored until secure Checkout is completed.</p>'}</article>`;
+  return `<section class="commercial-admin-grid" aria-label="Commercial dialer administration">
+    ${plansCard}
+    <article class="operator-panel commercial-card" data-admin-section="team"><p class="eyebrow">${dashboard.seats.length} assigned</p><h2>Team</h2><table><thead><tr><th>User</th><th>Tier</th><th>Status</th></tr></thead><tbody>${seats || '<tr><td colspan="3">No paid seats assigned.</td></tr>'}</tbody></table><form data-form="commercial-seat"><label>Provider user ID<input name="userId" required /></label><label>Tier<select name="planCode"><option value="single">Single</option><option value="standard">Standard</option><option value="power">Power</option></select></label><button type="submit" class="button button--secondary">Save seat</button></form></article>
+    <article class="operator-panel commercial-card" data-admin-section="phone-numbers"><p class="eyebrow">${dashboard.numbers.filter((number) => String(commercialValue(number, 'status', 'status')) === 'active').length} active</p><h2>Phone numbers</h2><table><thead><tr><th>Number</th><th>User</th><th>Status</th><th></th></tr></thead><tbody>${numbers || '<tr><td colspan="4">No numbers provisioned.</td></tr>'}</tbody></table><form data-form="commercial-number-search"><label>Area code or digits<input name="query" inputmode="numeric" required /></label><label>Assign to user<input name="userId" value="${escapeHtml(state.commercialNumberTargetUserId)}" required /></label><button type="submit" class="button button--secondary">Search available numbers</button></form><ul class="commercial-number-results">${searchResults}</ul></article>
+    <article class="operator-panel commercial-card" data-admin-section="usage"><p class="eyebrow">Current period</p><h2>Usage</h2><dl><div><dt>Connected minutes</dt><dd>${connectedMinutes}</dd></div><div><dt>Provider cost</dt><dd>${money(Math.round(providerCostMicros / 10_000))}</dd></div></dl></article>
+    ${billingCard}
+  </section>`;
+};
+
+const renderAdmin = (state: LeadConnectorEmbedState): string => `
+  <main class="surface-shell admin-shell" data-surface="admin" data-phase="${escapeHtml(state.phase)}">
+    <header class="operator-header"><div><p class="eyebrow">Workspace administration</p><h1>Dialer settings</h1><p class="lede">Manage subscriptions, seats, caller IDs, usage, and billing for this location.</p></div></header>
+    ${renderError(state)}
+    ${renderCommercialAdmin(state)}
+    ${renderAdminCallOperations(state)}
+  </main>
+`;
 
 const renderOverlay = (state: LeadConnectorEmbedState): string => `
   <main class="surface-shell overlay-shell" data-surface="overlay" data-phase="${escapeHtml(state.phase)}">
-    <header class="overlay-header"><div class="brand-lockup"><span class="brand-mark">C</span><strong>Consuelo Dialer</strong></div><span class="status-pill">${escapeHtml(phaseLabel(state.phase))}</span></header>
     ${renderOverlayStage(state)}
   </main>
 `;
