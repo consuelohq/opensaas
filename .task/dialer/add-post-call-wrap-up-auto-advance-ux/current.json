@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 610,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/610",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/610",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/610/add-post-call-wrap-up-auto-advance-ux",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/610",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/610/add-post-call-wrap-up-auto-advance-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-add-post-call-wrap-up-auto-advance-ux",
+  "taskSession": "tsk_616e6939174d",
+  "tmuxSession": "opensaas-dialer-add-post-call-wrap-up-auto-advance-ux-616e6939",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-add-post-call-wrap-up-auto-advance-ux/.task/dialer/add-post-call-wrap-up-auto-advance-ux/session.json",
+  "createdAt": "2026-05-27T02:58:41.284Z"
+}

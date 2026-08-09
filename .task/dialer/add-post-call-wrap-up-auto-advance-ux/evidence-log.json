@@ -1,0 +1,472 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+  "events": [
+    {
+      "id": "989dcf46-5e4f-4d1b-8c95-f9298d86e2f7",
+      "occurred_at": "2026-05-27T02:59:39.819Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/ui/layout/modal/components/Modal.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "942baf17-add8-4eab-aed6-84b768776709",
+      "occurred_at": "2026-05-27T02:59:39.872Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "3a3b7127-da11-4f1d-aeb5-4ab273464faf",
+      "occurred_at": "2026-05-27T03:00:32.236Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-ui/src/input/components/Checkbox.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "cbed9059-f235-438d-a992-61e82bad71e5",
+      "occurred_at": "2026-05-27T03:00:32.270Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "4755a14a-3899-4efb-908e-b610b6965aa6",
+      "occurred_at": "2026-05-27T03:00:39.152Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "d2651cef-93b9-4e96-8718-5760286bf72e",
+      "occurred_at": "2026-05-27T03:00:55.698Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "99e26d37-f9e6-4ad3-84c8-7f3237b6898b",
+      "occurred_at": "2026-05-27T03:01:05.646Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/OpportunityCallingWorkspace.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "995fde37-ffe3-48b7-8560-ebab0b7ef794",
+      "occurred_at": "2026-05-27T03:01:37.356Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/testing/renderWithRecoil.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "ba89d314-404f-4949-800f-fa456933feaa",
+      "occurred_at": "2026-05-27T03:01:43.642Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-ui/src/input/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "95686b71-47e6-4908-9b49-e563c552f607",
+      "occurred_at": "2026-05-27T03:01:55.221Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/usePostCallAnalysis.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "2c129ad4-7193-46a5-8c00-8db0dd0138fd",
+      "occurred_at": "2026-05-27T03:02:08.742Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "01031f33-e477-4abb-a756-0315342f1d4e",
+      "occurred_at": "2026-05-27T03:02:18.643Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/ui/layout/modal/hooks/useModal.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "0f858184-3e24-47f2-bf9c-35957f47c977",
+      "occurred_at": "2026-05-27T03:02:28.208Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-ui/src/input/components/Checkbox.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "4d4e0007-03a6-4b6c-9f4b-9d7a6ff8518a",
+      "occurred_at": "2026-05-27T03:04:36.231Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "f448abf4-311d-4992-ae2a-d991c9d0b471",
+      "occurred_at": "2026-05-27T03:04:46.832Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "4dde94f9-1125-4262-ae6a-04bfaa1ef171",
+      "occurred_at": "2026-05-27T03:05:06.451Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/types/queue.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "8a2e9d52-9f2e-4c4f-81aa-1bd6a4814406",
+      "occurred_at": "2026-05-27T03:05:11.573Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/types/queue.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "b01ea5ab-110d-4d03-b719-791b160c2b0a",
+      "occurred_at": "2026-05-27T03:05:16.123Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/types/coaching.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "fc465653-428e-460e-b08c-7af5083abef3",
+      "occurred_at": "2026-05-27T03:05:31.948Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/types/dialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "ab421d16-d02b-4c4d-a401-480addf82888",
+      "occurred_at": "2026-05-27T03:07:15.159Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/OpportunityCallingWorkspace.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "d77deab1-48e7-4fc9-b1cc-25eb932bddfd",
+      "occurred_at": "2026-05-27T03:08:04.571Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/OpportunityCallingWorkspace.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "909b718d-f67e-4ef2-8df9-27d028999690",
+      "occurred_at": "2026-05-27T03:08:09.073Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/OpportunityCallingWorkspace.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "7eabd428-9cd2-4738-9b5c-7f51e6419a3d",
+      "occurred_at": "2026-05-27T03:08:18.857Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/OpportunityCallingWorkspace.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "a0f40375-7138-44de-928b-f833ab1a40ff",
+      "occurred_at": "2026-05-27T03:08:40.368Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/OpportunityCallingWorkspace.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "07cdd143-c685-4742-bbeb-6b4740f08cc1",
+      "occurred_at": "2026-05-27T03:09:19.164Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "790fa993-e618-43fe-a5dc-5df371e89cc8",
+      "occurred_at": "2026-05-27T03:10:41.809Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/OpportunityCallingWorkspace.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "2d661ba3-0eff-408c-94fb-a2e43a10c1a1",
+      "occurred_at": "2026-05-27T03:12:33.161Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "59af2e0d-56b1-406b-90d5-4732404861bc",
+      "occurred_at": "2026-05-27T03:14:24.976Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/PostCallWrapUpModal.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    },
+    {
+      "id": "730ea183-becc-406b-8674-5fbbd8c20a74",
+      "occurred_at": "2026-05-27T03:15:05.846Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/__tests__/PostCallWrapUpModal.test.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-05-27T03:15:05.897Z"
+}
