@@ -56,5 +56,8 @@
 ## workspace-owned: validation evidence
 
 - 2026-08-10 16:22:59 `review.run`: passed — OK
-
 - 2026-08-10 16:26:11 apply-patch: `.task/os/mcp-2026-dual-era-transport/workpad.md`
+- 2026-08-10 16:32:13 apply-patch: `packages/os/scripts/lib/security-gateway.ts`
+- 2026-08-10 16:32:55 apply-patch: `packages/os/scripts/lib/security-gateway.ts`
+- 2026-08-10 16:33:58 `review.run`: passed — OK
+- 2026-08-10 16:34:31 `verify`: passed — OK

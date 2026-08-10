@@ -565,7 +565,7 @@ function recordCredentialAuditEvent(
   route?: string,
 ): void {
   recordGatewayAuditEvent({
-    home: consueloHomeFromGeneratedAuthPath(config.generatedAuthPath),
+    home: homeFromGeneratedAuthPath(config.generatedAuthPath),
     event: {
       event,
       callerId: token.callerId,
