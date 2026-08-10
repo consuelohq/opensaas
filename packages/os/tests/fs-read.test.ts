@@ -28,6 +28,17 @@ function runRead(cwd: string, args: string[]) {
 }
 
 describe('OS fs.read bounded ingestion', () => {
+  it('preserves exact full-file text including the trailing newline', () => {
+    const root = fixtureRoot();
+    try {
+      writeFileSync(path.join(root, 'full.txt'), 'one\ntwo\n');
+      const result = runRead(root, ['full.txt', '--full', '--json']);
+      expect(result.status).toBe(0);
+      expect(result.json).toMatchObject({ type: 'text-full', content: 'one\ntwo\n', sizeBytes: 8 });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
   it('should return a structured text page for a small UTF-8 file', () => {
     const root = fixtureRoot();
     try {

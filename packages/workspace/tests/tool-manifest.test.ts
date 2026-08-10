@@ -229,6 +229,26 @@ describe('workspace tool manifest generator', () => {
     assertStrongCodeCallExamples(codeCall as JsonObject | undefined);
   });
 
+  it('keeps every read-only fs tool task-session optional and every fs mutator task-scoped', () => {
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const fsEntries = registry.full.tools.filter((entry) => entry.name.startsWith('fs.'));
+    const readOnlyEntries = fsEntries.filter((entry) => entry.definition.capabilities.readOnly === true);
+    const mutatingEntries = fsEntries.filter((entry) => entry.definition.capabilities.mutating === true);
+
+    expect(readOnlyEntries.map((entry) => entry.name).sort()).toEqual(['fs.list', 'fs.read', 'fs.search']);
+    expect(mutatingEntries.map((entry) => entry.name).sort()).toEqual(['fs.apply_patch', 'fs.trash', 'fs.write']);
+
+    for (const entry of readOnlyEntries) {
+      expect(entry.definition.sessionRequired).toBe(false);
+      expect(entry.definition.command.branchMode).toBe('optional');
+    }
+
+    for (const entry of mutatingEntries) {
+      expect(entry.definition.sessionRequired).toBe(true);
+      expect(entry.definition.command.branchMode).toBe('required');
+    }
+  });
+
   it('writes full and core manifests to override output paths', () => {
     const fullOutputPath = join(fixtureRoot, 'tool-manifest.json');
     const coreOutputPath = join(fixtureRoot, 'core-manifest.json');

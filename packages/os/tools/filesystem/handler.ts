@@ -100,6 +100,11 @@ export const toolHandlers = [
           "source": "to",
           "flag": "--to",
           "kind": "value"
+        },
+        {
+          "source": "full",
+          "flag": "--full",
+          "kind": "boolean"
         }
       ]
     }
