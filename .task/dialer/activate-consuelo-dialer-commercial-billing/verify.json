@@ -1,0 +1,48 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/activate-consuelo-dialer-commercial-billing",
+  "base": "origin/stream/dialer",
+  "headSha": "38a6521ed420f82456e41ac75cda2f2cee22190c",
+  "changeHash": "dc63e03bd30f29de9ebc1f9b833442210609d7d743a07e47b50ee05a3e5c2275",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-10T00:41:56.281Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/activate-consuelo-dialer-commercial-billing/current.json",
+        ".task/dialer/activate-consuelo-dialer-commercial-billing/evidence-log.json",
+        ".task/dialer/activate-consuelo-dialer-commercial-billing/read-log.json",
+        ".task/dialer/activate-consuelo-dialer-commercial-billing/session.json",
+        ".task/dialer/activate-consuelo-dialer-commercial-billing/workpad.md",
+        ".task/tasks/dialer/activate-consuelo-dialer-commercial-billing.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
