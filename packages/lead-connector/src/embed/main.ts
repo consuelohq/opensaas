@@ -5,6 +5,7 @@ import { createLeadConnectorAgentVoice } from './agent-voice.js';
 import { resolveLeadConnectorContactName } from './contact-label.js';
 import { createLeadConnectorEmbedController } from './controller.js';
 import { createCombobox } from './combobox.js';
+import { createLeadConnectorIdleRefreshScheduler } from './idle-refresh.js';
 import {
   LEAD_CONNECTOR_PARENT_ORIGINS,
   createLeadConnectorParentBridge,
@@ -25,7 +26,6 @@ const api = createLeadConnectorEmbedApi({ baseUrl: window.location.origin });
 const voice = createLeadConnectorAgentVoice({ getToken: api.getVoiceToken });
 const controller = createLeadConnectorEmbedController({ api, voice, surface });
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
-let resourceTimer: ReturnType<typeof setInterval> | null = null;
 let bootstrapTimer: ReturnType<typeof setTimeout> | null = null;
 
 const failBootstrap = (): void => {
@@ -438,13 +438,12 @@ const refreshIdleResources = (): void => {
   void Promise.all([controller.refreshResources(), controller.loadCommercial()]);
 };
 
-const handleVisibility = (): void => {
-  if (document.visibilityState === 'visible') refreshIdleResources();
-};
-
-window.addEventListener('focus', refreshIdleResources);
-document.addEventListener('visibilitychange', handleVisibility);
-resourceTimer = setInterval(refreshIdleResources, 10_000);
+const idleRefreshScheduler = createLeadConnectorIdleRefreshScheduler({
+  windowTarget: window,
+  documentTarget: document,
+  refresh: refreshIdleResources,
+});
+idleRefreshScheduler.start();
 
 bridge.start();
 bootstrapTimer = setTimeout(failBootstrap, 5000);
@@ -452,10 +451,7 @@ bridge.requestUserContext();
 window.addEventListener('beforeunload', () => {
   completeBootstrap();
   stopRefresh();
-  if (resourceTimer) clearInterval(resourceTimer);
-  resourceTimer = null;
-  window.removeEventListener('focus', refreshIdleResources);
-  document.removeEventListener('visibilitychange', handleVisibility);
+  idleRefreshScheduler.stop();
   voice.disconnect();
   bridge.stop();
 });
