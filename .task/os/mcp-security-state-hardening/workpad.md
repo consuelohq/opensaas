@@ -47,7 +47,6 @@ started: 2026-08-10
 
 ## files changed
 
-- `.task/os/mcp-security-state-hardening/workpad.md`
 - `packages/os/scripts/lib/runtime-state.ts`
 - `packages/os/scripts/lib/security-gateway.ts`
 - `packages/os/scripts/os.ts`
@@ -55,6 +54,7 @@ started: 2026-08-10
 - `packages/os/tests/mcp-gateway.test.ts`
 - `packages/os/tests/runtime-state.test.ts`
 - `packages/os/tests/security-gateway.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -77,6 +77,9 @@ started: 2026-08-10
 - 2026-08-10 04:05:31 `review.run`: passed — strict review, 0 blocking findings.
 - 2026-08-10 04:05:40 `verify`: passed — full mode, `publishValid: true`, scoped against Branch 1 head.
 - 2026-08-10 04:06:32 `verify`: passed — OK
+- 2026-08-10 04:14:26 `review.run`: passed — OK
+- 2026-08-10 04:14:35 `verify`: passed — OK
+- 2026-08-10 04:14:51 `verify`: passed — OK
 
 ## validation details
 
@@ -131,3 +134,19 @@ bun run task:pr -- --task-only --ready
 - 2026-08-10 03:53:15 write: `.task/os/mcp-security-state-hardening/workpad.md`
 
 - 2026-08-10 04:06:22 write: `.task/os/mcp-security-state-hardening/workpad.md`
+
+## wait log
+
+- Start: 2026-08-10T04:09:30Z
+- Wait reason: GitHub has completed the failing distribution job but withholds job logs until the parent workflow run completes.
+- Duration: 15s, one bounded attempt.
+- Resume action: inspect run 31354534609 job 93351642450 with `gh run view --log-failed`, then re-check PR #1824 checks.
+- Expected signal: parent workflow is complete and failed-step logs identify a concrete assertion/error.
+- Fallback: if logs remain unavailable, inspect job annotations/API evidence and report the CI failure as unresolved without guessing.
+- Wait attempt 1 result: typed `wait` facade returned HTTP 502 before the timer completed.
+- Recovery plan: task-scoped terminal sleep for 15s; immediately inspect run 31354534609 job 93351642450 logs after wake.
+- Wait completion: GitHub logs became available on the next immediate verification; run 31354534609 job 93351642450 failed only in `tests/install-state.test.ts` because `gateway-audit.jsonl` was written under `<home>/logs` instead of the established `<home>/node/logs` path.
+- Root cause: Branch 2 overloaded the existing `homeFromGeneratedAuthPath` helper with two meanings. Audit/config code needs the security-node root; runtime SQLite needs the top-level Consuelo home.
+- Fix: restored `homeFromGeneratedAuthPath` to its original security-root semantics and added `consueloHomeFromGeneratedAuthPath` only for runtime replay/credential-usage state.
+- Regression result: the exact failing install-state test passes; the exact CI distribution-regression command now passes 89 tests with 5 intentional skips.
+- Post-fix safety: focused Bun security/state 47/47, Node/Vitest trace+authority 32/32, `git diff --check` clean, strict review 0 findings, full verify publish-valid.

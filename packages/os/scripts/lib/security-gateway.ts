@@ -514,12 +514,14 @@ function writeStoredAuth(
 }
 
 function homeFromGeneratedAuthPath(generatedAuthPath: string): string {
-  const generatedDir = path.dirname(generatedAuthPath);
-  const securityDir = path.dirname(generatedDir);
-  const securityParent = path.dirname(securityDir);
-  return path.basename(securityParent) === 'node'
-    ? path.dirname(securityParent)
-    : securityParent;
+  return path.dirname(path.dirname(path.dirname(generatedAuthPath)));
+}
+
+function consueloHomeFromGeneratedAuthPath(generatedAuthPath: string): string {
+  const securityHome = homeFromGeneratedAuthPath(generatedAuthPath);
+  return path.basename(securityHome) === 'node'
+    ? path.dirname(securityHome)
+    : securityHome;
 }
 
 function isLegacyNonceActive(seenAt: string | undefined, nowTime: number): boolean {
@@ -545,7 +547,7 @@ function credentialStatusForConfig(
   token: StoredToken,
 ): AgentAppCredentialStatus {
   const runtimeLastUsedAt = readGatewayCredentialLastUsedAt({
-    home: homeFromGeneratedAuthPath(config.generatedAuthPath),
+    home: consueloHomeFromGeneratedAuthPath(config.generatedAuthPath),
     tokenId: token.tokenId,
   });
   return credentialStatusFromStored(
@@ -996,7 +998,7 @@ export function verifyWorkspaceEdgeProxyRequest(input: {
     return safeError(401, 'EDGE_AUTH_NOT_CONFIGURED', 'Workspace edge authentication is not configured for this node.');
   }
   const nowTime = Date.parse(input.now);
-  const replayHome = homeFromGeneratedAuthPath(input.config.generatedAuthPath);
+  const replayHome = consueloHomeFromGeneratedAuthPath(input.config.generatedAuthPath);
   const replayScope = `edge:${stored.workspaceId}:${edgeProxy.nodeId}:${edgeProxy.connectorId}`;
   const result = verifyWorkspaceEdgeNodeRequest({
     signingSecret: edgeProxy.signingSecret,
@@ -1646,7 +1648,7 @@ export function verifyBearerMcpRequest(input: {
     input.path,
   );
   recordGatewayCredentialUsage({
-    home: homeFromGeneratedAuthPath(input.config.generatedAuthPath),
+    home: consueloHomeFromGeneratedAuthPath(input.config.generatedAuthPath),
     tokenId: token.tokenId,
     nowMs: nowTime,
   });
