@@ -1,53 +1,60 @@
-# MCP 2026 dual-era transport
 
-branch: `task/os/mcp-2026-dual-era-transport`
-stream: `stream/os`
-github pr: https://github.com/consuelohq/opensaas/pull/1828
-taskSession: `tsk_221d6401567a`
+## 2026-08-10 restart recovery continuation
 
-## acceptance criteria
+- Live evidence: launchd label com.consuelo.system disappeared after consuelo restart; plist remained valid.
+- Root cause contract: a restart invoked from inside the launchd-owned OS process must not boot out its own job before a replacement supervisor can restore it.
+- Watchdog contract: when the plist exists but the launchd label is absent, recovery must bootstrap the label rather than repeat kickstart-only failures.
+- Fallback contract: local legacy workspace health on 8850 is distinct from the configured hosted workspace connector and must not be reported as Codex failover readiness.
+- Test-first: add focused red coverage for self-safe launchd restart and missing-label watchdog bootstrap before production edits.
+- PR review continuation: refresh actionable comments and address all current P1/P2 findings before promotion.
 
-- [x] Preserve legacy MCP 2024-11-05 session behavior.
-- [x] Support validated, stateless MCP 2026-07-28 discovery and tool calls.
-- [x] Bind routing headers to the authenticated JSON-RPC body and reject mismatches.
-- [x] Reject malformed modern metadata before execution.
-- [x] Stamp modern responses with complete result type and namespaced server identity.
-- [x] Keep modern local-bridge requests stateless and ignore legacy session response headers.
-- [x] Make local-agent verification exercise the modern stateless contract.
-- [x] Make lifecycle health acceptance verify local MCP connectivity.
-- [x] Preserve auth, scopes, rate limits, origin checks, and dangerous-material rejection.
-- [x] Pass focused affected tests and package syntax/type validation without rebooting.
+- 2026-08-10 16:07:02 apply-patch: `packages/os/tests/consuelo-reload.test.ts`
+- 2026-08-10 16:07:02 apply-patch: `packages/os/tests/system-daemon-reliability.test.ts`
+- 2026-08-10 16:07:02 apply-patch: `packages/os/tests/observability-traces-site.test.ts`
+- 2026-08-10 16:07:02 apply-patch: `packages/os/tests/local-agent-connectivity.test.ts`
+- 2026-08-10 16:07:02 apply-patch: `packages/os/tests/security-gateway.test.ts`
+- 2026-08-10 16:07:02 apply-patch: `packages/os/tests/fs-read-output-contract.test.ts`
 
-## plan
+## workspace-owned: files read
 
-1. Preserve the recovered branch and red-test checkpoint.
-2. Implement shared protocol validation, gateway, route, bridge, and verifier changes.
-3. Add local MCP lifecycle acceptance.
-4. Verify, review, commit, and push.
+- `packages/os/tests/security-gateway.test.ts`
 
-## current status
+- 2026-08-10 16:10:33 apply-patch: `packages/os/tests/security-gateway.test.ts`
+- 2026-08-10 16:12:14 apply-patch: `packages/os/scripts/consuelo-reload.js`
+- 2026-08-10 16:12:14 apply-patch: `packages/os/scripts/workspace-watchdog.sh`
+- 2026-08-10 16:12:14 apply-patch: `packages/os/scripts/lib/local-agent-connectivity.ts`
+- 2026-08-10 16:12:14 apply-patch: `packages/os/scripts/lib/security-gateway.ts`
+- 2026-08-10 16:12:14 apply-patch: `packages/consuelo-website/src/pages/os/observability/traces.astro`
+- 2026-08-10 16:12:14 apply-patch: `packages/os/tests/observability-traces-site.test.ts`
+- 2026-08-10 16:12:51 apply-patch: `packages/os/scripts/lib/facade/schemas.ts`
+- 2026-08-10 16:12:51 apply-patch: `packages/workspace/scripts/lib/facade/schemas.ts`
+- 2026-08-10 16:13:22 apply-patch: `packages/os/tests/local-agent-connectivity.test.ts`
+- 2026-08-10 16:15:33 apply-patch: `packages/workspace/tests/tool-manifest.test.ts`
+- 2026-08-10 16:16:15 apply-patch: `packages/workspace/tests/tool-manifest.test.ts`
 
-- Implementation complete; 94 affected tests pass.
+## 2026-08-10 review and restart fixes
 
-## evidence
+- Red evidence: focused Bun/Vitest-compatible run produced 50 passing and 6 failing tests, one for each current review/restart contract.
+- Green evidence: the same six focused files now pass 56 tests with 307 assertions.
+- Restart fix: loaded LaunchAgents use `launchctl kickstart -k` without self-bootout; unloaded installed agents still bootstrap.
+- Watchdog fix: missing labels bootstrap their installed plist before kickstart.
+- Compatibility fix: MCP 2026 discovery falls back to the retained 2024 initialize handshake only on method-not-found.
+- Security fix: flattened `node/security/generated/auth.json` resolves replay, usage, and audit state to the canonical Consuelo home.
+- Traces fix: the Astro route renders the complete shared static cockpit; the real Astro build emitted one valid document with the live controller and EventSource client.
+- Facade fix: OS and workspace `FsReadOutput` signatures and generated types/docs include `text-full`.
+- Verification: OS syntax check, OS manifest tests (15/15), workspace manifest tests (6/6), generated facade artifacts, and website build all pass.
+- Detached broad verification kept launchd PID `54567` stable, proving the temporary errors came from the upstream long-call availability window rather than a daemon restart.
+- Full OS/workspace suites retain unrelated baseline failures in the media/facade matrix, task-hook/test-selection fixtures, and task-worktree fixtures; changed-area suites remain green.
+- Both OS and workspace generated-manifest drift checks pass.
+- Strict local review (static rules, lint, typecheck, spec compliance) reports 0 blocking issues.
+- Safety checkpoint: desired tree is committed at `fb0031e9a2dceec3ffe275458dca6823fde160fa` and pushed to `codex/checkpoint-pr-1828-review-fixes-20260810`.
+- Reconciliation: local task HEAD now exactly matches remote PR head `ab6c5e626e73482e3365c22c19439db6fd26b486`; the intended review/restart delta remains in the worktree.
+- Post-reconciliation package-script Vitest run passes 6 files / 56 tests on the exact remote base.
 
-- Transport red: 33 pass, 6 fail (`trc_219f6b4703b3`).
-- Lifecycle red: 0 pass, 2 fail (`trc_97d2245ef71e`).
-- Downgrade red: 0 pass, 1 fail (`trc_f504e4df486c`).
-- Final: 94 pass, 0 fail plus syntax/type (`trc_050db1e7ad6a`).
-
-## key decisions
-
-- Legacy stays sessionful; validated MCP 2026 is stateless.
-- Local readiness and client-owned connector recovery are separate claims.
-- Repair now verifies local MCP after loopback health.
-- Modern routing headers cannot downgrade to a legacy session.
-
-
-- 2026-08-10 05:33:05 write: `.task/os/mcp-2026-dual-era-transport/workpad.md`
+- 2026-08-10 16:21:50 apply-patch: `.task/os/mcp-2026-dual-era-transport/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- 2026-08-10 05:34:25 `review.run`: passed — OK
-- 2026-08-10 05:34:38 `verify`: passed — OK
-- 2026-08-10 05:34:53 `verify`: passed — OK
+- 2026-08-10 16:22:59 `review.run`: passed — OK
+
+- 2026-08-10 16:26:11 apply-patch: `.task/os/mcp-2026-dual-era-transport/workpad.md`

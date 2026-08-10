@@ -4,7 +4,8 @@
     "packages/os/scripts/lib/local-agent-mcp-bridge.ts",
     "packages/os/tests/local-agent-connectivity.test.ts",
     "packages/os/tests/local-agent-mcp-bridge.test.ts",
-    "packages/os/tests/mcp-gateway.test.ts"
+    "packages/os/tests/mcp-gateway.test.ts",
+    "packages/os/tests/security-gateway.test.ts"
   ],
-  "updatedAt": "2026-08-10T04:39:01.654Z"
+  "updatedAt": "2026-08-10T16:10:16.188Z"
 }

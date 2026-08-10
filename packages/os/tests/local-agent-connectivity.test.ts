@@ -502,6 +502,52 @@ describe('local agent connectivity', () => {
     ).toMatchObject({ status: 'configured' });
   });
 
+  it('verifies a retained legacy MCP runtime when server discovery is unsupported', async () => {
+    const packageRoot = join(osHome, 'legacy-package-root');
+    const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');
+    mkdirSync(join(packageRoot, 'scripts'), { recursive: true });
+    mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    writeFileSync(packageServerPath, `
+      process.stdin.setEncoding('utf8');
+      let buffer = '';
+      process.stdin.on('data', (chunk) => {
+        buffer += chunk;
+        let newline = buffer.indexOf('\\n');
+        while (newline >= 0) {
+          const line = buffer.slice(0, newline).trim();
+          buffer = buffer.slice(newline + 1);
+          if (line) {
+            const request = JSON.parse(line);
+            if (request.method === 'server/discover') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, error: { code: -32601, message: 'Method not found' } }) + '\\n');
+            } else if (request.method === 'initialize') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { protocolVersion: '2024-11-05', capabilities: {}, serverInfo: { name: 'legacy-fixture', version: '1.0.0' } } }) + '\\n');
+            } else if (request.method === 'tools/list') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { tools: [{ name: 'status', inputSchema: { type: 'object' } }] } }) + '\\n');
+            }
+          }
+          newline = buffer.indexOf('\\n');
+        }
+      });
+    `);
+    process.env.CONSUELO_OS_PACKAGE_ROOT = packageRoot;
+    configureLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
+
+    const verification = await verifyLocalAgents({
+      home: osHome,
+      userHome,
+      agentNames: ['opencode'],
+      timeoutMs: 10_000,
+    });
+
+    expect(verification.agents.find((agent) => agent.name === 'opencode')).toMatchObject({
+      status: 'verified',
+    });
+    expect(verification.handshake).toMatchObject({
+      protocolVersion: '2024-11-05',
+    });
+  });
+
   it('should launch MCP with the persisted package root and Bun executable', () => {
     const packageRoot = join(osHome, 'package-root-fixture');
     const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');

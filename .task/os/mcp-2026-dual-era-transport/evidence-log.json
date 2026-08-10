@@ -145,8 +145,24 @@
         "source": "task:fs",
         "task_branch": "task/os/mcp-2026-dual-era-transport"
       }
+    },
+    {
+      "id": "889956c6-eb14-40a3-ab58-6631ffea0a5f",
+      "occurred_at": "2026-08-10T16:10:16.255Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/security-gateway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/mcp-2026-dual-era-transport",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/mcp-2026-dual-era-transport"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-08-10T04:39:01.763Z"
+  "updated_at": "2026-08-10T16:10:16.319Z"
 }
