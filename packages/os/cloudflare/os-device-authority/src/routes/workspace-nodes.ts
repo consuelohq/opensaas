@@ -5,6 +5,7 @@ import {
   updateWorkspaceNodeTargetInD1,
 } from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { deriveWorkspaceEdgeNodeSecret } from '../../../../scripts/lib/workspace-edge-node-auth';
+import { createConnectorOriginHostname } from '../../../../scripts/lib/connector-origin-hostname';
 import { json } from '../http';
 import { normalizeWorkspaceAgentNames } from '../services/agents';
 import {
@@ -411,9 +412,18 @@ async function handleHeartbeat(
     updatedAt: nowMs,
   };
   if (runtime.workspaceRouteRegistry) {
+    const connectorId = updated.connectorId?.trim() || node.connectorId?.trim() || '';
+    const tunnelOriginUrl = connectorId
+      ? `https://${createConnectorOriginHostname({
+          connectorId,
+          baseDomain: 'consuelohq.com',
+        })}`
+      : undefined;
     await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
       hostname: node.workspaceHost,
       nodeId,
+      ...(connectorId ? { connectorId } : {}),
+      ...(tunnelOriginUrl ? { tunnelOriginUrl } : {}),
       connectorStatus,
       state: 'active',
       lastSeenAt: nowMs,

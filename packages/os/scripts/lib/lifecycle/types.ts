@@ -126,6 +126,11 @@ export type LifecycleHealthAcceptance = {
   accept(input?: { bundleId?: string; version?: string }): Promise<boolean>;
 };
 
+export type LifecycleConnectorReadiness = {
+  /** Re-assert public connector health + authority heartbeat after local service is up. */
+  accept(): Promise<boolean>;
+};
+
 export type LifecycleRuntimeMaterializer = {
   materialize(input: {
     home: string;

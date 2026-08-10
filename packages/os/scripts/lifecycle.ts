@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 
 import {
   createHttpHealthAcceptance,
+  createConnectorReadinessAcceptance,
   createGcpMetadataReleaseAuthorization,
   createHttpReleaseSource,
   createBunRuntimeMaterializer,
@@ -471,6 +472,10 @@ export const createDefaultLifecycleEngine = (input: {
     health: createHttpHealthAcceptance({
       url: `http://127.0.0.1:${port}/health`,
       expectedName: 'consuelo-os',
+    }),
+    connectorReadiness: createConnectorReadinessAcceptance({
+      home: resolveLifecyclePaths(input.home).home,
+      osRoot,
     }),
     progress: input.quiet || input.json ? undefined : input.progress,
     onboarding: async () => {

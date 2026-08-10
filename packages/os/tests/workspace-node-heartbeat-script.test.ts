@@ -9,6 +9,7 @@ import { createGatewaySecurityConfig } from '../scripts/lib/security-gateway';
 import {
   reconcileHeartbeatEdgeProxyAuth,
   resolveHeartbeatConnectorStatus,
+  sendWorkspaceNodeHeartbeatFromConfig,
   verifiedHeartbeatAgentNames,
 } from '../scripts/workspace-node-heartbeat';
 
@@ -126,4 +127,36 @@ describe('workspace node heartbeat script', () => {
       config: { ...config, connectorHealthUrl: undefined },
     })).resolves.toBe('connected');
   });
+
+  it('skips authority registration when connector health is down instead of reporting disconnected', async () => {
+    const configPath = '/tmp/consuelo-heartbeat-skip-test.json';
+    const config = {
+      authorityOrigin: 'https://os.consuelohq.com',
+      workspaceId: 'workspace_123',
+      nodeId: 'node_home',
+      connectorStatus: 'connected' as const,
+      connectorHealthUrl: 'https://c-0123456789abcdef0123456789abcdef.consuelohq.com/health',
+      capabilities: ['mcp'],
+      publicKeyJwk: '{}',
+      signingKeyJwk: '{}',
+    };
+    await Bun.write(configPath, JSON.stringify(config));
+    let fetchCalls = 0;
+    const result = await sendWorkspaceNodeHeartbeatFromConfig(configPath, {
+      fetchImpl: async () => {
+        fetchCalls += 1;
+        return new Response('down', { status: 503 });
+      },
+      detectAgents: () => [],
+    });
+    expect(result).toMatchObject({
+      nodeId: 'node_home',
+      presence: 'offline',
+      skipped: true,
+      reason: 'connector_health_failed',
+    });
+    // health probe only — no authority heartbeat POST
+    expect(fetchCalls).toBe(1);
+  });
+
 });
