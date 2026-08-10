@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/own-dialer-database-boundary",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1821,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1821",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1821",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1821/own-dialer-database-boundary",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1821",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1821/own-dialer-database-boundary",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-own-dialer-database-boundary",
+  "taskSession": "tsk_5925152ebace",
+  "tmuxSession": "opensaas-dialer-own-dialer-database-boundary-5925152e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-own-dialer-database-boundary/.task/dialer/own-dialer-database-boundary/session.json",
+  "createdAt": "2026-08-10T03:29:16.043Z"
+}

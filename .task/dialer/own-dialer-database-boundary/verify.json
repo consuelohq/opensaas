@@ -1,0 +1,179 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/own-dialer-database-boundary",
+  "base": "origin/task/dialer/own-dialer-database-boundary",
+  "headSha": "85b7c2fb0aefd25577747b00172bc6c968928404",
+  "changeHash": "83962bcc789345c9ffb92f31832a203333fb6bad3aca649591b36fba12e1d923",
+  "changedFiles": [
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/scripts/migrate-database.ts",
+    "packages/dialer-server/src/call-operations/persistence.ts",
+    "packages/dialer-server/src/database/migrations.test.ts",
+    "packages/dialer-server/src/database/migrations.ts",
+    "packages/dialer-server/src/runtime/predictive-target-ranking.test.ts",
+    "packages/dialer-server/src/runtime/predictive-target-ranking.ts",
+    "packages/dialer-server/src/runtime/railway.test.ts",
+    "packages/dialer-server/src/runtime/railway.ts"
+  ],
+  "verifiedAt": "2026-08-10T03:41:17.192Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/own-dialer-database-boundary/current.json",
+        ".task/dialer/own-dialer-database-boundary/evidence-log.json",
+        ".task/dialer/own-dialer-database-boundary/read-log.json",
+        ".task/dialer/own-dialer-database-boundary/session.json",
+        ".task/dialer/own-dialer-database-boundary/workpad.md",
+        ".task/tasks/dialer/own-dialer-database-boundary.json",
+        "packages/dialer-server/package.json",
+        "packages/dialer-server/scripts/migrate-database.ts",
+        "packages/dialer-server/src/call-operations/persistence.ts",
+        "packages/dialer-server/src/database/migrations.test.ts",
+        "packages/dialer-server/src/database/migrations.ts",
+        "packages/dialer-server/src/runtime/predictive-target-ranking.test.ts",
+        "packages/dialer-server/src/runtime/predictive-target-ranking.ts",
+        "packages/dialer-server/src/runtime/railway.test.ts",
+        "packages/dialer-server/src/runtime/railway.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/package.json",
+            "packages/dialer-server/scripts/migrate-database.ts",
+            "packages/dialer-server/src/call-operations/persistence.ts",
+            "packages/dialer-server/src/database/migrations.test.ts",
+            "packages/dialer-server/src/database/migrations.ts",
+            "packages/dialer-server/src/runtime/predictive-target-ranking.test.ts",
+            "packages/dialer-server/src/runtime/predictive-target-ranking.ts",
+            "packages/dialer-server/src/runtime/railway.test.ts",
+            "packages/dialer-server/src/runtime/railway.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/dialer-server:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/dialer-server.",
+          "matchedFiles": [
+            "packages/dialer-server/package.json",
+            "packages/dialer-server/scripts/migrate-database.ts",
+            "packages/dialer-server/src/call-operations/persistence.ts",
+            "packages/dialer-server/src/database/migrations.test.ts",
+            "packages/dialer-server/src/database/migrations.ts",
+            "packages/dialer-server/src/runtime/predictive-target-ranking.test.ts",
+            "packages/dialer-server/src/runtime/predictive-target-ranking.ts",
+            "packages/dialer-server/src/runtime/railway.test.ts",
+            "packages/dialer-server/src/runtime/railway.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/dialer-server package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/dialer-server",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/dialer-server:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 373,
+          "outputTail": "sessions > issues a short-lived token that authenticates the original workspace and user [0.28ms]\n(pass) dialer-server embed sessions > rejects expired, malformed, and tampered tokens [0.10ms]\n(pass) dialer-server embed sessions > binds sessions to installation and location and revalidates them on every request [0.09ms]\n\npackages/dialer-server/src/runtime/predictive-target-ranking.test.ts:\n(pass) predictive target ranking persistence boundary > uses only standalone Consuelo learning and workspace settings tables [1.50ms]\n\npackages/dialer-server/src/runtime/twilio-provider-mode.test.ts:\n(pass) Twilio provider test mode > selects test credentials without exposing the live credential pair [0.03ms]\n(pass) Twilio provider test mode > requires and preserves the exact no-carrier Twilio test From number [0.05ms]\n(pass) Twilio provider test mode > passes the magic From number unchanged into the provider group request [0.04ms]\n(pass) Twilio provider test mode > does not claim carrier delivery or callbacks for test credentials\n\npackages/dialer-server/src/runtime/railway.test.ts:\n(pass) LeadConnector dialer learning > records an atomic attempt and outcome for every completed carrier leg [0.14ms]\n(pass) LeadConnector dialer learning > does not fail carrier callback handling when learning persistence is unavailable [0.05ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.13ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.04ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.03ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [1.81ms]\n(pass) Railway dialer-server runtime composition > preserves input order when standalone learned data is not available [1.38ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from LeadConnector learned outcomes without Twenty model rows [0.58ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [0.48ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the attempt ledger before the outcome model tables [1.47ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [1.23ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.17ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.30ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [22.30ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.08ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.80ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.14ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.11ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.27ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.08ms]\n\n 72 pass\n 0 fail\n 375 expect() calls\nRan 72 tests across 20 files. [366.00ms]\n"
+        },
+        {
+          "name": "@consuelo/dialer-server package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/dialer-server",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/dialer-server:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4,
+          "outputTail": "zero-fill-buffers             Boolean to force Buffer.allocUnsafe(size) to be zero-filled.\n      --use-system-ca                 Use the system's trusted certificate authorities\n      --use-openssl-ca                Use OpenSSL's default CA store\n      --use-bundled-ca                Use bundled CA store\n      --redis-preconnect              Preconnect to $REDIS_URL at startup\n      --sql-preconnect                Preconnect to PostgreSQL at startup\n      --no-addons                     Throw an error if process.dlopen is called, and disable export condition \"node-addons\"\n      --unhandled-rejections=<val>    One of \"strict\", \"throw\", \"warn\", \"none\", or \"warn-with-error-code\"\n      --console-depth=<val>           Set the default depth for console.log object inspection (default: 2)\n      --user-agent=<val>              Set the default User-Agent header for HTTP requests\n      --cron-title=<val>              Title for cron execution mode\n      --cron-period=<val>             Cron period for cron execution mode\n      --main-fields=<val>             Main fields to lookup in package.json. Defaults to --target dependent\n      --preserve-symlinks             Preserve symlinks when resolving files\n      --preserve-symlinks-main        Preserve symlinks when resolving the main entry point\n      --extension-order=<val>         Defaults to: .tsx,.ts,.jsx,.js,.json\n      --tsconfig-override=<val>       Specify custom tsconfig.json. Default <d>$cwd<r>/tsconfig.json\n  -d, --define=<val>                  Substitute K:V while parsing, e.g. --define process.env.NODE_ENV:\"development\". Values are parsed as JSON.\n      --drop=<val>                    Remove function calls, e.g. --drop=console removes all console.* calls.\n      --feature=<val>                 Enable a feature flag for dead-code elimination, e.g. --feature=SUPER_SECRET\n  -l, --loader=<val>                  Parse files with .ext:loader, e.g. --loader .js:jsx. Valid loaders: js, jsx, ts, tsx, json, toml, text, file, wasm, napi\n      --no-macros                     Disable macros from being executed in the bundler, transpiler and runtime\n      --jsx-factory=<val>             Changes the function called when compiling JSX elements using the classic JSX runtime\n      --jsx-fragment=<val>            Changes the function called when compiling JSX fragments\n      --jsx-import-source=<val>       Declares the module specifier to be used for importing the jsx and jsxs factory functions. Default: \"react\"\n      --jsx-runtime=<val>             \"automatic\" (default) or \"classic\"\n      --jsx-side-effects              Treat JSX elements as having side effects (disable pure annotations)\n      --ignore-dce-annotations        Ignore tree-shaking annotations such as @__PURE__\n      --env-file=<val>                Load environment variables from the specified file(s)\n      --no-env-file                   Disable automatic loading of .env files\n      --cwd=<val>                     Absolute path to resolve files & entry points from. This just changes the process' cwd.\n  -c, --config=<val>                  Specify path to Bun config file. Default <d>$cwd<r>/bunfig.toml\n  -h, --help                          Display this menu and exit\n\nExamples:\n  Run a JavaScript or TypeScript file\n  bun run ./index.js\n  bun run ./index.tsx\n\n  Run a package.json script\n  bun run dev\n  bun run lint\n\nFull documentation is available at https://bun.com/docs/cli/run\n\npackage.json scripts (8 found):\n  $ bun run test\n    bun test src\n\n  $ bun run typecheck\n    tsc --noEmit\n\n  $ bun run build\n    mkdir -p ./dist && bun build ./src/main.ts --compile --outfile ./dist/dialer-server\n\n  $ bun run start\n    ./dist/dialer-server\n\n  $ bun run db:migrate\n    bun ./scripts/migrate-database.ts\n\n  $ bun run validate:local-runtime\n    bun ./scripts/validate-local-runtime.ts\n\n  $ bun run validate:provider-test\n    bun ./scripts/validate-provider-test.ts\n\n  $ bun run validate:groq-transcription\n    bun ./scripts/validate-groq-transcription.ts\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/scripts/migrate-database.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      },
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/src/database/migrations.test.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      },
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/src/database/migrations.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

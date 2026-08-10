@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/dialer/own-dialer-database-boundary/workpad.md",
+    "packages/dialer-server/src/runtime/lead-connector-learning.ts",
+    "packages/dialer-server/src/runtime/railway.test.ts",
+    "packages/twenty-server/src/database/typeorm/core/migrations/common/1774200000000-add-dialer-config-to-workspace-settings.ts"
+  ],
+  "updatedAt": "2026-08-10T03:39:58.920Z"
+}
