@@ -119,4 +119,20 @@ describe('Consuelo OS reload lifecycle', () => {
     expect(launchCommands).not.toContain('bootstrap');
     expect(result.stdout).toContain('reloaded: healthy');
   });
+
+  it('should bootstrap an unloaded LaunchAgent before kickstarting a reload', () => {
+    const harness = createHarness();
+    const result = spawnSync(process.execPath, [reloadScript, 'restart-now'], {
+      cwd: osRoot,
+      env: { ...harness.env, CONSUELO_OS_RELOAD_LAUNCHD: '1' },
+      encoding: 'utf8',
+    });
+
+    expect(result.status).toBe(0);
+    const launchCommands = readFileSync(harness.launchLog, 'utf8');
+    expect(launchCommands).toContain('print gui/');
+    expect(launchCommands).toContain('bootstrap gui/');
+    expect(launchCommands).toContain('kickstart -k gui/');
+    expect(result.stdout).toContain('reloaded: healthy');
+  });
 });

@@ -62,8 +62,15 @@ function isExpectedHealth(result) {
 }
 
 function isLaunchdLoaded() {
-  const output = runBestEffort('launchctl', ['print', `${LAUNCH_DOMAIN}/${LABEL}`]);
-  return output.includes(LABEL) || output.includes('state = running');
+  try {
+    execFileSync('launchctl', ['print', `${LAUNCH_DOMAIN}/${LABEL}`], {
+      timeout: 10000,
+      stdio: ['ignore', 'ignore', 'ignore'],
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function findServerPid() {
@@ -156,11 +163,15 @@ function bootstrapLaunchAgent() {
 function runReload({ useLaunchd }) {
   if (useLaunchd && existsSync(PLIST)) {
     stopConflictingLaunchAgents();
-    runRequired(
-      'launchctl',
-      ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`],
-      'launchctl kickstart',
-    );
+    if (isLaunchdLoaded()) {
+      runRequired(
+        'launchctl',
+        ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`],
+        'launchctl kickstart',
+      );
+    } else {
+      bootstrapLaunchAgent();
+    }
   } else {
     stopConflictingLaunchAgents();
     killServer();
