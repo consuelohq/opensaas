@@ -36,6 +36,7 @@ type ScenarioResult = {
   rows?: TraceRow[];
   recent?: { events?: Array<Record<string, unknown>> };
   recorded?: boolean;
+  immediateDbExists?: boolean;
   events?: Array<Record<string, unknown>>;
   status?: number;
   body?: Record<string, unknown>;
@@ -218,7 +219,18 @@ describe('canonical OS trace persistence', () => {
     });
   });
 
-  it('records a safe authenticated principal correlation key without raw identity material', () => {
+  it('should batch authentication traces after the request path returns', () => {
+    const output = runScenario('auth-principal-queued');
+
+    expect(output.immediateDbExists).toBe(false);
+    expect(output.rows).toHaveLength(2);
+    expect(output.rows?.map((row) => row.tool)).toEqual([
+      'authentication.mcp',
+      'authentication.mcp',
+    ]);
+  });
+
+  it('should record a safe principal correlation key when authentication succeeds without raw identity material', () => {
     const output = runScenario('auth-principal');
     expect(output.recorded).toBe(true);
     expect(output.rows).toHaveLength(1);

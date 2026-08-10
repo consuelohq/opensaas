@@ -1,5 +1,5 @@
 import { Database } from 'bun:sqlite';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 import { executeTool } from '../../scripts/lib/facade/executor';
@@ -8,6 +8,7 @@ import { createGatewaySecurityConfig } from '../../scripts/lib/security-gateway'
 import { parseSubagentTraceEvents } from '../../scripts/lib/subagent/runtime';
 import { createLocalTraceSitesReadBackend } from '../../scripts/lib/trace-sites-local-read-backend';
 import {
+  queueGatewayAuthenticationTraceSafely,
   recordGatewayAuthenticationTraceSafely,
   recordSubagentTraceEventsSafely,
   recordToolTraceSafely,
@@ -215,6 +216,22 @@ async function run(): Promise<unknown> {
         body: response ? await response.json() : null,
         rows: traceRows(),
       };
+    }
+
+    if (scenario === 'auth-principal-queued') {
+      const dbPath = resolveCanonicalTraceDbPath();
+      for (const principalKey of ['prn_first', 'prn_second']) {
+        queueGatewayAuthenticationTraceSafely({
+          workspaceId: 'workspace_trace_auth',
+          route: '/mcp',
+          requiredScope: 'mcp:read',
+          authMode: 'oauth',
+          principalKey,
+        });
+      }
+      const immediateDbExists = existsSync(dbPath);
+      await Bun.sleep(25);
+      return { immediateDbExists, rows: traceRows() };
     }
 
     if (scenario === 'auth-principal') {

@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import type { AuthenticatedMcpAuthMode } from '../server/security/authenticated-principal';
 import { expandHome, resolveConsueloHomeLayout } from './consuelo-home';
 import { redactJson, redactText, redactTraceJson } from './redaction';
 
@@ -125,16 +126,17 @@ export function resolveCanonicalTraceDbPath(
   return resolveConsueloHomeLayout(home).nodeTraceDbPath;
 }
 
-export function recordToolTraceSafely(
-  input: ToolTraceInput,
+function recordToolTraceBatchSafely(
+  inputs: ToolTraceInput[],
   options: TracePersistenceOptions = {},
 ): boolean {
+  if (inputs.length === 0) return true;
   try {
     const dbPath = options.dbPath ?? resolveCanonicalTraceDbPath({ env: options.env });
     const db = openTraceDatabase(dbPath);
     try {
       ensureToolTraceSchema(db);
-      insertToolTrace(db, input);
+      for (const input of inputs) insertToolTrace(db, input);
     } finally {
       db.close();
     }
@@ -143,6 +145,13 @@ export function recordToolTraceSafely(
     writePersistenceWarning(error);
     return false;
   }
+}
+
+export function recordToolTraceSafely(
+  input: ToolTraceInput,
+  options: TracePersistenceOptions = {},
+): boolean {
+  return recordToolTraceBatchSafely([input], options);
 }
 
 export function recordSubagentTraceEventsSafely(
@@ -245,14 +254,18 @@ export function recordGatewayAuthorizationTraceSafely(input: {
   }, options);
 }
 
-export function recordGatewayAuthenticationTraceSafely(input: {
+type GatewayAuthenticationTraceInput = {
   workspaceId: string;
   route: string;
   requiredScope: string;
-  authMode: string;
+  authMode: AuthenticatedMcpAuthMode;
   principalKey: string;
-}, options: TracePersistenceOptions = {}): boolean {
-  return recordToolTraceSafely({
+};
+
+function gatewayAuthenticationToolTrace(
+  input: GatewayAuthenticationTraceInput,
+): ToolTraceInput {
+  return {
     traceId: createTraceId(),
     source: 'gateway',
     tool: 'authentication.mcp',
@@ -268,7 +281,43 @@ export function recordGatewayAuthenticationTraceSafely(input: {
       principalKey: input.principalKey,
     },
     result: { ok: true },
-  }, options);
+  };
+}
+
+export function recordGatewayAuthenticationTraceSafely(
+  input: GatewayAuthenticationTraceInput,
+  options: TracePersistenceOptions = {},
+): boolean {
+  return recordToolTraceSafely(gatewayAuthenticationToolTrace(input), options);
+}
+
+const pendingGatewayAuthenticationTraces = new Map<string, ToolTraceInput[]>();
+let gatewayAuthenticationFlushScheduled = false;
+
+function flushGatewayAuthenticationTraces(): void {
+  gatewayAuthenticationFlushScheduled = false;
+  const pending = [...pendingGatewayAuthenticationTraces.entries()];
+  pendingGatewayAuthenticationTraces.clear();
+  for (const [dbPath, traces] of pending) {
+    recordToolTraceBatchSafely(traces, { dbPath });
+  }
+}
+
+export function queueGatewayAuthenticationTraceSafely(
+  input: GatewayAuthenticationTraceInput,
+  options: TracePersistenceOptions = {},
+): void {
+  try {
+    const dbPath = options.dbPath ?? resolveCanonicalTraceDbPath({ env: options.env });
+    const pending = pendingGatewayAuthenticationTraces.get(dbPath) ?? [];
+    pending.push(gatewayAuthenticationToolTrace(input));
+    pendingGatewayAuthenticationTraces.set(dbPath, pending);
+    if (gatewayAuthenticationFlushScheduled) return;
+    gatewayAuthenticationFlushScheduled = true;
+    setTimeout(flushGatewayAuthenticationTraces, 0);
+  } catch (error: unknown) {
+    writePersistenceWarning(error);
+  }
 }
 
 function openTraceDatabase(dbPath: string): TraceDatabase {

@@ -8,8 +8,10 @@ const source = readFileSync(
   'utf8',
 );
 
-test('OS launcher routes workspace surfaces to the workspace host', () => {
+test('should route workspace surfaces through the configured deployment origin', () => {
+  assert.match(source, /PUBLIC_CONSUELO_WORKSPACE_ORIGIN/);
   assert.match(source, /https:\/\/workspace\.consuelohq\.com/);
+  assert.match(source, /new URL\(pathname, workspaceOrigin\)/);
   for (const pathname of [
     '/gtm',
     '/artifacts',

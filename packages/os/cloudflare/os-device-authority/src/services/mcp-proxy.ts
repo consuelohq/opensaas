@@ -40,16 +40,16 @@ export function centralMcpSafeError(input: {
   );
 }
 
-async function centralMcpOperationScope(request: Request): Promise<string | null> {
+export async function centralMcpOperationScope(request: Request): Promise<string | null> {
   if (request.method !== 'POST') return null;
   let payload: unknown;
   try {
     payload = await request.clone().json();
   } catch {
-    return null;
+    return 'mcp:call';
   }
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    return null;
+    return 'mcp:call';
   }
   const record = payload as Record<string, unknown>;
   if (record.method !== 'tools/call') return null;

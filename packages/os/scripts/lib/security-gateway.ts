@@ -988,6 +988,13 @@ export function verifyWorkspaceEdgeProxyRequest(input: {
     return safeError(401, 'EDGE_AUTH_NOT_CONFIGURED', 'Workspace edge authentication is not configured for this node.');
   }
   const nowTime = Date.parse(input.now);
+  if (!Number.isFinite(nowTime)) {
+    return safeError(
+      401,
+      'EDGE_SIGNATURE_EXPIRED',
+      'Workspace edge signature timestamp is invalid.',
+    );
+  }
   const replayHome = consueloHomeFromGeneratedAuthPath(input.config.generatedAuthPath);
   const replayScope = `edge:${stored.workspaceId}:${edgeProxy.nodeId}:${edgeProxy.connectorId}`;
   const result = verifyWorkspaceEdgeNodeRequest({

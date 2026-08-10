@@ -689,6 +689,19 @@ describe('Consuelo OS public gateway security contract', () => {
       pathWithSearch: '/mcp',
       body,
       headers,
+      now: 'invalid-time',
+    })).toMatchObject({
+      ok: false,
+      status: 401,
+      error: { code: 'EDGE_SIGNATURE_EXPIRED' },
+    });
+
+    expect(gateway.verifyWorkspaceEdgeProxyRequest({
+      config,
+      method: 'POST',
+      pathWithSearch: '/mcp',
+      body,
+      headers,
       now: new Date(nowMs).toISOString(),
     })).toMatchObject({ ok: true });
     expect(readFileSync(config.generatedAuthPath, 'utf8')).toBe(authBeforeVerification);

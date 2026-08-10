@@ -20,7 +20,7 @@ import {
   admitRawMcpBody,
 } from '../middleware/dangerous-material';
 import { internalError, jsonResponse } from '../middleware/errors';
-import { recordGatewayAuthenticationTraceSafely } from '../../lib/trace-persistence';
+import { queueGatewayAuthenticationTraceSafely } from '../../lib/trace-persistence';
 import { logLocalOsServerError } from '../logger';
 import { validateMcpRequestOrigin } from '../security/mcp-origin';
 import { executeLocalOsFacadeTool } from '../services/call-service';
@@ -153,7 +153,7 @@ export function createMcpRoutes(
             requiredScope: mcpScope.requiredScope,
           });
       if (!authentication.ok) return authentication.response;
-      recordGatewayAuthenticationTraceSafely({
+      queueGatewayAuthenticationTraceSafely({
         workspaceId: authentication.principal.workspaceId ?? '',
         route: MCP_PATH,
         requiredScope: mcpScope.requiredScope,

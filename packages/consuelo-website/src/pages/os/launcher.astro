@@ -5,7 +5,11 @@ import '../../styles/primitives.css';
 
 const chatGptConnectorsUrl = 'https://chatgpt.com/apps#settings/Connectors';
 const mcpUrl = 'https://os.consuelohq.com/mcp';
-const workspaceUrl = (pathname: string) => `https://workspace.consuelohq.com${pathname}`;
+const workspaceOrigin = new URL(
+  import.meta.env.PUBLIC_CONSUELO_WORKSPACE_ORIGIN?.trim()
+    || 'https://workspace.consuelohq.com',
+);
+const workspaceUrl = (pathname: string) => new URL(pathname, workspaceOrigin).toString();
 const siteLinks = [
   { label: 'Go to market', href: workspaceUrl('/gtm') },
   { label: 'Artifacts', href: workspaceUrl('/artifacts') },

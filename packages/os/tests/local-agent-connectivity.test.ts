@@ -502,7 +502,7 @@ describe('local agent connectivity', () => {
     ).toMatchObject({ status: 'configured' });
   });
 
-  it('verifies a retained legacy MCP runtime when server discovery is unsupported', async () => {
+  it('should verify a retained legacy MCP runtime when discovery returns a nonstandard error', async () => {
     const packageRoot = join(osHome, 'legacy-package-root');
     const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');
     mkdirSync(join(packageRoot, 'scripts'), { recursive: true });
@@ -519,7 +519,7 @@ describe('local agent connectivity', () => {
           if (line) {
             const request = JSON.parse(line);
             if (request.method === 'server/discover') {
-              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, error: { code: -32601, message: 'Method not found' } }) + '\\n');
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, error: { code: -32602, message: 'Invalid params' } }) + '\\n');
             } else if (request.method === 'initialize') {
               process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { protocolVersion: '2024-11-05', capabilities: {}, serverInfo: { name: 'legacy-fixture', version: '1.0.0' } } }) + '\\n');
             } else if (request.method === 'tools/list') {
@@ -538,6 +538,52 @@ describe('local agent connectivity', () => {
       userHome,
       agentNames: ['opencode'],
       timeoutMs: 10_000,
+    });
+
+    expect(verification.agents.find((agent) => agent.name === 'opencode')).toMatchObject({
+      status: 'verified',
+    });
+    expect(verification.handshake).toMatchObject({
+      protocolVersion: '2024-11-05',
+    });
+  });
+
+  it('should verify a retained legacy MCP runtime when discovery omits the modern version', async () => {
+    const packageRoot = join(osHome, 'legacy-discovery-package-root');
+    const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');
+    mkdirSync(join(packageRoot, 'scripts'), { recursive: true });
+    mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    writeFileSync(packageServerPath, `
+      process.stdin.setEncoding('utf8');
+      let buffer = '';
+      process.stdin.on('data', (chunk) => {
+        buffer += chunk;
+        let newline = buffer.indexOf('\\n');
+        while (newline >= 0) {
+          const line = buffer.slice(0, newline).trim();
+          buffer = buffer.slice(newline + 1);
+          if (line) {
+            const request = JSON.parse(line);
+            if (request.method === 'server/discover') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { supportedVersions: ['2024-11-05'] } }) + '\\n');
+            } else if (request.method === 'initialize') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { protocolVersion: '2024-11-05', capabilities: {}, serverInfo: { name: 'legacy-fixture', version: '1.0.0' } } }) + '\\n');
+            } else if (request.method === 'tools/list') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { tools: [{ name: 'status', inputSchema: { type: 'object' } }] } }) + '\\n');
+            }
+          }
+          newline = buffer.indexOf('\\n');
+        }
+      });
+    `);
+    process.env.CONSUELO_OS_PACKAGE_ROOT = packageRoot;
+    configureLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
+
+    const verification = await verifyLocalAgents({
+      home: osHome,
+      userHome,
+      agentNames: ['opencode'],
+      timeoutMs: 2_000,
     });
 
     expect(verification.agents.find((agent) => agent.name === 'opencode')).toMatchObject({

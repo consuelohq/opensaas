@@ -1,7 +1,13 @@
 import { createHash } from 'node:crypto';
 
+export type AuthenticatedMcpAuthMode =
+  | 'oauth'
+  | 'local-bearer'
+  | 'machine'
+  | 'workspace-edge';
+
 export type AuthenticatedMcpPrincipal = {
-  authMode: 'oauth' | 'local-bearer' | 'machine' | 'workspace-edge';
+  authMode: AuthenticatedMcpAuthMode;
   workspaceId?: string;
   workspaceHost: string;
   subjectId: string;
@@ -18,7 +24,7 @@ export type AuthenticatedMcpPrincipal = {
 export function createAuthenticatedMcpPrincipal(
   input: Omit<AuthenticatedMcpPrincipal, 'principalKey'>,
 ): AuthenticatedMcpPrincipal {
-  const stableIdentity = [
+  const stableIdentity = JSON.stringify([
     input.authMode,
     input.workspaceId ?? '',
     input.workspaceHost,
@@ -29,7 +35,7 @@ export function createAuthenticatedMcpPrincipal(
     input.deviceId ?? '',
     input.connectorId ?? '',
     input.connectionId ?? '',
-  ].join('\n');
+  ]);
   const digest = createHash('sha256').update(stableIdentity).digest('hex');
   return {
     ...input,

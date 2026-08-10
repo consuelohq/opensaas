@@ -45,6 +45,7 @@ import {
 import {
   runLifecycleCli,
   trustedReleaseKeysFromEnvironment,
+  waitForAdvisoryProcessExit,
 } from '../scripts/lifecycle';
 
 const osRoot = resolve(import.meta.dirname, '..');
@@ -760,6 +761,17 @@ describe('unified lifecycle engine', () => {
     await expect(failedRestart.restart()).rejects.toMatchObject({ code: 'SERVICE_RESTART_FAILED' });
   });
 
+  it('should terminate an advisory process when its lifecycle deadline expires', async () => {
+    const kill = vi.fn();
+    const exitCode = await waitForAdvisoryProcessExit({
+      exited: new Promise<number>(() => {}),
+      kill,
+    }, 10);
+
+    expect(exitCode).toBeNull();
+    expect(kill).toHaveBeenCalledTimes(1);
+  });
+
   it('accepts local MCP connectivity after repaired runtime health', async () => {
     const initial = createEngine({ bundle: bundle100 });
     await initial.install({ channel: 'dev' });
@@ -797,7 +809,7 @@ describe('unified lifecycle engine', () => {
     }));
   });
 
-  it('keeps optional local-agent connectivity out of update and rollback acceptance', async () => {
+  it('should keep optional local-agent connectivity out of update acceptance when connectivity fails', async () => {
     const initial = createEngine({ bundle: bundle100 });
     await initial.install({ channel: 'dev' });
     const update = createEngine({

@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 
-import { proxyCentralMcpRequest } from '../cloudflare/os-device-authority/src/services/mcp-proxy';
+import {
+  centralMcpOperationScope,
+  proxyCentralMcpRequest,
+} from '../cloudflare/os-device-authority/src/services/mcp-proxy';
 import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
 import { hash } from '../cloudflare/os-device-authority/src/utils';
 import {
@@ -11,7 +14,25 @@ import {
 import { CENTRAL_MCP_READ_ONLY_FACADE_TOOLS } from '../scripts/lib/tool-scope-authorization';
 
 describe('central MCP proxy scope enforcement', () => {
-  test('keeps the central read-only classifier aligned with the generated facade manifest', async () => {
+  test('should require call scope when a POST body cannot be classified', async () => {
+    for (const body of ['not-json', '[]', 'null']) {
+      const request = new Request('https://os.consuelohq.com/mcp', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body,
+      });
+      await expect(centralMcpOperationScope(request)).resolves.toBe('mcp:call');
+    }
+
+    const initialize = new Request('https://os.consuelohq.com/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize' }),
+    });
+    await expect(centralMcpOperationScope(initialize)).resolves.toBeNull();
+  });
+
+  test('should keep the central read-only classifier aligned when the facade manifest changes', async () => {
     const manifest = await Bun.file(new URL(
       '../manifests/generated/tool.manifest.json',
       import.meta.url,
@@ -35,7 +56,7 @@ describe('central MCP proxy scope enforcement', () => {
     );
   });
 
-  test('does not forward a tools/call request with only the route-level grant', async () => {
+  test('should not forward a tools/call request when only the route-level grant is present', async () => {
     const origin = 'https://os.consuelohq.com';
     const workspaceHost = 'scope-proxy.consuelohq.com';
     const token = 'coa_route_only_test';
@@ -113,7 +134,7 @@ describe('central MCP proxy scope enforcement', () => {
     });
   });
 
-  test('forwards read-only facade calls without allowing writes for a tool read grant', async () => {
+  test('should forward read-only facade calls without allowing writes when a tool read grant is present', async () => {
     const origin = 'https://os.consuelohq.com';
     const workspaceHost = 'read-scope-proxy.consuelohq.com';
     const token = 'coa_read_scope_test';
@@ -204,7 +225,7 @@ describe('central MCP proxy scope enforcement', () => {
     });
   });
 
-  test('preserves action-specific read scopes without allowing dangerous actions', async () => {
+  test('should preserve action-specific read scopes without allowing dangerous actions when a narrow grant is present', async () => {
     const origin = 'https://os.consuelohq.com';
     const workspaceHost = 'action-scope-proxy.consuelohq.com';
     const token = 'coa_action_scope_test';

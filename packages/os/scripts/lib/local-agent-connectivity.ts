@@ -1111,6 +1111,21 @@ function probeMcpCommand(input: {
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
+    const requestLegacyInitialization = (): void => {
+      if (legacyInitializationRequested) return;
+      legacyInitializationRequested = true;
+      child.stdin.write(`${JSON.stringify({
+        jsonrpc: '2.0',
+        id: 2,
+        method: 'initialize',
+        params: {
+          protocolVersion: LEGACY_MCP_PROTOCOL_VERSION,
+          capabilities: {},
+          clientInfo: { name: 'consuelo-verifier', version: '1.0.0' },
+        },
+      })}\n`);
+    };
+
     const finish = (result: LocalAgentMcpHandshake | AgentConnectivityError, ok: boolean): void => {
       if (settled) return;
       settled = true;
@@ -1146,38 +1161,32 @@ function probeMcpCommand(input: {
         stdout = parsed.remainder;
         for (const message of parsed.messages) {
           if (isJsonObject(message.error)) {
-            if (
-              message.id === 1
-              && message.error.code === -32601
-              && !legacyInitializationRequested
-            ) {
-              legacyInitializationRequested = true;
-              child.stdin.write(`${JSON.stringify({
-                jsonrpc: '2.0',
-                id: 2,
-                method: 'initialize',
-                params: {
-                  protocolVersion: LEGACY_MCP_PROTOCOL_VERSION,
-                  capabilities: {},
-                  clientInfo: { name: 'consuelo-verifier', version: '1.0.0' },
-                },
-              })}\n`);
+            if (message.id === 1) {
+              requestLegacyInitialization();
               continue;
             }
             throw new Error(`MCP request ${String(message.id ?? 'unknown')} failed: ${JSON.stringify(message.error)}`);
           }
           if (message.id === 1 && isJsonObject(message.result)) {
             discovered = message.result;
-            if (!toolsRequested) {
-              toolsRequested = true;
-              child.stdin.write(`${JSON.stringify({
-                jsonrpc: '2.0',
-                id: 3,
-                method: 'tools/list',
-                params: {
-                  _meta: modernMcpClientMeta('consuelo-verifier'),
-                },
-              })}\n`);
+            const supportedVersions = discovered.supportedVersions;
+            if (
+              Array.isArray(supportedVersions)
+              && supportedVersions.includes(MODERN_MCP_PROTOCOL_VERSION)
+            ) {
+              if (!toolsRequested) {
+                toolsRequested = true;
+                child.stdin.write(`${JSON.stringify({
+                  jsonrpc: '2.0',
+                  id: 3,
+                  method: 'tools/list',
+                  params: {
+                    _meta: modernMcpClientMeta('consuelo-verifier'),
+                  },
+                })}\n`);
+              }
+            } else {
+              requestLegacyInitialization();
             }
           }
           if (message.id === 2 && isJsonObject(message.result)) {
