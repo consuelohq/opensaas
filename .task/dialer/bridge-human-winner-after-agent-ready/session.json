@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4d038fe5579e",
+  "tmuxSession": "opensaas-dialer-bridge-human-winner-after-agent-ready-4d038fe5",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/bridge-human-winner-after-agent-ready",
+  "branch": "task/dialer/bridge-human-winner-after-agent-ready",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-bridge-human-winner-after-agent-ready",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-bridge-human-winner-after-agent-ready",
+  "prNumber": 1758,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1758",
+  "createdAt": "2026-08-03T19:09:04.666Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-bridge-human-winner-after-agent-ready/.task/dialer/bridge-human-winner-after-agent-ready/session.json"
+}

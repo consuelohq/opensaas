@@ -15,6 +15,7 @@ on:
         type: choice
         options:
           - all
+          - docs
           - website
           - os
       migrate_mcp_origin_waf:
@@ -28,6 +29,38 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  deploy-docs:
+    name: Consuelo / docs deploy
+    if: github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'docs'
+    environment: consuelo / production
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install documentation dependencies
+        run: bun install --frozen-lockfile
+        working-directory: packages/documentation
+
+      - name: Deploy Consuelo docs
+        run: |
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error::Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID"
+            exit 1
+          fi
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_DOCS_API_TOKEN or CLOUDFLARE_OS_RELEASE_API_TOKEN"
+            exit 1
+          fi
+          bun run docs:deploy -- --json
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DOCS_API_TOKEN || secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+
   deploy-website:
     name: Consuelo / website deploy
     if: github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'website'
@@ -62,10 +95,11 @@ jobs:
 
   release-os:
     name: Consuelo / OS release
-    needs: deploy-website
+    needs: [deploy-docs, deploy-website]
     if: >-
       always() &&
       (github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'os') &&
+      (needs.deploy-docs.result == 'success' || needs.deploy-docs.result == 'skipped') &&
       (needs.deploy-website.result == 'success' || needs.deploy-website.result == 'skipped')
     environment: consuelo / production
     timeout-minutes: 20
@@ -84,6 +118,22 @@ jobs:
       - name: Install Wrangler
         run: bun install --global wrangler@4.105.0
 
+      - name: Sync Consuelo OS connector provisioning secret
+        run: |
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN"
+            exit 1
+          fi
+          if [ -z "${CLOUDFLARE_OS_PROVISIONING_API_TOKEN:-}" ]; then
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_PROVISIONING_API_TOKEN"
+            exit 1
+          fi
+          printf '%s' "${CLOUDFLARE_OS_PROVISIONING_API_TOKEN}" |
+            wrangler secret put CLOUDFLARE_API_TOKEN --config packages/os/cloudflare/os-device-authority/wrangler.toml
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CLOUDFLARE_OS_PROVISIONING_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_PROVISIONING_API_TOKEN }}
+
       - name: Release Consuelo OS
         run: |
           if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
@@ -94,10 +144,24 @@ jobs:
             echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN"
             exit 1
           fi
+          if [ -z "${CONSUELO_OS_RELEASE_R2_BUCKET:-}" ]; then
+            echo "::error::Missing GitHub Actions variable CONSUELO_OS_RELEASE_R2_BUCKET"
+            exit 1
+          fi
+          if [ -z "${CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS:-}" ] &&
+             { [ -z "${CONSUELO_OS_RELEASE_SIGNING_KEY_ID:-}" ] ||
+               [ -z "${CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY:-}" ]; }; then
+            echo "::error::Missing OS release trust anchors (CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS or signing key id + public key)"
+            exit 1
+          fi
           bun run os:release
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
+          CONSUELO_OS_RELEASE_SIGNING_KEY_ID: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_KEY_ID }}
+          CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY }}
+          CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS: ${{ vars.CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS }}
 
       - name: Migrate managed OS MCP connector-origin WAF class
         if: github.event_name == 'workflow_dispatch' && inputs.migrate_mcp_origin_waf

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   createConnectorOriginHostname,
+  createConnectorOriginHostnameWafExpression,
   createConnectorOriginHostnameRegexSource,
   isConnectorOriginHostname,
 } from '../scripts/lib/connector-origin-hostname';
@@ -96,6 +97,25 @@ describe('connector origin hostname', () => {
     ).toBe(false);
   });
 
+  it('builds an exact plan-compatible Cloudflare hostname classifier', () => {
+    const expression = createConnectorOriginHostnameWafExpression({
+      baseDomain: 'https://ConsueloHQ.com/',
+    });
+
+    expect(expression).toBe(
+      [
+        'starts_with(http.host, "c-")',
+        'ends_with(http.host, ".consuelohq.com")',
+        'len(http.host) eq 49',
+        'len(remove_bytes(substring(http.host, 2, 34), "0123456789abcdef")) eq 0',
+      ].join('\nand '),
+    );
+    expect(expression.length).toBeLessThan(300);
+    expect(expression).not.toMatch(/\bmatches\b|regex|wildcard|lower\(http\.host\)/);
+    expect(expression).toContain('substring(http.host, 2, 34)');
+    expect(expression).toContain('"0123456789abcdef"');
+  });
+
   it.each([
     { connectorId: '', baseDomain: 'consuelohq.com' },
     { connectorId: 'connector id', baseDomain: 'consuelohq.com' },
@@ -122,18 +142,23 @@ describe('connector origin hostname', () => {
     expect(() => createConnectorOriginHostname(input)).toThrow();
   });
 
-  it('prevents production code from generating the retired nested origin class', () => {
+  it('prevents production code outside the migration recognizer from generating the retired nested origin class', () => {
     const packageRoot = process.cwd();
     const roots = [join(packageRoot, 'scripts'), join(packageRoot, 'cloudflare')];
+    const migrationPath = 'scripts/lib/managed-os-mcp-origin-class-migration.ts';
     const violations = roots.flatMap((root) =>
       listSourceFiles(root).flatMap((path) => {
         const source = readFileSync(path, 'utf8');
-        return source.includes('.os-origin.')
-          ? [relative(packageRoot, path)]
+        const packageRelativePath = relative(packageRoot, path);
+        return source.includes('.os-origin.') && packageRelativePath !== migrationPath
+          ? [packageRelativePath]
           : [];
       }),
     );
 
     expect(violations).toEqual([]);
+    expect(readFileSync(join(packageRoot, migrationPath), 'utf8')).toContain(
+      '.os-origin.',
+    );
   });
 });

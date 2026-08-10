@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_40ac298362f8",
+  "tmuxSession": "opensaas-os-installer-dry-run-40ac2983",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/installer-dry-run",
+  "branch": "task/os/installer-dry-run",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-dry-run",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-dry-run",
+  "prNumber": 1393,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1393",
+  "createdAt": "2026-07-11T00:28:03.200Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-dry-run/.task/os/installer-dry-run/session.json"
+}

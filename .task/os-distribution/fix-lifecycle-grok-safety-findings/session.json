@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6b13ad118f4c",
+  "tmuxSession": "opensaas-os-distribution-fix-lifecycle-grok-safety-findings-6b13ad11",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-lifecycle-grok-safety-findings",
+  "branch": "task/os-distribution/fix-lifecycle-grok-safety-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-lifecycle-grok-safety-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-lifecycle-grok-safety-findings",
+  "prNumber": 1605,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1605",
+  "createdAt": "2026-07-23T21:32:48.706Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-lifecycle-grok-safety-findings/.task/os-distribution/fix-lifecycle-grok-safety-findings/session.json"
+}

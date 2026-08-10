@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4ffd48607294",
+  "tmuxSession": "opensaas-tooling-address-pr-1389-review-findings-and-merge-to-mai-4ffd4860",
+  "area": "tooling",
+  "stream": "stream/tooling",
+  "taskBranch": "task/tooling/address-pr-1389-review-findings-and-merge-to-main",
+  "branch": "task/tooling/address-pr-1389-review-findings-and-merge-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-address-pr-1389-review-findings-and-merge-to-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-address-pr-1389-review-findings-and-merge-to-main",
+  "prNumber": 1429,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1429",
+  "createdAt": "2026-07-12T23:37:59.664Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-address-pr-1389-review-findings-and-merge-to-main/.task/tooling/address-pr-1389-review-findings-and-merge-to-main/session.json"
+}

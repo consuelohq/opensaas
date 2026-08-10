@@ -354,28 +354,28 @@ Final-smoke-test.run workspace-call
 
 ---
 
-# Phase 3 — Research Through the Decision Engine and Context
+# Phase 3 — Research Through the Decision Engine and Memory
 
-Use the decision engine and project context before direct symbol hunting, and return to them whenever new uncertainty appears.
+Use the decision engine and project memory before direct symbol hunting, and return to them whenever new uncertainty appears.
 
-Context and exploration are not one-time kickoff steps; they are tools for staying aligned throughout the task.
+Memory and exploration are not one-time kickoff steps; they are tools for staying aligned throughout the task.
 
 ```ts
 await os.call({
-  tool: "context.search",
-  input: { keyword: "<feature or behavior>", limit: 5 },
+  tool: "memory",
+  input: { operation: "search", keyword: "<feature or behavior>", limit: 5 },
   timeout: 120,
 })
 
 await os.call({
-  tool: "context.search",
-  input: { keyword: "typed workspace facade", limit: 5 },
+  tool: "memory",
+  input: { operation: "search", keyword: "typed workspace facade", limit: 5 },
   timeout: 120,
 })
 
 await os.call({
-  tool: "context.search",
-  input: { keyword: "workspace scripts docs", limit: 5 },
+  tool: "memory",
+  input: { operation: "search", keyword: "workspace scripts docs", limit: 5 },
   timeout: 120,
 })
 
@@ -463,11 +463,11 @@ await os.call({
 
 Confidence comes from evidence, not from the first explore result.
 
-## Context Is a Live Memory Layer
+## Memory Is a Live Project Layer
 
-Use `context.search` throughout the task, not only at kickoff.
+Use `memory` with `operation: "search"` throughout the task, not only at kickoff.
 
-The workspace context store contains prior handoffs, workpads, task notes, decisions, failures, and session memory. Treat it as project memory.
+The OS memory store contains prior handoffs, workpads, task notes, decisions, failures, and session memory. Treat it as project memory.
 
 It often explains:
 
@@ -501,8 +501,8 @@ Default context loop:
 
 ```ts
 await os.call({
-  tool: "context.search",
-  input: {
+  tool: "memory",
+  input: { operation: "search",
     keyword: "<feature-or-failure-keyword>",
     limit: 5,
   },
@@ -512,7 +512,7 @@ await os.call({
 
 Then read the relevant result.
 
-Use the returned `context.search` results directly when they contain enough detail. If the result points to a handoff, workpad, or file, read that source through the matching typed workspace tool.
+Use the returned `memory` with `operation: "search"` results directly when they contain enough detail. If the result points to a handoff, workpad, or file, read that source through the matching typed workspace tool.
 
 Use short, strong keywords instead of long sentence searches.
 
@@ -536,7 +536,7 @@ If context contradicts current code, current code and runtime evidence win. Reco
 Mental model for agents:
 
 - `explore` finds where to look in the repo.
-- `context.search` finds what the team already learned.
+- `memory` with `operation: "search"` finds what the team already learned.
 - `fs.read` verifies what the code says now.
 - tests/logs/runtime prove what actually happens.
 
@@ -573,7 +573,8 @@ await os.call({
     maxResultChars: 20000,
     code: `
       const status = await workspace.status({});
-      const context = await workspace.context.search({
+      const memory = await workspace.memory({
+        operation: "search",
         keyword: "workspace facade",
         limit: 5
       });
@@ -701,8 +702,9 @@ await os.call({
         parallel: true,
       },
       {
-        tool: "context.search",
+        tool: "memory",
         input: {
+          operation: "search",
           keyword: "workspace facade",
           limit: 5,
         },
@@ -728,7 +730,7 @@ Make changes only inside the task worktree. Prefer typed workspace tools and `co
 
 Tool preference order:
 
-1. `context.search`, `explore`, `decideNext`, and `confidenceScore` for discovery and prior context.
+1. `memory` with `operation: "search"`, `explore`, `decideNext`, and `confidenceScore` for discovery and prior context.
 2. `code.run` for semantic workflows that compose multiple typed tools.
 3. `fs.read`, `fs.search`, `fs.list`, `fs.apply_patch`, `fs.write`, and `fs.trash` for exact file work.
 4. `batch` for independent read-only calls or fixed mechanical checklists.
@@ -747,11 +749,11 @@ Keep the scoped workpad current:
 - improvements noticed
 - errors or blockers
 - validation commands and results
-- context searched and relevant prior handoffs/workpads found
+- memory searched and relevant prior handoffs/workpads found
 
 Use the workspace as an evidence machine:
 
-- search context before guessing about prior decisions
+- search memory before guessing about prior decisions
 - use `explore` before broad file search
 - read relevant policy/control files fully
 - use `decideNext` when the next step is unclear

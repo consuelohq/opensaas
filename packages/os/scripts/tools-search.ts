@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
+import { applyManifestOverlay, readManifestOverlay, resolveOverlayHome } from './lib/manifest-overlay';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 
 const require = createRequire(import.meta.url);
@@ -138,6 +139,7 @@ type IntentPack = {
   label: string;
   terms: string[];
   requireAny?: string[];
+  requireAll?: string[];
   boost: Record<string, number>;
   alternatives?: Array<{ intent: string; tools: string[] }>;
   safeDefault?: string;
@@ -152,7 +154,7 @@ type EmbeddingCache = {
 };
 
 const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const manifestPath = path.join(workspaceRoot, 'manifests', 'tool.manifest.json');
+const manifestPath = path.join(workspaceRoot, 'manifests', 'generated', 'tool.manifest.json');
 const toolsDocPath = path.join(workspaceRoot, 'TOOLS.md');
 const TOOL_CARD_VERSION = 'tools-search-card-v2';
 
@@ -187,11 +189,17 @@ const QUERY_ALIASES: Record<string, string[]> = {
   read: ['get', 'fetch', 'view'],
   trace: ['context', 'logs', 'sentry'],
   log: ['logs', 'trace'],
-  logs: ['railway', 'context', 'sentry'],
+  logs: ['deployment', 'runtime', 'build', 'context', 'sentry'],
   codex: ['worker', 'cdx'],
   cdx: ['codex', 'worker'],
   pi: ['worker', 'mini'],
-  deploy: ['railway', 'website', 'server'],
+  deploy: ['deployment', 'railway', 'vercel', 'cloudflare', 'website', 'server'],
+  redeploy: ['deployment', 'deploy', 'service', 'railway', 'vercel', 'cloudflare'],
+  railway: ['deployment', 'provider', 'hosting'],
+  vercel: ['deployment', 'provider', 'hosting'],
+  cloudflare: ['deployment', 'provider', 'hosting', 'workers'],
+  environment: ['deployment', 'variables', 'config'],
+  variables: ['environment', 'deployment', 'config'],
   browser: ['page', 'screenshot', 'open'],
   bun: ['runtime', 'package', 'script', 'code', 'call'],
   python: ['runtime', 'transform', 'script', 'code', 'call'],
@@ -215,6 +223,20 @@ const QUERY_ALIASES: Record<string, string[]> = {
 };
 
 const INTENT_PACKS: IntentPack[] = [
+  {
+    id: 'stream-create',
+    label: 'create a durable stream branch with instructions',
+    terms: ['stream', 'create', 'initialize', 'new', 'branch', 'instructions'],
+    requireAll: ['stream'],
+    requireAny: ['create', 'initialize', 'new'],
+    boost: { 'stream.create': 120, 'stream.list': 18, 'task.start': -25 },
+    alternatives: [
+      { intent: 'inspect existing stream branches', tools: ['stream.list'] },
+      { intent: 'start work on an existing stream', tools: ['task.start'] },
+    ],
+    safeDefault: 'Use stream.list to confirm whether the stream already exists before creating it.',
+    mutatingGuidance: 'stream.create atomically creates the remote stream, instruction files, and local tracking branch.',
+  },
   {
     id: 'task-cleanup',
     label: 'clean up or abandon a task branch/worktree',
@@ -249,6 +271,17 @@ const INTENT_PACKS: IntentPack[] = [
       { intent: 'merge a pull request', tools: ['task.merge'] },
     ],
     safeDefault: 'task.prs is the safe read-only default for inspecting task PR links.',
+  },
+  {
+    id: 'github-pr-feedback',
+    label: 'fetch pull request feedback comments',
+    terms: ['github', 'pr', 'pull', 'request', 'review', 'reviews', 'comment', 'comments', 'feedback', 'inline', 'actionable', 'bot'],
+    requireAny: ['comments', 'comment', 'feedback', 'inline', 'bot'],
+    boost: { github: 120, 'task.pr': -80, 'task.prs': -20, 'task.merge': -30 },
+    alternatives: [
+      { intent: 'inspect task PR links', tools: ['task.prs'] },
+    ],
+    safeDefault: 'Use github operation pr.reviews for pull request feedback comments.',
   },
   {
     id: 'task-pr-create',
@@ -384,7 +417,7 @@ const INTENT_PACKS: IntentPack[] = [
     label: 'search repo files',
     terms: ['grep', 'ripgrep', 'rg', 'search', 'find', 'pattern', 'contents', 'files', 'codebase'],
     requireAny: ['grep', 'ripgrep', 'rg', 'pattern', 'contents'],
-    boost: { 'fs.search': 105, 'tools.search': -35, 'mac.search': 12, 'context.search': -18, 'task.cleanup': -45 },
+    boost: { 'fs.search': 105, 'tools.search': -35, 'mac.search': 12, 'memory': -18, 'task.cleanup': -45 },
     safeDefault: 'fs.search is the read-only default for searching repository files.',
   },
   {
@@ -424,11 +457,38 @@ const INTENT_PACKS: IntentPack[] = [
     boost: { 'linear.issue': 86, 'linear.search': 72, 'linear.createIssue': -16 },
   },
   {
-    id: 'railway-logs',
-    label: 'inspect Railway logs or deploy status',
-    terms: ['railway', 'logs', 'deploy', 'errors', 'runtime'],
-    requireAny: ['railway', 'logs', 'deploy'],
-    boost: { 'railway.logs': 86, 'railway.redeploy': -20 },
+    id: 'deployment-logs',
+    label: 'inspect Railway, Vercel, or Cloudflare deployment logs',
+    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'logs', 'log', 'errors', 'runtime', 'build'],
+    requireAny: ['logs', 'log', 'errors', 'runtime', 'build'],
+    boost: { 'deployment.logs': 145, 'deployment.status': 24, 'deployment.list': 10, 'task.prs': -120, 'task.pr': -90 },
+    safeDefault: 'deployment.logs is the read-only default for bounded Railway, Vercel, and Cloudflare runtime or build logs.',
+  },
+  {
+    id: 'deployment-status',
+    label: 'inspect Railway, Vercel, or Cloudflare deployment status',
+    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'status', 'check', 'inspect'],
+    requireAll: ['deployment'],
+    requireAny: ['status', 'check', 'inspect'],
+    boost: { 'deployment.status': 135, 'deployment.list': 22, 'deployment.context': 10, 'task.current': -80, 'task.prs': -100 },
+    safeDefault: 'deployment.status reads one provider deployment without changing remote state.',
+  },
+  {
+    id: 'deployment-environment',
+    label: 'inspect or change Railway, Vercel, or Cloudflare environment metadata',
+    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'environment', 'variable', 'variables', 'config', 'names', 'set', 'delete'],
+    requireAny: ['environment', 'variable', 'variables'],
+    boost: { 'deployment.environment': 145, 'deployment.context': 12, 'deployment.list': 8, 'task.prs': -100 },
+    safeDefault: 'Use deployment.environment action list to read variable names; set and delete require explicit approval and never return secret values.',
+    mutatingGuidance: 'deployment.environment set/delete changes provider configuration and requires explicit local approval.',
+  },
+  {
+    id: 'deployment-mutation',
+    label: 'deploy, redeploy, or promote on Railway, Vercel, or Cloudflare',
+    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'deploy', 'redeploy', 'promote', 'service', 'production'],
+    requireAny: ['deploy', 'redeploy', 'promote'],
+    boost: { 'deployment.deploy': 145, 'deployment.status': 18, 'deployment.logs': 8, 'task.prs': -110, 'website.deploy': -25 },
+    mutatingGuidance: 'deployment.deploy changes remote provider state and requires explicit local approval.',
   },
 ];
 
@@ -564,7 +624,10 @@ function readCanonicalManifest(): CanonicalToolManifest {
     throw new Error(`${manifestPath}: expected generated tool manifest with tools array`);
   }
 
-  return parsed as CanonicalToolManifest;
+  const manifest = parsed as CanonicalToolManifest;
+  const home = resolveOverlayHome();
+  if (!fs.existsSync(path.join(home, 'config.json'))) return manifest;
+  return applyManifestOverlay(manifest, readManifestOverlay(home));
 }
 
 function stringField(value: unknown): string | undefined {
@@ -678,6 +741,7 @@ function termSet(query: string): Set<string> {
 function intentMatches(pack: IntentPack, queryTerms: Set<string>): boolean {
   const hasTerm = pack.terms.some((term) => queryTerms.has(term));
   if (!hasTerm) return false;
+  if (pack.requireAll?.length && !pack.requireAll.every((term) => queryTerms.has(term))) return false;
   if (!pack.requireAny?.length) return true;
   return pack.requireAny.some((term) => queryTerms.has(term));
 }

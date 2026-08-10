@@ -1,0 +1,49 @@
+---
+title: Install a skill
+description: Enable a bundled skill during setup or add a validated local skill to the OS home.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/install.ts
+    tests:
+      - packages/os/scripts/onboarding-flow.test.ts
+    runtime: The interactive skill multiselect and non-interactive defaults were inspected on 2026-07-13.
+  - source: packages/os/scripts/lib/install-state.ts
+    tests:
+      - packages/os/tests/install-state.test.ts
+    runtime: Focused provisioning tests verified selected bundled skills, local-skill preservation, and registry refresh behavior.
+---
+
+Consuelo OS currently has two skill sources: bundled skills shipped with OS and user-owned local skills.
+
+## Choose bundled skills during setup
+
+The interactive installer asks which skills to enable. Selected bundled skills are materialized under `~/.consuelo/skills` and recorded in `~/.consuelo/config.json`.
+
+A non-interactive `--yes` installation uses the current default selection. There is not yet a standalone public `consuelo skill install <name>` command.
+
+To change the selected bundled set through the supported self-service UI, rerun the interactive installer and choose the desired skills. The installer preserves locally edited bundled skills instead of silently replacing them.
+
+## Add a local skill
+
+A local skill is a folder under:
+
+```text
+~/.consuelo/skills/<skill-name>/
+```
+
+At minimum it needs a valid `SKILL.md` and `skill.json`. Use the structure in [Create a skill](/build/skills/create-a-skill/) and [Skill structure](/build/skills/skill-structure/).
+
+Run the normal OS provisioning flow after adding the folder so `skills.json` is refreshed. Folders without Consuelo's bundled-install metadata are treated as user owned and preserved on later provisions.
+
+## Verify
+
+Check that:
+
+1. the skill folder exists under `~/.consuelo/skills`;
+2. its entry appears in `~/.consuelo/skills/skills.json`;
+3. the metadata status is `active`;
+4. its referenced guidance entrypoint and tools exist;
+5. permission and approval metadata match the manifest when a runtime skill entry is present.
+
+A folder being present does not prove its runtime dependencies are available. Exercise the skill's documented verification step before relying on it.

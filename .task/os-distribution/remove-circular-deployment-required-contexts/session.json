@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_03ccb973a50d",
+  "tmuxSession": "opensaas-os-distribution-remove-circular-deployment-required-contexts-03ccb973",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/remove-circular-deployment-required-contexts",
+  "branch": "task/os-distribution/remove-circular-deployment-required-contexts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-remove-circular-deployment-required-contexts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-remove-circular-deployment-required-contexts",
+  "prNumber": 1638,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1638",
+  "createdAt": "2026-07-24T15:05:13.599Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-remove-circular-deployment-required-contexts/.task/os-distribution/remove-circular-deployment-required-contexts/session.json"
+}

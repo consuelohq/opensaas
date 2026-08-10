@@ -2,14 +2,19 @@ import {
   GOOGLE_AUTH_URL,
   GOOGLE_SCOPE,
   MCP_OAUTH_CODE_TTL_MS,
+  MCP_OAUTH_REFRESH_TTL_MS,
   MCP_OAUTH_SCOPES,
   MCP_OAUTH_TTL_MS,
   TTL_MS,
 } from '../constants';
 import { json } from '../http';
-import type { Store } from '../types';
+import type {
+  McpOAuthAccessToken,
+  McpOAuthCode,
+  McpOAuthRefreshToken,
+  Store,
+} from '../types';
 import {
-  hasGrantedScope,
   hash,
   hashChallenge,
   host,
@@ -18,6 +23,9 @@ import {
   rand,
   validChatGptClientId,
   validChatGptRedirectUri,
+  scopesForClient,
+  validOperatorClientId,
+  validOperatorRedirectUri,
   workspaceHostFromMcpResource,
 } from '../utils';
 import {
@@ -34,8 +42,9 @@ export function authorizationServerMetadata(
     authorization_endpoint: new URL('/oauth/authorize', origin).toString(),
     token_endpoint: new URL('/oauth/token', origin).toString(),
     introspection_endpoint: new URL('/oauth/introspect', origin).toString(),
+    revocation_endpoint: new URL('/oauth/revoke', origin).toString(),
     response_types_supported: ['code'],
-    grant_types_supported: ['authorization_code'],
+    grant_types_supported: ['authorization_code', 'refresh_token'],
     code_challenge_methods_supported: ['S256'],
     token_endpoint_auth_methods_supported: ['none'],
     client_id_metadata_document_supported: true,
@@ -193,12 +202,20 @@ export async function startMcpOAuthAuthorization(input: {
       'unsupported_response_type',
       'Only authorization code is supported.',
     );
-  if (!validChatGptClientId(clientId))
+  // Client and redirect kinds must match. Allowing a ChatGPT client id with a loopback redirect, or
+  // the operator client with a chatgpt.com redirect, would let one client's registration be used to
+  // deliver another's authorization code.
+  const isChatGptClient = validChatGptClientId(clientId);
+  const isOperatorClient = validOperatorClientId(clientId);
+  if (!isChatGptClient && !isOperatorClient)
     return invalidOauthRequest(
       'unauthorized_client',
       'OAuth client is not allowed.',
     );
-  if (!validChatGptRedirectUri(redirectUriValue))
+  const redirectAllowed = isChatGptClient
+    ? validChatGptRedirectUri(redirectUriValue)
+    : validOperatorRedirectUri(redirectUriValue);
+  if (!redirectAllowed)
     return invalidOauthRequest(
       'invalid_request',
       'redirect_uri is not allowed.',
@@ -215,7 +232,12 @@ export async function startMcpOAuthAuthorization(input: {
     );
   }
   const state = rand('mcp_oauth_state', 24);
-  const scopes = normalizeScopes(url.searchParams.get('scope') ?? '');
+  // Restrict to what this client may hold before the grant is stored, so an over-requesting client
+  // never gets an operator-only scope persisted against its authorization code.
+  const scopes = scopesForClient(
+    normalizeScopes(url.searchParams.get('scope') ?? ''),
+    clientId,
+  );
   await input.store.putMcpOAuthState({
     state,
     clientId,
@@ -317,49 +339,83 @@ export async function finishMcpOAuthGoogleCallback(input: {
   });
 }
 
-export async function exchangeMcpOAuthToken(input: {
-  request: Request;
+type McpOAuthTokenClaims = Omit<
+  McpOAuthAccessToken,
+  'tokenHash' | 'issuedAt' | 'expiresAt'
+>;
+
+async function issueMcpOAuthTokenPair(input: {
+  store: Store;
+  claims: McpOAuthTokenClaims;
+  nowMs: number;
+}): Promise<Response> {
+  const accessToken = rand('coa', 32);
+  const refreshToken = rand('cor', 32);
+  try {
+    await input.store.putMcpOAuthAccessToken({
+      ...input.claims,
+      tokenHash: await hash(accessToken),
+      issuedAt: input.nowMs,
+      expiresAt: input.nowMs + MCP_OAUTH_TTL_MS,
+    });
+    await input.store.putMcpOAuthRefreshToken({
+      ...input.claims,
+      tokenHash: await hash(refreshToken),
+      issuedAt: input.nowMs,
+      expiresAt: input.nowMs + MCP_OAUTH_REFRESH_TTL_MS,
+    });
+  } catch {
+    throw new Error('MCP OAuth token issuance failed.');
+  }
+  return json({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    token_type: 'Bearer',
+    expires_in: Math.floor(MCP_OAUTH_TTL_MS / 1000),
+    scope: input.claims.scope,
+  });
+}
+
+async function exchangeMcpOAuthAuthorizationCode(input: {
+  params: URLSearchParams;
   store: Store;
   nowMs: number;
 }): Promise<Response> {
+  const clientId = input.params.get('client_id') ?? '';
+  const redirectUriValue = input.params.get('redirect_uri') ?? '';
+  const code = input.params.get('code') ?? '';
+  const verifier = input.params.get('code_verifier') ?? '';
+  const resource = input.params.get('resource') ?? '';
+  let authCode: McpOAuthCode | undefined;
   try {
-    const p = await params(input.request);
-    if (p.get('grant_type') !== 'authorization_code')
-      return invalidOauthRequest(
-        'unsupported_grant_type',
-        'Only authorization_code is supported.',
-      );
-    const clientId = p.get('client_id') ?? '';
-    const redirectUriValue = p.get('redirect_uri') ?? '';
-    const code = p.get('code') ?? '';
-    const verifier = p.get('code_verifier') ?? '';
-    const resource = p.get('resource') ?? '';
-    const authCode = await input.store.byMcpOAuthCode(await hash(code));
-    if (!authCode)
-      return invalidOauthRequest(
-        'invalid_grant',
-        'Authorization code was not found.',
-      );
-    if (input.nowMs >= authCode.expiresAt)
-      return invalidOauthRequest(
-        'invalid_grant',
-        'Authorization code expired.',
-      );
-    if (
-      authCode.clientId !== clientId ||
-      authCode.redirectUri !== redirectUriValue
-    )
-      return invalidOauthRequest(
-        'invalid_grant',
-        'Authorization code binding mismatch.',
-      );
-    if (resource && resource !== authCode.resource)
-      return invalidOauthRequest('invalid_grant', 'Resource binding mismatch.');
-    if (!verifier || (await hashChallenge(verifier)) !== authCode.codeChallenge)
-      return invalidOauthRequest('invalid_grant', 'PKCE verification failed.');
-    const accessToken = rand('coa', 32);
-    await input.store.putMcpOAuthAccessToken({
-      tokenHash: await hash(accessToken),
+    authCode = await input.store.byMcpOAuthCode(await hash(code));
+  } catch {
+    throw new Error('MCP OAuth authorization code lookup failed.');
+  }
+  if (!authCode)
+    return invalidOauthRequest(
+      'invalid_grant',
+      'Authorization code was not found.',
+    );
+  if (input.nowMs >= authCode.expiresAt)
+    return invalidOauthRequest('invalid_grant', 'Authorization code expired.');
+  if (
+    authCode.clientId !== clientId ||
+    authCode.redirectUri !== redirectUriValue
+  )
+    return invalidOauthRequest(
+      'invalid_grant',
+      'Authorization code binding mismatch.',
+    );
+  if (resource && resource !== authCode.resource)
+    return invalidOauthRequest('invalid_grant', 'Resource binding mismatch.');
+  if (!verifier || (await hashChallenge(verifier)) !== authCode.codeChallenge)
+    return invalidOauthRequest('invalid_grant', 'PKCE verification failed.');
+
+  const response = await issueMcpOAuthTokenPair({
+    store: input.store,
+    nowMs: input.nowMs,
+    claims: {
       clientId: authCode.clientId,
       scope: authCode.scope,
       scopes: authCode.scopes,
@@ -367,20 +423,126 @@ export async function exchangeMcpOAuthToken(input: {
       workspaceHost: authCode.workspaceHost,
       accountId: authCode.accountId,
       email: authCode.email,
-      issuedAt: input.nowMs,
-      expiresAt: input.nowMs + MCP_OAUTH_TTL_MS,
-    });
-    await input.store.delMcpOAuthCode(authCode.codeHash);
-    return json({
-      access_token: accessToken,
-      token_type: 'Bearer',
-      expires_in: Math.floor(MCP_OAUTH_TTL_MS / 1000),
-      scope: authCode.scope,
-    });
+    },
+  });
+  await input.store.delMcpOAuthCode(authCode.codeHash);
+  return response;
+}
+
+async function exchangeMcpOAuthRefreshToken(input: {
+  params: URLSearchParams;
+  store: Store;
+  nowMs: number;
+}): Promise<Response> {
+  const clientId = input.params.get('client_id') ?? '';
+  const rawRefreshToken = input.params.get('refresh_token') ?? '';
+  const resource = input.params.get('resource') ?? '';
+  const tokenHash = rawRefreshToken ? await hash(rawRefreshToken) : '';
+  let stored: McpOAuthRefreshToken | undefined;
+  try {
+    stored = tokenHash
+      ? await input.store.byMcpOAuthRefreshToken(tokenHash)
+      : undefined;
+  } catch {
+    throw new Error('MCP OAuth refresh token lookup failed.');
+  }
+  if (!stored)
+    return invalidOauthRequest('invalid_grant', 'Refresh token was not found.');
+  if (input.nowMs >= stored.expiresAt) {
+    await input.store.delMcpOAuthRefreshToken(tokenHash);
+    return invalidOauthRequest('invalid_grant', 'Refresh token expired.');
+  }
+  if (stored.clientId !== clientId)
+    return invalidOauthRequest('invalid_grant', 'Refresh token binding mismatch.');
+  if (resource && resource !== stored.resource)
+    return invalidOauthRequest('invalid_grant', 'Resource binding mismatch.');
+
+  const requestedScope = input.params.get('scope');
+  const requestedScopes = requestedScope ? normalizeScopes(requestedScope) : [];
+  if (
+    requestedScopes.length > 0 &&
+    requestedScopes.some((scope) => !stored.scopes.includes(scope))
+  ) {
+    return invalidOauthRequest(
+      'invalid_scope',
+      'Requested scope exceeds the original grant.',
+    );
+  }
+  const scopes = requestedScopes.length > 0 ? requestedScopes : stored.scopes;
+  await input.store.delMcpOAuthRefreshToken(tokenHash);
+  return issueMcpOAuthTokenPair({
+    store: input.store,
+    nowMs: input.nowMs,
+    claims: {
+      clientId: stored.clientId,
+      scope: scopes.join(' '),
+      scopes,
+      resource: stored.resource,
+      workspaceHost: stored.workspaceHost,
+      accountId: stored.accountId,
+      email: stored.email,
+    },
+  });
+}
+
+export async function exchangeMcpOAuthToken(input: {
+  request: Request;
+  store: Store;
+  nowMs: number;
+}): Promise<Response> {
+  try {
+    const p = await params(input.request);
+    const grantType = p.get('grant_type');
+    if (grantType === 'authorization_code')
+      return await exchangeMcpOAuthAuthorizationCode({
+        params: p,
+        store: input.store,
+        nowMs: input.nowMs,
+      });
+    if (grantType === 'refresh_token')
+      return await exchangeMcpOAuthRefreshToken({
+        params: p,
+        store: input.store,
+        nowMs: input.nowMs,
+      });
+    return invalidOauthRequest(
+      'unsupported_grant_type',
+      'Only authorization_code and refresh_token are supported.',
+    );
   } catch (error: unknown) {
     return invalidOauthRequest(
       'server_error',
       error instanceof Error ? error.message : 'OAuth token exchange failed.',
+      500,
+    );
+  }
+}
+
+export async function revokeMcpOAuthToken(input: {
+  request: Request;
+  store: Store;
+}): Promise<Response> {
+  try {
+    const p = await params(input.request);
+    const token = p.get('token') ?? '';
+    const clientId = p.get('client_id') ?? '';
+    if (!token)
+      return invalidOauthRequest('invalid_request', 'Token is required.');
+
+    const tokenHash = await hash(token);
+    const [accessToken, refreshToken] = await Promise.all([
+      input.store.byMcpOAuthAccessToken(tokenHash),
+      input.store.byMcpOAuthRefreshToken(tokenHash),
+    ]);
+    if (accessToken?.clientId === clientId)
+      await input.store.delMcpOAuthAccessToken(tokenHash);
+    if (refreshToken?.clientId === clientId)
+      await input.store.delMcpOAuthRefreshToken(tokenHash);
+    return new Response(null, { status: 200 });
+  } catch (error: unknown) {
+    return invalidOauthRequest(
+      'server_error',
+      error instanceof Error ? error.message : 'OAuth token revocation failed.',
       500,
     );
   }
@@ -395,15 +557,13 @@ export async function introspectMcpOAuthToken(input: {
     const p = await params(input.request);
     const token = p.get('token') ?? '';
     const resource = p.get('resource') ?? '';
-    const requiredScope = p.get('scope') ?? '';
     const stored = token
       ? await input.store.byMcpOAuthAccessToken(await hash(token))
       : undefined;
     if (
       !stored ||
       input.nowMs >= stored.expiresAt ||
-      (resource && resource !== stored.resource) ||
-      !hasGrantedScope(stored.scopes, requiredScope)
+      (resource && resource !== stored.resource)
     ) {
       return json({ active: false });
     }

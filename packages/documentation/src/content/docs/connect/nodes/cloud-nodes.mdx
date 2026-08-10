@@ -1,0 +1,36 @@
+---
+title: Cloud nodes
+description: Understand the current assisted Consuelo-hosted runtime option.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/install.ts
+    tests:
+      - packages/os/tests/installer-onboarding-ui.test.ts
+      - packages/os/scripts/onboarding-flow.test.ts
+    runtime: The installer cloud-mode branch was verified to open the Consuelo contact path and exit before local provisioning on 2026-07-13.
+---
+A cloud node is a Consuelo-managed runtime that can keep a workspace available without relying on your Mac. It is not currently created by a public self-service OS command.
+
+## Current availability
+
+Selecting **cloud** in the installer opens the Consuelo contact flow and exits before downloading the local source, installing dependencies, or creating local services. Provisioning, migration, and operational ownership are currently **handled by the Consuelo team**.
+
+## What to discuss before provisioning
+
+- which workspace should run in Cloud;
+- which agents need remote MCP access;
+- required service connectors and scopes;
+- files or artifacts that must remain local;
+- approval boundaries for mutating tools;
+- expected availability and support requirements.
+
+## Local and cloud can coexist
+
+A managed cloud runtime does not imply that every local file or machine capability moves to it. Work that needs a Mac's filesystem, local applications, or local network can remain on a local node. The workspace can expose different capabilities depending on which runtime is authorized to perform the action.
+
+## Verification
+
+For a provisioned cloud node, verify the workspace MCP endpoint, tool discovery, one harmless read, expected service capabilities, trace visibility, and a controlled failure. The Consuelo team should provide the runtime-specific health and revocation procedure.
+
+For the current product boundary, use [Local and Consuelo Cloud](/start/local-and-consuelo-cloud/) and contact Consuelo for provisioning.

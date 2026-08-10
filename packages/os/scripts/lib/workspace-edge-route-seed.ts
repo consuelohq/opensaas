@@ -11,6 +11,8 @@ export type WorkspaceEdgeRouteSeedInput = {
   baseDomain?: string;
   siteSnapshotKey?: string;
   siteVersionId?: string;
+  publishedSiteIds?: WorkspaceSiteSnapshotId[];
+  siteContentHashes?: Partial<Record<WorkspaceSiteSnapshotId, string>>;
   appUpstreamUrl?: string;
   connectorId?: string;
   tunnelOriginUrl?: string;
@@ -27,20 +29,46 @@ const DEFAULT_HOSTNAME = 'internal.consuelohq.com';
 const DEFAULT_BASE_DOMAIN = 'consuelohq.com';
 const DEFAULT_APP_UPSTREAM_URL = 'https://app.consuelohq.com';
 const DEFAULT_LOCAL_SERVICE_URL = 'http://127.0.0.1:8787';
-const DEFAULT_SITE_ID = 'launcher';
+export const WORKSPACE_SITE_SNAPSHOT_IDS = [
+  'launcher',
+  'artifacts',
+  'traces',
+  'diffs',
+  'docs',
+  'configuration',
+  'tools',
+  'environments',
+  'secrets',
+] as const;
+export type WorkspaceSiteSnapshotId =
+  (typeof WORKSPACE_SITE_SNAPSHOT_IDS)[number];
+
+const DEFAULT_SITE_ID: WorkspaceSiteSnapshotId = 'launcher';
 const DEFAULT_SITE_VERSION_ID = 'seeded-workspace-site-shell';
 const DEFAULT_SITE_MANIFEST_KEY = `sites/${DEFAULT_WORKSPACE_ID}/${DEFAULT_SITE_ID}/${DEFAULT_SITE_VERSION_ID}/index.html`;
 const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
-const SITE_SNAPSHOT_ROUTES = [
+const SITE_SNAPSHOT_ROUTES: ReadonlyArray<{
+  pathPrefix: string;
+  siteId: WorkspaceSiteSnapshotId;
+}> = [
   { pathPrefix: '/', siteId: 'launcher' },
-  { pathPrefix: '/office', siteId: 'office' },
+  { pathPrefix: '/artifacts', siteId: 'artifacts' },
   { pathPrefix: '/observability', siteId: 'traces' },
+  { pathPrefix: '/observability/traces', siteId: 'traces' },
   { pathPrefix: '/traces', siteId: 'traces' },
   { pathPrefix: '/tracing', siteId: 'traces' },
+  { pathPrefix: '/trace-burn-intelligence', siteId: 'traces' },
   { pathPrefix: '/diffs', siteId: 'diffs' },
   { pathPrefix: '/docs', siteId: 'docs' },
+  { pathPrefix: '/configuration', siteId: 'configuration' },
+  { pathPrefix: '/tools', siteId: 'tools' },
+  { pathPrefix: '/environments', siteId: 'environments' },
+  { pathPrefix: '/secrets', siteId: 'secrets' },
 ] as const;
 type SiteSnapshotRoute = typeof SITE_SNAPSHOT_ROUTES[number];
+const WORKSPACE_SITE_SNAPSHOT_ID_SET = new Set<string>(
+  WORKSPACE_SITE_SNAPSHOT_IDS,
+);
 
 const normalizeHostname = (hostname: string): string => hostname.trim().toLowerCase();
 
@@ -62,6 +90,29 @@ const hasOsConnectorInput = (
 ): boolean =>
   trimmedValue(input.connectorId) !== undefined &&
   trimmedValue(input.tunnelOriginUrl) !== undefined;
+
+const resolvePublishedSiteIds = (
+  publishedSiteIds: WorkspaceEdgeRouteSeedInput['publishedSiteIds'],
+): Set<WorkspaceSiteSnapshotId> => {
+  if (publishedSiteIds === undefined) {
+    return new Set([DEFAULT_SITE_ID]);
+  }
+  if (publishedSiteIds.length === 0) {
+    throw new Error('workspace edge seed requires a published launcher snapshot');
+  }
+
+  const normalized = new Set<WorkspaceSiteSnapshotId>();
+  for (const siteId of publishedSiteIds) {
+    if (!WORKSPACE_SITE_SNAPSHOT_ID_SET.has(siteId)) {
+      throw new Error(`workspace edge seed received unknown Site snapshot: ${siteId}`);
+    }
+    normalized.add(siteId);
+  }
+  if (!normalized.has(DEFAULT_SITE_ID)) {
+    throw new Error('workspace edge seed requires a published launcher snapshot');
+  }
+  return normalized;
+};
 const escapeSqlText = (value: string): string => value.replace(/'/g, "''");
 
 const sqlText = (value: string): string => `'${escapeSqlText(value)}'`;
@@ -72,6 +123,14 @@ const sqlNullableText = (value: string | null): string =>
 const siteVersionFromSnapshotKey = (siteSnapshotKey: string | undefined): string | undefined => {
   const match = trimmedValue(siteSnapshotKey)?.match(/^sites\/[^/]+\/[^/]+\/([^/]+)\/index\.html$/);
   return match?.[1];
+};
+
+const normalizedContentHash = (contentHash: string | undefined): string | undefined => {
+  const normalized = trimmedValue(contentHash)?.toLowerCase();
+  if (normalized !== undefined && !/^[a-f0-9]{64}$/.test(normalized)) {
+    throw new Error('workspace edge seed received invalid site snapshot content hash');
+  }
+  return normalized;
 };
 
 const siteManifestKey = (input: {
@@ -91,25 +150,33 @@ const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
   workspaceId: string;
   siteSnapshotKey?: string;
   siteVersionId?: string;
-}): WorkspaceRouteD1Route => ({
-  surface: 'sites',
-  pathPrefix: input.pathPrefix,
-  auth: 'public',
-  status: 'active',
-  target: {
-    kind: 'site-snapshot',
-    siteId: input.siteId,
-    versionId: trimmedValue(input.siteVersionId) ?? siteVersionFromSnapshotKey(input.siteSnapshotKey) ?? DEFAULT_SITE_VERSION_ID,
-    manifestKey: siteManifestKey({
-      workspaceId: input.workspaceId,
+  contentHash?: string;
+  published: boolean;
+}): WorkspaceRouteD1Route => {
+  const isLauncher = input.pathPrefix === '/' && input.siteId === 'launcher';
+  return {
+    surface: 'sites',
+    pathPrefix: input.pathPrefix,
+    auth: isLauncher ? 'workspace-session' : 'public',
+    status: input.published ? 'active' : 'disabled',
+    target: {
+      kind: 'site-snapshot',
       siteId: input.siteId,
-      siteSnapshotKey: input.siteSnapshotKey,
-      siteVersionId: input.siteVersionId,
-    }),
-    contentType: DEFAULT_SITE_CONTENT_TYPE,
-    cachePolicy: 'static-shell',
-  },
-});
+      versionId: trimmedValue(input.siteVersionId) ?? siteVersionFromSnapshotKey(input.siteSnapshotKey) ?? DEFAULT_SITE_VERSION_ID,
+      manifestKey: siteManifestKey({
+        workspaceId: input.workspaceId,
+        siteId: input.siteId,
+        siteSnapshotKey: input.siteSnapshotKey,
+        siteVersionId: input.siteVersionId,
+      }),
+      ...(normalizedContentHash(input.contentHash)
+        ? { contentHash: normalizedContentHash(input.contentHash) }
+        : {}),
+      contentType: DEFAULT_SITE_CONTENT_TYPE,
+      cachePolicy: isLauncher ? 'private-preview' : 'static-shell',
+    },
+  };
+};
 
 const buildAppRoute = (input: {
   appUpstreamUrl: string;
@@ -128,24 +195,36 @@ const buildAppRoute = (input: {
 const buildOsRoutes = (input: {
   connectorId: string;
   tunnelOriginUrl: string;
-}): WorkspaceRouteD1Route[] => [{
-  surface: 'os',
-  pathPrefix: '/mcp',
-  auth: 'required',
-  status: 'active',
-  target: {
+}): WorkspaceRouteD1Route[] => {
+  const target: Extract<WorkspaceRouteD1RouteTarget, { kind: 'os-connector' }> = {
     kind: 'os-connector',
     connectorId: input.connectorId,
     connectorStatus: 'connected',
     tunnelOriginUrl: input.tunnelOriginUrl,
-  },
-}];
+  };
+  return [
+    {
+      surface: 'os',
+      pathPrefix: '/gtm',
+      auth: 'workspace-session',
+      status: 'active',
+      target,
+    },
+    {
+      surface: 'os',
+      pathPrefix: '/mcp',
+      auth: 'required',
+      status: 'active',
+      target,
+    },
+  ];
+};
 
 const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/traces/events',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -157,7 +236,7 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
     pathPrefix: '/gateway/traces',
-    auth: 'required',
+    auth: 'workspace-session',
     status: 'active',
     target: {
       kind: 'consuelo-gateway-service',
@@ -165,6 +244,153 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
       gatewayRouteFamily: '/gateway/traces/*',
       publicSiteRouteFamily: '/observability/*',
     },
+  },
+];
+
+const buildConfigurationGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/configuration/overlay',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'configuration-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/configuration/*',
+      publicSiteRouteFamily: '/configuration/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/configuration',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'configuration-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/configuration/*',
+      publicSiteRouteFamily: '/configuration/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/settings/overlay',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'configuration-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/settings/*',
+      publicSiteRouteFamily: '/settings/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/settings',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'configuration-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/settings/*',
+      publicSiteRouteFamily: '/settings/*',
+    },
+  },
+];
+
+const buildEnvironmentGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/environments/upsert',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'environment-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/environments/*',
+      publicSiteRouteFamily: '/environments/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/environments/delete',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'environment-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/environments/*',
+      publicSiteRouteFamily: '/environments/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/environments',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'environment-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/environments/*',
+      publicSiteRouteFamily: '/environments/*',
+    },
+  },
+];
+
+const buildSecretGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/secrets',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'secrets-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/secrets/*',
+      publicSiteRouteFamily: '/secrets/*',
+    },
+  },
+];
+
+const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/artifacts',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'artifacts-sites-read-layer',
+      gatewayRouteFamily: '/gateway/artifacts/*',
+      publicSiteRouteFamily: '/artifacts/*',
+    },
+  },
+];
+
+const buildLegacyConfigurationRedirectRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/settings',
+    auth: 'public',
+    status: 'active',
+    target: { kind: 'redirect', location: '/configuration', statusCode: 308 },
+  },
+];
+
+const buildLegacyArtifactRedirectRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/office',
+    auth: 'public',
+    status: 'active',
+    target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/design-wiki',
+    auth: 'public',
+    status: 'active',
+    target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
   },
 ];
 
@@ -184,6 +410,7 @@ const getTargetOriginUrl = (target: WorkspaceRouteD1RouteTarget): string => {
   if (target.kind === 'service-upstream') return target.upstreamUrl;
   if (target.kind === 'os-connector') return target.tunnelOriginUrl;
   if (target.kind === 'site-snapshot') return `r2://consuelo-sites-snapshots/${target.manifestKey}`;
+  if (target.kind === 'redirect') return `redirect://${target.location}`;
   return `consuelo-gateway://${target.serviceName}`;
 };
 
@@ -208,32 +435,34 @@ export const createWorkspaceEdgeRouteSeedRecord = (
   const hostname = trimmedOrDefault(input.hostname, DEFAULT_HOSTNAME);
   const baseDomain = trimmedOrDefault(input.baseDomain, DEFAULT_BASE_DOMAIN);
   const appUpstreamUrl = trimmedOrDefault(input.appUpstreamUrl, DEFAULT_APP_UPSTREAM_URL);
+  const connectorId = trimmedValue(input.connectorId);
+  const tunnelOriginUrl = trimmedValue(input.tunnelOriginUrl);
+  const publishedSiteIds = resolvePublishedSiteIds(input.publishedSiteIds);
+  const osRoutes =
+    hasOsConnectorInput(input) && connectorId !== undefined && tunnelOriginUrl !== undefined
+      ? buildOsRoutes({ connectorId, tunnelOriginUrl })
+      : [];
   const routes: WorkspaceRouteD1Route[] = [
+    ...osRoutes,
     ...SITE_SNAPSHOT_ROUTES.map((route) => buildSiteSnapshotRoute({
       ...route,
       workspaceId,
       siteSnapshotKey: input.siteSnapshotKey,
       siteVersionId: input.siteVersionId,
+      contentHash: input.siteContentHashes?.[route.siteId],
+      published: publishedSiteIds.has(route.siteId),
     })),
+    ...buildLegacyConfigurationRedirectRoutes(),
     ...buildTraceGatewayRoutes(),
+    ...buildConfigurationGatewayRoutes(),
+    ...buildEnvironmentGatewayRoutes(),
+    ...buildSecretGatewayRoutes(),
+    ...buildArtifactsGatewayRoutes(),
+    ...buildLegacyArtifactRedirectRoutes(),
   ];
 
   if (trimmedValue(input.appUpstreamUrl) !== undefined) {
     routes.push(buildAppRoute({ appUpstreamUrl }));
-  }
-
-  if (hasOsConnectorInput(input)) {
-    const connectorId = trimmedValue(input.connectorId);
-    const tunnelOriginUrl = trimmedValue(input.tunnelOriginUrl);
-
-    if (connectorId !== undefined && tunnelOriginUrl !== undefined) {
-      routes.push(
-        ...buildOsRoutes({
-          connectorId,
-          tunnelOriginUrl,
-        }),
-      );
-    }
   }
 
   return {

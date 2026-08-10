@@ -6,7 +6,7 @@
       "label": "workspace-tooling",
       "kind": "facade-tool",
       "path": "packages/workspace/tooling/tool-manifest.json",
-      "entryCount": 125
+      "entryCount": 105
     }
   ],
   "tools": [
@@ -117,14 +117,14 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "composed",
-      "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+      "description": "run a fixed list of workspace tool calls sequentially or in parallel with compact per-step results; step inputs cannot depend on earlier outputs, and parallel mode is for independent operations",
       "core": true,
       "definition": {
         "name": "batch",
         "methodPath": [
           "batch"
         ],
-        "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+        "description": "run a fixed list of workspace tool calls sequentially or in parallel with compact per-step results; step inputs cannot depend on earlier outputs, and parallel mode is for independent operations",
         "category": "composed",
         "underlying": "workspace batch",
         "capabilities": {
@@ -870,22 +870,22 @@
       }
     },
     {
-      "name": "browser.login",
+      "name": "browser.headed",
       "kind": "facade-tool",
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "utilities",
-      "description": "run a saved browser auth login profile",
+      "description": "open the shared persistent browser visibly when the user must complete login, MFA, CAPTCHA, passkeys, or consent",
       "core": false,
       "definition": {
-        "name": "browser.login",
+        "name": "browser.headed",
         "methodPath": [
           "browser",
-          "login"
+          "headed"
         ],
-        "description": "run a saved browser auth login profile",
+        "description": "open the shared persistent browser visibly when the user must complete login, MFA, CAPTCHA, passkeys, or consent",
         "category": "utilities",
-        "underlying": "workspace browser.login",
+        "underlying": "workspace browser.headed",
         "capabilities": {
           "readOnly": false,
           "mutating": true,
@@ -893,28 +893,27 @@
           "safeToRetry": false
         },
         "defaultTimeout": 300000,
-        "inputSchema": "BrowserLoginInput",
+        "inputSchema": "BrowserHeadedInput",
         "outputSchema": "RawOutput",
         "command": {
           "script": "browser",
-          "subcommand": "login",
+          "subcommand": "headed",
           "branchMode": "none",
           "arguments": [
             {
-              "source": "name",
+              "source": "url",
               "kind": "value",
               "required": true
             },
             {
-              "source": "headed",
-              "flag": "--headed",
-              "kind": "boolean"
+              "source": "provider",
+              "flag": "--provider",
+              "kind": "value"
             }
           ]
         },
         "exampleInput": {
-          "name": "consuelo",
-          "headed": true,
+          "url": "https://dash.cloudflare.com",
           "dryRun": true
         },
         "sessionRequired": false
@@ -1094,60 +1093,9 @@
         },
         "exampleInput": {
           "args": [
-            "auth",
+            "tab",
             "list"
           ],
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "browser.reauth",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "utilities",
-      "description": "restart the browser daemon and run a saved auth login profile",
-      "core": false,
-      "definition": {
-        "name": "browser.reauth",
-        "methodPath": [
-          "browser",
-          "reauth"
-        ],
-        "description": "restart the browser daemon and run a saved auth login profile",
-        "category": "utilities",
-        "underlying": "workspace browser.reauth",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "BrowserLoginInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "browser",
-          "subcommand": "reauth",
-          "branchMode": "none",
-          "arguments": [
-            {
-              "source": "name",
-              "kind": "value",
-              "required": true
-            },
-            {
-              "source": "headed",
-              "flag": "--headed",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "name": "consuelo",
-          "headed": true,
           "dryRun": true
         },
         "sessionRequired": false
@@ -1172,7 +1120,7 @@
         "underlying": "workspace browser.screenshot",
         "capabilities": {
           "readOnly": false,
-          "mutating": true,
+          "mutating": false,
           "deterministic": false,
           "safeToRetry": false
         },
@@ -1251,10 +1199,10 @@
         "category": "utilities",
         "underlying": "workspace browser.snap",
         "capabilities": {
-          "readOnly": false,
-          "mutating": true,
+          "readOnly": true,
+          "mutating": false,
           "deterministic": false,
-          "safeToRetry": false
+          "safeToRetry": true
         },
         "defaultTimeout": 300000,
         "inputSchema": "EmptyInput",
@@ -1262,6 +1210,44 @@
         "command": {
           "script": "browser",
           "subcommand": "snap",
+          "branchMode": "none",
+          "arguments": []
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "browser.status",
+      "kind": "facade-tool",
+      "source": "workspace-tooling",
+      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+      "category": "utilities",
+      "description": "report safe browser daemon and page status without authentication values",
+      "core": false,
+      "definition": {
+        "name": "browser.status",
+        "methodPath": [
+          "browser",
+          "status"
+        ],
+        "description": "report safe browser daemon and page status without authentication values",
+        "category": "utilities",
+        "underlying": "workspace browser.status",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 300000,
+        "inputSchema": "EmptyInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "browser",
+          "subcommand": "status",
           "branchMode": "none",
           "arguments": []
         },
@@ -1706,7 +1692,7 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "codemode",
-      "description": "run workspace-native codemode JavaScript against allowed workspace tools",
+      "description": "execute one sandboxed JavaScript program that composes allowed typed workspace tools with loops, branching, filtering, dependent calls, and output shaping; intermediate tool results stay inside code mode and only the returned value enters agent context",
       "core": false,
       "definition": {
         "name": "code.run",
@@ -1714,7 +1700,7 @@
           "code",
           "run"
         ],
-        "description": "run workspace-native codemode JavaScript against allowed workspace tools",
+        "description": "execute one sandboxed JavaScript program that composes allowed typed workspace tools with loops, branching, filtering, dependent calls, and output shaping; intermediate tool results stay inside code mode and only the returned value enters agent context",
         "category": "codemode",
         "underlying": "workspace code.run",
         "capabilities": {
@@ -2049,139 +2035,6 @@
         },
         "exampleInput": {},
         "sessionRequired": false
-      }
-    },
-    {
-      "name": "design.publish",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "publish a design artifact through private Tailscale Serve and update the design wiki archive",
-      "core": false,
-      "definition": {
-        "name": "design.publish",
-        "methodPath": [
-          "design",
-          "publish"
-        ],
-        "description": "publish a design artifact through private Tailscale Serve and update the design wiki archive",
-        "category": "office",
-        "underlying": "workspace office publish",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "DesignPublishInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "publish",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": [
-            {
-              "source": "target",
-              "flag": "--target",
-              "kind": "value"
-            },
-            {
-              "source": "portlessName",
-              "flag": "--portless-name",
-              "kind": "value"
-            },
-            {
-              "source": "path",
-              "flag": "--path",
-              "kind": "value"
-            },
-            {
-              "source": "name",
-              "flag": "--name",
-              "kind": "value"
-            },
-            {
-              "source": "category",
-              "flag": "--category",
-              "kind": "value"
-            },
-            {
-              "source": "template",
-              "flag": "--template",
-              "kind": "value"
-            },
-            {
-              "source": "tailscaleBin",
-              "flag": "--tailscale-bin",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "portlessName": "design.localhost",
-          "dryRun": true
-        },
-        "sessionRequired": false,
-        "workflowRole": "office.publish",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
-      "name": "design.refresh",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "regenerate and publish the existing Consuelo Wiki archive without adding an artifact",
-      "core": false,
-      "definition": {
-        "name": "design.refresh",
-        "methodPath": [
-          "design",
-          "refresh"
-        ],
-        "description": "regenerate and publish the existing Consuelo Wiki archive without adding an artifact",
-        "category": "office",
-        "underlying": "workspace office refresh",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "DesignArchiveRefreshInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "refresh",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": [
-            {
-              "source": "tailscaleBin",
-              "flag": "--tailscale-bin",
-              "kind": "value"
-            }
-          ]
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false,
-        "workflowRole": "office.refresh",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
       }
     },
     {
@@ -2527,7 +2380,7 @@
           "path": "packages/workspace/scripts",
           "depth": 1
         },
-        "sessionRequired": true
+        "sessionRequired": false
       }
     },
     {
@@ -2536,7 +2389,7 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "filesystem",
-      "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
+      "description": "read exact full text or bounded text pages and supported media, with MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
       "core": false,
       "definition": {
         "name": "fs.read",
@@ -2544,7 +2397,7 @@
           "fs",
           "read"
         ],
-        "description": "read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
+        "description": "read exact full text or bounded text pages and supported media, with MIME metadata, binary detection, and structured truncation for agent-safe file ingestion",
         "category": "filesystem",
         "underlying": "workspace fs read, or task:fs read when a branch is resolved",
         "capabilities": {
@@ -2591,6 +2444,11 @@
               "source": "to",
               "flag": "--to",
               "kind": "value"
+            },
+            {
+              "source": "full",
+              "flag": "--full",
+              "kind": "boolean"
             }
           ]
         },
@@ -4316,917 +4174,6 @@
       }
     },
     {
-      "name": "office.check",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "run office package boundary and Railway checks",
-      "core": false,
-      "definition": {
-        "name": "office.check",
-        "methodPath": [
-          "office",
-          "check"
-        ],
-        "description": "run office package boundary and Railway checks",
-        "category": "office",
-        "underlying": "workspace office check",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "OfficeInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "check",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false,
-        "workflowRole": "office.check",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
-      "name": "office.generateDemo",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session",
-      "core": false,
-      "definition": {
-        "name": "office.generateDemo",
-        "methodPath": [
-          "office",
-          "generateDemo"
-        ],
-        "description": "create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session",
-        "category": "office",
-        "underlying": "workspace office generate-demo",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "OfficeSessionInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "generate-demo",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": [
-            {
-              "source": "name",
-              "flag": "--name",
-              "kind": "value"
-            },
-            {
-              "source": "prompt",
-              "flag": "--prompt",
-              "kind": "value"
-            },
-            {
-              "source": "live",
-              "flag": "--live",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false,
-        "workflowRole": "office.generate.demo",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
-      "name": "office.generateDigitalEguide",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template",
-      "core": false,
-      "definition": {
-        "name": "office.generateDigitalEguide",
-        "methodPath": [
-          "office",
-          "generateDigitalEguide"
-        ],
-        "description": "create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template",
-        "category": "office",
-        "underlying": "workspace office generate-digital-eguide",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "OfficeDigitalEguideInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "generate-digital-eguide",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": [
-            {
-              "source": "name",
-              "flag": "--name",
-              "kind": "value"
-            },
-            {
-              "source": "prompt",
-              "flag": "--prompt",
-              "kind": "value"
-            },
-            {
-              "source": "template",
-              "flag": "--template",
-              "kind": "value"
-            },
-            {
-              "source": "live",
-              "flag": "--live",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false,
-        "workflowRole": "office.generate.digitalEguide",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
-      "name": "office.generateEmail",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session",
-      "core": false,
-      "definition": {
-        "name": "office.generateEmail",
-        "methodPath": [
-          "office",
-          "generateEmail"
-        ],
-        "description": "create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session",
-        "category": "office",
-        "underlying": "workspace office generate-email",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "OfficeSessionInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "generate-email",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": [
-            {
-              "source": "name",
-              "flag": "--name",
-              "kind": "value"
-            },
-            {
-              "source": "prompt",
-              "flag": "--prompt",
-              "kind": "value"
-            },
-            {
-              "source": "live",
-              "flag": "--live",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false,
-        "workflowRole": "office.generate.email",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
-      "name": "office.generateImageBrief",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session",
-      "core": false,
-      "definition": {
-        "name": "office.generateImageBrief",
-        "methodPath": [
-          "office",
-          "generateImageBrief"
-        ],
-        "description": "create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session",
-        "category": "office",
-        "underlying": "workspace office generate-image-brief",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "OfficeSessionInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "generate-image-brief",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": [
-            {
-              "source": "name",
-              "flag": "--name",
-              "kind": "value"
-            },
-            {
-              "source": "prompt",
-              "flag": "--prompt",
-              "kind": "value"
-            },
-            {
-              "source": "live",
-              "flag": "--live",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false,
-        "workflowRole": "office.generate.imageBrief",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
-      "name": "office.generateMotionFrame",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session",
-      "core": false,
-      "definition": {
-        "name": "office.generateMotionFrame",
-        "methodPath": [
-          "office",
-          "generateMotionFrame"
-        ],
-        "description": "create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session",
-        "category": "office",
-        "underlying": "workspace office generate-motion-frame",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "OfficeSessionInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "generate-motion-frame",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": [
-            {
-              "source": "name",
-              "flag": "--name",
-              "kind": "value"
-            },
-            {
-              "source": "prompt",
-              "flag": "--prompt",
-              "kind": "value"
-            },
-            {
-              "source": "live",
-              "flag": "--live",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false,
-        "workflowRole": "office.generate.motionFrame",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
-      "name": "office.generateWebsite",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session",
-      "core": false,
-      "definition": {
-        "name": "office.generateWebsite",
-        "methodPath": [
-          "office",
-          "generateWebsite"
-        ],
-        "description": "create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session",
-        "category": "office",
-        "underlying": "workspace office generate-website",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "OfficeSessionInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "generate-website",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": [
-            {
-              "source": "name",
-              "flag": "--name",
-              "kind": "value"
-            },
-            {
-              "source": "prompt",
-              "flag": "--prompt",
-              "kind": "value"
-            },
-            {
-              "source": "live",
-              "flag": "--live",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false,
-        "workflowRole": "office.generate.website",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
-      "name": "office.getDesignSystem",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "return base Consuelo DESIGN.md and office AGENTS.md only",
-      "core": false,
-      "definition": {
-        "name": "office.getDesignSystem",
-        "methodPath": [
-          "office",
-          "getDesignSystem"
-        ],
-        "description": "return base Consuelo DESIGN.md and office AGENTS.md only",
-        "category": "office",
-        "underlying": "workspace office get-design-system",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "OfficeInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "get-design-system",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "office.listDesignSystems",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "list Consuelo default design system and upstream reference systems",
-      "core": false,
-      "definition": {
-        "name": "office.listDesignSystems",
-        "methodPath": [
-          "office",
-          "listDesignSystems"
-        ],
-        "description": "list Consuelo default design system and upstream reference systems",
-        "category": "office",
-        "underlying": "workspace office list-design-systems",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "OfficeInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "list-design-systems",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "office.listSkills",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "list upstream Open Design skills and Consuelo workflow mappings",
-      "core": false,
-      "definition": {
-        "name": "office.listSkills",
-        "methodPath": [
-          "office",
-          "listSkills"
-        ],
-        "description": "list upstream Open Design skills and Consuelo workflow mappings",
-        "category": "office",
-        "underlying": "workspace office list-skills",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "OfficeInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "list-skills",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "office.odBuild",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "build the vendored Open Design daemon CLI through the Bun facade",
-      "core": false,
-      "definition": {
-        "name": "office.odBuild",
-        "methodPath": [
-          "office",
-          "odBuild"
-        ],
-        "description": "build the vendored Open Design daemon CLI through the Bun facade",
-        "category": "office",
-        "underlying": "workspace office od:build",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "OfficeUiInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "od:build",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "office.railwayCheck",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "verify office is excluded from Railway deploy paths",
-      "core": false,
-      "definition": {
-        "name": "office.railwayCheck",
-        "methodPath": [
-          "office",
-          "railwayCheck"
-        ],
-        "description": "verify office is excluded from Railway deploy paths",
-        "category": "office",
-        "underlying": "workspace office railway:check",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "OfficeInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "railway:check",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false,
-        "workflowRole": "office.railwayCheck",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
-      "name": "office.renderHyperframes",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session",
-      "core": false,
-      "definition": {
-        "name": "office.renderHyperframes",
-        "methodPath": [
-          "office",
-          "renderHyperframes"
-        ],
-        "description": "create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session",
-        "category": "office",
-        "underlying": "workspace office render-hyperframes",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "OfficeSessionInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "render-hyperframes",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": [
-            {
-              "source": "name",
-              "flag": "--name",
-              "kind": "value"
-            },
-            {
-              "source": "prompt",
-              "flag": "--prompt",
-              "kind": "value"
-            },
-            {
-              "source": "live",
-              "flag": "--live",
-              "kind": "boolean"
-            }
-          ]
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "office.run",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "start Open Design daemon and web UI in the foreground through the Bun facade",
-      "core": false,
-      "definition": {
-        "name": "office.run",
-        "methodPath": [
-          "office",
-          "run"
-        ],
-        "description": "start Open Design daemon and web UI in the foreground through the Bun facade",
-        "category": "office",
-        "underlying": "workspace office run",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 600000,
-        "inputSchema": "OfficeUiInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "run",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false,
-        "workflowRole": "office.run",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
-      "name": "office.uiBg",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "start Open Design managed runtimes in the background through the Bun facade",
-      "core": false,
-      "definition": {
-        "name": "office.uiBg",
-        "methodPath": [
-          "office",
-          "uiBg"
-        ],
-        "description": "start Open Design managed runtimes in the background through the Bun facade",
-        "category": "office",
-        "underlying": "workspace office ui:bg",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 300000,
-        "inputSchema": "OfficeUiInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "ui:bg",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "office.uiLogs",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "show Open Design managed runtime logs through the Bun facade",
-      "core": false,
-      "definition": {
-        "name": "office.uiLogs",
-        "methodPath": [
-          "office",
-          "uiLogs"
-        ],
-        "description": "show Open Design managed runtime logs through the Bun facade",
-        "category": "office",
-        "underlying": "workspace office ui:logs",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "OfficeInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "ui:logs",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "office.uiStatus",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "show Open Design managed runtime status through the Bun facade",
-      "core": false,
-      "definition": {
-        "name": "office.uiStatus",
-        "methodPath": [
-          "office",
-          "uiStatus"
-        ],
-        "description": "show Open Design managed runtime status through the Bun facade",
-        "category": "office",
-        "underlying": "workspace office ui:status",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "OfficeInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "ui:status",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "office.uiStop",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "stop Open Design managed runtimes through the Bun facade",
-      "core": false,
-      "definition": {
-        "name": "office.uiStop",
-        "methodPath": [
-          "office",
-          "uiStop"
-        ],
-        "description": "stop Open Design managed runtimes through the Bun facade",
-        "category": "office",
-        "underlying": "workspace office ui:stop",
-        "capabilities": {
-          "readOnly": false,
-          "mutating": true,
-          "deterministic": false,
-          "safeToRetry": false
-        },
-        "defaultTimeout": 120000,
-        "inputSchema": "OfficeUiInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "ui:stop",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {
-          "dryRun": true
-        },
-        "sessionRequired": false
-      }
-    },
-    {
-      "name": "office.upstreamStatus",
-      "kind": "facade-tool",
-      "source": "workspace-tooling",
-      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "office",
-      "description": "show vendored Open Design metadata and runtime requirements",
-      "core": false,
-      "definition": {
-        "name": "office.upstreamStatus",
-        "methodPath": [
-          "office",
-          "upstreamStatus"
-        ],
-        "description": "show vendored Open Design metadata and runtime requirements",
-        "category": "office",
-        "underlying": "workspace office upstream-status",
-        "capabilities": {
-          "readOnly": true,
-          "mutating": false,
-          "deterministic": true,
-          "safeToRetry": true
-        },
-        "defaultTimeout": 30000,
-        "inputSchema": "OfficeInput",
-        "outputSchema": "RawOutput",
-        "command": {
-          "script": "office",
-          "subcommand": "upstream-status",
-          "branchMode": "none",
-          "jsonFlag": "--json",
-          "dryRunFlag": "--dry-run",
-          "arguments": []
-        },
-        "exampleInput": {},
-        "sessionRequired": false,
-        "workflowRole": "office.upstreamStatus",
-        "workflowAliases": [
-          "design",
-          "sites"
-        ]
-      }
-    },
-    {
       "name": "prReview",
       "kind": "facade-tool",
       "source": "workspace-tooling",
@@ -6075,6 +5022,55 @@
           "arguments": []
         },
         "exampleInput": {},
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "stream.cleanup",
+      "kind": "facade-tool",
+      "source": "workspace-tooling",
+      "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+      "category": "stream",
+      "description": "preview or remove safe local stream refs that are fully backed by origin",
+      "core": false,
+      "definition": {
+        "name": "stream.cleanup",
+        "methodPath": [
+          "stream",
+          "cleanup"
+        ],
+        "description": "preview or remove safe local stream refs that are fully backed by origin",
+        "category": "stream",
+        "underlying": "workspace stream.cleanup",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "StreamCleanupInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "stream:cleanup",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "apply",
+              "flag": "--apply",
+              "kind": "boolean"
+            },
+            {
+              "source": "keep",
+              "flag": "--keep",
+              "kind": "array"
+            }
+          ]
+        },
+        "exampleInput": {
+          "dryRun": true
+        },
         "sessionRequired": false
       }
     },
@@ -6933,6 +5929,11 @@
               "source": "startFrom",
               "flag": "--start-from",
               "kind": "value"
+            },
+            {
+              "source": "createStream",
+              "flag": "--create-stream",
+              "kind": "boolean"
             }
           ],
           "jsonFlag": "--json"

@@ -1,0 +1,13 @@
+{
+  "files": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/seed-workspace-edge-route.ts",
+    "packages/os/tests/cloudflare-edge-router.test.ts",
+    "packages/os/tests/install-edge-site-publisher.test.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-28T03:24:18.500Z"
+}

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { expectedMediaToolNames, expectArrayContainsAll, readJson, readPackageJson } from './helpers';
+import { workflows } from '../../workflows/workflows';
 
 type Workflow = {
   id: string;
@@ -17,10 +18,9 @@ type WorkflowFile = { workflows: Workflow[] };
 
 describe('media workflow intent and runbook routing', () => {
   it('should satisfy media contract when it declares media as a first-class OS workflow with video/youtube/sports aliases', () => {
-    const workflowFile = readJson<WorkflowFile>('tooling/workflows.json');
-    const media = workflowFile.workflows.find((workflow) => workflow.id === 'media');
+    const media = workflows.find((workflow) => workflow.id === 'media');
 
-    expect(media, 'tooling/workflows.json should declare media workflow').toBeDefined();
+    expect(media, 'workflows/workflows.ts should declare media workflow').toBeDefined();
     expect(media?.aliases).toEqual(expect.arrayContaining(['video', 'clips', 'youtube', 'sports-media']));
     expect(media?.roles).toEqual(expect.arrayContaining(['media.probe', 'media.compose', 'media.qa', 'media.workflow.runbook']));
     expect(media?.subscriptions).toEqual(expect.arrayContaining([
@@ -29,7 +29,7 @@ describe('media workflow intent and runbook routing', () => {
   });
 
   it('should satisfy media contract when it generates media workflow bundles with media tools only, not office-owned tools', () => {
-    const bundles = readJson<WorkflowFile>('manifests/workflow-bundles.json');
+    const bundles = readJson<WorkflowFile>('workflows/generated/workflow-bundles.json');
     const media = bundles.workflows.find((workflow) => workflow.id === 'media');
     const toolNames = media?.tools?.map((tool) => tool.name).sort() ?? [];
 

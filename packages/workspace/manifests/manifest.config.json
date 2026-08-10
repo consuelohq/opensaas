@@ -53,13 +53,12 @@
       "git.diff",
       "git.status",
       "stream.list",
+      "stream.cleanup",
       "checkFiles",
       "verify"
     ],
     "excludePrefixes": [
       "browser.",
-      "office.",
-      "design.",
       "linear.",
       "railway.",
       "sentry.",
@@ -69,7 +68,6 @@
     ],
     "excludeCategories": [
       "browser",
-      "consuelo design",
       "linear",
       "railway",
       "sentry"

@@ -685,12 +685,13 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### task:start — start scoped work and return workflow guidance
 
-Call this directly at the beginning of every scoped repo task. Do not run `tools:search` or search for another task-start tool first. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Use `--workflow` to select task, office, design, or sites; the default is `task`.
+Call this directly at the beginning of every scoped repo task. Do not run `tools:search` or search for another task-start tool first. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Workspace task orchestration supports the `task` workflow; Artifacts orchestration belongs to the OS facade.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
 bun run task:start -- --area workspace-agents --title "start scoped work" --workflow task
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
+bun run task:start -- --area new-area --title "first task" --create-stream  # explicit new durable stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
 bun run task:start -- --json
 ```
@@ -802,6 +803,23 @@ when cleanup removes a task worktree, it reads `.task/<area>/<slug>/session.json
 ```bash
 bun run stream:list                   # show all streams with status, divergence, warnings
 ```
+
+---
+
+### stream:cleanup — preview or remove safe local stream refs
+
+previews redundant local `stream/*` refs by default. a branch is removable only when `origin/<branch>` exists, the local branch has zero unique commits, and no worktree has it checked out. remote streams and task branches are never deleted.
+
+```bash
+bun run stream:cleanup                         # preview only
+bun run stream:cleanup -- --keep stream/tooling
+bun run stream:cleanup -- --apply              # remove only the reviewed safe local refs
+bun run stream:cleanup -- --json
+```
+
+**stream:cleanup failure modes**
+- local-only, diverged, current, checked-out, or explicitly kept branches are reported as protected
+- an origin fetch failure stops cleanup before classification or mutation
 
 ---
 
@@ -939,31 +957,26 @@ bun run linear -- query "{ viewer { id name } }"
 
 ### browser — test and interact with web pages
 
-opens agent-browser with ko's authenticated profile at `/Users/kokayi/.agent-browser-ko`. use for production verification after deploys.
+uses one persistent agent-browser home at `~/.agent-browser-ko` (or `AGENT_BROWSER_PROFILE`). logins completed in a headed window remain available to later agents and non-headed browser calls. screenshots default to `/tmp/opensaas-screenshots` unless `AGENT_SCREENSHOT_DIR` is set.
 
 ```bash
-bun run browser -- consuelo                 # open consuelo CRM (internal)
-bun run browser -- app                      # open app.consuelohq.com
-bun run browser -- open https://example.com # open any URL
-bun run browser -- open https://example.com --preset mobile --full
-bun run browser -- open https://example.com --preset tablet --full
-bun run browser -- open https://example.com --width 390 --height 844 --full
-bun run browser -- screenshot after-login   # take screenshot
-bun run browser -- screenshot mobile-check --preset mobile --full
-bun run browser -- snapshot                 # get accessibility tree
-bun run browser -- login consuelo --headed  # run saved login profile visibly
-bun run browser -- reauth consuelo --headed # close daemon, restart profile, login
+bun run browser -- consuelo                         # open consuelo CRM
+bun run browser -- app                              # open app.consuelohq.com
+bun run browser -- open https://example.com         # open and capture evidence
+bun run browser -- headed https://dash.cloudflare.com # visible handoff for login/MFA/CAPTCHA/passkeys
+bun run browser -- status                           # safe daemon/page status
+bun run browser -- screenshot after-login
+bun run browser -- snapshot
+bun run browser -- close                            # explicit reset only
 ```
 
-available browser flags for responsive checks: `preset` (`desktop`, `mobile`, `tablet`, `ipad`, `iphone`), `device` (agent-browser device name), `provider` (for example `ios`), `width` + `height`, and `colorScheme` (`dark`, `light`, `no-preference`). use flags on existing browser tools instead of adding device-specific tool names. for Google SSO persistence, open `https://accounts.google.com` with `--headed` and sign in manually; the persistent profile keeps the session.
-
-facade aliases are also registered for agent use:
+facade aliases are registered for agent use:
 
 ```bash
 workspace browser.test '{"url":"https://example.com","preset":"mobile","full":true}'
-workspace browser.consuelo '{"headed":true}'
-workspace browser.login '{"name":"consuelo","headed":true}'
-workspace browser.reauth '{"name":"consuelo","headed":true}'
+workspace browser.headed '{"url":"https://dash.cloudflare.com"}'
+workspace browser.status '{}'
+workspace browser.consuelo '{}'
 workspace browser.snap
 workspace browser.screenshot '{"name":"after-login","preset":"tablet","full":true}'
 workspace browser.get '{"target":"title"}'
@@ -971,17 +984,13 @@ workspace browser.find '{"by":"role","value":"button","action":"click","name":"S
 workspace browser.wait '{"load":"networkidle"}'
 workspace browser.download '{"ref":"@e1","path":"/tmp/download.bin"}'
 workspace browser.tabs '{"action":"list"}'
-workspace browser.cookies '{"action":"list"}'
 workspace browser.network '{"args":["requests"]}'
 workspace browser.dialog '{"action":"dismiss"}'
 workspace browser.trace '{"action":"start"}'
 workspace browser.clipboard '{"action":"read"}'
 ```
 
-
-Typed browser aliases should cover repeated primitives. Use `workspace browser.raw '{"args":[...]}'` only when an upstream `agent-browser` command is not yet represented by a typed facade alias.
-
-when Google or another provider requires password re-auth, use `browser.reauth` or `bun run browser -- reauth consuelo --headed`. this closes the active daemon first because `agent-browser` ignores new `--profile` flags while a daemon is already running.
+Use `browser.headed` whenever Ko must complete a human-only authentication step. It restarts an incompatible daemon in visible mode, opens the requested URL with the same persistent browser home, and leaves the window running. Continue afterward with `browser.status`, `browser.snap`, `browser.open`, or other typed browser tools. Do not create site-specific auth profiles. Use `browser.raw` only when an upstream agent-browser command has no typed facade alias.
 
 ---
 
@@ -1163,10 +1172,11 @@ bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 
 ### tool-batch — run typed workspace tools in sequence
 
-runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
+runs a JSON array of facade steps, or an object with `taskSession` and `steps`. the outer task session, task ID, metadata ID, or task branch is resolved once and inherited by every child. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
 
 ```bash
 bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}}]'
+bun run tool-batch -- '{"taskSession":"tsk_example","steps":[{"tool":"fs.read","input":{"path":"packages/workspace/package.json"}}]}'
 bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 
@@ -1323,17 +1333,6 @@ bun run website:deploy -- --build-only  # build only, don't deploy
 ```
 
 ---
-
-### consuelo-design — run local design tooling
-
-Publishes design artifacts into the generated Consuelo Wiki archive and manages the archive server used by the private tailnet and wiki tunnel.
-
-The archive server serves the wiki index, generated search assets, and published artifact pages from the same origin. Keep this route contract aligned with design.publish and design.refresh.
-
-```bash
-bun run consuelo-design -- --help
-bun run consuelo-design -- refresh --json
-```
 
 ---
 ### doctor — workspace diagnostics
@@ -1505,23 +1504,6 @@ always reread SCRIPTS.md when adding or changing scripts. if you add a new scrip
 
 ---
 
-## Design publish
-
-`design.publish` publishes a local design artifact URL, file, directory, or named `portless` service through private Tailscale Serve. It uses one persistent private tailnet host and a unique per-artifact path. It does not use Tailscale Funnel or create a public internet URL.
-
-Recommended Open Design target name: `design.localhost`.
-
-```bash
-bun run office publish --portless-name design.localhost --path "/daily-deep-idea/2026-05-12-prospect-theory"
-bun run office publish --target "/tmp/research/packet.md" --path "/research-packet/2026-05-12-prospect-theory/packet"
-bun run office publish --portless-name design.localhost --category daily-deep-idea --name prospect-theory
-bun run office publish --portless-name design.localhost --path "/daily-deep-idea/example" --dry-run --json
-```
-
-Use this after an Open Design workflow creates or opens an artifact. For daily lessons, publish the digital e-guide project as `/daily-deep-idea/<date>-<slug>` and optionally publish the source packet as `/research-packet/<date>-<slug>/packet`.
-
----
-
 ## CLI tools — fallbacks only
 
 these are installed globally. do not use them if a `bun run` script exists for the same operation. if you ran `--help` on the relevant script and it covers your use case, use the script. ko does not want raw CLI tools used when scripts are available.
@@ -1597,40 +1579,6 @@ workspace linear.projects '{"first":50}'
 ```
 
 ---
-
-## consuelo design e-guide templates
-
-Use `office.generateDigitalEguide` or `bun run office generate digital-eguide` for HTML e-guide artifacts. The workflow stays one command; `--template` is an optional routing hint for the artifact structure.
-
-```bash
-bun run office generate digital-eguide --template research --name "Daily Deep Idea" --prompt "Create the lesson guide..."
-bun run office generate digital-eguide --template spec --name "Workspace agent spec" --prompt "Create the spec..."
-bun run office generate digital-eguide --template plan --name "Execution plan" --prompt "Create the plan..."
-```
-
-Typed facade equivalent:
-
-```ts
-await workspace.call({
-  tool: "office.generateDigitalEguide",
-  input: { name: "Workspace agent spec", template: "spec", prompt: "Create the spec..." },
-  timeout: 600,
-})
-```
-
-Template names are `research`, `spec`, and `plan`. The selected template is injected into the pending Open Design prompt from `packages/office/templates/digital-eguides/` and stored in project metadata. Do not add new facade commands for template variants.
-
-
-## Design wiki archive
-
-Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. Artifacts under `/website/...` also appear under the top-level Website filter. The wiki is automatically regenerated and published at `/office`, sorted by `updatedAt` so republished artifacts return to the top.
-
-`design.publish` also rebuilds the Pagefind search bundle for the managed archive. Search stays inside the same text-card wiki UI: the top search control reveals an inline search input, results update as Ko types, and matching cards keep the same title/date/path presentation as the normal archive list.
-
-The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The wiki and every archived artifact are served by the same tailnet archive server.
-
-
-
 
 
 ### git:diff — structured git diff for agents

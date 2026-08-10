@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c81bea446920",
+  "tmuxSession": "opensaas-os-reconcile-release-plan-apply-immutable-tags-c81bea44",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-release-plan-apply-immutable-tags",
+  "branch": "task/os/reconcile-release-plan-apply-immutable-tags",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-release-plan-apply-immutable-tags",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-release-plan-apply-immutable-tags",
+  "prNumber": 1735,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1735",
+  "createdAt": "2026-07-29T09:52:06.774Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-release-plan-apply-immutable-tags/.task/os/reconcile-release-plan-apply-immutable-tags/session.json"
+}

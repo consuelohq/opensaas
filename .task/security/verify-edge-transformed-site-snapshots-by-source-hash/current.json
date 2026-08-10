@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/verify-edge-transformed-site-snapshots-by-source-hash",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1701,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1701",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1701",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1701/verify-edge-transformed-site-snapshots-by-source-hash",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1701",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1701/verify-edge-transformed-site-snapshots-by-source-hash",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-verify-edge-transformed-site-snapshots-by-source-hash",
+  "taskSession": "tsk_a3cf2a3994c9",
+  "tmuxSession": "opensaas-security-verify-edge-transformed-site-snapshots-by-source-a3cf2a39",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-verify-edge-transformed-site-snapshots-by-source-hash/.task/security/verify-edge-transformed-site-snapshots-by-source-hash/session.json",
+  "createdAt": "2026-07-28T03:38:54.707Z"
+}

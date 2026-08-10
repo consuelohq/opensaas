@@ -1,0 +1,19 @@
+{
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/repair-final-audit-kickoff-and-coordinate-fallback",
+  "baseBranch": "stream/os-foundation-two",
+  "sourceBranch": "stream/os-foundation-two",
+  "startFrom": "stream",
+  "prNumber": 1686,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1686",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1686",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1686/repair-final-audit-kickoff-and-coordinate-fallback",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1686",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1686/repair-final-audit-kickoff-and-coordinate-fallback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-repair-final-audit-kickoff-and-coordinate-fallback",
+  "taskSession": "tsk_349d93f781d8",
+  "tmuxSession": "opensaas-os-foundation-two-repair-final-audit-kickoff-and-coordinate-fallba-349d93f7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-repair-final-audit-kickoff-and-coordinate-fallback/.task/os-foundation-two/repair-final-audit-kickoff-and-coordinate-fallback/session.json",
+  "createdAt": "2026-07-28T00:48:42.023Z"
+}

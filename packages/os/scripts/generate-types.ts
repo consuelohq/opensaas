@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import manifestJson from '../manifests/tool.manifest.json';
+import manifestJson from '../manifests/generated/tool.manifest.json';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 import type { ToolManifestEntry } from './lib/facade/types';
 
@@ -85,6 +85,7 @@ function renderDts(): string {
     '  exitCode: number;',
     '  durationMs: number;',
     '  traceId: string;',
+    '  parentTraceId?: string;',
     '  requestId?: string;',
     '  apiVersion: "1.0.0";',
     '};',

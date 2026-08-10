@@ -23,6 +23,7 @@ type SearchResult = {
 };
 
 const packageRoot = join(import.meta.dirname, '..');
+const baselineDefinitions = (JSON.parse(readFileSync(join(import.meta.dirname, 'fixtures/tool-package-baseline.json'), 'utf8')) as { definitions: JsonObject[] }).definitions;
 const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
 
 const expectedDescriptions = {
@@ -32,6 +33,7 @@ const expectedDescriptions = {
   'task.start': "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
 } as const;
 const removedCoreToolNames = [
+  'context',
   'fs.list',
   'fs.write',
   'gh',
@@ -73,7 +75,7 @@ const oldContextToolNames = [
 const retainedCoreToolNames = [
   'batch',
   'code.call',
-  'context',
+  'memory',
   'explore',
   'fs.apply_patch',
   'fs.trash',
@@ -173,9 +175,9 @@ function writeFixtureConfig(regularManifestPath: string, devToolManifestPath: st
 
 function publicSurfaceText(): string {
   const publicFiles = [
-    'manifests/tool.manifest.json',
-    'manifests/core.manifest.json',
-    'manifests/workflow-bundles.json',
+    'manifests/generated/tool.manifest.json',
+    'manifests/generated/core.manifest.json',
+    'workflows/generated/workflow-bundles.json',
     'TOOLS.md',
     'src/generated/workspace.d.ts',
     'src/generated/tool-client.ts',
@@ -239,39 +241,17 @@ function assertStrongCodeCallExamples(codeCall: JsonObject | undefined): void {
 }
 
 describe('tool manifest generator', () => {
-  it('preserves every regular and dev manifest entry in the generated full manifest', () => {
-    const regularEntries = readJsonArray('tooling/tool-manifest.json');
-    const devEntries = readJsonArray('tooling/dev-tool-manifest.json');
-    const mediaEntries = readJsonArray('tooling/media-tool-manifest.json');
-    const facadeEntries = [...devEntries, ...mediaEntries];
-
+  it('preserves every characterized active package definition in the generated full manifest', () => {
     const registry = buildToolManifest({ write: false });
-    const generatedNames = registry.full.tools.map((entry) => entry.name).sort();
-    const expectedNames = Array.from(new Set([
-      ...regularEntries.map((entry) => String(entry.name)),
-      ...facadeEntries.map((entry) => String(entry.name)),
-    ])).sort();
-
-    expect(generatedNames).toEqual(expectedNames);
-    expect(generatedNames).toContain('batch');
-    expect(generatedNames).toContain('code.run');
-    expect(generatedNames).toContain('media.svg.convert');
-    expect(registry.full.tools).toHaveLength(expectedNames.length);
-    expect(registry.report.oldRegularToolCount).toBe(regularEntries.length);
-    expect(registry.report.oldDevToolCount).toBe(facadeEntries.length);
+    const generatedDefinitions = registry.full.tools.map((entry) => entry.definition);
+    expect(generatedDefinitions).toEqual(baselineDefinitions);
+    expect(registry.full.tools).toHaveLength(154);
+    expect(registry.report.oldRegularToolCount).toBe(0);
+    expect(registry.report.oldDevToolCount).toBe(154);
     expect(registry.report.duplicateNames).toEqual([]);
-
-    for (const original of regularEntries) {
-      const generated = registry.full.tools.find((entry) => entry.name === original.name);
-      expect(generated?.kind).toBe('os-skill');
-      expect(generated?.definition).toEqual(original);
-    }
-
-    for (const original of facadeEntries) {
-      const generated = registry.full.tools.find((entry) => entry.name === original.name);
-      expect(generated?.kind).toBe('facade-tool');
-      expect(generated?.definition).toEqual(original);
-    }
+    expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'media.svg.convert']));
+    expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
+    expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });
 
   it('derives core from config and excludes non-core provider families', () => {
@@ -294,32 +274,37 @@ describe('tool manifest generator', () => {
     }
     expect(coreNames).not.toContain('linear.issue');
     expect(coreNames).not.toContain('sentry.issues');
-    expect(coreNames).not.toContain('railway.logs');
+    expect(coreNames).not.toContain('deployment.logs');
     expect(coreNames).not.toContain('website.deploy');
     expect(coreNames).not.toContain('browser.open');
     expect(coreNames).not.toContain('design.publish');
-    expect(coreNames).not.toContain('office.generateWebsite');
-    expect(coreNames).not.toContain('daily-revenue-brief');
-    expect(coreNames).not.toContain('get_raw_steering');
-  });
+    expect(coreNames).not.toContain('office.generateWebsite');  });
 
 
 
   it('should model read-only fs operations as session-optional when building manifests', () => {
     const registry = buildToolManifest({ write: false });
-    const byName = new Map(registry.full.tools.map((entry) => [entry.name, entry]));
+    const fsEntries = registry.full.tools.filter((entry) => entry.name.startsWith('fs.'));
+    const readOnlyEntries = fsEntries.filter((entry) => entry.definition.capabilities.readOnly === true);
+    const mutatingEntries = fsEntries.filter((entry) => entry.definition.capabilities.mutating === true);
+    const byName = new Map(fsEntries.map((entry) => [entry.name, entry]));
 
-    for (const toolName of ['fs.read', 'fs.search', 'fs.list']) {
-      const entry = byName.get(toolName);
-      expect(entry?.definition.capabilities).toMatchObject({ readOnly: true, mutating: false });
-      expect(entry?.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'optional' });
-      expect(entry?.definition.sessionRequired).toBe(false);
+    expect(readOnlyEntries.map((entry) => entry.name).sort()).toEqual(['fs.list', 'fs.read', 'fs.search']);
+    expect(mutatingEntries.map((entry) => entry.name).sort()).toEqual(['fs.apply_patch', 'fs.trash', 'fs.write']);
+
+    for (const entry of readOnlyEntries) {
+      expect(entry.definition.capabilities).toMatchObject({ readOnly: true, mutating: false });
+      expect(entry.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'optional' });
+      expect(entry.definition.sessionRequired).toBe(false);
     }
 
     expect(byName.get('fs.read')?.definition.command.arguments).toContainEqual({ source: 'full', flag: '--full', kind: 'boolean' });
 
-    expect(byName.get('fs.write')?.definition.sessionRequired).toBe(true);
-    expect(byName.get('fs.apply_patch')?.definition.sessionRequired).toBe(true);
+    for (const entry of mutatingEntries) {
+      expect(entry.definition.capabilities).toMatchObject({ readOnly: false, mutating: true });
+      expect(entry.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'required' });
+      expect(entry.definition.sessionRequired).toBe(true);
+    }
   });
 
   it('keeps public execution surface on code.call while task lifecycle stays full-manifest only', async () => {
@@ -398,21 +383,14 @@ describe('tool manifest generator', () => {
     const registry = buildToolManifest({ write: false });
     const fullNames = registry.full.tools.map((entry) => entry.name);
     const coreNames = registry.core.tools.map((entry) => entry.name);
-    const devEntries = readJsonArray('tooling/dev-tool-manifest.json');
-    const devNames = devEntries.map((entry) => String(entry.name));
     const fullEntry = registry.full.tools.find((entry) => entry.name === 'fs.apply_patch');
     const coreEntry = registry.core.tools.find((entry) => entry.name === 'fs.apply_patch');
-    const devEntry = devEntries.find((entry) => entry.name === 'fs.apply_patch');
-
     expect(fullNames).toContain('fs.apply_patch');
     expect(coreNames).toContain('fs.apply_patch');
-    expect(devNames).toContain('fs.apply_patch');
     expect(fullNames).not.toContain('fs.patch');
     expect(coreNames).not.toContain('fs.patch');
-    expect(devNames).not.toContain('fs.patch');
     expect((fullEntry?.definition as JsonObject | undefined)?.inputSchema).toBe('FsApplyPatchInput');
     expect((coreEntry?.definition as JsonObject | undefined)?.inputSchema).toBe('FsApplyPatchInput');
-    expect(devEntry?.inputSchema).toBe('FsApplyPatchInput');
   });
 
   it('should validate fs.apply_patch input when exactly one patch transport is provided', () => {
@@ -435,6 +413,32 @@ describe('tool manifest generator', () => {
     expect(generatedWorkspace).toContain('patchText?: string');
     expect(generatedWorkspace).not.toContain('fs.patch');
     expect(generatedClient).toContain('createWorkspaceClient');
+  });
+
+  it('publishes one non-core provider-neutral deployment surface and generated client types', () => {
+    const registry = buildToolManifest({ write: false });
+    const fullNames = registry.full.tools.map((entry) => entry.name);
+    const coreNames = registry.core.tools.map((entry) => entry.name);
+    const deploymentNames = fullNames.filter((name) => name.startsWith('deployment.')).sort();
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+
+    expect(deploymentNames).toEqual([
+      'deployment.context',
+      'deployment.deploy',
+      'deployment.detect',
+      'deployment.environment',
+      'deployment.list',
+      'deployment.logs',
+      'deployment.raw',
+      'deployment.status',
+    ]);
+    expect(coreNames.filter((name) => name.startsWith('deployment.'))).toEqual([]);
+    expect(fullNames.filter((name) => /^(railway|vercel|cloudflare)\./.test(name))).toEqual([]);
+    expect(registry.full.tools
+      .filter((entry) => entry.name.startsWith('deployment.'))
+      .every((entry) => entry.definition.command.internal === 'deployment')).toBe(true);
+    expect(generatedWorkspace).toContain('deployment: {');
+    expect(generatedWorkspace).toContain('provider: "railway" | "vercel" | "cloudflare"');
   });
 
   it('should expose runtime fs result envelopes when generating OS TypeScript surfaces', () => {
@@ -490,34 +494,10 @@ describe('tool manifest generator', () => {
     expect(() => buildToolManifest({ configPath, write: false })).toThrow('duplicate tool name duplicate');
   });
 
-  it('lets tool search discover a regular non-core OS skill from the full manifest', async () => {
-    const result = await runToolSearch({
-      query: 'daily revenue brief',
-      limit: 5,
-      includeDocs: false,
-      includeEmbeddings: false,
-    }) as SearchResult;
-
-    expect(result.catalog?.source).toContain('tool.manifest.json');
-    expect(result.catalog?.toolCount).toBeGreaterThan(120);
-    expect(result.matches?.map((match) => match.name)).toContain('daily-revenue-brief');
-  });
-
-  it('keeps get_raw_steering discoverable through the full manifest without adding it to core', async () => {
+  it('keeps the generated catalog limited to canonical facade packages', () => {
     const registry = buildToolManifest({ write: false });
-    const fullNames = registry.full.tools.map((entry) => entry.name);
-    const coreNames = registry.core.tools.map((entry) => entry.name);
-
-    expect(fullNames).toContain('get_raw_steering');
-    expect(coreNames).not.toContain('get_raw_steering');
-
-    const result = await runToolSearch({
-      query: 'raw steering',
-      limit: 5,
-      includeDocs: false,
-      includeEmbeddings: false,
-    }) as SearchResult;
-
-    expect(result.matches?.map((match) => match.name)).toContain('get_raw_steering');
+    expect(registry.full.tools).toHaveLength(154);
+    expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
+    expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });
 });

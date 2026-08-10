@@ -1,11 +1,19 @@
-import { existsSync, mkdtempSync, readFileSync, symlinkSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 
-const readBootstrap = () => readFileSync(join(process.cwd(), 'scripts', 'bootstrap.sh'), 'utf8');
-
+const readBootstrap = () =>
+  readFileSync(join(process.cwd(), 'scripts', 'bootstrap.sh'), 'utf8');
 
 function runBootstrapFunction(
   source: string,
@@ -14,28 +22,46 @@ function runBootstrapFunction(
   options: { env?: NodeJS.ProcessEnv } = {},
 ): string {
   const fn = extractShellFunction(source, name);
-  const result = spawnSync('/bin/bash', ['-c', `set -euo pipefail
+  const result = spawnSync(
+    '/bin/bash',
+    [
+      '-c',
+      `set -euo pipefail
 ${fn}
-${name}`], {
-    input,
-    encoding: 'utf8',
-    env: { ...process.env, BASH_ENV: '/dev/null', ENV: '/dev/null', ...options.env },
-  });
+${name}`,
+    ],
+    {
+      input,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        BASH_ENV: '/dev/null',
+        ENV: '/dev/null',
+        ...options.env,
+      },
+    },
+  );
   if (result.error) {
     throw new Error(`${name} failed to start: ${result.error.message}`);
   }
   if (result.status === null) {
-    throw new Error(`${name} terminated by signal ${result.signal ?? 'unknown'}`);
+    throw new Error(
+      `${name} terminated by signal ${result.signal ?? 'unknown'}`,
+    );
   }
   if (result.status !== 0) {
-    throw new Error(result.stderr || `${name} failed with status ${result.status}`);
+    throw new Error(
+      result.stderr || `${name} failed with status ${result.status}`,
+    );
   }
   return result.stdout;
 }
 
 function createSedOnlyPath(): string {
   const directory = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-sed-'));
-  const sedPath = ['/usr/bin/sed', '/bin/sed'].find((candidate) => existsSync(candidate));
+  const sedPath = ['/usr/bin/sed', '/bin/sed'].find((candidate) =>
+    existsSync(candidate),
+  );
   if (!sedPath) {
     throw new Error('sed binary not found for fallback redaction test');
   }
@@ -70,15 +96,20 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('wrangler');
   });
 
-  it('refreshes hosted source by default with an explicit reuse escape hatch', () => {
+  it('should resolve the signed stable channel when a hosted install runs', () => {
     const bootstrap = readBootstrap();
 
-    expect(bootstrap).toContain('REFRESH_SOURCE=1');
-    expect(bootstrap).toContain('--refresh-source');
-    expect(bootstrap).toContain('--use-existing-source');
-    expect(bootstrap).toContain('SOURCE_STATUS="refreshed"');
-    expect(bootstrap).toContain('SOURCE_STATUS="reused"');
-    expect(bootstrap).not.toContain('pass --refresh-source to refresh it');
+    expect(bootstrap).toContain(
+      'RELEASE_CHANNEL="${CONSUELO_RELEASE_CHANNEL:-stable}"',
+    );
+    expect(bootstrap).toMatch(
+      /if \[ "\$\{CONSUELO_OS_DEV:-0\}" = "1" \]; then[\s\S]*RELEASE_CHANNEL="\$\{CONSUELO_RELEASE_CHANNEL:-stable\}"[\s\S]*else[\s\S]*RELEASE_CHANNEL="stable"/,
+    );
+    expect(bootstrap).toContain(
+      '--refresh-source|--use-existing-source) ;;',
+    );
+    expect(bootstrap).toContain('SOURCE_STATUS="verified"');
+    expect(bootstrap).not.toContain('REPO_ARCHIVE_URL');
   });
 
   it('asks for local or cloud before dependency setup', () => {
@@ -90,7 +121,9 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('◆ %s');
     expect(bootstrap).toContain('○ %s');
     expect(bootstrap).toContain('read -rsn1');
-    expect(bootstrap).toContain('CONTACT_URL="https://consuelohq.com/contact/"');
+    expect(bootstrap).toContain(
+      'CONTACT_URL="https://consuelohq.com/contact/"',
+    );
     expect(bootstrap).toContain('open_contact_url');
     expect(bootstrap).not.toContain('Enter 1 or 2:');
 
@@ -109,8 +142,12 @@ describe('bootstrap source refresh controls', () => {
     expect(promptSelect).toContain('prompt_lines=4');
     expect(promptSelect).toContain('rendered=0');
     expect(promptSelect).toContain('if [ "$rendered" -eq 1 ]; then');
-    expect(promptSelect).toContain("printf '\\033[%sA' \"$prompt_lines\" > /dev/tty");
-    expect(promptSelect).toContain("printf '\\033[2K%s\\n' \"$message\" > /dev/tty");
+    expect(promptSelect).toContain(
+      'printf \'\\033[%sA\' "$prompt_lines" > /dev/tty',
+    );
+    expect(promptSelect).toContain(
+      'printf \'\\033[2K%s\\n\' "$message" > /dev/tty',
+    );
     expect(promptSelect).not.toContain("printf '\\n' > /dev/tty");
   });
 
@@ -118,13 +155,15 @@ describe('bootstrap source refresh controls', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain('handle_cloud_mode');
-    expect(bootstrap).toContain('Consuelo cloud is handled by the Consuelo team. Opening the contact page.');
+    expect(bootstrap).toContain(
+      'Consuelo cloud is handled by the Consuelo team. Opening the contact page.',
+    );
     expect(bootstrap).toContain('exit 0');
     expect(bootstrap).toContain('OS_MODE="cloud"');
     expect(bootstrap).toContain('handle_cloud_mode');
 
     expect(bootstrap.indexOf('handle_cloud_mode')).toBeLessThan(
-      bootstrap.indexOf('resolve_source'),
+      bootstrap.indexOf('install_verified_runtime'),
     );
     expect(bootstrap.indexOf('handle_cloud_mode')).toBeLessThan(
       bootstrap.indexOf('ensure_dependencies'),
@@ -134,7 +173,9 @@ describe('bootstrap source refresh controls', () => {
   it('uses one dependency gate before the Bun onboarding UI for local installs', () => {
     const bootstrap = readBootstrap();
 
-    expect(bootstrap).toContain('Consuelo OS needs its dependencies to continue.');
+    expect(bootstrap).toContain(
+      'Consuelo OS needs its dependencies to continue.',
+    );
     expect(bootstrap).toContain('yes');
     expect(bootstrap).toContain('no');
     expect(bootstrap).toContain('DEPENDENCY_STATUS="cancelled"');
@@ -154,40 +195,69 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).not.toContain('○ artifacts');
     expect(bootstrap).not.toContain('Press Enter to continue');
     expect(bootstrap).not.toContain('prompt_enter');
-    expect(bootstrap).not.toContain('Consuelo OS needs the local runtime source to continue.');
-    expect(bootstrap).not.toContain('Consuelo OS needs its local runtime dependencies to continue.');
+    expect(bootstrap).not.toContain(
+      'Consuelo OS needs the local runtime source to continue.',
+    );
+    expect(bootstrap).not.toContain(
+      'Consuelo OS needs its local runtime dependencies to continue.',
+    );
     expect(bootstrap).not.toContain('We can download/setup this now.');
     expect(bootstrap).not.toContain('We can install/setup this now.');
   });
-
 
   it('resolves existing legacy nested installs before creating a fresh flattened home', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain('resolve_os_home()');
-    expect(bootstrap).toContain('DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"');
-    expect(bootstrap).toContain('LEGACY_OS_HOME="${CONSUELO_LEGACY_OS_HOME:-$HOME/.consuelo/os}"');
+    expect(bootstrap).toContain(
+      'DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"',
+    );
+    expect(bootstrap).toContain(
+      'LEGACY_OS_HOME="${CONSUELO_LEGACY_OS_HOME:-$HOME/.consuelo/os}"',
+    );
     expect(bootstrap).toContain('OS_HOME="$(resolve_os_home)"');
     expect(bootstrap).toContain('resolve_runtime_home()');
     expect(bootstrap).toContain('RUNTIME_HOME="$(resolve_runtime_home)"');
-    expect(bootstrap).toContain('[ -f "$LEGACY_OS_HOME/package.json" ]');
     expect(bootstrap).toContain('[ ! -f "$DEFAULT_OS_HOME/consuelo.yaml" ]');
   });
 
+  it('should isolate the active runtime when migrating a legacy nested install', () => {
+    const bootstrap = readBootstrap();
+    const legacyHome = mkdtempSync(
+      join(tmpdir(), 'consuelo-bootstrap-legacy-home-'),
+    );
+    writeFileSync(join(legacyHome, 'package.json'), '{}');
 
-  const createSensitiveTranscript = () => [
-    '\u001B[32m◇\u001B[39m Consuelo OS',
-    '    C7UD-BR7N',
-    '\u001B]8;;https://os.consuelohq.com/login/device?user_code=C7UDBR7N\u0007click here\u001B]8;;\u0007',
-    'Full URL: https://os.consuelohq.com/login/device?user_code=C7UDBR7N&device_code=device-secret&token=osat_secret',
-    'Callback: https://os.consuelohq.com/callback?authorization=auth-secret&bootstrap_token=boot-secret&state=state-secret&secret=plain-secret&code=code-secret',
-    'path=/Users/kokayikobb/.consuelo and /home/kokayi/.consuelo',
-    'Authorization: Bearer abc.def.ghi',
-    'cloudflare_tunnel_token=secret-token-123',
-    'client_secret=client-secret-456',
-    'MCP_TOKEN=mcp-secret',
-    'pat_secretprefix',
-  ].join('\n');
+    const runtimeHome = runBootstrapFunction(
+      bootstrap,
+      'resolve_runtime_home',
+      '',
+      {
+        env: {
+          CONSUELO_RUNTIME_HOME: '',
+          LEGACY_OS_HOME: legacyHome,
+          OS_HOME: legacyHome,
+        },
+      },
+    ).trim();
+
+    expect(runtimeHome).toBe(join(legacyHome, 'runtime', 'current'));
+  });
+
+  const createSensitiveTranscript = () =>
+    [
+      '\u001B[32m◇\u001B[39m Consuelo OS',
+      '    C7UD-BR7N',
+      '\u001B]8;;https://os.consuelohq.com/login/device?user_code=C7UDBR7N\u0007click here\u001B]8;;\u0007',
+      'Full URL: https://os.consuelohq.com/login/device?user_code=C7UDBR7N&device_code=device-secret&token=osat_secret',
+      'Callback: https://os.consuelohq.com/callback?authorization=auth-secret&bootstrap_token=boot-secret&state=state-secret&secret=plain-secret&code=code-secret',
+      'path=/Users/kokayikobb/.consuelo and /home/kokayi/.consuelo',
+      'Authorization: Bearer abc.def.ghi',
+      'cloudflare_tunnel_token=secret-token-123',
+      'client_secret=client-secret-456',
+      'MCP_TOKEN=mcp-secret',
+      'pat_secretprefix',
+    ].join('\n');
 
   function expectRedactedTranscript(redacted: string): void {
     expect(redacted).not.toContain('\u001B');
@@ -212,10 +282,86 @@ describe('bootstrap source refresh controls', () => {
     expect(redacted).toContain('/home/[user]/.consuelo');
   }
 
+  it('should install the immutable stable runtime instead of promoting repository source', () => {
+    const bootstrap = readBootstrap();
+    expect(bootstrap).toContain(
+      'HOSTED_RELEASE_BASE_URL="https://install.consuelohq.com/os/releases"',
+    );
+    expect(bootstrap).toContain('if [ "${CONSUELO_OS_DEV:-0}" = "1" ]; then');
+    expect(bootstrap).toContain('RELEASE_BASE_URL="$HOSTED_RELEASE_BASE_URL"');
+    expect(bootstrap).toContain(
+      'RELEASE_PUBLIC_KEYS_BASE64="$BAKED_RELEASE_PUBLIC_KEYS_BASE64"',
+    );
+    expect(bootstrap).toContain('/channels/${channel}.json');
+    expect(bootstrap).toContain('verify_runtime_release');
+    expect(bootstrap).toContain('install_verified_runtime');
+    expect(bootstrap).not.toContain('main.tar.gz');
+    expect(bootstrap).not.toContain('download_source_archive');
+    expect(bootstrap).not.toContain('promote_hosted_runtime');
+  });
+
+  it('should activate the verified runtime after onboarding succeeds and before daemon installation', () => {
+    const bootstrap = readBootstrap();
+    const main = extractShellFunction(bootstrap, 'main');
+    const daemonInstall = extractShellFunction(
+      bootstrap,
+      'install_daemons_quiet',
+    );
+
+    expect(main).toContain('install_verified_runtime');
+    expect(main.indexOf('install_verified_runtime')).toBeLessThan(
+      main.indexOf('run_onboarding'),
+    );
+    expect(main.indexOf('run_onboarding')).toBeLessThan(
+      main.indexOf('activate_verified_runtime'),
+    );
+    expect(main.indexOf('activate_verified_runtime')).toBeLessThan(
+      main.indexOf('maybe_install_daemons'),
+    );
+    expect(daemonInstall).toContain('CONSUELO_HOME="$OS_HOME"');
+    expect(daemonInstall).toContain(
+      'CONSUELO_SECURITY_GENERATED_DIR="$OS_HOME/node/security/generated"',
+    );
+    expect(daemonInstall).toContain(
+      'CONSUELO_DAEMON_LOG_DIR="$OS_HOME/node/logs"',
+    );
+  });
+
+  it('should repair only inactive incomplete immutable release directories', () => {
+    const installRuntime = extractShellFunction(
+      readBootstrap(),
+      'install_verified_runtime',
+    );
+
+    expect(installRuntime).toContain(
+      'active verified release directory is incomplete',
+    );
+    expect(installRuntime).toContain(
+      'stale_release_dir="${release_dir}.stale.$$"',
+    );
+    expect(installRuntime).toContain(
+      'mv "$release_dir" "$stale_release_dir"',
+    );
+    expect(installRuntime).toContain(
+      'mv "$extracted_dir" "$release_dir"',
+    );
+    expect(installRuntime.indexOf(
+      '[ "$active_release_dir" = "$release_dir_resolved" ]',
+    )).toBeLessThan(
+      installRuntime.indexOf('mv "$release_dir" "$stale_release_dir"'),
+    );
+  });
+
   it('should redact child installer PTY transcripts before saving diagnostics when perl is available', () => {
     const bootstrap = readBootstrap();
 
-    expectRedactedTranscript(runBootstrapFunction(bootstrap, 'redact_dev_log_line', createSensitiveTranscript()));
+    expectRedactedTranscript(
+      runBootstrapFunction(
+        bootstrap,
+        'redact_dev_log_line',
+        createSensitiveTranscript(),
+      ),
+    );
   });
 
   it('should redact child installer PTY transcripts before saving diagnostics when using sed fallback', () => {
@@ -223,14 +369,22 @@ describe('bootstrap source refresh controls', () => {
     const sedOnlyPath = createSedOnlyPath();
 
     expectRedactedTranscript(
-      runBootstrapFunction(bootstrap, 'redact_dev_log_line', createSensitiveTranscript(), {
-        env: { PATH: sedOnlyPath },
-      }),
+      runBootstrapFunction(
+        bootstrap,
+        'redact_dev_log_line',
+        createSensitiveTranscript(),
+        {
+          env: { PATH: sedOnlyPath },
+        },
+      ),
     );
   });
   it('forwards daemon decisions into interactive onboarding', () => {
     const bootstrap = readBootstrap();
-    const runner = extractShellFunction(bootstrap, 'run_install_with_script_pty');
+    const runner = extractShellFunction(
+      bootstrap,
+      'run_install_with_script_pty',
+    );
 
     expect(runner).toContain('local install_args=');
     expect(runner).toContain('install_args+=(--install-daemons)');
@@ -258,8 +412,12 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('[ "$DRY_RUN" -eq 0 ] || return 0');
     expect(bootstrap).toContain('[ "$JSON" -eq 0 ] || return 0');
     expect(main.indexOf('print_success_summary')).toBeGreaterThan(-1);
-    expect(main.indexOf('open_workspace_launcher')).toBeGreaterThan(main.indexOf('print_success_summary'));
-    expect(main.indexOf('emit_json_summary')).toBeGreaterThan(main.indexOf('open_workspace_launcher'));
+    expect(main.indexOf('open_workspace_launcher')).toBeGreaterThan(
+      main.indexOf('print_success_summary'),
+    );
+    expect(main.indexOf('emit_json_summary')).toBeGreaterThan(
+      main.indexOf('open_workspace_launcher'),
+    );
   });
 
   it('should pin darwin cloudflared checksums when bootstrap.sh is read', () => {

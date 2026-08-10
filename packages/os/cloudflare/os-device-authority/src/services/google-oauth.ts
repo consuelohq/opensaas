@@ -9,6 +9,7 @@ type GoogleIdentityErrorKind =
   | 'token_exchange'
   | 'identity_verification'
   | 'audience_mismatch'
+  | 'nonce_mismatch'
   | 'email_not_verified';
 
 class GoogleIdentityError extends Error {
@@ -45,6 +46,7 @@ export function googleAuthRedirect(input: {
   origin: string;
   clientId: string;
   state: string;
+  nonce?: string;
 }): string {
   const url = new URL(GOOGLE_AUTH_URL);
   url.searchParams.set('client_id', input.clientId);
@@ -52,6 +54,7 @@ export function googleAuthRedirect(input: {
   url.searchParams.set('response_type', 'code');
   url.searchParams.set('scope', GOOGLE_SCOPE);
   url.searchParams.set('state', input.state);
+  if (input.nonce) url.searchParams.set('nonce', input.nonce);
   url.searchParams.set('access_type', 'online');
   url.searchParams.set('prompt', 'select_account');
   return url.toString();
@@ -64,6 +67,7 @@ export async function googleIdentity(input: {
   clientSecret: string;
   fetchImpl: typeof fetch;
   redirectUri?: string;
+  expectedNonce?: string;
 }): Promise<{ sub: string; email: string; emailVerified: boolean }> {
   try {
     const clientId = input.clientId.trim();
@@ -114,6 +118,12 @@ export async function googleIdentity(input: {
         'audience_mismatch',
         'google_audience_mismatch',
       );
+    if (
+      input.expectedNonce &&
+      infoJson.nonce !== input.expectedNonce
+    ) {
+      throw new GoogleIdentityError('nonce_mismatch', 'google_nonce_mismatch');
+    }
     const email = typeof infoJson.email === 'string' ? infoJson.email : '';
     const sub = typeof infoJson.sub === 'string' ? infoJson.sub : '';
     const emailVerified =
@@ -140,6 +150,8 @@ export function googleApprovalErrorMessage(error: unknown): string {
       return `Google approval failed during identity verification (${error.message}). Try again with a verified Google account.`;
     if (error.kind === 'audience_mismatch')
       return 'Google approval failed because the returned Google identity was issued for a different OAuth client.';
+    if (error.kind === 'nonce_mismatch')
+      return 'Google approval failed because the sign-in session could not be verified.';
     return 'Google approval failed because this Google account does not have a verified email address.';
   }
   return `Google approval failed (${error instanceof Error ? error.message : String(error)}). Try this device code again.`;

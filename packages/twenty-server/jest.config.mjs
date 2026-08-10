@@ -8,22 +8,26 @@ const jestConfig = {
   clearMocks: true,
   displayName: 'twenty-server',
   rootDir: './',
+  resolver: './jest.dialer-source-resolver.cjs',
   testEnvironment: 'node',
   setupFilesAfterEnv: ['./setupTests.ts'],
   transformIgnorePatterns: ['/node_modules/'],
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': [
+    '^.+\\.(t|j)sx?$': [
       '@swc/jest',
       {
         jsc: {
           parser: {
             syntax: 'typescript',
-            tsx: false,
+            tsx: true,
             decorators: true,
           },
           transform: {
             decoratorMetadata: true,
+            react: {
+              runtime: 'automatic',
+            },
           },
           experimental: {
             plugins: [
@@ -42,13 +46,14 @@ const jestConfig = {
   moduleNameMapper: {
     '^src/(.*)': '<rootDir>/src/$1',
     '^test/(.*)': '<rootDir>/test/$1',
+    '^@consuelo/dialer$': '<rootDir>/../dialer/src/index.ts',
   },
-  moduleFileExtensions: ['js', 'json', 'ts'],
+  moduleFileExtensions: ['js', 'jsx', 'json', 'ts', 'tsx'],
   modulePathIgnorePatterns: ['<rootDir>/dist'],
   fakeTimers: {
     enableGlobally: true,
   },
-  collectCoverageFrom: ['**/*.(t|j)s'],
+  collectCoverageFrom: ['**/*.(t|j)sx?'],
   coverageDirectory: '../coverage',
 };
 

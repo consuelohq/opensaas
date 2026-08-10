@@ -1,5 +1,5 @@
 import { isValidElement, type ReactElement } from 'react';
-import { reactMarkupFromJSON } from 'twenty-emails';
+import { reactMarkupFromJSON } from 'src/engine/core-modules/email/templates';
 
 describe('Send Email Body Rendering', () => {
   describe('hardBreak node rendering', () => {

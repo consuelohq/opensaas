@@ -13,7 +13,7 @@ Current hooks:
 
 Manifest roles:
 
-Workflow hooks resolve tools by `workflowRole` in `packages/os/tooling/dev-tool-manifest.json`. Generated full and core manifests preserve those roles under each tool `definition`. Generated workflow bundles in `packages/os/manifests/workflow-bundles.json` are built from `packages/os/tooling/workflows.json`, current manifest roles, and categories.
+Workflow hooks resolve tools by `workflowRole` in `packages/os/manifests/generated/tool.manifest.json`. Generated full and core manifests preserve those roles under each tool `definition`. Generated workflow bundles in `packages/os/workflows/generated/workflow-bundles.json` are built from `packages/os/workflows/workflows.ts`, current manifest roles, and categories.
 
 Intent architecture:
 

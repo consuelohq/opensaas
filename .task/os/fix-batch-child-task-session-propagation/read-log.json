@@ -1,0 +1,27 @@
+{
+  "files": [
+    ".task/os/fix-batch-child-task-session-propagation/workpad.md",
+    "packages/cli/package.json",
+    "packages/cli/src/commands/os.test.ts",
+    "packages/cli/src/commands/os.ts",
+    "packages/cli/src/commands/update.test.ts",
+    "packages/cli/src/commands/update.ts",
+    "packages/cli/src/errors.ts",
+    "packages/cli/src/index.ts",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/facade/batch.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/logger.ts",
+    "packages/os/scripts/lib/facade/types.ts",
+    "packages/os/scripts/lib/trace-persistence.ts",
+    "packages/os/scripts/tool-runner.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-08-05T19:05:18.138Z"
+}

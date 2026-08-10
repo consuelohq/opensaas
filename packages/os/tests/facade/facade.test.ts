@@ -9,6 +9,7 @@ import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
 import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
+import { redactDeploymentTraceInput } from '../../tools/deployment-provider/redaction';
 
 const TEST_BRANCH = 'task/workspace-agents/test';
 const TEST_UUID = 'abc123def4567890abc123def4567890';
@@ -147,9 +148,44 @@ describe('typed facade executor', () => {
     expect(result.data).toBeNull();
   });
 
-  it('plans canonical context search through the context runtime', async () => {
+  it('fails deployment mutations closed before generic command execution', async () => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool('context', {
+    const result = await executeTool('deployment.deploy', {
+      provider: 'vercel',
+      action: 'deploy',
+      target: 'production',
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('APPROVAL_REQUIRED');
+    expect(result.data).toMatchObject({
+      provider: 'vercel',
+      approval: { required: true },
+    });
+    expect(plans).toHaveLength(0);
+  });
+
+  it('redacts provider secrets and arbitrary raw argv before trace persistence', () => {
+    const secret = 'cf_api_token_should_never_reach_a_trace';
+    const environmentInput = redactDeploymentTraceInput('deployment.environment', {
+      provider: 'cloudflare',
+      action: 'set',
+      name: 'API_TOKEN',
+      value: secret,
+    });
+    const rawInput = redactDeploymentTraceInput('deployment.raw', {
+      provider: 'railway',
+      args: ['variables', '--set', `API_TOKEN=${secret}`],
+    });
+
+    expect(environmentInput.value).toBe('[REDACTED_SECRET]');
+    expect(rawInput.args).toEqual(['[REDACTED_RAW_PAYLOAD]']);
+    expect(JSON.stringify({ environmentInput, rawInput })).not.toContain(secret);
+  });
+
+  it('plans canonical memory search through the memory runtime', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('memory', {
       operation: 'search',
       keyword: 'workspace',
       limit: 1,
@@ -159,7 +195,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('OK');
     expect(plans).toHaveLength(1);
     expect(plans[0].args).toEqual(expect.arrayContaining([
-      'context',
+      'memory',
       '--',
       'search',
       'workspace',
@@ -169,9 +205,9 @@ describe('typed facade executor', () => {
     ]));
   });
 
-  it('plans canonical context trace through the context runtime', async () => {
+  it('plans canonical memory trace through the memory runtime', async () => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool('context', {
+    const result = await executeTool('memory', {
       operation: 'trace',
       status: 'error',
       limit: 1,
@@ -181,7 +217,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('OK');
     expect(plans).toHaveLength(1);
     expect(plans[0].args).toEqual(expect.arrayContaining([
-      'context',
+      'memory',
       '--',
       'trace',
       '--status',
@@ -192,14 +228,24 @@ describe('typed facade executor', () => {
     ]));
   });
 
-  it('rejects canonical context calls without an operation', async () => {
-    const result = await executeTool('context', {
+  it('rejects canonical memory calls without an operation', async () => {
+    const result = await executeTool('memory', {
       keyword: 'workspace',
     }, stableOptions(successfulRunner()));
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('VALIDATION_ERROR');
     expect(result.message).toContain('operation');
+  });
+
+  it('does not expose the retired standalone context tool', async () => {
+    const result = await executeTool('context', {
+      operation: 'search',
+      keyword: 'workspace',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -270,6 +316,65 @@ describe('typed facade executor', () => {
       '--trace-engine',
       'auto',
       '--optimize',
+      '--json',
+    ]));
+  });
+
+  it('plans media.screenshot.render facade calls with configurable social-card arguments', async () => {
+    const schema = getInputSchema('MediaScreenshotRenderInput');
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({
+      input: 'chatgpt.png',
+      out: 'chatgpt-x.png',
+      width: 1600,
+      height: 900,
+      theme: 'dark',
+      accent: '#0000F2',
+      background: '#08080A',
+      padding: 120,
+      fit: 'contain',
+      pattern: 'grid',
+    }).success).toBe(true);
+
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('media.screenshot.render', {
+      input: 'chatgpt.png',
+      out: 'chatgpt-x.png',
+      width: 1600,
+      height: 900,
+      theme: 'dark',
+      accent: '#0000F2',
+      background: '#08080A',
+      padding: 120,
+      fit: 'contain',
+      pattern: 'grid',
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(expect.arrayContaining([
+      'media',
+      'screenshot:render',
+      '--input',
+      'chatgpt.png',
+      '--out',
+      'chatgpt-x.png',
+      '--width',
+      '1600',
+      '--height',
+      '900',
+      '--theme',
+      'dark',
+      '--accent',
+      '#0000F2',
+      '--background',
+      '#08080A',
+      '--padding',
+      '120',
+      '--fit',
+      'contain',
+      '--pattern',
+      'grid',
       '--json',
     ]));
   });
@@ -1225,7 +1330,7 @@ describe('batch facade tool', () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('batch', {
       steps: [
-        { tool: 'context.find', input: { keyword: 'workspace', limit: 1 } },
+        { tool: 'memory', input: { operation: 'find', keyword: 'workspace', limit: 1 } },
       ],
     }, stableOptions(successfulRunner(), plans));
 
@@ -1235,12 +1340,168 @@ describe('batch facade tool', () => {
     expect(plans).toHaveLength(1);
   });
 
+  it('inherits the outer task session for sequential child tools', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-session-'));
+    const taskSession = 'tsk_batch_session';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('batch', {
+        taskSession,
+        steps: [
+          { tool: 'fs.read', input: { path: 'packages/os/package.json' } },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+        branchResolver: ({ explicitBranch }) => explicitBranch
+          ? { ok: true as const, branch: explicitBranch, source: 'explicit' }
+          : {
+              ok: false as const,
+              code: 'AMBIGUOUS_TASK_SELECTION' as const,
+              message: 'missing inherited batch context',
+              candidates: [],
+            },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.completed).toBe(1);
+      expect(result.data.results[0].parentTraceId).toBe(result.traceId);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toContain(TEST_BRANCH);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('accepts a session id, task id, metadata id, or branch as the outer batch handle', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-session-alias-'));
+    const metadata = {
+      taskSession: 'tsk_batch_alias',
+      taskId: 'task_batch_alias',
+      id: 'meta_batch_alias',
+      branch: TEST_BRANCH,
+      worktree: tempRoot,
+    };
+    const plans: CommandPlan[] = [];
+
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(
+        join(tempRoot, '.task', 'session.json'),
+        JSON.stringify(metadata, null, 2),
+      );
+
+      for (const taskSession of [
+        metadata.taskSession,
+        metadata.taskId,
+        metadata.id,
+        metadata.branch,
+      ]) {
+        const result = await executeTool('batch', {
+          taskSession,
+          steps: [
+            { tool: 'fs.read', input: { path: 'packages/os/package.json' } },
+          ],
+        }, {
+          ...stableOptions(successfulRunner(), plans),
+          cwd: tempRoot,
+          currentTask: null,
+          candidates: [],
+        });
+
+        expect(result.ok).toBe(true);
+        expect(result.data.results[0].parentTraceId).toBe(result.traceId);
+      }
+
+      expect(plans).toHaveLength(4);
+      expect(plans.every((plan) => plan.args.includes(TEST_BRANCH))).toBe(true);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('inherits task context for parallel child tools', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-parallel-session-'));
+    const taskSession = 'tsk_batch_parallel_session';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('batch', {
+        taskSession,
+        steps: [
+          { tool: 'fs.read', input: { path: 'packages/os/package.json' }, parallel: true },
+          { tool: 'fs.read', input: { path: 'packages/cli/package.json' }, parallel: true },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+        branchResolver: ({ explicitBranch }) => explicitBranch
+          ? { ok: true as const, branch: explicitBranch, source: 'explicit' }
+          : {
+              ok: false as const,
+              code: 'AMBIGUOUS_TASK_SELECTION' as const,
+              message: 'missing inherited batch context',
+              candidates: [],
+            },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(2);
+      expect(plans.every((plan) => plan.args.includes(TEST_BRANCH))).toBe(true);
+      expect(result.data.results.every((child) => child.parentTraceId === result.traceId)).toBe(true);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects child task context that conflicts with the outer batch', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-conflict-'));
+    const taskSession = 'tsk_batch_conflict';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('batch', {
+        taskSession,
+        steps: [
+          {
+            tool: 'fs.read',
+            input: {
+              branch: 'task/workspace-agents/other',
+              path: 'packages/os/package.json',
+            },
+          },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.data.completed).toBe(1);
+      expect(result.data.results[0].code).toBe('VALIDATION_ERROR');
+      expect(result.data.results[0].message).toContain('conflicts with the outer batch task context');
+      expect(plans).toHaveLength(0);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('validates BatchInput step shape', () => {
     const schema = getInputSchema('BatchInput');
 
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({
-      steps: [{ tool: 'context.find', input: { keyword: 'workspace', limit: 1 } }],
+      steps: [{ tool: 'memory', input: { operation: 'find', keyword: 'workspace', limit: 1 } }],
     }).success).toBe(true);
     expect(schema?.safeParse({ steps: [] }).success).toBe(false);
     expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);

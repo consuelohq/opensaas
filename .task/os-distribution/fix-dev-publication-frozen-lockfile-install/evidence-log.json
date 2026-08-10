@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-distribution/fix-dev-publication-frozen-lockfile-install",
+  "events": [
+    {
+      "id": "eef58918-bd06-4807-bf26-c81d43c60359",
+      "occurred_at": "2026-07-24T05:31:06.327Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/distribution/release-channel-workflows.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-dev-publication-frozen-lockfile-install",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-dev-publication-frozen-lockfile-install"
+      }
+    },
+    {
+      "id": "09c04292-98f3-4543-8def-829b2cf789b0",
+      "occurred_at": "2026-07-24T05:32:36.955Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-distribution/fix-dev-publication-frozen-lockfile-install/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-dev-publication-frozen-lockfile-install",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-dev-publication-frozen-lockfile-install"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-24T05:32:37.011Z"
+}

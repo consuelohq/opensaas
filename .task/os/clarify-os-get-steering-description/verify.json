@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/clarify-os-get-steering-description",
+  "base": "origin/main",
+  "headSha": "3c42e1075505a5f9986fc2b5e6e84585f97810d6",
+  "changeHash": "0062c1fb817a9dab922badaae96210c57368c1854402b709597fb91d81f97bb8",
+  "changedFiles": [
+    "packages/os/scripts/lib/mcp-gateway.ts"
+  ],
+  "verifiedAt": "2026-07-15T17:54:33.025Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/clarify-os-get-steering-description/current.json",
+        ".task/os/clarify-os-get-steering-description/evidence-log.json",
+        ".task/os/clarify-os-get-steering-description/read-log.json",
+        ".task/os/clarify-os-get-steering-description/session.json",
+        ".task/os/clarify-os-get-steering-description/workpad.md",
+        ".task/tasks/os/clarify-os-get-steering-description.json",
+        "packages/os/scripts/lib/mcp-gateway.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

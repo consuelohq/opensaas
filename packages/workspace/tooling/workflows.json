@@ -67,57 +67,6 @@
           "stage": "task-finish"
         }
       ]
-    },
-    {
-      "id": "office",
-      "aliases": [
-        "design",
-        "sites"
-      ],
-      "roles": [
-        "office.publish",
-        "office.refresh",
-        "office.run",
-        "office.designSystem.get",
-        "office.skills.list",
-        "office.designSystems.list",
-        "office.upstreamStatus",
-        "office.railwayCheck",
-        "office.check",
-        "office.generate.website",
-        "office.generate.demo",
-        "office.generate.imageBrief",
-        "office.generate.digitalEguide",
-        "office.generate.email",
-        "office.generate.motionFrame",
-        "office.render.hyperframes",
-        "office.ui.background",
-        "office.ui.stop",
-        "office.ui.status",
-        "office.ui.logs",
-        "office.openDesign.build"
-      ],
-      "categories": [
-        "consuelo design"
-      ],
-      "subscriptions": [
-        {
-          "event": "workflow.intent.office.detected",
-          "workflow": "office"
-        },
-        {
-          "event": "artifact.postRender",
-          "workflow": "office"
-        },
-        {
-          "event": "artifact.prePublish",
-          "workflow": "office"
-        },
-        {
-          "event": "artifact.postPublish",
-          "workflow": "office"
-        }
-      ]
     }
   ]
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
@@ -8,7 +9,7 @@ import { pathToFileURL } from 'node:url';
 import {
   findManifestEntry,
   getPackageRoot,
-  readCoreToolManifest,
+  readEffectiveCoreManifest,
 } from './lib/manifest';
 import { validateManifestGuardrails } from './lib/local-guardrails';
 import {
@@ -29,12 +30,13 @@ import {
   materializeSites,
   prepareSitePagePatch,
   publishSitePage,
-  readOfficeSiteData,
   releaseSitePageLease,
   sitePageLeaseStatus,
 } from './lib/sites';
 import type { SitePageKind } from './lib/sites';
+import { readArtifactCatalog } from './lib/artifacts';
 import { loadOsConfig } from './lib/install-state';
+import { runConfigurationOverlayCommand } from './lib/settings-overlay-command';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -53,15 +55,22 @@ function readIfExists(filePath: string): string {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
 }
 
-const PRIMARY_STEERING_FILES = ['system_prompt.md', 'decision.md'] as const;
-const LEGACY_STEERING_FILE = 'steering.md';
+const PRIMARY_STEERING_FILES = ['system_prompt.md'] as const;
+// example-system.md is documentation for the user, not instructions for an agent. It is excluded
+// by name so its sample rules can never be mistaken for real ones.
+const EXCLUDED_STEERING_FILES = new Set([
+  'steering.md',
+  'decision.md',
+  'example-system.md',
+]);
 
-function localSteeringDir(home: string): string {
-  return path.join(home, 'steering');
+function visibleSteeringDir(): string {
+  const userHome = process.env.CONSUELO_USER_HOME?.trim() || os.homedir();
+  return path.join(userHome, 'Consuelo', 'Steering');
 }
 
 function isSupportedSteeringMarkdown(fileName: string): boolean {
-  return fileName.endsWith('.md') && fileName.toLowerCase() !== LEGACY_STEERING_FILE;
+  return fileName.endsWith('.md') && !EXCLUDED_STEERING_FILES.has(fileName.toLowerCase());
 }
 
 function readSteeringMarkdownFiles(steeringDir: string): Array<{ name: string; content: string }> {
@@ -114,21 +123,28 @@ export type SitesCommandResult = {
   home: string;
   sitesDir: string;
   indexPath: string;
-  officeIndexPath: string;
-  officeDataPath: string;
-  officeAssetsDir: string;
+  artifactsIndexPath: string;
+  artifactsDataPath: string;
   tracesIndexPath: string;
   diffsIndexPath: string;
   docsIndexPath: string;
+  configurationIndexPath: string;
+  toolsIndexPath: string;
+  environmentsIndexPath: string;
+  secretsIndexPath: string;
   url: string;
   artifacts: number;
   generatedAt: string | null;
   indexExists: boolean;
-  officeIndexExists: boolean;
-  officeDataExists: boolean;
+  artifactsIndexExists: boolean;
+  artifactsDataExists: boolean;
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
   docsIndexExists: boolean;
+  configurationIndexExists: boolean;
+  toolsIndexExists: boolean;
+  environmentsIndexExists: boolean;
+  secretsIndexExists: boolean;
   message: string;
   pagesDir?: string;
   pagesRegistryPath?: string;
@@ -159,18 +175,9 @@ export type SitesCommandResult = {
   error?: { code: string; message: string };
 };
 
-export type OfficeCommandResult = SitesCommandResult;
-
 export type RunSitesCommandOptions = {
   home?: string;
   openUrl?: boolean;
-};
-
-export type RunOfficeCommandOptions = RunSitesCommandOptions;
-
-type GeneratedOfficeSiteData = {
-  generatedAt?: string;
-  artifacts?: unknown[];
 };
 
 function hasFlag(args: readonly string[], flag: string): boolean {
@@ -188,7 +195,7 @@ type ReaderSiteTemplate = 'spec' | 'plan' | 'guide';
 
 function sitePageKind(value: string | null): SitePageKind {
   const kind = value ?? 'uncategorized';
-  if (['spec', 'plan', 'guide', 'trace', 'diff', 'office', 'uncategorized'].includes(kind)) return kind as SitePageKind;
+  if (['spec', 'plan', 'guide', 'trace', 'diff', 'artifact', 'uncategorized'].includes(kind)) return kind as SitePageKind;
   throw new Error(`Unsupported Sites page kind: ${kind}`);
 }
 
@@ -209,10 +216,10 @@ function textFromBytes(value: unknown): string {
 
 function renderReaderContent(template: ReaderSiteTemplate, input: string, output: string): { ok: boolean; stdout: string; error?: string } {
   const repoRoot = repoRootFromOsPackage();
-  const renderProcess = Bun.spawnSync(['bun', 'run', 'wiki:render', '--', '--template', template, '--input', input, '--out', output], { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' });
+  const renderProcess = Bun.spawnSync(['bun', 'run', 'artifact:render', '--', '--template', template, '--input', input, '--out', output], { cwd: repoRoot, stdout: 'pipe', stderr: 'pipe' });
   const stdout = textFromBytes(renderProcess.stdout).trim();
   const stderr = textFromBytes(renderProcess.stderr).trim();
-  return { ok: renderProcess.exitCode === 0 && fs.existsSync(output), stdout, error: stderr || stdout || `wiki:render exited with ${renderProcess.exitCode}` };
+  return { ok: renderProcess.exitCode === 0 && fs.existsSync(output), stdout, error: stderr || stdout || `artifact:render exited with ${renderProcess.exitCode}` };
 }
 
 function firstSitesSubcommand(args: readonly string[]): string {
@@ -225,14 +232,6 @@ function runtimePathsForHome(home?: string): { home: string; dbPath: string } {
   return { home: paths.home, dbPath: paths.dbPath };
 }
 
-function readGeneratedOfficeSiteData(dataPath: string): GeneratedOfficeSiteData | null {
-  if (!fs.existsSync(dataPath)) return null;
-  const parsed = JSON.parse(fs.readFileSync(dataPath, 'utf8')) as unknown;
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
-  return parsed as GeneratedOfficeSiteData;
-}
-
-
 function workspaceHostForSites(home: string): string | null {
   const config = loadOsConfig(home);
   return config?.workspace?.host ?? config?.security?.gateway?.workspaceHost ?? null;
@@ -240,9 +239,8 @@ function workspaceHostForSites(home: string): string | null {
 
 function sitesStatusResult(command: string, home: string, dbPath: string): SitesCommandResult {
   const sitesPaths = getSitesPaths(home);
-  const generated = readGeneratedOfficeSiteData(sitesPaths.officeDataPath);
-  const currentData = generated ?? readOfficeSiteData(dbPath);
-  const artifacts = Array.isArray(currentData.artifacts) ? currentData.artifacts.length : 0;
+  const currentData = readArtifactCatalog(home);
+  const artifacts = currentData.entries.length;
   return {
     ok: true,
     command,
@@ -251,21 +249,28 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     indexPath: sitesPaths.indexPath,
     pagesDir: sitesPaths.pagesDir,
     pagesRegistryPath: sitesPaths.pagesRegistryPath,
-    officeIndexPath: sitesPaths.officeIndexPath,
-    officeDataPath: sitesPaths.officeDataPath,
-    officeAssetsDir: sitesPaths.officeAssetsDir,
+    artifactsIndexPath: sitesPaths.artifactsIndexPath,
+    artifactsDataPath: sitesPaths.artifactsDataPath,
     tracesIndexPath: sitesPaths.tracesIndexPath,
     diffsIndexPath: sitesPaths.diffsIndexPath,
     docsIndexPath: sitesPaths.docsIndexPath,
+    configurationIndexPath: sitesPaths.configurationIndexPath,
+    toolsIndexPath: sitesPaths.toolsIndexPath,
+    environmentsIndexPath: sitesPaths.environmentsIndexPath,
+    secretsIndexPath: sitesPaths.secretsIndexPath,
     url: pathToFileURL(sitesPaths.indexPath).href,
     artifacts,
-    generatedAt: typeof currentData.generatedAt === 'string' ? currentData.generatedAt : null,
+    generatedAt: currentData.updatedAt,
     indexExists: fs.existsSync(sitesPaths.indexPath),
-    officeIndexExists: fs.existsSync(sitesPaths.officeIndexPath),
-    officeDataExists: fs.existsSync(sitesPaths.officeDataPath),
+    artifactsIndexExists: fs.existsSync(sitesPaths.artifactsIndexPath),
+    artifactsDataExists: fs.existsSync(sitesPaths.artifactsDataPath),
     tracesIndexExists: fs.existsSync(sitesPaths.tracesIndexPath),
     diffsIndexExists: fs.existsSync(sitesPaths.diffsIndexPath),
     docsIndexExists: fs.existsSync(sitesPaths.docsIndexPath),
+    configurationIndexExists: fs.existsSync(sitesPaths.configurationIndexPath),
+    toolsIndexExists: fs.existsSync(sitesPaths.toolsIndexPath),
+    environmentsIndexExists: fs.existsSync(sitesPaths.environmentsIndexPath),
+    secretsIndexExists: fs.existsSync(sitesPaths.secretsIndexPath),
     message: `Sites index: ${sitesPaths.indexPath}`,
   };
 }
@@ -289,8 +294,8 @@ export async function runSitesCommand(
     });
     return {
       ...sitesStatusResult(command, paths.home, paths.dbPath),
-      artifacts: result.data.artifacts.length,
-      generatedAt: result.data.generatedAt,
+      artifacts: result.data.entries.length,
+      generatedAt: result.data.updatedAt,
       actions: result.actions,
       message: `Sites refreshed: ${result.indexPath}`,
     };
@@ -319,7 +324,7 @@ export async function runSitesCommand(
     const renderProcess = Bun.spawnSync([
       'bun',
       'run',
-      'wiki:render',
+      'artifact:render',
       '--',
       '--template',
       template,
@@ -342,7 +347,7 @@ export async function runSitesCommand(
       rendered,
       rendererStdout: stdout || undefined,
       message: ok ? `Sites reader page rendered: ${output}` : 'Sites reader render failed.',
-      error: ok ? undefined : { code: 'SITES_RENDER_FAILED', message: stderr || stdout || `wiki:render exited with ${renderProcess.exitCode}` },
+      error: ok ? undefined : { code: 'SITES_RENDER_FAILED', message: stderr || stdout || `artifact:render exited with ${renderProcess.exitCode}` },
     };
   }
 
@@ -360,7 +365,7 @@ export async function runSitesCommand(
     let renderResult: { ok: boolean; stdout: string; error?: string } | null = null;
     if (template) {
       renderResult = renderReaderContent(template, prepared.contentPath, path.join(prepared.stagedTarget, 'index.html'));
-      if (!renderResult.ok) return { ...status, ok: false, pageId: prepared.pageId, pagePath: prepared.path, pageKind: prepared.kind ?? undefined, sectionId: prepared.sectionId, currentVersionId: prepared.currentVersionId, requiredBaseVersion: prepared.currentVersionId, rebased: prepared.rebased, stagedTarget: prepared.stagedTarget, contentPath: prepared.contentPath, rendered: false, error: { code: 'SITES_PATCH_RENDER_FAILED', message: renderResult.error ?? 'wiki:render failed' }, message: 'Sites patch render failed.' };
+      if (!renderResult.ok) return { ...status, ok: false, pageId: prepared.pageId, pagePath: prepared.path, pageKind: prepared.kind ?? undefined, sectionId: prepared.sectionId, currentVersionId: prepared.currentVersionId, requiredBaseVersion: prepared.currentVersionId, rebased: prepared.rebased, stagedTarget: prepared.stagedTarget, contentPath: prepared.contentPath, rendered: false, error: { code: 'SITES_PATCH_RENDER_FAILED', message: renderResult.error ?? 'artifact:render failed' }, message: 'Sites patch render failed.' };
     }
     const result = publishSitePage({ home: paths.home, dbPath: paths.dbPath, target: prepared.stagedTarget, pagePath, title: prepared.title ?? prepared.pageId, kind: prepared.kind ?? 'uncategorized', baseVersion: prepared.currentVersionId, forcePublish: hasFlag(args, '--force-publish'), agentId, changedSectionIds: [prepared.sectionId] });
     return { ...status, ok: result.ok, pageId: result.pageId, pagePath: result.path, pageTitle: result.title, pageKind: result.kind, sectionId: prepared.sectionId, currentVersionId: result.currentVersionId, publishedVersionId: result.publishedVersionId, requiredBaseVersion: result.requiredBaseVersion, versionCount: result.versionCount, currentPath: result.currentPath, versionPath: result.versionPath, rebased: prepared.rebased, stagedTarget: prepared.stagedTarget, contentPath: prepared.contentPath, rendered: renderResult ? renderResult.ok : undefined, rendererStdout: renderResult?.stdout || undefined, message: result.ok ? `Sites section patched: ${prepared.path}#${prepared.sectionId}` : result.message, error: result.error };
@@ -470,8 +475,8 @@ export async function runSitesCommand(
     }
     return {
       ...sitesStatusResult(command, paths.home, paths.dbPath),
-      artifacts: result.data.artifacts.length,
-      generatedAt: result.data.generatedAt,
+      artifacts: result.data.entries.length,
+      generatedAt: result.data.updatedAt,
       actions: result.actions,
       message: `Sites opened: ${result.indexPath}`,
     };
@@ -488,25 +493,14 @@ export async function runSitesCommand(
   };
 }
 
-export async function runOfficeCommand(
-  args: readonly string[],
-  options: RunOfficeCommandOptions = {},
-): Promise<OfficeCommandResult> {
-  return runSitesCommand(args, options);
-}
-
 function renderSitesCommandResult(result: SitesCommandResult): string {
   return [
     result.message,
     `Path: ${result.indexPath}`,
-    `Office: ${result.officeIndexPath}`,
+    `Artifacts: ${result.artifactsIndexPath}`,
     `URL: ${result.url}`,
-    `Artifacts: ${result.artifacts}`,
+    `Artifact count: ${result.artifacts}`,
   ].join('\n');
-}
-
-function renderOfficeCommandResult(result: OfficeCommandResult): string {
-  return renderSitesCommandResult(result);
 }
 export function getSteering(): string {
   const runtimePaths = ensureRuntimePaths();
@@ -520,7 +514,13 @@ export function getSteering(): string {
     '```',
   ];
 
-  for (const file of readSteeringMarkdownFiles(localSteeringDir(runtimePaths.home))) {
+  for (const file of readSteeringMarkdownFiles(
+    path.join(getPackageRoot(), 'steering'),
+  )) {
+    sections.push('', `# bundled ${file.name}`, '', file.content);
+  }
+
+  for (const file of readSteeringMarkdownFiles(visibleSteeringDir())) {
     sections.push('', `# ${file.name}`, '', file.content);
   }
 
@@ -533,7 +533,7 @@ export function getSteering(): string {
     '# raw core tool manifest',
     '',
     '```json',
-    safeJson(readCoreToolManifest()),
+    safeJson(readEffectiveCoreManifest(runtimePaths.home)),
     '```',
   );
   return sections.join('\n');
@@ -680,13 +680,13 @@ You already received full OS steering very recently in this pre-task bootstrap c
 Do not call get_steering again unless you are intentionally refreshing bootstrap context.
 
 Read only the specific file you need:
-- $CONSUELO_HOME/steering/system_prompt.md
-- $CONSUELO_HOME/steering/decision.md
-- packages/os/manifests/core.manifest.json
+- the immutable runtime steering/system_prompt.md
+- ~/Consuelo/Steering/*.md
+- packages/os/manifests/generated/core.manifest.json
 
 Useful alternatives:
 - fs.read for exact files
-- context.search for repo/project context
+- memory for repo/project memory
 - tools.search for tool discovery
 
 If you truly need a fresh full steering snapshot, call refresh_steering with a concrete reason.
@@ -847,17 +847,14 @@ export function getRawSteering(): string {
     '',
     'This surface is for build, design, deployment, debugging, and internal operator agents.',
     'It intentionally preserves the proven workspace steering pattern so OS capabilities can be repurposed instead of rebuilt.',
-    'Use this context for landing pages, Office, GitHub, auth, deployment, file workflows, and operator/debug tasks.',
+    'Use this context for landing pages, Artifacts, GitHub, auth, deployment, file workflows, and operator/debug tasks.',
     '',
   ];
   const devSteering = readIfExists(path.join(packageRoot, 'steering', 'system_prompt.md'));
   if (devSteering)
     sections.push('# bundled OS system_prompt.md', '', devSteering);
-  const decision = readIfExists(path.join(packageRoot, 'steering', 'decision.md'));
-  if (decision)
-    sections.push('', '# bundled OS decision.md', '', decision);
   const manifest = readIfExists(
-    path.join(packageRoot, 'manifests', 'tool.manifest.json'),
+    path.join(packageRoot, 'manifests', 'generated', 'tool.manifest.json'),
   );
   if (manifest)
     sections.push(
@@ -917,107 +914,12 @@ async function runSkill(callInput: CallInput): Promise<CallOutput> {
     };
   }
 
-  if (entry.name === 'get_raw_steering') {
-    return {
-      ok: true,
-      name: entry.name,
-      permission: entry.permission,
-      requiresApproval: entry.requiresApproval,
-      result: { steering: getRawSteering() },
-    };
-  }
-
   const context: SkillContext = {
     traceId: callInput.traceId ?? createTraceId(),
     workspaceId: callInput.workspaceId ?? process.env.CONSUELO_WORKSPACE_ID,
     userId: callInput.userId ?? process.env.CONSUELO_USER_ID,
     manifestEntry: entry,
   };
-  if (entry.name === 'daily-revenue-brief') {
-    try {
-      const { runDailyRevenueBrief } =
-        await import('./revenue/daily-revenue-brief');
-      return await runDailyRevenueBrief(callInput.input ?? {}, context);
-    } catch (error: unknown) {
-      return {
-        ok: false,
-        name: entry.name,
-        permission: entry.permission,
-        requiresApproval: entry.requiresApproval,
-        error: {
-          code: 'SKILL_EXECUTION_FAILED',
-          message:
-            error instanceof Error
-              ? error.message.slice(0, 240)
-              : 'Skill execution failed.',
-        },
-      };
-    }
-  }
-  if (entry.name === 'consuelo-workspace-snapshot') {
-    try {
-      const { runConsueloWorkspaceSnapshot } =
-        await import('./workspace/consuelo-workspace-snapshot');
-      return await runConsueloWorkspaceSnapshot(callInput.input ?? {}, context);
-    } catch (error: unknown) {
-      return {
-        ok: false,
-        name: entry.name,
-        permission: entry.permission,
-        requiresApproval: entry.requiresApproval,
-        error: {
-          code: 'SKILL_EXECUTION_FAILED',
-          message:
-            error instanceof Error
-              ? error.message.slice(0, 240)
-              : 'Skill execution failed.',
-        },
-      };
-    }
-  }
-  if (entry.name === 'office') {
-    try {
-      const { runOffice } = await import('./design/office');
-      return await runOffice(callInput.input ?? {}, context);
-    } catch (error: unknown) {
-      return {
-        ok: false,
-        name: entry.name,
-        permission: entry.permission,
-        requiresApproval: entry.requiresApproval,
-        error: {
-          code: 'SKILL_EXECUTION_FAILED',
-          message:
-            error instanceof Error
-              ? error.message.slice(0, 240)
-              : 'Skill execution failed.',
-        },
-      };
-    }
-  }
-  if (entry.name === 'office-landing-page') {
-    try {
-      const { runOfficeLandingPage } =
-        await import('./design/office-landing-page');
-      return await runOfficeLandingPage(callInput.input ?? {}, context);
-    } catch (error: unknown) {
-      return {
-        ok: false,
-        name: entry.name,
-        permission: entry.permission,
-        requiresApproval: entry.requiresApproval,
-        error: {
-          code: 'SKILL_EXECUTION_FAILED',
-          message:
-            error instanceof Error
-              ? error.message.slice(0, 240)
-              : 'Skill execution failed.',
-        },
-      };
-    }
-  }
-
-
   return {
     ok: false,
     name: entry.name,
@@ -1140,11 +1042,22 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === 'sites' || command === 'office') {
+  if (command === 'configuration' || command === 'settings') {
     try {
-      const result = command === 'office'
-        ? await runOfficeCommand(args)
-        : await runSitesCommand(args);
+      const result = await runConfigurationOverlayCommand(args);
+      if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}\n`);
+      else writeStdout(`${result.message}\n`);
+      if (!result.ok) process.exitCode = 1;
+    } catch (error: unknown) {
+      writeStderr(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+    return;
+  }
+
+  if (command === 'sites') {
+    try {
+      const result = await runSitesCommand(args);
       if (hasFlag(args, '--json')) writeStdout(`${safeJson(result)}
 `);
       else writeStdout(`${renderSitesCommandResult(result)}
@@ -1178,10 +1091,12 @@ async function main(): Promise<void> {
       '  bun ./scripts/os.ts sites status [--json]',
       '  bun ./scripts/os.ts sites refresh [--json]',
       '  bun ./scripts/os.ts sites open [--json]',
-      '  bun ./scripts/os.ts sites publish --target <dir-or-file> --path /pages/<slug> --title <title> [--kind spec|plan|guide|trace|diff|office|uncategorized] [--base-version <id>] [--force-publish] [--json]',
+      '  bun ./scripts/os.ts sites publish --target <dir-or-file> --path /pages/<slug> --title <title> [--kind spec|plan|guide|trace|diff|artifact|uncategorized] [--base-version <id>] [--force-publish] [--json]',
       '  bun ./scripts/os.ts sites patch --page <slug> --section <id> --input <section.json> --base-version <id> [--agent <id>] [--json]',
       '  bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <id> [--agent <id>] [--ttl-minutes 45] [--json]',
-      '  bun ./scripts/os.ts call \'{"name":"daily-revenue-brief"}\'',
+      '  bun ./scripts/os.ts configuration status [--json]',
+      '  bun ./scripts/os.ts configuration disable-tool|enable-tool|disable-skill|enable-skill|disable-workflow|enable-workflow <name> [--json]',
+      '  Legacy alias: settings',
       '',
     ].join('\n'),
   );

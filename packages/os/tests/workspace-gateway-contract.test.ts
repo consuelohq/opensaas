@@ -109,7 +109,7 @@ contractDescribe('Consuelo OS workspace gateway contract', () => {
       workspaceId: 'workspace-acme',
       workspaceSlug: 'acme',
       workspaceHost: 'acme.consuelohq.com',
-      publicRoutes: ['/office', '/diffs', '/docs', '/wiki', '/traces', '/tools', '/api', '/mcp', '/apps/chatgpt'],
+      publicRoutes: ['/artifacts', '/diffs', '/docs', '/traces', '/tools', '/api', '/mcp', '/apps/chatgpt'],
     });
     expect(authConfig).toMatchObject({
       kind: 'consuelo-generated',
@@ -143,13 +143,12 @@ contractDescribe('Consuelo OS workspace gateway contract', () => {
     expect(registry.routes.map((route) => route.path).sort()).toEqual([
       '/api',
       '/apps/chatgpt',
+      '/artifacts',
       '/diffs',
       '/docs',
       '/mcp',
-      '/office',
       '/tools',
       '/traces',
-      '/wiki',
     ]);
     for (const route of registry.routes) {
       expect(route).toMatchObject({
@@ -212,24 +211,24 @@ contractDescribe('Consuelo OS workspace gateway contract', () => {
       audit: { enabled: true, eventName: 'gateway.connector.state' },
       cloudflare: {
         managedHostname: 'acme.consuelohq.com',
-        publicRoutes: ['/office', '/diffs', '/docs', '/wiki', '/traces', '/tools', '/api', '/mcp', '/apps/chatgpt'],
+        publicRoutes: ['/artifacts', '/diffs', '/docs', '/traces', '/tools', '/api', '/mcp', '/apps/chatgpt'],
       },
     });
   });
 
-  it('should render Cloudflare-facing Caddy config that proxies only to the private Bun server', async () => {
+  it('should reject mTLS on the plaintext Cloudflare tunnel origin', async () => {
     const gateway = await loadGatewayModule();
-    const caddyfile = gateway.renderCaddyGatewayConfig({
-      workspaceHost: 'acme.consuelohq.com',
-      upstream: { host: '127.0.0.1', port: 8850 },
-      mtls: { enabled: true, caFile: '/Users/example/.consuelo/os/security/generated/client-ca.pem' },
-    });
 
-    expect(caddyfile).toContain('acme.consuelohq.com');
-    expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850');
-    expect(caddyfile).toContain('client_auth');
-    expect(caddyfile).toContain('require_and_verify');
-    expect(caddyfile).not.toContain('reverse_proxy 0.0.0.0:8850');
-    expect(caddyfile).not.toContain('MCP_BEARER_TOKEN');
+    expect(() =>
+      gateway.renderCaddyGatewayConfig({
+        workspaceHost: 'acme.consuelohq.com',
+        upstream: { host: '127.0.0.1', port: 8850 },
+        mtls: {
+          enabled: true,
+          caFile:
+            '/Users/example/.consuelo/security/generated/client-ca.pem',
+        },
+      }),
+    ).toThrow(/mTLS.*plaintext|plaintext.*mTLS/i);
   });
 });

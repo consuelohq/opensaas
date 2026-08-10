@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-managed-cloud-node-enrollment-so-a-fresh-linux-node-enrolls-unattended",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1751,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1751",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1751",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1751/fix-managed-cloud-node-enrollment-so-a-fresh-linux-node-enrolls-unattended",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1751",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1751/fix-managed-cloud-node-enrollment-so-a-fresh-linux-node-enrolls-unattended",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-managed-cloud-node-enrollment-so-a-fresh-linux-node-enrolls-unattended",
+  "taskSession": "tsk_72de722e0dfd",
+  "tmuxSession": "opensaas-os-fix-managed-cloud-node-enrollment-so-a-fresh-lin-72de722e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-managed-cloud-node-enrollment-so-a-fresh-linux-node-enrolls-unattended/.task/os/fix-managed-cloud-node-enrollment-so-a-fresh-linux-node-enrolls-unattended/session.json",
+  "createdAt": "2026-08-01T00:42:08.489Z"
+}

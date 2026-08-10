@@ -1,0 +1,81 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+  "base": "origin/stream/blog",
+  "headSha": "87149b272a24f06a47824679930caba78ba15911",
+  "changeHash": "9ce6ffc504c7dd91ea6a5bb7a8d7c9bf3655915c7af89d20495db5d0094b859d",
+  "changedFiles": [
+    "packages/consuelo-website/astro.config.mjs",
+    "packages/consuelo-website/src/assets/icons/IconDiscord.svg",
+    "packages/consuelo-website/src/components/ArticleToc.astro",
+    "packages/consuelo-website/src/components/BackButton.astro",
+    "packages/consuelo-website/src/components/Footer.astro",
+    "packages/consuelo-website/src/components/Header.astro",
+    "packages/consuelo-website/src/components/SeoHead.astro",
+    "packages/consuelo-website/src/components/Socials.astro",
+    "packages/consuelo-website/src/constants.ts",
+    "packages/consuelo-website/src/content/blog/software-is-becoming-decision-infrastructure.md",
+    "packages/consuelo-website/src/layouts/Layout.astro",
+    "packages/consuelo-website/src/layouts/PostDetails.astro",
+    "packages/consuelo-website/src/plugins/remarkOpenToc.mjs",
+    "packages/consuelo-website/src/styles/blog.css",
+    "packages/consuelo-website/tests/blog-refresh.test.mjs",
+    "packages/consuelo-website/tests/blog-toc-responsive.test.mjs"
+  ],
+  "verifiedAt": "2026-07-13T17:17:54.287Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents/current.json",
+        ".task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents/evidence-log.json",
+        ".task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents/read-log.json",
+        ".task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents/session.json",
+        ".task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents/workpad.md",
+        ".task/tasks/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents.json",
+        "packages/consuelo-website/astro.config.mjs",
+        "packages/consuelo-website/src/assets/icons/IconDiscord.svg",
+        "packages/consuelo-website/src/components/ArticleToc.astro",
+        "packages/consuelo-website/src/components/BackButton.astro",
+        "packages/consuelo-website/src/components/Footer.astro",
+        "packages/consuelo-website/src/components/Header.astro",
+        "packages/consuelo-website/src/components/SeoHead.astro",
+        "packages/consuelo-website/src/components/Socials.astro",
+        "packages/consuelo-website/src/constants.ts",
+        "packages/consuelo-website/src/content/blog/software-is-becoming-decision-infrastructure.md",
+        "packages/consuelo-website/src/layouts/Layout.astro",
+        "packages/consuelo-website/src/layouts/PostDetails.astro",
+        "packages/consuelo-website/src/plugins/remarkOpenToc.mjs",
+        "packages/consuelo-website/src/styles/blog.css",
+        "packages/consuelo-website/tests/blog-refresh.test.mjs",
+        "packages/consuelo-website/tests/blog-toc-responsive.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

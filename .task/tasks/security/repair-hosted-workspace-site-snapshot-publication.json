@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/repair-hosted-workspace-site-snapshot-publication",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1694,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1694",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1694",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1694/repair-hosted-workspace-site-snapshot-publication",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1694",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1694/repair-hosted-workspace-site-snapshot-publication",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-hosted-workspace-site-snapshot-publication",
+  "taskSession": "tsk_4f0bb2f0a375",
+  "tmuxSession": "opensaas-security-repair-hosted-workspace-site-snapshot-publicatio-4f0bb2f0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-hosted-workspace-site-snapshot-publication/.task/security/repair-hosted-workspace-site-snapshot-publication/session.json",
+  "createdAt": "2026-07-28T03:18:45.568Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1048f0e28f07",
+  "tmuxSession": "opensaas-security-verify-edge-transformed-site-snapshots-by-source-1048f0e2",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/verify-edge-transformed-site-snapshots-by-source-hash-retry",
+  "branch": "task/security/verify-edge-transformed-site-snapshots-by-source-hash-retry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-verify-edge-transformed-site-snapshots-by-source-hash-retry",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-verify-edge-transformed-site-snapshots-by-source-hash-retry",
+  "prNumber": 1702,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1702",
+  "createdAt": "2026-07-28T03:43:25.995Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-verify-edge-transformed-site-snapshots-by-source-hash-retry/.task/security/verify-edge-transformed-site-snapshots-by-source-hash-retry/session.json"
+}

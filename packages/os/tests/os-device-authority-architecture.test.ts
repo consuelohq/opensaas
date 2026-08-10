@@ -42,8 +42,10 @@ describe('OS device authority architecture', () => {
       'health',
       'device',
       'google-oauth',
+      'web-auth',
       'mcp-oauth',
       'mcp-proxy',
+      'workspace-agents',
     ]) {
       expect(
         existsSync(resolve(workerRoot, 'src/routes/' + route + '.ts')),
@@ -53,7 +55,7 @@ describe('OS device authority architecture', () => {
 
   it('should keep method, path, and trust policy explicit when composing Hono routes', () => {
     expect(DEVICE_AUTHORITY_ROUTE_POLICIES).toEqual([
-      { method: 'ANY', path: '/', trust: 'public' },
+      { method: 'GET', path: '/', trust: 'public' },
       { method: 'ANY', path: '/health', trust: 'public' },
       {
         method: 'ANY',
@@ -73,12 +75,22 @@ describe('OS device authority architecture', () => {
       { method: 'GET', path: '/oauth/authorize', trust: 'public' },
       { method: 'GET', path: '/oauth/google/callback', trust: 'public' },
       { method: 'POST', path: '/oauth/token', trust: 'oauth' },
+      { method: 'POST', path: '/oauth/revoke', trust: 'oauth' },
       { method: 'POST', path: '/oauth/introspect', trust: 'internal' },
       { method: 'ANY', path: '/mcp', trust: 'oauth' },
       { method: 'ANY', path: '/mcp/*', trust: 'oauth' },
       { method: 'GET', path: '/login/device', trust: 'public' },
       { method: 'GET', path: '/login/google/start', trust: 'public' },
       { method: 'GET', path: '/login/google/callback', trust: 'public' },
+      { method: 'GET', path: '/auth/workspaces', trust: 'authority-session' },
+      { method: 'POST', path: '/auth/handoff', trust: 'authority-session' },
+      { method: 'GET', path: '/auth/consume', trust: 'public' },
+      { method: 'POST', path: '/auth/logout', trust: 'workspace-session' },
+      {
+        method: 'POST',
+        path: '/internal/auth/session/validate',
+        trust: 'internal',
+      },
       { method: 'POST', path: '/login/device/code', trust: 'device-proof' },
       {
         method: 'POST',
@@ -91,11 +103,17 @@ describe('OS device authority architecture', () => {
         path: '/login/oauth/access_token',
         trust: 'device-proof',
       },
+      { method: 'GET', path: '/workspace/agents', trust: 'public' },
+      {
+        method: 'POST',
+        path: '/workspace/agents',
+        trust: 'node-bootstrap',
+      },
     ]);
   });
 
   it.each([
-    { name: 'root redirect', method: 'GET', path: '/', status: 302 },
+    { name: 'universal login root', method: 'GET', path: '/', status: 200 },
     { name: 'health GET', method: 'GET', path: '/health', status: 200 },
     { name: 'health POST', method: 'POST', path: '/health', status: 200 },
     {
@@ -130,6 +148,14 @@ describe('OS device authority architecture', () => {
       name: 'introspection method guard',
       method: 'GET',
       path: '/oauth/introspect',
+      status: 405,
+      allow: 'POST',
+      body: 'Method not allowed\n',
+    },
+    {
+      name: 'revocation method guard',
+      method: 'GET',
+      path: '/oauth/revoke',
       status: 405,
       allow: 'POST',
       body: 'Method not allowed\n',
@@ -302,6 +328,9 @@ describe('OS device authority architecture', () => {
       'mos:mcp-state',
       'aw:account',
       'wn:account:node',
+      'wni:node',
+      'wnl:account',
+      'wnh:workspace.consuelohq.com',
     ]);
   });
 
@@ -312,14 +341,16 @@ describe('OS device authority architecture', () => {
           'Authorization: Bearer header-secret',
           'Bearer standalone-secret',
           'CLOUDFLARE_API_TOKEN=cloudflare-secret',
+          'workspace Cloudflare provisioning failed: Cloudflare API listCloudflareTunnels failed with status 403 api token=operation-secret',
           'https://example.test/?access_token=query-secret&state=state-secret',
         ].join('\n'),
       ),
     );
 
     expect(message).not.toMatch(
-      /header-secret|standalone-secret|cloudflare-secret|query-secret|state-secret/,
+      /header-secret|standalone-secret|cloudflare-secret|operation-secret|query-secret|state-secret/,
     );
     expect(message).toContain('[redacted]');
+    expect(message).toContain('listCloudflareTunnels failed with status 403');
   });
 });

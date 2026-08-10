@@ -1,0 +1,77 @@
+---
+title: Supabase
+description: Use Supabase CLI and APIs today while native Supabase tools are planned.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current OS tool manifest was inspected on 2026-07-14; no native `supabase` provider family is currently published.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through the official Supabase CLI and platform APIs.**
+
+Use Supabase when you need to run a local stack, inspect projects, manage migrations and functions, query project APIs, and support deployment workflows.
+
+Consuelo plans to provide a focused `supabase` tool family. You do not need to wait for that native wrapper: an agent can use the official interface locally now, then turn the smallest proven workflow into a typed OS tool.
+
+## Ask your agent
+
+```text
+Set up Supabase for this workspace using the official interface linked below.
+Keep authentication on the local node and never print the credential.
+Start with one read-only verification command.
+Then create a typed Consuelo tool exposing only the operations I approve.
+Separate read methods from write methods, add structured errors and focused tests,
+and require approval for external, destructive, billing, permission, or deployment changes.
+```
+
+## Install and authenticate
+
+Run the CLI through `bunx supabase --help` or install it as a project development dependency. Use `supabase login` and `supabase link` only on the intended local node and project.
+
+Store service credentials with [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/) or another local process-owned mechanism. Do not put a token in steering, a skill file, a conversation, or a command argument that may be logged.
+
+## Verify before building a tool
+
+For local development, run `supabase init` and `supabase start`. For a hosted account, begin with a read-only project listing or project status check.
+
+A successful login is not enough. Confirm the selected account, team, project, region, or workspace before the tool can act.
+
+## Proposed Consuelo methods
+
+```text
+supabase.projects.list
+supabase.status
+supabase.db.diff
+supabase.functions.list
+supabase.functions.deploy
+```
+
+Useful typed inputs:
+
+```text
+projectRef
+workdir
+local
+schema
+function
+dryRun
+approval
+```
+
+The native wrapper should return structured results, redact secret material, expose exact provider errors, and make account or project selection explicit.
+
+## Writes and approvals
+
+Database migrations, secrets, Edge Function deploys, storage changes, and production resets require approval. Never expose the service-role key to the model.
+
+## Native Consuelo roadmap
+
+The planned tool will wrap proven provider operations rather than hide the underlying contract. Until it ships, the official CLI or API remains the source of truth for authentication, flags, limits, and provider behavior.
+
+## Official documentation
+
+[Supabase official documentation](https://supabase.com/docs/guides/local-development/cli/getting-started)

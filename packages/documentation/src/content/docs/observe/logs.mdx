@@ -1,0 +1,104 @@
+---
+title: Logs
+description: Read local diagnostic output without confusing logs with durable execution or artifact records.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/redaction.ts
+    tests:
+      - packages/os/tests/redaction.test.ts
+      - packages/os/tests/doctor-redaction.test.ts
+    runtime: Doctor JSON output replaced a sensitive database path with [REDACTED_SECRET] during isolated verification on 2026-07-13.
+  - source: packages/os/scripts/server/logger.ts
+    tests:
+      - packages/os/tests/doctor-logs.test.ts
+    runtime: Current local server and facade logger paths were inspected for structured stderr output and redaction before serialization.
+---
+
+Logs are diagnostic output produced while a process is running. Use them to understand a failure or timing issue, then correlate the message with a run, tool call, trace ID, or artifact record.
+
+A log is not the source of truth for completion state. Prefer the structured run or tool result when it exists.
+
+## Current local locations
+
+The Consuelo home layout reserves local node directories beneath:
+
+```text
+$CONSUELO_HOME/node/logs/
+$CONSUELO_HOME/node/runs/
+```
+
+Individual processes can also emit structured JSON to stderr. A command invoked from a terminal or tool call may therefore expose useful stderr even when no separate log file was written.
+
+## Read failed OS runs first
+
+Before searching arbitrary files, use the bounded diagnostic command:
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+bun run --cwd "$CONSUELO_HOME" doctor:errors -- --limit 20
+```
+
+Narrow by trace ID when available:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" doctor:errors -- --trace-id trc_example --json
+```
+
+This returns the current safe error code and message from the execution record. Use raw process output only when that summary does not explain the failure.
+
+## Workspace tool stderr
+
+Workspace facade traces can preserve bounded stderr on a tool call. Query a specific row with `--raw`:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" context -- trace --trace-id trc_example --raw --json
+```
+
+The stored row can include command result code, exit code, duration, resolved input, result JSON, and stderr. It does not guarantee the full unbounded process transcript was retained.
+
+## Structured logging
+
+Current local server and workspace facade loggers write JSON objects to stderr. Common fields include:
+
+- level and event;
+- service or tool;
+- trace ID and request ID when available;
+- command or implementation command;
+- duration, exit code, result code, and success state;
+- redacted error and context fields.
+
+Structured fields make filtering reliable. Search by trace ID, tool, event, or error code before searching broad message text.
+
+## Redaction behavior
+
+The shared OS redaction layer currently protects:
+
+- keys that look like passwords, secrets, tokens, API keys, authorization, cookies, credentials, private keys, sessions, or JWTs;
+- bearer tokens and common provider-token prefixes;
+- long secret-like strings;
+- sensitive URL query parameters;
+- phone numbers, while preserving the last four digits;
+- raw request or response payload fields, which become a bounded metadata object.
+
+Sensitive values can appear as `[REDACTED_SECRET]`, `[REDACTED]`, or `[REDACTED_RAW_PAYLOAD]`.
+
+Redaction is a guardrail, not a license to log private data. Do not put secrets, credentials, customer records, or complete raw payloads into commands, trace metadata, error messages, or debugging notes.
+
+## What to preserve when escalating
+
+Include:
+
+- trace ID;
+- tool or skill name;
+- timestamp and duration;
+- stable error code;
+- bounded safe error message;
+- branch and task session for repository work;
+- whether the issue was local OS, workspace tooling, or hosted Trace Sites.
+
+Exclude credentials, raw tokens, private customer payloads, and unrelated trace rows.
+
+## Logs can be incomplete
+
+A missing log line does not prove an operation never started. A process can exit before flushing, a command can retain only bounded stderr, or a component can record state only in SQLite. Reconcile logs with [Runs](/observe/runs/), [Tool calls](/observe/tool-calls/), and [Artifacts](/observe/artifacts/) before drawing a conclusion.
