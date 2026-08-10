@@ -777,15 +777,41 @@ describe('unified lifecycle engine', () => {
     ]);
   });
 
-  it('fails repair when local MCP connectivity is not accepted', async () => {
+  it('reports failed local MCP connectivity as advisory after repair', async () => {
     const initial = createEngine({ bundle: bundle100 });
     await initial.install({ channel: 'dev' });
-    const repair = createEngine({ connectivity: false });
+    const events: LifecycleProgressEvent[] = [];
+    const repair = createEngine({ connectivity: false, events });
 
-    await expect(repair.repair()).rejects.toMatchObject({
-      code: 'HEALTH_REJECTED',
-      phase: 'connectivity',
+    await expect(repair.repair()).resolves.toMatchObject({
+      operation: 'repair',
+      changed: true,
     });
+    expect(events).toContainEqual(expect.objectContaining({
+      phase: 'connectivity',
+      detail: expect.objectContaining({
+        advisory: true,
+        connected: false,
+        diagnostic: 'not-verified',
+      }),
+    }));
+  });
+
+  it('keeps optional local-agent connectivity out of update and rollback acceptance', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const update = createEngine({
+      bundle: bundle110,
+      connectivity: false,
+    });
+
+    await expect(update.update({ channel: 'dev' })).resolves.toMatchObject({
+      operation: 'update',
+      changed: true,
+      version: bundle110.manifest.version,
+    });
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(update.serviceOperations).toContain('connectivity');
   });
 
   it('persists channel and notification preferences and expires snooze at read time', async () => {

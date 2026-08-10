@@ -2,6 +2,7 @@ import {
   createWorkspaceCloudflareD1RouteRegistry,
   type WorkspaceRouteD1Resolution,
 } from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
+import { resolveCentralMcpFacadeScope } from '../../../../scripts/lib/tool-scope-authorization';
 import { json } from '../http';
 import type { Store, WorkspaceRouteRegistryBinding } from '../types';
 import { hasGrantedScope, hash } from '../utils';
@@ -60,8 +61,17 @@ async function centralMcpOperationScope(request: Request): Promise<string | null
   ) {
     return 'mcp:call';
   }
-  const name = (requestParams as Record<string, unknown>).name;
-  return name === 'get_steering' ? 'mcp:read' : 'mcp:call';
+  const params = requestParams as Record<string, unknown>;
+  if (params.name === 'get_steering') return 'route:/mcp:read';
+  if (params.name !== 'call') return 'mcp:call';
+  const args = params.arguments;
+  if (!args || typeof args !== 'object' || Array.isArray(args)) {
+    return 'mcp:call';
+  }
+  const toolName = (args as Record<string, unknown>).tool;
+  return typeof toolName === 'string' && toolName.trim()
+    ? resolveCentralMcpFacadeScope(toolName)
+    : 'mcp:call';
 }
 
 export function centralMcpUpstreamUrl(input: {

@@ -250,26 +250,20 @@ export function createLifecycleEngine(
       });
     }
     if (!dependencies.connectivity) return;
-
-    emit('connectivity', expected);
-    let connected: boolean;
+    let connected = false;
+    let diagnostic = 'not-verified';
     try {
       connected = await dependencies.connectivity.accept(expected);
-    } catch (error: unknown) {
-      throw asLifecycleError(
-        error,
-        'HEALTH_REJECTED',
-        'local MCP connectivity acceptance failed',
-        'connectivity',
-      );
+      diagnostic = connected ? 'verified' : 'not-verified';
+    } catch {
+      diagnostic = 'check-failed';
     }
-    if (!connected) {
-      throw lifecycleError(
-        'HEALTH_REJECTED',
-        'local MCP connectivity was not accepted',
-        { phase: 'connectivity' },
-      );
-    }
+    emit('connectivity', {
+      ...expected,
+      advisory: true,
+      connected,
+      diagnostic,
+    });
   };
 
   const pruneAfterCommit = (
