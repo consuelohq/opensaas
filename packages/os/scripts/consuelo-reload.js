@@ -155,11 +155,12 @@ function bootstrapLaunchAgent() {
 
 function runReload({ useLaunchd }) {
   if (useLaunchd && existsSync(PLIST)) {
-    bootoutLaunchAgent();
     stopConflictingLaunchAgents();
-    killServer();
-    sleep(1);
-    bootstrapLaunchAgent();
+    runRequired(
+      'launchctl',
+      ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`],
+      'launchctl kickstart',
+    );
   } else {
     stopConflictingLaunchAgents();
     killServer();

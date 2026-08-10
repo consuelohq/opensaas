@@ -4,10 +4,13 @@ import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
 } from '../../lib/mcp-gateway';
+import { validateModernMcpHttpRequest } from '../../lib/mcp-protocol';
 import {
+  authenticateBearerMcpRequest,
+  authenticateSignedRequest,
   authorizeBearerMcpRequest,
-  authorizeSignedRequest,
   hasSignedGatewayHeaders,
+  loadAuthConfigForRequest,
   requestHeaders,
 } from '../middleware/auth';
 import {
@@ -15,7 +18,9 @@ import {
   admitRawMcpBody,
 } from '../middleware/dangerous-material';
 import { internalError, jsonResponse } from '../middleware/errors';
+import { recordGatewayAuthenticationTraceSafely } from '../../lib/trace-persistence';
 import { logLocalOsServerError } from '../logger';
+import { validateMcpRequestOrigin } from '../security/mcp-origin';
 import { executeLocalOsFacadeTool } from '../services/call-service';
 import { resolveMcpRequestSession } from '../services/mcp-session';
 import { readGuardedLocalOsSteering } from '../services/steering-service';
@@ -63,6 +68,26 @@ export function createMcpRoutes(
     try {
       const request = context.req.raw;
 
+      try {
+        const config = loadAuthConfigForRequest();
+        const originValidation = validateMcpRequestOrigin(request, {
+          workspaceHost: config.workspaceHost,
+        });
+        if (!originValidation.ok) {
+          return jsonResponse(
+            {
+              error: {
+                code: originValidation.code,
+                message: originValidation.message,
+              },
+            },
+            originValidation.status,
+          );
+        }
+      } catch {
+        // Authentication below remains authoritative if generated auth is unavailable.
+      }
+
       if (request.method !== 'POST') {
         const denied = await authorizeBearerMcpRequest({
           request,
@@ -92,27 +117,41 @@ export function createMcpRoutes(
       }
 
       const headers = requestHeaders(request);
-      const denied = hasSignedGatewayHeaders(headers)
-        ? await authorizeSignedRequest({
+      const authentication = hasSignedGatewayHeaders(headers)
+        ? await authenticateSignedRequest({
             request,
             path: MCP_PATH,
             body,
             requiredScope: mcpScope.requiredScope,
           })
-        : await authorizeBearerMcpRequest({
+        : await authenticateBearerMcpRequest({
             request,
             path: MCP_PATH,
             requiredScope: mcpScope.requiredScope,
           });
-      if (denied) return denied;
+      if (!authentication.ok) return authentication.response;
+      recordGatewayAuthenticationTraceSafely({
+        workspaceId: authentication.principal.workspaceId ?? '',
+        route: MCP_PATH,
+        requiredScope: mcpScope.requiredScope,
+        authMode: authentication.principal.authMode,
+        principalKey: authentication.principal.principalKey,
+      });
 
-      const session = resolveMcpRequestSession(request, body);
+      const protocol = validateModernMcpHttpRequest(body, request.headers);
+      if (!protocol.ok) {
+        return jsonResponse(protocol.response, protocol.status);
+      }
+
+      const session = protocol.modern
+        ? null
+        : resolveMcpRequestSession(request, body);
       const result = await handleMcpGatewayJsonRpc(body, {
-        getSteering: () => dependencies.getSteering(session.callerKey),
+        getSteering: () => dependencies.getSteering(authentication.principal.principalKey),
         executeFacadeTool: dependencies.executeFacadeTool,
       });
       const response = jsonResponse(result);
-      if (session.responseSessionId) {
+      if (session?.responseSessionId) {
         response.headers.set('mcp-session-id', session.responseSessionId);
       }
       return response;

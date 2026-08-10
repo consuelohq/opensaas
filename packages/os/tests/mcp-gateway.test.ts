@@ -75,6 +75,24 @@ function issueMcpToken(config: GatewaySecurityConfig, scopes: string[]): AgentAp
   });
 }
 
+const MODERN_MCP_VERSION = '2026-07-28';
+
+function modernMcpMeta(): JsonObject {
+  return {
+    'io.modelcontextprotocol/protocolVersion': MODERN_MCP_VERSION,
+    'io.modelcontextprotocol/clientInfo': { name: 'consuelo-test-client', version: '1.0.0' },
+    'io.modelcontextprotocol/clientCapabilities': {},
+  };
+}
+
+function modernMcpHeaders(method: string, name?: string): Record<string, string> {
+  return {
+    'mcp-protocol-version': MODERN_MCP_VERSION,
+    'mcp-method': method,
+    ...(name ? { 'mcp-name': name } : {}),
+  };
+}
+
 beforeEach(() => {
   tempHome = mkdtempSync(join(tmpdir(), 'consuelo-os-mcp-gateway-'));
   process.env.CONSUELO_OS_HOME = tempHome;
@@ -325,6 +343,37 @@ describe('MCP gateway adapter', () => {
     });
   });
 
+  it('rejects an explicit untrusted Origin at the MCP route before execution', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const executeFacadeTool = vi.fn();
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'tools',
+      method: 'tools/list',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token.bearerToken}`,
+        'content-type': 'application/json',
+        origin: 'https://attacker.example',
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'INVALID_MCP_ORIGIN' },
+    });
+    expect(executeFacadeTool).not.toHaveBeenCalled();
+  });
+
 
   it('should accept an active Consuelo OAuth token when a public MCP request targets the central resource', async () => {
     const config = createConfig();
@@ -346,6 +395,7 @@ describe('MCP gateway adapter', () => {
       fetchCalls.push({ url, body: String(init?.body ?? '') });
       return new Response(JSON.stringify({
         active: true,
+        client_id: 'chatgpt-consuelo-os',
         workspace_host: config.workspaceHost,
         scopes: ['route:/mcp:read', 'tool:*:read'],
         sub: 'google:123',
@@ -536,6 +586,211 @@ describe('MCP gateway adapter', () => {
 });
 
 describe('MCP gateway server route', () => {
+  it('should serve modern MCP discovery without creating a transport session', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'discover-modern',
+      method: 'server/discover',
+      params: { _meta: modernMcpMeta() },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-discovery',
+    });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { ...signed.headers, ...modernMcpHeaders('server/discover') },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+    const result = isJsonObject(json.result) ? json.result : {};
+    const meta = isJsonObject(result._meta) ? result._meta : {};
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('mcp-session-id')).toBeNull();
+    expect(result).toMatchObject({
+      resultType: 'complete',
+      supportedVersions: expect.arrayContaining([MODERN_MCP_VERSION]),
+      capabilities: { tools: expect.any(Object) },
+    });
+    expect(result.serverInfo).toBeUndefined();
+    expect(meta['io.modelcontextprotocol/serverInfo']).toMatchObject({
+      name: 'consuelo-os-gateway',
+      version: '1.0.0',
+    });
+  });
+
+  it('should stamp modern list results and ignore legacy transport session headers', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'tools-modern',
+      method: 'tools/list',
+      params: { _meta: modernMcpMeta() },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-tools-list',
+    });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        ...signed.headers,
+        ...modernMcpHeaders('tools/list'),
+        'mcp-session-id': 'legacy-session-that-modern-must-ignore',
+      },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+    const result = isJsonObject(json.result) ? json.result : {};
+    const meta = isJsonObject(result._meta) ? result._meta : {};
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('mcp-session-id')).toBeNull();
+    expect(result.resultType).toBe('complete');
+    expect(meta['io.modelcontextprotocol/serverInfo']).toMatchObject({
+      name: 'consuelo-os-gateway',
+      version: '1.0.0',
+    });
+  });
+
+  it('should reject modern MCP routing headers that disagree with the authenticated body', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const getSteering = vi.fn(async () => '# OS steering');
+    const app = createMcpRoutes({
+      getSteering,
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'modern-header-mismatch',
+      method: 'tools/call',
+      params: {
+        name: 'get_steering',
+        arguments: {},
+        _meta: modernMcpMeta(),
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-header-mismatch',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { ...signed.headers, ...modernMcpHeaders('tools/call', 'call') },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+
+    expect(response.status).toBe(400);
+    expect(json).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'modern-header-mismatch',
+      error: { code: -32020 },
+    });
+    expect(getSteering).not.toHaveBeenCalled();
+  });
+
+  it('should reject modern routing headers on a legacy request body', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'modern-header-legacy-body',
+      method: 'initialize',
+      params: {
+        protocolVersion: '2024-11-05',
+        capabilities: {},
+        clientInfo: { name: 'legacy-client', version: '1.0.0' },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-header-legacy-body',
+    });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { ...signed.headers, ...modernMcpHeaders('tools/list') },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get('mcp-session-id')).toBeNull();
+    expect(json).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'modern-header-legacy-body',
+      error: { code: -32020 },
+    });
+  });
+
+  it('should reject malformed modern request metadata before execution', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'modern-meta-missing-capabilities',
+      method: 'tools/list',
+      params: {
+        _meta: {
+          'io.modelcontextprotocol/protocolVersion': MODERN_MCP_VERSION,
+          'io.modelcontextprotocol/clientInfo': { name: 'test', version: '1.0.0' },
+        },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-meta-invalid',
+    });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { ...signed.headers, ...modernMcpHeaders('tools/list') },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+
+    expect(response.status).toBe(400);
+    expect(json).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'modern-meta-missing-capabilities',
+      error: { code: -32602 },
+    });
+  });
+
   it('should keep unissued MCP session ids in the authenticated credential bucket', () => {
     const request = new Request('http://127.0.0.1:46321/mcp', {
       headers: {
@@ -567,7 +822,7 @@ describe('MCP gateway server route', () => {
     expect(first.callerKey).not.toContain('secret-value');
   });
 
-  it('should isolate steering guards between authenticated MCP sessions', async () => {
+  it('should share steering guard identity across legacy sessions for the same authenticated principal', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);
     const callerKeys: string[] = [];
@@ -648,8 +903,8 @@ describe('MCP gateway server route', () => {
     );
 
     expect(callerKeys).toHaveLength(3);
-    expect(callerKeys[0]).not.toBe(callerKeys[1]);
-    expect(callerKeys[0]).toBe(callerKeys[2]);
+    expect(new Set(callerKeys).size).toBe(1);
+    expect(callerKeys[0]).toMatch(/^prn_[a-f0-9]{32}$/);
     expect(callerKeys.join('')).not.toContain(token.bearerToken);
   });
 

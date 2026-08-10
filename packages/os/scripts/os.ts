@@ -17,12 +17,11 @@ import {
   dangerousMaterialError,
 } from './lib/dangerous-material-policy';
 import {
+  claimSteeringGuardDecision,
   ensureRuntimePaths,
   getRuntimePaths,
-  readSteeringGuardDecisions,
   recordExecutionFinished,
   recordExecutionStarted,
-  recordSteeringGuardEvent,
 } from './lib/runtime-state';
 import {
   acquireSitePageLease,
@@ -622,27 +621,18 @@ function getSteeringGuardDecision(
   options: SteeringGuardOptions,
 ): { decision: SteeringGuardDecision; attempt: number } {
   const nowMs = steeringNow(options);
-  const prior = readSteeringGuardDecisions({
+  const result = claimSteeringGuardDecision({
+    traceId,
     callerKey,
     tool: 'get_steering',
     windowMs: STEERING_GUARD_WINDOW_MS,
     nowMs,
+    decisions: ['full', 'soft_guard', 'hard_guard', 'cooldown'],
   });
-  const decision: SteeringGuardDecision = prior.length === 0
-    ? 'full'
-    : prior.length === 1
-      ? 'soft_guard'
-      : prior.length === 2
-        ? 'hard_guard'
-        : 'cooldown';
-  recordSteeringGuardEvent({
-    traceId,
-    callerKey,
-    tool: 'get_steering',
-    decision,
-    nowMs,
-  });
-  return { decision, attempt: prior.length + 1 };
+  return {
+    decision: result.decision as SteeringGuardDecision,
+    attempt: result.attempt,
+  };
 }
 
 function getRefreshGuardDecision(
@@ -652,24 +642,19 @@ function getRefreshGuardDecision(
   options: SteeringGuardOptions,
 ): { decision: SteeringGuardDecision; attempt: number } {
   const nowMs = steeringNow(options);
-  const prior = readSteeringGuardDecisions({
+  const result = claimSteeringGuardDecision({
+    traceId,
     callerKey,
     tool: 'refresh_steering',
     windowMs: STEERING_FORCE_WINDOW_MS,
     nowMs,
-  });
-  const decision: SteeringGuardDecision = prior.length === 0
-    ? 'forced_refresh'
-    : 'refresh_rate_limited';
-  recordSteeringGuardEvent({
-    traceId,
-    callerKey,
-    tool: 'refresh_steering',
-    decision,
     reason,
-    nowMs,
+    decisions: ['forced_refresh', 'refresh_rate_limited'],
   });
-  return { decision, attempt: prior.length + 1 };
+  return {
+    decision: result.decision as SteeringGuardDecision,
+    attempt: result.attempt,
+  };
 }
 
 function steeringGuardMessage(decision: SteeringGuardDecision, attempt: number): string {

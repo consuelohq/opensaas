@@ -6,6 +6,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -23,23 +24,25 @@ function executable(path: string, source: string): void {
   chmodSync(path, 0o755);
 }
 
-function createHarness(input: { bootstrapExit?: number } = {}) {
+function createHarness(input: { bootstrapExit?: number; launchdLoaded?: boolean } = {}) {
   const home = mkdtempSync(join(tmpdir(), 'consuelo-reload-test-'));
   temporaryHomes.push(home);
   const bin = join(home, 'bin');
   const launchAgents = join(home, 'Library', 'LaunchAgents');
   const marker = join(home, 'launchd-bootstrapped');
+  const launchLog = join(home, 'launchctl.log');
   mkdirSync(bin, { recursive: true });
   mkdirSync(launchAgents, { recursive: true });
   writeFileSync(join(launchAgents, 'com.consuelo.system.plist'), '<plist/>');
 
   executable(join(bin, 'launchctl'), `#!/bin/sh
+printf '%s\\n' "$*" >> "${launchLog}"
 case "$1" in
-  print) exit 113 ;;
+  print) ${input.launchdLoaded ? 'exit 0' : 'exit 113'} ;;
   bootstrap)
     ${input.bootstrapExit ? `exit ${input.bootstrapExit}` : `touch "${marker}"; exit 0`}
     ;;
-  kickstart) exit 0 ;;
+  kickstart) touch "${marker}"; exit 0 ;;
   bootout) exit 0 ;;
 esac
 exit 0
@@ -59,6 +62,7 @@ exit 22
   return {
     home,
     marker,
+    launchLog,
     env: {
       ...process.env,
       HOME: home,
@@ -98,5 +102,21 @@ describe('Consuelo OS reload lifecycle', () => {
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('launchctl bootstrap failed');
+  });
+
+  it('should kickstart a loaded LaunchAgent without booting out its own job', () => {
+    const harness = createHarness({ launchdLoaded: true });
+    const result = spawnSync(process.execPath, [reloadScript, 'restart-now'], {
+      cwd: osRoot,
+      env: { ...harness.env, CONSUELO_OS_RELOAD_LAUNCHD: '1' },
+      encoding: 'utf8',
+    });
+
+    expect(result.status).toBe(0);
+    const launchCommands = readFileSync(harness.launchLog, 'utf8');
+    expect(launchCommands).toContain('kickstart -k gui/');
+    expect(launchCommands).not.toContain('bootout');
+    expect(launchCommands).not.toContain('bootstrap');
+    expect(result.stdout).toContain('reloaded: healthy');
   });
 });
