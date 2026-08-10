@@ -8,6 +8,7 @@ import { createGatewaySecurityConfig } from '../../scripts/lib/security-gateway'
 import { parseSubagentTraceEvents } from '../../scripts/lib/subagent/runtime';
 import { createLocalTraceSitesReadBackend } from '../../scripts/lib/trace-sites-local-read-backend';
 import {
+  recordGatewayAuthenticationTraceSafely,
   recordSubagentTraceEventsSafely,
   recordToolTraceSafely,
   resolveCanonicalTraceDbPath,
@@ -214,6 +215,17 @@ async function run(): Promise<unknown> {
         body: response ? await response.json() : null,
         rows: traceRows(),
       };
+    }
+
+    if (scenario === 'auth-principal') {
+      const recorded = recordGatewayAuthenticationTraceSafely({
+        workspaceId: 'workspace_trace_auth',
+        route: '/mcp',
+        requiredScope: 'mcp:read',
+        authMode: 'oauth',
+        principalKey: 'prn_0123456789abcdef0123456789abcdef',
+      });
+      return { recorded, rows: traceRows() };
     }
 
     throw new Error(`unknown scenario: ${scenario}`);
