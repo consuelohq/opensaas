@@ -16,7 +16,7 @@ started: 2026-08-10
 - [x] `fs.write`, `fs.apply_patch`, and `fs.trash` remain task-session required and branch-required.
 - [x] Full-file `fs.read` behavior from the July fix remains available after the sync.
 - [x] Generated manifests/types/docs are regenerated from current source rather than accepting stale July generated conflict sides.
-- [ ] Focused Workspace + OS filesystem/facade/manifest tests, review, and publish verification pass or any unrelated repository gate failure is documented with exact evidence.
+- [x] Focused Workspace + OS filesystem/facade/manifest tests, review, and publish verification pass or any unrelated repository gate failure is documented with exact evidence.
 - [ ] Promote the repaired task into `stream/workspace-agents` so PR #1539 can become mergeable toward `main`.
 
 ## plan
@@ -101,6 +101,12 @@ After syncing main but before applying the routing/session fixes, run the focuse
 - Full OS tool-manifest suite: `trc_3575a836e0f8` (15/15 passed).
 - Server transport policy tests: `trc_482b7d0d804e` (2/2 passed).
 - Final non-task diff audit against current main: `trc_aa9bc01ca841` (27 files; only OS, Workspace, and `persona.md`; no legacy paths).
+- Strict repository review against current main: `trc_46b206301115` (0 blocking issues; static rules, eslint, typecheck, spec compliance passed).
+- Full task safety gate against current main: `trc_9759ff6f5036` (`passed: true`, `publishValid: true`, no DB risks).
+- Main-sync merge commit: `7f2b95342a`.
+- 2026-08-10 01:40:18 `review.run`: passed — OK
+- 2026-08-10 01:40:18 `review.run`: passed — OK
+- 2026-08-10 01:40:31 `verify`: passed — OK
 
 ## key decisions
 
@@ -155,3 +161,5 @@ bun run task:finish
 - `packages/workspace/tooling/tool-manifest.json`
 
 - 2026-08-10 01:39:25 apply-patch: `.task/workspace-agents/repair-workspace-stream-and-taskless-read-only-fs/workpad.md`
+
+- 2026-08-10 01:40:44 apply-patch: `.task/workspace-agents/repair-workspace-stream-and-taskless-read-only-fs/workpad.md`
