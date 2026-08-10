@@ -158,6 +158,37 @@ contractDescribe('install edge site publisher', () => {
     }
   });
 
+  it('bumps the immutable snapshot version when only a child site changes', async () => {
+    const publisher = await loadPublisher();
+    const home = makeHome();
+    const first = publisher.createWorkspaceEdgeSnapshotPlan({
+      home,
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+    });
+    const launcherHash = first.contentHash;
+
+    fs.writeFileSync(
+      path.join(home, 'sites', 'traces', 'index.html'),
+      '<!doctype html><title>Traces changed</title><main>new trace table</main>',
+      'utf8',
+    );
+
+    const second = publisher.createWorkspaceEdgeSnapshotPlan({
+      home,
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+    });
+
+    expect(second.contentHash).toBe(launcherHash);
+    expect(second.versionId).not.toBe(first.versionId);
+    expect(second.snapshotKey).not.toBe(first.snapshotKey);
+    expect(second.snapshots.find((snapshot) => snapshot.siteId === 'traces')?.snapshotKey)
+      .not.toBe(first.snapshots.find((snapshot) => snapshot.siteId === 'traces')?.snapshotKey);
+  });
+
   it('uploads R2, upserts D1, warms the edge route, and returns install-safe metadata', async () => {
     const publisher = await loadPublisher();
     const home = makeHome();

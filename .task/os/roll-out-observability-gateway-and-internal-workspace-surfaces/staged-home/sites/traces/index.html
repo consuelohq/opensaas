@@ -1,5 +1,4 @@
-export function buildObservabilityTracesSite(): string {
-  return String.raw`<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -185,8 +184,8 @@ export function buildObservabilityTracesSite(): string {
       <span><b data-trace-count>0</b> traces</span>
       <span>Rows per page <b>100</b></span>
       <span>Page <input data-page-input value="1" inputmode="numeric" aria-label="Page" /> of <b data-page-count>1</b></span>
-      <button type="button" data-prev-page aria-label="Previous page">‹</button>
-      <button type="button" data-next-page aria-label="Next page">›</button>
+      <button type="button" data-prev-page aria-label="Previous page">\u2039</button>
+      <button type="button" data-next-page aria-label="Next page">\u203A</button>
       <span data-footer-state>loading</span>
     </footer>
   </main>
@@ -226,7 +225,7 @@ export function buildObservabilityTracesSite(): string {
       const latency = (row) => {
         const ms = Number(first(row.durationMs, row.duration_ms, ''));
         if (Number.isFinite(ms) && ms >= 0) return (ms / 1000).toFixed(2).replace(/0+$/, '').replace(/\.$/, '') + 's';
-        const raw = String(first(row.latency, row.duration, '—'));
+        const raw = String(first(row.latency, row.duration, '\u2014'));
         const match = raw.match(/^(\d+(?:\.\d+)?)ms$/);
         if (match) return (Number(match[1]) / 1000).toFixed(2).replace(/0+$/, '').replace(/\.$/, '') + 's';
         return raw;
@@ -237,7 +236,7 @@ export function buildObservabilityTracesSite(): string {
         if (matched) return matched[1];
         if (/^\d{2}:\d{2}:\d{2}/.test(raw)) return raw.slice(0, 8);
         const date = new Date(raw);
-        return Number.isNaN(date.getTime()) ? '—' : date.toISOString().slice(11, 19);
+        return Number.isNaN(date.getTime()) ? '\u2014' : date.toISOString().slice(11, 19);
       };
       const stableTraceKey = (row) => String(first(row && row.traceId, row && row.trace, row && row.recordId, row && row.idempotencyKey, row && row.id, row && row.metadata && row.metadata.rowid, ''));
       const normalize = (row) => {
@@ -295,7 +294,7 @@ export function buildObservabilityTracesSite(): string {
           if (visible.length) {
             rowsHost.innerHTML = visible.map((row) => {
               const status = row.statusLabel === 'error' ? 'error' : 'success';
-              const statusGlyph = status === 'error' ? '✤' : '✤';
+              const statusGlyph = status === 'error' ? '\u2724' : '\u2724';
               return '<div class="trace-row">' +
                 '<span class="trace-check" aria-hidden="true"></span>' +
                 '<span>' + escapeHtml(row.timeLabel) + '</span>' +
@@ -434,5 +433,4 @@ export function buildObservabilityTracesSite(): string {
     })();
   </script>
 </body>
-</html>`;
-}
+</html>

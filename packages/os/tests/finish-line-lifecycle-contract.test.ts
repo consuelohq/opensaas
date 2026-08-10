@@ -97,6 +97,7 @@ describe('Consuelo finish-line lifecycle contract', () => {
   it('retires only recognized conflicting Portless services and scrubs inherited secrets', () => {
     const generator = read('scripts/generate-system-daemons.sh');
     const installer = read('scripts/install-system-daemons.sh');
+    const reload = read('scripts/consuelo-reload.js');
     const runtime = read('scripts/start-consuelo-daemon.sh');
     const portless = read('scripts/start-portless-daemon.sh');
     const caddy = read('scripts/start-caddy-daemon.sh');
@@ -108,6 +109,7 @@ describe('Consuelo finish-line lifecycle contract', () => {
     for (const source of [runtime, portless, caddy]) {
       expect(source).toContain('unset WORKSPACE_MCP_TOKEN');
     }
+    expect(reload).toContain("runBestEffort('launchctl', ['unsetenv', 'WORKSPACE_MCP_TOKEN'])");
     expect(runtime).toContain('unset INTERNAL_CONSUELO_API_KEY');
     expect(caddy).toContain('unset CLOUDFLARE_API_TOKEN');
   });

@@ -1,7 +1,7 @@
 ---
+const canonicalRoute = "/observability/traces";
 const gatewayRoutes = {
   recent: "/gateway/traces/recent",
-  summary: "/gateway/traces/summary",
   events: "/gateway/traces/events",
 };
 ---
@@ -11,60 +11,53 @@ const gatewayRoutes = {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Traces - Observability</title>
-    <meta name="description" content="Consuelo Observability traces cockpit." />
+    <meta name="description" content="Live Consuelo workspace traces." />
   </head>
-  <body class="observability-page">
+  <body>
     <main
-      class="dashboard"
-      data-observability-app
+      class="trace-shell"
+      data-trace-app
+      data-route={canonicalRoute}
       data-feed-url={gatewayRoutes.recent}
-      data-summary-url={gatewayRoutes.summary}
       data-events-url={gatewayRoutes.events}
     >
-      <section class="hero">
-        <div>
-          <div class="eyebrow">Observability</div>
-          <h1>Traces</h1>
-          <p>
-            Live traces are the first Observability module. The broader dashboard can grow around this
-            source without renaming the launchable Traces cockpit.
-          </p>
-          <nav aria-label="Observability sections">
-            <a aria-current="page" href="/observability/traces">Traces</a>
-            <span aria-disabled="true">Runs</span>
-            <span aria-disabled="true">Costs</span>
-            <span aria-disabled="true">Failures</span>
-          </nav>
-        </div>
-        <button type="button" data-testid="trace-launcher" data-open-traces>Live traces</button>
-      </section>
-
-      <section aria-label="Observability trace summary">
-        <article><span>Trace rows</span><strong data-kpi="trace-count">0</strong></article>
-        <article><span>Failures</span><strong data-kpi="failure-count">0</strong></article>
-        <article><span>Token burn</span><strong data-kpi="tokens">0</strong></article>
-        <article><span>Estimated cost</span><strong data-kpi="cost">$0.00</strong></article>
-      </section>
-
-      <section class="trace-modal" data-trace-modal aria-label="Traces">
-        <div class="trace-shell" data-mode="list">
-          <header><div class="trace-title">Traces</div><button type="button" data-show-filters>filters</button></header>
-          <input data-search placeholder="Search traces..." aria-label="Search traces" />
-          <div data-trace-rows></div>
-          <aside data-inspector></aside>
-          <footer><span><b data-trace-count>0</b> traces</span><span data-live-state>stale</span></footer>
+      <header class="trace-chrome">
+        <div class="trace-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="trace-title">Traces</div>
+        <div class="trace-state" data-live-state data-state="loading">loading</div>
+      </header>
+      <div class="trace-toolbar">
+        <input class="trace-search" data-search placeholder="Search traces..." aria-label="Search traces" autocomplete="off" />
+        <select class="trace-window" data-window aria-label="Trace time window">
+          <option value="1d">1 day</option>
+        </select>
+      </div>
+      <section class="trace-table-pane" aria-label="Trace table">
+        <div class="trace-table">
+          <div class="trace-head">
+            <span></span><span>Time</span><span>Tool</span><span>Latency</span><span>Tokens</span><span>Branch</span><span>Input</span><span>Output</span><span>Trace</span><span>Status</span><span>Cost</span>
+          </div>
+          <div data-trace-rows><div class="trace-empty">Loading traces...</div></div>
         </div>
       </section>
+      <footer class="trace-footer">
+        <span><b data-trace-count>0</b> traces</span>
+        <span>Rows per page <b>100</b></span>
+        <span>Page <input data-page-input value="1" inputmode="numeric" aria-label="Page" /> of <b data-page-count>1</b></span>
+        <button type="button" data-prev-page aria-label="Previous page">‹</button>
+        <button type="button" data-next-page aria-label="Next page">›</button>
+        <span data-footer-state>loading</span>
+      </footer>
     </main>
+
     <script is:inline>
       window.__consueloObservabilityTraces = {
         routes: {
           recent: "/gateway/traces/recent",
-          summary: "/gateway/traces/summary",
           events: "/gateway/traces/events",
         },
-        motion: "web-animations",
         module: "traces",
+        presentation: "direct-table",
       };
     </script>
   </body>

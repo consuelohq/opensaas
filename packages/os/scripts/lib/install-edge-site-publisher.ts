@@ -82,12 +82,19 @@ function readSnapshotHtml(snapshotPath: string, siteName: string): string {
 export function createWorkspaceEdgeSnapshotPlan(input: PublishInput): WorkspaceEdgeSnapshotPlan {
   const workspaceHost = host(input.workspaceHost);
   const sitesDir = path.join(input.home, 'sites');
-  const rootSnapshotPath = path.join(sitesDir, 'index.html');
-  const rootHtml = readSnapshotHtml(rootSnapshotPath, siteId);
-  const version = versionId(rootHtml);
-  const snapshots = snapshotSites.map((snapshot): WorkspaceEdgePublishedSnapshot => {
+  const sourceBySite = new Map<WorkspaceSiteSnapshotId, { html: string; snapshotPath: string; contentHash: string }>();
+  for (const snapshot of snapshotSites) {
+    if (sourceBySite.has(snapshot.siteId)) continue;
     const snapshotPath = path.join(sitesDir, ...snapshot.relativePath);
-    const html = snapshot.siteId === siteId ? rootHtml : readSnapshotHtml(snapshotPath, snapshot.siteId);
+    const html = readSnapshotHtml(snapshotPath, snapshot.siteId);
+    sourceBySite.set(snapshot.siteId, { html, snapshotPath, contentHash: hash(html) });
+  }
+  const version = versionId(JSON.stringify(
+    [...sourceBySite.entries()].map(([snapshotSiteId, source]) => [snapshotSiteId, source.contentHash]),
+  ));
+  const snapshots = snapshotSites.map((snapshot): WorkspaceEdgePublishedSnapshot => {
+    const source = sourceBySite.get(snapshot.siteId);
+    if (!source) throw new Error(`install edge snapshot source is missing: ${snapshot.siteId}`);
     const snapshotKey = `sites/${input.workspaceId}/${snapshot.siteId}/${version}/index.html`;
     const verifyUrl = `https://${workspaceHost}${snapshot.pathPrefix === '/' ? '/' : snapshot.pathPrefix}`;
     return {
@@ -95,9 +102,9 @@ export function createWorkspaceEdgeSnapshotPlan(input: PublishInput): WorkspaceE
       pathPrefix: snapshot.pathPrefix,
       versionId: version,
       snapshotKey,
-      snapshotPath,
+      snapshotPath: source.snapshotPath,
       verifyUrl,
-      contentHash: hash(html),
+      contentHash: source.contentHash,
       contentType,
     };
   });
