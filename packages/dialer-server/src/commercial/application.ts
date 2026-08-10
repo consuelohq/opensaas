@@ -95,8 +95,12 @@ const positiveLimit = (value: unknown): number => {
   return parsed;
 };
 
+const subscriptionDetails = (object: CommercialRecord): CommercialRecord =>
+  record(record(object.parent).subscription_details);
+
 const metadataWorkspaceId = (object: CommercialRecord): string =>
-  stringValue(record(object.metadata).workspaceId);
+  stringValue(record(object.metadata).workspaceId) ||
+  stringValue(record(subscriptionDetails(object).metadata).workspaceId);
 
 const metadataPayerId = (object: CommercialRecord): string =>
   stringValue(record(object.metadata).payerId);
@@ -104,9 +108,7 @@ const metadataPayerId = (object: CommercialRecord): string =>
 const subscriptionReference = (object: CommercialRecord): string => {
   const direct = stringValue(object.subscription);
   if (direct) return direct;
-  const parent = record(object.parent);
-  const details = record(parent.subscription_details);
-  return stringValue(details.subscription);
+  return stringValue(subscriptionDetails(object).subscription);
 };
 
 const billingPeriod = (now: Date) => {
@@ -438,6 +440,36 @@ export const createCommercialApplication = (input: {
     }
   };
 
+  const loadBillingAccess = async (workspaceId: string) => {
+    try {
+      const subscriptionResult = await input.database.query(
+        `SELECT status, payment_failed_at, cancel_at_period_end
+         FROM dialer_workspace_subscriptions
+         WHERE workspace_id = $1`,
+        [workspaceId],
+      );
+      const subscription = record(subscriptionResult.rows[0]);
+      const paymentFailedAt = stringValue(subscription.payment_failed_at);
+      return subscriptionResult.rows[0]
+        ? resolveBillingAccess({
+            status: stringValue(subscription.status) || 'unknown',
+            paymentFailedAt: paymentFailedAt ? new Date(paymentFailedAt) : null,
+            now: now(),
+            graceDays: input.catalog.paymentGraceDays,
+          })
+        : {
+            state: 'trial' as const,
+            canStartCalls: true,
+            canPurchaseNumbers: true,
+            canManageBilling: true,
+            canReadHistory: true,
+            graceEndsAt: null,
+          };
+    } catch (cause: unknown) {
+      throw normalizeAsyncError(cause);
+    }
+  };
+
   const loadCallerContext = async (identity: CommercialIdentity) => {
     try {
       authorizeCommercialAction({
@@ -449,7 +481,7 @@ export const createCommercialApplication = (input: {
         targetWorkspaceId: identity.workspaceId,
         action: 'calls.start',
       });
-      const [seatResult, numberResult, usageResult, subscriptionResult, totals] =
+      const [seatResult, numberResult, usageResult, billing, totals] =
         await Promise.all([
           input.database.query(
             `SELECT plan_code
@@ -471,12 +503,7 @@ export const createCommercialApplication = (input: {
                AND occurred_at >= date_trunc('month', now())`,
             [identity.workspaceId, identity.userId],
           ),
-          input.database.query(
-            `SELECT status, payment_failed_at, cancel_at_period_end
-             FROM dialer_workspace_subscriptions
-             WHERE workspace_id = $1`,
-            [identity.workspaceId],
-          ),
+          loadBillingAccess(identity.workspaceId),
           input.database.query(
             `SELECT
                (SELECT COUNT(*)::integer FROM dialer_team_seats
@@ -497,23 +524,6 @@ export const createCommercialApplication = (input: {
       const connectedMinutes = Number(
         record(usageResult.rows[0]).connected_minutes ?? 0,
       );
-      const subscription = record(subscriptionResult.rows[0]);
-      const paymentFailedAt = stringValue(subscription.payment_failed_at);
-      const billing = subscriptionResult.rows[0]
-        ? resolveBillingAccess({
-            status: stringValue(subscription.status) || 'active',
-            paymentFailedAt: paymentFailedAt ? new Date(paymentFailedAt) : null,
-            now: now(),
-            graceDays: input.catalog.paymentGraceDays,
-          })
-        : {
-            state: 'trial' as const,
-            canStartCalls: true,
-            canPurchaseNumbers: true,
-            canManageBilling: true,
-            canReadHistory: true,
-            graceEndsAt: null,
-          };
       const entitlement = resolveSeatEntitlement({
         catalog: input.catalog,
         planCode: currentPlan,
@@ -929,6 +939,10 @@ export const createCommercialApplication = (input: {
           const userId = stringValue(bodyRecord.userId);
           if (!userId) throw new Error('INVALID_NUMBER_ASSIGNMENT');
           const phoneNumber = e164(bodyRecord.phoneNumber);
+          const billingAccess = await loadBillingAccess(identity.workspaceId);
+          if (!billingAccess.canPurchaseNumbers) {
+            throw new Error('BILLING_ACCESS_BLOCKED');
+          }
           await ensureNumberInventory(identity.workspaceId);
           await validateAssignment(identity.workspaceId, userId, phoneNumber);
           const provisioned = await input.numbers.provision({
@@ -1083,7 +1097,7 @@ export const createCommercialApplication = (input: {
           const deleted = event.type === 'customer.subscription.deleted';
           const status = deleted
             ? 'canceled'
-            : stringValue(object.status) || 'active';
+            : stringValue(object.status) || 'unknown';
           const customerId = stringValue(object.customer) || null;
           await input.database.query(
             `INSERT INTO dialer_workspace_subscriptions (
@@ -1151,17 +1165,37 @@ export const createCommercialApplication = (input: {
           }
           if (event.type === 'invoice.payment_failed') {
           await input.database.query(
-            `UPDATE dialer_workspace_subscriptions
-             SET status = 'past_due', payment_failed_at = COALESCE(payment_failed_at, $2),
-                 updated_at = now()
-             WHERE workspace_id = $1`,
-            [workspaceId, now().toISOString()],
+            `INSERT INTO dialer_workspace_subscriptions (
+               workspace_id, provider_customer_id, provider_subscription_id,
+               status, payment_failed_at
+             ) VALUES ($1, $2, $3, 'past_due', $4)
+             ON CONFLICT (workspace_id) DO UPDATE
+             SET provider_customer_id = COALESCE(
+                   dialer_workspace_subscriptions.provider_customer_id,
+                   EXCLUDED.provider_customer_id
+                 ),
+                 provider_subscription_id = COALESCE(
+                   dialer_workspace_subscriptions.provider_subscription_id,
+                   EXCLUDED.provider_subscription_id
+                 ),
+                 status = 'past_due',
+                 payment_failed_at = COALESCE(
+                   dialer_workspace_subscriptions.payment_failed_at,
+                   EXCLUDED.payment_failed_at
+                 ),
+                 updated_at = now()`,
+            [
+              workspaceId,
+              stringValue(object.customer) || null,
+              providerSubscriptionId || null,
+              now().toISOString(),
+            ],
           );
           }
           if (event.type === 'invoice.paid') {
           await input.database.query(
             `UPDATE dialer_workspace_subscriptions
-             SET status = 'active', payment_failed_at = NULL, updated_at = now()
+             SET payment_failed_at = NULL, updated_at = now()
              WHERE workspace_id = $1`,
             [workspaceId],
           );

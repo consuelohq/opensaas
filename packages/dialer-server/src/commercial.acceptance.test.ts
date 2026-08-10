@@ -542,6 +542,92 @@ describe('Stripe subscription projection, grace, and uninstall', () => {
     ]);
   });
 
+  it('fails closed for status-only non-entitled Stripe states while preserving billing recovery and history', async () => {
+    const module =
+      await loadModule<BillingModule>('./billing/application.ts');
+    const now = new Date('2026-08-03T00:00:00.000Z');
+
+    for (const status of [
+      'past_due',
+      'unpaid',
+      'incomplete',
+      'paused',
+      'future_provider_status',
+    ]) {
+      expect(
+        module.resolveBillingAccess({
+          status,
+          paymentFailedAt: null,
+          now,
+          graceDays: 3,
+        }),
+      ).toEqual({
+        state: 'blocked',
+        canStartCalls: false,
+        canPurchaseNumbers: false,
+        canManageBilling: true,
+        canReadHistory: true,
+        graceEndsAt: null,
+      });
+    }
+
+    expect(
+      module.resolveBillingAccess({
+        status: 'future_provider_status',
+        paymentFailedAt: new Date('2026-08-02T00:00:00.000Z'),
+        now,
+        graceDays: 3,
+      }),
+    ).toEqual({
+      state: 'blocked',
+      canStartCalls: false,
+      canPurchaseNumbers: false,
+      canManageBilling: true,
+      canReadHistory: true,
+      graceEndsAt: null,
+    });
+  });
+
+  it('keeps only active and trialing subscriptions entitled without payment-failure evidence', async () => {
+    const module =
+      await loadModule<BillingModule>('./billing/application.ts');
+    const now = new Date('2026-08-03T00:00:00.000Z');
+
+    for (const status of ['active', 'trialing']) {
+      expect(
+        module.resolveBillingAccess({
+          status,
+          paymentFailedAt: null,
+          now,
+          graceDays: 3,
+        }),
+      ).toMatchObject({
+        state: 'active',
+        canStartCalls: true,
+        canPurchaseNumbers: true,
+        canManageBilling: true,
+        canReadHistory: true,
+      });
+    }
+
+    for (const status of ['canceled', 'incomplete_expired']) {
+      expect(
+        module.resolveBillingAccess({
+          status,
+          paymentFailedAt: null,
+          now,
+          graceDays: 3,
+        }),
+      ).toMatchObject({
+        state: 'canceled',
+        canStartCalls: false,
+        canPurchaseNumbers: false,
+        canManageBilling: true,
+        canReadHistory: true,
+      });
+    }
+  });
+
   it('preserves recovery/history during grace and blocks new commercial consumption after expiry', async () => {
     const module =
       await loadModule<BillingModule>('./billing/application.ts');

@@ -51,20 +51,34 @@ const access = (
   graceEndsAt,
 });
 
+const ENTITLED_SUBSCRIPTION_STATUSES = new Set(['active', 'trialing']);
+const CANCELED_SUBSCRIPTION_STATUSES = new Set([
+  'canceled',
+  'incomplete_expired',
+]);
+const GRACE_ELIGIBLE_SUBSCRIPTION_STATUSES = new Set([
+  'past_due',
+  'unpaid',
+  'incomplete',
+]);
+
 export const resolveBillingAccess = (input: {
   status: string;
   paymentFailedAt: Date | null;
   now: Date;
   graceDays: number;
 }) => {
-  if (['canceled', 'incomplete_expired'].includes(input.status)) {
+  if (ENTITLED_SUBSCRIPTION_STATUSES.has(input.status)) {
+    return access('active', null);
+  }
+  if (CANCELED_SUBSCRIPTION_STATUSES.has(input.status)) {
     return access('canceled', null);
   }
   if (
-    ['active', 'trialing'].includes(input.status) ||
+    !GRACE_ELIGIBLE_SUBSCRIPTION_STATUSES.has(input.status) ||
     !input.paymentFailedAt
   ) {
-    return access('active', null);
+    return access('blocked', null);
   }
   const graceEndsAt = new Date(
     input.paymentFailedAt.getTime() + input.graceDays * 86_400_000,
