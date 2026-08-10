@@ -4,13 +4,13 @@
   "mode": "full",
   "branch": "task/website/clean-up-cloud-footer-illustration-fill",
   "base": "origin/main",
-  "headSha": "33e7520fabb26481bdc491d2728a69fc10151f4c",
-  "changeHash": "244fc45b9a7456a20a3bb78e98b12d25afdbe9123b32fe8d6e02d20fe9a5dc4f",
+  "headSha": "3cda8eb4d778506aaf65485af8c5361a2fed3e8b",
+  "changeHash": "9cd36a9e78388cab3e928697372cf96b811beee174d781416c3b1f00e6d79e44",
   "changedFiles": [
     "packages/consuelo-website/scripts/generate-footer-art.ts",
     "packages/consuelo-website/tests/footer-art.test.mjs"
   ],
-  "verifiedAt": "2026-08-10T01:00:10.974Z",
+  "verifiedAt": "2026-08-10T01:01:21.686Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -29,6 +29,7 @@
         ".task/website/clean-up-cloud-footer-illustration-fill/evidence-log.json",
         ".task/website/clean-up-cloud-footer-illustration-fill/read-log.json",
         ".task/website/clean-up-cloud-footer-illustration-fill/session.json",
+        ".task/website/clean-up-cloud-footer-illustration-fill/verify.json",
         ".task/website/clean-up-cloud-footer-illustration-fill/workpad.md",
         "packages/consuelo-website/scripts/generate-footer-art.ts",
         "packages/consuelo-website/tests/footer-art.test.mjs"

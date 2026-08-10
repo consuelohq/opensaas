@@ -23,11 +23,13 @@
 
 ## files changed
 
-- none yet
+- `packages/consuelo-website/scripts/generate-footer-art.ts`
+- `packages/consuelo-website/tests/footer-art.test.mjs`
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/consuelo-website/scripts/generate-footer-art.ts`
+- `packages/consuelo-website/tests/footer-art.test.mjs`
 
 ## workspace-owned: activity log
 
@@ -37,6 +39,7 @@
 - 2026-08-10 00:57:17 apply-patch: `packages/consuelo-website/scripts/generate-footer-art.ts`
 - 2026-08-10 00:58:59 apply-patch: `packages/consuelo-website/scripts/generate-footer-art.ts`
 - 2026-08-10 00:59:34 fs.write: `.task/website/clean-up-cloud-footer-illustration-fill/workpad.md`
+- 2026-08-10 01:00:35 fs.write: `.task/website/clean-up-cloud-footer-illustration-fill/workpad.md`
 
 ## Implementation and validation
 
@@ -57,3 +60,15 @@
 - 2026-08-10 00:59:59 `review.run`: passed — OK
 - 2026-08-10 01:00:00 `review.run`: passed — OK
 - 2026-08-10 01:00:10 `verify`: passed — OK
+- 2026-08-10 01:00:40 `verify`: passed — OK
+- 2026-08-10 01:01:21 `verify`: passed — OK
+
+## Final pre-publish status
+
+- Changed `scripts/generate-footer-art.ts` to apply targeted white cleanup to the inner sash and outstretched hand while preserving the Potrace source, outer robe linework, globe detail, and layout.
+- Added `tests/footer-art.test.mjs` regression coverage for hand/sash white-fill ratios.
+- Validation: focused footer-art test 3/3 pass; final hand white share 94.05%; sash 99.36–100%; `media.svg verify` pass; website production build pass with 0 errors; workspace review 0 issues from this change; full verify publish-valid.
+- Recovery: rejected a global erosion approach after it reduced outer-robe blue detail; replaced it with targeted clean-white masks. Fixed a build-only TypeScript inference issue in the polygon scaler and reran all focused validation successfully.
+- No known product blocker remains. Next action: promote task PR #1799 to `stream/website`, merge stream to `main`, then verify the live iPad/footer rendering.
+
+- 2026-08-10 01:00:35 append: `.task/website/clean-up-cloud-footer-illustration-fill/workpad.md`
