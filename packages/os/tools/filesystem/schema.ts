@@ -82,7 +82,7 @@ export const toolSchemas = [
         "path": "packages/os/scripts",
         "depth": 1
       },
-      "sessionRequired": true
+      "sessionRequired": false
     }
   },
   {

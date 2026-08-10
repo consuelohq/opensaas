@@ -261,6 +261,7 @@ const FsReadFileInput = z.object({
   limit: z.number().int().positive().optional(),
   from: z.number().int().positive().optional(),
   to: z.number().int().positive().optional(),
+  full: z.boolean().optional(),
 });
 
 export const FsReadInput = z.object({
@@ -272,11 +273,12 @@ export const FsReadInput = z.object({
   limit: z.number().int().positive().optional(),
   from: z.number().int().positive().optional(),
   to: z.number().int().positive().optional(),
+  full: z.boolean().optional(),
 }).refine((input) => Boolean(input.path) !== Boolean(input.files), {
   message: 'provide exactly one of path or files',
   path: ['path'],
-}).refine((input) => !input.files || (input.offset === undefined && input.limit === undefined && input.from === undefined && input.to === undefined), {
-  message: 'top-level pagination fields cannot be used with files; put offset, limit, from, or to on each file entry instead',
+}).refine((input) => !input.files || (input.offset === undefined && input.limit === undefined && input.from === undefined && input.to === undefined && input.full === undefined), {
+  message: 'top-level read fields cannot be used with files; put offset, limit, from, to, or full on each file entry instead',
   path: ['files'],
 });
 
@@ -1353,7 +1355,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"artifacts\" | \"media\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
-  FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
+  FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; full?: boolean; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number; full?: boolean }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; full?: never; branch?: string; requestId?: string; taskSession?: string })',
   FsSearchInput: '{ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
   FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
