@@ -64,7 +64,10 @@ export function modernMcpRoutingFromBody(body: string): ModernMcpRouting | null 
   const meta = requestMeta(request);
   const protocolVersion = meta?.[PROTOCOL_VERSION_KEY];
   const modern = request.method === 'server/discover'
-    || protocolVersion === MODERN_MCP_PROTOCOL_VERSION;
+    || (
+      request.method !== 'initialize'
+      && protocolVersion === MODERN_MCP_PROTOCOL_VERSION
+    );
   if (!modern) return null;
   const name = requestName(request);
   return {
@@ -94,6 +97,20 @@ export function validateModernMcpHttpRequest(
   const headerVersion = headers.get('mcp-protocol-version');
   const headerMethod = headers.get('mcp-method');
   const headerName = headers.get('mcp-name');
+  if (
+    request?.method === 'initialize'
+    && requestMeta(request)?.[PROTOCOL_VERSION_KEY] === MODERN_MCP_PROTOCOL_VERSION
+  ) {
+    return {
+      ok: false,
+      status: 400,
+      response: jsonRpcError(
+        id,
+        -32602,
+        'Initialize only supports the legacy MCP protocol.',
+      ),
+    };
+  }
   if (!routing) {
     if (headerVersion === null && headerMethod === null && headerName === null) {
       return { ok: true, modern: false };

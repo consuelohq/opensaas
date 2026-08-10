@@ -203,4 +203,90 @@ describe('central MCP proxy scope enforcement', () => {
       error: { code: 'MISSING_SCOPE' },
     });
   });
+
+  test('preserves action-specific read scopes without allowing dangerous actions', async () => {
+    const origin = 'https://os.consuelohq.com';
+    const workspaceHost = 'action-scope-proxy.consuelohq.com';
+    const token = 'coa_action_scope_test';
+    const nowMs = Date.parse('2026-06-13T00:00:00.000Z');
+    const store = createMemoryDeviceGrantStore();
+    await store.putMcpOAuthAccessToken({
+      tokenHash: await hash(token),
+      clientId: 'chatgpt-consuelo-os',
+      scope: 'route:/mcp:read tool:mac.process:read',
+      scopes: ['route:/mcp:read', 'tool:mac.process:read'],
+      resource: origin + '/mcp',
+      workspaceHost,
+      accountId: 'google:action-scope-proxy-user',
+      email: 'action-scope-proxy@example.com',
+      issuedAt: nowMs,
+      expiresAt: nowMs + 60_000,
+    });
+
+    const routeRegistry = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routeRegistry);
+    await upsertWorkspaceHostnameInD1(routeRegistry, {
+      workspaceId: 'workspace_action_scope_proxy',
+      workspaceSlug: 'action-scope-proxy',
+      hostname: workspaceHost,
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [{
+        surface: 'os',
+        pathPrefix: '/mcp',
+        auth: 'signed-connector',
+        status: 'active',
+        target: {
+          kind: 'os-connector',
+          connectorId: 'connector_action_scope_proxy',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://connector.action-scope-proxy.example',
+        },
+      }],
+    });
+
+    const forwardedActions: string[] = [];
+    const proxy = async (action: 'list' | 'kill') => proxyCentralMcpRequest({
+      request: new Request(origin + '/mcp', {
+        method: 'POST',
+        headers: {
+          authorization: 'Bearer ' + token,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: action,
+          method: 'tools/call',
+          params: {
+            name: 'call',
+            arguments: {
+              tool: 'mac.process',
+              input: action === 'list' ? { action } : { action, pid: 123 },
+            },
+          },
+        }),
+      }),
+      store,
+      origin,
+      nowMs,
+      routeRegistry,
+      fetchImpl: async (request) => {
+        const payload = await request.clone().json() as {
+          params?: { arguments?: { input?: { action?: string } } };
+        };
+        forwardedActions.push(payload.params?.arguments?.input?.action ?? '');
+        return new Response('{}', { status: 200 });
+      },
+    });
+
+    const list = await proxy('list');
+    expect(list.status).toBe(200);
+    expect(forwardedActions).toEqual(['list']);
+
+    const kill = await proxy('kill');
+    expect(kill.status).toBe(403);
+    expect(forwardedActions).toEqual(['list']);
+  });
 });

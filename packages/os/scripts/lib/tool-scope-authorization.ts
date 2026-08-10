@@ -64,10 +64,31 @@ export const CENTRAL_MCP_READ_ONLY_FACADE_TOOLS = new Set([
   'wait',
 ]);
 
-export function resolveCentralMcpFacadeScope(toolName: string): string {
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function resolveToolActionCategory(
+  toolName: string,
+  toolInput: unknown,
+): 'read' | 'dangerous' | null {
+  if (toolName !== 'mac.process') return null;
+
+  return isJsonObject(toolInput) && toolInput.action === 'list'
+    ? 'read'
+    : 'dangerous';
+}
+
+export function resolveCentralMcpFacadeScope(
+  toolName: string,
+  toolInput: unknown = {},
+): string {
   const normalized = toolName.trim();
+  const actionCategory = resolveToolActionCategory(normalized, toolInput);
+  if (actionCategory) return 'tool:' + normalized + ':' + actionCategory;
+
   return CENTRAL_MCP_READ_ONLY_FACADE_TOOLS.has(normalized)
-    ? `tool:${normalized}:read`
+    ? 'tool:' + normalized + ':read'
     : MCP_CALL_SCOPE;
 }
 

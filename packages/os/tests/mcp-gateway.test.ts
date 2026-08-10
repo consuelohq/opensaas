@@ -825,6 +825,46 @@ describe('MCP gateway server route', () => {
     });
   });
 
+  it('should reject 2026 metadata on the legacy initialize path', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'modern-initialize',
+      method: 'initialize',
+      params: {
+        protocolVersion: '2026-07-28',
+        capabilities: {},
+        clientInfo: { name: 'modern-client', version: '1.0.0' },
+        _meta: modernMcpMeta(),
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-initialize',
+    });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { ...signed.headers, ...modernMcpHeaders('initialize') },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get('mcp-session-id')).toBeNull();
+    expect(json).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'modern-initialize',
+      error: { code: -32602 },
+    });
+  });
+
   it('should reject malformed modern request metadata before execution', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);

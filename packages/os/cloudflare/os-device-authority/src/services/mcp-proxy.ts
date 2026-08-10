@@ -68,9 +68,10 @@ async function centralMcpOperationScope(request: Request): Promise<string | null
   if (!args || typeof args !== 'object' || Array.isArray(args)) {
     return 'mcp:call';
   }
-  const toolName = (args as Record<string, unknown>).tool;
+  const facadeArgs = args as Record<string, unknown>;
+  const toolName = facadeArgs.tool;
   return typeof toolName === 'string' && toolName.trim()
-    ? resolveCentralMcpFacadeScope(toolName)
+    ? resolveCentralMcpFacadeScope(toolName, facadeArgs.input)
     : 'mcp:call';
 }
 

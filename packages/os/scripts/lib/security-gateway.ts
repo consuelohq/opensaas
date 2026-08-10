@@ -24,6 +24,7 @@ import {
 import {
   grantsRequiredScope,
   normalizeGrantedScopes,
+  resolveToolActionCategory,
 } from './tool-scope-authorization';
 import { PLACEHOLDER_WORKSPACE_ID } from './unenrolled-placeholder-identity';
 import { verifyWorkspaceEdgeNodeRequest } from './workspace-edge-node-auth';
@@ -661,17 +662,6 @@ const DANGEROUS_TOOL_NAMES = new Set([
 ]);
 
 const ELEVATED_OS_PERMISSIONS = new Set(['execute', 'external', 'admin']);
-
-function resolveToolActionCategory(
-  toolName: string,
-  toolInput: unknown,
-): 'read' | 'write' | 'dangerous' | null {
-  if (toolName !== 'mac.process') return null;
-
-  return isJsonObject(toolInput) && toolInput.action === 'list'
-    ? 'read'
-    : 'dangerous';
-}
 
 function activeToolManifestForScope(): ReturnType<typeof readFullToolManifest> {
   const home = resolveOverlayHome();
