@@ -1168,7 +1168,7 @@ export const createCommercialApplication = (input: {
             `INSERT INTO dialer_workspace_subscriptions (
                workspace_id, provider_customer_id, provider_subscription_id,
                status, payment_failed_at
-             ) VALUES ($1, $2, $3, 'past_due', $4)
+             ) VALUES ($1, $2, $3, 'payment_failed', $4)
              ON CONFLICT (workspace_id) DO UPDATE
              SET provider_customer_id = COALESCE(
                    dialer_workspace_subscriptions.provider_customer_id,
@@ -1178,7 +1178,6 @@ export const createCommercialApplication = (input: {
                    dialer_workspace_subscriptions.provider_subscription_id,
                    EXCLUDED.provider_subscription_id
                  ),
-                 status = 'past_due',
                  payment_failed_at = COALESCE(
                    dialer_workspace_subscriptions.payment_failed_at,
                    EXCLUDED.payment_failed_at
