@@ -45,6 +45,7 @@ import {
 import {
   runLifecycleCli,
   trustedReleaseKeysFromEnvironment,
+  waitForAdvisoryProcessExit,
 } from '../scripts/lifecycle';
 
 const osRoot = resolve(import.meta.dirname, '..');
@@ -236,6 +237,7 @@ function createEngine(input: {
   now?: () => Date;
   serviceFailure?: Error;
   health?: boolean | boolean[];
+  connectivity?: boolean;
   stagingFailure?: Error;
   onboarding?: () => Promise<void>;
   runtime?: LifecycleRuntimeMaterializer;
@@ -271,6 +273,14 @@ function createEngine(input: {
         return input.health ?? true;
       },
     },
+    ...(input.connectivity === undefined ? {} : {
+      connectivity: {
+        async accept() {
+          serviceOperations.push('connectivity');
+          return input.connectivity ?? true;
+        },
+      },
+    }),
     hooks: {
       async beforeStage() {
         if (input.stagingFailure) throw input.stagingFailure;
@@ -749,6 +759,71 @@ describe('unified lifecycle engine', () => {
     writeInstalledIdentity();
     const failedRestart = createEngine({ serviceFailure: new Error('launchctl failed') });
     await expect(failedRestart.restart()).rejects.toMatchObject({ code: 'SERVICE_RESTART_FAILED' });
+  });
+
+  it('should terminate an advisory process when its lifecycle deadline expires', async () => {
+    const kill = vi.fn();
+    const exitCode = await waitForAdvisoryProcessExit({
+      exited: new Promise<number>(() => {}),
+      kill,
+    }, 10);
+
+    expect(exitCode).toBeNull();
+    expect(kill).toHaveBeenCalledTimes(1);
+  });
+
+  it('accepts local MCP connectivity after repaired runtime health', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const repair = createEngine({ connectivity: true });
+
+    await expect(repair.repair()).resolves.toMatchObject({
+      operation: 'repair',
+      changed: true,
+    });
+    expect(repair.serviceOperations).toEqual([
+      'preflight',
+      'restart',
+      'health',
+      'connectivity',
+    ]);
+  });
+
+  it('reports failed local MCP connectivity as advisory after repair', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const events: LifecycleProgressEvent[] = [];
+    const repair = createEngine({ connectivity: false, events });
+
+    await expect(repair.repair()).resolves.toMatchObject({
+      operation: 'repair',
+      changed: true,
+    });
+    expect(events).toContainEqual(expect.objectContaining({
+      phase: 'connectivity',
+      detail: expect.objectContaining({
+        advisory: true,
+        connected: false,
+        diagnostic: 'not-verified',
+      }),
+    }));
+  });
+
+  it('should keep optional local-agent connectivity out of update acceptance when connectivity fails', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const update = createEngine({
+      bundle: bundle110,
+      connectivity: false,
+    });
+
+    await expect(update.update({ channel: 'dev' })).resolves.toMatchObject({
+      operation: 'update',
+      changed: true,
+      version: bundle110.manifest.version,
+    });
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(update.serviceOperations).toContain('connectivity');
   });
 
   it('persists channel and notification preferences and expires snooze at read time', async () => {

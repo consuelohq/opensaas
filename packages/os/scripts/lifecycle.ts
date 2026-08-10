@@ -439,6 +439,28 @@ export function createDefaultLifecycleServiceController(input: {
   return createReloadServiceController({ osRoot: input.osRoot, platform });
 }
 
+const DEFAULT_ADVISORY_PROCESS_TIMEOUT_MS = 30_000;
+
+export async function waitForAdvisoryProcessExit(
+  child: { exited: Promise<number>; kill(): void },
+  timeoutMs: number,
+): Promise<number | null> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      child.exited,
+      new Promise<null>((resolveTimeout) => {
+        timeout = setTimeout(() => {
+          child.kill();
+          resolveTimeout(null);
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
 export const createDefaultLifecycleEngine = (input: {
   home?: string;
   quiet: boolean;
@@ -472,6 +494,27 @@ export const createDefaultLifecycleEngine = (input: {
       url: `http://127.0.0.1:${port}/health`,
       expectedName: 'consuelo-os',
     }),
+    connectivity: {
+      async accept() {
+        const child = Bun.spawn([
+          process.execPath,
+          resolve(osRoot, 'scripts', 'verify-local-agents.ts'),
+        ], {
+          cwd: osRoot,
+          env: {
+            ...process.env,
+            CONSUELO_HOME: resolveLifecyclePaths(input.home).home,
+          },
+          stdin: 'ignore',
+          stdout: 'ignore',
+          stderr: 'ignore',
+        });
+        return await waitForAdvisoryProcessExit(
+          child,
+          DEFAULT_ADVISORY_PROCESS_TIMEOUT_MS,
+        ) === 0;
+      },
+    },
     progress: input.quiet || input.json ? undefined : input.progress,
     onboarding: async () => {
       try {

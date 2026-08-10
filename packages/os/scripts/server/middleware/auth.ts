@@ -10,8 +10,16 @@ import {
   type GatewaySecurityConfig,
 } from '../../lib/security-gateway';
 import { hasAnyWorkspaceEdgeNodeHeaders } from '../../lib/workspace-edge-node-auth';
-import { authorizeConsueloOAuthMcpRequest } from '../services/oauth-introspection';
+import {
+  createAuthenticatedMcpPrincipal,
+  type AuthenticatedMcpPrincipal,
+} from '../security/authenticated-principal';
+import { authenticateConsueloOAuthMcpRequest } from '../services/oauth-introspection';
 import { unauthorized, verificationResponse } from './errors';
+
+export type McpAuthenticationResult =
+  | { ok: true; principal: AuthenticatedMcpPrincipal }
+  | { ok: false; response: Response };
 
 function candidateHomeAuthPaths(): string[] {
   const explicitHomes = [process.env.CONSUELO_HOME, process.env.CONSUELO_OS_HOME]
@@ -89,26 +97,44 @@ export async function authorizeSignedRequest(input: {
   requiredScope: string;
   now?: Date;
 }): Promise<Response | null> {
+  const authentication = await authenticateSignedRequest(input);
+  return authentication.ok ? null : authentication.response;
+}
+
+export async function authenticateSignedRequest(input: {
+  request: Request;
+  path: string;
+  body: string;
+  requiredScope: string;
+  now?: Date;
+}): Promise<McpAuthenticationResult> {
   if (!hasGeneratedAuthConfig()) {
-    return unauthorized(
-      'CONSUELO_AUTH_REQUIRED',
-      'Generated Consuelo OS auth is required.',
-    );
+    return {
+      ok: false,
+      response: unauthorized(
+        'CONSUELO_AUTH_REQUIRED',
+        'Generated Consuelo OS auth is required.',
+      ),
+    };
   }
 
   let config: GatewaySecurityConfig;
   try {
     config = loadAuthConfigForRequest();
   } catch {
-    return unauthorized(
-      'AUTH_CONFIG_REQUIRED',
-      'Generated Consuelo OS auth config is required.',
-    );
+    return {
+      ok: false,
+      response: unauthorized(
+        'AUTH_CONFIG_REQUIRED',
+        'Generated Consuelo OS auth config is required.',
+      ),
+    };
   }
 
   const headers = requestHeaders(input.request);
+  const workspaceEdge = hasAnyWorkspaceEdgeNodeHeaders(headers);
   const now = (input.now ?? new Date()).toISOString();
-  const result = hasAnyWorkspaceEdgeNodeHeaders(headers)
+  const result = workspaceEdge
     ? verifyWorkspaceEdgeProxyRequest({
         config,
         method: input.request.method,
@@ -127,8 +153,25 @@ export async function authorizeSignedRequest(input: {
         requiredScope: input.requiredScope,
         now,
       });
+  if (!result.ok) {
+    return { ok: false, response: verificationResponse(result) };
+  }
 
-  return result.ok ? null : verificationResponse(result);
+  return {
+    ok: true,
+    principal: createAuthenticatedMcpPrincipal({
+      authMode: workspaceEdge ? 'workspace-edge' : 'machine',
+      workspaceId: result.caller.workspaceId,
+      workspaceHost: config.workspaceHost,
+      subjectId: result.caller.subjectId,
+      callerId: result.caller.callerId,
+      appId: result.caller.appId,
+      deviceId: result.caller.deviceId,
+      connectorId: result.caller.connectorId,
+      connectionId: result.caller.connectionId,
+      scopes: result.caller.scopes,
+    }),
+  };
 }
 
 function bearerTokenFromRequest(request: Request): string | null {
@@ -186,6 +229,16 @@ export async function authorizeBearerMcpRequest(input: {
   requiredScope: string;
   now?: Date;
 }): Promise<Response | null> {
+  const authentication = await authenticateBearerMcpRequest(input);
+  return authentication.ok ? null : authentication.response;
+}
+
+export async function authenticateBearerMcpRequest(input: {
+  request: Request;
+  path: string;
+  requiredScope: string;
+  now?: Date;
+}): Promise<McpAuthenticationResult> {
   const bearerToken = bearerTokenFromRequest(input.request);
   if (!bearerToken) {
     let config: GatewaySecurityConfig | undefined;
@@ -194,19 +247,25 @@ export async function authorizeBearerMcpRequest(input: {
     } catch {
       config = undefined;
     }
-    return unauthorized('MISSING_BEARER', 'Bearer token is required.', {
-      'www-authenticate': oauthDiscoveryChallenge(input.request, config),
-    });
+    return {
+      ok: false,
+      response: unauthorized('MISSING_BEARER', 'Bearer token is required.', {
+        'www-authenticate': oauthDiscoveryChallenge(input.request, config),
+      }),
+    };
   }
 
   let config: GatewaySecurityConfig;
   try {
     config = loadAuthConfigForRequest();
   } catch {
-    return unauthorized(
-      'AUTH_CONFIG_REQUIRED',
-      'Generated Consuelo OS auth config is required.',
-    );
+    return {
+      ok: false,
+      response: unauthorized(
+        'AUTH_CONFIG_REQUIRED',
+        'Generated Consuelo OS auth config is required.',
+      ),
+    };
   }
 
   if (isLoopbackRequest(input.request)) {
@@ -215,15 +274,31 @@ export async function authorizeBearerMcpRequest(input: {
       bearerToken,
       path: input.path,
       requiredScope: input.requiredScope,
-      now: new Date().toISOString(),
+      now: (input.now ?? new Date()).toISOString(),
     });
-    if (result.ok) return null;
+    if (result.ok) {
+      return {
+        ok: true,
+        principal: createAuthenticatedMcpPrincipal({
+          authMode: 'local-bearer',
+          workspaceId: result.caller.workspaceId,
+          workspaceHost: config.workspaceHost,
+          subjectId: result.caller.subjectId,
+          callerId: result.caller.callerId,
+          appId: result.caller.appId,
+          deviceId: result.caller.deviceId,
+          connectorId: result.caller.connectorId,
+          connectionId: result.caller.connectionId,
+          scopes: result.caller.scopes,
+        }),
+      };
+    }
     if (result.error.code !== 'UNKNOWN_TOKEN') {
-      return verificationResponse(result);
+      return { ok: false, response: verificationResponse(result) };
     }
   }
 
-  return authorizeConsueloOAuthMcpRequest({
+  return authenticateConsueloOAuthMcpRequest({
     config,
     bearerToken,
     requiredScope: input.requiredScope,

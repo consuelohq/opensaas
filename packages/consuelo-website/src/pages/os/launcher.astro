@@ -5,11 +5,16 @@ import '../../styles/primitives.css';
 
 const chatGptConnectorsUrl = 'https://chatgpt.com/apps#settings/Connectors';
 const mcpUrl = 'https://os.consuelohq.com/mcp';
+const workspaceOrigin = new URL(
+  import.meta.env.PUBLIC_CONSUELO_WORKSPACE_ORIGIN?.trim()
+    || 'https://workspace.consuelohq.com',
+);
+const workspaceUrl = (pathname: string) => new URL(pathname, workspaceOrigin).toString();
 const siteLinks = [
-  { label: 'Go to market', href: '/gtm' },
-  { label: 'Artifacts', href: '/artifacts' },
-  { label: 'Observability', href: '/observability' },
-  { label: 'Code review', href: '/diffs' },
+  { label: 'Go to market', href: workspaceUrl('/gtm') },
+  { label: 'Artifacts', href: workspaceUrl('/artifacts') },
+  { label: 'Observability', href: workspaceUrl('/observability') },
+  { label: 'Code review', href: workspaceUrl('/diffs') },
 ];
 const guideLinks = [{ label: 'Documentation', href: 'https://docs.consuelohq.com/' }];
 const writingLinks = [
@@ -19,9 +24,9 @@ const writingLinks = [
   },
 ];
 const configurationLinks = [
-  { label: 'Tools', href: '/tools' },
-  { label: 'Environments', href: '/environments' },
-  { label: 'Secrets', href: '/secrets' },
+  { label: 'Tools', href: workspaceUrl('/tools') },
+  { label: 'Environments', href: workspaceUrl('/environments') },
+  { label: 'Secrets', href: workspaceUrl('/secrets') },
 ];
 
 const description = 'Connect ChatGPT and workspace agents to Consuelo OS.';

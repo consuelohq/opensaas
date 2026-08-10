@@ -208,6 +208,42 @@ describe('macOS runtime service reliability', () => {
     expect(readFileSync(launchLog, 'utf8')).toContain('com.consuelo.system');
   });
 
+  it('should bootstrap the installed LaunchAgent when watchdog finds its label missing', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-watchdog-bootstrap-');
+    const fakeBin = join(fixtureRoot, 'bin');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    const launchLog = join(fixtureRoot, 'launchctl.log');
+    mkdirSync(fakeBin, { recursive: true });
+    mkdirSync(launchAgents, { recursive: true });
+    writeFileSync(join(launchAgents, 'com.consuelo.system.plist'), '<plist/>');
+    writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 1\n');
+    writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(
+      join(fakeBin, 'launchctl'),
+      '#!/bin/bash\nprintf "%s\\n" "$*" >> "$WATCHDOG_LAUNCH_LOG"\nif [ "$1" = "print" ]; then exit 113; fi\n',
+    );
+
+    const result = run('bash', [resolve(osRoot, 'scripts/workspace-watchdog.sh')], {
+      ...process.env,
+      HOME: home,
+      CONSUELO_HOME: consueloHome,
+      WORKSPACE_WATCHDOG_PATH: `${fakeBin}:/usr/bin:/bin:/usr/sbin:/sbin`,
+      WORKSPACE_WATCHDOG_DISABLE_EXTERNAL: '1',
+      WORKSPACE_WATCHDOG_LOCAL_TCP_FAILURE_THRESHOLD: '1',
+      WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
+      WATCHDOG_LAUNCH_LOG: launchLog,
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    const launchCommands = readFileSync(launchLog, 'utf8');
+    expect(launchCommands).toContain('print gui/');
+    expect(launchCommands).toContain(`bootstrap gui/`);
+    expect(launchCommands).toContain(join(launchAgents, 'com.consuelo.system.plist'));
+    expect(launchCommands).toContain('kickstart -k gui/');
+  });
+
   it('should open a recovery circuit when restart attempts exceed the bounded window', () => {
     const fixtureRoot = temporaryDirectory('consuelo-watchdog-circuit-');
     const fakeBin = join(fixtureRoot, 'bin');
@@ -246,7 +282,7 @@ describe('macOS runtime service reliability', () => {
     const launches = readFileSync(launchLog, 'utf8')
       .trim()
       .split('\n')
-      .filter(Boolean);
+      .filter((line) => line.startsWith('kickstart '));
     expect(launches).toHaveLength(2);
     expect(
       existsSync(
