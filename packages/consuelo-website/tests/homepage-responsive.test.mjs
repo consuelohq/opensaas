@@ -89,7 +89,7 @@ describe('Consuelo OS homepage presentation', () => {
     expect(footer).toContain('font-size: clamp(3.1rem, 14.7vw, 3.8rem);');
     expect(footer).toContain('data-cloud-word-line>CONSUELO</span>');
     expect(footer).toContain('data-cloud-word-line>CLOUD</span>');
-    expect(footer).toContain('/generated/holding-world-editorial.png?v=20260810-white-fill');
+    expect(footer).toContain('/generated/holding-world-editorial.png?v=20260810-smooth-fill');
     expect(footer).not.toContain('filter: brightness(0) invert(1)');
     expect(footer).toContain('KEEP THE SAME WORKSPACE AND LET CONSUELO');
     expect(footer).toContain('RUN THE HOME NODE FOR YOU');

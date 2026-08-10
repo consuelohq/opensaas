@@ -6,6 +6,8 @@ import sharp from 'sharp';
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const sourcePath = join(packageRoot, 'public/images/home/holding-world.svg');
+const bodyFillMaskPath = join(packageRoot, 'public/images/home/holding-world-body-fill-mask.svg');
+const fillMaskPath = join(packageRoot, 'public/images/home/holding-world-white-fill-mask.svg');
 const outputPath = join(packageRoot, 'public/generated/holding-world-editorial.png');
 const badgePath = join(packageRoot, 'public/generated/consuelo-footer-badge.png');
 const renderSize = 1200;
@@ -179,92 +181,17 @@ const outputHeight = cropBottom - cropTop + 1;
 const finalWidth = outputWidth * outputScale;
 const finalHeight = outputHeight * outputScale;
 const output = Buffer.alloc(outputWidth * outputHeight * 4);
-const whiteInkRegions = [
-  [
-    [0.39, 0.49],
-    [0.69, 0.45],
-    [0.87, 0.55],
-    [0.95, 0.86],
-    [0.78, 1],
-    [0.48, 0.98],
-    [0.35, 0.74],
-  ],
-  [
-    [0.36, 0.55],
-    [0.58, 0.55],
-    [0.64, 0.65],
-    [0.55, 0.79],
-    [0.39, 0.82],
-    [0.3, 0.73],
-    [0.31, 0.63],
-  ],
-  [
-    [0.25, 0.66],
-    [0.43, 0.65],
-    [0.48, 0.74],
-    [0.4, 0.84],
-    [0.26, 0.82],
-    [0.19, 0.73],
-  ],
-] as const;
-const scalePoints = (region: ReadonlyArray<readonly [number, number]>) =>
-  region
-    .map(([x, y]) => `${Math.round(x * outputWidth)},${Math.round(y * outputHeight)}`)
-    .join(' ');
-const bodyRegionSvg = Buffer.from(`
-  <svg width="${outputWidth}" height="${outputHeight}" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100%" height="100%" fill="#000000" />
-    ${whiteInkRegions.map((region) => `<polygon points="${scalePoints(region)}" fill="#FFFFFF" />`).join('')}
-    <ellipse
-      cx="${Math.round(outputWidth * 0.275)}"
-      cy="${Math.round(outputHeight * 0.535)}"
-      rx="${Math.round(outputWidth * 0.16)}"
-      ry="${Math.round(outputHeight * 0.115)}"
-      fill="#000000"
-    />
-  </svg>
-`);
-const bodyRegionMask = await sharp(bodyRegionSvg)
-  .greyscale()
-  .raw()
-  .toBuffer();
-const cleanWhiteRegions = [
-  [
-    [0.44, 0.5],
-    [0.68, 0.48],
-    [0.7, 0.58],
-    [0.64, 0.76],
-    [0.59, 0.96],
-    [0.43, 0.96],
-    [0.4, 0.78],
-    [0.42, 0.62],
-  ],
-  [
-    [0.1, 0.62],
-    [0.38, 0.59],
-    [0.42, 0.66],
-    [0.39, 0.76],
-    [0.22, 0.79],
-    [0.08, 0.72],
-  ],
-] as const;
-const cleanWhiteRegionSvg = Buffer.from(`
-  <svg width="${outputWidth}" height="${outputHeight}" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100%" height="100%" fill="#000000" />
-    ${cleanWhiteRegions.map((region) => `<polygon points="${scalePoints(region)}" fill="#FFFFFF" />`).join('')}
-    <ellipse
-      cx="${Math.round(outputWidth * 0.275)}"
-      cy="${Math.round(outputHeight * 0.535)}"
-      rx="${Math.round(outputWidth * 0.16)}"
-      ry="${Math.round(outputHeight * 0.115)}"
-      fill="#000000"
-    />
-  </svg>
-`);
-const cleanWhiteRegionMask = await sharp(cleanWhiteRegionSvg)
-  .greyscale()
-  .raw()
-  .toBuffer();
+const renderFillMask = (path: string) =>
+  sharp(path)
+    .resize(outputWidth, outputHeight, { fit: 'fill' })
+    .greyscale()
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+const [bodyRegionMask, cleanWhiteRegionMask] = await Promise.all([
+  renderFillMask(bodyFillMaskPath),
+  renderFillMask(fillMaskPath),
+]);
 const bodyShape = new Uint8Array(width * height);
 for (let index = 0; index < bodyShape.length; index += 1) {
   bodyShape[index] = bodyOutside[index] === 0 ? 1 : 0;
