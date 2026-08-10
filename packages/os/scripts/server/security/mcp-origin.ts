@@ -48,11 +48,9 @@ export function validateMcpRequestOrigin(
   }
 
   const origin = normalizedOrigin(rawOrigin);
-  const requestOrigin = normalizedOrigin(new URL(request.url).origin);
   const workspaceOrigin = normalizedOrigin(`https://${input.workspaceHost}`);
   const allowed = new Set(
     [
-      requestOrigin,
       workspaceOrigin,
       ...(input.allowedOrigins ?? configuredAllowedOrigins()).map(normalizedOrigin),
     ].filter((value): value is string => Boolean(value)),

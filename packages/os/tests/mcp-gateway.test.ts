@@ -377,6 +377,35 @@ describe('MCP gateway adapter', () => {
   });
 
 
+  it('rejects an Origin that only matches the inbound Host-derived request origin', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool: vi.fn(),
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'tools',
+      method: 'tools/list',
+    });
+
+    const response = await app.request(new Request('http://rebind.attacker.example/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer ' + token.bearerToken,
+        'content-type': 'application/json',
+        origin: 'http://rebind.attacker.example',
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'INVALID_MCP_ORIGIN' },
+    });
+  });
+
   it('should accept an active Consuelo OAuth token when a public MCP request targets the central resource', async () => {
     const config = createConfig();
     const body = JSON.stringify({ jsonrpc: '2.0', id: 'tools', method: 'tools/list' });
