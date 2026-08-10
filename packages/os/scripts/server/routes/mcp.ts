@@ -68,13 +68,15 @@ function resolveSteeringCallerKey(input: {
 }): string {
   if (input.authMode !== 'workspace-edge') return input.principalKey;
   const authorization = input.request.headers.get('authorization')?.trim() ?? '';
-  if (!/^Bearer\s+\S+$/i.test(authorization)) return input.principalKey;
+  const bearerMatch = /^Bearer\s+(\S+)$/i.exec(authorization);
+  if (!bearerMatch) return input.principalKey;
+  const bearerToken = bearerMatch[1];
 
   const digest = createHash('sha256')
     .update([
       'workspace-edge-oauth',
       input.principalKey,
-      authorization,
+      bearerToken,
     ].join('\n'))
     .digest('hex');
   return `prn_${digest.slice(0, 32)}`;

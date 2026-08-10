@@ -680,7 +680,7 @@ describe('MCP gateway server route', () => {
     ));
     globalThis.fetch = introspection as unknown as typeof fetch;
 
-    const sendSteering = async (bearerToken: string, nonce: string) => {
+    const sendSteering = async (authorization: string, nonce: string) => {
       const body = JSON.stringify({
         jsonrpc: '2.0',
         id: nonce,
@@ -708,7 +708,7 @@ describe('MCP gateway server route', () => {
         headers: {
           ...edgeHeaders,
           ...modernMcpHeaders('tools/call', 'get_steering'),
-          authorization: `Bearer ${bearerToken}`,
+          authorization,
           'content-type': 'application/json',
         },
         body,
@@ -716,14 +716,17 @@ describe('MCP gateway server route', () => {
       expect(response.status).toBe(200);
     };
 
-    await sendSteering('coa_oauth_subject_alpha', 'edge-oauth-alpha');
-    await sendSteering('coa_oauth_subject_beta', 'edge-oauth-beta');
+    await sendSteering('Bearer coa_oauth_subject_alpha', 'edge-oauth-alpha');
+    await sendSteering('bearer   coa_oauth_subject_alpha', 'edge-oauth-alpha-variant');
+    await sendSteering('Bearer coa_oauth_subject_beta', 'edge-oauth-beta');
 
     expect(introspection).not.toHaveBeenCalled();
-    expect(getSteering).toHaveBeenCalledTimes(2);
+    expect(getSteering).toHaveBeenCalledTimes(3);
     const callerKeys = getSteering.mock.calls.map(([callerKey]) => callerKey);
-    expect(new Set(callerKeys).size).toBe(2);
+    expect(callerKeys[0]).toBe(callerKeys[1]);
+    expect(callerKeys[0]).not.toBe(callerKeys[2]);
     expect(callerKeys).toEqual([
+      expect.stringMatching(/^prn_[a-f0-9]{32}$/),
       expect.stringMatching(/^prn_[a-f0-9]{32}$/),
       expect.stringMatching(/^prn_[a-f0-9]{32}$/),
     ]);
