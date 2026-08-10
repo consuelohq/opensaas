@@ -66,6 +66,9 @@ function renderDts(): string {
 
   return [
     'export type ErrorCode =',
+    '  | "CAPABILITY_NOT_SUPPORTED"',
+    '  | "WAIT_TIMEOUT"',
+    '  | "IDEMPOTENCY_CONFLICT"',
     '  | "OK"',
     '  | "VALIDATION_ERROR"',
     '  | "AMBIGUOUS_TASK_SELECTION"',

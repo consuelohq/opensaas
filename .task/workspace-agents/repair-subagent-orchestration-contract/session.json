@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e7b2e423a0f7",
+  "tmuxSession": "opensaas-workspace-agents-repair-subagent-orchestration-contract-e7b2e423",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/repair-subagent-orchestration-contract",
+  "branch": "task/workspace-agents/repair-subagent-orchestration-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-repair-subagent-orchestration-contract",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-repair-subagent-orchestration-contract",
+  "prNumber": 1820,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1820",
+  "createdAt": "2026-08-10T03:29:28.478Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-repair-subagent-orchestration-contract/.task/workspace-agents/repair-subagent-orchestration-contract/session.json"
+}
