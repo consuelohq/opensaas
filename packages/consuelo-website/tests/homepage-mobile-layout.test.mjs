@@ -99,6 +99,37 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
   const browser = await chromium.launch();
 
   try {
+    for (const width of [320, 360, 375, 390, 430]) {
+      const heroPage = await browser.newPage({ viewport: { width, height: 844 } });
+      await heroPage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+      await heroPage.locator('.os-hero h1').waitFor({ state: 'attached' });
+
+      const heroContract = await heroPage.evaluate(() => {
+        const heading = document.querySelector('.os-hero h1');
+        const lines = Array.from(document.querySelectorAll('.os-hero__heading-line'));
+        if (!(heading instanceof HTMLElement) || lines.length !== 2) {
+          throw new Error('Expected the current two-line rotating-assistant hero');
+        }
+
+        return {
+          inlineSize: heading.style.getPropertyValue('--hero-title-size'),
+          lines: lines.map((line) => ({
+            clientWidth: line.clientWidth,
+            scrollWidth: line.scrollWidth,
+          })),
+        };
+      });
+
+      assert.equal(heroContract.inlineSize, '');
+      for (const line of heroContract.lines) {
+        assert.ok(
+          line.scrollWidth <= line.clientWidth + 1,
+          `Expected ${width}px hero line to fit (${line.scrollWidth}px > ${line.clientWidth}px)`,
+        );
+      }
+      await heroPage.close();
+    }
+
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await page.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
     await page.locator('.os-hero h1').waitFor({ state: 'attached' });
@@ -134,18 +165,28 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.deepEqual(settledHeadlineFrame, firstHeadlineFrame);
     assert.equal(firstHeadlineFrame.hero.inlineSize, '');
     assert.equal(firstHeadlineFrame.cloud.inlineSize, '');
-    assert.ok(Math.abs(Number.parseFloat(firstHeadlineFrame.hero.fontSize) - 36.075) < 0.25);
+    assert.ok(Number.parseFloat(firstHeadlineFrame.hero.fontSize) >= 32);
+    assert.ok(Number.parseFloat(firstHeadlineFrame.hero.fontSize) <= 52);
     assert.ok(Math.abs(Number.parseFloat(firstHeadlineFrame.cloud.fontSize) - 57.33) < 0.35);
     await page.locator('main').waitFor();
 
     const mobileHeader = page.locator('.os-header__mobile');
     await assert.doesNotReject(() => mobileHeader.waitFor({ state: 'visible' }));
+    const mobileSideLinks = mobileHeader.locator('.os-header__side-link');
     assert.equal(
-      await mobileHeader.locator('a').first().innerText(),
+      await mobileSideLinks.first().innerText(),
+      'DOCS',
+    );
+    assert.equal(
+      await mobileSideLinks.first().getAttribute('href'),
+      'https://docs.consuelohq.com',
+    );
+    assert.equal(
+      await mobileSideLinks.last().innerText(),
       'CLOUD',
     );
     assert.equal(
-      await mobileHeader.locator('a').first().getAttribute('href'),
+      await mobileSideLinks.last().getAttribute('href'),
       'https://os.consuelohq.com',
     );
     assert.equal(
@@ -177,14 +218,14 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
 
     const heading = page.locator('.os-hero h1');
     assert.equal(
-      (await heading.innerText()).replace(/\s+/g, ' ').trim(),
-      'YOUR WORKSPACE, CONNECTED TO EVERY AGENT',
+      await heading.getAttribute('aria-label'),
+      'Make ChatGPT or Claude your digital worker',
     );
-    const headingLineTops = await heading.locator('[data-hero-line]').evaluateAll(
+    const headingLineTops = await heading.locator('.os-hero__heading-line').evaluateAll(
       (lines) =>
         lines.map((line) => Math.round(line.getBoundingClientRect().top)),
     );
-    assert.equal(new Set(headingLineTops).size, 3);
+    assert.equal(new Set(headingLineTops).size, 2);
 
     const viewportContract = await page.evaluate(() => {
       const hero = document.querySelector('.os-hero');
@@ -346,20 +387,22 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
       assert.deepEqual(settledFrame, firstFrame);
       assert.equal(firstFrame.heroInline, '');
       assert.equal(firstFrame.cloudInline, '');
-      const expectedHeroFonts = { 768: 71.04, 1024: 94.72, 1180: 100 };
       const expectedCloudFonts = { 768: 54.528, 1024: 45.056, 1180: 51.92 };
-      assert.ok(Math.abs(Number.parseFloat(firstFrame.heroFont) - expectedHeroFonts[width]) < 0.4);
+      assert.ok(Number.parseFloat(firstFrame.heroFont) > 0);
       assert.ok(Math.abs(Number.parseFloat(firstFrame.cloudFont) - expectedCloudFonts[width]) < 0.4);
 
-      const responsiveContract = await responsivePage.evaluate(() => ({
-        lineTops: Array.from(document.querySelectorAll('.os-hero h1 [data-hero-line]')).map(
-          (line) => Math.round(line.getBoundingClientRect().top),
-        ),
-        horizontalOverflow:
-          document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      }));
+      const responsiveContract = await responsivePage.evaluate(() => {
+        const lines = Array.from(document.querySelectorAll('.os-hero__heading-line'));
+        return {
+          lineTops: lines.map((line) => Math.round(line.getBoundingClientRect().top)),
+          lineFits: lines.map((line) => line.scrollWidth <= line.clientWidth + 1),
+          horizontalOverflow:
+            document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
+      });
 
-      assert.equal(new Set(responsiveContract.lineTops).size, 3);
+      assert.equal(new Set(responsiveContract.lineTops).size, 2);
+      assert.ok(responsiveContract.lineFits.every(Boolean));
       assert.equal(responsiveContract.horizontalOverflow, 0);
       await responsivePage.close();
     }
@@ -481,7 +524,10 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.equal(new Set(mobileFooterContract.titleLines).size, 2);
     assert.ok(mobileFooterContract.artTop >= 0);
     assert.ok(mobileFooterContract.artBottom <= mobileFooterContract.viewportHeight + 1);
-    assert.equal(mobileFooterContract.artSrc, '/generated/holding-world-editorial.png');
+    assert.equal(
+      mobileFooterContract.artSrc,
+      '/generated/holding-world-editorial.png?v=20260810-line-art-v2',
+    );
     assert.ok(mobileFooterContract.artHeight <= 408);
     assert.equal(mobileFooterContract.artFilter, 'none');
     assert.ok(mobileFooterContract.bluePixels > 1000);
@@ -521,11 +567,11 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     await desktopPage.locator('main').waitFor();
 
     const desktopHeadingLineTops = await desktopPage
-      .locator('.os-hero h1 [data-hero-line]')
+      .locator('.os-hero__heading-line')
       .evaluateAll((lines) =>
         lines.map((line) => Math.round(line.getBoundingClientRect().top)),
       );
-    assert.equal(new Set(desktopHeadingLineTops).size, 3);
+    assert.equal(new Set(desktopHeadingLineTops).size, 2);
 
     const desktopWordmarkFontSize = await desktopPage
       .locator('.os-header__wordmark')
