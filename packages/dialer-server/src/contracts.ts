@@ -194,6 +194,10 @@ export type LeadConnectorServerApplication = {
     },
     LeadConnectorError
   >;
+  getContact?: (input: {
+    workspaceId: string;
+    contactId: string;
+  }) => Effect.Effect<LeadConnectorContact, LeadConnectorError>;
   searchOpportunities: (input: {
     workspaceId: string;
     query?: string;

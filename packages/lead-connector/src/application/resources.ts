@@ -248,7 +248,7 @@ export const listLeadConnectorPipelines = (workspaceId: string) =>
   });
 
 
-const getLeadConnectorContact = (input: {
+export const getLeadConnectorContact = (input: {
   workspaceId: string;
   contactId: string;
 }) =>

@@ -20,6 +20,7 @@ import {
   completeLeadConnectorOAuth,
   createLeadConnectorNote,
   createLeadConnectorTask,
+  getLeadConnectorContact,
   getValidLeadConnectorAccessToken,
   listLeadConnectorContacts,
   listLeadConnectorPipelines,
@@ -690,6 +691,50 @@ describe('LeadConnector token and resource contracts', () => {
     expect(requestUrl.searchParams.get('locationId')).toBe('location-1');
     expect(requestUrl.searchParams.get('query')).toBe('Ada');
     expect(requestUrl.searchParams.get('limit')).toBe('25');
+  });
+
+  it('resolves one installation-scoped contact for server-authoritative dial targets', async () => {
+    const harness = makeHarness((request) => {
+      if (request.url.endsWith('/contacts/contact-1')) {
+        return {
+          contact: {
+            id: 'contact-1',
+            name: 'Ada Lovelace',
+            phone: '+15555550100',
+            tags: ['prospect'],
+          },
+        };
+      }
+      return {};
+    });
+    harness.state.installationsByWorkspace.set(
+      'workspace-1',
+      connectedInstallation(),
+    );
+    harness.state.workspaceByLocation.set('location-1', 'workspace-1');
+
+    const result = await Effect.runPromise(
+      getLeadConnectorContact({
+        workspaceId: 'workspace-1',
+        contactId: 'contact-1',
+      }).pipe(Effect.provide(harness.layer)),
+    );
+
+    expect(result).toEqual({
+      id: 'contact-1',
+      firstName: null,
+      lastName: null,
+      name: 'Ada Lovelace',
+      email: null,
+      phone: '+15555550100',
+      tags: ['prospect'],
+    });
+    expect(harness.state.requests[0]).toEqual(
+      expect.objectContaining({
+        method: 'GET',
+        url: config.apiBaseUrl + '/contacts/contact-1',
+      }),
+    );
   });
 
   it('creates provider notes, tasks, and dispositions without dialer lifecycle logic', async () => {

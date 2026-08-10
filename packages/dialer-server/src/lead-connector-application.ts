@@ -3,6 +3,7 @@ import {
   completeLeadConnectorOAuth,
   disableLeadConnectorInstallation,
   exchangeLeadConnectorEmbedContext,
+  getLeadConnectorContact,
   listLeadConnectorContacts,
   listLeadConnectorPipelines,
   processLeadConnectorWebhook,
@@ -52,6 +53,8 @@ export const createEffectLeadConnectorApplication = (
     disableLeadConnectorInstallation(workspaceId).pipe(Effect.provide(layer)),
   listContacts: (input) =>
     listLeadConnectorContacts(input).pipe(Effect.provide(layer)),
+  getContact: (input) =>
+    getLeadConnectorContact(input).pipe(Effect.provide(layer)),
   searchOpportunities: (input) =>
     searchLeadConnectorOpportunities(input).pipe(Effect.provide(layer)),
   listPipelines: (workspaceId) =>
