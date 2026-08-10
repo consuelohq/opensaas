@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Hono } from 'hono';
 
 import {
@@ -5,6 +6,7 @@ import {
   resolveMcpGatewayRequiredScope,
 } from '../../lib/mcp-gateway';
 import { validateModernMcpHttpRequest } from '../../lib/mcp-protocol';
+import { hasAnyWorkspaceEdgeNodeHeaders } from '../../lib/workspace-edge-node-auth';
 import {
   authenticateBearerMcpRequest,
   authenticateSignedRequest,
@@ -58,6 +60,25 @@ const defaultDependencies: McpRouteDependencies = {
     }
   },
 };
+
+function resolveSteeringCallerKey(input: {
+  request: Request;
+  authMode: 'oauth' | 'local-bearer' | 'machine' | 'workspace-edge';
+  principalKey: string;
+}): string {
+  if (input.authMode !== 'workspace-edge') return input.principalKey;
+  const authorization = input.request.headers.get('authorization')?.trim() ?? '';
+  if (!/^Bearer\s+\S+$/i.test(authorization)) return input.principalKey;
+
+  const digest = createHash('sha256')
+    .update([
+      'workspace-edge-oauth',
+      input.principalKey,
+      authorization,
+    ].join('\n'))
+    .digest('hex');
+  return `prn_${digest.slice(0, 32)}`;
+}
 
 export function createMcpRoutes(
   dependencies: McpRouteDependencies = defaultDependencies,
@@ -117,7 +138,9 @@ export function createMcpRoutes(
       }
 
       const headers = requestHeaders(request);
-      const authentication = hasSignedGatewayHeaders(headers)
+      const signedGatewayRequest =
+        hasSignedGatewayHeaders(headers) || hasAnyWorkspaceEdgeNodeHeaders(headers);
+      const authentication = signedGatewayRequest
         ? await authenticateSignedRequest({
             request,
             path: MCP_PATH,
@@ -146,8 +169,13 @@ export function createMcpRoutes(
       const session = protocol.modern
         ? null
         : resolveMcpRequestSession(request, body);
+      const steeringCallerKey = resolveSteeringCallerKey({
+        request,
+        authMode: authentication.principal.authMode,
+        principalKey: authentication.principal.principalKey,
+      });
       const result = await handleMcpGatewayJsonRpc(body, {
-        getSteering: () => dependencies.getSteering(authentication.principal.principalKey),
+        getSteering: () => dependencies.getSteering(steeringCallerKey),
         executeFacadeTool: dependencies.executeFacadeTool,
       });
       const response = jsonResponse(result);

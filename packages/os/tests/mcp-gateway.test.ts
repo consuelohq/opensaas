@@ -8,11 +8,13 @@ import {
   getAgentAppCredentialStatus,
   issueAgentAppToken,
   listAgentAppCredentialStatuses,
+  reconcileGatewayWorkspaceEdgeProxyAuth,
   signMachineRequest,
   verifyMachineRequest,
   type AgentAppToken,
   type GatewaySecurityConfig,
 } from '../scripts/lib/security-gateway';
+import { createWorkspaceEdgeNodeHeaders } from '../scripts/lib/workspace-edge-node-auth';
 import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
@@ -626,6 +628,77 @@ describe('MCP gateway server route', () => {
       name: 'consuelo-os-gateway',
       version: '1.0.0',
     });
+  });
+
+  it('should isolate steering guards by OAuth bearer behind the signed workspace edge', async () => {
+    const config = createConfig();
+    const signingSecret = 'workspace-edge-oauth-isolation-secret';
+    reconcileGatewayWorkspaceEdgeProxyAuth({
+      authConfigPath: config.generatedAuthPath,
+      workspaceId: config.workspaceId,
+      nodeId: 'node_mcp_test',
+      connectorId: 'connector_mcp_test',
+      signingSecret,
+    });
+    const getSteering = vi.fn(async () => '# OS steering');
+    const app = createMcpRoutes({
+      getSteering,
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+    const introspection = vi.fn(async () => new Response(
+      JSON.stringify({ active: false }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    ));
+    globalThis.fetch = introspection as unknown as typeof fetch;
+
+    const sendSteering = async (bearerToken: string, nonce: string) => {
+      const body = JSON.stringify({
+        jsonrpc: '2.0',
+        id: nonce,
+        method: 'tools/call',
+        params: {
+          name: 'get_steering',
+          arguments: {},
+          _meta: modernMcpMeta(),
+        },
+      });
+      const edgeHeaders = createWorkspaceEdgeNodeHeaders({
+        signingSecret,
+        workspaceId: config.workspaceId,
+        nodeId: 'node_mcp_test',
+        connectorId: 'connector_mcp_test',
+        surface: 'os',
+        method: 'POST',
+        pathWithSearch: '/mcp',
+        body,
+        timestamp: String(Date.now()),
+        nonce,
+      });
+      const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+        method: 'POST',
+        headers: {
+          ...edgeHeaders,
+          ...modernMcpHeaders('tools/call', 'get_steering'),
+          authorization: `Bearer ${bearerToken}`,
+          'content-type': 'application/json',
+        },
+        body,
+      }));
+      expect(response.status).toBe(200);
+    };
+
+    await sendSteering('coa_oauth_subject_alpha', 'edge-oauth-alpha');
+    await sendSteering('coa_oauth_subject_beta', 'edge-oauth-beta');
+
+    expect(introspection).not.toHaveBeenCalled();
+    expect(getSteering).toHaveBeenCalledTimes(2);
+    const callerKeys = getSteering.mock.calls.map(([callerKey]) => callerKey);
+    expect(new Set(callerKeys).size).toBe(2);
+    expect(callerKeys).toEqual([
+      expect.stringMatching(/^prn_[a-f0-9]{32}$/),
+      expect.stringMatching(/^prn_[a-f0-9]{32}$/),
+    ]);
+    expect(callerKeys.join('')).not.toContain('coa_oauth_subject');
   });
 
   it('should stamp modern list results and ignore legacy transport session headers', async () => {
