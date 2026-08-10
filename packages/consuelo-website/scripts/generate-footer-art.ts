@@ -6,7 +6,7 @@ import sharp from 'sharp';
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const sourcePath = join(packageRoot, 'public/images/home/holding-world.svg');
-const bodyFillMaskPath = join(packageRoot, 'public/images/home/holding-world-body-fill-mask.svg');
+const autoFillExclusionMaskPath = join(packageRoot, 'public/images/home/holding-world-auto-fill-exclusion-mask.svg');
 const fillMaskPath = join(packageRoot, 'public/images/home/holding-world-white-fill-mask.svg');
 const outputPath = join(packageRoot, 'public/generated/holding-world-editorial.png');
 const badgePath = join(packageRoot, 'public/generated/consuelo-footer-badge.png');
@@ -14,9 +14,6 @@ const renderSize = 1200;
 const outputScale = 2;
 const alphaThreshold = 8;
 const closureRadius = 1;
-const bodyClosureRadius = 5;
-const interiorRadius = 3;
-const cleanInteriorRadius = 2;
 const outputMargin = 12;
 
 const render = await sharp(sourcePath)
@@ -92,44 +89,6 @@ const dilate = (source: Uint8Array, radius: number) => {
   return output;
 };
 
-const erode = (source: Uint8Array, radius: number) => {
-  const horizontal = new Uint8Array(source.length);
-  const output = new Uint8Array(source.length);
-  const windowSize = radius * 2 + 1;
-
-  for (let y = 0; y < height; y += 1) {
-    const row = y * width;
-    let count = 0;
-    for (let sampleX = 0; sampleX <= radius && sampleX < width; sampleX += 1) {
-      count += source[row + sampleX];
-    }
-    for (let x = 0; x < width; x += 1) {
-      horizontal[row + x] = count === windowSize ? 1 : 0;
-      const removeX = x - radius;
-      const addX = x + radius + 1;
-      if (removeX >= 0) count -= source[row + removeX];
-      if (addX < width) count += source[row + addX];
-    }
-  }
-
-  for (let x = 0; x < width; x += 1) {
-    let count = 0;
-    for (let sampleY = 0; sampleY <= radius && sampleY < height; sampleY += 1) {
-      count += horizontal[sampleY * width + x];
-    }
-    for (let y = 0; y < height; y += 1) {
-      output[y * width + x] = count === windowSize ? 1 : 0;
-      const removeY = y - radius;
-      const addY = y + radius + 1;
-      if (removeY >= 0) count -= horizontal[removeY * width + x];
-      if (addY < height) count += horizontal[addY * width + x];
-    }
-  }
-
-  return output;
-};
-
-const inkInterior = erode(ink, interiorRadius);
 const floodOutside = (barrier: Uint8Array) => {
   const outside = new Uint8Array(width * height);
   const queue = new Int32Array(width * height);
@@ -170,7 +129,6 @@ const floodOutside = (barrier: Uint8Array) => {
 };
 
 const detailOutside = floodOutside(dilate(ink, closureRadius));
-const bodyOutside = floodOutside(dilate(ink, bodyClosureRadius));
 
 const cropLeft = Math.max(0, minX - outputMargin);
 const cropTop = Math.max(0, minY - outputMargin);
@@ -188,33 +146,12 @@ const renderFillMask = (path: string) =>
     .removeAlpha()
     .raw()
     .toBuffer();
-const [bodyRegionMask, cleanWhiteRegionMask] = await Promise.all([
-  renderFillMask(bodyFillMaskPath),
+const [cleanWhiteRegionMask, autoFillExclusionMask] = await Promise.all([
   renderFillMask(fillMaskPath),
+  renderFillMask(autoFillExclusionMaskPath),
 ]);
-const bodyShape = new Uint8Array(width * height);
-for (let index = 0; index < bodyShape.length; index += 1) {
-  bodyShape[index] = bodyOutside[index] === 0 ? 1 : 0;
-}
-const cleanBodyInterior = erode(bodyShape, cleanInteriorRadius);
-const bodyUnderlayMask = new Uint8Array(outputWidth * outputHeight);
-
-for (let y = 0; y < outputHeight; y += 1) {
-  for (let x = 0; x < outputWidth; x += 1) {
-    const sourceX = cropLeft + x;
-    const sourceY = cropTop + y;
-    const sourceIndex = sourceY * width + sourceX;
-    const outputIndex = y * outputWidth + x;
-    const inBodyRegion = bodyRegionMask[outputIndex] > 128;
-
-    if (inBodyRegion && bodyOutside[sourceIndex] === 0) {
-      bodyUnderlayMask[outputIndex] = 1;
-    }
-  }
-}
 let bluePixels = 0;
 let whitePixels = 0;
-let whitenedInkPixels = 0;
 
 for (let y = 0; y < outputHeight; y += 1) {
   for (let x = 0; x < outputWidth; x += 1) {
@@ -225,20 +162,10 @@ for (let y = 0; y < outputHeight; y += 1) {
     const outputOffset = (y * outputWidth + x) * 4;
     const outputIndex = y * outputWidth + x;
     const alpha = render.data[sourceOffset + 3];
-    const inBodyRegion = bodyRegionMask[outputIndex] > 128;
-    const forceCleanWhite =
-      cleanWhiteRegionMask[outputIndex] > 128 && cleanBodyInterior[sourceIndex] === 1;
-    const hasWhiteUnderlay =
-      bodyUnderlayMask[outputIndex] === 1 || detailOutside[sourceIndex] === 0;
-
-    if (forceCleanWhite) {
-      output[outputOffset] = 255;
-      output[outputOffset + 1] = 255;
-      output[outputOffset + 2] = 255;
-      output[outputOffset + 3] = 255;
-      whitePixels += 1;
-      continue;
-    }
+    const explicitWhiteUnderlay = cleanWhiteRegionMask[outputIndex] > 128;
+    const automaticWhiteUnderlay =
+      detailOutside[sourceIndex] === 0 && autoFillExclusionMask[outputIndex] <= 128;
+    const hasWhiteUnderlay = explicitWhiteUnderlay || automaticWhiteUnderlay;
 
     if (hasWhiteUnderlay) {
       output[outputOffset] = 255;
@@ -249,16 +176,11 @@ for (let y = 0; y < outputHeight; y += 1) {
     }
 
     if (alpha > alphaThreshold) {
-      const whiteInk = inBodyRegion && inkInterior[sourceIndex] === 1;
-      if (whiteInk) {
-        whitenedInkPixels += 1;
-      } else {
-        output[outputOffset] = render.data[sourceOffset];
-        output[outputOffset + 1] = render.data[sourceOffset + 1];
-        output[outputOffset + 2] = render.data[sourceOffset + 2];
-        output[outputOffset + 3] = alpha;
-        bluePixels += 1;
-      }
+      output[outputOffset] = render.data[sourceOffset];
+      output[outputOffset + 1] = render.data[sourceOffset + 1];
+      output[outputOffset + 2] = render.data[sourceOffset + 2];
+      output[outputOffset + 3] = alpha;
+      bluePixels += 1;
       continue;
     }
   }
@@ -331,11 +253,7 @@ process.stdout.write(
       height: finalHeight,
       bluePixels,
       whitePixels,
-      whitenedInkPixels,
       closureRadius,
-      bodyClosureRadius,
-      interiorRadius,
-      cleanInteriorRadius,
       outputScale,
     },
     null,
