@@ -481,7 +481,10 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.equal(new Set(mobileFooterContract.titleLines).size, 2);
     assert.ok(mobileFooterContract.artTop >= 0);
     assert.ok(mobileFooterContract.artBottom <= mobileFooterContract.viewportHeight + 1);
-    assert.equal(mobileFooterContract.artSrc, '/generated/holding-world-editorial.png');
+    assert.equal(
+      mobileFooterContract.artSrc,
+      '/generated/holding-world-editorial.png?v=20260810-white-fill',
+    );
     assert.ok(mobileFooterContract.artHeight <= 408);
     assert.equal(mobileFooterContract.artFilter, 'none');
     assert.ok(mobileFooterContract.bluePixels > 1000);
