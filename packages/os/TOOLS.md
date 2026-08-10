@@ -6604,12 +6604,12 @@ await workspace.call({
 
 ### workspace.subagent
 
-run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.
+run or start a subagent from an instruction handoff. Write the handoff to OS tmp first under the canonical opensaas-handoffs root; model and reasoning selection are provider-specific and surfaced explicitly. Edit self-bootstrap may call task.start first, or an existing taskSession may be supplied. task.push publishes only the task branch. task.pr merges to the stream and must not be called when the handoff says stop after push. status/wait/logs attach to an existing run and never spawn; cancel targets runId. requestId makes retries idempotent. Provider capability limitations are returned explicitly and never silently weakened. Return one compact trace-style summary with traceId, files read, files edited, tools called, and token usage.
 
 | Field | Value |
 | --- | --- |
 | Category | subagent |
-| Signature | `workspace.subagent({ provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; bundle?: "core" &#124; "media"; policy?: "read" &#124; "edit"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; outputFormat?: "text" &#124; "json"; workspaceOnly?: boolean &#124; "preferred" &#124; "strict"; requestId?: string }) => Promise<ToolResult<{ provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; bundle: "core" &#124; "media"; outputFormat: "text" &#124; "json"; mode: "work"; policy: "read" &#124; "edit"; status: "completed" &#124; "failed" &#124; "not_configured" &#124; "not_supported" &#124; "timed_out"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary?: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" &#124; "strict" &#124; false; rawShellUsed: boolean } }>>` |
+| Signature | `workspace.subagent({ action?: "run" &#124; "start" &#124; "status" &#124; "wait" &#124; "logs" &#124; "cancel"; provider?: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; reasoningEffort?: "minimal" &#124; "low" &#124; "medium" &#124; "high" &#124; "xhigh"; bundle?: "core" &#124; "media"; policy?: "read" &#124; "edit"; instructionPath?: string; cwd?: string; runId?: string; waitMs?: number; taskSession?: string; timeoutMs?: number; outputFormat?: "text" &#124; "json"; workspaceOnly?: boolean &#124; "preferred" &#124; "strict"; requestId?: string }) => Promise<ToolResult<{ action?: "run" &#124; "start" &#124; "status" &#124; "wait" &#124; "logs" &#124; "cancel"; runId?: string; requestId?: string; provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; reasoningEffort?: "minimal" &#124; "low" &#124; "medium" &#124; "high" &#124; "xhigh"; bundle: "core" &#124; "media"; outputFormat: "text" &#124; "json"; mode: "work"; policy: "read" &#124; "edit"; status: "starting" &#124; "running" &#124; "completed" &#124; "failed" &#124; "cancelled" &#124; "completion_unknown" &#124; "not_configured" &#124; "not_supported" &#124; "timed_out"; capabilities?: { modelSelection: boolean; reasoningEffort: boolean; strictWorkspaceOnly: boolean; edit: boolean; detachedExecution: boolean }; unsupportedCapabilities?: string[]; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary?: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" &#124; "strict" &#124; false; rawShellUsed: boolean } }>>` |
 | Runtime | `workspace subagent` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -6620,10 +6620,13 @@ run a subagent with a tmp instruction file. use only when the user asks for suba
 await workspace.call({
   "tool": "subagent",
   "input": {
-    "provider": "grok",
-    "bundle": "media",
-    "policy": "read",
-    "instructionPath": "/tmp/ko-social.md",
+    "action": "start",
+    "provider": "codex",
+    "model": "gpt-5.6-luna",
+    "reasoningEffort": "xhigh",
+    "policy": "edit",
+    "instructionPath": "/tmp/opensaas-handoffs/repair.md",
+    "requestId": "req_repair_once",
     "outputFormat": "json"
   }
 });
@@ -6643,6 +6646,7 @@ await workspace.call({
   "exitCode": 0,
   "durationMs": 12,
   "traceId": "trc_abc123def456",
+  "requestId": "req_repair_once",
   "apiVersion": "1.0.0"
 }
 ```
@@ -6661,6 +6665,7 @@ await workspace.call({
   "exitCode": 1,
   "durationMs": 12,
   "traceId": "trc_abc123def456",
+  "requestId": "req_repair_once",
   "apiVersion": "1.0.0"
 }
 ```
@@ -9325,6 +9330,7 @@ Every result includes `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `du
 
 `OK`, `VALIDATION_ERROR`, `AMBIGUOUS_TASK_SELECTION`, `WORKTREE_NOT_FOUND`, `COMMAND_FAILED`, `TIMEOUT`, `PARSE_ERROR`, `NOT_FOUND`, `TASK_SESSION_REQUIRED`, `TASK_SESSION_NOT_FOUND`, `DRY_RUN`.
 
+Lifecycle actions also return CAPABILITY_NOT_SUPPORTED, WAIT_TIMEOUT, and IDEMPOTENCY_CONFLICT where applicable.
 ## final rule
 
 The tool manifest is executable contract, not prose. If the docs and manifest disagree, regenerate this file from the manifest and trust the manifest-backed generator.

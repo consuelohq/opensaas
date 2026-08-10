@@ -122,6 +122,7 @@ const REQUIRED_RUNTIME_INPUTS = [
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
   'scripts/lib/managed-component-install.ts',
+  'scripts/lib/subagent/runner.ts',
   'manifests/generated/tool.manifest.json',
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
