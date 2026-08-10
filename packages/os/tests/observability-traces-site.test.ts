@@ -4,7 +4,10 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { buildObservabilityTracesSite } from '../scripts/lib/observability-traces-site';
+import {
+  buildObservabilityTracesClientScript,
+  buildObservabilityTracesSite,
+} from '../scripts/lib/observability-traces-site';
 
 describe('Observability Traces shell', () => {
   it('renders Observability as the surface and Traces as the current module', () => {
@@ -35,13 +38,16 @@ describe('Observability Traces shell', () => {
     expect(html).not.toContain('127.0.0.1');
   });
 
-  it('keeps private observability free of third-party runtime dependencies', () => {
+  it('keeps shared observability behavior free of third-party and visual runtime dependencies', () => {
+    const clientScript = buildObservabilityTracesClientScript();
     const html = buildObservabilityTracesSite();
 
-    expect(html).not.toContain('cdn.jsdelivr.net');
-    expect(html).not.toContain('<script src=\"https://');
-    expect(html).not.toContain('ReactDOM');
-    expect(html).toContain('.animate(');
+    expect(html).toContain(clientScript);
+    expect(clientScript).not.toContain('cdn.jsdelivr.net');
+    expect(clientScript).not.toContain('<script src=\"https://');
+    expect(clientScript).not.toContain('ReactDOM');
+    expect(clientScript).not.toContain('.animate(');
+    expect(clientScript).not.toContain('cubic-bezier');
   });
 
   it('keeps an Astro source for the durable Observability to Traces product model', () => {
@@ -50,8 +56,10 @@ describe('Observability Traces shell', () => {
       'utf8',
     );
 
-    expect(source).toContain('buildObservabilityTracesSite');
-    expect(source).toContain('set:html={tracesPage}');
+    expect(source).toContain('buildObservabilityTracesClientScript');
+    expect(source).toContain('<MarketingLayout');
+    expect(source).toContain('set:html={traceClientScript}');
+    expect(source).not.toContain('buildObservabilityTracesSite()');
     expect(source).not.toContain('cdn.jsdelivr.net');
     expect(source).not.toContain('Trace Burn Intelligence');
     expect(source).not.toMatch(/ReactDOM/);
