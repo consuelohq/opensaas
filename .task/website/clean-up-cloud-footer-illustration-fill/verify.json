@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/clean-up-cloud-footer-illustration-fill",
+  "base": "origin/main",
+  "headSha": "33e7520fabb26481bdc491d2728a69fc10151f4c",
+  "changeHash": "244fc45b9a7456a20a3bb78e98b12d25afdbe9123b32fe8d6e02d20fe9a5dc4f",
+  "changedFiles": [
+    "packages/consuelo-website/scripts/generate-footer-art.ts",
+    "packages/consuelo-website/tests/footer-art.test.mjs"
+  ],
+  "verifiedAt": "2026-08-10T01:00:10.974Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/clean-up-cloud-footer-illustration-fill.json",
+        ".task/website/clean-up-cloud-footer-illustration-fill/current.json",
+        ".task/website/clean-up-cloud-footer-illustration-fill/evidence-log.json",
+        ".task/website/clean-up-cloud-footer-illustration-fill/read-log.json",
+        ".task/website/clean-up-cloud-footer-illustration-fill/session.json",
+        ".task/website/clean-up-cloud-footer-illustration-fill/workpad.md",
+        "packages/consuelo-website/scripts/generate-footer-art.ts",
+        "packages/consuelo-website/tests/footer-art.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

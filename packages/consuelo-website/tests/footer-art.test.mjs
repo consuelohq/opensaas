@@ -70,6 +70,40 @@ describe('cloud footer editorial artwork', () => {
     expect(globe.blue).toBeGreaterThan(3000);
   });
 
+  test('should keep the inner sash and outstretched hand cleanly white', async () => {
+    const handCore = await countRegion(artPath, {
+      left: 0.15,
+      right: 0.34,
+      top: 0.62,
+      bottom: 0.72,
+    });
+    const sashUpper = await countRegion(artPath, {
+      left: 0.48,
+      right: 0.68,
+      top: 0.48,
+      bottom: 0.66,
+    });
+    const sashMiddle = await countRegion(artPath, {
+      left: 0.43,
+      right: 0.68,
+      top: 0.6,
+      bottom: 0.84,
+    });
+    const sashLower = await countRegion(artPath, {
+      left: 0.43,
+      right: 0.68,
+      top: 0.76,
+      bottom: 0.96,
+    });
+
+    const whiteShare = ({ white, blue }) => white / (white + blue);
+
+    expect(whiteShare(handCore)).toBeGreaterThan(0.8);
+    expect(whiteShare(sashUpper)).toBeGreaterThan(0.97);
+    expect(whiteShare(sashMiddle)).toBeGreaterThan(0.97);
+    expect(whiteShare(sashLower)).toBeGreaterThan(0.97);
+  });
+
   test('should generate a legible portrait badge from the editorial artwork', async () => {
     const metadata = await sharp(badgePath).metadata();
     expect(metadata.format).toBe('png');
