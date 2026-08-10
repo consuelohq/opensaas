@@ -73,6 +73,27 @@ const createDependencies = (
   } satisfies DialerServerDependencies;
 };
 
+const createCommercialAuthorization = () =>
+  ({
+    authorizeCall: (_identity: typeof identity, body: unknown) =>
+      Effect.succeed(
+        body && typeof body === 'object' && !Array.isArray(body)
+          ? (body as Record<string, unknown>)
+          : {},
+      ),
+  }) as unknown as NonNullable<DialerServerDependencies['commercial']>;
+
+const createLeadConnectorTargetResolver = (input: {
+  getContact: () => ReturnType<typeof Effect.succeed> | ReturnType<typeof Effect.fail>;
+  resolveQueueCandidates: () =>
+    | ReturnType<typeof Effect.succeed>
+    | ReturnType<typeof Effect.fail>;
+}) =>
+  ({
+    getContact: input.getContact,
+    resolveQueueCandidates: input.resolveQueueCandidates,
+  }) as unknown as NonNullable<DialerServerDependencies['leadConnector']>;
+
 const authenticatedRequest = (path: string, init: RequestInit = {}) =>
   new Request(`https://dialer.test${path}`, {
     ...init,
@@ -177,6 +198,142 @@ describe('dialer-server HTTP contracts', () => {
       sessionId: 'group-1',
       workspaceId: 'workspace-1',
     });
+  });
+
+  it('rejects an entitled commercial user whose direct target is not an authorized GHL contact', async () => {
+    const dependencies = createDependencies({
+      commercial: createCommercialAuthorization(),
+      leadConnector: createLeadConnectorTargetResolver({
+        getContact: () => Effect.fail(new Error('contact not found')),
+        resolveQueueCandidates: () => Effect.die('not used'),
+      }),
+    });
+
+    const response = await createDialerServer(dependencies).fetch(
+      authenticatedRequest('/v1/call-sessions', {
+        method: 'POST',
+        body: JSON.stringify({
+          source: 'direct',
+          selectionStrategy: 'single',
+          requestedFanout: 1,
+          contactId: 'contact-not-in-installation',
+          targetPhone: '+15550000009',
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: {
+        code: 'CALL_TARGET_NOT_AUTHORIZED',
+        message: 'Call target could not be authorized',
+        retryable: false,
+      },
+    });
+    expect(dependencies.application.startCallSession).not.toHaveBeenCalled();
+  });
+
+  it('uses the installation contact phone for supported Single Dial instead of the client phone', async () => {
+    const dependencies = createDependencies({
+      commercial: createCommercialAuthorization(),
+      leadConnector: createLeadConnectorTargetResolver({
+        getContact: () =>
+          Effect.succeed({
+            id: 'contact-1',
+            firstName: 'Ada',
+            lastName: 'Lovelace',
+            name: 'Ada Lovelace',
+            email: null,
+            phone: '+15550000011',
+            tags: [],
+          }),
+        resolveQueueCandidates: () => Effect.die('not used'),
+      }),
+    });
+
+    const response = await createDialerServer(dependencies).fetch(
+      authenticatedRequest('/v1/call-sessions', {
+        method: 'POST',
+        body: JSON.stringify({
+          source: 'direct',
+          selectionStrategy: 'single',
+          requestedFanout: 1,
+          contactId: 'contact-1',
+          targetPhone: '+15559999999',
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(dependencies.application.startCallSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          contactId: 'contact-1',
+          targetPhone: '+15550000011',
+        }),
+      }),
+    );
+  });
+
+  it('uses queue-preview candidates for supported progressive queue starts', async () => {
+    const resolveQueueCandidates = mock(() =>
+      Effect.succeed({
+        pipelineId: 'pipeline-1',
+        pipelineName: 'Sales',
+        stageId: 'stage-1',
+        stageName: 'Qualified',
+        opportunityTotal: 1,
+        callableTotal: 1,
+        truncated: false,
+        candidates: [
+          {
+            opportunityId: 'opportunity-1',
+            contactId: 'contact-1',
+            contactName: 'Ada Lovelace',
+            phone: '+15550000012',
+            status: 'open',
+            monetaryValue: 100,
+          },
+        ],
+      }),
+    );
+    const dependencies = createDependencies({
+      commercial: createCommercialAuthorization(),
+      leadConnector: createLeadConnectorTargetResolver({
+        getContact: () => Effect.die('not used'),
+        resolveQueueCandidates,
+      }),
+    });
+
+    const response = await createDialerServer(dependencies).fetch(
+      authenticatedRequest('/v1/call-sessions', {
+        method: 'POST',
+        body: JSON.stringify({
+          source: 'queue',
+          selectionStrategy: 'predictive',
+          requestedFanout: 1,
+          queueId: 'pipeline-1:stage-1',
+          contactIds: ['contact-1'],
+          targetPhones: ['+15559999998'],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(resolveQueueCandidates).toHaveBeenCalledWith({
+      workspaceId: 'workspace-1',
+      pipelineId: 'pipeline-1',
+      stageId: 'stage-1',
+    });
+    expect(dependencies.application.startCallSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          queueId: 'pipeline-1:stage-1',
+          contactIds: ['contact-1'],
+          targetPhones: ['+15550000012'],
+        }),
+      }),
+    );
   });
 
   it('fails closed before invoking an application use case when identity is absent', async () => {

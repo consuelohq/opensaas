@@ -78,6 +78,7 @@ export type { LeadConnectorTokenResponse } from './application/tokens.js';
 export {
   createLeadConnectorNote,
   createLeadConnectorTask,
+  getLeadConnectorContact,
   listLeadConnectorContacts,
   listLeadConnectorPipelines,
   recordLeadConnectorDisposition,

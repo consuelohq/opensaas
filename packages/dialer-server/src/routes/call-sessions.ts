@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 
 import type { DialerServerDependencies } from '../contracts';
+import { resolveCommercialCallTargetInput } from '../commercial-target-authorization';
 import { runApplicationEffect } from '../effect-runner';
 import { dialerErrorResponse, invalidRequestResponse } from '../errors';
 import type { DialerVariables } from '../middleware/auth';
@@ -44,13 +45,20 @@ export const createCallSessionRoutes = (
       if (authorizedInput && !authorizedInput.ok) {
         return dialerErrorResponse(context, authorizedInput.error);
       }
+      const applicationInput = authorizedInput?.ok
+        ? await resolveCommercialCallTargetInput(
+            authorizedInput.value,
+            identity,
+            dependencies.leadConnector,
+          )
+        : input;
       const result = await runApplicationEffect(
         dependencies.application.startCallSession({
           workspaceId: identity.workspaceId,
           userId: identity.userId,
           installationId: identity.installationId,
           locationId: identity.locationId,
-          input: (authorizedInput?.ok ? authorizedInput.value : input) as never,
+          input: applicationInput as never,
         }),
       );
       return result.ok
