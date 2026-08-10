@@ -325,6 +325,37 @@ describe('MCP gateway adapter', () => {
     });
   });
 
+  it('rejects an explicit untrusted Origin at the MCP route before execution', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const executeFacadeTool = vi.fn();
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'tools',
+      method: 'tools/list',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token.bearerToken}`,
+        'content-type': 'application/json',
+        origin: 'https://attacker.example',
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'INVALID_MCP_ORIGIN' },
+    });
+    expect(executeFacadeTool).not.toHaveBeenCalled();
+  });
+
 
   it('should accept an active Consuelo OAuth token when a public MCP request targets the central resource', async () => {
     const config = createConfig();
@@ -346,6 +377,7 @@ describe('MCP gateway adapter', () => {
       fetchCalls.push({ url, body: String(init?.body ?? '') });
       return new Response(JSON.stringify({
         active: true,
+        client_id: 'chatgpt-consuelo-os',
         workspace_host: config.workspaceHost,
         scopes: ['route:/mcp:read', 'tool:*:read'],
         sub: 'google:123',

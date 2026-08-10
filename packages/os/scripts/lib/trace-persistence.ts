@@ -245,6 +245,32 @@ export function recordGatewayAuthorizationTraceSafely(input: {
   }, options);
 }
 
+export function recordGatewayAuthenticationTraceSafely(input: {
+  workspaceId: string;
+  route: string;
+  requiredScope: string;
+  authMode: string;
+  principalKey: string;
+}, options: TracePersistenceOptions = {}): boolean {
+  return recordToolTraceSafely({
+    traceId: createTraceId(),
+    source: 'gateway',
+    tool: 'authentication.mcp',
+    status: 'ok',
+    ok: true,
+    code: 'OK',
+    exitCode: 0,
+    input: {
+      workspaceId: input.workspaceId,
+      route: input.route,
+      requiredScope: input.requiredScope,
+      authMode: input.authMode,
+      principalKey: input.principalKey,
+    },
+    result: { ok: true },
+  }, options);
+}
+
 function openTraceDatabase(dbPath: string): TraceDatabase {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
   const { Database } = require('bun:sqlite') as { Database: TraceDatabaseConstructor };
