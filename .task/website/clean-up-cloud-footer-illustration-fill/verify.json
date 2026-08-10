@@ -4,13 +4,13 @@
   "mode": "full",
   "branch": "task/website/clean-up-cloud-footer-illustration-fill",
   "base": "origin/main",
-  "headSha": "3cda8eb4d778506aaf65485af8c5361a2fed3e8b",
-  "changeHash": "9cd36a9e78388cab3e928697372cf96b811beee174d781416c3b1f00e6d79e44",
+  "headSha": "bbc4369f72d0e8ad2c971849dea89667a909db22",
+  "changeHash": "245749f75a111bc8605f76bbaec6316a8c06c28f3de4fdad552bcb4b48b1aa0d",
   "changedFiles": [
     "packages/consuelo-website/scripts/generate-footer-art.ts",
     "packages/consuelo-website/tests/footer-art.test.mjs"
   ],
-  "verifiedAt": "2026-08-10T01:01:21.686Z",
+  "verifiedAt": "2026-08-10T01:03:03.537Z",
   "review": {
     "skipped": false,
     "passed": true,

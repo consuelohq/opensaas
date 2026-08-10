@@ -20,6 +20,7 @@
 - `packages/consuelo-website/scripts/generate-footer-art.ts`
 - `packages/consuelo-website/tests/footer-art.test.mjs`
 - `packages/consuelo-website/tests/homepage-mobile-layout.test.mjs`
+- `packages/workspace/scripts/lib/task-workpad.js`
 
 ## files changed
 
@@ -40,6 +41,7 @@
 - 2026-08-10 00:58:59 apply-patch: `packages/consuelo-website/scripts/generate-footer-art.ts`
 - 2026-08-10 00:59:34 fs.write: `.task/website/clean-up-cloud-footer-illustration-fill/workpad.md`
 - 2026-08-10 01:00:35 fs.write: `.task/website/clean-up-cloud-footer-illustration-fill/workpad.md`
+- 2026-08-10 01:02:56 fs.write: `.task/website/clean-up-cloud-footer-illustration-fill/workpad.md`
 
 ## Implementation and validation
 
@@ -62,6 +64,7 @@
 - 2026-08-10 01:00:10 `verify`: passed — OK
 - 2026-08-10 01:00:40 `verify`: passed — OK
 - 2026-08-10 01:01:21 `verify`: passed — OK
+- 2026-08-10 01:03:03 `verify`: passed — OK
 
 ## Final pre-publish status
 
@@ -72,3 +75,13 @@
 - No known product blocker remains. Next action: promote task PR #1799 to `stream/website`, merge stream to `main`, then verify the live iPad/footer rendering.
 
 - 2026-08-10 01:00:35 append: `.task/website/clean-up-cloud-footer-illustration-fill/workpad.md`
+
+## Final validation
+
+- What changed: the footer-art generator now applies an inset clean-white mask to the character's inner sash and outstretched hand, while leaving the Potrace source SVG, outer robe, globe, pose, typography, and page layout intact.
+- Why: the prior globe exclusion overlapped the hand and the generic ink-preservation pass left blue hatching inside areas that are intended to read as solid white fabric/skin.
+- Validation: `bun test tests/footer-art.test.mjs` passes 3/3; hand core is 94.05% white and sash bands are 99.36–100% white; `media.svg verify` passes; production Astro build passes with 0 errors; review reports 0 issues from this change; full verify is publish-valid.
+- Issues/recovery: a first global erosion adjustment reduced desired outer-robe blue detail and was reverted; the final solution is targeted. A TypeScript polygon inference error found by the build was fixed by generalizing the point-scaling helper.
+- Follow-up: no code blocker remains; promote PR #1799 through `stream/website`, merge to `main`, and verify the deployed footer on an iPad viewport.
+
+- 2026-08-10 01:02:56 append: `.task/website/clean-up-cloud-footer-illustration-fill/workpad.md`
