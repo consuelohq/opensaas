@@ -218,6 +218,31 @@ describe('commercial LeadConnector surfaces', () => {
     expect(document.querySelectorAll('[role="listbox"]').length).toBeGreaterThanOrEqual(2);
   });
 
+  it('renders provider pipeline stages as selectable queue options when they are returned', () => {
+    const html = renderLeadConnectorEmbed(
+      {
+        ...commercialState(),
+        pipelines: [
+          {
+            id: 'marketing-pipeline',
+            name: 'Marketing Pipeline',
+            stages: [{ id: 'new-lead', name: 'New Lead', position: 0 }],
+          },
+        ],
+        selectedQueue: null,
+      },
+      { surface: 'overlay' },
+    );
+    const document = new JSDOM(html).window.document;
+    const queueOptions = [
+      ...document.querySelectorAll(
+        '[data-combobox-field="queue"] [role="option"]',
+      ),
+    ].map((option) => option.textContent?.trim());
+
+    expect(queueOptions).toEqual(['Marketing Pipeline — New Lead']);
+  });
+
   it('renders an actionable transfer form and only exposes complete or cancel during a warm consultation', () => {
     const connected = {
       ...commercialState(),

@@ -558,6 +558,76 @@ describe('LeadConnector embed controller', () => {
     });
   });
 
+  it('loads Marketing Pipeline stages and previews the selected New Lead queue', async () => {
+    const api = createApi();
+    api.listPipelines = mock(async () => [
+      {
+        id: 'marketing-pipeline',
+        name: 'Marketing Pipeline',
+        stages: [{ id: 'new-lead', name: 'New Lead', position: 0 }],
+      },
+    ]);
+    api.resolveQueueCandidates = mock(async () => ({
+      pipelineId: 'marketing-pipeline',
+      pipelineName: 'Marketing Pipeline',
+      stageId: 'new-lead',
+      stageName: 'New Lead',
+      opportunityTotal: 1,
+      callableTotal: 1,
+      truncated: false,
+      candidates: [
+        {
+          opportunityId: 'opportunity-new-lead',
+          contactId: 'contact-new-lead',
+          contactName: 'New Lead Contact',
+          phone: '+15550100126',
+          status: 'open',
+          monetaryValue: null,
+        },
+      ],
+    }));
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
+
+    await controller.authenticate('opaque-parent-ciphertext');
+    expect(controller.getState().pipelines).toEqual([
+      {
+        id: 'marketing-pipeline',
+        name: 'Marketing Pipeline',
+        stages: [{ id: 'new-lead', name: 'New Lead', position: 0 }],
+      },
+    ]);
+
+    await controller.selectQueue({
+      pipelineId: 'marketing-pipeline',
+      stageId: 'new-lead',
+    });
+
+    expect(api.resolveQueueCandidates).toHaveBeenCalledWith({
+      pipelineId: 'marketing-pipeline',
+      stageId: 'new-lead',
+    });
+    expect(controller.getState()).toMatchObject({
+      selectedQueue: {
+        pipelineId: 'marketing-pipeline',
+        pipelineName: 'Marketing Pipeline',
+        stageId: 'new-lead',
+        stageName: 'New Lead',
+        opportunityTotal: 1,
+        callableTotal: 1,
+      },
+      selectedTargets: [
+        {
+          contactId: 'contact-new-lead',
+          opportunityId: 'opportunity-new-lead',
+          phone: '+15550100126',
+        },
+      ],
+    });
+  });
+
   it('coalesces idle background resource refreshes and skips refresh while a call is active', async () => {
     const api = createApi();
     const controller = createLeadConnectorEmbedController({
@@ -642,6 +712,14 @@ describe('LeadConnector embed controller', () => {
       surface: 'admin',
     });
     await controller.authenticate('opaque-parent-ciphertext');
+
+    expect(api.createEmbedSession).toHaveBeenCalledWith(
+      'opaque-parent-ciphertext',
+    );
+    expect(api.getCommercialDashboard).toHaveBeenCalledTimes(1);
+    expect(controller.getState().commercialDashboard?.workspaceId).toBe(
+      'workspace-1',
+    );
 
     expect(
       await controller.createCheckout({
