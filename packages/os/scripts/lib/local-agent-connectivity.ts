@@ -6,6 +6,11 @@ import path from 'node:path';
 
 import { Effect } from 'effect';
 
+import {
+  MODERN_MCP_PROTOCOL_VERSION,
+  modernMcpClientMeta,
+} from './mcp-protocol';
+
 export type AgentName =
   | 'codex'
   | 'cursor'
@@ -1089,7 +1094,7 @@ function probeMcpCommand(input: {
     let settled = false;
     let stdout = Buffer.alloc(0);
     let stderr = '';
-    let initialized: JsonObject | undefined;
+    let discovered: JsonObject | undefined;
     let tools: JsonObject | undefined;
     let toolsRequested = false;
     const child = spawn(commandPath, [], {
@@ -1141,25 +1146,26 @@ function probeMcpCommand(input: {
             throw new Error(`MCP request ${String(message.id ?? 'unknown')} failed: ${JSON.stringify(message.error)}`);
           }
           if (message.id === 1 && isJsonObject(message.result)) {
-            initialized = message.result;
+            discovered = message.result;
             if (!toolsRequested) {
               toolsRequested = true;
               child.stdin.write(`${JSON.stringify({
                 jsonrpc: '2.0',
-                method: 'notifications/initialized',
-                params: {},
-              })}\n`);
-              child.stdin.write(`${JSON.stringify({
-                jsonrpc: '2.0',
                 id: 3,
                 method: 'tools/list',
-                params: {},
+                params: {
+                  _meta: modernMcpClientMeta('consuelo-verifier'),
+                },
               })}\n`);
             }
           }
           if (message.id === 3 && isJsonObject(message.result)) tools = message.result;
         }
-        const protocolVersion = initialized?.protocolVersion;
+        const supportedVersions = discovered?.supportedVersions;
+        const protocolVersion = Array.isArray(supportedVersions)
+          && supportedVersions.includes(MODERN_MCP_PROTOCOL_VERSION)
+          ? MODERN_MCP_PROTOCOL_VERSION
+          : undefined;
         const toolList = tools?.tools;
         if (typeof protocolVersion === 'string' && Array.isArray(toolList)) {
           if (toolList.length === 0) {
@@ -1195,11 +1201,9 @@ function probeMcpCommand(input: {
     child.stdin.write(`${JSON.stringify({
       jsonrpc: '2.0',
       id: 1,
-      method: 'initialize',
+      method: 'server/discover',
       params: {
-        protocolVersion: '2024-11-05',
-        capabilities: {},
-        clientInfo: { name: 'consuelo-verifier', version: '1.0.0' },
+        _meta: modernMcpClientMeta('consuelo-verifier'),
       },
     })}\n`);
   });

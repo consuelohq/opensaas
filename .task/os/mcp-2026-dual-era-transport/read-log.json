@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/mcp-2026-dual-era-transport/workpad.md",
+    "packages/os/scripts/lib/local-agent-mcp-bridge.ts",
+    "packages/os/tests/local-agent-connectivity.test.ts",
+    "packages/os/tests/local-agent-mcp-bridge.test.ts",
+    "packages/os/tests/mcp-gateway.test.ts"
+  ],
+  "updatedAt": "2026-08-10T04:39:01.654Z"
+}

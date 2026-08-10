@@ -4,6 +4,7 @@ import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
 } from '../../lib/mcp-gateway';
+import { validateModernMcpHttpRequest } from '../../lib/mcp-protocol';
 import {
   authenticateBearerMcpRequest,
   authenticateSignedRequest,
@@ -137,13 +138,20 @@ export function createMcpRoutes(
         principalKey: authentication.principal.principalKey,
       });
 
-      const session = resolveMcpRequestSession(request, body);
+      const protocol = validateModernMcpHttpRequest(body, request.headers);
+      if (!protocol.ok) {
+        return jsonResponse(protocol.response, protocol.status);
+      }
+
+      const session = protocol.modern
+        ? null
+        : resolveMcpRequestSession(request, body);
       const result = await handleMcpGatewayJsonRpc(body, {
         getSteering: () => dependencies.getSteering(authentication.principal.principalKey),
         executeFacadeTool: dependencies.executeFacadeTool,
       });
       const response = jsonResponse(result);
-      if (session.responseSessionId) {
+      if (session?.responseSessionId) {
         response.headers.set('mcp-session-id', session.responseSessionId);
       }
       return response;

@@ -87,6 +87,47 @@ describe('local agent MCP bridge', () => {
     expect(requests[1].headers.get('mcp-session-id')).toBe('session_123');
   });
 
+  it('forwards modern MCP metadata as stateless HTTP routing headers', async () => {
+    const home = createCredentialHome();
+    const requests: Request[] = [];
+    const fetchImpl: typeof fetch = async (input, init) => {
+      requests.push(new Request(input, init));
+      return Response.json(
+        { jsonrpc: '2.0', id: requests.length, result: { resultType: 'complete', tools: [] } },
+        { headers: { 'mcp-session-id': 'legacy-session-must-be-ignored' } },
+      );
+    };
+    const bridge = createLocalAgentMcpBridge({ home, agentId: 'codex', fetchImpl });
+    const meta = {
+      'io.modelcontextprotocol/protocolVersion': '2026-07-28',
+      'io.modelcontextprotocol/clientInfo': { name: 'bridge-test', version: '1.0.0' },
+      'io.modelcontextprotocol/clientCapabilities': {},
+    };
+
+    await bridge.forward(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'tools/list',
+      params: { _meta: meta },
+    }));
+    await bridge.forward(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 2,
+      method: 'tools/call',
+      params: { name: 'call', arguments: { tool: 'status' }, _meta: meta },
+    }));
+
+    expect(requests).toHaveLength(2);
+    expect(requests[0].headers.get('mcp-protocol-version')).toBe('2026-07-28');
+    expect(requests[0].headers.get('mcp-method')).toBe('tools/list');
+    expect(requests[0].headers.get('mcp-name')).toBeNull();
+    expect(requests[0].headers.get('mcp-session-id')).toBeNull();
+    expect(requests[1].headers.get('mcp-protocol-version')).toBe('2026-07-28');
+    expect(requests[1].headers.get('mcp-method')).toBe('tools/call');
+    expect(requests[1].headers.get('mcp-name')).toBe('call');
+    expect(requests[1].headers.get('mcp-session-id')).toBeNull();
+  });
+
   it('returns a retryable JSON-RPC error without exposing credentials', async () => {
     const home = createCredentialHome();
     const bridge = createLocalAgentMcpBridge({

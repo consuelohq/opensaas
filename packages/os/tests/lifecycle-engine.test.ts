@@ -236,6 +236,7 @@ function createEngine(input: {
   now?: () => Date;
   serviceFailure?: Error;
   health?: boolean | boolean[];
+  connectivity?: boolean;
   stagingFailure?: Error;
   onboarding?: () => Promise<void>;
   runtime?: LifecycleRuntimeMaterializer;
@@ -271,6 +272,14 @@ function createEngine(input: {
         return input.health ?? true;
       },
     },
+    ...(input.connectivity === undefined ? {} : {
+      connectivity: {
+        async accept() {
+          serviceOperations.push('connectivity');
+          return input.connectivity ?? true;
+        },
+      },
+    }),
     hooks: {
       async beforeStage() {
         if (input.stagingFailure) throw input.stagingFailure;
@@ -749,6 +758,34 @@ describe('unified lifecycle engine', () => {
     writeInstalledIdentity();
     const failedRestart = createEngine({ serviceFailure: new Error('launchctl failed') });
     await expect(failedRestart.restart()).rejects.toMatchObject({ code: 'SERVICE_RESTART_FAILED' });
+  });
+
+  it('accepts local MCP connectivity after repaired runtime health', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const repair = createEngine({ connectivity: true });
+
+    await expect(repair.repair()).resolves.toMatchObject({
+      operation: 'repair',
+      changed: true,
+    });
+    expect(repair.serviceOperations).toEqual([
+      'preflight',
+      'restart',
+      'health',
+      'connectivity',
+    ]);
+  });
+
+  it('fails repair when local MCP connectivity is not accepted', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const repair = createEngine({ connectivity: false });
+
+    await expect(repair.repair()).rejects.toMatchObject({
+      code: 'HEALTH_REJECTED',
+      phase: 'connectivity',
+    });
   });
 
   it('persists channel and notification preferences and expires snooze at read time', async () => {

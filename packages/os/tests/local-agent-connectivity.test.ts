@@ -353,7 +353,7 @@ describe('local agent connectivity', () => {
     });
 
     expect(verification.handshake).toMatchObject({
-      protocolVersion: '2024-11-05',
+      protocolVersion: '2026-07-28',
     });
     expect(Number.isInteger(verification.handshake?.toolCount)).toBe(true);
     expect((verification.handshake?.toolCount ?? 0) > 0).toBe(true);
