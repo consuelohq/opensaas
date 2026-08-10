@@ -56,11 +56,7 @@ const CANCELED_SUBSCRIPTION_STATUSES = new Set([
   'canceled',
   'incomplete_expired',
 ]);
-const GRACE_ELIGIBLE_SUBSCRIPTION_STATUSES = new Set([
-  'past_due',
-  'unpaid',
-  'incomplete',
-]);
+const GRACE_ELIGIBLE_SUBSCRIPTION_STATUSES = new Set(['past_due']);
 
 export const resolveBillingAccess = (input: {
   status: string;

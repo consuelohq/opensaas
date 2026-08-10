@@ -823,7 +823,7 @@ describe('commercial application billing and inventory authority', () => {
             provider_subscription_id:
               subscription?.provider_subscription_id ??
               String(parameters[2] ?? ''),
-            status: 'past_due',
+            status: subscription?.status ?? 'payment_failed',
             payment_failed_at:
               subscription?.payment_failed_at ?? String(parameters[3] ?? ''),
             cancel_at_period_end:
@@ -847,7 +847,6 @@ describe('commercial application billing and inventory authority', () => {
         currentEventType === 'invoice.payment_failed'
       ) {
         if (subscription) {
-          subscription.status = 'past_due';
           subscription.payment_failed_at ??= String(parameters[1] ?? '');
         }
         return { rows: [], rowCount: subscription ? 1 : 0 };
@@ -1003,8 +1002,8 @@ describe('commercial application billing and inventory authority', () => {
       status: 'unpaid',
     });
     await expect(callerContext()).resolves.toMatchObject({
-      canStartCall: true,
-      billing: { state: 'grace', canPurchaseNumbers: true },
+      canStartCall: false,
+      billing: { state: 'blocked', canPurchaseNumbers: false },
     });
 
     await processWebhook({
@@ -1025,8 +1024,8 @@ describe('commercial application billing and inventory authority', () => {
       type: 'invoice.payment_failed',
     });
     await expect(callerContext()).resolves.toMatchObject({
-      canStartCall: true,
-      billing: { state: 'grace', canPurchaseNumbers: true },
+      canStartCall: false,
+      billing: { state: 'blocked', canPurchaseNumbers: false },
     });
   });
 

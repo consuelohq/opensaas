@@ -586,6 +586,24 @@ describe('Stripe subscription projection, grace, and uninstall', () => {
       canReadHistory: true,
       graceEndsAt: null,
     });
+
+    for (const status of ['unpaid', 'incomplete', 'paused']) {
+      expect(
+        module.resolveBillingAccess({
+          status,
+          paymentFailedAt: new Date('2026-08-02T00:00:00.000Z'),
+          now,
+          graceDays: 3,
+        }),
+      ).toEqual({
+        state: 'blocked',
+        canStartCalls: false,
+        canPurchaseNumbers: false,
+        canManageBilling: true,
+        canReadHistory: true,
+        graceEndsAt: null,
+      });
+    }
   });
 
   it('keeps only active and trialing subscriptions entitled without payment-failure evidence', async () => {
