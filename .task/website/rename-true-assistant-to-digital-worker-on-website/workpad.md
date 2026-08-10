@@ -21,7 +21,7 @@ started: 2026-08-10
 
 ## current status
 
-- Copy edit complete and publish-valid. Exact-string verification, production build, strict review, and full verify all pass; task publish and deployed browser verification remain.
+- Copy edit is committed and publish-valid on the task branch, but promotion is blocked by unrelated `stream/website` sync conflicts in `HomeHero.astro` and `homepage-responsive.test.mjs`. The task PR remains open; live deployment/browser verification cannot proceed until the stream conflict is resolved.
 
 ## files changed
 
@@ -41,6 +41,7 @@ started: 2026-08-10
 - 2026-08-10 00:21:07 `review.run`: passed — OK
 - 2026-08-10 00:21:08 `review.run`: passed — OK
 - 2026-08-10 00:22:07 `verify`: passed — OK
+- 2026-08-10 00:24:55 `verify`: passed — OK
 
 ## key decisions
 
@@ -58,6 +59,9 @@ started: 2026-08-10
 
 - A safety preflight scanner request was rejected because its request body itself contained destructive-command literals. Recovered by reading the package build script and generator through typed `fs.read`; no destructive behavior was present.
 - First Bun build invocation used the wrong `--cwd` argument ordering and printed CLI usage without running the build. Re-ran with `bun run --cwd packages/consuelo-website build`; the real build completed successfully.
+- `task.pr` promotion failed because PR #1796 was conflicted against `stream/website`. `task.ensureSynced` identified the stream as six commits behind `main` and prescribed `stream.sync`.
+- `stream.sync --area website` exposed two real non-metadata conflicts: `packages/consuelo-website/src/components/home/HomeHero.astro` and `packages/consuelo-website/tests/homepage-responsive.test.mjs`. These are outside this copy-only task and require an integration decision; no conflict side was chosen automatically.
+- After the API-based task push, the local task worktree remained at its bootstrap SHA. A scoped fast-forward resync brought it to remote task commit `959b39fdee9bc65f06a97006241430591aba64ef` without changing production content.
 
 ---
 
@@ -105,3 +109,5 @@ bun run task:finish
 - 2026-08-10 00:20:43 apply-patch: `.task/website/rename-true-assistant-to-digital-worker-on-website/workpad.md`
 
 - 2026-08-10 00:22:15 apply-patch: `.task/website/rename-true-assistant-to-digital-worker-on-website/workpad.md`
+
+- 2026-08-10 00:24:42 apply-patch: `.task/website/rename-true-assistant-to-digital-worker-on-website/workpad.md`

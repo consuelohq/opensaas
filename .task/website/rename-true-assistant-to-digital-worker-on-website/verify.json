@@ -4,12 +4,12 @@
   "mode": "full",
   "branch": "task/website/rename-true-assistant-to-digital-worker-on-website",
   "base": "origin/main",
-  "headSha": "abba2d39febbefd86ecf2fad06b3d0eb0a53dc2b",
-  "changeHash": "3724db5ece54fd3d94c619c8c309fe98342eaa0c266a6c7278bf3feef85ab2a9",
+  "headSha": "959b39fdee9bc65f06a97006241430591aba64ef",
+  "changeHash": "6695947c394dc670f7e712092af04a8bed1a08a60db752a73423f229aadfbf43",
   "changedFiles": [
     "packages/consuelo-website/src/data/home-content.ts"
   ],
-  "verifiedAt": "2026-08-10T00:22:07.929Z",
+  "verifiedAt": "2026-08-10T00:24:55.196Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -28,6 +28,7 @@
         ".task/website/rename-true-assistant-to-digital-worker-on-website/evidence-log.json",
         ".task/website/rename-true-assistant-to-digital-worker-on-website/read-log.json",
         ".task/website/rename-true-assistant-to-digital-worker-on-website/session.json",
+        ".task/website/rename-true-assistant-to-digital-worker-on-website/verify.json",
         ".task/website/rename-true-assistant-to-digital-worker-on-website/workpad.md",
         "packages/consuelo-website/src/data/home-content.ts"
       ],
