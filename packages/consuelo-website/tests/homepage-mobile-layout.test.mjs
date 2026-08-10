@@ -526,7 +526,7 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.ok(mobileFooterContract.artBottom <= mobileFooterContract.viewportHeight + 1);
     assert.equal(
       mobileFooterContract.artSrc,
-      '/generated/holding-world-editorial.png?v=20260810-smooth-fill',
+      '/generated/holding-world-editorial.png?v=20260810-line-art-v2',
     );
     assert.ok(mobileFooterContract.artHeight <= 408);
     assert.equal(mobileFooterContract.artFilter, 'none');
