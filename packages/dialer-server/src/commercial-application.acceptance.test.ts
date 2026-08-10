@@ -348,6 +348,12 @@ describe('commercial application billing and inventory authority', () => {
 
   it('rejects number purchase before the provider boundary when confirmed line inventory is exhausted', async () => {
     const query = mock(async (sql: string) => {
+      if (
+        sql.includes('FROM dialer_workspace_subscriptions') &&
+        sql.includes('payment_failed_at')
+      ) {
+        return { rows: [] };
+      }
       if (sql.includes('SELECT plan_code')) {
         return { rows: [{ plan_code: 'standard' }] };
       }
@@ -395,6 +401,75 @@ describe('commercial application billing and inventory authority', () => {
         }),
       ),
     ).rejects.toThrow('NUMBER_INVENTORY_EXHAUSTED');
+    expect(provision).not.toHaveBeenCalled();
+  });
+
+  it('rejects number purchase before the provider boundary when billing status is not entitled', async () => {
+    const query = mock(async (sql: string) => {
+      if (
+        sql.includes('FROM dialer_workspace_subscriptions') &&
+        sql.includes('payment_failed_at')
+      ) {
+        return {
+          rows: [
+            {
+              status: 'unpaid',
+              payment_failed_at: null,
+              cancel_at_period_end: false,
+            },
+          ],
+        };
+      }
+      if (sql.includes('SELECT item_code, quantity')) {
+        return { rows: [{ item_code: 'single', quantity: 1 }] };
+      }
+      if (sql.includes('COUNT(*)::integer AS quantity')) {
+        return { rows: [{ quantity: 0 }] };
+      }
+      if (sql.includes('SELECT plan_code')) {
+        return { rows: [{ plan_code: 'single' }] };
+      }
+      if (sql.includes('SELECT workspace_id, user_id, phone_number, status')) {
+        return { rows: [] };
+      }
+      if (sql.includes('UPDATE dialer_phone_numbers AS target')) {
+        return {
+          rows: [
+            {
+              phone_number: '+15550100002',
+              user_id: 'payer-one',
+              slot_type: 'included',
+            },
+          ],
+          rowCount: 1,
+        };
+      }
+      throw new Error('Unexpected query: ' + sql);
+    });
+    const provision = mock(async () => ({
+      providerNumberId: 'PN_should_not_exist',
+      phoneNumber: '+15550100002',
+    }));
+    const application = createCommercialApplication({
+      database: { query },
+      catalog,
+      billing: createBilling(),
+      billingReturnUrl: 'https://app.test/admin',
+      numbers: {
+        searchAvailable: async () => [],
+        provision,
+        release: async () => ({ released: true as const }),
+      },
+    });
+
+    await expect(
+      Effect.runPromise(
+        application.provisionNumber(admin('workspace-one'), {
+          userId: 'payer-one',
+          phoneNumber: '+15550100002',
+        }),
+      ),
+    ).rejects.toThrow('BILLING_ACCESS_BLOCKED');
     expect(provision).not.toHaveBeenCalled();
   });
 
@@ -712,6 +787,247 @@ describe('commercial application billing and inventory authority', () => {
       ['workspace-one', 'single', 'si_single', 'price_single', 2],
       ['workspace-one', 'additional-number', 'si_number', 'price_number', 3],
     ]);
+  });
+
+  it('keeps caller access fail closed across subscription and invoice webhook ordering', async () => {
+    type SubscriptionRow = {
+      provider_customer_id: string | null;
+      provider_subscription_id: string | null;
+      status: string;
+      payment_failed_at: string | null;
+      cancel_at_period_end: boolean;
+    };
+    type WebhookInput = {
+      id: string;
+      type:
+        | 'customer.subscription.updated'
+        | 'invoice.payment_failed'
+        | 'invoice.paid';
+      status?: string;
+    };
+
+    let subscription: SubscriptionRow | null = null;
+    let currentEventType: WebhookInput['type'] | null = null;
+    const query = mock(async (sql: string, parameters: readonly unknown[] = []) => {
+      if (sql.includes('INSERT INTO dialer_provider_webhook_events')) {
+        return { rows: [{ inserted: true }], rowCount: 1 };
+      }
+      if (sql.includes('UPDATE dialer_provider_webhook_events')) {
+        return { rows: [], rowCount: 1 };
+      }
+      if (sql.includes('INSERT INTO dialer_workspace_subscriptions')) {
+        if (currentEventType === 'invoice.payment_failed') {
+          subscription = {
+            provider_customer_id:
+              subscription?.provider_customer_id ?? String(parameters[1] ?? ''),
+            provider_subscription_id:
+              subscription?.provider_subscription_id ??
+              String(parameters[2] ?? ''),
+            status: 'past_due',
+            payment_failed_at:
+              subscription?.payment_failed_at ?? String(parameters[3] ?? ''),
+            cancel_at_period_end:
+              subscription?.cancel_at_period_end ?? false,
+          };
+        } else {
+          subscription = {
+            provider_customer_id:
+              parameters[1] === null ? null : String(parameters[1] ?? ''),
+            provider_subscription_id:
+              parameters[2] === null ? null : String(parameters[2] ?? ''),
+            status: String(parameters[3] ?? ''),
+            payment_failed_at: subscription?.payment_failed_at ?? null,
+            cancel_at_period_end: Boolean(parameters[4]),
+          };
+        }
+        return { rows: [], rowCount: 1 };
+      }
+      if (
+        sql.includes('UPDATE dialer_workspace_subscriptions') &&
+        currentEventType === 'invoice.payment_failed'
+      ) {
+        if (subscription) {
+          subscription.status = 'past_due';
+          subscription.payment_failed_at ??= String(parameters[1] ?? '');
+        }
+        return { rows: [], rowCount: subscription ? 1 : 0 };
+      }
+      if (
+        sql.includes('UPDATE dialer_workspace_subscriptions') &&
+        currentEventType === 'invoice.paid'
+      ) {
+        if (subscription) {
+          if (sql.includes("SET status = 'active'")) {
+            subscription.status = 'active';
+          }
+          subscription.payment_failed_at = null;
+        }
+        return { rows: [], rowCount: subscription ? 1 : 0 };
+      }
+      if (sql.includes('DELETE FROM dialer_workspace_subscription_items')) {
+        return { rows: [], rowCount: 1 };
+      }
+      if (sql.includes('INSERT INTO dialer_workspace_subscription_items')) {
+        return { rows: [], rowCount: 1 };
+      }
+      if (
+        sql.includes('FROM dialer_team_seats') &&
+        sql.includes('user_id = $2')
+      ) {
+        return { rows: [{ plan_code: 'single' }] };
+      }
+      if (
+        sql.includes('FROM dialer_phone_numbers') &&
+        sql.includes('user_id = $2')
+      ) {
+        return { rows: [{ phone_number: '+15550100001' }] };
+      }
+      if (sql.includes('FROM dialer_usage_events')) {
+        return { rows: [{ connected_minutes: 0 }] };
+      }
+      if (
+        sql.includes('FROM dialer_workspace_subscriptions') &&
+        sql.includes('payment_failed_at')
+      ) {
+        return { rows: subscription ? [subscription] : [] };
+      }
+      if (sql.includes('AS seat_count')) {
+        return { rows: [{ seat_count: 1, number_count: 1 }] };
+      }
+      throw new Error('Unexpected query: ' + sql);
+    });
+    const billing = createBilling();
+    billing.constructWebhookEvent.mockImplementation((rawBody: string) => {
+      const webhook = JSON.parse(rawBody) as WebhookInput;
+      currentEventType = webhook.type;
+      return webhook.type === 'customer.subscription.updated'
+        ? {
+            id: webhook.id,
+            type: webhook.type,
+            data: {
+              object: {
+                id: 'sub_one',
+                customer: 'cus_payer_one',
+                status: webhook.status,
+                cancel_at_period_end: false,
+                metadata: { workspaceId: 'workspace-one' },
+                items: {
+                  data: [
+                    {
+                      id: 'si_single',
+                      quantity: 1,
+                      price: { id: 'price_single' },
+                    },
+                  ],
+                },
+              },
+            },
+          }
+        : {
+            id: webhook.id,
+            type: webhook.type,
+            data: {
+              object: {
+                id: 'in_one',
+                customer: 'cus_payer_one',
+                metadata: { workspaceId: '' },
+                parent: {
+                  subscription_details: {
+                    subscription: 'sub_one',
+                    metadata: { workspaceId: 'workspace-one' },
+                  },
+                },
+              },
+            },
+          };
+    });
+    const application = createCommercialApplication({
+      database: { query },
+      catalog,
+      billing,
+      billingReturnUrl: 'https://app.test/admin',
+      now: () => new Date('2026-08-05T00:00:00.000Z'),
+    });
+    const processWebhook = (webhook: WebhookInput) =>
+      Effect.runPromise(
+        application.processStripeWebhook({
+          rawBody: JSON.stringify(webhook),
+          signature: 'sig',
+        }),
+      );
+    const authorizeCall = () =>
+      Effect.runPromise(
+        application.authorizeCall(
+          {
+            workspaceId: 'workspace-one',
+            userId: 'user-one',
+            role: 'user',
+          },
+          {
+            requestedFanout: 1,
+            selectionStrategy: 'single',
+            callerIdNumber: '+15550100001',
+          },
+        ),
+      );
+    const callerContext = () =>
+      Effect.runPromise(
+        application.callerContext({
+          workspaceId: 'workspace-one',
+          userId: 'user-one',
+          role: 'user',
+        }),
+      );
+
+    await processWebhook({
+      id: 'evt_subscription_past_due',
+      type: 'customer.subscription.updated',
+      status: 'past_due',
+    });
+    await expect(authorizeCall()).rejects.toThrow('BILLING_ACCESS_BLOCKED');
+
+    await processWebhook({
+      id: 'evt_paid_after_past_due',
+      type: 'invoice.paid',
+    });
+    await expect(authorizeCall()).rejects.toThrow('BILLING_ACCESS_BLOCKED');
+
+    subscription = null;
+    await processWebhook({
+      id: 'evt_failed_before_subscription',
+      type: 'invoice.payment_failed',
+    });
+    await processWebhook({
+      id: 'evt_unpaid_after_failure',
+      type: 'customer.subscription.updated',
+      status: 'unpaid',
+    });
+    await expect(callerContext()).resolves.toMatchObject({
+      canStartCall: true,
+      billing: { state: 'grace', canPurchaseNumbers: true },
+    });
+
+    await processWebhook({
+      id: 'evt_paid_after_unpaid',
+      type: 'invoice.paid',
+    });
+    await expect(authorizeCall()).rejects.toThrow('BILLING_ACCESS_BLOCKED');
+
+    subscription = null;
+    await processWebhook({
+      id: 'evt_incomplete_before_failure',
+      type: 'customer.subscription.updated',
+      status: 'incomplete',
+    });
+    await expect(authorizeCall()).rejects.toThrow('BILLING_ACCESS_BLOCKED');
+    await processWebhook({
+      id: 'evt_failed_after_incomplete',
+      type: 'invoice.payment_failed',
+    });
+    await expect(callerContext()).resolves.toMatchObject({
+      canStartCall: true,
+      billing: { state: 'grace', canPurchaseNumbers: true },
+    });
   });
 
   it('marks a failed Stripe projection retryable and completes the same signed event on retry', async () => {

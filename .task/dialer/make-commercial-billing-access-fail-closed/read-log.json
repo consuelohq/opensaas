@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".agents/skills/nx-run-tasks/SKILL.md",
+    ".agents/skills/nx-workspace/SKILL.md",
+    ".task/dialer/make-commercial-billing-access-fail-closed/workpad.md",
+    "AGENTS.md",
+    "packages/dialer-server/src/commercial/application.ts",
+    "packages/dialer-server/src/commercial/persistence.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-08-10T01:58:57.437Z"
+}
