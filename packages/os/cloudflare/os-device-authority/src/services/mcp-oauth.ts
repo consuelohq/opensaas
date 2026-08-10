@@ -18,6 +18,7 @@ import {
   hash,
   hashChallenge,
   host,
+  isChatGptClientMetadataDocumentId,
   normalizeScopes,
   params,
   rand,
@@ -187,6 +188,7 @@ export async function startMcpOAuthAuthorization(input: {
   store: Store;
   origin: string;
   googleClientId: string;
+  fetchImpl: typeof fetch;
   nowMs: number;
 }): Promise<Response> {
   const url = new URL(input.request.url);
@@ -220,6 +222,40 @@ export async function startMcpOAuthAuthorization(input: {
       'invalid_request',
       'redirect_uri is not allowed.',
     );
+  if (isChatGptClientMetadataDocumentId(clientId)) {
+    try {
+      const metadataResponse = await input.fetchImpl(clientId, {
+        method: 'GET',
+        headers: { accept: 'application/json' },
+        redirect: 'error',
+      });
+      const metadata = (await metadataResponse.json().catch(() => null)) as
+        | Record<string, unknown>
+        | null;
+      const metadataRedirectUris = Array.isArray(metadata?.redirect_uris)
+        ? metadata.redirect_uris.filter(
+            (value): value is string => typeof value === 'string',
+          )
+        : [];
+      if (
+        !metadataResponse.ok ||
+        !metadata ||
+        metadata.client_id !== clientId ||
+        metadataRedirectUris.length === 0 ||
+        !metadataRedirectUris.includes(redirectUriValue)
+      ) {
+        return invalidOauthRequest(
+          'invalid_client',
+          'Client ID Metadata Document validation failed.',
+        );
+      }
+    } catch {
+      return invalidOauthRequest(
+        'invalid_client',
+        'Client ID Metadata Document validation failed.',
+      );
+    }
+  }
   if (!codeChallenge || codeChallengeMethod !== 'S256')
     return invalidOauthRequest('invalid_request', 'PKCE S256 is required.');
   let workspaceHost: string;
@@ -335,6 +371,7 @@ export async function finishMcpOAuthGoogleCallback(input: {
   await input.store.delMcpOAuthState(stateValue);
   return redirectWithParams(oauthState.redirectUri, {
     code,
+    iss: input.origin,
     ...(oauthState.requestedState ? { state: oauthState.requestedState } : {}),
   });
 }

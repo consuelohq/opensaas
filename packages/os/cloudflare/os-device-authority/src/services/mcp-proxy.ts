@@ -39,6 +39,31 @@ export function centralMcpSafeError(input: {
   );
 }
 
+async function centralMcpOperationScope(request: Request): Promise<string | null> {
+  if (request.method !== 'POST') return null;
+  let payload: unknown;
+  try {
+    payload = await request.clone().json();
+  } catch {
+    return null;
+  }
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return null;
+  }
+  const record = payload as Record<string, unknown>;
+  if (record.method !== 'tools/call') return null;
+  const requestParams = record.params;
+  if (
+    !requestParams ||
+    typeof requestParams !== 'object' ||
+    Array.isArray(requestParams)
+  ) {
+    return 'mcp:call';
+  }
+  const name = (requestParams as Record<string, unknown>).name;
+  return name === 'get_steering' ? 'mcp:read' : 'mcp:call';
+}
+
 export function centralMcpUpstreamUrl(input: {
   tunnelOriginUrl: string;
   inboundUrl: URL;
@@ -192,6 +217,14 @@ export async function proxyCentralMcpRequest(input: {
         status: 403,
         code: 'MISSING_SCOPE',
         message: 'OAuth token does not grant MCP route access.',
+      });
+    }
+    const operationScope = await centralMcpOperationScope(input.request);
+    if (operationScope && !hasGrantedScope(stored.scopes, operationScope)) {
+      return centralMcpSafeError({
+        status: 403,
+        code: 'MISSING_SCOPE',
+        message: 'OAuth token does not grant the requested MCP operation.',
       });
     }
     if (!input.routeRegistry) {

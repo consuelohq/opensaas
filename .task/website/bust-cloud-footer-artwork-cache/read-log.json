@@ -1,8 +1,0 @@
-{
-  "files": [
-    "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
-    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
-    "packages/consuelo-website/tests/homepage-responsive.test.mjs"
-  ],
-  "updatedAt": "2026-08-10T01:14:23.654Z"
-}

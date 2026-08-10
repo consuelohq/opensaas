@@ -3299,7 +3299,7 @@
         "path": "packages/os/scripts",
         "depth": 1
       },
-      "sessionRequired": false
+      "sessionRequired": true
     },
     {
       "name": "fs.read",
@@ -3354,11 +3354,6 @@
             "source": "to",
             "flag": "--to",
             "kind": "value"
-          },
-          {
-            "source": "full",
-            "flag": "--full",
-            "kind": "boolean"
           }
         ]
       },

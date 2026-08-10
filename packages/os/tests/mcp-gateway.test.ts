@@ -325,6 +325,37 @@ describe('MCP gateway adapter', () => {
     });
   });
 
+  it('rejects an explicit untrusted Origin at the MCP route before execution', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const executeFacadeTool = vi.fn();
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'tools',
+      method: 'tools/list',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token.bearerToken}`,
+        'content-type': 'application/json',
+        origin: 'https://attacker.example',
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'INVALID_MCP_ORIGIN' },
+    });
+    expect(executeFacadeTool).not.toHaveBeenCalled();
+  });
+
 
   it('should accept an active Consuelo OAuth token when a public MCP request targets the central resource', async () => {
     const config = createConfig();
@@ -346,6 +377,7 @@ describe('MCP gateway adapter', () => {
       fetchCalls.push({ url, body: String(init?.body ?? '') });
       return new Response(JSON.stringify({
         active: true,
+        client_id: 'chatgpt-consuelo-os',
         workspace_host: config.workspaceHost,
         scopes: ['route:/mcp:read', 'tool:*:read'],
         sub: 'google:123',
@@ -567,7 +599,7 @@ describe('MCP gateway server route', () => {
     expect(first.callerKey).not.toContain('secret-value');
   });
 
-  it('should isolate steering guards between authenticated MCP sessions', async () => {
+  it('should share steering guard identity across legacy sessions for the same authenticated principal', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);
     const callerKeys: string[] = [];
@@ -648,8 +680,8 @@ describe('MCP gateway server route', () => {
     );
 
     expect(callerKeys).toHaveLength(3);
-    expect(callerKeys[0]).not.toBe(callerKeys[1]);
-    expect(callerKeys[0]).toBe(callerKeys[2]);
+    expect(new Set(callerKeys).size).toBe(1);
+    expect(callerKeys[0]).toMatch(/^prn_[a-f0-9]{32}$/);
     expect(callerKeys.join('')).not.toContain(token.bearerToken);
   });
 

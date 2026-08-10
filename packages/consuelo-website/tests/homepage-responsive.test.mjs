@@ -20,7 +20,7 @@ describe('Consuelo OS homepage presentation', () => {
     expect(hero).toContain('data-assistant-name={secondaryAssistant}');
     expect(hero).toContain('data-active-assistant={primaryAssistant}');
     expect(homeContent).toContain("prefix: 'Make'");
-    expect(homeContent).toContain("suffix: 'your digital worker'");
+    expect(homeContent).toContain("suffix: 'your true assistant'");
     expect(homeContent).toContain("assistants: ['ChatGPT', 'Claude']");
     expect(homeContent).toContain(
       'AI is coming to the workspace, with smarter search, faster drafting and summarization and intelligent organization',
@@ -89,7 +89,7 @@ describe('Consuelo OS homepage presentation', () => {
     expect(footer).toContain('font-size: clamp(3.1rem, 14.7vw, 3.8rem);');
     expect(footer).toContain('data-cloud-word-line>CONSUELO</span>');
     expect(footer).toContain('data-cloud-word-line>CLOUD</span>');
-    expect(footer).toContain('/generated/holding-world-editorial.png?v=20260810-line-art-v2');
+    expect(footer).toContain('/generated/holding-world-editorial.png');
     expect(footer).not.toContain('filter: brightness(0) invert(1)');
     expect(footer).toContain('KEEP THE SAME WORKSPACE AND LET CONSUELO');
     expect(footer).toContain('RUN THE HOME NODE FOR YOU');
@@ -116,8 +116,7 @@ describe('Consuelo OS homepage presentation', () => {
     expect(gitignore).toContain('public/generated/');
     expect(generator).toContain("public/generated/holding-world-editorial.png");
     expect(generator).toContain("public/generated/consuelo-footer-badge.png");
-    expect(generator).not.toContain('bodyUnderlayMask');
-    expect(generator).toContain('holding-world-auto-fill-exclusion-mask.svg');
+    expect(generator).toContain('bodyUnderlayMask');
   });
 
   test('should use a refresh-visible preview notice without persistent storage', async () => {

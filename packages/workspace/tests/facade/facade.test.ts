@@ -218,7 +218,7 @@ describe('typed facade executor', () => {
 
     const fileSearch = runSearch('file search', 4).matches[0];
     expect(fileSearch.name).toBe('fs.search');
-    expect(fileSearch.usage.workspaceCall).not.toContain('taskSession');
+    expect(fileSearch.usage.workspaceCall).toContain('fs.search');
 
     const missingPayload = runSearch('no-such-made-up-tool', 4);
     expect(missingPayload.totalMatches).toBe(0);
@@ -480,17 +480,6 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('passes exact full-file fs reads to the CLI transport', async () => {
-    const plans: CommandPlan[] = [];
-    const result = await executeTool('fs.read', {
-      path: 'AGENTS.md',
-      full: true,
-    }, stableOptions(successfulRunner(), plans));
-
-    expect(result.ok).toBe(true);
-    expect(plans[0].args).toContain('--full');
-  });
-
   it('passes fs read multi-file page arguments to the CLI transport', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-read-files-'));
     writeTaskSession(tempRoot, 'tsk_fs_read_files');
@@ -680,66 +669,6 @@ describe('typed facade executor', () => {
     expect(plans).toHaveLength(2);
     expect(plans[0].args).not.toContain('--branch');
     expect(plans[1].args).not.toContain('--branch');
-  });
-
-  it('runs taskless read-only fs tools from the caller repo when task selection is ambiguous', async () => {
-    const plans: CommandPlan[] = [];
-    const ambiguousBranchResolver = () => ({
-      ok: false as const,
-      code: 'AMBIGUOUS_TASK_SELECTION' as const,
-      message: 'multiple active task worktrees found',
-      candidates: [
-        { branch: TEST_BRANCH, area: 'workspace-agents', worktree: '/tmp/a' },
-        { branch: 'task/workspace-agents/other', area: 'workspace-agents', worktree: '/tmp/b' },
-      ],
-    });
-    const options = {
-      ...stableOptions(successfulRunner(), plans),
-      branchResolver: ambiguousBranchResolver,
-      currentTask: null,
-      candidates: ambiguousBranchResolver().candidates,
-    };
-
-    const readResult = await executeTool('fs.read', { path: 'AGENTS.md' }, options);
-    const searchResult = await executeTool('fs.search', {
-      pattern: 'workspace',
-      paths: ['AGENTS.md'],
-      maxResults: 3,
-    }, options);
-    const listResult = await executeTool('fs.list', { path: '.', depth: 1 }, options);
-
-    expect(readResult.ok).toBe(true);
-    expect(searchResult.ok).toBe(true);
-    expect(listResult.ok).toBe(true);
-    expect(plans).toHaveLength(3);
-    for (const plan of plans) {
-      expect(plan.args).not.toContain('--branch');
-      expect(plan.args[1]).toBe('fs');
-    }
-  });
-
-  it('does not hide ambiguous routing when read-only fs receives an explicit branch', async () => {
-    const plans: CommandPlan[] = [];
-    const result = await executeTool('fs.read', {
-      branch: TEST_BRANCH,
-      path: 'AGENTS.md',
-    }, {
-      ...stableOptions(successfulRunner(), plans),
-      branchResolver: () => ({
-        ok: false,
-        code: 'AMBIGUOUS_TASK_SELECTION',
-        message: 'explicit branch was ambiguous',
-        candidates: [
-          { branch: TEST_BRANCH, area: 'workspace-agents', worktree: '/tmp/a' },
-          { branch: TEST_BRANCH, area: 'workspace-agents', worktree: '/tmp/b' },
-        ],
-      }),
-      currentTask: null,
-    });
-
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe('AMBIGUOUS_TASK_SELECTION');
-    expect(plans).toHaveLength(0);
   });
 
   it('keeps mutating task tools fail-closed without unsafe finish hints', async () => {
@@ -1499,7 +1428,7 @@ describe('batch facade tool', () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('batch', {
       steps: [
-        { tool: 'context.find', input: { keyword: 'workspace', limit: 1 } },
+        { tool: 'fs.read', input: { path: 'AGENTS.md' } },
       ],
     }, stableOptions(successfulRunner(), plans));
 
@@ -1670,7 +1599,7 @@ describe('batch facade tool', () => {
 
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({
-      steps: [{ tool: 'context.find', input: { keyword: 'workspace', limit: 1 } }],
+      steps: [{ tool: 'fs.read', input: { path: 'AGENTS.md' } }],
     }).success).toBe(true);
     expect(schema?.safeParse({ steps: [] }).success).toBe(false);
     expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);

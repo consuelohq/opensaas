@@ -187,7 +187,7 @@
           "source": "workspace-tooling",
           "sourcePath": "packages/workspace/tooling/tool-manifest.json",
           "category": "codemode",
-          "description": "execute one sandboxed JavaScript program that composes allowed typed workspace tools with loops, branching, filtering, dependent calls, and output shaping; intermediate tool results stay inside code mode and only the returned value enters agent context",
+          "description": "run workspace-native codemode JavaScript against allowed workspace tools",
           "core": false,
           "definition": {
             "name": "code.run",
@@ -195,7 +195,7 @@
               "code",
               "run"
             ],
-            "description": "execute one sandboxed JavaScript program that composes allowed typed workspace tools with loops, branching, filtering, dependent calls, and output shaping; intermediate tool results stay inside code mode and only the returned value enters agent context",
+            "description": "run workspace-native codemode JavaScript against allowed workspace tools",
             "category": "codemode",
             "underlying": "workspace code.run",
             "capabilities": {

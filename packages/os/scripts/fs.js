@@ -28,16 +28,15 @@ function which(bin) {
 // ── helpers shown contextually ──
 
 function readHelp() {
-  out('usage: bun run fs -- read <path> [--offset N] [--limit M] [--all] [path2 --offset N --limit M ...]');
+  out('usage: bun run fs -- read <path> [--offset N] [--limit M] [path2 --offset N --limit M ...]');
   out('');
-  out('safely ingest a bounded page or complete text file for agents.');
+  out('read a bounded structured view of text or supported media for agent-safe ingestion.');
   out('');
   out('options:');
   out('  --offset N       start line (1-based, preferred)');
   out('  --limit M        max lines to return, capped at 2000');
   out('  --from N         alias for --offset');
   out('  --to M           alias that derives --limit from offset');
-  out('  --all, --full   return the complete text file, subject to full-read byte limits');
   out('  --files-json J   JSON array of { path, offset?, limit? } entries');
   out('  --plain          no line numbers for human text output');
   out('  --json           structured JSON output');
@@ -123,7 +122,6 @@ function mainHelp() {
 function parseReadSegments(argv) {
   const segments = [];
   let current = null;
-  const full = argv.includes('--all') || argv.includes('--full');
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -147,9 +145,9 @@ function parseReadSegments(argv) {
     else if (a === '--to') { if (current) current.to = parseInt(argv[++i], 10); }
     else if (a === '--offset') { if (current) current.offset = parseInt(argv[++i], 10); }
     else if (a === '--limit') { if (current) current.limit = parseInt(argv[++i], 10); }
-    else if (a === '--all' || a === '--full' || a === '--plain' || a === '--json') { /* handled globally */ }
+    else if (a === '--all' || a === '--plain' || a === '--json') { /* handled globally */ }
     else if (!a.startsWith('--')) {
-      current = { path: a, ...(full ? { full: true } : {}) };
+      current = { path: a };
       segments.push(current);
     }
   }
@@ -200,14 +198,12 @@ async function cmdRead(argv) {
         continue;
       }
       if (item.page.type === 'text-page') renderTextPage(item.page, plain);
-      else if (item.page.type === 'text-full') out(item.page.content);
       else out(`${item.page.type}: ${item.page.message || item.page.mime || item.path}`);
     }
     return;
   }
 
   if (result.type === 'text-page') renderTextPage(result, plain);
-  else if (result.type === 'text-full') out(result.content);
   else if (result.type === 'error') err(`${result.code}: ${result.message}`);
   else out(`${result.type}: ${result.message || result.mime || result.path}`);
 }
