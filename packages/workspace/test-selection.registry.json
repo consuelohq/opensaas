@@ -2,17 +2,20 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2161,
-    "mappedTestCount": 2144,
-    "unmappedTestCount": 17,
-    "ruleCount": 29,
-    "explicitRuleCount": 10,
-    "autoRuleCount": 19,
-    "projectCount": 18,
-    "packageTestScriptCount": 12,
+    "testFileCount": 2404,
+    "mappedTestCount": 2331,
+    "unmappedTestCount": 73,
+    "ruleCount": 34,
+    "explicitRuleCount": 13,
+    "autoRuleCount": 21,
+    "projectCount": 15,
+    "packageTestScriptCount": 19,
     "byGroup": {
+      "packages/os/tests": 131,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
+      "packages/workspace/tests": 49,
+      "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/utils": 31,
       "packages/twenty-front/src/modules/page-layout/utils": 30,
@@ -35,12 +38,11 @@
       "packages/twenty-front/src/modules/spreadsheet-import/utils": 15,
       "packages/twenty-shared/src/utils": 15,
       "packages/consuelo-design/upstream/open-design": 14,
-      "packages/twenty-eslint-rules/rules": 14,
+      "packages/eslint-rules/rules": 14,
       "packages/twenty-front/src/modules/command-menu/hooks": 14,
       "packages/twenty-front/src/modules/views/utils": 14,
       "packages/twenty-server/test/integration/metadata/suites/object-metadata/utils": 14,
       "packages/twenty-server/test/integration/metadata/suites/skill/utils": 14,
-      "packages/workspace/tests": 14,
       "packages/twenty-front/src/modules/navigation-menu-item/utils": 13,
       "packages/twenty-shared/src/utils/filter/utils": 13,
       "packages/twenty-server/src/engine/twenty-orm/utils": 12,
@@ -58,6 +60,8 @@
       "packages/twenty-server/test/integration/metadata/suites/page-layout-widget/utils": 11,
       "packages/twenty-server/test/integration/metadata/suites/role/utils": 11,
       "packages/api/src/routes": 10,
+      "packages/consuelo-website/tests": 10,
+      "packages/dialer/src/services": 10,
       "packages/twenty-front/src/modules/object-metadata/utils": 10,
       "packages/twenty-front/src/modules/object-record/record-field/ui/utils": 10,
       "packages/twenty-server/src/engine/core-modules/billing/utils": 10,
@@ -68,7 +72,7 @@
       "packages/twenty-server/test/integration/metadata/suites/view-filter-group": 10,
       "packages/twenty-server/test/integration/metadata/suites/view-filter/utils": 10,
       "packages/twenty-server/test/integration/utils": 10,
-      "packages/dialer/src/services": 9,
+      "packages/documentation/tests": 9,
       "packages/twenty-front/src/modules/object-record/utils": 9,
       "packages/twenty-front/src/modules/workflow/workflow-trigger/utils": 9,
       "packages/twenty-front/src/utils/array": 9,
@@ -107,7 +111,6 @@
       "packages/twenty-server/test/integration/metadata/suites/skill": 7,
       "packages/twenty-shared/src/utils/strings": 7,
       "packages/twenty-shared/src/utils/url": 7,
-      "packages/twenty-zapier/src": 7,
       "packages/twenty-front/src/hooks": 6,
       "packages/twenty-front/src/modules/ai/utils": 6,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/chart-core/utils": 6,
@@ -127,6 +130,8 @@
       "packages/twenty-server/test/integration/metadata/suites/front-component": 6,
       "packages/twenty-shared/src/utils/validation": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
+      "packages/dialer-server/src": 5,
+      "packages/os/tests/distribution": 5,
       "packages/twenty-front/src/modules/apollo/utils": 5,
       "packages/twenty-front/src/modules/auth/sign-in-up/hooks": 5,
       "packages/twenty-front/src/modules/dialer/hooks": 5,
@@ -135,6 +140,7 @@
       "packages/twenty-front/src/utils/format": 5,
       "packages/twenty-sdk/src/cli/utilities/entity": 5,
       "packages/twenty-server/src/engine/api/common/common-query-runners/common-create-many-query-runner/utils": 5,
+      "packages/twenty-server/src/engine/core-modules/consuelo-api/services": 5,
       "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils": 5,
       "packages/twenty-server/src/modules/workflow/workflow-executor/utils": 5,
       "packages/twenty-server/test/integration/metadata/suites/dashboard": 5,
@@ -145,7 +151,7 @@
       "packages/twenty-server/test/integration/metadata/suites/utils": 5,
       "packages/consuelo-design/upstream/open-design/apps/web/src/i18n": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/runtime": 4,
-      "packages/twenty-apps/community/fireflies/src": 4,
+      "packages/lead-connector/src": 4,
       "packages/twenty-front/src/modules/activities/hooks": 4,
       "packages/twenty-front/src/modules/apollo/optimistic-effect/group-by/utils": 4,
       "packages/twenty-front/src/modules/favorites/hooks": 4,
@@ -160,7 +166,6 @@
       "packages/twenty-front/src/modules/ui/utilities/focus/hooks": 4,
       "packages/twenty-front/src/modules/workflow/workflow-steps/workflow-actions/utils": 4,
       "packages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/utils": 4,
-      "packages/twenty-server/src/engine/core-modules/consuelo-api/services": 4,
       "packages/twenty-server/src/engine/core-modules/domain/subdomain-manager/utils/__test__": 4,
       "packages/twenty-server/src/engine/core-modules/twenty-config/decorators": 4,
       "packages/twenty-server/src/engine/core-modules/two-factor-authentication": 4,
@@ -176,6 +181,7 @@
       "packages/twenty-server/test/integration/metadata/suites/dashboard/utils": 4,
       "packages/twenty-server/test/integration/metadata/suites/field-metadata/relation": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/providers": 3,
+      "packages/os/scripts": 3,
       "packages/twenty-front/src/modules/action-menu/utils": 3,
       "packages/twenty-front/src/modules/activities/calendar/utils": 3,
       "packages/twenty-front/src/modules/activities/files/utils": 3,
@@ -223,7 +229,10 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
-      "packages/create-twenty-app/src/utils": 2,
+      "packages/dialer/src/application": 2,
+      "packages/diff-cockpit/tests": 2,
+      "packages/os/tests/audit": 2,
+      "packages/os/tests/facade": 2,
       "packages/twenty-e2e-testing/tests/authentication": 2,
       "packages/twenty-front/src/modules/activities/emails/graphql/queries": 2,
       "packages/twenty-front/src/modules/activities/tasks/hooks": 2,
@@ -299,6 +308,7 @@
       "packages/twenty-server/test/integration/metadata/suites/row-level-permission-predicate/utils": 2,
       "packages/twenty-server/test/integration/metadata/types": 2,
       "packages/twenty-server/test/integration/metadata/utils": 2,
+      "packages/twenty-server/test/integration/twenty-config/types": 2,
       "packages/twenty-shared/src/utils/filter/dates/utils": 2,
       "packages/twenty-shared/src/utils/image": 2,
       "packages/twenty-shared/src/utils/navigation": 2,
@@ -306,13 +316,18 @@
       "packages/twenty-shared/src/workflow/workflow-schema/utils": 2,
       "packages/twenty-ui/src/utilities/color/utils": 2,
       "packages/twenty-ui/src/utilities/device": 2,
+      "cron_jobs": 1,
       "packages/agent/src/pi-extensions": 1,
+      "packages/consuelo-core/tests": 1,
+      "packages/consuelo-design/scripts": 1,
       "packages/consuelo-design/upstream/open-design/packages/platform/src": 1,
       "packages/consuelo-design/upstream/open-design/packages/sidecar-proto/src": 1,
       "packages/consuelo-design/upstream/open-design/packages/sidecar/src": 1,
       "packages/consuelo-design/upstream/open-design/tools/dev/src": 1,
       "packages/consuelo-design/upstream/open-design/tools/pack/src": 1,
       "packages/dialer/src": 1,
+      "packages/dialer/src/domain": 1,
+      "packages/os/tests/fixtures": 1,
       "packages/twenty-front/src/modules/accounts/utils": 1,
       "packages/twenty-front/src/modules/action-menu/actions/record-actions/utils": 1,
       "packages/twenty-front/src/modules/action-menu/actions/record-agnostic-actions/hooks": 1,
@@ -427,6 +442,7 @@
       "packages/twenty-server/src/engine/api/rest/metadata/query-builder/utils": 1,
       "packages/twenty-server/src/engine/api/rest/utils": 1,
       "packages/twenty-server/src/engine/core-modules/actor/services": 1,
+      "packages/twenty-server/src/engine/core-modules/agent/services": 1,
       "packages/twenty-server/src/engine/core-modules/api-key/services": 1,
       "packages/twenty-server/src/engine/core-modules/app-token/services": 1,
       "packages/twenty-server/src/engine/core-modules/applicationVariable": 1,
@@ -443,10 +459,12 @@
       "packages/twenty-server/src/engine/core-modules/client-config": 1,
       "packages/twenty-server/src/engine/core-modules/client-config/services": 1,
       "packages/twenty-server/src/engine/core-modules/cloudflare/guards": 1,
+      "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers": 1,
       "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers": 1,
       "packages/twenty-server/src/engine/core-modules/dns-manager/services": 1,
       "packages/twenty-server/src/engine/core-modules/domain/domain-server-config/services/__test__": 1,
       "packages/twenty-server/src/engine/core-modules/domain/workspace-domains/services/__test__": 1,
+      "packages/twenty-server/src/engine/core-modules/email/templates": 1,
       "packages/twenty-server/src/engine/core-modules/event-emitter/utils": 1,
       "packages/twenty-server/src/engine/core-modules/exception-handler": 1,
       "packages/twenty-server/src/engine/core-modules/feature-flag/services": 1,
@@ -564,7 +582,6 @@
       "packages/twenty-server/test/integration/metadata/suites/view-filter": 1,
       "packages/twenty-server/test/integration/twenty-config": 1,
       "packages/twenty-server/test/integration/twenty-config/constants": 1,
-      "packages/twenty-server/test/integration/twenty-config/types": 1,
       "packages/twenty-shared/src/types": 1,
       "packages/twenty-shared/src/utils/date": 1,
       "packages/twenty-shared/src/utils/files": 1,
@@ -577,16 +594,18 @@
       "packages/twenty-ui/src/utilities/responsive/hooks": 1,
       "packages/twenty-ui/src/utilities/utils": 1,
       "packages/workspace/tests/audit": 1,
-      "packages/workspace/tests/facade": 1
+      "packages/workspace/tests/facade": 1,
+      "tests": 1
     },
     "byKind": {
-      "__tests__": 1242,
-      "test-dir": 687,
-      "spec": 144,
-      "test": 78,
+      "__tests__": 1237,
+      "test-dir": 688,
+      "test": 313,
+      "spec": 151,
       "other": 7,
-      "tests-dir": 2,
-      "e2e": 1
+      "tests-dir": 6,
+      "e2e": 1,
+      "integration": 1
     }
   },
   "rules": [
@@ -688,21 +707,21 @@
     },
     {
       "id": "trace-watch",
-      "source": ["scripts/operator/trace-watch.ts"],
+      "source": ["packages/os/scripts/trace-watch.ts"],
       "tests": [
         {
-          "name": "trace watch build",
+          "name": "OS trace watcher behavior",
           "command": [
             "bun",
-            "build",
-            "scripts/operator/trace-watch.ts",
-            "--target=bun",
-            "--outfile=/tmp/trace-watch-test-selection.js"
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-watch.test.ts"
           ]
         }
       ],
       "critical": true,
-      "reason": "Trace renderer changes must compile.",
+      "reason": "OS trace watcher changes must preserve terminal rendering, canonical sidecar resolution, and real SQLite CLI behavior.",
       "origin": "explicit"
     },
     {
@@ -730,6 +749,57 @@
       "origin": "explicit"
     },
     {
+      "id": "trace-site-pagination",
+      "source": [
+        "packages/os/scripts/lib/trace-sites-gateway-*.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/scripts/server/services/trace-gateway.ts",
+        "packages/os/tests/trace-gateway-service.test.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+        "packages/workspace/scripts/office.ts",
+        "packages/workspace/scripts/trace-site-inspector/**",
+        "packages/workspace/tests/trace-site-inspector.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "trace gateway history endpoints",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ]
+        },
+        {
+          "name": "trace gateway DB resolution",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-gateway-service.test.ts"
+          ]
+        },
+        {
+          "name": "trace site inspector pagination",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/workspace",
+            "tests/trace-site-inspector.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior.",
+      "origin": "explicit"
+    },
+    {
       "id": "dialer-package",
       "source": ["packages/dialer/**"],
       "tests": [
@@ -743,12 +813,44 @@
       "origin": "explicit"
     },
     {
+      "id": "dialer-server-package",
+      "source": ["packages/dialer-server/**"],
+      "tests": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": ["bun", "test", "packages/dialer-server/src"]
+        }
+      ],
+      "critical": true,
+      "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+      "origin": "explicit"
+    },
+    {
+      "id": "lead-connector-package",
+      "source": ["packages/lead-connector/**"],
+      "tests": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": ["bun", "test", "packages/lead-connector/src"]
+        }
+      ],
+      "critical": true,
+      "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+      "origin": "explicit"
+    },
+    {
       "id": "api-package",
       "source": ["packages/api/**"],
       "tests": [
         {
           "name": "api specs",
-          "command": ["bun", "test", "packages/api/src"]
+          "command": [
+            "bunx",
+            "jest",
+            "--config",
+            "packages/api/jest.config.mjs",
+            "--runInBand"
+          ]
         }
       ],
       "critical": true,
@@ -784,6 +886,71 @@
       "critical": false,
       "reason": "Frontend package changes should run the project test target.",
       "origin": "explicit"
+    },
+    {
+      "id": "auto:@consuelo/core:package-test",
+      "source": ["packages/consuelo-core/**"],
+      "tests": [
+        {
+          "name": "@consuelo/core package test",
+          "command": ["bun", "--cwd", "packages/consuelo-core", "run", "test"]
+        }
+      ],
+      "critical": false,
+      "reason": "Auto-discovered package test script for packages/consuelo-core.",
+      "origin": "auto"
+    },
+    {
+      "id": "auto:@consuelo/dialer-server:package-test",
+      "source": ["packages/dialer-server/**"],
+      "tests": [
+        {
+          "name": "@consuelo/dialer-server package test",
+          "command": ["bun", "--cwd", "packages/dialer-server", "run", "test"]
+        }
+      ],
+      "critical": false,
+      "reason": "Auto-discovered package test script for packages/dialer-server.",
+      "origin": "auto"
+    },
+    {
+      "id": "auto:@consuelo/diff-cockpit:package-test",
+      "source": ["packages/diff-cockpit/**"],
+      "tests": [
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": ["bun", "--cwd", "packages/diff-cockpit", "run", "test"]
+        }
+      ],
+      "critical": false,
+      "reason": "Auto-discovered package test script for packages/diff-cockpit.",
+      "origin": "auto"
+    },
+    {
+      "id": "auto:@consuelo/lead-connector:package-test",
+      "source": ["packages/lead-connector/**"],
+      "tests": [
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": ["bun", "--cwd", "packages/lead-connector", "run", "test"]
+        }
+      ],
+      "critical": false,
+      "reason": "Auto-discovered package test script for packages/lead-connector.",
+      "origin": "auto"
+    },
+    {
+      "id": "auto:@consuelo/os:package-test",
+      "source": ["packages/os/**"],
+      "tests": [
+        {
+          "name": "@consuelo/os package test",
+          "command": ["bun", "--cwd", "packages/os", "run", "test"]
+        }
+      ],
+      "critical": false,
+      "reason": "Auto-discovered package test script for packages/os.",
+      "origin": "auto"
     },
     {
       "id": "auto:@open-design/daemon:package-test",
@@ -946,32 +1113,6 @@
       "origin": "auto"
     },
     {
-      "id": "auto:create-twenty-app:test",
-      "source": ["packages/create-twenty-app/**"],
-      "tests": [
-        {
-          "name": "create-twenty-app test",
-          "command": ["npx", "nx", "test", "create-twenty-app", "--coverage=false"]
-        }
-      ],
-      "critical": false,
-      "reason": "Auto-discovered Nx test target for packages/create-twenty-app.",
-      "origin": "auto"
-    },
-    {
-      "id": "auto:fireflies:test",
-      "source": ["packages/twenty-apps/community/fireflies/**"],
-      "tests": [
-        {
-          "name": "fireflies test",
-          "command": ["npx", "nx", "test", "fireflies", "--coverage=false"]
-        }
-      ],
-      "critical": false,
-      "reason": "Auto-discovered Nx test target for packages/twenty-apps/community/fireflies.",
-      "origin": "auto"
-    },
-    {
       "id": "auto:open-design:package-test",
       "source": ["packages/consuelo-design/upstream/open-design/**"],
       "tests": [
@@ -996,7 +1137,13 @@
       "tests": [
         {
           "name": "twenty-e2e-testing test",
-          "command": ["npx", "nx", "test", "twenty-e2e-testing", "--coverage=false"]
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-e2e-testing",
+            "--coverage=false"
+          ]
         }
       ],
       "critical": false,
@@ -1005,15 +1152,21 @@
     },
     {
       "id": "auto:twenty-eslint-rules:test",
-      "source": ["packages/twenty-eslint-rules/**"],
+      "source": ["packages/eslint-rules/**"],
       "tests": [
         {
           "name": "twenty-eslint-rules test",
-          "command": ["npx", "nx", "test", "twenty-eslint-rules", "--coverage=false"]
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-eslint-rules",
+            "--coverage=false"
+          ]
         }
       ],
       "critical": false,
-      "reason": "Auto-discovered Nx test target for packages/twenty-eslint-rules.",
+      "reason": "Auto-discovered Nx test target for packages/eslint-rules.",
       "origin": "auto"
     },
     {
@@ -1080,22 +1233,14 @@
       "critical": false,
       "reason": "Auto-discovered Nx test target for packages/twenty-ui.",
       "origin": "auto"
-    },
-    {
-      "id": "auto:twenty-zapier:test",
-      "source": ["packages/twenty-zapier/**"],
-      "tests": [
-        {
-          "name": "twenty-zapier test",
-          "command": ["npx", "nx", "test", "twenty-zapier", "--coverage=false"]
-        }
-      ],
-      "critical": false,
-      "reason": "Auto-discovered Nx test target for packages/twenty-zapier.",
-      "origin": "auto"
     }
   ],
   "tests": [
+    {
+      "path": "cron_jobs/tests/cron_jobs.test.ts",
+      "group": "cron_jobs",
+      "kind": "test"
+    },
     {
       "path": "packages/agent/src/pi-extensions/__tests__/crm-tools.test.ts",
       "group": "packages/agent/src/pi-extensions",
@@ -1160,6 +1305,16 @@
       "path": "packages/api/src/services/workspace-phone-numbers.spec.ts",
       "group": "packages/api/src/services",
       "kind": "spec"
+    },
+    {
+      "path": "packages/consuelo-core/tests/registry.test.ts",
+      "group": "packages/consuelo-core/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+      "group": "packages/consuelo-design/scripts",
+      "kind": "test"
     },
     {
       "path": "packages/consuelo-design/upstream/open-design/apps/daemon/tests/agents.test.ts",
@@ -1472,6 +1627,56 @@
       "kind": "test"
     },
     {
+      "path": "packages/consuelo-website/tests/blog-refresh.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/blog-toc-responsive.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/brand-assets.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/footer-art.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/pricing-interactions.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/site-header.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/social-card.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/website-structure.test.js",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/contacts/src/queues.spec.ts",
       "group": "packages/contacts/src",
       "kind": "spec"
@@ -1482,18 +1687,48 @@
       "kind": "spec"
     },
     {
-      "path": "packages/create-twenty-app/src/utils/__tests__/app-template.spec.ts",
-      "group": "packages/create-twenty-app/src/utils",
-      "kind": "__tests__"
+      "path": "packages/dialer-server/src/app.contract.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
     },
     {
-      "path": "packages/create-twenty-app/src/utils/__tests__/convert-to-label.spec.ts",
-      "group": "packages/create-twenty-app/src/utils",
-      "kind": "__tests__"
+      "path": "packages/dialer-server/src/architecture.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lead-connector-boundary.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lifecycle.integration.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/twilio-boundary.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/application/adapter-application.spec.ts",
+      "group": "packages/dialer/src/application",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/application/parallel-application.spec.ts",
+      "group": "packages/dialer/src/application",
+      "kind": "spec"
     },
     {
       "path": "packages/dialer/src/dialer.spec.ts",
       "group": "packages/dialer/src",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/domain/parallel-transition.spec.ts",
+      "group": "packages/dialer/src/domain",
       "kind": "spec"
     },
     {
@@ -1527,6 +1762,11 @@
       "kind": "spec"
     },
     {
+      "path": "packages/dialer/src/services/parallel-lifecycle.contract.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
       "path": "packages/dialer/src/services/parallel-strategy-resolver.spec.ts",
       "group": "packages/dialer/src/services",
       "kind": "spec"
@@ -1542,24 +1782,1039 @@
       "kind": "spec"
     },
     {
-      "path": "packages/twenty-apps/community/fireflies/src/__tests__/fireflies-webhook.spec.ts",
-      "group": "packages/twenty-apps/community/fireflies/src",
-      "kind": "__tests__"
+      "path": "packages/diff-cockpit/tests/bun-test.d.ts",
+      "group": "packages/diff-cockpit/tests",
+      "kind": "tests-dir"
     },
     {
-      "path": "packages/twenty-apps/community/fireflies/src/__tests__/historical-importer.spec.ts",
-      "group": "packages/twenty-apps/community/fireflies/src",
-      "kind": "__tests__"
+      "path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "group": "packages/diff-cockpit/tests",
+      "kind": "test"
     },
     {
-      "path": "packages/twenty-apps/community/fireflies/src/__tests__/setup.ts",
-      "group": "packages/twenty-apps/community/fireflies/src",
-      "kind": "__tests__"
+      "path": "packages/documentation/tests/build.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
     },
     {
-      "path": "packages/twenty-apps/community/fireflies/src/__tests__/webhook-handler-logging.spec.ts",
-      "group": "packages/twenty-apps/community/fireflies/src",
-      "kind": "__tests__"
+      "path": "packages/documentation/tests/connect.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/documentation/tests/foundation.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/documentation/tests/observe.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/documentation/tests/reference.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/documentation/tests/review-cleanup.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/documentation/tests/secure.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/documentation/tests/sites.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/documentation/tests/start.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/eslint-rules/rules/component-props-naming.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/effect-components.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/inject-workspace-repository.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/matching-state-variable.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/max-consts-per-file.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/no-hardcoded-colors.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/no-state-useref.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts",
+      "group": "packages/eslint-rules/rules",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/lead-connector/src/application.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/architecture.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/infrastructure.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/webhook.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/scripts/compact-daemon-output.test.ts",
+      "group": "packages/os/scripts",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/scripts/install-tty.test.ts",
+      "group": "packages/os/scripts",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/scripts/onboarding-flow.test.ts",
+      "group": "packages/os/scripts",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifact-render.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifacts-edge-redirect.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifacts-hono-routes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifacts-legacy-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifacts-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifacts.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/audit/audit.test.ts",
+      "group": "packages/os/tests/audit",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "group": "packages/os/tests/audit",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/bootstrap-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/browser-service.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/bun-product-server-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/cloudflare-connector-transport-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/cloudflare-edge-router.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/cloudflare-worker-deployment-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/code-call-parity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/code-call-service-architecture.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/code-call-snapshot.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/code-call.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/connector-origin-hostname.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-home-config.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-artifacts-adapter.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-environment-adapter.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-gateway-policy.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-gateway-registry.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-settings-adapter.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-trace-adapter.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-workspace-snapshot.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/daemon-bun-path.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/dangerous-material-policy.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/environment-probe.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/fixture-harness.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/lifecycle-contract.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/local-container-runner.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/workflow-contract.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/doctor-logs.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/doctor-redaction.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-control-plane.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-hono-routes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-sites-gateway-endpoints.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/facade/facade.test.ts",
+      "group": "packages/os/tests/facade",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/facade/process-tree.test.ts",
+      "group": "packages/os/tests/facade",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/fixtures/trace-persistence-runtime.ts",
+      "group": "packages/os/tests/fixtures",
+      "kind": "tests-dir"
+    },
+    {
+      "path": "packages/os/tests/fs-read.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/fs-search.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/fs-write.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/github-pr-reviews.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/github.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-diagnostics.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-edge-site-publisher.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-state.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/installer-local-agent-connectivity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/installer-onboarding-ui.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/installer-runtime-dependencies.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/launcher-astro-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/launcher-onboarding.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/local-agent-connectivity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/local-guardrails.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/local-os-port-cutover.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/local-os-server-hono-architecture.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/local-os-server-review-findings.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/manifest-overlay.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-gateway-action-scopes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/00-manifest-taxonomy.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/01-package-boundaries.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/02-workflow-intent.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/03-runtime-dependency-catalog.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/04-installer-plan.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/05-doctor.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/06-effect-architecture.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/07-contracts-asset.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/08-contracts-timeline.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/09-contracts-render-result.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/10-cli-json-envelope.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/11-core-probe.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/12-core-frames-extract.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/13-core-timeline-validate.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/14-core-compose.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/15-core-qa.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/16-source-capture-internal.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/17-media-ingest-source-capture.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/18-youtube-clip-search.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/19-youtube-ingest.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/20-audio-transcribe.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/21-scene-detect.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/22-vision-light-opencv.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/23-vision-pose-mediapipe.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/24-motion-track.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/25-overlay-render.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/26-sports-science-breakdown.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/27-export-package.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/28-artifact-handoff.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/29-storage-budget.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/30-fixtures-integration.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/31-svg-convert.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/32-screenshot-render.test.ts",
+      "group": "packages/os/tests/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/media/helpers.ts",
+      "group": "packages/os/tests/media",
+      "kind": "tests-dir"
+    },
+    {
+      "path": "packages/os/tests/memory-adjacent.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/memory.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/oauth-device-http-client.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/oauth-device-onboarding-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/oauth-device-page-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/onboarding-skills.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-call-artifacts.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-device-agent-status.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-device-authority-architecture.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-device-authority-connector-provisioning.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-device-authority-release-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-device-authority-worker.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-get-steering-trace.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-raw-steering.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/platform-cloudflare-provisioning-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/pr-review-collector.test.js",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/pr-review.test.js",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/redaction.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/repo-default-config.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/runtime-state.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/safe-temp-cleanup.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/safe-temp-cleanup.ts",
+      "group": "packages/os/tests",
+      "kind": "tests-dir"
+    },
+    {
+      "path": "packages/os/tests/security-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/semantic-embedding-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/semantic-index-storage.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/senior-engineer-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-control-plane.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-hono-routes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-site.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-sites-gateway-endpoints.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/sites-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/skill-migration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/skills-registry.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-context-memory.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-install-state.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-service.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/subagent-executable-discovery.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-hook-dispatcher.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-hooks.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-manifest-workflow-roles.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-meta.test.js",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-selection.test.js",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-session.test.js",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-start-output.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/tool-manifest.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/tool-scope-authorization.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/tools-search-v2.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-gateway-workspace-host.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-persistence.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-sites-browser-client.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-sites-gateway-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-sites-gateway-live-stream.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-sites-gateway-read-layer.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-sites-live-smoke-script.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-sites-reporting.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-sites-runtime-boundary.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-watch.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/verification.test.js",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/verify-run-state.test.js",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workflow-intent.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-cloudflare-gateway-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-edge-beta-smoke-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-gateway-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-hostname-edge-router.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-site-snapshot-publishing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
     },
     {
       "path": "packages/twenty-e2e-testing/tests/authentication/fixture.ts",
@@ -1644,76 +2899,6 @@
     {
       "path": "packages/twenty-e2e-testing/tests/workflow-visualizer.spec.ts",
       "group": "packages/twenty-e2e-testing/tests",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/component-props-naming.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/effect-components.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/inject-workspace-repository.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/matching-state-variable.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/max-consts-per-file.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/no-hardcoded-colors.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/no-navigate-prefer-link.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/no-state-useref.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/sort-css-properties-alphabetically.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/twenty-eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts",
-      "group": "packages/twenty-eslint-rules/rules",
       "kind": "spec"
     },
     {
@@ -6127,6 +7312,11 @@
       "kind": "__tests__"
     },
     {
+      "path": "packages/twenty-server/src/engine/core-modules/agent/services/automation.service.spec.ts",
+      "group": "packages/twenty-server/src/engine/core-modules/agent/services",
+      "kind": "spec"
+    },
+    {
       "path": "packages/twenty-server/src/engine/core-modules/api-key/services/__tests__/api-key.service.spec.ts",
       "group": "packages/twenty-server/src/engine/core-modules/api-key/services",
       "kind": "__tests__"
@@ -6387,6 +7577,11 @@
       "kind": "spec"
     },
     {
+      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.spec.ts",
+      "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers",
+      "kind": "spec"
+    },
+    {
       "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/guards/dialer-call-permission.guard.spec.ts",
       "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/guards",
       "kind": "spec"
@@ -6399,6 +7594,11 @@
     {
       "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.spec.ts",
       "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts",
+      "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/services",
       "kind": "spec"
     },
     {
@@ -6464,6 +7664,11 @@
     {
       "path": "packages/twenty-server/src/engine/core-modules/email/__tests__/email-sender.service.spec.ts",
       "group": "packages/twenty-server/src/engine/core-modules/email",
+      "kind": "__tests__"
+    },
+    {
+      "path": "packages/twenty-server/src/engine/core-modules/email/templates/__tests__/email-templates.spec.ts",
+      "group": "packages/twenty-server/src/engine/core-modules/email/templates",
       "kind": "__tests__"
     },
     {
@@ -11262,6 +12467,11 @@
       "kind": "test-dir"
     },
     {
+      "path": "packages/twenty-server/test/integration/twenty-config/types/config-variable-graphql-error.type.ts",
+      "group": "packages/twenty-server/test/integration/twenty-config/types",
+      "kind": "test-dir"
+    },
+    {
       "path": "packages/twenty-server/test/integration/twenty-config/types/perform-twenty-config-query.type.ts",
       "group": "packages/twenty-server/test/integration/twenty-config/types",
       "kind": "test-dir"
@@ -11787,38 +12997,8 @@
       "kind": "__tests__"
     },
     {
-      "path": "packages/twenty-zapier/src/test/authentication.test.ts",
-      "group": "packages/twenty-zapier/src",
-      "kind": "test"
-    },
-    {
-      "path": "packages/twenty-zapier/src/test/creates/crud_record.test.ts",
-      "group": "packages/twenty-zapier/src",
-      "kind": "test"
-    },
-    {
-      "path": "packages/twenty-zapier/src/test/triggers/find_object_names_singular.test.ts",
-      "group": "packages/twenty-zapier/src",
-      "kind": "test"
-    },
-    {
-      "path": "packages/twenty-zapier/src/test/triggers/list_record_ids.test.ts",
-      "group": "packages/twenty-zapier/src",
-      "kind": "test"
-    },
-    {
-      "path": "packages/twenty-zapier/src/test/triggers/trigger_record.test.ts",
-      "group": "packages/twenty-zapier/src",
-      "kind": "test"
-    },
-    {
-      "path": "packages/twenty-zapier/src/test/utils/computeInputFields.test.ts",
-      "group": "packages/twenty-zapier/src",
-      "kind": "test"
-    },
-    {
-      "path": "packages/twenty-zapier/src/test/utils/handleQueryParams.test.ts",
-      "group": "packages/twenty-zapier/src",
+      "path": "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
+      "group": "packages/workspace/tests",
       "kind": "test"
     },
     {
@@ -11827,7 +13007,32 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/browser-review-contract.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/browser-service.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/chunker.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/code-call-parity.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/code-call-service-architecture.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/code-call.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -11842,6 +13047,36 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/deploy-wrappers.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/dialer-validation-runbook.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/docs-production-release.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/email-package-removal.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/embedding-config.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/explore-ranker.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -11852,7 +13087,32 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/fs-apply-patch.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/fs-read.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/fs-search.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/git-diff.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/github-pr-reviews.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/github-workflow-policy.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -11867,6 +13127,16 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/pr-ref.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/pr-review.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/research-ingest.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -11877,12 +13147,52 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/stream-lifecycle.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/stream-workpads.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-hook-dispatcher.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-hooks.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/task-meta.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/task-node-modules.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-selector-pr-ref.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/task-session.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-workpad.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -11897,29 +13207,130 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/tool-manifest.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/tools-search-v2.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/trace-home.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/trace-site-inspector.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/verification.test.js",
       "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/wait.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/website-deploy.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/workflow-intent.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "tests/operator.test.ts",
+      "group": "tests",
       "kind": "test"
     }
   ],
   "unmappedTests": [
+    "cron_jobs/tests/cron_jobs.test.ts",
     "packages/agent/src/pi-extensions/__tests__/crm-tools.test.ts",
+    "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-website/tests/blog-refresh.test.mjs",
+    "packages/consuelo-website/tests/blog-toc-responsive.test.mjs",
+    "packages/consuelo-website/tests/brand-assets.test.mjs",
+    "packages/consuelo-website/tests/footer-art.test.mjs",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+    "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+    "packages/consuelo-website/tests/pricing-interactions.test.mjs",
+    "packages/consuelo-website/tests/site-header.test.mjs",
+    "packages/consuelo-website/tests/social-card.test.mjs",
+    "packages/consuelo-website/tests/website-structure.test.js",
     "packages/contacts/src/queues.spec.ts",
     "packages/contacts/src/utils.spec.ts",
+    "packages/documentation/tests/build.test.ts",
+    "packages/documentation/tests/connect.test.ts",
+    "packages/documentation/tests/foundation.test.ts",
+    "packages/documentation/tests/observe.test.ts",
+    "packages/documentation/tests/reference.test.ts",
+    "packages/documentation/tests/review-cleanup.test.ts",
+    "packages/documentation/tests/secure.test.ts",
+    "packages/documentation/tests/sites.test.ts",
+    "packages/documentation/tests/start.test.ts",
+    "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
+    "packages/workspace/tests/browser-review-contract.test.ts",
+    "packages/workspace/tests/browser-service.test.ts",
     "packages/workspace/tests/chunker.test.js",
+    "packages/workspace/tests/code-call-parity.test.ts",
+    "packages/workspace/tests/code-call-service-architecture.test.ts",
+    "packages/workspace/tests/code-call.test.ts",
     "packages/workspace/tests/codemode.test.ts",
     "packages/workspace/tests/context-trace.test.js",
+    "packages/workspace/tests/deploy-wrappers.test.js",
+    "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
+    "packages/workspace/tests/dialer-validation-runbook.test.ts",
+    "packages/workspace/tests/docs-production-release.test.js",
+    "packages/workspace/tests/email-package-removal.test.ts",
+    "packages/workspace/tests/embedding-config.test.js",
     "packages/workspace/tests/explore-ranker.test.js",
     "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/fs-apply-patch.test.ts",
+    "packages/workspace/tests/fs-read.test.ts",
+    "packages/workspace/tests/fs-search.test.ts",
     "packages/workspace/tests/git-diff.test.ts",
+    "packages/workspace/tests/github-pr-reviews.test.ts",
+    "packages/workspace/tests/github-workflow-policy.test.js",
     "packages/workspace/tests/github.test.ts",
     "packages/workspace/tests/pr-links.test.js",
+    "packages/workspace/tests/pr-ref.test.js",
+    "packages/workspace/tests/pr-review.test.js",
     "packages/workspace/tests/research-ingest.test.js",
     "packages/workspace/tests/review-run-state.test.js",
+    "packages/workspace/tests/stream-lifecycle.test.ts",
+    "packages/workspace/tests/stream-workpads.test.js",
+    "packages/workspace/tests/task-hook-dispatcher.test.ts",
+    "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+    "packages/workspace/tests/task-hooks.test.ts",
     "packages/workspace/tests/task-meta.test.ts",
+    "packages/workspace/tests/task-node-modules.test.js",
+    "packages/workspace/tests/task-selector-pr-ref.test.js",
     "packages/workspace/tests/task-session.test.js",
+    "packages/workspace/tests/task-workpad.test.js",
     "packages/workspace/tests/task-workpad.test.ts",
-    "packages/workspace/tests/verification.test.js"
+    "packages/workspace/tests/tool-manifest.test.ts",
+    "packages/workspace/tests/tools-search-v2.test.ts",
+    "packages/workspace/tests/trace-home.test.ts",
+    "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
+    "packages/workspace/tests/verification.test.js",
+    "packages/workspace/tests/wait.test.js",
+    "packages/workspace/tests/website-deploy.test.js",
+    "packages/workspace/tests/workflow-intent.test.ts",
+    "tests/operator.test.ts"
   ],
   "projects": [
     {
@@ -11931,17 +13342,17 @@
       "lint": false
     },
     {
-      "name": "create-twenty-app",
-      "root": "packages/create-twenty-app",
-      "file": "packages/create-twenty-app/project.json",
-      "testTargets": ["test"],
-      "typecheck": true,
-      "lint": true
-    },
-    {
       "name": "@consuelo/dialer",
       "root": "packages/dialer",
       "file": "packages/dialer/project.json",
+      "testTargets": [],
+      "typecheck": true,
+      "lint": false
+    },
+    {
+      "name": "@consuelo/dialer-server",
+      "root": "packages/dialer-server",
+      "file": "packages/dialer-server/project.json",
       "testTargets": [],
       "typecheck": true,
       "lint": false
@@ -11955,6 +13366,22 @@
       "lint": false
     },
     {
+      "name": "twenty-eslint-rules",
+      "root": "packages/eslint-rules",
+      "file": "packages/eslint-rules/project.json",
+      "testTargets": ["test"],
+      "typecheck": true,
+      "lint": true
+    },
+    {
+      "name": "@consuelo/lead-connector",
+      "root": "packages/lead-connector",
+      "file": "packages/lead-connector/project.json",
+      "testTargets": [],
+      "typecheck": true,
+      "lint": false
+    },
+    {
       "name": "@consuelo/logger",
       "root": "packages/logger",
       "file": "packages/logger/project.json",
@@ -11963,27 +13390,11 @@
       "lint": false
     },
     {
-      "name": "twenty-apps",
-      "root": "packages/twenty-apps",
-      "file": "packages/twenty-apps/project.json",
+      "name": "consuelo-os",
+      "root": "packages/os",
+      "file": "packages/os/project.json",
       "testTargets": [],
-      "typecheck": false,
-      "lint": false
-    },
-    {
-      "name": "fireflies",
-      "root": "packages/twenty-apps/community/fireflies",
-      "file": "packages/twenty-apps/community/fireflies/project.json",
-      "testTargets": ["test"],
       "typecheck": true,
-      "lint": true
-    },
-    {
-      "name": "twenty-browser-extension",
-      "root": "packages/twenty-apps/community/linkedin-browser-extension/browser-extension",
-      "file": "packages/twenty-apps/community/linkedin-browser-extension/browser-extension/project.json",
-      "testTargets": [],
-      "typecheck": false,
       "lint": false
     },
     {
@@ -11993,22 +13404,6 @@
       "testTargets": ["test", "test:ui", "test:debug", "test:report"],
       "typecheck": false,
       "lint": false
-    },
-    {
-      "name": "twenty-emails",
-      "root": "packages/twenty-emails",
-      "file": "packages/twenty-emails/project.json",
-      "testTargets": [],
-      "typecheck": true,
-      "lint": true
-    },
-    {
-      "name": "twenty-eslint-rules",
-      "root": "packages/twenty-eslint-rules",
-      "file": "packages/twenty-eslint-rules/project.json",
-      "testTargets": ["test"],
-      "typecheck": true,
-      "lint": true
     },
     {
       "name": "twenty-front",
@@ -12058,14 +13453,6 @@
       "lint": true
     },
     {
-      "name": "twenty-zapier",
-      "root": "packages/twenty-zapier",
-      "file": "packages/twenty-zapier/project.json",
-      "testTargets": ["test"],
-      "typecheck": true,
-      "lint": false
-    },
-    {
       "name": "openworkspace",
       "root": "packages/workspace",
       "file": "packages/workspace/project.json",
@@ -12083,7 +13470,25 @@
         "test-selection:generate": "node packages/workspace/scripts/test-selection.js generate",
         "test-selection:check": "node packages/workspace/scripts/test-selection.js check",
         "test-selection:nightly": "node packages/workspace/scripts/test-selection.js nightly",
-        "test-selection": "node packages/workspace/scripts/test-selection.js"
+        "test-selection": "node packages/workspace/scripts/test-selection.js",
+        "test:reader": "bun run --cwd packages/consuelo-design test:reader",
+        "docs:test-translation": "bun run --cwd packages/documentation test:translation"
+      }
+    },
+    {
+      "name": "@consuelo/core",
+      "root": "packages/consuelo-core",
+      "file": "packages/consuelo-core/package.json",
+      "scripts": {
+        "test": "vitest run"
+      }
+    },
+    {
+      "name": "consuelo-design",
+      "root": "packages/consuelo-design",
+      "file": "packages/consuelo-design/package.json",
+      "scripts": {
+        "test:reader": "bun test ./scripts/render-consuelo-reader.test.ts"
       }
     },
     {
@@ -12167,12 +13572,80 @@
       }
     },
     {
-      "name": "fireflies",
-      "root": "packages/twenty-apps/community/fireflies",
-      "file": "packages/twenty-apps/community/fireflies/package.json",
+      "name": "consuelo-website",
+      "root": "packages/consuelo-website",
+      "file": "packages/consuelo-website/package.json",
       "scripts": {
-        "test": "jest",
-        "test:webhook": "tsx scripts/test-webhook.ts"
+        "test:header": "node tests/site-header.test.mjs"
+      }
+    },
+    {
+      "name": "@consuelo/dialer-server",
+      "root": "packages/dialer-server",
+      "file": "packages/dialer-server/package.json",
+      "scripts": {
+        "test": "bun test src"
+      }
+    },
+    {
+      "name": "@consuelo/diff-cockpit",
+      "root": "packages/diff-cockpit",
+      "file": "packages/diff-cockpit/package.json",
+      "scripts": {
+        "test": "bun test tests/diff-cockpit.test.ts"
+      }
+    },
+    {
+      "name": "packages-documentation",
+      "root": "packages/documentation",
+      "file": "packages/documentation/package.json",
+      "scripts": {
+        "test:translation": "bun scripts/test-translation.mjs",
+        "test:foundation": "bun test tests/foundation.test.ts",
+        "test:start": "bun test tests/start.test.ts",
+        "test:boundary": "bun scripts/check-package-boundary.mjs",
+        "test:browser": "bun scripts/test-foundation-browser.mjs",
+        "test:connect": "bun test tests/connect.test.ts",
+        "test:connect-browser": "bun scripts/test-connect-browser.mjs",
+        "test:build": "bun test tests/build.test.ts",
+        "test:build-browser": "bun scripts/test-build-browser.mjs",
+        "test:sites": "bun test tests/sites.test.ts",
+        "test:sites-browser": "bun scripts/test-sites-browser.mjs",
+        "test:observe": "bun test tests/observe.test.ts",
+        "test:observe-browser": "bun scripts/test-observe-browser.mjs",
+        "test:secure": "bun test tests/secure.test.ts",
+        "test:secure-browser": "bun scripts/test-secure-browser.mjs",
+        "test:reference": "bun test tests/reference.test.ts",
+        "test:reference-browser": "bun scripts/test-reference-browser.mjs",
+        "test:review-cleanup": "bun test tests/review-cleanup.test.ts"
+      }
+    },
+    {
+      "name": "@consuelo/lead-connector",
+      "root": "packages/lead-connector",
+      "file": "packages/lead-connector/package.json",
+      "scripts": {
+        "test": "bun test src"
+      }
+    },
+    {
+      "name": "@consuelo/os",
+      "root": "packages/os",
+      "file": "packages/os/package.json",
+      "scripts": {
+        "test": "vitest run",
+        "media:test": "vitest run tests/media",
+        "media:test:manifest": "vitest run tests/media/00-manifest-taxonomy.test.ts tests/media/01-package-boundaries.test.ts tests/media/02-workflow-intent.test.ts",
+        "media:test:deps": "vitest run tests/media/03-runtime-dependency-catalog.test.ts tests/media/04-installer-plan.test.ts tests/media/05-doctor.test.ts",
+        "media:test:contracts": "vitest run tests/media/06-effect-architecture.test.ts tests/media/07-contracts-asset.test.ts tests/media/08-contracts-timeline.test.ts tests/media/09-contracts-render-result.test.ts tests/media/10-cli-json-envelope.test.ts",
+        "media:test:core": "vitest run tests/media/11-core-probe.test.ts tests/media/12-core-frames-extract.test.ts tests/media/13-core-timeline-validate.test.ts tests/media/14-core-compose.test.ts tests/media/15-core-qa.test.ts",
+        "media:test:youtube": "vitest run tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts",
+        "media:test:audio": "vitest run tests/media/20-audio-transcribe.test.ts",
+        "media:test:vision": "vitest run tests/media/21-scene-detect.test.ts tests/media/22-vision-light-opencv.test.ts tests/media/23-vision-pose-mediapipe.test.ts tests/media/24-motion-track.test.ts",
+        "media:test:render": "vitest run tests/media/25-overlay-render.test.ts tests/media/26-sports-science-breakdown.test.ts tests/media/27-export-package.test.ts tests/media/32-screenshot-render.test.ts",
+        "media:test:handoff": "vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts",
+        "media:test:ingest": "vitest run tests/media/16-source-capture-internal.test.ts tests/media/17-media-ingest-source-capture.test.ts tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts",
+        "media:test:svg": "vitest run tests/media/31-svg-convert.test.ts"
       }
     },
     {

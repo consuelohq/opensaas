@@ -1,0 +1,964 @@
+{
+  "query": "OS hook workflow",
+  "budget": 8,
+  "results": [
+    {
+      "path": "packages/os/hooks/task/workflow.js",
+      "score": 0.9872,
+      "belief_prior": 0.7436,
+      "symbol": "createTaskWorkflowHookRegistry",
+      "chunk_type": "function",
+      "file_outline": "createTaskWorkflowHookRegistry buildStages anchorsForStage isTaskWorkflowEvent handlePreTaskStart handlePostTaskStart handleValidationReady handleTaskFinishReady createManifestResolver actionFromManifestEntry missingCapabilityAction extractSkillAnchors firstLineContaining areaFromBranch slugFromBranch workpadPathForBranch buildInitialWorkpadContent",
+      "typed_edges": [
+        {
+          "path": "packages/os/hooks/task/guidance.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/hooks/task/guidance.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 12133,
+      "chunk_count": 19,
+      "last_modified": 1783901679,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.5641,
+      "reason": "hybrid match: function createTaskWorkflowHookRegistry",
+      "preview": "function createTaskWorkflowHookRegistry(options = {}) { const manifest = Array.isArray(options.manifest) ? options.manifest : []; const resolver = createManifestResolver(manifest);",
+      "graph_connections": [
+        "packages/os/hooks/task/guidance.js"
+      ],
+      "graph_connection_count": 1,
+      "lines": {
+        "start": 42,
+        "end": 79
+      },
+      "target": {
+        "key": "packages/os/hooks/task/workflow.js:function:createTaskWorkflowHookRegistry:42-79",
+        "path": "packages/os/hooks/task/workflow.js",
+        "kind": "function",
+        "name": "createTaskWorkflowHookRegistry",
+        "symbol_path": "createTaskWorkflowHookRegistry",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 42,
+          "end": 79
+        },
+        "content_hash": "b55a3450a3d7c376033dd04d4ed3599af3e87cd9c15aa2a7629a5fce34eaa9b1",
+        "preview": "function createTaskWorkflowHookRegistry(options = {}) { const manifest = Array.isArray(options.manifest) ? options.manifest : []; const resolver = createManifestResolver(manifest);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.02,
+        "graphRelevance": 0.02,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 1,
+        "nameMatch": 1,
+        "rawScore": 0.9871500000000001,
+        "recency": 0.5,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 1,
+        "weightedEdges": 0.6
+      }
+    },
+    {
+      "path": "packages/workspace/hooks/task/workflow.js",
+      "score": 0.9872,
+      "belief_prior": 0.7436,
+      "symbol": "createTaskWorkflowHookRegistry",
+      "chunk_type": "function",
+      "file_outline": "createTaskWorkflowHookRegistry buildStages anchorsForStage isTaskWorkflowEvent handlePreTaskStart handlePostTaskStart handleValidationReady handleTaskFinishReady createManifestResolver actionFromManifestEntry missingCapabilityAction extractSkillAnchors firstLineContaining areaFromBranch slugFromBranch workpadPathForBranch buildInitialWorkpadContent",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/hooks/task/guidance.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/hooks/task/guidance.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 12154,
+      "chunk_count": 19,
+      "last_modified": 1783901679,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.5641,
+      "reason": "hybrid match: function createTaskWorkflowHookRegistry",
+      "preview": "function createTaskWorkflowHookRegistry(options = {}) { const manifest = Array.isArray(options.manifest) ? options.manifest : []; const resolver = createManifestResolver(manifest);",
+      "graph_connections": [
+        "packages/workspace/hooks/task/guidance.js"
+      ],
+      "graph_connection_count": 1,
+      "lines": {
+        "start": 42,
+        "end": 79
+      },
+      "target": {
+        "key": "packages/workspace/hooks/task/workflow.js:function:createTaskWorkflowHookRegistry:42-79",
+        "path": "packages/workspace/hooks/task/workflow.js",
+        "kind": "function",
+        "name": "createTaskWorkflowHookRegistry",
+        "symbol_path": "createTaskWorkflowHookRegistry",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 42,
+          "end": 79
+        },
+        "content_hash": "b55a3450a3d7c376033dd04d4ed3599af3e87cd9c15aa2a7629a5fce34eaa9b1",
+        "preview": "function createTaskWorkflowHookRegistry(options = {}) { const manifest = Array.isArray(options.manifest) ? options.manifest : []; const resolver = createManifestResolver(manifest);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.02,
+        "graphRelevance": 0.02,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 1,
+        "nameMatch": 1,
+        "rawScore": 0.9871500000000001,
+        "recency": 0.5,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 1,
+        "weightedEdges": 0.6
+      }
+    },
+    {
+      "path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "score": 0.8753,
+      "belief_prior": 0.6876,
+      "symbol": "tool",
+      "chunk_type": "function",
+      "file_outline": "tool loadWorkflowModule",
+      "typed_edges": [
+        {
+          "path": "packages/os/tests/artifact-render.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/artifacts.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/bootstrap-source.test.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 10813,
+      "chunk_count": 9,
+      "last_modified": null,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.2184,
+      "reason": "hybrid match: function tool",
+      "preview": "function tool(name: string, workflowRole: string, sessionRequired: boolean, inputSchema: string): ManifestTool { return { name,",
+      "graph_connections": [
+        "packages/os/tests/artifact-render.test.ts",
+        "packages/os/tests/artifacts.test.ts",
+        "packages/os/tests/bootstrap-source.test.ts"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 37,
+        "end": 46
+      },
+      "target": {
+        "key": "packages/os/tests/task-hook-workflow-contract.test.ts:function:tool:37-46",
+        "path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+        "kind": "function",
+        "name": "tool",
+        "symbol_path": "tool",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 37,
+          "end": 46
+        },
+        "content_hash": "7123a095e03f0da317f629ef7c32c02cfe7a751c0f008a87284ea3bc6ceda062",
+        "preview": "function tool(name: string, workflowRole: string, sessionRequired: boolean, inputSchema: string): ManifestTool { return { name,"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.5499999999999999,
+        "nameMatch": 1,
+        "rawScore": 0.8752500000000001,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 1,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+      "score": 0.8753,
+      "belief_prior": 0.6876,
+      "symbol": "tool",
+      "chunk_type": "function",
+      "file_outline": "tool loadWorkflowModule",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/tests/chunker.test.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/code-call-parity.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/code-call-service-architecture.test.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 10974,
+      "chunk_count": 9,
+      "last_modified": null,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.2184,
+      "reason": "hybrid match: function tool",
+      "preview": "function tool(name: string, workflowRole: string, sessionRequired: boolean, inputSchema: string): ManifestTool { return { name,",
+      "graph_connections": [
+        "packages/workspace/tests/chunker.test.js",
+        "packages/workspace/tests/code-call-parity.test.ts",
+        "packages/workspace/tests/code-call-service-architecture.test.ts"
+      ],
+      "graph_connection_count": 3,
+      "lines": {
+        "start": 37,
+        "end": 46
+      },
+      "target": {
+        "key": "packages/workspace/tests/task-hook-workflow-contract.test.ts:function:tool:37-46",
+        "path": "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+        "kind": "function",
+        "name": "tool",
+        "symbol_path": "tool",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 37,
+          "end": 46
+        },
+        "content_hash": "7123a095e03f0da317f629ef7c32c02cfe7a751c0f008a87284ea3bc6ceda062",
+        "preview": "function tool(name: string, workflowRole: string, sessionRequired: boolean, inputSchema: string): ManifestTool { return { name,"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.029999999999999995,
+        "graphRelevance": 0.029999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.5499999999999999,
+        "nameMatch": 1,
+        "rawScore": 0.8752500000000001,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 1,
+        "weightedEdges": 0.8999999999999999
+      }
+    },
+    {
+      "path": "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+      "score": 0.8706,
+      "belief_prior": 0.6853,
+      "symbol": "deleteWorkflow",
+      "chunk_type": "function",
+      "file_outline": "deleteWorkflow",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+          "type": "imports",
+          "symbol": "../requests/delete-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "imported_by",
+          "symbol": "./backend"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+          "type": "imported_by",
+          "symbol": "../requests/delete-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "imports",
+          "symbol": "./backend"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/utils/getAccessAuthToken.ts",
+          "type": "imports",
+          "symbol": "../utils/getAccessAuthToken"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/tests/workflow-creation.spec.ts",
+          "type": "imported_by",
+          "symbol": "../lib/requests/delete-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/utils/getAccessAuthToken.ts",
+          "type": "imported_by",
+          "symbol": "../utils/getAccessAuthToken"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/tests/workflow-creation.spec.ts",
+          "type": "imports",
+          "symbol": "../lib/requests/delete-workflow"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 713,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-e2e-testing",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.007,
+      "reason": "hybrid match: function deleteWorkflow",
+      "preview": "export const deleteWorkflow = async ({ page, workflowId,",
+      "graph_connections": [
+        "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+        "packages/twenty-e2e-testing/lib/requests/backend.ts",
+        "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+        "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+        "packages/twenty-e2e-testing/lib/utils/getAccessAuthToken.ts",
+        "packages/twenty-e2e-testing/tests/workflow-creation.spec.ts"
+      ],
+      "graph_connection_count": 6,
+      "lines": {
+        "start": 5,
+        "end": 25
+      },
+      "target": {
+        "key": "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts:function:deleteWorkflow:5-25",
+        "path": "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+        "kind": "function",
+        "name": "deleteWorkflow",
+        "symbol_path": "deleteWorkflow",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 5,
+          "end": 25
+        },
+        "content_hash": "4faf7d76b7b137559ce028ada619a631b5abace153f9f0c829634b96e1c8b82c",
+        "preview": "export const deleteWorkflow = async ({ page, workflowId,"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.3266666666666666,
+        "graphRelevance": 0.3266666666666666,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.5,
+        "nameMatch": 1,
+        "rawScore": 0.8705500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 9.799999999999999
+      }
+    },
+    {
+      "path": "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+      "score": 0.8706,
+      "belief_prior": 0.6853,
+      "symbol": "destroyWorkflow",
+      "chunk_type": "function",
+      "file_outline": "destroyWorkflow",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+          "type": "imports",
+          "symbol": "../requests/destroy-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "imported_by",
+          "symbol": "./backend"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+          "type": "imported_by",
+          "symbol": "../requests/destroy-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "imports",
+          "symbol": "./backend"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/utils/getAccessAuthToken.ts",
+          "type": "imports",
+          "symbol": "../utils/getAccessAuthToken"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/tests/workflow-creation.spec.ts",
+          "type": "imported_by",
+          "symbol": "../lib/requests/destroy-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/utils/getAccessAuthToken.ts",
+          "type": "imported_by",
+          "symbol": "../utils/getAccessAuthToken"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/tests/workflow-creation.spec.ts",
+          "type": "imports",
+          "symbol": "../lib/requests/destroy-workflow"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 705,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-e2e-testing",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.007,
+      "reason": "hybrid match: function destroyWorkflow",
+      "preview": "export const destroyWorkflow = async ({ page, workflowId,",
+      "graph_connections": [
+        "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+        "packages/twenty-e2e-testing/lib/requests/backend.ts",
+        "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+        "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+        "packages/twenty-e2e-testing/lib/utils/getAccessAuthToken.ts",
+        "packages/twenty-e2e-testing/tests/workflow-creation.spec.ts"
+      ],
+      "graph_connection_count": 6,
+      "lines": {
+        "start": 5,
+        "end": 25
+      },
+      "target": {
+        "key": "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts:function:destroyWorkflow:5-25",
+        "path": "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+        "kind": "function",
+        "name": "destroyWorkflow",
+        "symbol_path": "destroyWorkflow",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 5,
+          "end": 25
+        },
+        "content_hash": "216e5fd02a62b40d380ab28320ffdeed25603cb0ce7706902243d7f2c2d2e020",
+        "preview": "export const destroyWorkflow = async ({ page, workflowId,"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.3266666666666666,
+        "graphRelevance": 0.3266666666666666,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.5,
+        "nameMatch": 1,
+        "rawScore": 0.8705500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 9.799999999999999
+      }
+    },
+    {
+      "path": "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+      "score": 0.8682,
+      "belief_prior": 0.6841,
+      "symbol": "WorkflowVisualizerPage",
+      "chunk_type": "class",
+      "file_outline": "WorkflowVisualizerPage WorkflowVisualizerPage.#page WorkflowVisualizerPage.workflowId WorkflowVisualizerPage.workflowName WorkflowVisualizerPage.addStepButton WorkflowVisualizerPage.workflowStatus WorkflowVisualizerPage.activateWorkflowButton WorkflowVisualizerPage.deactivateWorkflowButton WorkflowVisualizerPage.addTriggerButton WorkflowVisualizerPage.commandMenu WorkflowVisualizerPage.stepHeaderInCommandMenu WorkflowVisualizerPage.workflowNameLabel WorkflowVisualizerPage.triggerNode WorkflowVisualizerPage.background WorkflowVisualizerPage.useAsDraftButton WorkflowVisualizerPage.overrideDraftButton WorkflowVisualizerPage.discardDraftButton WorkflowVisualizerPage.seeRunsButton WorkflowVisualizerPage.goBackInCommandMenu WorkflowVisualizerPage.#actionNames WorkflowVisualizerPage.#createdActionNames WorkflowVisualizerPage.#triggerNames WorkflowVisualizerPage.#createdTriggerNames WorkflowVisualizerPage.constructor WorkflowVisualizerPage.createOneWorkflow WorkflowVisualizerPage.waitForWorkflowVisualizerLoad WorkflowVisualizerPage.goToWorkflowVisualizerPage WorkflowVisualizerPage.createInitialTrigger WorkflowVisualizerPage.createStep WorkflowVisualizerPage.getStepNode WorkflowVisualizerPage.getDeleteNodeButton WorkflowVisualizerPage.getAllStepNodes WorkflowVisualizerPage.deleteStep WorkflowVisualizerPage.deleteTrigger WorkflowVisualizerPage.closeSidePanel WorkflowVisualizerPage.goToWorkflowsIndexPage WorkflowVisualizerPage.setWorkflowsOpenInMode",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-e2e-testing/lib/fixtures/screenshot.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+          "type": "imports",
+          "symbol": "../requests/create-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+          "type": "imports",
+          "symbol": "../requests/delete-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+          "type": "imports",
+          "symbol": "../requests/destroy-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/types/workflows.ts",
+          "type": "imports",
+          "symbol": "../types/workflows"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/fixtures/screenshot.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+          "type": "imported_by",
+          "symbol": "../requests/create-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+          "type": "imported_by",
+          "symbol": "../requests/delete-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+          "type": "imported_by",
+          "symbol": "../requests/destroy-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/types/workflows.ts",
+          "type": "imported_by",
+          "symbol": "../types/workflows"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 9485,
+      "chunk_count": 39,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-e2e-testing",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.9477,
+      "reason": "hybrid match: class WorkflowVisualizerPage",
+      "preview": "export class WorkflowVisualizerPage {",
+      "graph_connections": [
+        "packages/twenty-e2e-testing/lib/fixtures/screenshot.ts",
+        "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+        "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+        "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+        "packages/twenty-e2e-testing/lib/types/workflows.ts"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 8,
+        "end": 8
+      },
+      "target": {
+        "key": "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts:class:WorkflowVisualizerPage:8-8",
+        "path": "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+        "kind": "class",
+        "name": "WorkflowVisualizerPage",
+        "symbol_path": "WorkflowVisualizerPage",
+        "node_type": "class_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 8,
+          "end": 8
+        },
+        "content_hash": "2be3e35e85450f981a2977ebda82e7a79446ddbe71d944e77e1b7be666a309a7",
+        "preview": "export class WorkflowVisualizerPage {"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.2866666666666667,
+        "graphRelevance": 0.2866666666666667,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.5,
+        "nameMatch": 1,
+        "rawScore": 0.8681500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 8.6
+      }
+    },
+    {
+      "path": "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+      "score": 0.8666,
+      "belief_prior": 0.6833,
+      "symbol": "createWorkflow",
+      "chunk_type": "function",
+      "file_outline": "createWorkflow",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+          "type": "imports",
+          "symbol": "../requests/create-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "imported_by",
+          "symbol": "./backend"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+          "type": "imported_by",
+          "symbol": "../requests/create-workflow"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "imports",
+          "symbol": "./backend"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/backend.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/utils/getAccessAuthToken.ts",
+          "type": "imports",
+          "symbol": "../utils/getAccessAuthToken"
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-e2e-testing/lib/utils/getAccessAuthToken.ts",
+          "type": "imported_by",
+          "symbol": "../utils/getAccessAuthToken"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 796,
+      "chunk_count": 2,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-e2e-testing",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.9501,
+      "reason": "hybrid match: function createWorkflow",
+      "preview": "export const createWorkflow = async ({ page, workflowId,",
+      "graph_connections": [
+        "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts",
+        "packages/twenty-e2e-testing/lib/requests/backend.ts",
+        "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts",
+        "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts",
+        "packages/twenty-e2e-testing/lib/utils/getAccessAuthToken.ts"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 5,
+        "end": 32
+      },
+      "target": {
+        "key": "packages/twenty-e2e-testing/lib/requests/create-workflow.ts:function:createWorkflow:5-32",
+        "path": "packages/twenty-e2e-testing/lib/requests/create-workflow.ts",
+        "kind": "function",
+        "name": "createWorkflow",
+        "symbol_path": "createWorkflow",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 5,
+          "end": 32
+        },
+        "content_hash": "e07e2afce3fa41d4f5d6676627117fb3475aab0a4d9b46a64a4fe30be5376bf3",
+        "preview": "export const createWorkflow = async ({ page, workflowId,"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.25999999999999995,
+        "graphRelevance": 0.25999999999999995,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.5,
+        "nameMatch": 1,
+        "rawScore": 0.8665500000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 7.799999999999999
+      }
+    }
+  ],
+  "source_routes": [],
+  "index_stats": {
+    "total_files": 15660,
+    "total_chunks": 79832,
+    "last_indexed": "2026-07-08T23:39:32.022Z",
+    "last_full_index": "2026-05-28T22:34:26.578Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_dimensions": 2560,
+    "files_indexed": 0,
+    "chunks_embedded": 0
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/os/hooks/task/workflow.js": {
+      "prior": 0.7436,
+      "posterior": 0.7436,
+      "observations": []
+    },
+    "packages/workspace/hooks/task/workflow.js": {
+      "prior": 0.7436,
+      "posterior": 0.7436,
+      "observations": []
+    },
+    "packages/os/tests/task-hook-workflow-contract.test.ts": {
+      "prior": 0.6876,
+      "posterior": 0.6876,
+      "observations": []
+    },
+    "packages/workspace/tests/task-hook-workflow-contract.test.ts": {
+      "prior": 0.6876,
+      "posterior": 0.6876,
+      "observations": []
+    },
+    "packages/twenty-e2e-testing/lib/requests/delete-workflow.ts": {
+      "prior": 0.6853,
+      "posterior": 0.6853,
+      "observations": []
+    },
+    "packages/twenty-e2e-testing/lib/requests/destroy-workflow.ts": {
+      "prior": 0.6853,
+      "posterior": 0.6853,
+      "observations": []
+    },
+    "packages/twenty-e2e-testing/lib/fixtures/blank-workflow.ts": {
+      "prior": 0.6841,
+      "posterior": 0.6841,
+      "observations": []
+    },
+    "packages/twenty-e2e-testing/lib/requests/create-workflow.ts": {
+      "prior": 0.6833,
+      "posterior": 0.6833,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/os/investigate-code-mode-call-hooks-and-task-start-consolidation",
+  "mode": "exploring",
+  "worktree_id": "task/os/investigate-code-mode-call-hooks-and-task-start-consolidation",
+  "updated_at": "2026-07-21T03:47:08.200Z"
+}

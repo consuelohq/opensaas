@@ -5,7 +5,7 @@ import { PermissionFlagType } from 'twenty-shared/constants';
 export const EXPECTED_MANIFEST: Manifest = {
   publicAssets: [
     {
-      checksum: '99496069dcc2a1488e1cae9f826d2707',
+      checksum: 'fed6fd1cefc3b51770560caef5a75d28',
       fileName: 'favicon.png',
       filePath: 'public/favicon.png',
       fileType: 'png',

@@ -15,6 +15,8 @@ type WorkspaceEdgeRouteSeedInput = {
   appUpstreamUrl?: string;
   siteSnapshotKey?: string;
   siteVersionId?: string;
+  publishedSiteIds?: string[];
+  siteContentHashes?: Record<string, string>;
   connectorId?: string;
   tunnelOriginUrl?: string;
   localServiceUrl?: string;
@@ -64,7 +66,7 @@ async function loadWorkspaceEdgeRouteSeedScriptContract(): Promise<WorkspaceEdge
 }
 
 contractDescribe('workspace edge route seed contract', () => {
-  it('should default the migration host to internal.consuelohq.com and route Sites shells plus Trace gateway routes', async () => {
+  it('should default the migration host to internal.consuelohq.com without routing unpublished child Sites', async () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
     const record = seed.createWorkspaceEdgeRouteSeedRecord() as {
       workspaceId: string;
@@ -86,30 +88,36 @@ contractDescribe('workspace edge route seed contract', () => {
       owner: 'consuelo-os-cloud',
       status: 'active',
     });
-    expect(record.routes.map((route) => route.pathPrefix)).toEqual([
+    expect(record.routes.filter((route) => route.status === 'active').map((route) => route.pathPrefix)).toEqual([
       '/',
-      '/office',
-      '/observability',
-      '/traces',
-      '/tracing',
-      '/diffs',
-      '/docs',
+      '/settings',
       '/gateway/traces/events',
       '/gateway/traces',
+      '/gateway/configuration/overlay',
+      '/gateway/configuration',
+      '/gateway/settings/overlay',
+      '/gateway/settings',
+      '/gateway/environments/upsert',
+      '/gateway/environments/delete',
+      '/gateway/environments',
+      '/gateway/secrets',
+      '/gateway/artifacts',
+      '/office',
+      '/design-wiki',
     ]);
-    expect(record.routes.filter((route) => route.target.kind === 'site-snapshot')).toEqual(expect.arrayContaining([
-      expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'static-shell' }) }),
-      expect.objectContaining({ pathPrefix: '/office', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'office', manifestKey: 'sites/workspace_internal/office/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/observability', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/traces', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/tracing', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'traces', manifestKey: 'sites/workspace_internal/traces/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/diffs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'diffs', manifestKey: 'sites/workspace_internal/diffs/seeded-workspace-site-shell/index.html' }) }),
-      expect.objectContaining({ pathPrefix: '/docs', surface: 'sites', auth: 'public', target: expect.objectContaining({ siteId: 'docs', manifestKey: 'sites/workspace_internal/docs/seeded-workspace-site-shell/index.html' }) }),
-    ]));
+    expect(record.routes.filter(
+      (route) => route.target.kind === 'site-snapshot' && route.status === 'active',
+    )).toEqual([
+      expect.objectContaining({ pathPrefix: '/', surface: 'sites', auth: 'workspace-session', target: expect.objectContaining({ siteId: 'launcher', versionId: 'seeded-workspace-site-shell', manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html', cachePolicy: 'private-preview' }) }),
+    ]);
+    expect(record.routes.find((route) => route.pathPrefix === '/tools')).toMatchObject({
+      status: 'disabled',
+      target: { kind: 'site-snapshot', siteId: 'tools' },
+    });
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/gateway/traces/events',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'trace-sites-live-endpoints',
@@ -119,7 +127,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/traces',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'trace-sites-read-layer',
@@ -127,7 +135,197 @@ contractDescribe('workspace edge route seed contract', () => {
           publicSiteRouteFamily: '/observability/*',
         }),
       }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/configuration/overlay',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'configuration-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/configuration/*',
+          publicSiteRouteFamily: '/configuration/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/configuration',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'configuration-sites-read-endpoints',
+          gatewayRouteFamily: '/gateway/configuration/*',
+          publicSiteRouteFamily: '/configuration/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/settings/overlay',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'configuration-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/settings/*',
+          publicSiteRouteFamily: '/settings/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/settings',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'configuration-sites-read-endpoints',
+          gatewayRouteFamily: '/gateway/settings/*',
+          publicSiteRouteFamily: '/settings/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/environments/upsert',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'environment-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/environments/*',
+          publicSiteRouteFamily: '/environments/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/environments/delete',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'environment-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/environments/*',
+          publicSiteRouteFamily: '/environments/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/environments',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'environment-sites-read-endpoints',
+          gatewayRouteFamily: '/gateway/environments/*',
+          publicSiteRouteFamily: '/environments/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/settings',
+        auth: 'public',
+        target: { kind: 'redirect', location: '/configuration', statusCode: 308 },
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/artifacts',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'artifacts-sites-read-layer',
+          gatewayRouteFamily: '/gateway/artifacts/*',
+          publicSiteRouteFamily: '/artifacts/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/office',
+        auth: 'public',
+        target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
+      }),
+      expect.objectContaining({
+        pathPrefix: '/design-wiki',
+        auth: 'public',
+        target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
+      }),
     ]));
+  });
+
+  it('should route only the Site snapshots explicitly proven published', async () => {
+    const seed = await loadWorkspaceEdgeRouteSeedContract();
+    const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      siteSnapshotKey: 'sites/workspace_internal/launcher/sha256-release/index.html',
+      siteVersionId: 'sha256-release',
+      siteContentHashes: {
+        launcher: 'a'.repeat(64),
+        tools: 'b'.repeat(64),
+      },
+      publishedSiteIds: [
+        'launcher',
+        'artifacts',
+        'traces',
+        'diffs',
+        'docs',
+        'configuration',
+        'tools',
+        'environments',
+        'secrets',
+      ],
+    }) as {
+      routes: Array<{
+        pathPrefix: string;
+        target: { kind: string; siteId?: string; manifestKey?: string };
+      }>;
+    };
+
+    const snapshotRoutes = record.routes.filter(
+      (route) => route.target.kind === 'site-snapshot',
+    );
+    expect(snapshotRoutes.map((route) => route.pathPrefix)).toEqual([
+      '/',
+      '/artifacts',
+      '/observability',
+      '/observability/traces',
+      '/traces',
+      '/tracing',
+      '/trace-burn-intelligence',
+      '/diffs',
+      '/docs',
+      '/configuration',
+      '/tools',
+      '/environments',
+      '/secrets',
+    ]);
+    expect(snapshotRoutes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        pathPrefix: '/tools',
+        target: expect.objectContaining({
+          siteId: 'tools',
+          manifestKey: 'sites/workspace_internal/tools/sha256-release/index.html',
+          contentHash: 'b'.repeat(64),
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/environments',
+        target: expect.objectContaining({
+          siteId: 'environments',
+          manifestKey: 'sites/workspace_internal/environments/sha256-release/index.html',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/secrets',
+        target: expect.objectContaining({
+          siteId: 'secrets',
+          manifestKey: 'sites/workspace_internal/secrets/sha256-release/index.html',
+        }),
+      }),
+    ]));
+  });
+
+  it('should reject invalid publication sets before creating route records', async () => {
+    const seed = await loadWorkspaceEdgeRouteSeedContract();
+
+    expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      publishedSiteIds: [],
+    })).toThrow('workspace edge seed requires a published launcher snapshot');
+
+    expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      publishedSiteIds: ['tools'],
+    })).toThrow('workspace edge seed requires a published launcher snapshot');
+
+    expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      publishedSiteIds: ['launcher', 'not-a-site'],
+    })).toThrow('workspace edge seed received unknown Site snapshot: not-a-site');
+
+    expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      publishedSiteIds: ['launcher'],
+      siteContentHashes: { launcher: 'not-a-sha256' },
+    })).toThrow('workspace edge seed received invalid site snapshot content hash');
   });
 
   it('should replace empty seed identity inputs with defaults before normalization', async () => {
@@ -162,7 +360,7 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(appOnlySql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
     expect(appOnlySql).toMatch(/internal\.consuelohq\.com/);
     expect(appOnlySql).not.toMatch(/workspace_connectors/i);
-    expect(appOnlySql).not.toMatch(/token|credential|secret/i);
+    expect(appOnlySql).not.toMatch(/api[_-]?key|access[_-]?token|refresh[_-]?token|credential[_-]?value|secret[_-]?value/i);
     expect(appOnlySql.split('\n')).toHaveLength(1);
     expect(appOnlySql).not.toMatch(/INSERT OR REPLACE INTO workspace_route_registry \(\n/);
 
@@ -181,14 +379,38 @@ contractDescribe('workspace edge route seed contract', () => {
     }
     expect(osSql).toMatch(/http:\/\/127\.0\.0\.1:8787/);
     expect(osSql).toMatch(/\/mcp/);
+    expect(osSql).toMatch(/\/gtm/);
     expect(osSql).toMatch(/\/observability/);
     expect(osSql).toMatch(/\/traces/);
     expect(osSql).toMatch(/consuelo-gateway-service/);
     expect(osSql).toMatch(/trace-sites-read-layer/);
     expect(osSql).toMatch(/trace-sites-live-endpoints/);
+    expect(osSql).toMatch(/configuration-sites-read-endpoints/);
+    expect(osSql).toMatch(/configuration-sites-write-endpoints/);
+    expect(osSql).toMatch(/environment-sites-read-endpoints/);
+    expect(osSql).toMatch(/environment-sites-write-endpoints/);
     expect(osSql).not.toMatch(/  connector_internal  /);
-    expect(osSql).not.toMatch(/token|credential|secret/i);
+    expect(osSql).not.toMatch(/api[_-]?key|access[_-]?token|refresh[_-]?token|credential[_-]?value|secret[_-]?value/i);
     expect(osSql).not.toMatch(/"pathPrefix":"\/traces"[^}]+"kind":"os-connector"/);
+
+    const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      hostname: 'acme.consuelohq.com',
+      workspaceId: 'workspace_acme',
+      workspaceSlug: 'acme',
+      connectorId: 'connector_acme',
+      tunnelOriginUrl: 'https://connector-acme.example.test',
+    }) as { routes: Array<{ pathPrefix: string; auth: string; target: { kind: string; connectorId?: string } }> };
+    const gtmIndex = record.routes.findIndex((route) => route.pathPrefix === '/gtm');
+    const mcpIndex = record.routes.findIndex((route) => route.pathPrefix === '/mcp');
+    const launcherIndex = record.routes.findIndex((route) => route.pathPrefix === '/');
+    expect(record.routes[gtmIndex]).toMatchObject({
+      pathPrefix: '/gtm',
+      auth: 'workspace-session',
+      target: { kind: 'os-connector', connectorId: 'connector_acme' },
+    });
+    expect(gtmIndex).toBeGreaterThanOrEqual(0);
+    expect(gtmIndex).toBeLessThan(mcpIndex);
+    expect(gtmIndex).toBeLessThan(launcherIndex);
   });
 
   it('should ignore incomplete connector inputs instead of persisting empty connector routes', async () => {

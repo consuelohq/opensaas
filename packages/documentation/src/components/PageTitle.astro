@@ -1,0 +1,398 @@
+---
+import { getBreadcrumbs } from '../lib/docs-navigation';
+import { pagePathToMarkdownHref } from '../lib/markdown-pages';
+
+const title = Astro.locals.starlightRoute.entry.data.title;
+const markdownHref = pagePathToMarkdownHref(Astro.url.pathname);
+const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
+---
+
+{
+  breadcrumbs.length > 0 && (
+    <nav class="page-breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        {breadcrumbs.map((crumb, index) => (
+          <li>
+            {index > 0 && <span class="breadcrumb-separator" aria-hidden="true">/</span>}
+            {crumb.current || !crumb.href ? (
+              <span aria-current={crumb.current ? 'page' : undefined}>{crumb.label}</span>
+            ) : (
+              <a href={crumb.href}>{crumb.label}</a>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<div class="page-title-row">
+  <h1 id="_top">{title}</h1>
+  <div class="page-actions" data-markdown-href={markdownHref}>
+    <button type="button" class="copy-page" data-page-action="copy">
+      <svg class="page-action-icon" aria-hidden="true" viewBox="0 0 24 24">
+        <rect x="9" y="9" width="11" height="11" rx="2" />
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+      </svg>
+      <span>Copy page</span>
+    </button>
+    <details>
+      <summary aria-label="More page actions" title="More page actions">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="m8 10 4 4 4-4" />
+        </svg>
+      </summary>
+      <div class="page-actions-menu" aria-label="Page actions">
+        <button type="button" class="page-action-item" data-page-action="copy">
+          <svg class="page-action-icon" aria-hidden="true" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="11" height="11" rx="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <span class="page-action-copy">
+            <strong>Copy page</strong>
+            <small>Copy page as Markdown for LLMs</small>
+          </span>
+        </button>
+        <a class="page-action-item" href={markdownHref}>
+          <svg class="page-action-icon" aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M4 4h16v16H4z" />
+            <path d="m7 15 2.5-3 2 2 2.5-4 3 5" />
+          </svg>
+          <span class="page-action-copy">
+            <strong>View as Markdown</strong>
+            <small>Open this page as plain text</small>
+          </span>
+        </a>
+        <a
+          class="page-action-item"
+          href="https://chatgpt.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-page-action="chatgpt"
+        >
+          <svg class="page-action-icon" aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M12 3a4 4 0 0 1 3.5 2 4 4 0 0 1 4 6.5 4 4 0 0 1-3.5 6 4 4 0 0 1-7 0 4 4 0 0 1-3.5-6A4 4 0 0 1 9.5 5 4 4 0 0 1 12 3Z" />
+            <path d="m8.5 9 7 4M8.5 15l7-4M12 7v10" />
+          </svg>
+          <span class="page-action-copy">
+            <strong>Open in ChatGPT</strong>
+            <small>Copy this page and open ChatGPT</small>
+          </span>
+        </a>
+        <a
+          class="page-action-item"
+          href="https://claude.ai/new"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-page-action="claude"
+        >
+          <svg class="page-action-icon" aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M12 3 9.8 8.2 4 7l3.5 4.8L4 17l5.8-1.2L12 21l2.2-5.2L20 17l-3.5-5.2L20 7l-5.8 1.2Z" />
+          </svg>
+          <span class="page-action-copy">
+            <strong>Open in Claude</strong>
+            <small>Copy this page and open Claude</small>
+          </span>
+        </a>
+      </div>
+    </details>
+    <span class="action-status" aria-live="polite"></span>
+  </div>
+</div>
+
+<script>
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch {}
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.append(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    textarea.remove();
+  }
+
+  document.querySelectorAll('.page-actions').forEach((actions) => {
+    if (!(actions instanceof HTMLElement)) return;
+    const markdownHref = actions.dataset.markdownHref;
+    const details = actions.querySelector('details');
+    const status = actions.querySelector('.action-status');
+
+    const setStatus = (message) => {
+      if (status) status.textContent = message;
+      window.setTimeout(() => {
+        if (status?.textContent === message) status.textContent = '';
+      }, 3000);
+    };
+
+    const copyPage = async () => {
+      if (!markdownHref) throw new Error('Missing Markdown page URL');
+      const response = await fetch(markdownHref);
+      if (!response.ok) throw new Error(`Markdown request failed: ${response.status}`);
+      const markdown = await response.text();
+      await copyText(markdown);
+    };
+
+    actions.addEventListener('click', async (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const control = target.closest('[data-page-action]');
+      if (!(control instanceof HTMLElement)) return;
+      const action = control.dataset.pageAction;
+      try {
+        await copyPage();
+        if (action === 'copy') {
+          setStatus('Page copied');
+        } else if (action === 'chatgpt' || action === 'claude') {
+          setStatus(`Page copied — paste it into ${action === 'chatgpt' ? 'ChatGPT' : 'Claude'}`);
+        }
+        if (details instanceof HTMLDetailsElement) details.open = false;
+      } catch {
+        setStatus('Could not copy this page');
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (
+        details instanceof HTMLDetailsElement &&
+        event.target instanceof Node &&
+        !actions.contains(event.target)
+      ) {
+        details.open = false;
+      }
+    });
+
+    actions.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && details instanceof HTMLDetailsElement) {
+        details.open = false;
+        details.querySelector('summary')?.focus();
+      }
+    });
+  });
+</script>
+
+<style>
+  @layer starlight.core {
+    .page-breadcrumbs {
+      color: var(--sl-color-gray-3);
+      font-size: var(--sl-text-xs);
+      margin-top: 0.25rem;
+    }
+
+    .page-breadcrumbs ol {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .page-breadcrumbs li {
+      align-items: center;
+      display: inline-flex;
+      gap: 0.45rem;
+    }
+
+    .page-breadcrumbs a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page-breadcrumbs a:hover,
+    .page-breadcrumbs a:focus-visible,
+    .page-breadcrumbs [aria-current='page'] {
+      color: var(--sl-color-white);
+    }
+
+    .breadcrumb-separator {
+      color: var(--sl-color-gray-5);
+    }
+
+    .page-title-row {
+      align-items: flex-start;
+      display: flex;
+      gap: 1.5rem;
+      justify-content: space-between;
+    }
+
+    h1 {
+      color: var(--sl-color-white);
+      font-size: var(--sl-text-h1);
+      font-weight: 600;
+      line-height: 1.12;
+      margin-top: 1rem;
+      max-width: 26ch;
+    }
+
+    .page-actions {
+      align-items: stretch;
+      display: flex;
+      flex: 0 0 auto;
+      margin-top: 1rem;
+      position: relative;
+    }
+
+    .copy-page,
+    summary {
+      align-items: center;
+      background: var(--sl-color-bg-nav);
+      border: 1px solid var(--sl-color-hairline-light);
+      color: var(--sl-color-white);
+      display: inline-flex;
+      min-height: 2.25rem;
+    }
+
+    .copy-page {
+      border-radius: 0.45rem 0 0 0.45rem;
+      cursor: pointer;
+      font: inherit;
+      font-size: var(--sl-text-sm);
+      font-weight: 600;
+      gap: 0.45rem;
+      padding: 0.45rem 0.7rem;
+    }
+
+    details {
+      position: relative;
+    }
+
+    summary {
+      border-left: 0;
+      border-radius: 0 0.45rem 0.45rem 0;
+      cursor: pointer;
+      justify-content: center;
+      list-style: none;
+      min-width: 2.25rem;
+      padding: 0.45rem;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary > svg,
+    .page-action-icon {
+      fill: none;
+      flex: 0 0 auto;
+      height: 1rem;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.75;
+      width: 1rem;
+    }
+
+    .copy-page:hover,
+    .copy-page:focus-visible,
+    summary:hover,
+    summary:focus-visible {
+      background: var(--sl-color-gray-6);
+      border-color: var(--sl-color-gray-4);
+    }
+
+    .copy-page:focus:not(:focus-visible),
+    summary:focus:not(:focus-visible),
+    .page-action-item:focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    details:not([open]) .page-actions-menu {
+      display: none;
+    }
+
+    details[open] .page-actions-menu {
+      display: grid;
+    }
+
+    .page-actions-menu {
+      background: var(--sl-color-bg-nav);
+      border: 1px solid var(--sl-color-hairline-light);
+      border-radius: 0.65rem;
+      box-shadow: var(--sl-shadow-md);
+      min-width: 18.5rem;
+      padding: 0.35rem;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 0.45rem);
+      z-index: 20;
+    }
+
+    .page-action-item {
+      align-items: flex-start;
+      background: transparent;
+      border: 0;
+      border-radius: 0.4rem;
+      color: var(--sl-color-white);
+      cursor: pointer;
+      display: grid;
+      font: inherit;
+      gap: 0.65rem;
+      grid-template-columns: 1rem 1fr;
+      padding: 0.6rem 0.65rem;
+      text-align: left;
+      text-decoration: none;
+      width: 100%;
+    }
+
+    .page-action-item:hover,
+    .page-action-item:focus-visible {
+      background: var(--sl-color-gray-6);
+    }
+
+    .page-action-item .page-action-icon {
+      color: var(--sl-color-gray-2);
+      margin-top: 0.15rem;
+    }
+
+    .page-action-copy {
+      display: grid;
+      gap: 0.1rem;
+      line-height: 1.25;
+    }
+
+    .page-action-copy strong {
+      font-size: var(--sl-text-sm);
+      font-weight: 500;
+    }
+
+    .page-action-copy small {
+      color: var(--sl-color-gray-3);
+      font-size: var(--sl-text-xs);
+      font-weight: 400;
+    }
+
+    .action-status {
+      height: 1px;
+      overflow: hidden;
+      position: absolute;
+      width: 1px;
+    }
+
+    @media (max-width: 35rem) {
+      .page-title-row {
+        display: block;
+      }
+
+      h1 {
+        max-width: none;
+      }
+
+      .page-actions {
+        width: max-content;
+      }
+
+      .page-actions-menu {
+        left: 0;
+        min-width: min(18.5rem, calc(100vw - 2.5rem));
+        right: auto;
+      }
+    }
+  }
+</style>

@@ -65,6 +65,7 @@ export class Dialer {
   // lets api layers share one lock service so caller-id locking stays consistent across requests.
   withCallerIdLock(service: CallerIdLockService): this {
     this.callerIdLock = service;
+    this.parallel.withCallerIdLock(service);
     return this;
   }
 
@@ -75,7 +76,7 @@ export class Dialer {
   }
 
   // preflight and queue flows need caller-id selection without creating a twilio call first.
-  async resolveCallerId(
+  resolveCallerId(
     options: Pick<
       DialOptions,
       'to' | 'from' | 'callerIdNumber' | 'localPresence'
@@ -83,54 +84,53 @@ export class Dialer {
     numberPool?: NumberPool,
   ): Promise<ResolveCallerIdResult> {
     if (options.callerIdNumber) {
-      return {
+      return Promise.resolve({
         callerIdNumber: options.callerIdNumber,
         selectionMethod: 'manual',
         localMatch: false,
         proximityMatch: false,
         isPrimary: false,
-      };
+      });
     }
 
-    if (options.localPresence !== false && numberPool) {
-      const selection = await this.localPresence.selectNumber(
-        numberPool,
-        options.to,
-      );
+    const fallback = (): ResolveCallerIdResult =>
+      this.config.defaultNumber
+        ? {
+            callerIdNumber: this.config.defaultNumber,
+            selectionMethod: 'primary',
+            localMatch: false,
+            proximityMatch: false,
+            isPrimary: true,
+          }
+        : {
+            callerIdNumber: undefined,
+            selectionMethod: 'system_default',
+            localMatch: false,
+            proximityMatch: false,
+            isPrimary: false,
+          };
 
-      if (selection) {
-        return {
-          callerIdNumber: selection.phoneNumber,
-          selectionMethod:
-            selection.localMatch || selection.proximityMatch
-              ? 'local_presence'
-              : 'primary_fallback',
-          localMatch: selection.localMatch,
-          proximityMatch: selection.proximityMatch,
-          distanceMiles: selection.distanceMiles,
-          isPrimary: selection.isPrimary,
-          customerAreaCode: selection.customerAreaCode,
-        };
-      }
+    if (options.localPresence === false || !numberPool) {
+      return Promise.resolve(fallback());
     }
 
-    if (this.config.defaultNumber) {
-      return {
-        callerIdNumber: this.config.defaultNumber,
-        selectionMethod: 'primary',
-        localMatch: false,
-        proximityMatch: false,
-        isPrimary: true,
-      };
-    }
-
-    return {
-      callerIdNumber: undefined,
-      selectionMethod: 'system_default',
-      localMatch: false,
-      proximityMatch: false,
-      isPrimary: false,
-    };
+    return this.localPresence.selectNumber(numberPool, options.to).then(
+      (selection): ResolveCallerIdResult =>
+        selection
+          ? {
+              callerIdNumber: selection.phoneNumber,
+              selectionMethod:
+                selection.localMatch || selection.proximityMatch
+                  ? 'local_presence'
+                  : 'primary_fallback',
+              localMatch: selection.localMatch,
+              proximityMatch: selection.proximityMatch,
+              distanceMiles: selection.distanceMiles,
+              isPrimary: selection.isPrimary,
+              customerAreaCode: selection.customerAreaCode,
+            }
+          : fallback(),
+    );
   }
 
   /**
@@ -198,12 +198,14 @@ export class Dialer {
   }
 
   /** Hang up an active call and release any caller ID lock */
-  async hangup(callSid: string): Promise<HangupResult> {
-    const result = await this.provider.hangup(callSid);
-    if (this.callerIdLock) {
-      await this.callerIdLock.releaseLock(callSid);
-    }
-    return result;
+  hangup(callSid: string): Promise<HangupResult> {
+    return this.provider
+      .hangup(callSid)
+      .then((result) =>
+        this.callerIdLock
+          ? this.callerIdLock.releaseLock(callSid).then(() => result)
+          : result,
+      );
   }
 
   /** Generate a voice token for browser-based calling */

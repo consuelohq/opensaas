@@ -7,7 +7,7 @@ import { msg } from '@lingui/core/macro';
 import { render } from '@react-email/render';
 import { addMilliseconds } from 'date-fns';
 import ms from 'ms';
-import { PasswordUpdateNotifyEmail } from 'twenty-emails';
+import { PasswordUpdateNotifyEmail } from 'src/engine/core-modules/email/templates';
 import { PermissionFlagType } from 'twenty-shared/constants';
 import { AppPath } from 'twenty-shared/types';
 import { assertIsDefinedOrThrow, isDefined } from 'twenty-shared/utils';

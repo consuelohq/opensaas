@@ -1,0 +1,89 @@
+---
+title: Troubleshooting
+description: Diagnose Sites command errors without discarding version history or bypassing collaboration checks.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/sites-cli.test.ts
+    runtime: Invalid render, publish, patch, lease, and open paths were reviewed against structured command results on 2026-07-13.
+  - source: packages/os/scripts/lib/sites.ts
+    tests:
+      - packages/os/tests/sites-cli.test.ts
+    runtime: Missing target, malformed registry, stale version, section conflict, and lease conflict behavior were exercised by focused tests.
+---
+
+Sites commands return structured errors with a stable `error.code` when `--json` is used. Start with the code, then fix the state that caused it. Do not delete the page registry or force a publish as a generic first response.
+
+## Quick diagnosis
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+bun run --cwd "$CONSUELO_HOME" os -- sites status --json
+```
+
+Confirm that the result points at the intended Consuelo home. The CLI does not accept a `--home` override; set `CONSUELO_HOME` in the environment.
+
+## Common errors
+
+| Code or symptom | Meaning | Correct next step |
+| --- | --- | --- |
+| `INVALID_SITES_RENDER_ARGS` | `--template`, `--input`, or `--out` is missing or the template is unsupported. | Use `spec`, `plan`, or `guide` and provide all three paths. |
+| `SITES_RENDER_FAILED` | The reader renderer rejected the input or did not create output. | Read the returned renderer message, correct `content.json`, and render again. |
+| `TARGET_NOT_FOUND` | The publish target does not exist. | Use an absolute path or confirm the file/directory was generated. |
+| `INVALID_SITES_PUBLISH_ARGS` | Publish is missing target, path, or title/name. | Supply every required flag. |
+| `INVALID_SITES_PUBLISH_KIND` | The page kind is outside the current allowed set. | Use `spec`, `plan`, `guide`, `trace`, `diff`, `office`, or `uncategorized`. |
+| `STALE_SITES_PUBLISH` | An existing page moved or no base version was supplied. | Read the current version, reconcile changes, and retry with `--base-version`. |
+| `MALFORMED_SITES_PAGE_REGISTRY` | `registry.json` cannot be parsed as the expected registry. | Preserve a copy, inspect the malformed JSON, and recover from known-good state rather than overwriting it blindly. |
+| `STALE_SITES_PATCH` | A patch to an existing page omitted its base version. | Read the current page and supply its version. |
+| `UNKNOWN_BASE_VERSION` | The patch base is not in that page's history. | Re-read the registry; do not invent a version ID. |
+| `SECTION_CONFLICT` | The same section changed after your base. | Merge against the current content and submit a new patch. |
+| `LEASE_CONFLICT` | Another active agent owns the section lease, or the wrong agent tried to release it. | Coordinate with the owner or wait for expiry; force only with explicit approval. |
+| `CONTENT_JSON_NOT_FOUND` | A section patch targeted a page without typed reader source. | Update the original source and republish the whole target instead. |
+| `OPEN_FAILED` | macOS could not open the generated launcher. | Use the returned `indexPath` and open it manually. |
+| `UNKNOWN_SITES_COMMAND` | The subcommand is not implemented. | Use `path`, `status`, `refresh`, `open`, `render`, `publish`, `patch`, or `lease`. |
+
+## The launcher or page is missing
+
+Run a dry refresh first:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" os -- sites refresh --dry-run --json
+```
+
+If the plan points at the correct home, run the real refresh. This regenerates OS-owned launcher surfaces. It does not republish a missing user page from source; use the original target and `sites publish` for that.
+
+## The page opens without styles or assets
+
+A directory target is copied recursively. A single HTML target copies only that file. If the page needs local CSS, JavaScript, images, or downloads, publish the containing directory and keep its internal relative paths intact.
+
+## A publish is stale
+
+Do not immediately reach for `--force-publish`.
+
+1. Read `requiredBaseVersion` from the error.
+2. Inspect the current page and source.
+3. Merge the intended changes.
+4. Publish with the current `--base-version`.
+
+Use `--force-publish` only when an intentional overwrite or recovery has been explicitly approved.
+
+## Local preview works but the hostname does not
+
+Local and hosted publication are separate. Check whether the managed workspace hostname was actually provisioned and its snapshot verified. There is no self-service custom-domain command in the current Sites CLI.
+
+## Traces says the gateway is unavailable
+
+The Traces HTML can generate successfully while its live request to `/gateway/traces/recent` is unavailable. Confirm that the compatible local gateway is running and that the page is being reached through a route that can serve the gateway endpoint. Plain `file:` preview cannot provide that route by itself.
+
+## Preserve evidence
+
+When escalating a problem, include:
+
+- the command without secrets;
+- the JSON `error.code` and message;
+- the intended `CONSUELO_HOME`;
+- page path and current version ID;
+- relevant trace ID when one was supplied;
+- whether the failure occurred during render, local publish, or managed hosting.

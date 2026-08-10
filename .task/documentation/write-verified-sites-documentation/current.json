@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/write-verified-sites-documentation",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 1462,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1462",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1462",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1462/write-verified-sites-documentation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1462",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1462/write-verified-sites-documentation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-sites-documentation",
+  "taskSession": "tsk_4c00efa642e7",
+  "tmuxSession": "opensaas-documentation-write-verified-sites-documentation-4c00efa6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-sites-documentation/.task/documentation/write-verified-sites-documentation/session.json",
+  "createdAt": "2026-07-13T18:38:29.207Z"
+}

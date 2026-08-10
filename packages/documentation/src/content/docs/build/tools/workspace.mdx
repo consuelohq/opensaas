@@ -1,0 +1,63 @@
+---
+title: Workspace
+description: Use the shared workspace facade for files, code, tasks, services, and composed calls.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/tooling/dev-tool-manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tests/tools-search-v2.test.ts
+    runtime: The current workspace facade categories, schemas, and examples were inspected on 2026-07-13.
+---
+
+The workspace tool surface is the common doorway to Consuelo OS capabilities. Agents use the same typed facade instead of learning a different command shape for every underlying service.
+
+## What is available
+
+The installed registry currently groups tools for work such as:
+
+- files and repository search;
+- focused code execution and tests;
+- task and stream lifecycle;
+- browser interaction;
+- GitHub and deployment inspection;
+- Office and media work;
+- context, traces, and composed batches.
+
+The exact catalog changes as tools are added. Use `tools.search` for discovery instead of relying on a copied list.
+
+## Core versus discovered tools
+
+`get_steering` exposes a compact core set for common work. The full registry remains searchable. This keeps an agent's initial context small without hiding less common capabilities.
+
+```json
+{
+  "query": "inspect pull request checks",
+  "limit": 5
+}
+```
+
+## Task-scoped work
+
+Repository mutations belong to a task. `task.start` creates an isolated branch and worktree and returns a `taskSession`. Pass that session on every scoped call:
+
+```json
+{
+  "tool": "code.call",
+  "taskSession": "tsk_example",
+  "input": {
+    "language": "bun",
+    "mode": "verify",
+    "code": "console.log('verification')"
+  }
+}
+```
+
+Calls that require a task session fail rather than falling back to the main checkout.
+
+## Compose related calls
+
+`batch` can run a small set of typed tools sequentially or in parallel and returns a compact result for each step. It does not remove the permissions, input validation, or task-session requirements of the tools inside it.
+
+Use a batch for related independent reads or verification steps. Keep stateful work sequential when one result determines the next input.

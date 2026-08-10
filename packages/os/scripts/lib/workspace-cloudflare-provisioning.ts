@@ -1,6 +1,6 @@
 import {
   createConnectorOriginHostname,
-  createConnectorOriginHostnameRegexSource,
+  createConnectorOriginHostnameWafExpression,
   normalizeConnectorOriginBaseDomain,
 } from './connector-origin-hostname';
 
@@ -143,8 +143,16 @@ export type WorkspaceCloudflareProvisioningClient = {
   putTunnelConfig: (input: {
     tunnelId: string;
     hostname: string;
+    httpHostHeader: string;
     localServiceUrl: string;
   }) => Promise<void>;
+  createOrReuseWorkerRouteExclusion: (input: {
+    zoneId: string;
+    pattern: string;
+  }) => Promise<{
+    routeId: string;
+    status: 'created' | 'updated' | 'unchanged';
+  }>;
   createOrReuseDnsRecord: (input: {
     zoneId: string;
     name: string;
@@ -186,6 +194,7 @@ export type WorkspaceCloudflareProvisioningPlan = {
     tunnelName: string;
     workspaceDnsRecord: { name: string };
     osTunnelDnsRecord: { name: string };
+    osTunnelWorkerRouteExclusion: { pattern: string };
     edgeHostname: string;
     localServiceUrl: string;
   };
@@ -630,12 +639,12 @@ const createManagedOsMcpBaseExpression = (input: {
   reservedHostnames: string[];
   managedMcpHostnames: string[];
 }): string => {
-  const connectorOriginHostnameRegex = createConnectorOriginHostnameRegexSource({
+  const connectorOriginHostnameExpression = createConnectorOriginHostnameWafExpression({
     baseDomain: input.baseDomain,
   });
   const workspaceHostnameExpression = [
     `ends_with(http.host, ".${input.baseDomain}")`,
-    `not (http.host matches r"${connectorOriginHostnameRegex}")`,
+    `not (${connectorOriginHostnameExpression})`,
     `not (http.host in {\n${formatHostnameSet(input.reservedHostnames)}\n})`,
   ].join('\nand ');
   const centralHostnameExpression = `http.host in {\n${formatHostnameSet(
@@ -1041,6 +1050,57 @@ const readCloudflareResultArray = (input: {
   return input.value;
 };
 
+type CloudflareWorkerRoute = {
+  id: string;
+  pattern: string;
+  script?: string;
+};
+
+const parseCloudflareWorkerRoute = (input: {
+  value: unknown;
+  operation: string;
+}): CloudflareWorkerRoute => {
+  if (!isRecord(input.value)) {
+    throw new Error(`Cloudflare API ${input.operation} route response was invalid`);
+  }
+  const id = readRequiredString({
+    value: input.value,
+    key: 'id',
+    operation: input.operation,
+  });
+  const pattern = readRequiredString({
+    value: input.value,
+    key: 'pattern',
+    operation: input.operation,
+  });
+  const scriptValue = input.value.script;
+  if (
+    scriptValue !== undefined &&
+    scriptValue !== null &&
+    (typeof scriptValue !== 'string' || !scriptValue.trim())
+  ) {
+    throw new Error(`Cloudflare API ${input.operation} route script was invalid`);
+  }
+
+  return {
+    id,
+    pattern,
+    ...(typeof scriptValue === 'string' ? { script: scriptValue } : {}),
+  };
+};
+
+const assertWorkerRouteExclusion = (input: {
+  route: CloudflareWorkerRoute;
+  pattern: string;
+  operation: string;
+}): void => {
+  if (input.route.pattern !== input.pattern || input.route.script !== undefined) {
+    throw new Error(
+      `Cloudflare API ${input.operation} did not return the expected no-script route`,
+    );
+  }
+};
+
 const readTunnelToken = (input: {
   value: unknown;
   operation: string;
@@ -1165,6 +1225,9 @@ export const createCloudflareWorkspaceProvisioningClient = (
                 {
                   hostname: input.hostname,
                   service: input.localServiceUrl,
+                  originRequest: {
+                    httpHostHeader: input.httpHostHeader,
+                  },
                 },
                 { service: 'http_status:404' },
               ],
@@ -1174,6 +1237,69 @@ export const createCloudflareWorkspaceProvisioningClient = (
       } catch (error: unknown) {
         throw createCloudflareWorkspaceProvisioningClientError(
           'putTunnelConfig',
+          error,
+        );
+      }
+    },
+    async createOrReuseWorkerRouteExclusion(input) {
+      try {
+        const routesResult = await request({
+          operation: 'listCloudflareWorkerRoutes',
+          method: 'GET',
+          path: createCloudflarePath('zones', input.zoneId, 'workers', 'routes'),
+        });
+        const routes = readCloudflareResultArray({
+          value: routesResult,
+          operation: 'listCloudflareWorkerRoutes',
+        }).map((value) =>
+          parseCloudflareWorkerRoute({
+            value,
+            operation: 'listCloudflareWorkerRoutes',
+          }),
+        );
+        const exactRoutes = routes.filter((route) => route.pattern === input.pattern);
+        if (exactRoutes.length > 1) {
+          throw new Error(
+            `Cloudflare returned duplicate Worker routes for pattern ${input.pattern}`,
+          );
+        }
+
+        const existing = exactRoutes[0];
+        if (existing && existing.script === undefined) {
+          return { routeId: existing.id, status: 'unchanged' };
+        }
+
+        const operation = existing
+          ? 'updateCloudflareWorkerRouteExclusion'
+          : 'createCloudflareWorkerRouteExclusion';
+        const result = await request({
+          operation,
+          method: existing ? 'PUT' : 'POST',
+          path: existing
+            ? createCloudflarePath(
+                'zones',
+                input.zoneId,
+                'workers',
+                'routes',
+                existing.id,
+              )
+            : createCloudflarePath('zones', input.zoneId, 'workers', 'routes'),
+          body: { pattern: input.pattern },
+        });
+        const route = parseCloudflareWorkerRoute({ value: result, operation });
+        assertWorkerRouteExclusion({
+          route,
+          pattern: input.pattern,
+          operation,
+        });
+
+        return {
+          routeId: route.id,
+          status: existing ? 'updated' : 'created',
+        };
+      } catch (error: unknown) {
+        throw createCloudflareWorkspaceProvisioningClientError(
+          'createOrReuseWorkerRouteExclusion',
           error,
         );
       }
@@ -1692,6 +1818,7 @@ export const planWorkspaceCloudflareProvisioning = (
       tunnelName: `workspace-${input.workspaceId}-${connectorLabel}`,
       workspaceDnsRecord: { name: workspaceHostname },
       osTunnelDnsRecord: { name: osTunnelHostname },
+      osTunnelWorkerRouteExclusion: { pattern: `${osTunnelHostname}/*` },
       edgeHostname,
       localServiceUrl,
     },
@@ -1720,7 +1847,13 @@ export const applyWorkspaceCloudflareProvisioning = async (input: {
     await input.cloudflare.putTunnelConfig({
       tunnelId: tunnel.tunnelId,
       hostname: plan.osTunnelHostname,
+      httpHostHeader: plan.workspaceHostname,
       localServiceUrl: plan.cloudflare.localServiceUrl,
+    });
+
+    await input.cloudflare.createOrReuseWorkerRouteExclusion({
+      zoneId: plan.cloudflare.zoneId,
+      pattern: plan.cloudflare.osTunnelWorkerRouteExclusion.pattern,
     });
 
     await input.cloudflare.createOrReuseDnsRecord({
@@ -1750,9 +1883,10 @@ export const applyWorkspaceCloudflareProvisioning = async (input: {
       registryRecord: createRegistryRecord({ plan, baseDomain }),
     };
   } catch (error: unknown) {
-    throw new Error('workspace Cloudflare provisioning failed', {
-      cause: error,
-    });
+    throw new Error(
+      `workspace Cloudflare provisioning failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
   }
 };
 

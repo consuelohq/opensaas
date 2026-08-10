@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/extract-effect-application-core",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1593,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1593",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1593",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1593/extract-effect-application-core",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1593",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1593/extract-effect-application-core",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-extract-effect-application-core",
+  "taskSession": "tsk_da266468f486",
+  "tmuxSession": "opensaas-dialer-extract-effect-application-core-da266468",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-extract-effect-application-core/.task/dialer/extract-effect-application-core/session.json",
+  "createdAt": "2026-07-23T18:07:56.923Z"
+}

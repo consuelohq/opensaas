@@ -44,7 +44,7 @@ export function createCallRoutes(): Hono {
     const decodedMaterialDenied = admitDecodedCallBody(input);
     if (decodedMaterialDenied) return decodedMaterialDenied;
 
-    const toolScope = resolveToolScope(input.name);
+    const toolScope = resolveToolScope(input.name, input.input);
     if (!toolScope.ok) {
       return jsonResponse(
         { ok: false, error: toolScope.error },

@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier/workpad.md",
+    "packages/os/scripts/lib/connector-origin-hostname.ts",
+    "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts"
+  ],
+  "updatedAt": "2026-07-13T18:49:43.697Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a13315cd9433",
+  "tmuxSession": "opensaas-documentation-write-verified-secure-documentation-recovery-a13315cd",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/write-verified-secure-documentation-recovery",
+  "branch": "task/documentation/write-verified-secure-documentation-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-secure-documentation-recovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-secure-documentation-recovery",
+  "prNumber": 1472,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1472",
+  "createdAt": "2026-07-13T21:11:41.920Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-secure-documentation-recovery/.task/documentation/write-verified-secure-documentation-recovery/session.json"
+}

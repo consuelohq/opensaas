@@ -1,5 +1,40 @@
 // Public legacy-route compatibility for the Mintlify-to-Starlight cutover.
 export const legacyRedirects = {
+  '/connect/connectors': '/connect/apps-and-services/',
+  '/connect/connectors/github': '/connect/apps-and-services/github/',
+  '/connect/connectors/google-drive': '/connect/apps-and-services/google-drive/',
+  '/connect/connectors/gmail': '/connect/apps-and-services/gmail/',
+  '/connect/connectors/google-calendar': '/connect/apps-and-services/google-calendar/',
+  '/connect/connectors/slack': '/connect/apps-and-services/slack/',
+  '/connect/connectors/additional-connectors': '/connect/apps-and-services/additional-services/',
+  '/os/concepts/configuration': '/reference/configuration/',
+  '/os/glossary': '/reference/glossary/',
+  '/os/concepts/mcp-ingress-security': '/secure/hosted-mcp-ingress/',
+  '/os/concepts/observability': '/observe/',
+  '/tools/sites/overview': '/sites/',
+  '/os/concepts/portal': '/build/tools/how-tools-work/',
+  '/os/concepts/skills': '/build/skills/how-skills-work/',
+  '/os/concepts/scripts': '/build/skills/skill-structure/',
+  '/os/concepts/context-and-memory': '/build/shared-memory-and-context/',
+  '/os/concepts/files-and-artifacts': '/build/files-and-artifacts/',
+  '/os/concepts/approvals': '/build/approvals/',
+  '/os/tools/overview': '/build/tools/workspace/',
+  '/os/tools/browser-tools': '/build/tools/browser/',
+  '/tools/overview': '/build/tools/how-tools-work/',
+  '/tools/office': '/build/tools/office/',
+  '/tools/media/getting-started': '/build/tools/media/',
+  '/developers/agent/tool-system': '/build/tools/how-tools-work/',
+  '/developers/agent/integrations': '/connect/apps-and-services/',
+  '/os/concepts/integrations-and-capabilities': '/connect/apps-and-services/',
+  '/os/overview': '/start/',
+  '/os/how-it-works': '/start/core-concepts/',
+  '/os/getting-started/install': '/start/install-consuelo-os/',
+  '/os/getting-started/connect-agents': '/start/connect-your-first-agent/',
+  '/os/getting-started/workspace-launcher': '/start/create-a-workspace/',
+  '/os/concepts/local-and-cloud': '/start/local-and-consuelo-cloud/',
+  '/user-guide/introduction': '/start/',
+  '/user-guide/getting-started/capabilities/what-is-consuelo': '/start/',
+  '/user-guide/getting-started/how-tos/create-workspace': '/start/create-a-workspace/',
   '/consuelo-ui/display/app-tooltip': '/developers/introduction',
   '/consuelo-ui/display/checkmark': '/developers/introduction',
   '/consuelo-ui/display/chip': '/developers/introduction',
@@ -43,54 +78,54 @@ export const legacyRedirects = {
     '/developers/api/graphql',
   '/graphql-api/overview': '/developers/api/graphql',
   '/graphql-api/troubleshooting/common-ops-issues': '/developers/api/graphql',
-  '/os/agent-context/test-driven-agent-work': '/developers/agent/tool-system',
-  '/os/skills/browser': '/os/concepts/skills',
-  '/os/skills/consuelo-workspace-snapshot': '/os/concepts/skills',
-  '/os/skills/daily-revenue-brief': '/os/concepts/skills',
-  '/os/skills/debugger': '/os/concepts/skills',
-  '/os/skills/handoff': '/os/concepts/skills',
-  '/os/skills/office': '/os/concepts/skills',
-  '/os/skills/office-landing-page': '/os/concepts/skills',
-  '/os/skills/planned/campaign-brief': '/os/concepts/skills',
-  '/os/skills/planned/follow-up-generator': '/os/concepts/skills',
-  '/os/skills/planned/google-ads-review': '/os/concepts/skills',
-  '/os/skills/planned/landing-page-builder': '/os/concepts/skills',
-  '/os/skills/planned/lead-prioritizer': '/os/concepts/skills',
-  '/os/skills/planned/meta-ads-review': '/os/concepts/skills',
-  '/os/skills/planned/post-call-analysis': '/os/concepts/skills',
-  '/os/skills/planned/sales-coaching': '/os/concepts/skills',
-  '/os/skills/planned/weekly-manager-report': '/os/concepts/skills',
-  '/os/skills/research-ingest': '/os/concepts/skills',
-  '/os/skills/senior-engineer': '/os/concepts/skills',
-  '/os/skills/sites': '/os/concepts/skills',
-  '/os/skills/skill-creator': '/os/concepts/skills',
-  '/os/skills/task': '/os/concepts/skills',
-  '/os/skills/teach': '/os/concepts/skills',
-  '/os/tools/exploration-tools': '/os/tools/overview',
-  '/os/tools/filesystem-tools': '/os/tools/overview',
-  '/os/tools/github-and-review-tools': '/os/tools/overview',
-  '/os/tools/task-and-stream-tools': '/os/tools/overview',
-  '/os/tools/tool-search': '/os/tools/overview',
-  '/tools/media/capabilities': '/tools/media/getting-started',
-  '/tools/media/reference/media-breakdown-plan': '/tools/media/getting-started',
-  '/tools/media/reference/media-compose': '/tools/media/getting-started',
-  '/tools/media/reference/media-export': '/tools/media/getting-started',
-  '/tools/media/reference/media-frames-extract': '/tools/media/getting-started',
-  '/tools/media/reference/media-ingest': '/tools/media/getting-started',
-  '/tools/media/reference/media-motion-track': '/tools/media/getting-started',
-  '/tools/media/reference/media-overlay-render': '/tools/media/getting-started',
-  '/tools/media/reference/media-pose-estimate': '/tools/media/getting-started',
-  '/tools/media/reference/media-probe': '/tools/media/getting-started',
-  '/tools/media/reference/media-qa': '/tools/media/getting-started',
-  '/tools/media/reference/media-scene-detect': '/tools/media/getting-started',
-  '/tools/media/reference/media-svg-convert': '/tools/media/getting-started',
+  '/os/agent-context/test-driven-agent-work': '/build/workflows/',
+  '/os/skills/browser': '/build/skills/how-skills-work/',
+  '/os/skills/consuelo-workspace-snapshot': '/build/skills/how-skills-work/',
+  '/os/skills/daily-revenue-brief': '/build/skills/how-skills-work/',
+  '/os/skills/debugger': '/build/skills/how-skills-work/',
+  '/os/skills/handoff': '/build/skills/how-skills-work/',
+  '/os/skills/office': '/build/skills/how-skills-work/',
+  '/os/skills/office-landing-page': '/build/skills/how-skills-work/',
+  '/os/skills/planned/campaign-brief': '/build/skills/how-skills-work/',
+  '/os/skills/planned/follow-up-generator': '/build/skills/how-skills-work/',
+  '/os/skills/planned/google-ads-review': '/build/skills/how-skills-work/',
+  '/os/skills/planned/landing-page-builder': '/build/skills/how-skills-work/',
+  '/os/skills/planned/lead-prioritizer': '/build/skills/how-skills-work/',
+  '/os/skills/planned/meta-ads-review': '/build/skills/how-skills-work/',
+  '/os/skills/planned/post-call-analysis': '/build/skills/how-skills-work/',
+  '/os/skills/planned/sales-coaching': '/build/skills/how-skills-work/',
+  '/os/skills/planned/weekly-manager-report': '/build/skills/how-skills-work/',
+  '/os/skills/research-ingest': '/build/skills/how-skills-work/',
+  '/os/skills/senior-engineer': '/build/skills/how-skills-work/',
+  '/os/skills/sites': '/build/skills/how-skills-work/',
+  '/os/skills/skill-creator': '/build/skills/how-skills-work/',
+  '/os/skills/task': '/build/skills/how-skills-work/',
+  '/os/skills/teach': '/build/skills/how-skills-work/',
+  '/os/tools/exploration-tools': '/build/tools/workspace/',
+  '/os/tools/filesystem-tools': '/build/tools/workspace/',
+  '/os/tools/github-and-review-tools': '/build/tools/workspace/',
+  '/os/tools/task-and-stream-tools': '/build/tools/workspace/',
+  '/os/tools/tool-search': '/build/tools/workspace/',
+  '/tools/media/capabilities': '/build/tools/media/',
+  '/tools/media/reference/media-breakdown-plan': '/build/tools/media/',
+  '/tools/media/reference/media-compose': '/build/tools/media/',
+  '/tools/media/reference/media-export': '/build/tools/media/',
+  '/tools/media/reference/media-frames-extract': '/build/tools/media/',
+  '/tools/media/reference/media-ingest': '/build/tools/media/',
+  '/tools/media/reference/media-motion-track': '/build/tools/media/',
+  '/tools/media/reference/media-overlay-render': '/build/tools/media/',
+  '/tools/media/reference/media-pose-estimate': '/build/tools/media/',
+  '/tools/media/reference/media-probe': '/build/tools/media/',
+  '/tools/media/reference/media-qa': '/build/tools/media/',
+  '/tools/media/reference/media-scene-detect': '/build/tools/media/',
+  '/tools/media/reference/media-svg-convert': '/build/tools/media/',
   '/tools/media/reference/media-timeline-validate':
-    '/tools/media/getting-started',
-  '/tools/media/reference/media-transcribe': '/tools/media/getting-started',
-  '/tools/media/workflows/first-video': '/tools/media/getting-started',
-  '/tools/media/workflows/image-to-svg': '/tools/media/getting-started',
+    '/build/tools/media/',
+  '/tools/media/reference/media-transcribe': '/build/tools/media/',
+  '/tools/media/workflows/first-video': '/build/tools/media/',
+  '/tools/media/workflows/image-to-svg': '/build/tools/media/',
   '/tools/media/workflows/youtube-clip-breakdown':
-    '/tools/media/getting-started',
+    '/build/tools/media/',
   '/user-guide/billing/capabilities/pricing-plans':
     '/user-guide/getting-started/capabilities/implementation-services',
   '/user-guide/billing/capabilities/workflow-credits':
@@ -99,108 +134,106 @@ export const legacyRedirects = {
     '/user-guide/getting-started/capabilities/implementation-services',
   '/user-guide/billing/overview':
     '/user-guide/getting-started/capabilities/implementation-services',
-  '/user-guide/calendar-emails/capabilities/calendar': '/tools/office',
-  '/user-guide/calendar-emails/capabilities/mailbox': '/tools/office',
+  '/user-guide/calendar-emails/capabilities/calendar': '/connect/apps-and-services/google-calendar/',
+  '/user-guide/calendar-emails/capabilities/mailbox': '/connect/apps-and-services/gmail/',
   '/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo':
-    '/tools/office',
+    '/build/tools/office/',
   '/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo':
-    '/tools/office',
+    '/build/tools/office/',
   '/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects':
-    '/tools/office',
+    '/build/tools/office/',
   '/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user':
-    '/tools/office',
+    '/build/tools/office/',
   '/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records':
-    '/tools/office',
-  '/user-guide/calendar-emails/how-tos/limit-emails-imported': '/tools/office',
-  '/user-guide/calendar-emails/overview': '/tools/office',
-  '/user-guide/dashboards/capabilities/chart-settings': '/tools/sites/overview',
-  '/user-guide/dashboards/capabilities/dashboards': '/tools/sites/overview',
-  '/user-guide/dashboards/capabilities/widgets': '/tools/sites/overview',
-  '/user-guide/dashboards/how-tos/dashboards-faq': '/tools/sites/overview',
-  '/user-guide/dashboards/how-tos/widget-faq': '/tools/sites/overview',
-  '/user-guide/dashboards/overview': '/tools/sites/overview',
+    '/build/tools/office/',
+  '/user-guide/calendar-emails/how-tos/limit-emails-imported': '/build/tools/office/',
+  '/user-guide/calendar-emails/overview': '/connect/apps-and-services/google-workspace/',
+  '/user-guide/dashboards/capabilities/chart-settings': '/',
+  '/user-guide/dashboards/capabilities/dashboards': '/',
+  '/user-guide/dashboards/capabilities/widgets': '/',
+  '/user-guide/dashboards/how-tos/dashboards-faq': '/',
+  '/user-guide/dashboards/how-tos/widget-faq': '/',
+  '/user-guide/dashboards/overview': '/',
   '/user-guide/data-migration/capabilities/error-handling':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/capabilities/field-mapping':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/capabilities/file-formats':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/capabilities/import-relations':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/capabilities/uniqueness-constraints':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/export-your-data':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/fix-import-errors':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/import-companies-via-csv':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/import-contacts-via-csv':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/import-data-via-api':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/migrating-from-other-crms':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/prepare-your-csv-files':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/update-existing-records-via-import':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-migration/how-tos/upload-csv-programmatically':
-    '/tools/sites/overview',
-  '/user-guide/data-migration/overview': '/tools/sites/overview',
-  '/user-guide/data-model/capabilities/fields': '/tools/sites/overview',
-  '/user-guide/data-model/capabilities/objects': '/tools/sites/overview',
+    '/',
+  '/user-guide/data-migration/overview': '/',
+  '/user-guide/data-model/capabilities/fields': '/',
+  '/user-guide/data-model/capabilities/objects': '/',
   '/user-guide/data-model/capabilities/relation-fields':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-model/how-tos/create-custom-fields':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-model/how-tos/create-custom-objects':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-model/how-tos/create-many-to-many-relations':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-model/how-tos/create-relation-fields':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/data-model/how-tos/customize-your-data-model':
-    '/tools/sites/overview',
-  '/user-guide/data-model/how-tos/data-model-faq': '/tools/sites/overview',
-  '/user-guide/data-model/overview': '/tools/sites/overview',
-  '/user-guide/dialer/hold-mute': '/tools/office',
-  '/user-guide/dialer/how-tos/discord-setup': '/tools/office',
-  '/user-guide/dialer/making-calls': '/tools/office',
-  '/user-guide/dialer/overview': '/tools/office',
-  '/user-guide/dialer/transfers': '/tools/office',
-  '/user-guide/discord-bot/capabilities/call-controls': '/tools/office',
-  '/user-guide/discord-bot/capabilities/contact-search': '/tools/office',
-  '/user-guide/discord-bot/capabilities/queue-management': '/tools/office',
-  '/user-guide/discord-bot/capabilities/team-collaboration': '/tools/office',
-  '/user-guide/discord-bot/getting-started': '/tools/office',
-  '/user-guide/discord-bot/overview': '/tools/office',
-  '/user-guide/features/overview': '/user-guide/introduction',
+    '/',
+  '/user-guide/data-model/how-tos/data-model-faq': '/',
+  '/user-guide/data-model/overview': '/',
+  '/user-guide/dialer/hold-mute': '/build/tools/office/',
+  '/user-guide/dialer/how-tos/discord-setup': '/build/tools/office/',
+  '/user-guide/dialer/making-calls': '/build/tools/office/',
+  '/user-guide/dialer/overview': '/build/tools/office/',
+  '/user-guide/dialer/transfers': '/build/tools/office/',
+  '/user-guide/discord-bot/capabilities/call-controls': '/build/tools/office/',
+  '/user-guide/discord-bot/capabilities/contact-search': '/build/tools/office/',
+  '/user-guide/discord-bot/capabilities/queue-management': '/build/tools/office/',
+  '/user-guide/discord-bot/capabilities/team-collaboration': '/build/tools/office/',
+  '/user-guide/discord-bot/getting-started': '/build/tools/office/',
+  '/user-guide/discord-bot/overview': '/build/tools/office/',
+  '/user-guide/features/overview': '/start/',
   '/user-guide/file-system/capabilities/auto-indexing':
-    '/os/concepts/files-and-artifacts',
+    '/build/files-and-artifacts/',
   '/user-guide/file-system/capabilities/file-categories':
-    '/os/concepts/files-and-artifacts',
+    '/build/files-and-artifacts/',
   '/user-guide/file-system/capabilities/knowledge-base':
-    '/os/concepts/files-and-artifacts',
+    '/build/files-and-artifacts/',
   '/user-guide/file-system/how-tos/file-system-faq':
-    '/os/concepts/files-and-artifacts',
-  '/user-guide/file-system/overview': '/os/concepts/files-and-artifacts',
+    '/build/files-and-artifacts/',
+  '/user-guide/file-system/overview': '/build/files-and-artifacts/',
   '/user-guide/graphql-api/overview': '/developers/api/graphql',
-  '/user-guide/guides-tutorials/overview': '/user-guide/introduction',
-  '/user-guide/highlevel/overview': '/tools/sites/overview',
-  '/user-guide/integrations/overview': '/developers/agent/integrations',
-  '/user-guide/permissions-access/capabilities/permissions':
-    '/user-guide/getting-started/how-tos/configure-your-workspace',
-  '/user-guide/permissions-access/capabilities/sso-configuration':
-    '/user-guide/getting-started/how-tos/configure-your-workspace',
-  '/user-guide/permissions-access/how-tos/permissions-faq':
-    '/user-guide/getting-started/how-tos/configure-your-workspace',
-  '/user-guide/permissions-access/overview':
-    '/user-guide/getting-started/how-tos/configure-your-workspace',
+  '/user-guide/guides-tutorials/overview': '/start/',
+  '/user-guide/highlevel/overview': '/',
+  '/user-guide/highlevel/embedded/getting-started':
+    '/connect/apps-and-services/leadconnector-dialer/',
+  '/user-guide/integrations/overview': '/connect/apps-and-services/',
+  '/user-guide/permissions-access/capabilities/permissions': '/secure/access-and-permissions/',
+  '/user-guide/permissions-access/capabilities/sso-configuration': '/secure/access-and-permissions/',
+  '/user-guide/permissions-access/how-tos/permissions-faq': '/secure/access-and-permissions/',
+  '/user-guide/permissions-access/overview': '/secure/access-and-permissions/',
   '/user-guide/settings/capabilities/domains-settings':
     '/user-guide/getting-started/how-tos/configure-your-workspace',
   '/user-guide/settings/capabilities/experience-settings':
@@ -218,81 +251,81 @@ export const legacyRedirects = {
   '/user-guide/settings/overview':
     '/user-guide/getting-started/how-tos/configure-your-workspace',
   '/user-guide/views-pipelines/capabilities/calendar-view':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/capabilities/fields-and-columns':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/capabilities/filters-and-sorting':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/capabilities/kanban-views':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/capabilities/table-views':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/capabilities/view-settings':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/create-a-calendar-view-for-tasks-due':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/create-a-kanban-view-for-projects':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/create-a-table-view-with-grouping':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/restrict-access-to-your-view':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/set-up-a-sales-pipeline':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/show-expected-amount-in-pipeline':
-    '/tools/sites/overview',
+    '/',
   '/user-guide/views-pipelines/how-tos/track-time-in-stage':
-    '/tools/sites/overview',
-  '/user-guide/views-pipelines/overview': '/tools/sites/overview',
+    '/',
+  '/user-guide/views-pipelines/overview': '/',
   '/user-guide/workflows/capabilities/send-emails-from-workflows':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/capabilities/use-branches-in-workflows':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/capabilities/use-iterator':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/capabilities/workflow-actions':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/capabilities/workflow-branches':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/capabilities/workflow-credits':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/capabilities/workflow-runs':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/capabilities/workflow-triggers':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/capabilities/workflow-versions':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/crm-automations/closed-won-automations':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/crm-automations/detect-stale-opportunities':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/crm-automations/display-number-of-emails-received':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/crm-automations/display-related-record-data':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/crm-automations/formula-fields':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/crm-automations/notify-teammates-of-note-to-review':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/crm-automations/send-email-alerts-with-tasks-due':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/need-more-help/professional-services':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting':
-    '/developers/agent/tool-system',
+    '/build/workflows/',
   '/user-guide/workflows/how-tos/need-more-help/workflows-faq':
-    '/developers/agent/tool-system',
-  '/user-guide/workflows/overview': '/developers/agent/tool-system',
+    '/build/workflows/',
+  '/user-guide/workflows/overview': '/build/workflows/',
 };

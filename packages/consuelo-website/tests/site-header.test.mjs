@@ -97,182 +97,141 @@ ${output}`);
   };
 };
 
-const getHeaderText = async (page) =>
-  (await page.locator('[data-launch-header]').innerText())
-    .replace(/\s+/g, ' ')
-    .trim();
-
-const disallowedHeaderText = [
-  'NOUS',
-  'Hermes Agent',
-  'HERMES AGENT',
-  'Mercury',
-  'Enterprise',
-  'Login',
-  'Free',
-];
-
-test('home page header follows the Consuelo OS desktop and mobile contract', async () => {
+test('home page header and rotating hero follow the responsive launch contract', { timeout: 30_000 }, async () => {
   const server = await startDevServer();
   const browser = await chromium.launch();
 
   try {
     const desktopPage = await browser.newPage({
-      viewport: { width: 1440, height: 720 },
+      viewport: { width: 1440, height: 900 },
     });
     await desktopPage.goto(server.baseUrl, { waitUntil: 'networkidle' });
 
-    const header = desktopPage.locator('[data-launch-header]');
+    const header = desktopPage.locator('[data-os-header]');
     await assert.doesNotReject(() => header.waitFor({ state: 'visible' }));
 
-    const headerText = await getHeaderText(desktopPage);
-
-    for (const expectedText of [
-      'CONSUELO',
-      'CONSUELO OS',
-      'PORTAL',
-      'DOCS',
-      'INSTALL',
-    ]) {
-      assert.equal(
-        headerText.includes(expectedText),
-        true,
-        `Expected header to include ${expectedText}`,
+    const desktopSlots = await desktopPage
+      .locator('.os-header__desktop > a, .os-header__desktop > .os-header__identity')
+      .evaluateAll((elements) =>
+        elements.map((element) => {
+          const rect = element.getBoundingClientRect();
+          return {
+            text: element.textContent?.replace(/\s+/g, ' ').trim(),
+            center: rect.left + rect.width / 2,
+          };
+        }),
       );
-    }
 
-    for (const blockedText of disallowedHeaderText) {
-      assert.equal(
-        headerText.includes(blockedText),
-        false,
-        `Expected header to omit ${blockedText}`,
-      );
-    }
-
-    assert.equal(
-      await desktopPage.locator('[data-header-brand]').innerText(),
-      'CONSUELO',
-    );
-
-    const getDesktopSlots = async (page) =>
-      page
-        .locator('[data-header-brand], [data-desktop-header-slot]')
-        .evaluateAll((elements) =>
-          elements.map((element) => {
-            const rect = element.getBoundingClientRect();
-            const style = window.getComputedStyle(element);
-
-            return {
-              text: element.textContent?.replace(/\s+/g, ' ').trim(),
-              visible:
-                style.display !== 'none' &&
-                style.visibility !== 'hidden' &&
-                rect.width > 0 &&
-                rect.height > 0,
-              center: rect.left + rect.width / 2,
-            };
-          }),
-        );
-
-    const desktopSlots = await getDesktopSlots(desktopPage);
     assert.deepEqual(
       desktopSlots.map((slot) => slot.text),
-      ['CONSUELO', 'DOCS', 'CONSUELO OS', 'PORTAL', 'INSTALL →'],
-    );
-    assert.equal(
-      desktopSlots.every((slot) => slot.visible),
-      true,
+      ['CONSUELO', 'DOCS', 'CONSUELO OS', 'PRICING', 'CLOUD'],
     );
     for (let index = 1; index < desktopSlots.length; index += 1) {
       assert.ok(desktopSlots[index - 1].center < desktopSlots[index].center);
     }
     assert.ok(Math.abs(desktopSlots[2].center - 720) < 64);
+    assert.equal(
+      await header.evaluate((element) => getComputedStyle(element).position),
+      'absolute',
+    );
+
+    const heroHeading = desktopPage.locator('[data-hero-heading]');
+    await assert.doesNotReject(() => heroHeading.waitFor({ state: 'visible' }));
+    assert.equal(
+      await heroHeading.getAttribute('aria-label'),
+      'Make ChatGPT or Claude your true assistant',
+    );
+    const initialHeadingSize = await heroHeading.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).fontSize),
+    );
+    assert.equal(await heroHeading.getAttribute('style'), null);
+
+    const assistantRotator = desktopPage.locator('[data-assistant-rotator]');
+    assert.equal(await assistantRotator.getAttribute('data-active-assistant'), 'ChatGPT');
+    await desktopPage.waitForFunction(
+      () =>
+        document.querySelector('[data-assistant-rotator]')?.getAttribute('data-active-assistant') ===
+        'Claude',
+      undefined,
+      { timeout: 8_000 },
+    );
+
+    const rotatedHeadingSize = await heroHeading.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).fontSize),
+    );
+    assert.equal(rotatedHeadingSize, initialHeadingSize);
+    assert.equal(await heroHeading.getAttribute('style'), null);
 
     const tabletPage = await browser.newPage({
-      viewport: { width: 820, height: 1180 },
-      isMobile: true,
+      viewport: { width: 1024, height: 1366 },
     });
     await tabletPage.goto(server.baseUrl, { waitUntil: 'networkidle' });
-    const tabletSlots = await getDesktopSlots(tabletPage);
-    assert.deepEqual(
-      tabletSlots.map((slot) => slot.text),
-      ['CONSUELO', 'DOCS', 'CONSUELO OS', 'PORTAL', 'INSTALL →'],
-    );
-    assert.equal(
-      tabletSlots.every((slot) => slot.visible),
-      true,
-    );
-    for (let index = 1; index < tabletSlots.length; index += 1) {
-      assert.ok(tabletSlots[index - 1].center < tabletSlots[index].center);
-    }
-    assert.ok(Math.abs(tabletSlots[2].center - 410) < 48);
+    assert.equal(await tabletPage.locator('.os-header__desktop').isVisible(), true);
+    assert.equal(await tabletPage.locator('.os-header__mobile').isVisible(), false);
 
-    const headerPosition = await header.evaluate(
-      (element) => window.getComputedStyle(element).position,
-    );
-    assert.notEqual(headerPosition, 'fixed');
-    assert.notEqual(headerPosition, 'sticky');
-
-    await desktopPage.evaluate(() => {
-      document.documentElement.style.scrollBehavior = 'auto';
-      window.scrollTo(0, 320);
+    const reducedMotionPage = await browser.newPage({
+      viewport: { width: 1024, height: 1366 },
+      reducedMotion: 'reduce',
     });
-    await desktopPage.waitForFunction(() => window.scrollY > 80);
-    const scrolledHeaderTop = await header.evaluate(
-      (element) => element.getBoundingClientRect().top,
+    await reducedMotionPage.goto(server.baseUrl, { waitUntil: 'networkidle' });
+    await reducedMotionPage.waitForTimeout(3_100);
+    assert.equal(
+      await reducedMotionPage.locator('[data-assistant-rotator]').getAttribute('data-active-assistant'),
+      'ChatGPT',
     );
-    assert.ok(scrolledHeaderTop < 0);
-    await desktopPage.evaluate(() => window.scrollTo(0, 0));
-
-    const heroHeading = (await desktopPage.locator('h1').first().innerText())
-      .replace(/\s+/g, ' ')
-      .trim();
-    assert.equal(heroHeading, 'GIVE EVERY AGENT WORKSPACE SUPERPOWERS');
-    assert.doesNotMatch(heroHeading, /SUPERPOWERS\.$/);
-
-    const heroEyebrow = await desktopPage
-      .locator('.home-hero__eyebrow')
-      .innerText();
-    assert.match(heroEyebrow, /OPEN SOURCE/);
-    assert.doesNotMatch(heroEyebrow, /BATTERIES INCLUDED/);
 
     const mobilePage = await browser.newPage({
       viewport: { width: 390, height: 844 },
     });
     await mobilePage.goto(server.baseUrl, { waitUntil: 'networkidle' });
 
-    const mobileSlots = await mobilePage
-      .locator('[data-mobile-header-slot]')
+    const mobileHeader = mobilePage.locator('.os-header__mobile');
+    await assert.doesNotReject(() => mobileHeader.waitFor({ state: 'visible' }));
+    const mobileSlots = await mobileHeader
+      .locator(':scope > a, :scope > .os-header__mobile-identity, :scope > button')
       .evaluateAll((elements) =>
         elements.map((element) => {
           const rect = element.getBoundingClientRect();
-          const style = window.getComputedStyle(element);
-
           return {
             text: element.textContent?.replace(/\s+/g, ' ').trim(),
-            visible:
-              style.display !== 'none' &&
-              style.visibility !== 'hidden' &&
-              rect.width > 0 &&
-              rect.height > 0,
-            left: rect.left,
             center: rect.left + rect.width / 2,
-            right: rect.right,
           };
         }),
       );
 
     assert.deepEqual(
       mobileSlots.map((slot) => slot.text),
-      ['PORTAL', 'CONSUELO OS', 'DOCS'],
-    );
-    assert.equal(
-      mobileSlots.every((slot) => slot.visible),
-      true,
+      ['DOCS', 'CONSUELO OS', 'CLOUD'],
     );
     assert.ok(mobileSlots[0].center < mobileSlots[1].center);
     assert.ok(mobileSlots[1].center < mobileSlots[2].center);
     assert.ok(Math.abs(mobileSlots[1].center - 195) < 32);
+
+    assert.equal(await mobileHeader.locator('button').count(), 0);
+    assert.equal(await mobileHeader.locator('text=MENU').count(), 0);
+    const typography = await mobileHeader.evaluate((element) => {
+      const wordmark = element.querySelector('.os-header__mobile-wordmark');
+      const label = element.querySelector(':scope > a');
+      const github = element.querySelector('[aria-label="GitHub"] svg');
+
+      if (!(wordmark && label && github)) {
+        throw new Error('Expected mobile header content');
+      }
+
+      return {
+        wordmark: Number.parseFloat(getComputedStyle(wordmark).fontSize),
+        label: Number.parseFloat(getComputedStyle(label).fontSize),
+        icon: github.getBoundingClientRect().width,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+
+    assert.ok(typography.wordmark >= 23);
+    assert.ok(typography.label >= 14);
+    assert.ok(typography.icon >= 19);
+    assert.equal(typography.overflow, 0);
+    assert.equal(await mobileHeader.locator('[aria-label="Discord"]').isVisible(), true);
+    assert.equal(await mobileHeader.locator('[aria-label="GitHub"]').isVisible(), true);
   } finally {
     await browser.close();
     await server.stop();

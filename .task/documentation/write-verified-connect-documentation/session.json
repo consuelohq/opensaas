@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d0623ce13ae6",
+  "tmuxSession": "opensaas-documentation-write-verified-connect-documentation-d0623ce1",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/write-verified-connect-documentation",
+  "branch": "task/documentation/write-verified-connect-documentation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-connect-documentation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-connect-documentation",
+  "prNumber": 1452,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1452",
+  "createdAt": "2026-07-13T16:04:22.742Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-connect-documentation/.task/documentation/write-verified-connect-documentation/session.json"
+}

@@ -1,0 +1,73 @@
+---
+title: URLs and ports
+description: Local gateway, hosted MCP, workspace, trace, and settings endpoints.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/server/app.ts
+    tests:
+      - packages/os/tests/local-os-server-hono-architecture.test.ts
+      - packages/os/tests/local-os-port-cutover.test.ts
+    runtime: The local Hono server route table and loopback binding were exercised on 2026-07-13.
+  - source: packages/os/scripts/lib/chatgpt-mcp-connection.ts
+    tests:
+      - packages/os/tests/mcp-gateway.test.ts
+    runtime: The stable hosted MCP URL and workspace-specific launcher behavior were inspected on 2026-07-13.
+---
+
+## Local gateway
+
+The local server binds to loopback only by default:
+
+```text
+http://127.0.0.1:46321
+```
+
+`46321` is the current default. `8960` is a legacy port recognized during migration; it is not the default for new installs. Override the active port with `CONSUELO_OS_PORT`, or with `PORT` when the preferred variable is absent.
+
+| Path | Methods | Purpose |
+| --- | --- | --- |
+| `/health` | any | Local health, runtime, protocol, and port metadata. |
+| `/mcp` | `POST` | MCP JSON-RPC gateway. Other methods return `405` after authorization. |
+| `/get_steering` | `GET`, `POST` | Signed steering read route. |
+| `/call` | `POST` | Signed direct OS skill call. |
+| `/gateway/settings/snapshot` | `GET` | Signed effective settings snapshot. |
+| `/gateway/settings/overlay` | `POST` | Signed tool, skill, or workflow overlay update. |
+| `/gateway/traces/recent` | `GET` | Recent traces. |
+| `/gateway/traces/summary` | `GET` | Trace summary. |
+| `/gateway/traces/aggregates` | `GET` | Trace aggregates. |
+| `/gateway/traces/events` | `GET` | Trace event stream response. |
+
+Except for `/health`, these routes are not an unauthenticated local API. Supported coding agents normally use `~/.consuelo/bin/consuelo-os-mcp` over stdio.
+
+## Hosted MCP
+
+The stable central endpoint is:
+
+```text
+https://os.consuelohq.com/mcp
+```
+
+ChatGPT and other approved hosted clients use OAuth and the managed connector path described in [Hosted MCP ingress](/secure/hosted-mcp-ingress/). Do not replace this URL with the loopback endpoint.
+
+A workspace launcher can present a workspace-specific MCP URL. Use the URL it supplies rather than constructing a hostname.
+
+## Workspace host
+
+Managed workspace identity uses a host shaped like:
+
+```text
+https://<workspace-slug>.consuelohq.com
+```
+
+Static Sites snapshots and live OS routes have different authority paths even when they share a workspace identity. A published Site being reachable does not prove the home node is online.
+
+## Local status check
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+cd "$CONSUELO_HOME"
+bun ./scripts/server.js status
+```
+
+The server wrapper calculates its health URL from the effective port and reports the current process state.

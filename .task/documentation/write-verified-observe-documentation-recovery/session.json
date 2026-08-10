@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_830663b96ae5",
+  "tmuxSession": "opensaas-documentation-write-verified-observe-documentation-recovery-830663b9",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/write-verified-observe-documentation-recovery",
+  "branch": "task/documentation/write-verified-observe-documentation-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-observe-documentation-recovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-observe-documentation-recovery",
+  "prNumber": 1468,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1468",
+  "createdAt": "2026-07-13T19:39:18.971Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-observe-documentation-recovery/.task/documentation/write-verified-observe-documentation-recovery/session.json"
+}

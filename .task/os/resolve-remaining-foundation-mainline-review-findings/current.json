@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-remaining-foundation-mainline-review-findings",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1718,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1718",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1718",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1718/resolve-remaining-foundation-mainline-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1718",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1718/resolve-remaining-foundation-mainline-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-remaining-foundation-mainline-review-findings",
+  "taskSession": "tsk_1f5ed8de3cb0",
+  "tmuxSession": "opensaas-os-resolve-remaining-foundation-mainline-review-fin-1f5ed8de",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-remaining-foundation-mainline-review-findings/.task/os/resolve-remaining-foundation-mainline-review-findings/session.json",
+  "createdAt": "2026-07-29T04:33:51.848Z"
+}

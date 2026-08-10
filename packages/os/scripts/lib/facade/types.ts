@@ -9,7 +9,19 @@ export type ErrorCode =
   | 'NOT_FOUND'
   | 'TASK_SESSION_NOT_FOUND'
   | 'TASK_SESSION_REQUIRED'
-  | 'DRY_RUN';
+  | 'DRY_RUN'
+  | 'CLI_MISSING'
+  | 'UNSUPPORTED_VERSION'
+  | 'UNAUTHENTICATED'
+  | 'NO_CONTEXT'
+  | 'PERMISSION_DENIED'
+  | 'RATE_LIMITED'
+  | 'UNAVAILABLE'
+  | 'MALFORMED_OUTPUT'
+  | 'INVALID_INPUT'
+  | 'UNSUPPORTED_CAPABILITY'
+  | 'APPROVAL_REQUIRED'
+  | 'CANCELLED';
 
 export type ToolCapabilities = {
   readOnly: boolean;
@@ -28,6 +40,7 @@ export type ToolResult<TData = unknown> = {
   exitCode: number;
   durationMs: number;
   traceId: string;
+  parentTraceId?: string;
   requestId?: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -123,6 +136,12 @@ export type ExecuteToolOptions = {
   now?: () => number;
   randomUUID?: () => string;
   logMode?: LogMode;
+};
+
+export type BatchExecutionContext = {
+  taskSession?: string;
+  branch?: string;
+  taskWorktree?: string;
 };
 
 export type BatchStep = {

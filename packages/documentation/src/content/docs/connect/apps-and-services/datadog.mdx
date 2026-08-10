@@ -1,0 +1,78 @@
+---
+title: Datadog
+description: Query Datadog APIs and use datadog-ci today while native Datadog tools are planned.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current OS tool manifest was inspected on 2026-07-14; no native `datadog` provider family is currently published.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through the Datadog API and official `datadog-ci` package.**
+
+Use Datadog when you need to search monitors and incidents, inspect dashboards and service health, and upload CI metadata or release artifacts.
+
+Consuelo plans to provide a focused `datadog` tool family. You do not need to wait for that native wrapper: an agent can use the official interface locally now, then turn the smallest proven workflow into a typed OS tool.
+
+## Ask your agent
+
+```text
+Set up Datadog for this workspace using the official interface linked below.
+Keep authentication on the local node and never print the credential.
+Start with one read-only verification command.
+Then create a typed Consuelo tool exposing only the operations I approve.
+Separate read methods from write methods, add structured errors and focused tests,
+and require approval for external, destructive, billing, permission, or deployment changes.
+```
+
+## Install and authenticate
+
+For CI and delivery commands, install `@datadog/datadog-ci` as a development dependency or run it through your package runner. For operational reads, build against the documented Datadog API with a scoped application key.
+
+Store service credentials with [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/) or another local process-owned mechanism. Do not put a token in steering, a skill file, a conversation, or a command argument that may be logged.
+
+## Verify before building a tool
+
+Start with a read-only API call for the selected site and organization. Keep `DD_API_KEY`, `DD_APP_KEY`, and the Datadog site outside model context.
+
+A successful login is not enough. Confirm the selected account, team, project, region, or workspace before the tool can act.
+
+## Proposed Consuelo methods
+
+```text
+datadog.monitors.list
+datadog.incidents.list
+datadog.events.search
+datadog.dashboards.get
+datadog.ci.upload
+```
+
+Useful typed inputs:
+
+```text
+site
+query
+from
+to
+service
+environment
+dryRun
+approval
+```
+
+The native wrapper should return structured results, redact secret material, expose exact provider errors, and make account or project selection explicit.
+
+## Writes and approvals
+
+Monitor edits, incident updates, synthetic test changes, and uploads are external mutations. Separate them from read-only search methods and require approval.
+
+## Native Consuelo roadmap
+
+The planned tool will wrap proven provider operations rather than hide the underlying contract. Until it ships, the official CLI or API remains the source of truth for authentication, flags, limits, and provider behavior.
+
+## Official documentation
+
+[Datadog official documentation](https://github.com/DataDog/datadog-ci)

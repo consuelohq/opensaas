@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f59a4bbb3089",
+  "tmuxSession": "opensaas-os-foundation-two-close-final-audit-evidence-loop-f59a4bbb",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/close-final-audit-evidence-loop",
+  "branch": "task/os-foundation-two/close-final-audit-evidence-loop",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-close-final-audit-evidence-loop",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-close-final-audit-evidence-loop",
+  "prNumber": 1678,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1678",
+  "createdAt": "2026-07-27T18:59:04.419Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-close-final-audit-evidence-loop/.task/os-foundation-two/close-final-audit-evidence-loop/session.json"
+}

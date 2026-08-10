@@ -1,0 +1,85 @@
+---
+title: Preview locally
+description: Generate the local Sites surfaces and inspect a page before publishing or sharing it.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/sites-cli.test.ts
+    runtime: Status, refresh, and open behavior were exercised against clean temporary Consuelo homes on 2026-07-13.
+  - source: packages/os/scripts/lib/sites.ts
+    tests:
+      - packages/os/tests/sites-cli.test.ts
+    runtime: Generated launcher, page index, Office, Traces, Diffs, Docs, and Settings files were inspected after refresh.
+---
+
+Sites preview is file-based. `sites refresh` materializes local HTML under your Consuelo home, and `sites open` opens the generated launcher with the macOS `open` command. It does not start a development server such as `localhost:3000`.
+
+## Refresh the local surfaces
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+bun run --cwd "$CONSUELO_HOME" os -- sites refresh --json
+```
+
+A refresh creates or updates OS-owned surfaces, including the launcher, page index, Office artifact view, Traces shell, Settings, and reserved Diffs and Docs pages.
+
+Use a dry run to inspect planned filesystem work without writing it:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" os -- sites refresh --dry-run --json
+```
+
+The result reports planned directories and files. A dry run does not create a usable preview.
+
+## Open the launcher
+
+```bash
+bun run --cwd "$CONSUELO_HOME" os -- sites open --json
+```
+
+The returned URL uses the `file:` scheme. The launcher itself lives at:
+
+```text
+$CONSUELO_HOME/sites/index.html
+```
+
+If you only need the path without generating or opening anything:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" os -- sites path --json
+```
+
+`sites status` reports the same paths plus existence checks.
+
+## Preview a page you are authoring
+
+Before the first publish, open the source target directly:
+
+```bash
+open "$PWD/release-checklist/index.html"
+```
+
+After publishing, open the current Sites copy:
+
+```bash
+open "$CONSUELO_HOME/sites/pages/release-checklist/index.html"
+```
+
+The current copy is useful for confirming that publish copied all required assets. The source remains the place to make the next authoring change.
+
+## What to check
+
+- The page loads without relying on a source-only relative path.
+- Images, styles, scripts, and downloads travel with a directory target.
+- Links point to intended public or local destinations.
+- Content remains readable at phone, tablet, and desktop widths.
+- No secret, private token, local credential, or internal-only note is visible.
+- A typed page identifies the expected reader shell and renders every required section.
+
+## Local gateway behavior
+
+The generated Traces surface requests `/gateway/traces/recent`. When opened as a plain file or without a running compatible gateway route, it can report that traces are unavailable. That does not mean the static Sites files failed to generate.
+
+For public workspace snapshots and hostnames, see [Domains](/sites/domains/). Local preview and hosted publication are separate states.

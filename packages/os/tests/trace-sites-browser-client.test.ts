@@ -33,7 +33,7 @@ function createTransport(overrides: Partial<TraceSitesBrowserTransport> = {}): T
               id: "trace_001",
               cursor: "cur_001",
               idempotencyKey: "idem_001",
-              toolName: "workspace.context.search",
+              toolName: "workspace.memory",
               status: "ok",
             },
           ],

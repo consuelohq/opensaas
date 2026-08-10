@@ -71,6 +71,71 @@ type ScenarioLog = {
   }>;
 };
 
+export type ScenarioWorkspace = {
+  id: string;
+  loginToken?: string | null;
+  workspaceUrls: {
+    customUrl?: string | null;
+    subdomainUrl: string;
+  };
+};
+
+export async function selectWorkspaceLoginToken(input: {
+  workspaces: ScenarioWorkspace[];
+  requestedWorkspaceId: string;
+  exchangeToken: (workspace: ScenarioWorkspace) => Promise<string>;
+}): Promise<{ token: string; workspaceId: string } | null> {
+  const candidates =
+    input.requestedWorkspaceId.length > 0
+      ? input.workspaces.filter(
+          (workspace) => workspace.id === input.requestedWorkspaceId,
+        )
+      : input.workspaces;
+
+  if (input.requestedWorkspaceId.length > 0 && candidates.length === 0) {
+    throw new Error(
+      'Requested scenario workspace was not returned by sign-in.',
+    );
+  }
+
+  const candidatesWithLoginTokens = candidates.filter(
+    (workspace) =>
+      typeof workspace.loginToken === 'string' &&
+      workspace.loginToken.length > 0,
+  );
+
+  if (
+    input.requestedWorkspaceId.length > 0 &&
+    candidatesWithLoginTokens.length === 0
+  ) {
+    throw new Error(
+      'Requested scenario workspace did not include a login token.',
+    );
+  }
+
+  if (candidatesWithLoginTokens.length === 0) {
+    return null;
+  }
+
+  for (const workspace of candidatesWithLoginTokens) {
+    try {
+      const token = await input.exchangeToken(workspace);
+
+      if (token.length > 0) {
+        return { token, workspaceId: workspace.id };
+      }
+    } catch {
+      if (input.requestedWorkspaceId.length > 0) {
+        throw new Error(
+          'Requested scenario workspace login token could not be exchanged.',
+        );
+      }
+    }
+  }
+
+  throw new Error('No returned workspace login token could be exchanged.');
+}
+
 const apiBaseUrl = trimTrailingSlash(
   process.env.CONSUELO_API_BASE_URL ?? 'https://consuelo.consuelohq.com',
 );
@@ -279,24 +344,25 @@ async function authenticateUser(): Promise<string> {
     );
   }
 
-  const result = await graphqlRequest<{
-    signIn: {
-      availableWorkspaces: {
-        availableWorkspacesForSignIn: Array<{
-          id: string;
-          loginToken?: string | null;
-          workspaceUrls: {
-            customUrl?: string | null;
-            subdomainUrl: string;
-          };
-        }>;
+  try {
+    const result = await graphqlRequest<{
+      signIn: {
+        availableWorkspaces: {
+          availableWorkspacesForSignIn: Array<{
+            id: string;
+            loginToken?: string | null;
+            workspaceUrls: {
+              customUrl?: string | null;
+              subdomainUrl: string;
+            };
+          }>;
+        };
+        tokens: { accessOrWorkspaceAgnosticToken: { token: string } };
       };
-      tokens: { accessOrWorkspaceAgnosticToken: { token: string } };
-    };
-  }>({
-    endpoint: metadataUrl,
-    token: null,
-    query: `
+    }>({
+      endpoint: metadataUrl,
+      token: null,
+      query: `
       mutation SignIn($email: String!, $password: String!) {
         signIn(email: $email, password: $password) {
           availableWorkspaces {
@@ -317,57 +383,76 @@ async function authenticateUser(): Promise<string> {
         }
       }
     `,
-    variables: { email, password },
-  });
+      variables: { email, password },
+    });
 
-  const availableWorkspaces =
-    result.signIn.availableWorkspaces.availableWorkspacesForSignIn;
-  const workspace =
-    availableWorkspaces.find(
-      (availableWorkspace) => availableWorkspace.id === scenarioWorkspaceId,
-    ) ?? availableWorkspaces[0];
-
-  if (workspace?.loginToken) {
-    const authTokens = await graphqlRequest<{
-      getAuthTokensFromLoginToken: {
-        tokens: {
-          accessOrWorkspaceAgnosticToken: { token: string };
-        };
-      };
-    }>({
-      endpoint: metadataUrl,
-      token: null,
-      query: `
-        mutation GetAuthTokensFromLoginToken(
-          $loginToken: String!
-          $origin: String!
-        ) {
-          getAuthTokensFromLoginToken(
-            loginToken: $loginToken
-            origin: $origin
-          ) {
-            tokens {
-              accessOrWorkspaceAgnosticToken {
-                token
+    const availableWorkspaces: ScenarioWorkspace[] =
+      result.signIn.availableWorkspaces.availableWorkspacesForSignIn;
+    const selectedWorkspaceToken = await selectWorkspaceLoginToken({
+      workspaces: availableWorkspaces,
+      requestedWorkspaceId: scenarioWorkspaceId,
+      exchangeToken: async (workspace) => {
+        try {
+          const authTokens = await graphqlRequest<{
+            getAuthTokensFromLoginToken: {
+              tokens: {
+                accessOrWorkspaceAgnosticToken: { token: string };
+              };
+            };
+          }>({
+            endpoint: metadataUrl,
+            token: null,
+            query: `
+            mutation GetAuthTokensFromLoginToken(
+              $loginToken: String!
+              $origin: String!
+            ) {
+              getAuthTokensFromLoginToken(
+                loginToken: $loginToken
+                origin: $origin
+              ) {
+                tokens {
+                  accessOrWorkspaceAgnosticToken {
+                    token
+                  }
+                }
               }
             }
-          }
+          `,
+            variables: {
+              loginToken: workspace.loginToken,
+              origin: resolveWorkspaceOrigin(workspace.workspaceUrls),
+            },
+          });
+
+          return authTokens.getAuthTokensFromLoginToken.tokens
+            .accessOrWorkspaceAgnosticToken.token;
+        } catch (error: unknown) {
+          throw new Error(
+            `Unable to exchange scenario workspace login token: ${
+              error instanceof Error ? error.message : 'unknown error'
+            }`,
+          );
         }
-      `,
-      variables: {
-        loginToken: workspace.loginToken,
-        origin: resolveWorkspaceOrigin(workspace.workspaceUrls),
       },
     });
 
-    userToken =
-      authTokens.getAuthTokensFromLoginToken.tokens
-        .accessOrWorkspaceAgnosticToken.token;
-    return userToken;
-  }
+    if (selectedWorkspaceToken) {
+      userToken = selectedWorkspaceToken.token;
+      return userToken;
+    }
 
-  userToken = result.signIn.tokens.accessOrWorkspaceAgnosticToken.token;
-  return userToken;
+    userToken = result.signIn.tokens.accessOrWorkspaceAgnosticToken.token;
+    return userToken;
+  } catch (error: unknown) {
+    throw new Error(
+      `Unable to authenticate the dialer scenario user: ${
+        error instanceof Error
+          ? redactSensitiveString(error.message)
+          : 'unknown error'
+      }`,
+    );
+  }
 }
 
 function resolveWorkspaceOrigin(workspaceUrls: {
@@ -389,38 +474,48 @@ async function graphqlRequest<TData>(params: {
   query: string;
   variables: Record<string, unknown>;
 }): Promise<TData> {
-  const response = await fetch(params.endpoint, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      ...(params.token ? { authorization: `Bearer ${params.token}` } : {}),
-    },
-    body: JSON.stringify({
-      query: params.query,
-      variables: params.variables,
-    }),
-  });
-  const text = await response.text();
+  try {
+    const response = await fetch(params.endpoint, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...(params.token ? { authorization: `Bearer ${params.token}` } : {}),
+      },
+      body: JSON.stringify({
+        query: params.query,
+        variables: params.variables,
+      }),
+    });
+    const text = await response.text();
 
-  if (response.status >= 400) {
-    throw new Error(
-      `GraphQL HTTP ${response.status}: ${redactSensitiveString(text)}`,
-    );
+    if (response.status >= 400) {
+      throw new Error(
+        `GraphQL HTTP ${response.status}: ${redactSensitiveString(text)}`,
+      );
+    }
+
+    const body = JSON.parse(text) as GraphqlResponse<TData>;
+
+    if (body.errors && body.errors.length > 0) {
+      throw new Error(
+        `GraphQL errors: ${body.errors.map((error) => error.message).join('; ')}`,
+      );
+    }
+
+    if (!body.data) {
+      throw new Error(
+        `GraphQL returned no data: ${redactSensitiveString(text)}`,
+      );
+    }
+
+    return body.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error('GraphQL request failed with an unknown error.');
   }
-
-  const body = JSON.parse(text) as GraphqlResponse<TData>;
-
-  if (body.errors && body.errors.length > 0) {
-    throw new Error(
-      `GraphQL errors: ${body.errors.map((error) => error.message).join('; ')}`,
-    );
-  }
-
-  if (!body.data) {
-    throw new Error(`GraphQL returned no data: ${redactSensitiveString(text)}`);
-  }
-
-  return body.data;
 }
 
 function assertLiveSafety(): void {
@@ -503,12 +598,13 @@ function resolveCallerIdNumber(): string | undefined {
 async function startDialerCall(
   input: Record<string, unknown>,
 ): Promise<StartDialerCallResult> {
-  const result = await graphqlRequest<{
-    startDialerCall: StartDialerCallResult;
-  }>({
-    endpoint: graphqlUrl,
-    token: requireUserToken(),
-    query: `
+  try {
+    const result = await graphqlRequest<{
+      startDialerCall: StartDialerCallResult;
+    }>({
+      endpoint: graphqlUrl,
+      token: requireUserToken(),
+      query: `
       mutation StartDialerCall($input: StartDialerCallInput!) {
         startDialerCall(input: $input) {
           sessionId
@@ -537,13 +633,22 @@ async function startDialerCall(
         }
       }
     `,
-    variables: { input },
-  });
+      variables: { input },
+    });
 
-  return result.startDialerCall;
+    return result.startDialerCall;
+  } catch (error: unknown) {
+    throw new Error(
+      `Unable to start the dialer scenario call: ${
+        error instanceof Error
+          ? redactSensitiveString(error.message)
+          : 'unknown error'
+      }`,
+    );
+  }
 }
 
-async function runSingleScenario(): Promise<StartDialerCallResult> {
+function runSingleScenario(): Promise<StartDialerCallResult> {
   const targetPhone = resolveTargetPhones()[0];
 
   return startDialerCall({
@@ -556,7 +661,7 @@ async function runSingleScenario(): Promise<StartDialerCallResult> {
   });
 }
 
-async function runPredictiveScenario(): Promise<StartDialerCallResult> {
+function runPredictiveScenario(): Promise<StartDialerCallResult> {
   const targetPhones = resolveTargetPhones();
   const input: Record<string, unknown> = {
     source: 'queue',
@@ -575,58 +680,71 @@ async function runPredictiveScenario(): Promise<StartDialerCallResult> {
 }
 
 async function main(): Promise<void> {
-  persistTranscript();
+  try {
+    persistTranscript();
 
-  await runStep({
-    name: 'call-mode-safety-preflight',
-    run: async () => {
-      assertLiveSafety();
-      return {
-        callMode,
-        liveCallsEnabled,
-        safeToNumberCount: safeToNumbers.length,
-        safeFromNumberCount: safeFromNumbers.length,
-        twilioTestCredentialPresence: scenarioLog.twilioTestCredentialPresence,
-      };
-    },
-  });
-
-  await runStep({
-    name: 'authenticate-user',
-    run: async () => {
-      const token = await authenticateUser();
-      return { tokenLength: token.length };
-    },
-  });
-
-  if (scenarioMode === 'single' || scenarioMode === 'both') {
     await runStep({
-      name: 'graphql-start-dialer-call-single',
-      run: runSingleScenario,
+      name: 'call-mode-safety-preflight',
+      run: () => {
+        assertLiveSafety();
+        return Promise.resolve({
+          callMode,
+          liveCallsEnabled,
+          safeToNumberCount: safeToNumbers.length,
+          safeFromNumberCount: safeFromNumbers.length,
+          twilioTestCredentialPresence:
+            scenarioLog.twilioTestCredentialPresence,
+        });
+      },
     });
-  }
 
-  if (scenarioMode === 'predictive' || scenarioMode === 'both') {
     await runStep({
-      name: 'graphql-start-dialer-call-predictive',
-      run: runPredictiveScenario,
+      name: 'authenticate-user',
+      run: () =>
+        authenticateUser().then((token) => ({ tokenLength: token.length })),
     });
+
+    if (scenarioMode === 'single' || scenarioMode === 'both') {
+      await runStep({
+        name: 'graphql-start-dialer-call-single',
+        run: runSingleScenario,
+      });
+    }
+
+    if (scenarioMode === 'predictive' || scenarioMode === 'both') {
+      await runStep({
+        name: 'graphql-start-dialer-call-predictive',
+        run: runPredictiveScenario,
+      });
+    }
+  } catch (error: unknown) {
+    throw new Error(
+      `Dialer scenario execution failed: ${
+        error instanceof Error
+          ? redactSensitiveString(error.message)
+          : 'unknown error'
+      }`,
+    );
   }
 }
 
-main()
-  .then(() => {
-    persistTranscript();
-    process.stdout.write(`dialer scenario complete: ${transcriptPath}\n`);
-  })
-  .catch((err: unknown) => {
-    appendStep('scenario-failed', false, {
-      message: err instanceof Error ? err.message : String(err),
+if (import.meta.main) {
+  main()
+    .then(() => {
+      persistTranscript();
+      process.stdout.write(`dialer scenario complete: ${transcriptPath}\n`);
+    })
+    .catch((err: unknown) => {
+      appendStep('scenario-failed', false, {
+        message: err instanceof Error ? err.message : String(err),
+      });
+      process.stderr.write(
+        `dialer scenario failed: ${
+          err instanceof Error
+            ? redactSensitiveString(err.message)
+            : String(err)
+        }\ntranscript: ${transcriptPath}\n`,
+      );
+      process.exit(1);
     });
-    process.stderr.write(
-      `dialer scenario failed: ${
-        err instanceof Error ? redactSensitiveString(err.message) : String(err)
-      }\ntranscript: ${transcriptPath}\n`,
-    );
-    process.exit(1);
-  });
+}

@@ -5,11 +5,15 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 const homes: string[] = [];
+const userHomes: string[] = [];
 
 function makeHome(): string {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-steering-'));
+  const userHome = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-steering-user-'));
   homes.push(home);
+  userHomes.push(userHome);
   process.env.CONSUELO_HOME = home;
+  process.env.CONSUELO_USER_HOME = userHome;
   return home;
 }
 
@@ -17,7 +21,11 @@ function runOsSnippet<TOutput>(home: string, code: string): TOutput {
   const result = spawnSync('bun', ['--eval', code], {
     cwd: process.cwd(),
     encoding: 'utf8',
-    env: { ...process.env, CONSUELO_HOME: home },
+    env: {
+      ...process.env,
+      CONSUELO_HOME: home,
+      CONSUELO_USER_HOME: process.env.CONSUELO_USER_HOME,
+    },
   });
 
   if (result.status !== 0) {
@@ -45,16 +53,24 @@ function readExecution(home: string): Record<string, unknown> {
 
 afterEach(() => {
   delete process.env.CONSUELO_HOME;
+  delete process.env.CONSUELO_USER_HOME;
   for (const home of homes.splice(0)) fs.rmSync(home, { recursive: true, force: true });
+  for (const home of userHomes.splice(0)) fs.rmSync(home, { recursive: true, force: true });
 });
 
 describe('OS steering execution recording', () => {
-  it('loads local steering folder files and ignores legacy steering.md', () => {
+  it('loads supported local steering files while excluding decision and legacy steering', () => {
     const home = makeHome();
-    const steeringDir = path.join(home, 'steering');
+    const steeringDir = path.join(
+      String(process.env.CONSUELO_USER_HOME),
+      'Consuelo',
+      'Steering',
+    );
     fs.mkdirSync(steeringDir, { recursive: true });
     fs.writeFileSync(path.join(steeringDir, 'system_prompt.md'), '# Local system prompt\n\nlocal system body\n');
     fs.writeFileSync(path.join(steeringDir, 'decision.md'), '# Local decision\n\nlocal decision body\n');
+    fs.writeFileSync(path.join(steeringDir, 'operator-notes.md'), '# Operator notes\n\noperator notes body\n');
+    fs.writeFileSync(path.join(steeringDir, 'dialer-AGENTS.md'), '# Consuelo Dialer agent instructions\n\nunique dialer steering marker\n');
     fs.writeFileSync(path.join(steeringDir, 'steering.md'), '# Legacy steering\n\nlegacy body must be ignored\n');
 
     const { first, second } = runOsSnippet<{ first: string; second: string }>(home, `
@@ -62,17 +78,21 @@ describe('OS steering execution recording', () => {
       const path = await import('node:path');
       const { getSteering } = await import('./scripts/os.ts');
       const first = getSteering();
-      fs.writeFileSync(path.join(process.env.CONSUELO_HOME, 'steering', 'system_prompt.md'), '# Local system prompt\\n\\nupdated system body\\n');
+      fs.writeFileSync(path.join(process.env.CONSUELO_USER_HOME, 'Consuelo', 'Steering', 'system_prompt.md'), '# Local system prompt\\n\\nupdated system body\\n');
       const second = getSteering();
       process.stdout.write(JSON.stringify({ first, second }));
     `);
 
     expect(first).toContain('# system_prompt.md');
     expect(first).toContain('local system body');
-    expect(first).toContain('# decision.md');
-    expect(first).toContain('local decision body');
+    expect(first).toContain('# operator-notes.md');
+    expect(first).toContain('operator notes body');
+    expect(first).toContain('# dialer-AGENTS.md');
+    expect(first.match(/unique dialer steering marker/g)).toHaveLength(1);
+    expect(first).not.toContain('# decision.md');
+    expect(first).not.toContain('local decision body');
     expect(first).not.toContain('legacy body must be ignored');
-    expect(first.indexOf('# system_prompt.md')).toBeLessThan(first.indexOf('# decision.md'));
+    expect(first.indexOf('# system_prompt.md')).toBeLessThan(first.indexOf('# operator-notes.md'));
     expect(second).toContain('updated system body');
     expect(second).not.toContain('local system body');
   });
@@ -123,7 +143,8 @@ describe('OS steering execution recording', () => {
 
     expect(result.first).toBe('os steering payload');
     expect(result.second).toContain('GET_STEERING_LOOP_GUARD');
-    expect(result.second).toContain('$CONSUELO_HOME/steering/system_prompt.md');
+    expect(result.second).toContain('~/Consuelo/Steering/*.md');
+    expect(result.second).not.toContain('$CONSUELO_HOME/steering/decision.md');
     expect(result.third).toContain('GET_STEERING_RATE_LIMITED');
     expect(result.fourth).toContain('GET_STEERING_COOLDOWN');
     expect(result.builds).toBe(1);

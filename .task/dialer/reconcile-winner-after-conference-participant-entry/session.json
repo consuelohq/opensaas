@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4756f9e154d1",
+  "tmuxSession": "opensaas-dialer-reconcile-winner-after-conference-participant-en-4756f9e1",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/reconcile-winner-after-conference-participant-entry",
+  "branch": "task/dialer/reconcile-winner-after-conference-participant-entry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconcile-winner-after-conference-participant-entry",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconcile-winner-after-conference-participant-entry",
+  "prNumber": 1762,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1762",
+  "createdAt": "2026-08-03T22:19:23.827Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconcile-winner-after-conference-participant-entry/.task/dialer/reconcile-winner-after-conference-participant-entry/session.json"
+}

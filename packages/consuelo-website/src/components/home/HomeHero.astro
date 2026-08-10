@@ -1,49 +1,70 @@
 ---
-import { INSTALL_COMMAND } from '../../data/home-content';
+import { homeHeroRotatingAssistant, INSTALL_COMMAND } from '../../data/home-content';
 
 type Props = {
   sectionId?: string;
 };
 
 const { sectionId = 'intro' } = Astro.props as Props;
+const heroCopy = homeHeroRotatingAssistant;
+const [primaryAssistant, secondaryAssistant] = heroCopy.assistants;
 ---
 
 <section class="os-hero" id={sectionId} data-section="hero">
-  <img
-    class="os-hero__art"
-    src="/images/home/connect-transparent.svg"
-    alt=""
-    width="1200"
-    height="900"
-    aria-hidden="true"
-  />
+  <div class="os-hero__atmosphere" aria-hidden="true">
+    <img class="os-hero__cloud os-hero__cloud--1" src="/images/home/dither/cloud-1.png" alt="" width="900" height="450" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--2" src="/images/home/dither/cloud-2.png" alt="" width="1020" height="390" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--3" src="/images/home/dither/cloud-3.png" alt="" width="800" height="450" loading="eager" />
+    <img class="os-hero__cloud os-hero__cloud--4" src="/images/home/dither/cloud-4.png" alt="" width="950" height="400" loading="eager" />
+  </div>
 
   <div class="os-hero__content">
-    <p class="os-hero__eyebrow">OPEN SOURCE <span aria-hidden="true">•</span> MIT LICENSE</p>
-    <h1>YOUR WORKSPACE, CONNECTED TO EVERY AGENT.</h1>
+    <h1 data-hero-heading aria-label={heroCopy.ariaLabel}>
+      <span class="os-hero__heading-line">
+        <span>{heroCopy.prefix}</span>
+        <span
+          class="os-hero__assistant-rotator"
+          data-assistant-rotator
+          data-active-assistant={primaryAssistant}
+          aria-hidden="true"
+        >
+          <span data-assistant-name={primaryAssistant}>{primaryAssistant}</span>
+          <span data-assistant-name={secondaryAssistant}>{secondaryAssistant}</span>
+        </span>
+      </span>
+      <span class="os-hero__heading-line">{heroCopy.suffix}</span>
+    </h1>
     <p class="os-hero__subtitle">
-      Build it once. Use it from ChatGPT, Codex, Claude, and whatever comes next.
+      {heroCopy.subtitle}
     </p>
 
     <div class="os-hero__actions">
-      <a class="os-hero__button" href="https://os.consuelohq.com">SIGN IN</a>
-      <button class="os-hero__button os-hero__button--quiet" type="button" data-copy-install>
-        <span data-copy-label>DOWNLOAD LOCALLY</span>
-      </button>
+      <a class="os-hero__button" href="https://os.consuelohq.com">
+        {heroCopy.signInLabel}
+        <svg class="os-hero__button-arrow" viewBox="0 0 6 9" fill="currentColor" aria-hidden="true">
+          <rect x="0" y="0" width="1" height="9" />
+          <rect x="1" y="1" width="1" height="1" />
+          <rect x="2" y="2" width="1" height="1" />
+          <rect x="3" y="3" width="1" height="1" />
+          <rect x="4" y="4" width="1" height="1" />
+          <rect x="3" y="5" width="1" height="1" />
+          <rect x="2" y="6" width="1" height="1" />
+          <rect x="1" y="7" width="1" height="1" />
+        </svg>
+      </a>
     </div>
 
-    <button class="os-hero__command" type="button" data-copy-install aria-label="Copy install command">
+    <button class="os-hero__command" type="button" data-copy-install aria-label={heroCopy.copyInstallAriaLabel}>
       <code>{INSTALL_COMMAND}</code>
-      <span data-copy-label>COPY</span>
+      <span data-copy-label>{heroCopy.copyLabel}</span>
     </button>
   </div>
 </section>
 
-<script define:vars={{ INSTALL_COMMAND }}>
+<script define:vars={{ INSTALL_COMMAND, copyLabel: heroCopy.copyLabel }}>
   const labels = Array.from(document.querySelectorAll('[data-copy-label]')).filter(
     (label) => label instanceof HTMLElement,
   );
-  const defaultLabels = new Map(labels.map((label) => [label, label.textContent ?? '']));
 
   document.querySelectorAll('[data-copy-install]').forEach((button) => {
     button.addEventListener('click', async () => {
@@ -62,23 +83,194 @@ const { sectionId = 'intro' } = Astro.props as Props;
       });
       window.setTimeout(() => {
         labels.forEach((label) => {
-          label.textContent = defaultLabels.get(label) ?? '';
+          label.textContent = copyLabel;
         });
       }, 1500);
     });
   });
 </script>
 
+<script>
+  import gsap from 'gsap';
+
+  // Hero/editorial motion contract: translation max 32px (animations.md).
+  const HERO_NAME_OFFSET_PX = 32;
+  const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+  const ROTATION_EASE = 'power3.inOut';
+  const ROTATION_DURATION = 0.52;
+
+  const hero = document.querySelector('[data-section="hero"]');
+  const rotator = document.querySelector('[data-assistant-rotator]');
+  const primaryName = document.querySelector('[data-assistant-name="ChatGPT"]');
+  const secondaryName = document.querySelector('[data-assistant-name="Claude"]');
+  const reduceMotion = window.matchMedia(REDUCED_MOTION_QUERY);
+
+  let timeline: gsap.core.Timeline | null = null;
+  let context: gsap.Context | null = null;
+  let visibilityObserver: IntersectionObserver | null = null;
+  let isHeroVisible = true;
+
+  const hasRotatorNodes = () =>
+    rotator instanceof HTMLElement &&
+    primaryName instanceof HTMLElement &&
+    secondaryName instanceof HTMLElement;
+
+  const clearInlineMotionStyles = () => {
+    if (!(primaryName instanceof HTMLElement) || !(secondaryName instanceof HTMLElement)) {
+      return;
+    }
+
+    for (const node of [primaryName, secondaryName]) {
+      node.style.removeProperty('opacity');
+      node.style.removeProperty('visibility');
+      node.style.removeProperty('transform');
+    }
+  };
+
+  const resetActiveAssistant = () => {
+    if (!(rotator instanceof HTMLElement)) {
+      return;
+    }
+
+    rotator.dataset.activeAssistant = 'ChatGPT';
+  };
+
+  const destroyRotation = () => {
+    visibilityObserver?.disconnect();
+    visibilityObserver = null;
+    timeline?.kill();
+    timeline = null;
+    context?.revert();
+    context = null;
+    clearInlineMotionStyles();
+    resetActiveAssistant();
+  };
+
+  const syncTimelinePlayback = () => {
+    if (!timeline) {
+      return;
+    }
+
+    if (isHeroVisible && !reduceMotion.matches) {
+      timeline.play();
+      return;
+    }
+
+    timeline.pause();
+  };
+
+  const bindVisibilityObserver = () => {
+    if (!(hero instanceof HTMLElement) || typeof IntersectionObserver === 'undefined') {
+      isHeroVisible = true;
+      syncTimelinePlayback();
+      return;
+    }
+
+    visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        isHeroVisible = entry?.isIntersecting ?? false;
+        syncTimelinePlayback();
+      },
+      { threshold: 0.15 },
+    );
+    visibilityObserver.observe(hero);
+  };
+
+  const startRotation = () => {
+    if (!hasRotatorNodes() || reduceMotion.matches) {
+      destroyRotation();
+      return;
+    }
+
+    if (!(rotator instanceof HTMLElement) || !(primaryName instanceof HTMLElement) || !(secondaryName instanceof HTMLElement)) {
+      return;
+    }
+
+    destroyRotation();
+
+    context = gsap.context(() => {
+      gsap.set(primaryName, { autoAlpha: 1, y: 0 });
+      gsap.set(secondaryName, { autoAlpha: 0, y: HERO_NAME_OFFSET_PX });
+
+      timeline = gsap.timeline({
+        repeat: -1,
+        paused: true,
+      });
+
+      timeline
+        .to(
+          primaryName,
+          { autoAlpha: 0, y: -HERO_NAME_OFFSET_PX, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          2.4,
+        )
+        .to(
+          secondaryName,
+          { autoAlpha: 1, y: 0, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
+        .call(() => {
+          rotator.dataset.activeAssistant = 'Claude';
+        })
+        .set(primaryName, { autoAlpha: 0, y: HERO_NAME_OFFSET_PX }, '+=2.6')
+        .to(
+          secondaryName,
+          { autoAlpha: 0, y: -HERO_NAME_OFFSET_PX, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
+        .to(
+          primaryName,
+          { autoAlpha: 1, y: 0, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
+        .call(() => {
+          rotator.dataset.activeAssistant = 'ChatGPT';
+        });
+    }, rotator);
+
+    bindVisibilityObserver();
+    syncTimelinePlayback();
+  };
+
+  const handleReducedMotionChange = () => {
+    if (reduceMotion.matches) {
+      destroyRotation();
+      return;
+    }
+
+    startRotation();
+  };
+
+  const handlePageHide = () => {
+    destroyRotation();
+  };
+
+  const handlePageShow = (event: PageTransitionEvent) => {
+    if (!event.persisted) {
+      return;
+    }
+
+    isHeroVisible = true;
+    startRotation();
+  };
+
+  startRotation();
+  reduceMotion.addEventListener('change', handleReducedMotionChange);
+  window.addEventListener('pagehide', handlePageHide);
+  window.addEventListener('pageshow', handlePageShow);
+</script>
+
 <style>
   .os-hero {
     position: relative;
     display: grid;
-    min-height: calc(100svh - clamp(4.5rem, 8vw, 6.5rem));
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 90svh;
     place-items: center;
     overflow: hidden;
     background: var(--site-color-brand);
     color: white;
-    padding: clamp(7rem, 12vw, 10rem) 1rem clamp(4rem, 8vw, 6rem);
+    padding: clamp(7rem, 10vw, 9rem) clamp(1.25rem, 4vw, 4rem) clamp(3rem, 5vw, 4.5rem);
     text-align: center;
   }
 
@@ -86,43 +278,71 @@ const { sectionId = 'intro' } = Astro.props as Props;
     position: relative;
     z-index: 2;
     display: grid;
-    width: min(100%, 58rem);
+    width: min(100%, 80rem);
+    min-width: 0;
+    max-width: 100%;
     justify-items: center;
-    gap: clamp(1rem, 1.7vw, 1.5rem);
-  }
-
-  .os-hero__eyebrow {
-    margin: 0;
-    font: 650 0.66rem/1 var(--site-font-mono);
-    letter-spacing: 0.2em;
+    gap: clamp(1rem, 1.55vw, 1.4rem);
   }
 
   .os-hero h1 {
-    max-width: 12.5em;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
     margin: 0;
     color: white;
     font-family: var(--site-font-display);
-    font-size: clamp(3.25rem, 6.3vw, 6.6rem);
-    font-weight: 430;
-    letter-spacing: 0;
-    line-height: 0.9;
+    font-size: clamp(3.75rem, 7vw, 6.75rem);
+    font-optical-sizing: auto;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 0.96;
     text-wrap: balance;
   }
 
+  .os-hero__heading-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.2em;
+    white-space: nowrap;
+  }
+
+  .os-hero__assistant-rotator {
+    position: relative;
+    display: inline-grid;
+    overflow: hidden;
+    min-width: 3.75em;
+    place-items: baseline center;
+    vertical-align: baseline;
+  }
+
+  .os-hero__assistant-rotator > span {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+  }
+
+  [data-assistant-name='Claude'] {
+    opacity: 0;
+    visibility: hidden;
+  }
+
   .os-hero__subtitle {
-    max-width: 42rem;
+    width: min(100%, 56rem);
+    min-width: 0;
     margin: 0;
-    color: rgba(255, 255, 255, 0.86);
-    font-size: clamp(0.9rem, 1.25vw, 1.05rem);
-    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: clamp(1rem, 1.4vw, 1.25rem);
+    line-height: 1.45;
     text-wrap: balance;
   }
 
   .os-hero__actions {
     display: grid;
-    width: min(100%, 17rem);
+    width: min(100%, 34rem);
+    min-width: 0;
     gap: 0.55rem;
-    margin-top: 0.35rem;
+    margin-top: 0.45rem;
   }
 
   .os-hero__button,
@@ -130,49 +350,55 @@ const { sectionId = 'intro' } = Astro.props as Props;
     border: 1px solid white;
     border-radius: 0;
     font-family: var(--site-font-mono);
-    font-size: 0.72rem;
+    font-size: clamp(0.72rem, 0.9vw, 0.8rem);
     font-weight: 650;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.09em;
   }
 
   .os-hero__button {
-    display: grid;
-    min-height: 2.75rem;
-    place-items: center;
+    display: flex;
+    min-height: 3.15rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
     background: white;
+    box-shadow: 0.22rem 0.22rem 0 rgba(0, 0, 92, 0.28);
     color: var(--site-color-brand);
     text-decoration: none;
-    transition: background var(--site-motion-fast), color var(--site-motion-fast);
+    transform: translate(-0.08rem, -0.08rem);
+    transition: background var(--site-motion-fast), color var(--site-motion-fast), box-shadow var(--site-motion-fast), transform var(--site-motion-fast);
   }
 
-  .os-hero__button--quiet {
-    background: transparent;
-    color: white;
+  .os-hero__button-arrow {
+    width: 0.58rem;
+    height: 0.82rem;
+    shape-rendering: crispEdges;
   }
 
   .os-hero__button:hover,
   .os-hero__button:focus-visible {
-    background: var(--site-color-soft-white);
-  }
-
-  .os-hero__button--quiet:hover,
-  .os-hero__button--quiet:focus-visible {
     background: white;
+    box-shadow: 0.1rem 0.1rem 0 rgba(0, 0, 92, 0.2);
     color: var(--site-color-brand);
+    transform: translate(0, 0);
   }
 
   .os-hero__command {
     display: flex;
-    width: min(100%, 31rem);
-    min-height: 2.8rem;
+    width: min(100%, 34rem);
+    min-width: 0;
+    min-height: 3.05rem;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     overflow: hidden;
-    background: rgba(0, 0, 242, 0.76);
+    background: transparent;
+    box-shadow: 0.2rem 0.2rem 0 rgba(255, 255, 255, 0.32);
     color: white;
-    padding: 0.7rem 0.9rem;
+    padding: 0.75rem 1rem;
     text-align: left;
+    transform: translate(-0.06rem, -0.06rem);
+    transition: background var(--site-motion-fast), color var(--site-motion-fast), box-shadow var(--site-motion-fast), transform var(--site-motion-fast);
   }
 
   .os-hero__command code {
@@ -186,44 +412,142 @@ const { sectionId = 'intro' } = Astro.props as Props;
 
   .os-hero__command span {
     flex: 0 0 auto;
-    font-size: 0.62rem;
+    font-size: 0.68rem;
   }
 
-  .os-hero__art {
+  .os-hero__command:hover,
+  .os-hero__command:focus-visible {
+    background: white;
+    box-shadow: 0.08rem 0.08rem 0 rgba(255, 255, 255, 0.22);
+    color: var(--site-color-brand);
+    transform: translate(0, 0);
+  }
+
+  .os-hero__atmosphere {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
+  }
+
+  .os-hero__cloud {
+    position: absolute;
+    max-width: none;
+    image-rendering: pixelated;
+  }
+
+  .os-hero__cloud--1 {
+    top: 5%;
+    left: -10%;
+    opacity: 0.42;
+  }
+
+  .os-hero__cloud--2 {
+    bottom: 22%;
+    left: -12%;
+    opacity: 0.45;
+  }
+
+  .os-hero__cloud--3 {
+    top: 2%;
+    right: -16%;
+    opacity: 0.34;
+  }
+
+  .os-hero__cloud--4 {
+    bottom: 8%;
+    right: -14%;
+    opacity: 0.4;
+  }
+
+  .os-hero::after {
     position: absolute;
     z-index: 1;
-    bottom: -30%;
-    left: 50%;
-    width: min(92vw, 75rem);
-    max-width: none;
-    opacity: 0.12;
-    filter: brightness(0) invert(1);
-    transform: translateX(-50%);
+    inset: 18% 0 7%;
+    background: radial-gradient(circle at 50% 48%, rgba(0, 0, 242, 0.64), transparent 54%);
+    content: '';
     pointer-events: none;
   }
 
   @media (max-width: 720px) {
     .os-hero {
-      min-height: calc(100svh - 4.5rem);
-      padding: 6.25rem 1rem 3.5rem;
+      min-height: 90svh;
+      padding: 6.1rem 0.9rem 2.5rem;
+    }
+
+    .os-hero__content {
+      width: 100%;
+      gap: 0.95rem;
+      transform: translateY(-3.5svh);
     }
 
     .os-hero h1 {
-      font-size: clamp(2.9rem, 13vw, 4.5rem);
-      line-height: 0.92;
+      font-size: clamp(2.65rem, 10.8vw, 3.2rem);
+      letter-spacing: 0.005em;
+      line-height: 0.98;
+    }
+
+    .os-hero__heading-line {
+      gap: 0.16em;
     }
 
     .os-hero__subtitle {
-      max-width: 22rem;
+      width: min(100%, 23rem);
+      max-width: 100%;
+      font-size: 0.94rem;
+      line-height: 1.48;
+    }
+
+    .os-hero__actions,
+    .os-hero__command {
+      width: min(100%, 32rem);
+    }
+
+    .os-hero__button {
+      min-height: 3rem;
     }
 
     .os-hero__command {
-      font-size: 0.62rem;
+      min-height: 2.85rem;
+      font-size: 0.64rem;
     }
 
-    .os-hero__art {
-      bottom: -8%;
-      width: 150vw;
+    .os-hero__cloud--1 {
+      top: 3%;
+      left: -30%;
+      width: 480px;
+      height: 240px;
+    }
+
+    .os-hero::after {
+      inset: 16% -25% 8%;
+      background: radial-gradient(circle at 50% 48%, rgba(0, 0, 242, 0.74), transparent 58%);
+    }
+
+    .os-hero__cloud--3 {
+      top: 8%;
+      right: -34%;
+      width: 400px;
+      height: 225px;
+    }
+
+    .os-hero__cloud--2,
+    .os-hero__cloud--4 {
+      display: none;
+    }
+  }
+
+  @media (min-width: 721px) and (max-width: 1100px) {
+    .os-hero {
+      min-height: 88svh;
+      padding-top: 8rem;
+    }
+
+    .os-hero__content {
+      transform: translateY(-1.5svh);
     }
   }
 

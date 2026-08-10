@@ -13,7 +13,7 @@ export const siteMetadata = {
   defaultTitle: 'Consuelo OS | Your workspace, connected to every agent',
   defaultDescription:
     'Connect ChatGPT, Codex, Claude, and the agents that come next to the same tools, memory, workflows, and machines.',
-  blogTitle: 'Consuelo Blog',
+  blogTitle: 'The Consuelo Blog',
   blogDescription:
     'Product updates, implementation notes, and technical writing from the Consuelo team.',
   defaultOgImage: '/og.png',
@@ -53,7 +53,7 @@ export const getOrganizationSchema = (): StructuredData => ({
   '@id': `${siteMetadata.siteUrl}/#organization`,
   name: siteMetadata.siteName,
   url: siteMetadata.siteUrl,
-  logo: resolveImageUrl('/images/home/consuelo-mark.svg'),
+  logo: resolveImageUrl('/favicon.svg'),
   sameAs: [siteMetadata.githubUrl, siteMetadata.docsUrl],
   description: siteMetadata.defaultDescription,
 });

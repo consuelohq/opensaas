@@ -35,6 +35,7 @@ const {
 } = require('./lib/git');
 const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
+const { compactTaskStartOutput } = require('./lib/task-start-output');
 const { renderHookResult } = require('../hooks/dispatcher.js');
 const { createWorkflowIntentRuntime } = require('../hooks/intent.js');
 
@@ -57,8 +58,9 @@ function printHelp() {
   writeStdout('  --title <value>        task title used for branch slug and pr title');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --workflow <value>    workflow bundle to return: task|office|design|sites|media (default: task)');
+  writeStdout('  --workflow <value>    workflow bundle to return: task|artifacts|design|sites|media (default: task)');
   writeStdout('  --stream <branch>      target stream branch for later push/pr flow (default: stream/<area>)');
+  writeStdout('                         create missing streams first with stream.create');
   writeStdout(`  --start-from <mode>    source branch for the new task: ${Array.from(START_FROM_OPTIONS).join('|')} (default: ${DEFAULT_START_FROM})`);
   writeStdout('  --branch <name>        task branch (default: task/<area>/<slug>)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
@@ -207,29 +209,19 @@ function resolveSourceBranch(startFrom, stream) {
   return DEFAULT_MAIN_BRANCH;
 }
 
-async function ensureRemoteStreamBranch({ token, repository, streamBranch, mainRef }) {
+async function ensureRemoteStreamBranch({ token, repository, streamBranch }) {
   try {
-    let streamRef = await getBranchRef({ token, repository, branch: streamBranch });
-
-    if (streamRef) {
-      return {
-        streamRef,
-        created: false,
-      };
-    }
-
-    writeStderr(`creating remote ${streamBranch} from ${DEFAULT_MAIN_BRANCH}...`);
-    streamRef = await createBranch({
+    const streamRef = await getBranchRef({
       token,
       repository,
       branch: streamBranch,
-      sha: mainRef.object.sha,
     });
-
-    return {
-      streamRef,
-      created: true,
-    };
+    if (!streamRef) {
+      throw new Error(
+        `remote stream ${streamBranch} does not exist. Create it first with stream.create.`,
+      );
+    }
+    return { streamRef, created: false };
   } catch (error) {
     throw new Error(`failed to ensure stream branch ${streamBranch}: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -303,22 +295,11 @@ async function main() {
 
     fetchOrigin(repoRoot);
 
-    const mainRef = await getBranchRef({ token, repository: args.repo, branch: DEFAULT_MAIN_BRANCH });
-
-    if (!mainRef) {
-      throw new Error(`remote ${DEFAULT_MAIN_BRANCH} branch not found in ${args.repo}`);
-    }
-
-    const streamDetails = await ensureRemoteStreamBranch({
+    await ensureRemoteStreamBranch({
       token,
       repository: args.repo,
       streamBranch: stream,
-      mainRef,
     });
-
-    if (streamDetails.created) {
-      fetchOrigin(repoRoot);
-    }
 
     const sourceBranch = resolveSourceBranch(args.startFrom, stream);
     const sourceRef = `refs/remotes/origin/${sourceBranch}`;
@@ -563,14 +544,14 @@ async function main() {
       worktreePath,
       taskResult,
     });
-    const combinedResult = {
+    const combinedResult = compactTaskStartOutput({
       ...taskResult,
       workflow: workflowStart.workflow,
       requestedWorkflow: workflowStart.requestedWorkflow,
       manifestBundle: workflowStart.manifestBundle,
       hookEvent: workflowStart.hookEvent,
       hookResult: workflowStart.hookResult,
-    };
+    });
 
     printResult(combinedResult, args.json);
 

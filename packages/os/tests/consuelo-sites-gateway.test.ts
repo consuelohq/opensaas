@@ -10,6 +10,7 @@ import {
   routeConsueloGatewayRequest,
 } from '../scripts/lib/consuelo-sites-gateway';
 import { createConsueloSiteServiceRegistry, registerConsueloSiteService } from '../scripts/lib/consuelo-sites-gateway-registry';
+import { createConfigurationConsueloSiteServiceRegistry } from '../scripts/lib/consuelo-sites-settings-adapter';
 import { createTraceConsueloSiteServiceRegistry } from '../scripts/lib/consuelo-sites-trace-adapter';
 import type { ConsueloGatewayRequest, ConsueloGatewaySessionScope } from '../scripts/lib/consuelo-sites-gateway-types';
 
@@ -37,6 +38,32 @@ function request(overrides: Partial<ConsueloGatewayRequest> = {}): ConsueloGatew
 
 function traceGateway() {
   return createConsueloSitesGateway({ registry: createTraceConsueloSiteServiceRegistry() });
+}
+
+function configurationGateway() {
+  return createConsueloSitesGateway({ registry: createConfigurationConsueloSiteServiceRegistry() });
+}
+
+const configurationScope: ConsueloGatewaySessionScope = {
+  userId: 'usr_configuration_gateway',
+  workspaceId: 'wrk_configuration_gateway',
+  workspaceHost: 'testing.consuelohq.com',
+  allowedSites: ['configuration'],
+  capabilities: ['configuration-read', 'configuration-write'],
+  sourceModesAllowed: ['local-networked', 'cloud-compute', 'local-off-network'],
+  bridgeConfigured: false,
+};
+
+function configurationRequest(overrides: Partial<ConsueloGatewayRequest> = {}): ConsueloGatewayRequest {
+  return {
+    host: 'testing.consuelohq.com',
+    site: 'configuration',
+    capability: 'configuration-read',
+    sourceMode: 'local-networked',
+    publicPath: '/configuration',
+    session: configurationScope,
+    ...overrides,
+  };
 }
 
 describe('Consuelo Sites Gateway contract service', () => {
@@ -214,6 +241,62 @@ describe('Consuelo Sites Gateway contract service', () => {
       }),
     ]));
     expect(discovery.services.every((service) => service.publicBoundary === 'consuelo-gateway')).toBe(true);
+  });
+
+  it('routes Configuration Site read capability through the canonical adapter service', () => {
+    const result = routeConsueloGatewayRequest(configurationGateway(), configurationRequest({ capability: 'configuration-read' }));
+
+    expect(result).toMatchObject({
+      ok: true,
+      publicBoundary: 'consuelo-gateway',
+      route: {
+        publicSiteRouteFamily: '/configuration/*',
+        gatewayRouteFamily: '/gateway/configuration/*',
+        gatewayServiceName: 'configuration-sites-read-endpoints',
+        gatewayAdapterName: 'configuration-sites-read-endpoints',
+        capability: 'configuration-read',
+        site: 'configuration',
+      },
+    });
+  });
+
+  it('routes Configuration Site write capability through the canonical adapter service', () => {
+    const result = routeConsueloGatewayRequest(configurationGateway(), configurationRequest({ capability: 'configuration-write' }));
+
+    expect(result).toMatchObject({
+      ok: true,
+      publicBoundary: 'consuelo-gateway',
+      route: {
+        gatewayServiceName: 'configuration-sites-write-endpoints',
+        gatewayAdapterName: 'configuration-sites-write-endpoints',
+        capability: 'configuration-write',
+        site: 'configuration',
+      },
+    });
+  });
+
+  it('routes legacy Settings capability aliases through the Configuration service', () => {
+    const result = routeConsueloGatewayRequest(configurationGateway(), configurationRequest({
+      site: 'settings',
+      capability: 'settings-read',
+      publicPath: '/settings',
+      session: {
+        ...configurationScope,
+        allowedSites: ['settings'],
+        capabilities: ['settings-read'],
+      },
+    }));
+
+    expect(result).toMatchObject({
+      ok: true,
+      route: {
+        gatewayServiceName: 'configuration-sites-read-endpoints',
+        publicSiteRouteFamily: '/settings/*',
+        gatewayRouteFamily: '/gateway/settings/*',
+        capability: 'settings-read',
+        site: 'settings',
+      },
+    });
   });
 
   it('should allow Trace to be absent without changing generic gateway core behavior', () => {

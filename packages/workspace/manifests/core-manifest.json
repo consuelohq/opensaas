@@ -10,14 +10,14 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "composed",
-      "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+      "description": "run a fixed list of workspace tool calls sequentially or in parallel with compact per-step results; step inputs cannot depend on earlier outputs, and parallel mode is for independent operations",
       "core": true,
       "definition": {
         "name": "batch",
         "methodPath": [
           "batch"
         ],
-        "description": "run multiple workspace tools sequentially or in parallel with compact per-step results",
+        "description": "run a fixed list of workspace tool calls sequentially or in parallel with compact per-step results; step inputs cannot depend on earlier outputs, and parallel mode is for independent operations",
         "category": "composed",
         "underlying": "workspace batch",
         "capabilities": {
@@ -821,6 +821,11 @@
               "source": "startFrom",
               "flag": "--start-from",
               "kind": "value"
+            },
+            {
+              "source": "createStream",
+              "flag": "--create-stream",
+              "kind": "boolean"
             }
           ],
           "jsonFlag": "--json"

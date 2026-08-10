@@ -1,0 +1,20 @@
+{
+  "area": "os-native",
+  "stream": "stream/os-native",
+  "taskBranch": "task/os-native/implement-windows-platform-support",
+  "baseBranch": "stream/os-native",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1646,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1646",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1646",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1646/implement-windows-platform-support",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1646",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1646/implement-windows-platform-support",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-windows-platform-support",
+  "taskSession": "tsk_54add4ed7243",
+  "tmuxSession": "opensaas-os-native-implement-windows-platform-support-54add4ed",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-windows-platform-support/.task/os-native/implement-windows-platform-support/session.json",
+  "createdAt": "2026-07-25T00:53:21.902Z",
+  "taskPrNumber": 1646
+}

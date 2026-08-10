@@ -1,0 +1,112 @@
+---
+import MobileMenuFooter from 'virtual:starlight/components/MobileMenuFooter';
+import SidebarSublist from '@astrojs/starlight/components/SidebarSublist.astro';
+import {
+  globalSectionLinks,
+  selectSectionSidebar,
+} from '../lib/docs-navigation';
+
+const navigation = selectSectionSidebar(
+  Astro.locals.starlightRoute.sidebar,
+  Astro.url.pathname,
+);
+---
+
+{
+  navigation.mode === 'section' ? (
+    <nav aria-label={`${navigation.sectionLabel} documentation`} class="section-sidebar">
+      <a class="all-docs" href="/">← All documentation</a>
+      <SidebarSublist sublist={navigation.entries} />
+    </nav>
+  ) : (
+    <nav aria-label="Documentation sections" class="global-sidebar">
+      <ul class="global-section-list">
+        {globalSectionLinks.map((section) => (
+          <li>
+            <a class="global-section-link" href={section.href}>
+              <span>{section.label}</span>
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<div class="md:sl-hidden">
+  <MobileMenuFooter />
+</div>
+
+<style>
+  @layer starlight.core {
+    .section-sidebar {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .all-docs {
+      color: var(--sl-color-gray-2);
+      display: inline-flex;
+      font-size: var(--sl-text-sm);
+      padding-inline: 0.5rem;
+      text-decoration: none;
+    }
+
+    .all-docs:hover,
+    .all-docs:focus-visible {
+      color: var(--sl-color-white);
+    }
+
+    .global-section-list {
+      display: grid;
+      gap: 0.35rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .global-section-link {
+      align-items: center;
+      border-radius: 0.45rem;
+      color: var(--sl-color-white);
+      display: flex;
+      font-size: var(--sl-text-base);
+      font-weight: 600;
+      justify-content: space-between;
+      line-height: 1.35;
+      padding: 0.55rem 0.65rem;
+      text-decoration: none;
+    }
+
+    .global-section-link svg {
+      fill: none;
+      height: 1rem;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 2;
+      width: 1rem;
+    }
+
+    .global-section-link:hover {
+      background: color-mix(
+        in srgb,
+        var(--sl-color-text-accent) 12%,
+        transparent
+      );
+      color: var(--sl-color-text-accent);
+    }
+
+    .global-section-link:focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    .global-section-link:focus-visible {
+      outline: 2px solid var(--sl-color-text-accent);
+      outline-offset: 2px;
+    }
+  }
+</style>

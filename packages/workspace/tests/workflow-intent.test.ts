@@ -71,10 +71,9 @@ function toolNames(bundle: WorkflowBundle): string[] {
 }
 
 describe('Workspace workflow intent bundles', () => {
-  test('should generate task and office workflow bundles when loading workflow metadata', () => {
+  test('should generate only the task workflow bundle', () => {
     const bundles = readBundles();
     const task = workflowById(bundles, 'task');
-    const office = workflowById(bundles, 'office');
 
     expect(task.roles).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'workpad.write']));
     expect(toolNames(task)).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'fs.write']));
@@ -82,9 +81,7 @@ describe('Workspace workflow intent bundles', () => {
       expect.arrayContaining([expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' })]),
     );
 
-    expect(office.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
-    expect(office.roles).toEqual(expect.arrayContaining(['office.publish', 'office.generate.website']));
-    expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'office.generateWebsite']));
+    expect(bundles.workflows.map((workflow) => workflow.id)).toEqual(['task']);
   });
 
   test('should bind the task workflow bundle and post-start guidance to the real task session', () => {
@@ -161,25 +158,26 @@ describe('Workspace workflow intent bundles', () => {
     const parsed = getInputSchema('TaskStartInput').parse({
       area: 'workspace-agents',
       title: 'combined task start',
-      workflow: 'design',
+      workflow: 'task',
     });
 
-    expect(parsed.workflow).toBe('design');
+    expect(parsed.workflow).toBe('task');
+    for (const retiredWorkflow of ['office', 'design', 'sites']) {
+      expect(() => getInputSchema('TaskStartInput').parse({
+        area: 'workspace-agents',
+        title: 'retired workflow',
+        workflow: retiredWorkflow,
+      })).toThrow();
+    }
   });
 
-  test('should resolve office aliases when starting design or sites intent', () => {
+  test('should reject artifact workflow aliases in the workspace controller', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
-    const design = runtime.start({ workflow: 'design', taskSession: 'tsk_design' });
-    const sites = runtime.start({ workflow: 'sites', taskSession: 'tsk_sites' });
-
-    expect(design.workflow).toBe('office');
-    expect(design.requestedWorkflow).toBe('design');
-    expect(sites.workflow).toBe('office');
-    expect(design.manifestBundle.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
-    expect(design.manifestBundle.tools.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(['design.publish', 'office.generateWebsite']),
-    );
+    for (const retiredWorkflow of ['office', 'design', 'sites']) {
+      expect(() => runtime.start({ workflow: retiredWorkflow, taskSession: `tsk_${retiredWorkflow}` }))
+        .toThrow(`unknown workflow: ${retiredWorkflow}`);
+    }
   });
 
   test('should require taskSession when dispatching scoped hook events', () => {

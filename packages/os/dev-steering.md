@@ -860,7 +860,7 @@ after finishing meaningful work, ask:
 
 * did i discover something future agents need?
 * does a nearby `AGENTS.md` need a short note?
-* should this be saved to context memory?
+* should this be saved to project memory?
 * should `SCRIPTS.md` be updated?
 
 ---
@@ -986,9 +986,9 @@ Start workspace-tooling investigations with:
 
 ```ts
 await workspace.call({ tool: "stream.context", input: { area: "workspace-agents" }, timeout: 120 })
-await workspace.call({ tool: "context.search", input: { keyword: "typed workspace facade", limit: 5 }, timeout: 120 })
-await workspace.call({ tool: "context.search", input: { keyword: "browser facade aliases", limit: 5 }, timeout: 120 })
-await workspace.call({ tool: "context.search", input: { keyword: "workspace tooling docs", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "memory", input: { operation: "search", keyword: "typed workspace facade", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "memory", input: { operation: "search", keyword: "browser facade aliases", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "memory", input: { operation: "search", keyword: "workspace tooling docs", limit: 5 }, timeout: 120 })
 ```
 
 ## shell command construction with base64 + JSON escaping
@@ -1021,12 +1021,12 @@ Exploration must answer these questions before implementation begins:
 5. What tests, snapshots, audits, or review gates prove the change?
 6. What uncertainty remains, and what needs Ko’s answer before coding?
 
-Use context search first, then code/file exploration. Good first-pass commands:
+Use memory search first, then code/file exploration. Good first-pass commands:
 
 ```ts
-await workspace.call({ tool: "context.search", input: { keyword: "<feature or behavior>", limit: 5 }, timeout: 120 })
-await workspace.call({ tool: "context.search", input: { keyword: "typed workspace facade", limit: 5 }, timeout: 120 })
-await workspace.call({ tool: "context.search", input: { keyword: "workspace scripts docs", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "memory", input: { operation: "search", keyword: "<feature or behavior>", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "memory", input: { operation: "search", keyword: "typed workspace facade", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "memory", input: { operation: "search", keyword: "workspace scripts docs", limit: 5 }, timeout: 120 })
 await workspace.call({ tool: "explore", input: { query: "<feature or behavior> workspace facade script manifest docs tests", limit: 8 }, timeout: 120 })
 ```
 

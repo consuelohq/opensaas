@@ -10,7 +10,7 @@ const PLIST = path.join(HOME, 'Library', 'LaunchAgents', `${LABEL}.plist`);
 const PORT = process.env.CONSUELO_OS_PORT || process.env.PORT || process.env.WORKSPACE_DAEMON_PORT || '46321';
 const HEALTH = `http://127.0.0.1:${PORT}/health`;
 const OS_DIR = path.resolve(__dirname, '..');
-const START_SCRIPT = path.join(OS_DIR, 'scripts', 'start-brain.sh');
+const START_SCRIPT = path.join(OS_DIR, 'scripts', 'start-consuelo-daemon.sh');
 const LOG_FILE = process.env.CONSUELO_DAEMON_LOG_FILE || path.join(HOME, 'Library', 'Logs', 'Consuelo', 'system.log');
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
@@ -20,7 +20,7 @@ const CONFLICTING_LABELS = ['com.consuelo.workspace'];
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
 
-function run(command, args = []) {
+function runBestEffort(command, args = []) {
   try {
     return execFileSync(command, args, { encoding: 'utf8', timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   } catch (error) {
@@ -28,8 +28,17 @@ function run(command, args = []) {
   }
 }
 
+function runRequired(command, args, label) {
+  try {
+    return execFileSync(command, args, { encoding: 'utf8', timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  } catch (error) {
+    const detail = error.stderr?.trim() || error.stdout?.trim() || '';
+    throw new Error(`${label} failed${detail ? `: ${detail}` : ''}`);
+  }
+}
+
 function sleep(seconds) {
-  run('sleep', [String(seconds)]);
+  runBestEffort('sleep', [String(seconds)]);
 }
 
 function parsePids(output) {
@@ -41,7 +50,7 @@ function parsePids(output) {
 
 function health() {
   try {
-    const response = run('curl', ['-sf', HEALTH]);
+    const response = runBestEffort('curl', ['-sf', HEALTH]);
     return JSON.parse(response);
   } catch {
     return null;
@@ -53,7 +62,7 @@ function isExpectedHealth(result) {
 }
 
 function isLaunchdLoaded() {
-  const output = run('launchctl', ['print', `${LAUNCH_DOMAIN}/${LABEL}`]);
+  const output = runBestEffort('launchctl', ['print', `${LAUNCH_DOMAIN}/${LABEL}`]);
   return output.includes(LABEL) || output.includes('state = running');
 }
 
@@ -62,15 +71,15 @@ function findServerPid() {
 }
 
 function findServerPids() {
-  return parsePids(run('pgrep', ['-f', 'packages/os/scripts/server/main.ts|scripts/server/main.ts']));
+  return parsePids(runBestEffort('pgrep', ['-f', 'packages/os/scripts/server/main.ts|scripts/server/main.ts']));
 }
 
 function findPortPids() {
-  return parsePids(run('lsof', [`-iTCP:${PORT}`, '-sTCP:LISTEN', '-t']));
+  return parsePids(runBestEffort('lsof', [`-iTCP:${PORT}`, '-sTCP:LISTEN', '-t']));
 }
 
 function findLaunchLabelPid(label) {
-  const output = run('launchctl', ['print', `${LAUNCH_DOMAIN}/${label}`]);
+  const output = runBestEffort('launchctl', ['print', `${LAUNCH_DOMAIN}/${label}`]);
   const match = output.match(/\bpid\s*=\s*(\d+)/);
   return match?.[1] || null;
 }
@@ -80,7 +89,7 @@ function findRunningPids() {
 }
 
 function bootoutLaunchLabel(label) {
-  run('launchctl', ['bootout', `${LAUNCH_DOMAIN}/${label}`]);
+  runBestEffort('launchctl', ['bootout', `${LAUNCH_DOMAIN}/${label}`]);
 }
 
 function stopConflictingLaunchAgents() {
@@ -96,12 +105,12 @@ function stopConflictingLaunchAgents() {
 function killServer() {
   const pids = findRunningPids();
 
-  for (const pid of pids) run('kill', [pid]);
+  for (const pid of pids) runBestEffort('kill', [pid]);
   for (let index = 0; index < 10; index += 1) {
     if (findRunningPids().length === 0) return true;
     sleep(0.3);
   }
-  for (const pid of pids) run('kill', ['-9', pid]);
+  for (const pid of pids) runBestEffort('kill', ['-9', pid]);
   return findRunningPids().length === 0;
 }
 
@@ -140,8 +149,8 @@ function bootoutLaunchAgent() {
 }
 
 function bootstrapLaunchAgent() {
-  run('launchctl', ['bootstrap', LAUNCH_DOMAIN, PLIST]);
-  run('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`]);
+  runRequired('launchctl', ['bootstrap', LAUNCH_DOMAIN, PLIST], 'launchctl bootstrap');
+  runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
 }
 
 function runReload({ useLaunchd }) {
@@ -157,7 +166,9 @@ function runReload({ useLaunchd }) {
     sleep(1);
     startDirect();
   }
-  waitForHealth('reloaded');
+  if (!waitForHealth('reloaded')) {
+    throw new Error('Consuelo OS did not become healthy after reload.');
+  }
 }
 
 function scheduleReload({ useLaunchd }) {
@@ -185,7 +196,9 @@ if (args.includes('--help')) {
 
 const command = args[0] || 'reload';
 const useLaunchd = isLaunchdLoaded();
+const hasLaunchdPlist = existsSync(PLIST);
 
+try {
 switch (command) {
   case 'status': {
     const shouldWaitForLaunchd = useLaunchd && existsSync(PLIST);
@@ -216,21 +229,30 @@ switch (command) {
       writeStdout('server already running');
       break;
     }
-    if (useLaunchd && existsSync(PLIST)) bootstrapLaunchAgent();
-    else startDirect();
-    waitForHealth('started');
+    if (hasLaunchdPlist) {
+      if (useLaunchd) {
+        runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
+      } else {
+        bootstrapLaunchAgent();
+      }
+    } else {
+      startDirect();
+    }
+    if (!waitForHealth('started')) {
+      throw new Error('Consuelo OS did not become healthy after start.');
+    }
     break;
 
   case 'consuelo-reload':
   case 'reload':
   case 'restart':
-    scheduleReload({ useLaunchd });
+    scheduleReload({ useLaunchd: hasLaunchdPlist });
     break;
 
   case 'reload-now':
   case 'restart-now':
     sleep(0.5);
-    runReload({ useLaunchd: process.env.CONSUELO_OS_RELOAD_LAUNCHD === '1' || useLaunchd });
+    runReload({ useLaunchd: process.env.CONSUELO_OS_RELOAD_LAUNCHD === '1' || hasLaunchdPlist });
     break;
 
   case 'logs':
@@ -241,4 +263,8 @@ switch (command) {
   default:
     writeStderr(`unknown command: ${command}`);
     process.exit(1);
+}
+} catch (error) {
+  writeStderr(`error: ${error instanceof Error ? error.message : String(error)}`);
+  process.exitCode = 1;
 }
