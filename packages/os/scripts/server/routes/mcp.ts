@@ -139,7 +139,7 @@ export function createMcpRoutes(
 
       const session = resolveMcpRequestSession(request, body);
       const result = await handleMcpGatewayJsonRpc(body, {
-        getSteering: () => dependencies.getSteering(session.callerKey),
+        getSteering: () => dependencies.getSteering(authentication.principal.principalKey),
         executeFacadeTool: dependencies.executeFacadeTool,
       });
       const response = jsonResponse(result);

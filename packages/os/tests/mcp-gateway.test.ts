@@ -599,7 +599,7 @@ describe('MCP gateway server route', () => {
     expect(first.callerKey).not.toContain('secret-value');
   });
 
-  it('should isolate steering guards between authenticated MCP sessions', async () => {
+  it('should share steering guard identity across legacy sessions for the same authenticated principal', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);
     const callerKeys: string[] = [];
@@ -680,8 +680,8 @@ describe('MCP gateway server route', () => {
     );
 
     expect(callerKeys).toHaveLength(3);
-    expect(callerKeys[0]).not.toBe(callerKeys[1]);
-    expect(callerKeys[0]).toBe(callerKeys[2]);
+    expect(new Set(callerKeys).size).toBe(1);
+    expect(callerKeys[0]).toMatch(/^prn_[a-f0-9]{32}$/);
     expect(callerKeys.join('')).not.toContain(token.bearerToken);
   });
 
