@@ -1,0 +1,30 @@
+{
+  "files": [
+    ".task/dialer/build-lead-connector-embed/workpad.md",
+    ".task/dialer/lead-connector-e2e-cutover/workpad.md",
+    ".yarnrc.yml",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/project.json",
+    "packages/dialer-server/scripts/validate-provider-test.ts",
+    "packages/dialer-server/src/errors.ts",
+    "packages/dialer-server/src/lead-connector-boundary.test.ts",
+    "packages/dialer-server/src/routes/embed.ts",
+    "packages/dialer-server/src/runtime/embed-session.ts",
+    "packages/dialer-server/src/runtime/environment.test.ts",
+    "packages/dialer-server/src/runtime/environment.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer/src/services/caller-id.ts",
+    "packages/lead-connector/package.json",
+    "packages/lead-connector/scripts/build-embed.ts",
+    "packages/lead-connector/src/embed/api-client.ts",
+    "packages/lead-connector/src/embed/controller.test.ts",
+    "packages/lead-connector/src/embed/controller.ts",
+    "packages/lead-connector/src/embed/main.ts",
+    "packages/lead-connector/src/embed/protocol.ts",
+    "packages/lead-connector/src/embed/state-machine.ts",
+    "packages/lead-connector/src/testing/in-memory.ts",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-24T04:00:10.587Z"
+}

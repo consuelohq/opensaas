@@ -2,7 +2,11 @@ import {
   CHATGPT_OAUTH_CLIENT_ID,
   CHATGPT_REDIRECT_PREFIX,
   MCP_OAUTH_SCOPES,
+  OPERATOR_LOOPBACK_HOSTS,
+  OPERATOR_OAUTH_CLIENT_ID,
+  OPERATOR_ONLY_SCOPES,
 } from './constants';
+import { grantsRequiredScope } from '../../../scripts/lib/tool-scope-authorization';
 
 export function b64(bytes: Uint8Array): string {
   let s = '';
@@ -34,6 +38,16 @@ export async function hash(value: string): Promise<string> {
         await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)),
       ),
     );
+  } catch {
+    throw new Error('hash failed');
+  }
+}
+export async function hashHex(value: string): Promise<string> {
+  try {
+    const digest = new Uint8Array(
+      await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)),
+    );
+    return Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join('');
   } catch {
     throw new Error('hash failed');
   }
@@ -124,7 +138,7 @@ export function normalizeScopes(value: string): string[] {
     .filter(Boolean);
   const allowed = requested.filter((scope) => MCP_OAUTH_SCOPES.includes(scope));
   const scopes =
-    allowed.length > 0 ? allowed : ['mcp:read', 'mcp:call', 'tool:*:read'];
+    allowed.length > 0 ? allowed : ['mcp:read', 'mcp:call', 'os:tools'];
   if (
     (scopes.includes('mcp:read') || scopes.includes('mcp:call')) &&
     !scopes.includes('route:/mcp:read')
@@ -137,13 +151,40 @@ export function hasGrantedScope(
   scopes: string[],
   requiredScope: string,
 ): boolean {
-  if (!requiredScope || scopes.includes(requiredScope)) return true;
-  const parts = requiredScope.split(':');
-  return (
-    parts.length === 3 &&
-    parts[0] === 'tool' &&
-    (scopes.includes(`tool:*:${parts[2]}`) || scopes.includes('tool:*:*'))
-  );
+  return grantsRequiredScope(scopes, requiredScope);
+}
+/**
+ * Loopback redirects for the operator CLI. Only http on a loopback host is allowed, and the host
+ * must be a literal loopback address rather than a name that could resolve elsewhere, so an
+ * authorization code cannot be delivered off the machine that started the flow.
+ */
+export function validOperatorRedirectUri(value: string): boolean {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'http:') return false;
+    if (url.username || url.password || url.hash) return false;
+    if (!OPERATOR_LOOPBACK_HOSTS.has(url.hostname)) return false;
+    // A port is required so the CLI listener is explicit, and 0 is not a real listener.
+    if (!url.port || Number(url.port) <= 0) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+export function validOperatorClientId(value: string): boolean {
+  return value === OPERATOR_OAUTH_CLIENT_ID;
+}
+/**
+ * Drops scopes a client is not entitled to. Silent removal rather than rejection keeps a client
+ * that over-requests working with the scopes it may legitimately have, which matches how
+ * normalizeScopes already filters unknown scopes.
+ */
+export function scopesForClient(
+  scopes: string[],
+  clientId: string,
+): string[] {
+  if (validOperatorClientId(clientId)) return scopes;
+  return scopes.filter((scope) => !OPERATOR_ONLY_SCOPES.has(scope));
 }
 export function validChatGptRedirectUri(value: string): boolean {
   try {

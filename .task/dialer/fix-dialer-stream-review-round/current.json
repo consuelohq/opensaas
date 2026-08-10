@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-dialer-stream-review-round",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1768,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1768",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1768",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1768/fix-dialer-stream-review-round",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1768",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1768/fix-dialer-stream-review-round",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-dialer-stream-review-round",
+  "taskSession": "tsk_fe1fc1484598",
+  "tmuxSession": "opensaas-dialer-fix-dialer-stream-review-round-fe1fc148",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-dialer-stream-review-round/.task/dialer/fix-dialer-stream-review-round/session.json",
+  "createdAt": "2026-08-04T19:50:14.750Z"
+}

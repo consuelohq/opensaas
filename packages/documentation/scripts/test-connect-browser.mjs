@@ -95,7 +95,7 @@ try {
   if (!(await sidebar.getByRole('link', { name: 'Google Workspace', exact: true }).getAttribute('aria-current'))) throw new Error('Deep link did not mark Google Workspace current');
 
   await page.goto(`${origin}/connect/apps-and-services/railway/`, { waitUntil: 'networkidle' });
-  if (!(await page.getByText('railway.logs', { exact: false }).first().isVisible())) throw new Error('Railway partial support guidance is missing');
+  if (!(await page.getByText('deployment.logs', { exact: false }).first().isVisible())) throw new Error('Railway canonical deployment guidance is missing');
 
   await page.goto(`${origin}/connect/nodes/local-nodes/`, { waitUntil: 'networkidle' });
   if (!(await page.getByText('cloudflare-tunnel', { exact: false }).first().isVisible())) throw new Error('Local node transport guidance is missing');
@@ -112,7 +112,7 @@ try {
     if (!(await page.getByRole('button', { name: 'Copy page' }).isVisible())) throw new Error(`Copy page is hidden on ${viewport.name}`);
     if (viewport.name === 'mobile') {
       await page.locator('button[aria-controls="starlight__sidebar"]').click();
-      if (!(await page.getByRole('link', { name: 'Additional services', exact: true }).isVisible())) throw new Error('Nested Apps and services navigation is unavailable on mobile');
+      if (!(await page.locator('#starlight__sidebar').getByRole('link', { name: 'Additional services', exact: true }).isVisible())) throw new Error('Nested Apps and services navigation is unavailable on mobile');
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });

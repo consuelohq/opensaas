@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/dialer/normalize-persisted-parallel-group-cleanup-failures/workpad.md",
+    "packages/dialer/package.json",
+    "packages/dialer/src/domain/parallel-group.ts",
+    "packages/dialer/src/domain/parallel-transition.spec.ts",
+    "packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts",
+    "packages/dialer/src/infrastructure/redis/redis-parallel-store.ts",
+    "packages/workspace/scripts/review.js"
+  ],
+  "updatedAt": "2026-08-03T16:31:43.136Z"
+}

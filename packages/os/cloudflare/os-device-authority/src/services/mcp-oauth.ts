@@ -23,6 +23,9 @@ import {
   rand,
   validChatGptClientId,
   validChatGptRedirectUri,
+  scopesForClient,
+  validOperatorClientId,
+  validOperatorRedirectUri,
   workspaceHostFromMcpResource,
 } from '../utils';
 import {
@@ -199,12 +202,20 @@ export async function startMcpOAuthAuthorization(input: {
       'unsupported_response_type',
       'Only authorization code is supported.',
     );
-  if (!validChatGptClientId(clientId))
+  // Client and redirect kinds must match. Allowing a ChatGPT client id with a loopback redirect, or
+  // the operator client with a chatgpt.com redirect, would let one client's registration be used to
+  // deliver another's authorization code.
+  const isChatGptClient = validChatGptClientId(clientId);
+  const isOperatorClient = validOperatorClientId(clientId);
+  if (!isChatGptClient && !isOperatorClient)
     return invalidOauthRequest(
       'unauthorized_client',
       'OAuth client is not allowed.',
     );
-  if (!validChatGptRedirectUri(redirectUriValue))
+  const redirectAllowed = isChatGptClient
+    ? validChatGptRedirectUri(redirectUriValue)
+    : validOperatorRedirectUri(redirectUriValue);
+  if (!redirectAllowed)
     return invalidOauthRequest(
       'invalid_request',
       'redirect_uri is not allowed.',
@@ -221,7 +232,12 @@ export async function startMcpOAuthAuthorization(input: {
     );
   }
   const state = rand('mcp_oauth_state', 24);
-  const scopes = normalizeScopes(url.searchParams.get('scope') ?? '');
+  // Restrict to what this client may hold before the grant is stored, so an over-requesting client
+  // never gets an operator-only scope persisted against its authorization code.
+  const scopes = scopesForClient(
+    normalizeScopes(url.searchParams.get('scope') ?? ''),
+    clientId,
+  );
   await input.store.putMcpOAuthState({
     state,
     clientId,
@@ -441,7 +457,8 @@ async function exchangeMcpOAuthRefreshToken(input: {
   if (resource && resource !== stored.resource)
     return invalidOauthRequest('invalid_grant', 'Resource binding mismatch.');
 
-  const requestedScopes = normalizeScopes(input.params.get('scope') ?? '');
+  const requestedScope = input.params.get('scope');
+  const requestedScopes = requestedScope ? normalizeScopes(requestedScope) : [];
   if (
     requestedScopes.length > 0 &&
     requestedScopes.some((scope) => !stored.scopes.includes(scope))

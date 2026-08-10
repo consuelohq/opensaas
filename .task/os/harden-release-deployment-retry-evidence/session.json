@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c1319e029bd1",
+  "tmuxSession": "opensaas-os-harden-release-deployment-retry-evidence-c1319e02",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/harden-release-deployment-retry-evidence",
+  "branch": "task/os/harden-release-deployment-retry-evidence",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-harden-release-deployment-retry-evidence",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-harden-release-deployment-retry-evidence",
+  "prNumber": 1734,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1734",
+  "createdAt": "2026-07-29T09:32:20.249Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-harden-release-deployment-retry-evidence/.task/os/harden-release-deployment-retry-evidence/session.json"
+}

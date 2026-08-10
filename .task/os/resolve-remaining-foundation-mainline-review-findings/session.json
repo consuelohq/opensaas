@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1f5ed8de3cb0",
+  "tmuxSession": "opensaas-os-resolve-remaining-foundation-mainline-review-fin-1f5ed8de",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-remaining-foundation-mainline-review-findings",
+  "branch": "task/os/resolve-remaining-foundation-mainline-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-remaining-foundation-mainline-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-remaining-foundation-mainline-review-findings",
+  "prNumber": 1718,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1718",
+  "createdAt": "2026-07-29T04:33:51.847Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-remaining-foundation-mainline-review-findings/.task/os/resolve-remaining-foundation-mainline-review-findings/session.json"
+}

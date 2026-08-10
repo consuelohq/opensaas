@@ -97,7 +97,7 @@ ${output}`);
   };
 };
 
-test('home page header follows the Consuelo OS desktop and mobile contract', { timeout: 20_000 }, async () => {
+test('home page header and rotating hero follow the responsive launch contract', { timeout: 30_000 }, async () => {
   const server = await startDevServer();
   const browser = await chromium.launch();
 
@@ -135,6 +135,51 @@ test('home page header follows the Consuelo OS desktop and mobile contract', { t
       'absolute',
     );
 
+    const heroHeading = desktopPage.locator('[data-hero-heading]');
+    await assert.doesNotReject(() => heroHeading.waitFor({ state: 'visible' }));
+    assert.equal(
+      await heroHeading.getAttribute('aria-label'),
+      'Make ChatGPT or Claude your true assistant',
+    );
+    const initialHeadingSize = await heroHeading.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).fontSize),
+    );
+    assert.equal(await heroHeading.getAttribute('style'), null);
+
+    const assistantRotator = desktopPage.locator('[data-assistant-rotator]');
+    assert.equal(await assistantRotator.getAttribute('data-active-assistant'), 'ChatGPT');
+    await desktopPage.waitForFunction(
+      () =>
+        document.querySelector('[data-assistant-rotator]')?.getAttribute('data-active-assistant') ===
+        'Claude',
+      undefined,
+      { timeout: 8_000 },
+    );
+
+    const rotatedHeadingSize = await heroHeading.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).fontSize),
+    );
+    assert.equal(rotatedHeadingSize, initialHeadingSize);
+    assert.equal(await heroHeading.getAttribute('style'), null);
+
+    const tabletPage = await browser.newPage({
+      viewport: { width: 1024, height: 1366 },
+    });
+    await tabletPage.goto(server.baseUrl, { waitUntil: 'networkidle' });
+    assert.equal(await tabletPage.locator('.os-header__desktop').isVisible(), true);
+    assert.equal(await tabletPage.locator('.os-header__mobile').isVisible(), false);
+
+    const reducedMotionPage = await browser.newPage({
+      viewport: { width: 1024, height: 1366 },
+      reducedMotion: 'reduce',
+    });
+    await reducedMotionPage.goto(server.baseUrl, { waitUntil: 'networkidle' });
+    await reducedMotionPage.waitForTimeout(3_100);
+    assert.equal(
+      await reducedMotionPage.locator('[data-assistant-rotator]').getAttribute('data-active-assistant'),
+      'ChatGPT',
+    );
+
     const mobilePage = await browser.newPage({
       viewport: { width: 390, height: 844 },
     });
@@ -156,12 +201,14 @@ test('home page header follows the Consuelo OS desktop and mobile contract', { t
 
     assert.deepEqual(
       mobileSlots.map((slot) => slot.text),
-      ['CLOUD', 'CONSUELO OS', 'MENU'],
+      ['DOCS', 'CONSUELO OS', 'CLOUD'],
     );
     assert.ok(mobileSlots[0].center < mobileSlots[1].center);
     assert.ok(mobileSlots[1].center < mobileSlots[2].center);
     assert.ok(Math.abs(mobileSlots[1].center - 195) < 32);
 
+    assert.equal(await mobileHeader.locator('button').count(), 0);
+    assert.equal(await mobileHeader.locator('text=MENU').count(), 0);
     const typography = await mobileHeader.evaluate((element) => {
       const wordmark = element.querySelector('.os-header__mobile-wordmark');
       const label = element.querySelector(':scope > a');

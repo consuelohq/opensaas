@@ -4,7 +4,7 @@ description: Post outbound Slack messages today and understand the current conne
 status: preview
 verifiedAt: 2026-07-14
 evidence:
-  - source: packages/os/tools/slack.py
+  - source: packages/workspace/tools/slack.py
     tests:
       - packages/os/tests/tool-manifest.test.ts
     runtime: 'The current adapter was inspected on 2026-07-14; it posts text through a configured incoming webhook and does not provide full Slack read/write OAuth access.'

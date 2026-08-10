@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ec309865491f",
+  "tmuxSession": "opensaas-os-distribution-install-wrangler-in-release-publish-jobs-ec309865",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/install-wrangler-in-release-publish-jobs",
+  "branch": "task/os-distribution/install-wrangler-in-release-publish-jobs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-wrangler-in-release-publish-jobs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-wrangler-in-release-publish-jobs",
+  "prNumber": 1634,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1634",
+  "createdAt": "2026-07-24T07:31:24.528Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-wrangler-in-release-publish-jobs/.task/os-distribution/install-wrangler-in-release-publish-jobs/session.json"
+}

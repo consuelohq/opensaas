@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 import { createWorkflowIntentRuntime } from '../hooks/intent.js';
 import { getInputSchema } from '../scripts/lib/facade/schemas';
@@ -34,8 +35,8 @@ type WorkflowBundlesFile = {
   workflows: WorkflowBundle[];
 };
 
-const manifestPath = resolve(import.meta.dirname, '../tooling/dev-tool-manifest.json');
-const bundlesPath = resolve(import.meta.dirname, '../manifests/workflow-bundles.json');
+const manifestPath = resolve(import.meta.dirname, '../manifests/generated/tool.manifest.json');
+const bundlesPath = resolve(import.meta.dirname, '../workflows/generated/workflow-bundles.json');
 const packageRoot = resolve(import.meta.dirname, '..');
 const taskIntentScript = resolve(import.meta.dirname, '../scripts/task-intent.js');
 
@@ -44,14 +45,16 @@ function readJson(path: string): unknown {
 }
 
 function readManifest(): ManifestToolDefinition[] {
-  const value = readJson(manifestPath);
-  if (!Array.isArray(value)) throw new Error('expected dev manifest array');
-  return value as ManifestToolDefinition[];
+  const value = readJson(manifestPath) as { kind?: string; tools?: ManifestWrapper[] };
+  if (value.kind !== 'consuelo-os-tool-manifest' || !Array.isArray(value.tools)) {
+    throw new Error('expected generated tool manifest');
+  }
+  return value.tools.map((entry) => entry.definition);
 }
 
 
 function readCoreManifest(): { tools: ManifestWrapper[] } {
-  return readJson(resolve(packageRoot, 'manifests/core.manifest.json')) as { tools: ManifestWrapper[] };
+  return readJson(resolve(packageRoot, 'manifests/generated/core.manifest.json')) as { tools: ManifestWrapper[] };
 }
 
 function readBundles(): WorkflowBundlesFile {
@@ -71,10 +74,16 @@ function toolNames(bundle: WorkflowBundle): string[] {
 }
 
 describe('OS workflow intent bundles', () => {
-  test('should generate task and office workflow bundles when loading workflow metadata', () => {
+  test('uses the canonical TypeScript workflow source and generated output paths', async () => {
+    const source = await import('../workflows/workflows');
+    expect(source.workflows.map((workflow) => workflow.id)).toEqual(['task', 'artifacts', 'media']);
+    expect(existsSync(resolve(packageRoot, 'workflows/generated/workflow-bundles.json'))).toBe(true);
+    expect(existsSync(resolve(packageRoot, 'tooling'))).toBe(false);
+  });
+  test('should generate task and artifacts workflow bundles when loading workflow metadata', () => {
     const bundles = readBundles();
     const task = workflowById(bundles, 'task');
-    const office = workflowById(bundles, 'office');
+    const artifacts = workflowById(bundles, 'artifacts');
 
     expect(task.roles).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'workpad.write']));
     expect(toolNames(task)).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'fs.write']));
@@ -82,9 +91,9 @@ describe('OS workflow intent bundles', () => {
       expect.arrayContaining([expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' })]),
     );
 
-    expect(office.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
-    expect(office.roles).toEqual(expect.arrayContaining(['office.publish', 'office.generate.website']));
-    expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'office.generateWebsite']));
+    expect(artifacts.aliases).toEqual([]);
+    expect(artifacts.roles).toEqual(expect.arrayContaining(['artifacts.publish', 'artifacts.generate.website']));
+    expect(toolNames(artifacts)).toEqual(expect.arrayContaining(['artifacts.publish', 'artifacts.generateWebsite']));
   });
 
   test('should bind the task workflow bundle and post-start guidance to the real task session', () => {
@@ -183,19 +192,42 @@ describe('OS workflow intent bundles', () => {
     expect(parsed.workflow).toBe('media');
   });
 
-  test('should resolve office aliases when starting design or sites intent', () => {
+  test('should expose only the canonical artifacts workflow without legacy aliases', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
-    const design = runtime.start({ workflow: 'design', taskSession: 'tsk_design' });
-    const sites = runtime.start({ workflow: 'sites', taskSession: 'tsk_sites' });
+    const artifacts = runtime.start({ workflow: 'artifacts', taskSession: 'tsk_artifacts' });
 
-    expect(design.workflow).toBe('office');
-    expect(design.requestedWorkflow).toBe('design');
-    expect(sites.workflow).toBe('office');
-    expect(design.manifestBundle.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
-    expect(design.manifestBundle.tools.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(['design.publish', 'office.generateWebsite']),
+    expect(artifacts.workflow).toBe('artifacts');
+    expect(artifacts.requestedWorkflow).toBe('artifacts');
+    expect(artifacts.manifestBundle.aliases).toEqual([]);
+    expect(artifacts.manifestBundle.tools.map((tool) => tool.name)).toEqual(
+      expect.arrayContaining(['artifacts.publish', 'artifacts.generateWebsite']),
     );
+    for (const legacy of ['office', 'design', 'sites']) {
+      expect(() => runtime.start({ workflow: legacy, taskSession: `tsk_${legacy}` })).toThrow(`unknown workflow: ${legacy}`);
+    }
+  });
+
+  test('should reject workflow bundles disabled by the manifest overlay', () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-disabled-workflow-'));
+    const overlayPath = join(home, 'security', 'overrides', 'manifest.overlay.json');
+    mkdirSync(join(home, 'security', 'overrides'), { recursive: true });
+    writeFileSync(overlayPath, JSON.stringify({
+      version: 1,
+      disabledSkills: [],
+      disabledTools: [],
+      disabledWorkflows: ['task'],
+      updatedAt: '2026-07-16T00:00:00.000Z',
+    }), 'utf8');
+    const runtime = createWorkflowIntentRuntime({
+      manifest: readManifest(),
+      bundles: readBundles(),
+      overlayHome: home,
+    });
+
+    expect(() => runtime.start({ workflow: 'task', taskSession: 'tsk_disabled' }))
+      .toThrow('workflow disabled: task');
+    expect(() => runtime.bundleFor('task')).toThrow('workflow disabled: task');
   });
 
   test('should require taskSession when dispatching scoped hook events', () => {

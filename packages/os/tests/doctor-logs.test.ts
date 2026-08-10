@@ -25,8 +25,10 @@ function runBun(args: string[]): string {
 function seedExecutions(): void {
   runBun(['-e', `
     const { executeCall } = await import('./scripts/os.ts');
+    const { recordExecutionStarted, recordExecutionFinished } = await import('./scripts/lib/runtime-state.ts');
     await executeCall({ name: 'missing-skill', traceId: 'trc_doctor_missing' });
-    await executeCall({ name: 'daily-revenue-brief', traceId: 'trc_doctor_success', input: { source: 'doctor-test' } });
+    recordExecutionStarted({ name: 'fixture-success', traceId: 'trc_doctor_success', input: { source: 'doctor-test' } });
+    recordExecutionFinished({ traceId: 'trc_doctor_success', status: 'succeeded', output: { ok: true }, durationMs: 1 });
   `]);
 }
 
@@ -37,7 +39,7 @@ describe('Doctor execution log scripts', () => {
 
     expect(output).toContain('Doctor watch:');
     expect(output).toContain('missing-skill');
-    expect(output).toContain('daily-revenue-brief');
+    expect(output).toContain('fixture-success');
     expect(output).toContain('trc_doctor_missing');
     expect(output).toContain('trc_doctor_success');
   });
@@ -62,7 +64,7 @@ describe('Doctor execution log scripts', () => {
     };
 
     expect(output.executions).toContainEqual(expect.objectContaining({
-      name: 'daily-revenue-brief',
+      name: 'fixture-success',
       status: 'succeeded',
       count: 1,
     }));

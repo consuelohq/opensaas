@@ -106,7 +106,7 @@ workspace.call -> os.call
 Workspace Tool Surface -> OS Tool Surface
 workspace tool -> OS tool
 workspace tools -> OS tools
-workspace context -> OS context
+workspace memory -> OS memory
 ```
 
 Add skill-specific replacements only when they are mechanical namespace updates. Do not silently improve wording in exact mode.

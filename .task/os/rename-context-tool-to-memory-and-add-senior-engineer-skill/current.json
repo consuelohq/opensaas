@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/rename-context-tool-to-memory-and-add-senior-engineer-skill",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1542,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1542",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1542",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1542/rename-context-tool-to-memory-and-add-senior-engineer-skill",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1542",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1542/rename-context-tool-to-memory-and-add-senior-engineer-skill",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-context-tool-to-memory-and-add-senior-engineer-skill",
+  "taskSession": "tsk_2fba648c1657",
+  "tmuxSession": "opensaas-os-rename-context-tool-to-memory-and-add-senior-eng-2fba648c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-context-tool-to-memory-and-add-senior-engineer-skill/.task/os/rename-context-tool-to-memory-and-add-senior-engineer-skill/session.json",
+  "createdAt": "2026-07-21T05:58:27.665Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-hosted-bootstrap-dry-run-outside-repository",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1737,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1737",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1737",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1737/fix-hosted-bootstrap-dry-run-outside-repository",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1737",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1737/fix-hosted-bootstrap-dry-run-outside-repository",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-hosted-bootstrap-dry-run-outside-repository",
+  "taskSession": "tsk_fa3064d15013",
+  "tmuxSession": "opensaas-os-fix-hosted-bootstrap-dry-run-outside-repository-fa3064d1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-hosted-bootstrap-dry-run-outside-repository/.task/os/fix-hosted-bootstrap-dry-run-outside-repository/session.json",
+  "createdAt": "2026-07-29T10:28:47.426Z"
+}

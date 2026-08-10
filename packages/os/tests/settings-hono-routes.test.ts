@@ -55,23 +55,25 @@ function signedRequest(input: {
 }
 
 beforeEach(() => {
-  home = mkdtempSync(join(tmpdir(), 'consuelo-settings-hono-'));
+  home = mkdtempSync(join(tmpdir(), 'consuelo-configuration-hono-'));
   writeMinimalOsConfig();
   config = createGatewaySecurityConfig({
     home,
-    workspaceId: 'workspace_settings_hono',
-    workspaceSlug: 'settings-hono',
-    workspaceHost: 'settings-hono.consuelohq.com',
+    workspaceId: 'workspace_configuration_hono',
+    workspaceSlug: 'configuration-hono',
+    workspaceHost: 'configuration-hono.consuelohq.com',
   });
   token = issueAgentAppToken({
     config,
-    callerId: 'caller_settings_hono',
-    appId: 'app_settings_hono',
-    subjectId: 'subject_settings_hono',
-    deviceId: 'device_settings_hono',
-    connectorId: 'connector_settings_hono',
-    connectionId: 'connection_settings_hono',
+    callerId: 'caller_configuration_hono',
+    appId: 'app_configuration_hono',
+    subjectId: 'subject_configuration_hono',
+    deviceId: 'device_configuration_hono',
+    connectorId: 'connector_configuration_hono',
+    connectionId: 'connection_configuration_hono',
     scopes: [
+      'route:/gateway/configuration:read',
+      'route:/gateway/configuration:write',
       'route:/gateway/settings:read',
       'route:/gateway/settings:write',
     ],
@@ -90,12 +92,12 @@ afterEach(() => {
   home = '';
 });
 
-describe('Hono Settings routes', () => {
-  it('serves a signed Settings snapshot', async () => {
+describe('Hono Configuration routes', () => {
+  it('serves a signed canonical configuration snapshot', async () => {
     const response = await handleRequest(signedRequest({
       method: 'GET',
-      path: '/gateway/settings/snapshot',
-      nonce: 'settings-snapshot-nonce',
+      path: '/gateway/configuration/snapshot',
+      nonce: 'configuration-snapshot-nonce',
     }));
 
     expect(response.status).toBe(200);
@@ -108,25 +110,34 @@ describe('Hono Settings routes', () => {
     });
   });
 
-  it('applies a signed Settings overlay patch', async () => {
+  it('applies a signed canonical configuration overlay patch', async () => {
     const tool = readFullToolManifest().tools.find((entry) => entry.kind === 'facade-tool');
     expect(tool).toBeTruthy();
     const body = JSON.stringify({ kind: 'tool', name: tool!.name, enabled: false });
 
     const response = await handleRequest(signedRequest({
       method: 'POST',
-      path: '/gateway/settings/overlay',
+      path: '/gateway/configuration/overlay',
       body,
-      nonce: 'settings-overlay-nonce',
+      nonce: 'configuration-overlay-nonce',
     }));
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
-      snapshot: {
-        overlay: { disabledTools: expect.arrayContaining([tool!.name]) },
-      },
+      snapshot: { overlay: { disabledTools: expect.arrayContaining([tool!.name]) } },
     });
+  });
+
+  it('keeps the signed settings snapshot route as a compatibility alias', async () => {
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/gateway/settings/snapshot',
+      nonce: 'legacy-settings-snapshot-nonce',
+    }));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ ok: true, snapshot: { version: 1 } });
   });
 
   it('authorizes before disclosing missing OS-home configuration', async () => {
@@ -135,23 +146,20 @@ describe('Hono Settings routes', () => {
     process.env.CONSUELO_OS_AUTH_CONFIG = join(home, 'missing-auth.json');
 
     const response = await handleRequest(new Request(
-      'http://127.0.0.1:46321/gateway/settings/snapshot',
+      'http://127.0.0.1:46321/gateway/configuration/snapshot',
     ));
 
     expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toMatchObject({
-      error: { code: 'AUTH_CONFIG_REQUIRED' },
-    });
+    await expect(response.json()).resolves.toMatchObject({ error: { code: 'AUTH_CONFIG_REQUIRED' } });
   });
 
   it.each([
+    ['POST', '/gateway/configuration/snapshot'],
+    ['GET', '/gateway/configuration/overlay'],
     ['POST', '/gateway/settings/snapshot'],
     ['GET', '/gateway/settings/overlay'],
   ] as const)('returns not found for unsupported %s %s', async (method, path) => {
-    const response = await handleRequest(new Request(
-      `http://127.0.0.1:46321${path}`,
-      { method },
-    ));
+    const response = await handleRequest(new Request(`http://127.0.0.1:46321${path}`, { method }));
     expect(response.status).toBe(404);
   });
 });

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0509e205e569",
+  "tmuxSession": "opensaas-security-verify-private-launcher-during-site-publication-0509e205",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/verify-private-launcher-during-site-publication",
+  "branch": "task/security/verify-private-launcher-during-site-publication",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-verify-private-launcher-during-site-publication",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-verify-private-launcher-during-site-publication",
+  "prNumber": 1699,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1699",
+  "createdAt": "2026-07-28T03:31:28.213Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-verify-private-launcher-during-site-publication/.task/security/verify-private-launcher-during-site-publication/session.json"
+}

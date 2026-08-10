@@ -10,7 +10,7 @@ import {
   renderHookResult,
 } from '../hooks/dispatcher.js';
 
-const actualManifestPath = resolve(import.meta.dirname, '../tooling/dev-tool-manifest.json');
+const actualManifestPath = resolve(import.meta.dirname, '../manifests/generated/tool.manifest.json');
 const taskHookScript = resolve(import.meta.dirname, '../scripts/task-hook.js');
 const taskStartScript = resolve(import.meta.dirname, '../scripts/task-start.js');
 
@@ -34,18 +34,22 @@ describe('OS hook dispatcher', () => {
     expect(result).toEqual(
       expect.objectContaining({
         workflow: 'task',
-        stage: 'workpad-bootstrap',
-        requiredNextAction: expect.objectContaining({
-          capability: 'workpad.write',
-          tool: 'fs.write',
-          inputSchema: 'FsWriteInput',
+        stage: 'post-task-start-guidance',
+        suggestedNextAction: expect.objectContaining({
+          capability: 'tool.batch',
+          tool: 'batch',
+          inputSchema: 'BatchInput',
           source: 'manifest',
           taskSessionPlacement: 'top-level',
           taskSession: 'tsk_dispatch',
         }),
+        contextInjection: expect.objectContaining({
+          taskSession: 'tsk_dispatch',
+          worktreePath: '/tmp/dispatcher-example',
+        }),
       }),
     );
-    expect(result.requiredNextAction.input.path).toBe('.task/os/dispatcher-example/workpad.md');
+    expect(result.suggestedNextAction.input.steps).toHaveLength(6);
     expect(JSON.stringify(result)).not.toContain('fs.put');
   });
 
@@ -85,12 +89,11 @@ describe('OS hook dispatcher', () => {
     const source = readFileSync(taskStartScript, 'utf8');
 
     expect(source).toContain("require('../hooks/dispatcher.js')");
-    expect(source).toContain('dispatchHookEvent({');
-    expect(source).toContain("event: 'tool.postInvoke'");
-    expect(source).toContain("tool: 'task.start'");
-    expect(source).toContain("workflow: 'task'");
-    expect(source).toContain('task hook guidance failed');
-    expect(source).toContain('renderHookResult(guidance)');
+    expect(source).toContain("require('../hooks/intent.js')");
+    expect(source).toContain('createWorkflowIntentRuntime().start({');
+    expect(source).toContain('workflow: args.workflow');
+    expect(source).toContain('taskResult');
+    expect(source).toContain('renderHookResult(workflowStart.hookResult)');
     expect(source).not.toContain("getTaskHookGuidance('after-task-start'");
   });
 
@@ -116,8 +119,13 @@ describe('OS hook dispatcher', () => {
 
     expect(eventResult.status).toBe(0);
     const parsed = JSON.parse(eventResult.stdout);
-    expect(parsed.stage).toBe('stream-context');
-    expect(parsed.requiredNextAction).toEqual(
+    expect(parsed.stage).toBe('task-start-guidance');
+    expect(parsed.advisory).toEqual(
+      expect.objectContaining({
+        suggestedNextTool: 'stream.context',
+      }),
+    );
+    expect(parsed.examples[0].orderedActions[0]).toEqual(
       expect.objectContaining({
         capability: 'stream.context',
         tool: 'stream.context',

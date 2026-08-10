@@ -50,7 +50,7 @@ export const BranchInput = z.object({
 });
 
 
-export const DesignPublishInput = z.object({
+export const ArtifactsPublishInput = z.object({
   ...requestFields,
   ...dryRunField,
   target: optionalString,
@@ -64,24 +64,24 @@ export const DesignPublishInput = z.object({
   message: 'provide either target or portlessName',
   path: ['target'],
 });
-export const OfficeInput = z.object({
+export const ArtifactsInput = z.object({
   ...requestFields,
   ...dryRunField,
 });
 
-export const OfficeUiInput = z.object({
+export const ArtifactsUiInput = z.object({
   ...requestFields,
   ...dryRunField,
   timeout: z.number().int().positive().optional(),
 });
 
-export const DesignArchiveRefreshInput = z.object({
+export const ArtifactsRefreshInput = z.object({
   ...requestFields,
   ...dryRunField,
   tailscaleBin: optionalString,
 });
 
-export const OfficeSessionInput = z.object({
+export const ArtifactsSessionInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -89,7 +89,7 @@ export const OfficeSessionInput = z.object({
   prompt: optionalString,
   timeout: z.number().int().positive().optional(),
 });
-export const OfficeDigitalEguideInput = z.object({
+export const ArtifactsDigitalEguideInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...liveField,
@@ -219,7 +219,7 @@ export const WorkflowIntentInput = z.object({
   ...requestFields,
   ...dryRunField,
   action: z.enum(['start', 'dispatch']),
-  workflow: z.enum(['task', 'office', 'design', 'sites', 'media']).optional(),
+  workflow: z.enum(['task', 'artifacts', 'media']).optional(),
   area: optionalString,
   title: optionalString,
   eventFile: optionalString,
@@ -368,13 +368,12 @@ export const TaskStartInput = z.object({
   area: optionalString,
   stream: optionalString,
   title: optionalString,
-  workflow: z.enum(['task', 'office', 'design', 'sites', 'media']).optional(),
+  workflow: z.enum(['task', 'artifacts', 'media']).optional(),
   description: optionalString,
   pr: prRefInput.optional(),
   github: optionalString,
   bodyFile: optionalString,
   startFrom: z.enum(['main', 'stream']).optional(),
-  createStream: z.boolean().optional(),
 }).refine((input) => Boolean(input.area || input.stream || input.pr || input.github), {
   message: 'provide area/stream or a PR reference',
   path: ['area'],
@@ -444,32 +443,32 @@ export const TaskExecInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
-export const ContextSearchInput = z.object({
+export const MemorySearchInput = z.object({
   ...requestFields,
   keyword: z.string().min(1),
   limit: z.number().int().positive().optional(),
   category: optionalString,
 });
 
-export const ContextFindInput = z.object({
+export const MemoryFindInput = z.object({
   ...requestFields,
   keyword: z.string().min(1),
   limit: z.number().int().positive().optional(),
 });
 
-export const ContextGetInput = z.object({
+export const MemoryGetInput = z.object({
   ...requestFields,
   index: z.number().int().positive(),
   keyword: z.string().min(1),
 });
 
-export const ContextListInput = z.object({
+export const MemoryListInput = z.object({
   ...requestFields,
   category: optionalString,
   limit: z.number().int().positive().optional(),
 });
 
-export const ContextSaveInput = z.object({
+export const MemorySaveInput = z.object({
   ...requestFields,
   ...dryRunField,
   title: z.string().min(1),
@@ -478,7 +477,7 @@ export const ContextSaveInput = z.object({
   category: optionalString,
 });
 
-export const ContextTraceInput = z.object({
+export const MemoryTraceInput = z.object({
   ...requestFields,
   traceId: optionalString,
   tool: optionalString,
@@ -493,7 +492,7 @@ export const ContextTraceInput = z.object({
   db: optionalString,
 });
 
-export const ContextInput = z.object({
+export const MemoryInput = z.object({
   ...requestFields,
   ...dryRunField,
   operation: z.enum(['search', 'find', 'get', 'list', 'save', 'categories', 'trace']),
@@ -511,7 +510,7 @@ export const ContextInput = z.object({
   since: optionalString,
   until: optionalString,
   contains: optionalString,
-  contextTaskSession: optionalString,
+  memoryTaskSession: optionalString,
   branch: optionalString,
   raw: z.boolean().optional(),
   db: optionalString,
@@ -560,7 +559,6 @@ export const ExploitInput = z.object({
 export const ConfirmInput = z.object({
   ...requestFields,
   verify: z.boolean().optional(),
-  runtime: z.boolean().optional(),
   test: optionalString,
 });
 
@@ -584,11 +582,12 @@ export const StreamListInput = z.object({
   repo: optionalString,
 });
 
-export const StreamCleanupInput = z.object({
+export const StreamCreateInput = z.object({
   ...requestFields,
   ...dryRunField,
-  apply: z.boolean().optional(),
-  keep: stringArray,
+  area: z.string().min(1),
+  sourceBranch: optionalString,
+  repo: optionalString,
 });
 
 export const ReviewInput = z.object({
@@ -1017,9 +1016,95 @@ export const ResearchIngestInput = z.object({
   keep: z.boolean().optional(),
   outDir: optionalString,
   summarizeBin: optionalString,
-  contextTitle: optionalString,
-  contextCategory: optionalString,
-  noContextSave: z.boolean().optional(),
+  memoryTitle: optionalString,
+  memoryCategory: optionalString,
+  noMemorySave: z.boolean().optional(),
+});
+
+const DeploymentProvider = z.enum(['railway', 'vercel', 'cloudflare']);
+const deploymentCommonFields = {
+  ...requestFields,
+  provider: DeploymentProvider,
+  timeout: z.number().int().positive().optional(),
+};
+const deploymentApprovalFields = {
+  approved: z.boolean().optional(),
+  approvalReason: optionalString,
+};
+
+export const DeploymentDetectInput = z.object({
+  ...deploymentCommonFields,
+});
+
+export const DeploymentContextInput = z.object({
+  ...deploymentCommonFields,
+  action: z.enum(['auth', 'current']),
+});
+
+export const DeploymentListInput = z.object({
+  ...deploymentCommonFields,
+  resource: z.enum(['projects', 'services', 'deployments', 'domains']),
+  projectId: optionalString,
+  environment: optionalString,
+  serviceId: optionalString,
+  cursor: optionalString,
+  limit: z.number().int().positive().max(1000).optional(),
+});
+
+export const DeploymentStatusInput = z.object({
+  ...deploymentCommonFields,
+  deploymentId: z.string().min(1),
+  serviceId: optionalString,
+  environment: optionalString,
+});
+
+export const DeploymentLogsInput = z.object({
+  ...deploymentCommonFields,
+  deploymentId: optionalString,
+  serviceId: optionalString,
+  environment: optionalString,
+  cursor: optionalString,
+  limit: z.number().int().positive().max(1000).optional(),
+  since: optionalString,
+  until: optionalString,
+  filter: optionalString,
+  kind: z.enum(['runtime', 'build']).optional(),
+  latest: z.boolean().optional(),
+});
+
+export const DeploymentDeployInput = z.object({
+  ...deploymentCommonFields,
+  ...dryRunField,
+  ...deploymentApprovalFields,
+  action: z.enum(['deploy', 'redeploy', 'promote']),
+  target: optionalString,
+  projectId: optionalString,
+  serviceId: optionalString,
+  source: optionalString,
+  deploymentId: optionalString,
+  environment: optionalString,
+  wait: z.boolean().optional(),
+});
+
+export const DeploymentEnvironmentInput = z.object({
+  ...deploymentCommonFields,
+  ...dryRunField,
+  ...deploymentApprovalFields,
+  action: z.enum(['list', 'set', 'delete']),
+  name: optionalString,
+  value: z.string().min(1).optional(),
+  scope: optionalString,
+  projectId: optionalString,
+  environment: optionalString,
+  serviceId: optionalString,
+  skipDeploys: z.boolean().optional(),
+});
+
+export const DeploymentRawInput = z.object({
+  ...deploymentCommonFields,
+  ...dryRunField,
+  ...deploymentApprovalFields,
+  args: z.array(z.string().min(1)).min(1),
 });
 
 export const RailwayLogsInput = z.object({
@@ -1137,12 +1222,12 @@ export const SubagentInput = z.object({
 export const schemaRegistry = {
   EmptyInput,
   BranchInput,
-  DesignPublishInput,
-  DesignArchiveRefreshInput,
-  OfficeInput,
-  OfficeUiInput,
-  OfficeSessionInput,
-  OfficeDigitalEguideInput,
+  ArtifactsPublishInput,
+  ArtifactsRefreshInput,
+  ArtifactsInput,
+  ArtifactsUiInput,
+  ArtifactsSessionInput,
+  ArtifactsDigitalEguideInput,
   MediaSvgInput,
   CodeRunInput,
   CodeCallInput,
@@ -1164,13 +1249,13 @@ export const schemaRegistry = {
   TaskMergeInput,
   TaskCleanupInput,
   TaskExecInput,
-  ContextInput,
-  ContextSearchInput,
-  ContextFindInput,
-  ContextGetInput,
-  ContextListInput,
-  ContextSaveInput,
-  ContextTraceInput,
+  MemoryInput,
+  MemorySearchInput,
+  MemoryFindInput,
+  MemoryGetInput,
+  MemoryListInput,
+  MemorySaveInput,
+  MemoryTraceInput,
   ExploreInput,
   DecideNextInput,
   ExploitInput,
@@ -1178,7 +1263,7 @@ export const schemaRegistry = {
   AuditInput,
   StreamInput,
   StreamListInput,
-  StreamCleanupInput,
+  StreamCreateInput,
   ReviewInput,
   VerifyInput,
   PrReviewInput,
@@ -1223,6 +1308,14 @@ export const schemaRegistry = {
   MediaSvgConvertInput,
   MediaScreenshotRenderInput,
   ResearchIngestInput,
+  DeploymentDetectInput,
+  DeploymentContextInput,
+  DeploymentListInput,
+  DeploymentStatusInput,
+  DeploymentLogsInput,
+  DeploymentDeployInput,
+  DeploymentEnvironmentInput,
+  DeploymentRawInput,
   RailwayLogsInput,
   RailwayRedeployInput,
   WebsiteDeployInput,
@@ -1248,16 +1341,16 @@ export function getInputSchema(name: string): z.ZodType<unknown> | null {
 export const schemaTypeSignatures: Record<string, string> = {
   EmptyInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   BranchInput: '{ branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  DesignArchiveRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
-  OfficeInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
-  OfficeUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
-  OfficeSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
-  OfficeDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  ArtifactsPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  ArtifactsRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  ArtifactsInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
+  ArtifactsUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
+  ArtifactsSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
+  ArtifactsDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   MediaSvgInput: '{ action: \"create\" | \"inspect\" | \"render\" | \"measure\" | \"edit\" | \"verify\" | \"snapshot\" | \"restore\"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: \"png\"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: \"light\" | \"dark\" | \"no-preference\" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"office\" | \"design\" | \"sites\" | \"media\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"artifacts\" | \"media\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
   FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
@@ -1268,28 +1361,28 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskStartInput: '{ stream?: string; area?: string; title?: string; workflow?: "task" | "office" | "design" | "sites" | "media"; description?: string; pr?: string | number; github?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskStartInput: '{ stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; description?: string; pr?: string | number; github?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPushInput: '{ branch?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPrInput: '{ branch?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskMergeInput: '{ pr?: string | number; github?: string; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ContextInput: '{ operation: "search" | "find" | "get" | "list" | "save" | "categories" | "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; contextTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
-  ContextFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
-  ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
-  ContextListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
-  ContextSaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ContextTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
+  MemoryInput: '{ operation: "search" | "find" | "get" | "list" | "save" | "categories" | "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; memoryTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MemorySearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string; taskSession?: string }',
+  MemoryFindInput: '{ keyword: string; limit?: number; requestId?: string; taskSession?: string }',
+  MemoryGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
+  MemoryListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
+  MemorySaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MemoryTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
   ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
-  ConfirmInput: '{ verify?: boolean; runtime?: boolean; test?: string; requestId?: string; taskSession?: string }',
+  ConfirmInput: '{ verify?: boolean; test?: string; requestId?: string; taskSession?: string }',
   AuditInput: '{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }',
   StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   StreamListInput: '{ repo?: string; requestId?: string; taskSession?: string }',
-  StreamCleanupInput: '{ apply?: boolean; keep?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  StreamCreateInput: '{ area: string; sourceBranch?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ReviewInput: "{ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }",
   VerifyInput: '{ branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1333,7 +1426,15 @@ export const schemaTypeSignatures: Record<string, string> = {
   TmpInput: '{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaSvgConvertInput: '{ input: string; out: string; strategy?: \"wrapper\" | \"trace\" | \"both\" | \"auto\"; traceEngine?: \"auto\" | \"color\" | \"mono\"; optimize?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaScreenshotRenderInput: '{ input: string; out: string; width?: number; height?: number; theme?: \"dark\" | \"light\"; accent?: string; background?: string; padding?: number; fit?: \"contain\" | \"cover\"; pattern?: \"grid\" | \"lines\" | \"none\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ResearchIngestInput: '{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ResearchIngestInput: '{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; memoryTitle?: string; memoryCategory?: string; noMemorySave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  DeploymentDetectInput: '{ provider: "railway" | "vercel" | "cloudflare"; timeout?: number; requestId?: string; taskSession?: string }',
+  DeploymentContextInput: '{ provider: "railway" | "vercel" | "cloudflare"; action: "auth" | "current"; timeout?: number; requestId?: string; taskSession?: string }',
+  DeploymentListInput: '{ provider: "railway" | "vercel" | "cloudflare"; resource: "projects" | "services" | "deployments" | "domains"; projectId?: string; environment?: string; serviceId?: string; cursor?: string; limit?: number; timeout?: number; requestId?: string; taskSession?: string }',
+  DeploymentStatusInput: '{ provider: "railway" | "vercel" | "cloudflare"; deploymentId: string; serviceId?: string; environment?: string; timeout?: number; requestId?: string; taskSession?: string }',
+  DeploymentLogsInput: '{ provider: "railway" | "vercel" | "cloudflare"; deploymentId?: string; serviceId?: string; environment?: string; cursor?: string; limit?: number; since?: string; until?: string; filter?: string; kind?: "runtime" | "build"; latest?: boolean; timeout?: number; requestId?: string; taskSession?: string }',
+  DeploymentDeployInput: '{ provider: "railway" | "vercel" | "cloudflare"; action: "deploy" | "redeploy" | "promote"; target?: string; projectId?: string; serviceId?: string; source?: string; deploymentId?: string; environment?: string; wait?: boolean; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  DeploymentEnvironmentInput: '{ provider: "railway" | "vercel" | "cloudflare"; action: "list" | "set" | "delete"; name?: string; value?: string; scope?: string; projectId?: string; environment?: string; serviceId?: string; skipDeploys?: boolean; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  DeploymentRawInput: '{ provider: "railway" | "vercel" | "cloudflare"; args: string[]; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',

@@ -65,11 +65,14 @@ const findRoute = (method: string, path: string): Route => {
 const exec = (route: Route, req?: Partial<ApiRequest>) =>
   executeHandler(route.handler, req);
 
-const authReq = (overrides?: Partial<ApiRequest>) =>
-  ({ ...createAuthenticatedRequest(overrides) });
+const authReq = (overrides?: Partial<ApiRequest>) => ({
+  ...createAuthenticatedRequest(overrides),
+});
 
 const noAuthReq = (overrides?: Partial<ApiRequest>) =>
-  ({ auth: undefined, ...overrides } as Partial<ApiRequest> & { auth: undefined });
+  ({ auth: undefined, ...overrides }) as Partial<ApiRequest> & {
+    auth: undefined;
+  };
 
 // ---- setup ----
 
@@ -92,9 +95,17 @@ describe('GET /v1/subscription/status', () => {
     const status = {
       workspaceId: 'ws-test-001',
       mode: 'hosted',
-      plan: { name: 'consuelo-base', status: 'active', interval: 'month', currentPeriodEnd: '2026-04-01' },
+      plan: {
+        name: 'consuelo-base',
+        status: 'active',
+        interval: 'month',
+        currentPeriodEnd: '2026-04-01',
+      },
       addOns: ['dialer-coach'],
-      usage: { callMinutes: { used: 120, limit: null }, aiTokens: { used: 500, limit: null } },
+      usage: {
+        callMinutes: { used: 120, limit: null },
+        aiTokens: { used: 500, limit: null },
+      },
       byokKeys: null,
       stripeCustomerId: 'cus_test',
     };
@@ -107,7 +118,9 @@ describe('GET /v1/subscription/status', () => {
   it('returns 401 without auth', async () => {
     const res = await exec(route(), noAuthReq());
     expect(res.statusCode).toBe(401);
-    expect((res.body as { error: { code: string } }).error.code).toBe('UNAUTHORIZED');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'UNAUTHORIZED',
+    );
   });
 
   it('returns 500 on service error', async () => {
@@ -125,75 +138,109 @@ describe('POST /v1/subscription/checkout', () => {
   const route = () => findRoute('POST', '/v1/subscription/checkout');
 
   it('creates checkout session with default base plan', async () => {
-    mockCreateCheckoutSession.mockResolvedValueOnce({ url: 'https://checkout.stripe.com/session' });
-    const res = await exec(route(), authReq({
-      body: { successUrl: 'https://app.com/success', cancelUrl: 'https://app.com/cancel' },
-    }));
+    mockCreateCheckoutSession.mockResolvedValueOnce({
+      url: 'https://checkout.stripe.com/session',
+    });
+    const res = await exec(
+      route(),
+      authReq({
+        body: {
+          successUrl: 'https://consuelohq.com/success',
+          cancelUrl: 'https://consuelohq.com/cancel',
+        },
+      }),
+    );
     expect(res.statusCode).toBe(200);
-    expect((res.body as { url: string }).url).toBe('https://checkout.stripe.com/session');
+    expect((res.body as { url: string }).url).toBe(
+      'https://checkout.stripe.com/session',
+    );
     expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
       'ws-test-001',
       expect.arrayContaining(['price_base_monthly']),
-      'https://app.com/success',
-      'https://app.com/cancel',
+      'https://consuelohq.com/success',
+      'https://consuelohq.com/cancel',
     );
   });
 
   it('creates checkout with add-ons', async () => {
-    mockCreateCheckoutSession.mockResolvedValueOnce({ url: 'https://checkout.stripe.com/session' });
-    const res = await exec(route(), authReq({
-      body: {
-        successUrl: 'https://app.com/success',
-        cancelUrl: 'https://app.com/cancel',
-        addOns: ['dialer-coach'],
-        interval: 'year',
-      },
-    }));
+    mockCreateCheckoutSession.mockResolvedValueOnce({
+      url: 'https://checkout.stripe.com/session',
+    });
+    const res = await exec(
+      route(),
+      authReq({
+        body: {
+          successUrl: 'https://consuelohq.com/success',
+          cancelUrl: 'https://consuelohq.com/cancel',
+          addOns: ['dialer-coach'],
+          interval: 'year',
+        },
+      }),
+    );
     expect(res.statusCode).toBe(200);
     expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
       'ws-test-001',
       expect.arrayContaining(['price_base_annual', 'price_dialer_annual']),
-      'https://app.com/success',
-      'https://app.com/cancel',
+      'https://consuelohq.com/success',
+      'https://consuelohq.com/cancel',
     );
   });
 
   it('creates checkout with explicit priceIds', async () => {
-    mockCreateCheckoutSession.mockResolvedValueOnce({ url: 'https://checkout.stripe.com/session' });
-    const res = await exec(route(), authReq({
-      body: {
-        successUrl: 'https://app.com/success',
-        cancelUrl: 'https://app.com/cancel',
-        priceIds: ['price_custom_123'],
-      },
-    }));
+    mockCreateCheckoutSession.mockResolvedValueOnce({
+      url: 'https://checkout.stripe.com/session',
+    });
+    const res = await exec(
+      route(),
+      authReq({
+        body: {
+          successUrl: 'https://consuelohq.com/success',
+          cancelUrl: 'https://consuelohq.com/cancel',
+          priceIds: ['price_custom_123'],
+        },
+      }),
+    );
     expect(res.statusCode).toBe(200);
     expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
       'ws-test-001',
       ['price_custom_123'],
-      'https://app.com/success',
-      'https://app.com/cancel',
+      'https://consuelohq.com/success',
+      'https://consuelohq.com/cancel',
     );
   });
 
   it('returns 401 without auth', async () => {
-    const res = await exec(route(), noAuthReq({
-      body: { successUrl: 'https://app.com/success', cancelUrl: 'https://app.com/cancel' },
-    }));
+    const res = await exec(
+      route(),
+      noAuthReq({
+        body: {
+          successUrl: 'https://consuelohq.com/success',
+          cancelUrl: 'https://consuelohq.com/cancel',
+        },
+      }),
+    );
     expect(res.statusCode).toBe(401);
   });
 
   it('returns 400 when URLs are missing', async () => {
     const res = await exec(route(), authReq({ body: {} }));
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('BAD_REQUEST');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'BAD_REQUEST',
+    );
   });
 
   it('returns 500 on stripe error', async () => {
     mockCreateCheckoutSession.mockRejectedValueOnce(new Error('stripe error'));
-    const res = await exec(route(), authReq({
-      body: { successUrl: 'https://app.com/success', cancelUrl: 'https://app.com/cancel' },
-    }));
+    const res = await exec(
+      route(),
+      authReq({
+        body: {
+          successUrl: 'https://consuelohq.com/success',
+          cancelUrl: 'https://consuelohq.com/cancel',
+        },
+      }),
+    );
     expect(res.statusCode).toBe(500);
   });
 });
@@ -206,34 +253,49 @@ describe('POST /v1/subscription/portal', () => {
   const route = () => findRoute('POST', '/v1/subscription/portal');
 
   it('creates portal session', async () => {
-    mockCreatePortalSession.mockResolvedValueOnce({ url: 'https://billing.stripe.com/portal' });
-    const res = await exec(route(), authReq({
-      body: { returnUrl: 'https://app.com/settings' },
-    }));
+    mockCreatePortalSession.mockResolvedValueOnce({
+      url: 'https://billing.stripe.com/portal',
+    });
+    const res = await exec(
+      route(),
+      authReq({
+        body: { returnUrl: 'https://consuelohq.com/settings' },
+      }),
+    );
     expect(res.statusCode).toBe(200);
-    expect((res.body as { url: string }).url).toBe('https://billing.stripe.com/portal');
+    expect((res.body as { url: string }).url).toBe(
+      'https://billing.stripe.com/portal',
+    );
   });
 
   it('returns 401 without auth', async () => {
-    const res = await exec(route(), noAuthReq({
-      body: { returnUrl: 'https://app.com/settings' },
-    }));
+    const res = await exec(
+      route(),
+      noAuthReq({
+        body: { returnUrl: 'https://consuelohq.com/settings' },
+      }),
+    );
     expect(res.statusCode).toBe(401);
   });
 
   it('returns 400 when returnUrl is missing', async () => {
     const res = await exec(route(), authReq({ body: {} }));
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('BAD_REQUEST');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'BAD_REQUEST',
+    );
   });
 
   it('returns 500 on stripe error', async () => {
     mockCreatePortalSession.mockRejectedValueOnce(
       Object.assign(new Error('No subscription found'), { status: 404 }),
     );
-    const res = await exec(route(), authReq({
-      body: { returnUrl: 'https://app.com/settings' },
-    }));
+    const res = await exec(
+      route(),
+      authReq({
+        body: { returnUrl: 'https://consuelohq.com/settings' },
+      }),
+    );
     // errorHandler catches the error with status 404
     expect(res.statusCode).toBe(404);
   });

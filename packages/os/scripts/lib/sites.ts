@@ -1,15 +1,21 @@
 import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 
+import {
+  artifactsSiteDataPath,
+  artifactsSiteIndexPath,
+  readArtifactCatalog,
+  refreshArtifactsSite,
+  type ArtifactCatalog,
+} from './artifacts';
 import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
+import { buildObservabilityTracesSite } from './observability-traces-site';
 import {
   renderLauncherOnboarding,
   type LauncherLocalAgent,
 } from './launcher-onboarding';
-import { buildSettingsSite } from './settings-site';
-import { buildSettingsSnapshot } from './settings-snapshot';
+import { materializeConfigurationSite } from './settings-materialization';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -18,29 +24,7 @@ export type SitesAction = {
   message: string;
 };
 
-export type SiteArtifact = {
-  id: string;
-  title: string;
-  type: string;
-  format: string;
-  status: string;
-  storageMode: string;
-  path: string;
-  localPath: string;
-  traceId: string;
-  skillName: string;
-  workspaceId: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type OfficeSiteData = {
-  version: 1;
-  generatedAt: string;
-  artifacts: SiteArtifact[];
-};
-
-export type SitePageKind = 'spec' | 'plan' | 'guide' | 'trace' | 'diff' | 'office' | 'uncategorized';
+export type SitePageKind = 'spec' | 'plan' | 'guide' | 'trace' | 'diff' | 'artifact' | 'uncategorized';
 
 export type SitePageVersion = {
   versionId: string;
@@ -97,21 +81,26 @@ export type SitesPaths = {
   pagesDataDir: string;
   pagesRegistryPath: string;
   pagesLeasesPath: string;
-  officeDir: string;
-  officeDataDir: string;
-  officeAssetsDir: string;
-  officeIndexPath: string;
-  officeDataPath: string;
+  artifactsDir: string;
+  artifactsDataDir: string;
+  artifactsIndexPath: string;
+  artifactsDataPath: string;
   tracesDir: string;
   tracesIndexPath: string;
   diffsDir: string;
   diffsIndexPath: string;
   docsDir: string;
   docsIndexPath: string;
-  settingsDir: string;
-  settingsDataDir: string;
-  settingsIndexPath: string;
-  settingsSnapshotPath: string;
+  configurationDir: string;
+  configurationDataDir: string;
+  configurationIndexPath: string;
+  configurationSnapshotPath: string;
+  toolsDir: string;
+  toolsIndexPath: string;
+  environmentsDir: string;
+  environmentsIndexPath: string;
+  secretsDir: string;
+  secretsIndexPath: string;
 };
 
 export type MaterializeSitesOptions = {
@@ -126,13 +115,15 @@ export type MaterializeSitesResult = {
   indexPath: string;
   pagesDir: string;
   pagesRegistryPath: string;
-  officeIndexPath: string;
-  officeDataPath: string;
-  officeAssetsDir: string;
+  artifactsIndexPath: string;
+  artifactsDataPath: string;
   docsIndexPath: string;
-  settingsIndexPath: string;
-  settingsSnapshotPath: string;
-  data: OfficeSiteData;
+  configurationIndexPath: string;
+  configurationSnapshotPath: string;
+  toolsIndexPath: string;
+  environmentsIndexPath: string;
+  secretsIndexPath: string;
+  data: ArtifactCatalog;
   actions: SitesAction[];
 };
 
@@ -208,53 +199,6 @@ export type SitePageLeaseResult = {
   error?: { code: string; message: string };
 };
 
-type ArtifactRow = {
-  id: string;
-  workspace_id: string | null;
-  skill_execution_trace_id: string;
-  skill_name: string;
-  title: string;
-  type: string;
-  format: string;
-  status: string;
-  storage_mode: string;
-  storage_key: string;
-  local_path: string;
-  created_at: string;
-  updated_at: string;
-};
-
-type BunSqliteDatabase = {
-  query: (statement: string) => {
-    get: (...params: unknown[]) => unknown;
-    all: (...params: unknown[]) => unknown[];
-  };
-  close: () => void;
-};
-
-type BunSqliteDatabaseConstructor = new (
-  dbPath: string,
-  options?: { readonly?: boolean },
-) => BunSqliteDatabase;
-
-const BUN_SQLITE_SPECIFIER = `bun:${'sqlite'}`;
-const requireFromSites = createRequire(import.meta.url);
-
-function loadBunSqliteDatabase(): BunSqliteDatabaseConstructor {
-  try {
-    const module = requireFromSites(BUN_SQLITE_SPECIFIER) as {
-      Database?: BunSqliteDatabaseConstructor;
-    };
-    if (!module.Database) throw new Error('Database export is missing');
-    return module.Database;
-  } catch (error: unknown) {
-    throw new Error(
-      `Sites artifact database requires Bun SQLite: ${error instanceof Error ? error.message : String(error)}`,
-      { cause: error },
-    );
-  }
-}
-
 type ReservedSite = {
   slug: 'diffs' | 'docs';
   title: string;
@@ -311,55 +255,6 @@ function addDirectoryAction(actions: SitesAction[], dirPath: string, dryRun: boo
 
 function addFileAction(actions: SitesAction[], filePath: string, dryRun: boolean, message: string): void {
   actions.push({ type: 'create_file', path: filePath, status: dryRun ? 'planned' : 'created', message });
-}
-
-function hasArtifactsTable(db: BunSqliteDatabase): boolean {
-  const row = db.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'artifacts'").get() as { name?: string } | null;
-  return row?.name === 'artifacts';
-}
-
-function readArtifactRows(dbPath: string): ArtifactRow[] {
-  let stat: fs.Stats;
-  try {
-    stat = fs.statSync(dbPath);
-  } catch {
-    return [];
-  }
-  if (!stat.isFile() || stat.size === 0) return [];
-  const Database = loadBunSqliteDatabase();
-  const db = new Database(dbPath, { readonly: true });
-  try {
-    if (!hasArtifactsTable(db)) return [];
-    const selectArtifactsSql = [
-      'SELECT',
-      'id, workspace_id, skill_execution_trace_id, skill_name, title, type, format,',
-      'status, storage_mode, storage_key, local_path, created_at, updated_at',
-      'FROM artifacts',
-      "WHERE status != 'deleted'",
-      'ORDER BY created_at DESC, id DESC',
-    ].join(' ');
-    return db.query(selectArtifactsSql).all() as ArtifactRow[];
-  } finally {
-    db.close();
-  }
-}
-
-function toSiteArtifact(row: ArtifactRow): SiteArtifact {
-  return {
-    id: row.id,
-    title: row.title,
-    type: row.type,
-    format: row.format,
-    status: row.status,
-    storageMode: row.storage_mode,
-    path: row.storage_key,
-    localPath: row.local_path,
-    traceId: row.skill_execution_trace_id,
-    skillName: row.skill_name,
-    workspaceId: row.workspace_id,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
 }
 
 function hashFile(filePath: string, hash: ReturnType<typeof createHash>): void {
@@ -720,9 +615,20 @@ function launcherLocalAgents(home: string): LauncherLocalAgent[] {
     }));
 }
 
-function buildSitesIndex(home: string): string {
+function launcherWorkspaceHostname(
+  home: string,
+  workspaceHost: string | null | undefined,
+): string | null {
+  const explicit = workspaceHost?.trim();
+  if (explicit) return explicit;
+  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
+  return config?.workspace?.host?.trim() || null;
+}
+
+function buildSitesIndex(home: string, workspaceHost?: string | null): string {
   return renderLauncherOnboarding({
     mcpUrl: launcherMcpUrl(home),
+    workspaceHostname: launcherWorkspaceHostname(home, workspaceHost),
     localAgents: launcherLocalAgents(home),
   });
 }
@@ -743,17 +649,6 @@ function buildPagesIndex(registry: SitePageRegistry): string {
 `;
 }
 
-function buildOfficeSite(data: OfficeSiteData): string {
-  const artifactRows = data.artifacts.map((artifact) => `
-          <tr><td>${escapeHtml(artifact.title)}</td><td>${escapeHtml(artifact.type)}</td><td>${escapeHtml(artifact.format)}</td><td>${escapeHtml(artifact.skillName)}</td><td><code>${escapeHtml(artifact.traceId)}</code></td></tr>`).join('');
-  const artifactBody = artifactRows.length > 0 ? artifactRows : '<tr><td colspan="5" class="empty">No local Office artifacts have been created yet.</td></tr>';
-  return `<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Office - Sites</title><style>${baseStyles()}</style></head>
-<body><main><header><h1>Office</h1><p>Office is the Sites category for generated docs, reports, files, and pages. Artifacts are the durable provenance records behind this site.</p></header><section aria-labelledby="artifacts-title"><div class="section-header"><h2 id="artifacts-title">Artifacts</h2><span class="count">${data.artifacts.length} total</span></div><div class="table-wrap"><table><thead><tr><th>Title</th><th>Type</th><th>Format</th><th>Skill</th><th>Trace</th></tr></thead><tbody>${artifactBody}</tbody></table></div></section></main></body></html>
-`;
-}
-
 function buildReservedSitePage(site: ReservedSite): string {
   return `<!doctype html>
 <html lang="en">
@@ -762,98 +657,20 @@ function buildReservedSitePage(site: ReservedSite): string {
 `;
 }
 
-function buildTracesSite(): string {
-  return `<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Traces - Sites</title><style>${baseStyles()}
-    .trace-shell { display: grid; gap: 14px; max-width: 1200px; }
-    .trace-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid rgba(242,238,230,0.16); border-bottom: 1px solid rgba(242,238,230,0.16); padding: 8px 0; }
-    .trace-status { color: #a8a095; }
-    .trace-table td:nth-child(1), .trace-table td:nth-child(2), .trace-table td:nth-child(5) { white-space: nowrap; }
-    .trace-table td:nth-child(6), .trace-table td:nth-child(7) { max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  </style></head>
-<body>
-  <main class="trace-shell">
-    <header>
-      <h1>Traces</h1>
-      <p>Review execution traces and provenance.</p>
-    </header>
-    <section aria-label="Trace stream">
-      <div class="trace-toolbar">
-        <span class="trace-status" id="trace-status">Loading gateway traces...</span>
-        <code>/gateway/traces/recent</code>
-      </div>
-      <div class="table-wrap">
-        <table class="trace-table">
-          <thead><tr><th>Time</th><th>Tool</th><th>Latency</th><th>Tokens</th><th>Branch</th><th>Input</th><th>Output</th></tr></thead>
-          <tbody id="trace-rows"><tr><td colspan="7" class="empty">No traces loaded yet.</td></tr></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
-  <script>
-    const status = document.getElementById('trace-status');
-    const rows = document.getElementById('trace-rows');
-    const escapeHtml = (value) => String(value ?? '').replace(/[&<>\"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char] || char);
-    const first = (...values) => values.find((value) => value !== undefined && value !== null && String(value).length > 0) ?? '';
-    const shortTime = (value) => { try { return value ? new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''; } catch { return String(value || ''); } };
-    const summarize = (value) => {
-      if (typeof value === 'string') return value;
-      if (!value || typeof value !== 'object') return '';
-      return first(value.summary, value.command, value.message, value.path, value.input, value.output, value.code, value.error && value.error.message, JSON.stringify(value));
-    };
-    function normalizeTrace(trace) {
-      const input = summarize(first(trace.input, trace.inputSummary, trace.request, trace.args));
-      const output = summarize(first(trace.output, trace.outputSummary, trace.result, trace.response, trace.error));
-      return {
-        id: first(trace.id, trace.traceId, trace.trace_id, trace.idempotencyKey),
-        time: shortTime(first(trace.startedAt, trace.started_at, trace.time, trace.timestamp, trace.createdAt)),
-        tool: first(trace.toolName, trace.tool, trace.name, trace.traceName),
-        latency: first(trace.latency, trace.duration, trace.durationMs ? String(trace.durationMs) + 'ms' : undefined, trace.duration_ms ? String(trace.duration_ms) + 'ms' : undefined),
-        tokens: first(trace.tokens, trace.totalTokens, trace.total_tokens),
-        branch: first(trace.branch, trace.gitBranch, trace.git_branch),
-        input,
-        output,
-      };
-    }
-    function render(events) {
-      if (!events.length) { rows.innerHTML = '<tr><td colspan="7" class="empty">No traces found.</td></tr>'; return; }
-      rows.innerHTML = events.slice(0, 100).map((trace) => {
-        const row = normalizeTrace(trace);
-        return '<tr data-trace-id="' + escapeHtml(row.id) + '"><td>' + escapeHtml(row.time) + '</td><td>' + escapeHtml(row.tool) + '</td><td>' + escapeHtml(row.latency) + '</td><td>' + escapeHtml(row.tokens) + '</td><td>' + escapeHtml(row.branch) + '</td><td title="' + escapeHtml(row.input) + '">' + escapeHtml(row.input) + '</td><td title="' + escapeHtml(row.output) + '">' + escapeHtml(row.output) + '</td></tr>';
-      }).join('');
-    }
-    async function loadRecent() {
-      try {
-        const response = await fetch('/gateway/traces/recent', { headers: { accept: 'application/json' } });
-        if (!response.ok) throw new Error('gateway traces returned ' + response.status);
-        const payload = await response.json();
-        const events = Array.isArray(payload.events) ? payload.events : Array.isArray(payload.rows) ? payload.rows : Array.isArray(payload.traces) ? payload.traces : [];
-        render(events);
-        status.textContent = payload.ok === false ? (payload.code || 'Trace gateway unavailable') : String(events.length) + ' traces';
-      } catch {
-        status.textContent = 'Trace gateway unavailable';
-        rows.innerHTML = '<tr><td colspan="7" class="empty">Unable to load gateway traces.</td></tr>';
-      }
-    }
-    loadRecent();
-  </script>
-</body></html>
-`;
-}
-
 export function getSitesPaths(home: string): SitesPaths {
   const sitesDir = path.join(home, 'sites');
   const pagesDir = path.join(sitesDir, 'pages');
   const pagesDataDir = path.join(sitesDir, '.data', 'pages');
-  const officeDir = path.join(sitesDir, 'office');
-  const officeDataDir = path.join(officeDir, 'data');
-  const officeAssetsDir = path.join(officeDir, 'assets');
+  const artifactsDir = path.join(sitesDir, 'artifacts');
+  const artifactsDataDir = path.join(artifactsDir, 'data');
   const tracesDir = path.join(sitesDir, 'traces');
   const diffsDir = path.join(sitesDir, 'diffs');
   const docsDir = path.join(sitesDir, 'docs');
-  const settingsDir = path.join(sitesDir, 'settings');
-  const settingsDataDir = path.join(sitesDir, '.data', 'settings');
+  const configurationDir = path.join(sitesDir, 'configuration');
+  const configurationDataDir = path.join(sitesDir, '.data', 'configuration');
+  const toolsDir = path.join(sitesDir, 'tools');
+  const environmentsDir = path.join(sitesDir, 'environments');
+  const secretsDir = path.join(sitesDir, 'secrets');
   return {
     sitesDir,
     indexPath: path.join(sitesDir, 'index.html'),
@@ -861,55 +678,75 @@ export function getSitesPaths(home: string): SitesPaths {
     pagesDataDir,
     pagesRegistryPath: path.join(pagesDataDir, 'registry.json'),
     pagesLeasesPath: path.join(pagesDataDir, 'leases.json'),
-    officeDir,
-    officeDataDir,
-    officeAssetsDir,
-    officeIndexPath: path.join(officeDir, 'index.html'),
-    officeDataPath: path.join(officeDataDir, 'artifacts.json'),
+    artifactsDir,
+    artifactsDataDir,
+    artifactsIndexPath: artifactsSiteIndexPath(home),
+    artifactsDataPath: artifactsSiteDataPath(home),
     tracesDir,
     tracesIndexPath: path.join(tracesDir, 'index.html'),
     diffsDir,
     diffsIndexPath: path.join(diffsDir, 'index.html'),
     docsDir,
     docsIndexPath: path.join(docsDir, 'index.html'),
-    settingsDir,
-    settingsDataDir,
-    settingsIndexPath: path.join(settingsDir, 'index.html'),
-    settingsSnapshotPath: path.join(settingsDataDir, 'snapshot.json'),
+    configurationDir,
+    configurationDataDir,
+    configurationIndexPath: path.join(configurationDir, 'index.html'),
+    configurationSnapshotPath: path.join(configurationDataDir, 'snapshot.json'),
+    toolsDir,
+    toolsIndexPath: path.join(toolsDir, 'index.html'),
+    environmentsDir,
+    environmentsIndexPath: path.join(environmentsDir, 'index.html'),
+    secretsDir,
+    secretsIndexPath: path.join(secretsDir, 'index.html'),
   };
-}
-
-export function readOfficeSiteData(dbPath: string): OfficeSiteData {
-  return { version: 1, generatedAt: nowIso(), artifacts: readArtifactRows(dbPath).map(toSiteArtifact) };
 }
 
 export function materializeSites(options: MaterializeSitesOptions): MaterializeSitesResult {
   const paths = getSitesPaths(options.home);
   const actions: SitesAction[] = [];
-  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.officeDir, paths.officeDataDir, paths.officeAssetsDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.settingsDir, paths.settingsDataDir]) {
+  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.artifactsDir, paths.artifactsDataDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.configurationDir, paths.configurationDataDir, paths.toolsDir, paths.environmentsDir, paths.secretsDir]) {
     addDirectoryAction(actions, dirPath, options.dryRun);
   }
-  const data = readOfficeSiteData(options.dbPath);
+  const data = readArtifactCatalog(options.home);
   const registry = readSitePageRegistry(paths.pagesRegistryPath);
   addFileAction(actions, paths.indexPath, options.dryRun, 'Sites index generated');
   addFileAction(actions, path.join(paths.pagesDir, 'index.html'), options.dryRun, 'Pages site generated');
-  addFileAction(actions, paths.officeDataPath, options.dryRun, 'Office site artifact data generated');
-  addFileAction(actions, paths.officeIndexPath, options.dryRun, 'Office site generated');
+  addFileAction(actions, paths.artifactsDataPath, options.dryRun, 'Artifacts catalog snapshot generated');
+  addFileAction(actions, paths.artifactsIndexPath, options.dryRun, 'Artifacts site generated');
   for (const site of RESERVED_SITES) addFileAction(actions, path.join(paths.sitesDir, site.slug, 'index.html'), options.dryRun, `${site.title} site generated`);
-  addFileAction(actions, paths.settingsIndexPath, options.dryRun, 'Settings site generated');
-  addFileAction(actions, paths.settingsSnapshotPath, options.dryRun, 'Settings snapshot generated');
+  addFileAction(actions, paths.configurationIndexPath, options.dryRun, 'Configuration site generated');
+  addFileAction(actions, paths.toolsIndexPath, options.dryRun, 'Tools site generated');
+  addFileAction(actions, paths.environmentsIndexPath, options.dryRun, 'Environments site generated');
+  addFileAction(actions, paths.secretsIndexPath, options.dryRun, 'Secrets site generated');
+  addFileAction(actions, paths.configurationSnapshotPath, options.dryRun, 'Configuration snapshot generated');
   if (!options.dryRun) {
-    fs.writeFileSync(paths.indexPath, buildSitesIndex(options.home), { mode: 0o600 });
+    fs.writeFileSync(
+      paths.indexPath,
+      buildSitesIndex(options.home, options.workspaceHost),
+      { mode: 0o600 },
+    );
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
-    fs.writeFileSync(paths.officeDataPath, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
-    fs.writeFileSync(paths.officeIndexPath, buildOfficeSite(data), { mode: 0o600 });
-    fs.writeFileSync(paths.tracesIndexPath, buildTracesSite(), { mode: 0o600 });
+    refreshArtifactsSite(options.home, data);
+    fs.writeFileSync(paths.tracesIndexPath, buildObservabilityTracesSite(), { mode: 0o600 });
     for (const site of RESERVED_SITES) fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), buildReservedSitePage(site), { mode: 0o600 });
-    const settingsSnapshot = buildSettingsSnapshot(options.home);
-    fs.writeFileSync(paths.settingsIndexPath, buildSettingsSite(options.home), { mode: 0o600 });
-    fs.writeFileSync(paths.settingsSnapshotPath, `${JSON.stringify(settingsSnapshot, null, 2)}\n`, { mode: 0o600 });
+    materializeConfigurationSite(options.home);
   }
-  return { sitesDir: paths.sitesDir, indexPath: paths.indexPath, pagesDir: paths.pagesDir, pagesRegistryPath: paths.pagesRegistryPath, officeIndexPath: paths.officeIndexPath, officeDataPath: paths.officeDataPath, officeAssetsDir: paths.officeAssetsDir, docsIndexPath: paths.docsIndexPath, settingsIndexPath: paths.settingsIndexPath, settingsSnapshotPath: paths.settingsSnapshotPath, data, actions };
+  return {
+    sitesDir: paths.sitesDir,
+    indexPath: paths.indexPath,
+    pagesDir: paths.pagesDir,
+    pagesRegistryPath: paths.pagesRegistryPath,
+    artifactsIndexPath: paths.artifactsIndexPath,
+    artifactsDataPath: paths.artifactsDataPath,
+    docsIndexPath: paths.docsIndexPath,
+    configurationIndexPath: paths.configurationIndexPath,
+    configurationSnapshotPath: paths.configurationSnapshotPath,
+    toolsIndexPath: paths.toolsIndexPath,
+    environmentsIndexPath: paths.environmentsIndexPath,
+    secretsIndexPath: paths.secretsIndexPath,
+    data,
+    actions,
+  };
 }
 
 export function publishSitePage(options: PublishSitePageOptions): PublishSitePageResult {
@@ -1023,15 +860,4 @@ export function publishSitePage(options: PublishSitePageOptions): PublishSitePag
     message: options.dryRun ? `Sites publish planned: ${normalized.path}` : `Sites page published: ${normalized.path}`,
   };
 }
-
-export type OfficePageAction = SitesAction;
-export type OfficeArtifact = SiteArtifact;
-export type OfficePageData = OfficeSiteData;
-export type OfficePagePaths = SitesPaths;
-export type MaterializeOfficePagesOptions = MaterializeSitesOptions;
-export type MaterializeOfficePagesResult = MaterializeSitesResult;
-
-export const getOfficePagePaths = getSitesPaths;
-export const readOfficePageData = readOfficeSiteData;
-export const materializeOfficePages = materializeSites;
 

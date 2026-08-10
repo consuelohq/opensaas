@@ -1,0 +1,1 @@
+Return exactly: grok task runtime discovery works. Do not call tools.

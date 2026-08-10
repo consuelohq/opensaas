@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3206f89a15d5",
+  "tmuxSession": "opensaas-os-resolve-final-mainline-codex-review-findings-3206f89a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-final-mainline-codex-review-findings",
+  "branch": "task/os/resolve-final-mainline-codex-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-final-mainline-codex-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-final-mainline-codex-review-findings",
+  "prNumber": 1719,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1719",
+  "createdAt": "2026-07-29T06:26:49.483Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-final-mainline-codex-review-findings/.task/os/resolve-final-mainline-codex-review-findings/session.json"
+}

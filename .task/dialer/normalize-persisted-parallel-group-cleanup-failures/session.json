@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_aeb29e4b0cb3",
+  "tmuxSession": "opensaas-dialer-normalize-persisted-parallel-group-cleanup-failu-aeb29e4b",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/normalize-persisted-parallel-group-cleanup-failures",
+  "branch": "task/dialer/normalize-persisted-parallel-group-cleanup-failures",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-normalize-persisted-parallel-group-cleanup-failures",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-normalize-persisted-parallel-group-cleanup-failures",
+  "prNumber": 1755,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1755",
+  "createdAt": "2026-08-03T16:24:42.186Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-normalize-persisted-parallel-group-cleanup-failures/.task/dialer/normalize-persisted-parallel-group-cleanup-failures/session.json"
+}

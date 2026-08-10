@@ -35,12 +35,17 @@ load_env_file() {
 
 load_env_file "$env_file"
 
+unset WORKSPACE_MCP_TOKEN
+unset INTERNAL_CONSUELO_API_KEY
+unset CLOUDFLARE_API_TOKEN
+
 export HOME="${WORKSPACE_DAEMON_HOME:-${HOME:-/Users/$(id -un)}}"
 export USER="${WORKSPACE_DAEMON_USER:-${USER:-$(id -un)}}"
 export PATH="${WORKSPACE_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 export CONSUELO_OS_PORT="${WORKSPACE_DAEMON_PORT:-${CONSUELO_OS_PORT:-${PORT:-46321}}}"
 export PORT="$CONSUELO_OS_PORT"
 export CONSUELO_HOME="${WORKSPACE_DAEMON_CONSUELO_HOME:-${CONSUELO_HOME:-$HOME/.consuelo}}"
+export CONSUELO_TRACE_DB="${CONSUELO_TRACE_DB:-$CONSUELO_HOME/node/db/traces.db}"
 
 bun_bin="${BUN_BIN:-}"
 if [ -z "$bun_bin" ]; then

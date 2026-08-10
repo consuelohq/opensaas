@@ -16,6 +16,25 @@ export const siteHeaderLinks: SiteNavLink[] = [
   { label: 'Enterprise', href: siteLinks.enterprise },
 ];
 
+/** Primary OS marketing header (5-link desktop layout). */
+export const osSiteHeaderLinks = {
+  cloudHref: 'https://os.consuelohq.com',
+  desktop: [
+    { label: 'CONSUELO', href: '/blog' },
+    { label: 'DOCS', href: siteLinks.docs },
+    { label: 'PRICING', href: '/pricing' },
+    { label: 'CLOUD', href: 'https://os.consuelohq.com' },
+  ] as const satisfies readonly SiteNavLink[],
+  mobile: [
+    { label: 'DOCS', href: siteLinks.docs },
+    { label: 'CLOUD', href: 'https://os.consuelohq.com' },
+  ] as const satisfies readonly SiteNavLink[],
+  wordmarkAriaLabel: 'Consuelo OS home',
+  communityAriaLabel: 'Community links',
+  primaryAriaLabel: 'Primary',
+  mobilePrimaryAriaLabel: 'Mobile primary',
+} as const;
+
 export const siteMobileMenuLinks: SiteNavLink[] = [
   ...siteHeaderLinks.filter((link) => link.label !== 'Docs'),
   { label: 'Login', href: siteLinks.login },

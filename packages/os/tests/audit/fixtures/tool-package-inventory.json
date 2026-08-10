@@ -1,0 +1,4917 @@
+{
+  "version": 1,
+  "tools": [
+    {
+      "name": "aiReview",
+      "domain": "review",
+      "sourcePath": "packages/os/tools/review/manifest.ts",
+      "handlerPath": "packages/os/tools/review/handler.ts",
+      "schemaPath": "packages/os/tools/review/schema.ts",
+      "command": {
+        "script": "ai-review",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "pr",
+            "kind": "value"
+          },
+          {
+            "source": "noPost",
+            "flag": "--no-post",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "AiReviewInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.check",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "check",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.generateDemo",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "generate-demo",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "name",
+            "flag": "--name",
+            "kind": "value"
+          },
+          {
+            "source": "prompt",
+            "flag": "--prompt",
+            "kind": "value"
+          },
+          {
+            "source": "live",
+            "flag": "--live",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ArtifactsSessionInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.generateDigitalEguide",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "generate-digital-eguide",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "name",
+            "flag": "--name",
+            "kind": "value"
+          },
+          {
+            "source": "prompt",
+            "flag": "--prompt",
+            "kind": "value"
+          },
+          {
+            "source": "template",
+            "flag": "--template",
+            "kind": "value"
+          },
+          {
+            "source": "live",
+            "flag": "--live",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ArtifactsDigitalEguideInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.generateEmail",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "generate-email",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "name",
+            "flag": "--name",
+            "kind": "value"
+          },
+          {
+            "source": "prompt",
+            "flag": "--prompt",
+            "kind": "value"
+          },
+          {
+            "source": "live",
+            "flag": "--live",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ArtifactsSessionInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.generateImageBrief",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "generate-image-brief",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "name",
+            "flag": "--name",
+            "kind": "value"
+          },
+          {
+            "source": "prompt",
+            "flag": "--prompt",
+            "kind": "value"
+          },
+          {
+            "source": "live",
+            "flag": "--live",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ArtifactsSessionInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.generateMotionFrame",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "generate-motion-frame",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "name",
+            "flag": "--name",
+            "kind": "value"
+          },
+          {
+            "source": "prompt",
+            "flag": "--prompt",
+            "kind": "value"
+          },
+          {
+            "source": "live",
+            "flag": "--live",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ArtifactsSessionInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.generateWebsite",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "generate-website",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "name",
+            "flag": "--name",
+            "kind": "value"
+          },
+          {
+            "source": "prompt",
+            "flag": "--prompt",
+            "kind": "value"
+          },
+          {
+            "source": "live",
+            "flag": "--live",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ArtifactsSessionInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.getDesignSystem",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "get-design-system",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.listDesignSystems",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "list-design-systems",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.listSkills",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "list-skills",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.odBuild",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "od:build",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsUiInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.publish",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "publish",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "target",
+            "flag": "--target",
+            "kind": "value"
+          },
+          {
+            "source": "portlessName",
+            "flag": "--portless-name",
+            "kind": "value"
+          },
+          {
+            "source": "path",
+            "flag": "--path",
+            "kind": "value"
+          },
+          {
+            "source": "name",
+            "flag": "--name",
+            "kind": "value"
+          },
+          {
+            "source": "category",
+            "flag": "--category",
+            "kind": "value"
+          },
+          {
+            "source": "template",
+            "flag": "--template",
+            "kind": "value"
+          },
+          {
+            "source": "tailscaleBin",
+            "flag": "--tailscale-bin",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "ArtifactsPublishInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.railwayCheck",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "railway:check",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.refresh",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "refresh",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "tailscaleBin",
+            "flag": "--tailscale-bin",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "ArtifactsRefreshInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.renderHyperframes",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "render-hyperframes",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "name",
+            "flag": "--name",
+            "kind": "value"
+          },
+          {
+            "source": "prompt",
+            "flag": "--prompt",
+            "kind": "value"
+          },
+          {
+            "source": "live",
+            "flag": "--live",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ArtifactsSessionInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.run",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "run",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsUiInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.uiBg",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "ui:bg",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsUiInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.uiLogs",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "ui:logs",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.uiStatus",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "ui:status",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.uiStop",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "ui:stop",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsUiInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "artifacts.upstreamStatus",
+      "domain": "artifacts",
+      "sourcePath": "packages/os/tools/artifacts/manifest.ts",
+      "handlerPath": "packages/os/tools/artifacts/handler.ts",
+      "schemaPath": "packages/os/tools/artifacts/schema.ts",
+      "command": {
+        "script": "artifacts",
+        "subcommand": "upstream-status",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": []
+      },
+      "inputSchema": "ArtifactsInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "audit",
+      "domain": "decision-engine",
+      "sourcePath": "packages/os/tools/decision-engine/manifest.ts",
+      "handlerPath": "packages/os/tools/decision-engine/handler.ts",
+      "schemaPath": "packages/os/tools/decision-engine/schema.ts",
+      "command": {
+        "script": "audit",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "scripts",
+            "flag": "--scripts",
+            "kind": "boolean"
+          },
+          {
+            "source": "docs",
+            "flag": "--docs",
+            "kind": "boolean"
+          },
+          {
+            "source": "index",
+            "flag": "--index",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "AuditInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "batch",
+      "domain": "composed",
+      "sourcePath": "packages/os/tools/composed/manifest.ts",
+      "handlerPath": "packages/os/tools/composed/handler.ts",
+      "schemaPath": "packages/os/tools/composed/schema.ts",
+      "command": {
+        "script": "batch",
+        "branchMode": "none",
+        "internal": "batch",
+        "arguments": []
+      },
+      "inputSchema": "BatchInput",
+      "outputSchema": "BatchOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "command",
+            "kind": "value"
+          },
+          {
+            "source": "url",
+            "kind": "value"
+          },
+          {
+            "source": "args",
+            "kind": "array"
+          }
+        ]
+      },
+      "inputSchema": "BrowserInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.app",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "app",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "headed",
+            "flag": "--headed",
+            "kind": "boolean"
+          },
+          {
+            "source": "full",
+            "flag": "--full",
+            "kind": "boolean"
+          },
+          {
+            "source": "preset",
+            "flag": "--preset",
+            "kind": "value"
+          },
+          {
+            "source": "device",
+            "flag": "--device",
+            "kind": "value"
+          },
+          {
+            "source": "provider",
+            "flag": "--provider",
+            "kind": "value"
+          },
+          {
+            "source": "width",
+            "flag": "--width",
+            "kind": "value"
+          },
+          {
+            "source": "height",
+            "flag": "--height",
+            "kind": "value"
+          },
+          {
+            "source": "colorScheme",
+            "flag": "--color-scheme",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserPageInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.click",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "click",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "ref",
+            "kind": "value",
+            "required": true
+          }
+        ]
+      },
+      "inputSchema": "BrowserElementInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.clipboard",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "clipboard",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "text",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserClipboardInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.close",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "close",
+        "branchMode": "none",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.consuelo",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "consuelo",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "headed",
+            "flag": "--headed",
+            "kind": "boolean"
+          },
+          {
+            "source": "full",
+            "flag": "--full",
+            "kind": "boolean"
+          },
+          {
+            "source": "preset",
+            "flag": "--preset",
+            "kind": "value"
+          },
+          {
+            "source": "device",
+            "flag": "--device",
+            "kind": "value"
+          },
+          {
+            "source": "provider",
+            "flag": "--provider",
+            "kind": "value"
+          },
+          {
+            "source": "width",
+            "flag": "--width",
+            "kind": "value"
+          },
+          {
+            "source": "height",
+            "flag": "--height",
+            "kind": "value"
+          },
+          {
+            "source": "colorScheme",
+            "flag": "--color-scheme",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserPageInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.cookies",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "cookies",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value"
+          },
+          {
+            "source": "name",
+            "kind": "value"
+          },
+          {
+            "source": "value",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserCookiesInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.dialog",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "dialog",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "text",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserDialogInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.download",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "download",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "ref",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "path",
+            "kind": "value",
+            "required": true
+          }
+        ]
+      },
+      "inputSchema": "BrowserDownloadInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.eval",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "eval",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "js",
+            "kind": "value",
+            "required": true
+          }
+        ]
+      },
+      "inputSchema": "BrowserEvalInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.fill",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "fill",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "ref",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "text",
+            "kind": "value",
+            "required": true
+          }
+        ]
+      },
+      "inputSchema": "BrowserFillInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.find",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "find",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "by",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "value",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "action",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "text",
+            "kind": "value"
+          },
+          {
+            "source": "name",
+            "flag": "--name",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserFindInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.get",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "get",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "target",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "selector",
+            "kind": "value"
+          },
+          {
+            "source": "attribute",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserGetInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.headed",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "headed",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "url",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "provider",
+            "flag": "--provider",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserHeadedInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.network",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "network",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "args",
+            "kind": "array",
+            "required": true
+          }
+        ]
+      },
+      "inputSchema": "BrowserNetworkInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.open",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "open",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "url",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "headed",
+            "flag": "--headed",
+            "kind": "boolean"
+          },
+          {
+            "source": "full",
+            "flag": "--full",
+            "kind": "boolean"
+          },
+          {
+            "source": "preset",
+            "flag": "--preset",
+            "kind": "value"
+          },
+          {
+            "source": "device",
+            "flag": "--device",
+            "kind": "value"
+          },
+          {
+            "source": "provider",
+            "flag": "--provider",
+            "kind": "value"
+          },
+          {
+            "source": "width",
+            "flag": "--width",
+            "kind": "value"
+          },
+          {
+            "source": "height",
+            "flag": "--height",
+            "kind": "value"
+          },
+          {
+            "source": "colorScheme",
+            "flag": "--color-scheme",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserOpenInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.raw",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "raw",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "args",
+            "kind": "array",
+            "required": true
+          }
+        ]
+      },
+      "inputSchema": "BrowserRawInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.screenshot",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "screenshot",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "name",
+            "kind": "value"
+          },
+          {
+            "source": "full",
+            "flag": "--full",
+            "kind": "boolean"
+          },
+          {
+            "source": "preset",
+            "flag": "--preset",
+            "kind": "value"
+          },
+          {
+            "source": "device",
+            "flag": "--device",
+            "kind": "value"
+          },
+          {
+            "source": "provider",
+            "flag": "--provider",
+            "kind": "value"
+          },
+          {
+            "source": "width",
+            "flag": "--width",
+            "kind": "value"
+          },
+          {
+            "source": "height",
+            "flag": "--height",
+            "kind": "value"
+          },
+          {
+            "source": "colorScheme",
+            "flag": "--color-scheme",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserScreenshotInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.snap",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "snap",
+        "branchMode": "none",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.status",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "status",
+        "branchMode": "none",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.tabs",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "tabs",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value"
+          },
+          {
+            "source": "target",
+            "kind": "value"
+          },
+          {
+            "source": "url",
+            "kind": "value"
+          },
+          {
+            "source": "label",
+            "flag": "--label",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserTabsInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.test",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "open",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "url",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "headed",
+            "flag": "--headed",
+            "kind": "boolean"
+          },
+          {
+            "source": "full",
+            "flag": "--full",
+            "kind": "boolean"
+          },
+          {
+            "source": "preset",
+            "flag": "--preset",
+            "kind": "value"
+          },
+          {
+            "source": "device",
+            "flag": "--device",
+            "kind": "value"
+          },
+          {
+            "source": "provider",
+            "flag": "--provider",
+            "kind": "value"
+          },
+          {
+            "source": "width",
+            "flag": "--width",
+            "kind": "value"
+          },
+          {
+            "source": "height",
+            "flag": "--height",
+            "kind": "value"
+          },
+          {
+            "source": "colorScheme",
+            "flag": "--color-scheme",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserOpenInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.trace",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "trace",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "path",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "BrowserTraceInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "browser.wait",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "browser",
+        "subcommand": "wait",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "target",
+            "kind": "value"
+          },
+          {
+            "source": "text",
+            "flag": "--text",
+            "kind": "value"
+          },
+          {
+            "source": "url",
+            "flag": "--url",
+            "kind": "value"
+          },
+          {
+            "source": "load",
+            "flag": "--load",
+            "kind": "value"
+          },
+          {
+            "source": "conditionScript",
+            "flag": "--fn",
+            "kind": "value"
+          },
+          {
+            "source": "download",
+            "flag": "--download",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "BrowserWaitInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "checkFiles",
+      "domain": "composed",
+      "sourcePath": "packages/os/tools/composed/manifest.ts",
+      "handlerPath": "packages/os/tools/composed/handler.ts",
+      "schemaPath": "packages/os/tools/composed/schema.ts",
+      "command": {
+        "script": "check-files",
+        "branchMode": "required",
+        "branchArgumentStyle": "flag",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "files",
+            "flag": "--files",
+            "kind": "array",
+            "required": true
+          },
+          {
+            "source": "stopOnFirstError",
+            "flag": "--stop-on-first-error",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "CheckFilesInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "code.call",
+      "domain": "codemode",
+      "sourcePath": "packages/os/tools/codemode/manifest.ts",
+      "handlerPath": "packages/os/tools/codemode/handler.ts",
+      "schemaPath": "packages/os/tools/codemode/schema.ts",
+      "command": {
+        "script": "code-call",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "internal": "code.call",
+        "arguments": []
+      },
+      "inputSchema": "CodeCallInput",
+      "outputSchema": "CodeCallOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "code.run",
+      "domain": "codemode",
+      "sourcePath": "packages/os/tools/codemode/manifest.ts",
+      "handlerPath": "packages/os/tools/codemode/handler.ts",
+      "schemaPath": "packages/os/tools/codemode/schema.ts",
+      "command": {
+        "script": "code-run",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "taskSession",
+            "kind": "value"
+          },
+          {
+            "source": "code",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "mode",
+            "flag": "--mode",
+            "kind": "value"
+          },
+          {
+            "source": "timeout",
+            "flag": "--timeout",
+            "kind": "value"
+          },
+          {
+            "source": "memoryLimit",
+            "flag": "--memory-limit",
+            "kind": "value"
+          },
+          {
+            "source": "maxOperations",
+            "flag": "--max-operations",
+            "kind": "value"
+          },
+          {
+            "source": "maxResultChars",
+            "flag": "--max-result-chars",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "CodeRunInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "confidenceScore",
+      "domain": "decision-engine",
+      "sourcePath": "packages/os/tools/decision-engine/manifest.ts",
+      "handlerPath": "packages/os/tools/decision-engine/handler.ts",
+      "schemaPath": "packages/os/tools/decision-engine/schema.ts",
+      "command": {
+        "script": "confidence-score",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "confirm",
+      "domain": "decision-engine",
+      "sourcePath": "packages/os/tools/decision-engine/manifest.ts",
+      "handlerPath": "packages/os/tools/decision-engine/handler.ts",
+      "schemaPath": "packages/os/tools/decision-engine/schema.ts",
+      "command": {
+        "script": "confirm",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "verify",
+            "flag": "--verify",
+            "kind": "boolean"
+          },
+          {
+            "source": "test",
+            "flag": "--test",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "ConfirmInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "decideNext",
+      "domain": "decision-engine",
+      "sourcePath": "packages/os/tools/decision-engine/manifest.ts",
+      "handlerPath": "packages/os/tools/decision-engine/handler.ts",
+      "schemaPath": "packages/os/tools/decision-engine/schema.ts",
+      "command": {
+        "script": "decide-next",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "context",
+            "flag": "--context",
+            "kind": "value"
+          },
+          {
+            "source": "markRead",
+            "flag": "--mark-read",
+            "kind": "value"
+          },
+          {
+            "source": "markRelevant",
+            "flag": "--mark-relevant",
+            "kind": "value"
+          },
+          {
+            "source": "markIrrelevant",
+            "flag": "--mark-irrelevant",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "DecideNextInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "doctor",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "doctor",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "editFlow",
+      "domain": "composed",
+      "sourcePath": "packages/os/tools/composed/manifest.ts",
+      "handlerPath": "packages/os/tools/composed/handler.ts",
+      "schemaPath": "packages/os/tools/composed/schema.ts",
+      "command": {
+        "script": "edit-flow",
+        "branchMode": "required",
+        "branchArgumentStyle": "flag",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "searchPattern",
+            "flag": "--search-pattern",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "searchPaths",
+            "flag": "--search-paths",
+            "kind": "array",
+            "required": true
+          },
+          {
+            "source": "from",
+            "flag": "--from",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "to",
+            "flag": "--to",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "contentFile",
+            "flag": "--content-file",
+            "kind": "value",
+            "required": true
+          }
+        ]
+      },
+      "inputSchema": "EditFlowInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "exploit",
+      "domain": "decision-engine",
+      "sourcePath": "packages/os/tools/decision-engine/manifest.ts",
+      "handlerPath": "packages/os/tools/decision-engine/handler.ts",
+      "schemaPath": "packages/os/tools/decision-engine/schema.ts",
+      "command": {
+        "script": "exploit",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "query",
+            "kind": "value"
+          },
+          {
+            "source": "target",
+            "flag": "--target",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "ExploitInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "explore",
+      "domain": "decision-engine",
+      "sourcePath": "packages/os/tools/decision-engine/manifest.ts",
+      "handlerPath": "packages/os/tools/decision-engine/handler.ts",
+      "schemaPath": "packages/os/tools/decision-engine/schema.ts",
+      "command": {
+        "script": "explore",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "query",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "limit",
+            "flag": "--budget",
+            "kind": "value"
+          },
+          {
+            "source": "changedOnly",
+            "flag": "--changed-only",
+            "kind": "boolean"
+          },
+          {
+            "source": "reindex",
+            "flag": "--reindex",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ExploreInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "fs.apply_patch",
+      "domain": "filesystem",
+      "sourcePath": "packages/os/tools/filesystem/manifest.ts",
+      "handlerPath": "packages/os/tools/filesystem/handler.ts",
+      "schemaPath": "packages/os/tools/filesystem/schema.ts",
+      "command": {
+        "script": "task:fs",
+        "subcommand": "apply-patch",
+        "branchMode": "required",
+        "branchArgumentStyle": "prefix",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "patchText",
+            "flag": "--patch-text",
+            "kind": "value"
+          },
+          {
+            "source": "patchFile",
+            "flag": "--patch-file",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "FsApplyPatchInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "fs.list",
+      "domain": "filesystem",
+      "sourcePath": "packages/os/tools/filesystem/manifest.ts",
+      "handlerPath": "packages/os/tools/filesystem/handler.ts",
+      "schemaPath": "packages/os/tools/filesystem/schema.ts",
+      "command": {
+        "script": "task:fs",
+        "subcommand": "list",
+        "branchMode": "optional",
+        "branchArgumentStyle": "prefix",
+        "arguments": [
+          {
+            "source": "path",
+            "kind": "value"
+          },
+          {
+            "source": "pattern",
+            "flag": "--find",
+            "kind": "value"
+          },
+          {
+            "source": "depth",
+            "flag": "--depth",
+            "kind": "value"
+          },
+          {
+            "source": "tree",
+            "flag": "--tree",
+            "kind": "boolean"
+          },
+          {
+            "source": "dirs",
+            "flag": "--dirs",
+            "kind": "boolean"
+          },
+          {
+            "source": "files",
+            "flag": "--files",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "FsListInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "fs.read",
+      "domain": "filesystem",
+      "sourcePath": "packages/os/tools/filesystem/manifest.ts",
+      "handlerPath": "packages/os/tools/filesystem/handler.ts",
+      "schemaPath": "packages/os/tools/filesystem/schema.ts",
+      "command": {
+        "script": "task:fs",
+        "subcommand": "read",
+        "branchMode": "optional",
+        "branchArgumentStyle": "prefix",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "path",
+            "kind": "value"
+          },
+          {
+            "source": "filesJson",
+            "flag": "--files-json",
+            "kind": "value"
+          },
+          {
+            "source": "offset",
+            "flag": "--offset",
+            "kind": "value"
+          },
+          {
+            "source": "limit",
+            "flag": "--limit",
+            "kind": "value"
+          },
+          {
+            "source": "from",
+            "flag": "--from",
+            "kind": "value"
+          },
+          {
+            "source": "to",
+            "flag": "--to",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "FsReadInput",
+      "outputSchema": "FsReadOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "fs.search",
+      "domain": "filesystem",
+      "sourcePath": "packages/os/tools/filesystem/manifest.ts",
+      "handlerPath": "packages/os/tools/filesystem/handler.ts",
+      "schemaPath": "packages/os/tools/filesystem/schema.ts",
+      "command": {
+        "script": "task:fs",
+        "subcommand": "search",
+        "branchMode": "optional",
+        "branchArgumentStyle": "prefix",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "pattern",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "paths",
+            "kind": "array"
+          },
+          {
+            "source": "include",
+            "flag": "--include",
+            "kind": "value"
+          },
+          {
+            "source": "context",
+            "flag": "--context",
+            "kind": "value"
+          },
+          {
+            "source": "maxResults",
+            "flag": "--max-results",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "FsSearchInput",
+      "outputSchema": "FsSearchOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "fs.trash",
+      "domain": "filesystem",
+      "sourcePath": "packages/os/tools/filesystem/manifest.ts",
+      "handlerPath": "packages/os/tools/filesystem/handler.ts",
+      "schemaPath": "packages/os/tools/filesystem/schema.ts",
+      "command": {
+        "script": "task:fs",
+        "subcommand": "trash",
+        "branchMode": "required",
+        "branchArgumentStyle": "prefix",
+        "arguments": [
+          {
+            "source": "path",
+            "kind": "value",
+            "required": true
+          }
+        ]
+      },
+      "inputSchema": "FsTrashInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "fs.write",
+      "domain": "filesystem",
+      "sourcePath": "packages/os/tools/filesystem/manifest.ts",
+      "handlerPath": "packages/os/tools/filesystem/handler.ts",
+      "schemaPath": "packages/os/tools/filesystem/schema.ts",
+      "command": {
+        "script": "task:fs",
+        "subcommand": "write",
+        "branchMode": "required",
+        "branchArgumentStyle": "prefix",
+        "arguments": [
+          {
+            "source": "path",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "content",
+            "flag": "--content",
+            "kind": "value"
+          },
+          {
+            "source": "contentFile",
+            "flag": "--content-file",
+            "kind": "value"
+          },
+          {
+            "source": "force",
+            "flag": "--force",
+            "kind": "boolean"
+          },
+          {
+            "source": "append",
+            "flag": "--append",
+            "kind": "boolean"
+          },
+          {
+            "source": "mkdirs",
+            "flag": "--mkdirs",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "FsWriteInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "generate.docs",
+      "domain": "generation",
+      "sourcePath": "packages/os/tools/generation/manifest.ts",
+      "handlerPath": "packages/os/tools/generation/handler.ts",
+      "schemaPath": "packages/os/tools/generation/schema.ts",
+      "command": {
+        "script": "generate-docs",
+        "branchMode": "none",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "generate.types",
+      "domain": "generation",
+      "sourcePath": "packages/os/tools/generation/manifest.ts",
+      "handlerPath": "packages/os/tools/generation/handler.ts",
+      "schemaPath": "packages/os/tools/generation/schema.ts",
+      "command": {
+        "script": "generate-types",
+        "branchMode": "none",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "gh",
+      "domain": "github",
+      "sourcePath": "packages/os/tools/github/manifest.ts",
+      "handlerPath": "packages/os/tools/github/handler.ts",
+      "schemaPath": "packages/os/tools/github/schema.ts",
+      "command": {
+        "script": "gh",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "args",
+            "kind": "array"
+          }
+        ]
+      },
+      "inputSchema": "GhInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "git.diff",
+      "domain": "git",
+      "sourcePath": "packages/os/tools/git/manifest.ts",
+      "handlerPath": "packages/os/tools/git/handler.ts",
+      "schemaPath": "packages/os/tools/git/schema.ts",
+      "command": {
+        "script": "git:diff",
+        "branchMode": "required",
+        "branchArgumentStyle": "flag",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "base",
+            "flag": "--base",
+            "kind": "value"
+          },
+          {
+            "source": "head",
+            "flag": "--head",
+            "kind": "value"
+          },
+          {
+            "source": "paths",
+            "flag": "--paths",
+            "kind": "array"
+          },
+          {
+            "source": "stat",
+            "flag": "--stat",
+            "kind": "boolean"
+          },
+          {
+            "source": "files",
+            "flag": "--files",
+            "kind": "boolean"
+          },
+          {
+            "source": "hunks",
+            "flag": "--hunks",
+            "kind": "boolean"
+          },
+          {
+            "source": "patch",
+            "flag": "--patch",
+            "kind": "boolean"
+          },
+          {
+            "source": "nameOnly",
+            "flag": "--name-only",
+            "kind": "boolean"
+          },
+          {
+            "source": "context",
+            "flag": "--context",
+            "kind": "value"
+          },
+          {
+            "source": "maxBytes",
+            "flag": "--max-bytes",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "GitDiffInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "git.status",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "status",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "github",
+      "domain": "github",
+      "sourcePath": "packages/os/tools/github/manifest.ts",
+      "handlerPath": "packages/os/tools/github/handler.ts",
+      "schemaPath": "packages/os/tools/github/schema.ts",
+      "command": {
+        "script": "github",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "operation",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "repo",
+            "flag": "--repo",
+            "kind": "value"
+          },
+          {
+            "source": "pr",
+            "flag": "--pr",
+            "kind": "value"
+          },
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "base",
+            "flag": "--base",
+            "kind": "value"
+          },
+          {
+            "source": "head",
+            "flag": "--head",
+            "kind": "value"
+          },
+          {
+            "source": "preset",
+            "flag": "--preset",
+            "kind": "value"
+          },
+          {
+            "source": "fields",
+            "flag": "--field",
+            "kind": "array"
+          },
+          {
+            "source": "limit",
+            "flag": "--limit",
+            "kind": "value"
+          },
+          {
+            "source": "state",
+            "flag": "--state",
+            "kind": "value"
+          },
+          {
+            "source": "body",
+            "flag": "--body",
+            "kind": "value"
+          },
+          {
+            "source": "bodyFile",
+            "flag": "--body-file",
+            "kind": "value"
+          },
+          {
+            "source": "wait",
+            "flag": "--wait",
+            "kind": "boolean"
+          },
+          {
+            "source": "squash",
+            "flag": "--squash",
+            "kind": "boolean"
+          },
+          {
+            "source": "full",
+            "flag": "--full",
+            "kind": "boolean"
+          },
+          {
+            "source": "mergeMethod",
+            "flag": "--merge-method",
+            "kind": "value"
+          },
+          {
+            "source": "rawArgs",
+            "flag": "--raw-arg",
+            "kind": "array"
+          },
+          {
+            "source": "args",
+            "flag": "--raw-arg",
+            "kind": "array"
+          },
+          {
+            "source": "reason",
+            "flag": "--reason",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "GithubInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "http",
+      "domain": "http",
+      "sourcePath": "packages/os/tools/http/manifest.ts",
+      "handlerPath": "packages/os/tools/http/handler.ts",
+      "schemaPath": "packages/os/tools/http/schema.ts",
+      "command": {
+        "script": "fs",
+        "subcommand": "http",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "method",
+            "kind": "value"
+          },
+          {
+            "source": "url",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "headers",
+            "kind": "record"
+          },
+          {
+            "source": "body",
+            "kind": "value",
+            "flag": "--raw"
+          }
+        ]
+      },
+      "inputSchema": "HttpInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "linear.createIssue",
+      "domain": "linear",
+      "sourcePath": "packages/os/tools/linear/manifest.ts",
+      "handlerPath": "packages/os/tools/linear/handler.ts",
+      "schemaPath": "packages/os/tools/linear/schema.ts",
+      "command": {
+        "script": "linear",
+        "subcommand": "create",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "title",
+            "kind": "value"
+          },
+          {
+            "source": "description",
+            "flag": "--description",
+            "kind": "value"
+          },
+          {
+            "source": "team",
+            "flag": "--team",
+            "kind": "value"
+          },
+          {
+            "source": "state",
+            "flag": "--state",
+            "kind": "value"
+          },
+          {
+            "source": "labels",
+            "flag": "--labels",
+            "kind": "array"
+          },
+          {
+            "source": "priority",
+            "flag": "--priority",
+            "kind": "value"
+          },
+          {
+            "source": "assignee",
+            "flag": "--assignee",
+            "kind": "value"
+          },
+          {
+            "source": "project",
+            "flag": "--project",
+            "kind": "value"
+          },
+          {
+            "source": "cycle",
+            "flag": "--cycle",
+            "kind": "value"
+          },
+          {
+            "source": "parent",
+            "flag": "--parent",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "LinearCreateIssueInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "linear.issue",
+      "domain": "linear",
+      "sourcePath": "packages/os/tools/linear/manifest.ts",
+      "handlerPath": "packages/os/tools/linear/handler.ts",
+      "schemaPath": "packages/os/tools/linear/schema.ts",
+      "command": {
+        "script": "linear",
+        "subcommand": "issue",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "identifier",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "LinearIssueInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "linear.labels",
+      "domain": "linear",
+      "sourcePath": "packages/os/tools/linear/manifest.ts",
+      "handlerPath": "packages/os/tools/linear/handler.ts",
+      "schemaPath": "packages/os/tools/linear/schema.ts",
+      "command": {
+        "script": "linear",
+        "subcommand": "labels",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "first",
+            "flag": "--first",
+            "kind": "value"
+          },
+          {
+            "source": "after",
+            "flag": "--after",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "LinearListInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "linear.projects",
+      "domain": "linear",
+      "sourcePath": "packages/os/tools/linear/manifest.ts",
+      "handlerPath": "packages/os/tools/linear/handler.ts",
+      "schemaPath": "packages/os/tools/linear/schema.ts",
+      "command": {
+        "script": "linear",
+        "subcommand": "projects",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "first",
+            "flag": "--first",
+            "kind": "value"
+          },
+          {
+            "source": "after",
+            "flag": "--after",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "LinearListInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "linear.search",
+      "domain": "linear",
+      "sourcePath": "packages/os/tools/linear/manifest.ts",
+      "handlerPath": "packages/os/tools/linear/handler.ts",
+      "schemaPath": "packages/os/tools/linear/schema.ts",
+      "command": {
+        "script": "linear",
+        "subcommand": "search",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "search",
+            "flag": "--search",
+            "kind": "value"
+          },
+          {
+            "source": "team",
+            "flag": "--team",
+            "kind": "value"
+          },
+          {
+            "source": "first",
+            "flag": "--first",
+            "kind": "value"
+          },
+          {
+            "source": "after",
+            "flag": "--after",
+            "kind": "value"
+          },
+          {
+            "source": "filter",
+            "flag": "--filter",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "LinearSearchInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "linear.states",
+      "domain": "linear",
+      "sourcePath": "packages/os/tools/linear/manifest.ts",
+      "handlerPath": "packages/os/tools/linear/handler.ts",
+      "schemaPath": "packages/os/tools/linear/schema.ts",
+      "command": {
+        "script": "linear",
+        "subcommand": "states",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "team",
+            "flag": "--team",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "LinearTeamScopedListInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "linear.teams",
+      "domain": "linear",
+      "sourcePath": "packages/os/tools/linear/manifest.ts",
+      "handlerPath": "packages/os/tools/linear/handler.ts",
+      "schemaPath": "packages/os/tools/linear/schema.ts",
+      "command": {
+        "script": "linear",
+        "subcommand": "teams",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "first",
+            "flag": "--first",
+            "kind": "value"
+          },
+          {
+            "source": "after",
+            "flag": "--after",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "LinearListInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "linear.updateIssue",
+      "domain": "linear",
+      "sourcePath": "packages/os/tools/linear/manifest.ts",
+      "handlerPath": "packages/os/tools/linear/handler.ts",
+      "schemaPath": "packages/os/tools/linear/schema.ts",
+      "command": {
+        "script": "linear",
+        "subcommand": "update",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "issueId",
+            "kind": "value"
+          },
+          {
+            "source": "title",
+            "flag": "--title",
+            "kind": "value"
+          },
+          {
+            "source": "description",
+            "flag": "--description",
+            "kind": "value"
+          },
+          {
+            "source": "state",
+            "flag": "--state",
+            "kind": "value"
+          },
+          {
+            "source": "labels",
+            "flag": "--labels",
+            "kind": "array"
+          },
+          {
+            "source": "priority",
+            "flag": "--priority",
+            "kind": "value"
+          },
+          {
+            "source": "assignee",
+            "flag": "--assignee",
+            "kind": "value"
+          },
+          {
+            "source": "project",
+            "flag": "--project",
+            "kind": "value"
+          },
+          {
+            "source": "cycle",
+            "flag": "--cycle",
+            "kind": "value"
+          },
+          {
+            "source": "parent",
+            "flag": "--parent",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "LinearUpdateIssueInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "mac.call",
+      "domain": "mac",
+      "sourcePath": "packages/os/tools/mac/manifest.ts",
+      "handlerPath": "packages/os/tools/mac/handler.ts",
+      "schemaPath": "packages/os/tools/mac/schema.ts",
+      "command": {
+        "script": "mac",
+        "subcommand": "exec",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "command",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "cwd",
+            "flag": "--cwd",
+            "kind": "value"
+          },
+          {
+            "source": "timeout",
+            "flag": "--timeout",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "MacExecInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "mac.exec",
+      "domain": "mac",
+      "sourcePath": "packages/os/tools/mac/manifest.ts",
+      "handlerPath": "packages/os/tools/mac/handler.ts",
+      "schemaPath": "packages/os/tools/mac/schema.ts",
+      "command": {
+        "script": "mac",
+        "subcommand": "exec",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "command",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "cwd",
+            "flag": "--cwd",
+            "kind": "value"
+          },
+          {
+            "source": "timeout",
+            "flag": "--timeout",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "MacExecInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "mac.list",
+      "domain": "mac",
+      "sourcePath": "packages/os/tools/mac/manifest.ts",
+      "handlerPath": "packages/os/tools/mac/handler.ts",
+      "schemaPath": "packages/os/tools/mac/schema.ts",
+      "command": {
+        "script": "mac",
+        "subcommand": "list",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "path",
+            "kind": "value"
+          },
+          {
+            "source": "depth",
+            "flag": "--depth",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "MacListInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "mac.port",
+      "domain": "mac",
+      "sourcePath": "packages/os/tools/mac/manifest.ts",
+      "handlerPath": "packages/os/tools/mac/handler.ts",
+      "schemaPath": "packages/os/tools/mac/schema.ts",
+      "command": {
+        "script": "mac",
+        "subcommand": "port",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "port",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "MacPortInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "mac.process",
+      "domain": "mac",
+      "sourcePath": "packages/os/tools/mac/manifest.ts",
+      "handlerPath": "packages/os/tools/mac/handler.ts",
+      "schemaPath": "packages/os/tools/mac/schema.ts",
+      "command": {
+        "script": "mac",
+        "subcommand": "process",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "pid",
+            "flag": "--pid",
+            "kind": "value"
+          },
+          {
+            "source": "name",
+            "flag": "--name",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "MacProcessInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "mac.read",
+      "domain": "mac",
+      "sourcePath": "packages/os/tools/mac/manifest.ts",
+      "handlerPath": "packages/os/tools/mac/handler.ts",
+      "schemaPath": "packages/os/tools/mac/schema.ts",
+      "command": {
+        "script": "mac",
+        "subcommand": "read",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "path",
+            "kind": "value",
+            "required": true
+          }
+        ]
+      },
+      "inputSchema": "MacReadInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "mac.search",
+      "domain": "mac",
+      "sourcePath": "packages/os/tools/mac/manifest.ts",
+      "handlerPath": "packages/os/tools/mac/handler.ts",
+      "schemaPath": "packages/os/tools/mac/schema.ts",
+      "command": {
+        "script": "mac",
+        "subcommand": "search",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "pattern",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "path",
+            "kind": "value"
+          },
+          {
+            "source": "include",
+            "flag": "--include",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "MacSearchInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "mac.write",
+      "domain": "mac",
+      "sourcePath": "packages/os/tools/mac/manifest.ts",
+      "handlerPath": "packages/os/tools/mac/handler.ts",
+      "schemaPath": "packages/os/tools/mac/schema.ts",
+      "command": {
+        "script": "mac",
+        "subcommand": "write",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "path",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "content",
+            "flag": "--content",
+            "kind": "value"
+          },
+          {
+            "source": "contentFile",
+            "flag": "--content-file",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "MacWriteInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "media.angle.measure",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "angle:measure",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaAngleMeasureInput",
+      "outputSchema": "MediaAngleMetrics",
+      "requiredProfiles": [
+        "media-vision-pose"
+      ],
+      "requiredCommands": [
+        "python3"
+      ]
+    },
+    {
+      "name": "media.audio.extract",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "audio:extract",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaAudioExtractInput",
+      "outputSchema": "MediaAudioArtifact",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "ffmpeg"
+      ]
+    },
+    {
+      "name": "media.audio.normalize",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "audio:normalize",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaAudioNormalizeInput",
+      "outputSchema": "MediaAudioArtifact",
+      "requiredProfiles": [
+        "media-audio"
+      ],
+      "requiredCommands": [
+        "sox"
+      ]
+    },
+    {
+      "name": "media.breakdown.plan",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "breakdown:plan",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaBreakdownPlanInput",
+      "outputSchema": "MediaBreakdownPlan",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "ffprobe"
+      ]
+    },
+    {
+      "name": "media.camera.motion",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "camera:motion",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaCameraMotionInput",
+      "outputSchema": "MediaCameraMotion",
+      "requiredProfiles": [
+        "media-vision-light"
+      ],
+      "requiredCommands": [
+        "python3"
+      ]
+    },
+    {
+      "name": "media.clip.search",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "clip:search",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaClipSearchInput",
+      "outputSchema": "MediaClipSearchResult",
+      "requiredProfiles": [
+        "media-youtube"
+      ],
+      "requiredCommands": [
+        "yt-dlp"
+      ]
+    },
+    {
+      "name": "media.compose",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "compose",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaComposeInput",
+      "outputSchema": "MediaRenderResult",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "ffmpeg"
+      ]
+    },
+    {
+      "name": "media.doctor",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "doctor",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaDoctorInput",
+      "outputSchema": "MediaDependencyReport",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "ffmpeg",
+        "ffprobe",
+        "mediainfo",
+        "magick",
+        "exiftool"
+      ]
+    },
+    {
+      "name": "media.export",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "export",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaExportInput",
+      "outputSchema": "MediaExportPackage",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "ffmpeg",
+        "ffprobe"
+      ]
+    },
+    {
+      "name": "media.frames.extract",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "frames:extract",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaFramesExtractInput",
+      "outputSchema": "MediaFrameManifest",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "ffmpeg"
+      ]
+    },
+    {
+      "name": "media.ingest",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "ingest",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaIngestInput",
+      "outputSchema": "MediaIngestManifest",
+      "requiredProfiles": [
+        "media-youtube"
+      ],
+      "requiredCommands": [
+        "yt-dlp",
+        "ffprobe"
+      ]
+    },
+    {
+      "name": "media.install",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "install",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaInstallInput",
+      "outputSchema": "MediaInstallPlan",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "brew"
+      ]
+    },
+    {
+      "name": "media.motion.track",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "motion:track",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaMotionTrackInput",
+      "outputSchema": "MediaMotionTrack",
+      "requiredProfiles": [
+        "media-vision-light"
+      ],
+      "requiredCommands": [
+        "python3"
+      ]
+    },
+    {
+      "name": "media.object.track",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "object:track",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaObjectTrackInput",
+      "outputSchema": "MediaObjectTrack",
+      "requiredProfiles": [
+        "media-vision-light"
+      ],
+      "requiredCommands": [
+        "python3"
+      ]
+    },
+    {
+      "name": "media.overlay.render",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "overlay:render",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaOverlayRenderInput",
+      "outputSchema": "MediaOverlay",
+      "requiredProfiles": [
+        "media-render-advanced"
+      ],
+      "requiredCommands": [
+        "magick"
+      ]
+    },
+    {
+      "name": "media.pose.estimate",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "pose:estimate",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaPoseEstimateInput",
+      "outputSchema": "MediaPoseTrack",
+      "requiredProfiles": [
+        "media-vision-pose"
+      ],
+      "requiredCommands": [
+        "python3"
+      ]
+    },
+    {
+      "name": "media.probe",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "probe",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaProbeInput",
+      "outputSchema": "MediaAsset",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "ffprobe"
+      ]
+    },
+    {
+      "name": "media.qa",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "qa",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaQaInput",
+      "outputSchema": "MediaQaResult",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "ffprobe"
+      ]
+    },
+    {
+      "name": "media.scene.detect",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "scene:detect",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaSceneDetectInput",
+      "outputSchema": "MediaSceneDetectResult",
+      "requiredProfiles": [
+        "media-vision-light"
+      ],
+      "requiredCommands": [
+        "python3"
+      ]
+    },
+    {
+      "name": "media.screenshot.render",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "screenshot:render",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "input",
+            "flag": "--input",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "out",
+            "flag": "--out",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "width",
+            "flag": "--width",
+            "kind": "value"
+          },
+          {
+            "source": "height",
+            "flag": "--height",
+            "kind": "value"
+          },
+          {
+            "source": "theme",
+            "flag": "--theme",
+            "kind": "value"
+          },
+          {
+            "source": "accent",
+            "flag": "--accent",
+            "kind": "value"
+          },
+          {
+            "source": "background",
+            "flag": "--background",
+            "kind": "value"
+          },
+          {
+            "source": "padding",
+            "flag": "--padding",
+            "kind": "value"
+          },
+          {
+            "source": "fit",
+            "flag": "--fit",
+            "kind": "value"
+          },
+          {
+            "source": "pattern",
+            "flag": "--pattern",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "MediaScreenshotRenderInput",
+      "outputSchema": "MediaScreenshotResult",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "ffmpeg"
+      ]
+    },
+    {
+      "name": "media.sports-science.metrics",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "sports-science:metrics",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaSportsScienceMetricsInput",
+      "outputSchema": "MediaSportsScienceMetrics",
+      "requiredProfiles": [
+        "media-vision-pose"
+      ],
+      "requiredCommands": [
+        "python3"
+      ]
+    },
+    {
+      "name": "media.svg",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media:svg",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "dryRunFlag": "--dry-run",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value"
+          },
+          {
+            "source": "input",
+            "flag": "--input",
+            "kind": "value"
+          },
+          {
+            "source": "output",
+            "flag": "--output",
+            "kind": "value"
+          },
+          {
+            "source": "svg",
+            "flag": "--svg",
+            "kind": "value"
+          },
+          {
+            "source": "svgFile",
+            "flag": "--svg-file",
+            "kind": "value"
+          },
+          {
+            "source": "documentJson",
+            "flag": "--document-json",
+            "kind": "value"
+          },
+          {
+            "source": "operationsJson",
+            "flag": "--operations-json",
+            "kind": "value"
+          },
+          {
+            "source": "checksJson",
+            "flag": "--checks-json",
+            "kind": "value"
+          },
+          {
+            "source": "renderJson",
+            "flag": "--render-json",
+            "kind": "value"
+          },
+          {
+            "source": "selectorsJson",
+            "flag": "--selectors-json",
+            "kind": "value"
+          },
+          {
+            "source": "snapshot",
+            "flag": "--snapshot",
+            "kind": "boolean"
+          },
+          {
+            "source": "snapshotName",
+            "flag": "--snapshot-name",
+            "kind": "value"
+          },
+          {
+            "source": "restoreFrom",
+            "flag": "--restore-from",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "MediaSvgInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [
+        "media-core"
+      ],
+      "requiredCommands": [
+        "python3",
+        "rsvg-convert"
+      ]
+    },
+    {
+      "name": "media.svg.convert",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "svg:convert",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "input",
+            "flag": "--input",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "out",
+            "flag": "--out",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "strategy",
+            "flag": "--strategy",
+            "kind": "value"
+          },
+          {
+            "source": "traceEngine",
+            "flag": "--trace-engine",
+            "kind": "value"
+          },
+          {
+            "source": "optimize",
+            "flag": "--optimize",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "MediaSvgConvertInput",
+      "outputSchema": "MediaSvgResult",
+      "requiredProfiles": [
+        "media-render-advanced"
+      ],
+      "requiredCommands": [
+        "ffmpeg",
+        "potrace"
+      ]
+    },
+    {
+      "name": "media.timeline.validate",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "timeline:validate",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaTimelineValidateInput",
+      "outputSchema": "MediaTimelineValidationResult",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "media.transcribe",
+      "domain": "media",
+      "sourcePath": "packages/os/tools/media/manifest.ts",
+      "handlerPath": "packages/os/tools/media/handler.ts",
+      "schemaPath": "packages/os/tools/media/schema.ts",
+      "command": {
+        "script": "media",
+        "subcommand": "transcribe",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "MediaTranscribeInput",
+      "outputSchema": "MediaTranscript",
+      "requiredProfiles": [
+        "media-audio"
+      ],
+      "requiredCommands": [
+        "ffmpeg"
+      ]
+    },
+    {
+      "name": "memory",
+      "domain": "memory",
+      "sourcePath": "packages/os/tools/memory/manifest.ts",
+      "handlerPath": "packages/os/tools/memory/handler.ts",
+      "schemaPath": "packages/os/tools/memory/schema.ts",
+      "command": {
+        "script": "memory",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "operation",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "index",
+            "kind": "value"
+          },
+          {
+            "source": "keyword",
+            "kind": "value"
+          },
+          {
+            "source": "title",
+            "kind": "value"
+          },
+          {
+            "source": "file",
+            "kind": "value"
+          },
+          {
+            "source": "category",
+            "flag": "--category",
+            "kind": "value"
+          },
+          {
+            "source": "limit",
+            "flag": "--limit",
+            "kind": "value"
+          },
+          {
+            "source": "byTitle",
+            "flag": "--by-title",
+            "kind": "boolean"
+          },
+          {
+            "source": "text",
+            "flag": "--text",
+            "kind": "boolean"
+          },
+          {
+            "source": "traceId",
+            "flag": "--trace-id",
+            "kind": "value"
+          },
+          {
+            "source": "tool",
+            "flag": "--tool",
+            "kind": "value"
+          },
+          {
+            "source": "status",
+            "flag": "--status",
+            "kind": "value"
+          },
+          {
+            "source": "since",
+            "flag": "--since",
+            "kind": "value"
+          },
+          {
+            "source": "until",
+            "flag": "--until",
+            "kind": "value"
+          },
+          {
+            "source": "contains",
+            "flag": "--contains",
+            "kind": "value"
+          },
+          {
+            "source": "memoryTaskSession",
+            "flag": "--task-session",
+            "kind": "value"
+          },
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "raw",
+            "flag": "--raw",
+            "kind": "boolean"
+          },
+          {
+            "source": "db",
+            "flag": "--db",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "MemoryInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "prReview",
+      "domain": "review",
+      "sourcePath": "packages/os/tools/review/manifest.ts",
+      "handlerPath": "packages/os/tools/review/handler.ts",
+      "schemaPath": "packages/os/tools/review/schema.ts",
+      "command": {
+        "script": "pr-review",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "pr",
+            "kind": "value"
+          },
+          {
+            "source": "stdout",
+            "flag": "--stdout",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "PrReviewInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "research.ingest",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "research:ingest",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "source",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "question",
+            "flag": "--question",
+            "kind": "value"
+          },
+          {
+            "source": "mode",
+            "flag": "--mode",
+            "kind": "value"
+          },
+          {
+            "source": "visual",
+            "flag": "--visual",
+            "kind": "boolean"
+          },
+          {
+            "source": "slidesMax",
+            "flag": "--slides-max",
+            "kind": "value"
+          },
+          {
+            "source": "videoMode",
+            "flag": "--video-mode",
+            "kind": "value"
+          },
+          {
+            "source": "keep",
+            "flag": "--keep",
+            "kind": "boolean"
+          },
+          {
+            "source": "outDir",
+            "flag": "--out-dir",
+            "kind": "value"
+          },
+          {
+            "source": "summarizeBin",
+            "flag": "--summarize-bin",
+            "kind": "value"
+          },
+          {
+            "source": "memoryTitle",
+            "flag": "--memory-title",
+            "kind": "value"
+          },
+          {
+            "source": "memoryCategory",
+            "flag": "--memory-category",
+            "kind": "value"
+          },
+          {
+            "source": "noMemorySave",
+            "flag": "--no-memory-save",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ResearchIngestInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "review.run",
+      "domain": "review",
+      "sourcePath": "packages/os/tools/review/manifest.ts",
+      "handlerPath": "packages/os/tools/review/handler.ts",
+      "schemaPath": "packages/os/tools/review/schema.ts",
+      "command": {
+        "script": "review",
+        "branchMode": "required",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "fix",
+            "flag": "--fix",
+            "kind": "boolean"
+          },
+          {
+            "source": "all",
+            "flag": "--all",
+            "kind": "boolean"
+          },
+          {
+            "source": "base",
+            "flag": "--base",
+            "kind": "value"
+          },
+          {
+            "source": "strict",
+            "flag": "--strict",
+            "kind": "boolean"
+          },
+          {
+            "source": "mine",
+            "flag": "--mine",
+            "kind": "boolean"
+          },
+          {
+            "source": "noTests",
+            "flag": "--no-tests",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ReviewInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "sentry.config",
+      "domain": "sentry",
+      "sourcePath": "packages/os/tools/sentry/manifest.ts",
+      "handlerPath": "packages/os/tools/sentry/handler.ts",
+      "schemaPath": "packages/os/tools/sentry/schema.ts",
+      "command": {
+        "script": "sentry",
+        "subcommand": "config",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "verify",
+            "flag": "--verify",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "SentryConfigInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "sentry.event",
+      "domain": "sentry",
+      "sourcePath": "packages/os/tools/sentry/manifest.ts",
+      "handlerPath": "packages/os/tools/sentry/handler.ts",
+      "schemaPath": "packages/os/tools/sentry/schema.ts",
+      "command": {
+        "script": "sentry",
+        "subcommand": "event",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "eventId",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "project",
+            "flag": "--project",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "SentryEventInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "sentry.issue",
+      "domain": "sentry",
+      "sourcePath": "packages/os/tools/sentry/manifest.ts",
+      "handlerPath": "packages/os/tools/sentry/handler.ts",
+      "schemaPath": "packages/os/tools/sentry/schema.ts",
+      "command": {
+        "script": "sentry",
+        "subcommand": "issue",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "identifier",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "expand",
+            "flag": "--expand",
+            "kind": "array"
+          }
+        ]
+      },
+      "inputSchema": "SentryIssueInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "sentry.issueEvent",
+      "domain": "sentry",
+      "sourcePath": "packages/os/tools/sentry/manifest.ts",
+      "handlerPath": "packages/os/tools/sentry/handler.ts",
+      "schemaPath": "packages/os/tools/sentry/schema.ts",
+      "command": {
+        "script": "sentry",
+        "subcommand": "issue-event",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "issueId",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "eventId",
+            "kind": "value"
+          },
+          {
+            "source": "full",
+            "flag": "--full",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "SentryIssueEventInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "sentry.issues",
+      "domain": "sentry",
+      "sourcePath": "packages/os/tools/sentry/manifest.ts",
+      "handlerPath": "packages/os/tools/sentry/handler.ts",
+      "schemaPath": "packages/os/tools/sentry/schema.ts",
+      "command": {
+        "script": "sentry",
+        "subcommand": "issues",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "query",
+            "flag": "--query",
+            "kind": "value"
+          },
+          {
+            "source": "project",
+            "flag": "--project",
+            "kind": "value"
+          },
+          {
+            "source": "environment",
+            "flag": "--environment",
+            "kind": "array"
+          },
+          {
+            "source": "sort",
+            "flag": "--sort",
+            "kind": "value"
+          },
+          {
+            "source": "statsPeriod",
+            "flag": "--stats-period",
+            "kind": "value"
+          },
+          {
+            "source": "start",
+            "flag": "--start",
+            "kind": "value"
+          },
+          {
+            "source": "end",
+            "flag": "--end",
+            "kind": "value"
+          },
+          {
+            "source": "cursor",
+            "flag": "--cursor",
+            "kind": "value"
+          },
+          {
+            "source": "limit",
+            "flag": "--limit",
+            "kind": "value"
+          },
+          {
+            "source": "expand",
+            "flag": "--expand",
+            "kind": "array"
+          },
+          {
+            "source": "collapse",
+            "flag": "--collapse",
+            "kind": "array"
+          }
+        ]
+      },
+      "inputSchema": "SentryIssuesInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "sentry.projects",
+      "domain": "sentry",
+      "sourcePath": "packages/os/tools/sentry/manifest.ts",
+      "handlerPath": "packages/os/tools/sentry/handler.ts",
+      "schemaPath": "packages/os/tools/sentry/schema.ts",
+      "command": {
+        "script": "sentry",
+        "subcommand": "projects",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "limit",
+            "flag": "--limit",
+            "kind": "value"
+          },
+          {
+            "source": "cursor",
+            "flag": "--cursor",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "SentryProjectsInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "sentry.trace",
+      "domain": "sentry",
+      "sourcePath": "packages/os/tools/sentry/manifest.ts",
+      "handlerPath": "packages/os/tools/sentry/handler.ts",
+      "schemaPath": "packages/os/tools/sentry/schema.ts",
+      "command": {
+        "script": "sentry",
+        "subcommand": "trace",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "traceId",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "project",
+            "flag": "--project",
+            "kind": "value"
+          },
+          {
+            "source": "query",
+            "flag": "--query",
+            "kind": "value"
+          },
+          {
+            "source": "statsPeriod",
+            "flag": "--stats-period",
+            "kind": "value"
+          },
+          {
+            "source": "dataset",
+            "flag": "--dataset",
+            "kind": "value"
+          },
+          {
+            "source": "field",
+            "flag": "--field",
+            "kind": "array"
+          },
+          {
+            "source": "cursor",
+            "flag": "--cursor",
+            "kind": "value"
+          },
+          {
+            "source": "limit",
+            "flag": "--limit",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "SentryTraceInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "server",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "consuelo-reload",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value",
+            "required": true
+          }
+        ]
+      },
+      "inputSchema": "ServerInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "status",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "status",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "stream.context",
+      "domain": "stream",
+      "sourcePath": "packages/os/tools/stream/manifest.ts",
+      "handlerPath": "packages/os/tools/stream/handler.ts",
+      "schemaPath": "packages/os/tools/stream/schema.ts",
+      "command": {
+        "script": "stream:context",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "area",
+            "flag": "--area",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "stream",
+            "flag": "--stream",
+            "kind": "value"
+          },
+          {
+            "source": "repo",
+            "flag": "--repo",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "StreamInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "stream.create",
+      "domain": "stream",
+      "sourcePath": "packages/os/tools/stream/manifest.ts",
+      "handlerPath": "packages/os/tools/stream/handler.ts",
+      "schemaPath": "packages/os/tools/stream/schema.ts",
+      "command": {
+        "script": "stream:create",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "area",
+            "flag": "--area",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "sourceBranch",
+            "flag": "--source-branch",
+            "kind": "value"
+          },
+          {
+            "source": "repo",
+            "flag": "--repo",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "StreamCreateInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "stream.list",
+      "domain": "stream",
+      "sourcePath": "packages/os/tools/stream/manifest.ts",
+      "handlerPath": "packages/os/tools/stream/handler.ts",
+      "schemaPath": "packages/os/tools/stream/schema.ts",
+      "command": {
+        "script": "stream:list",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "repo",
+            "flag": "--repo",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "StreamListInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "stream.sync",
+      "domain": "stream",
+      "sourcePath": "packages/os/tools/stream/manifest.ts",
+      "handlerPath": "packages/os/tools/stream/handler.ts",
+      "schemaPath": "packages/os/tools/stream/schema.ts",
+      "command": {
+        "script": "stream:sync",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "area",
+            "flag": "--area",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "stream",
+            "flag": "--stream",
+            "kind": "value"
+          },
+          {
+            "source": "repo",
+            "flag": "--repo",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "StreamInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "subagent",
+      "domain": "subagent",
+      "sourcePath": "packages/os/tools/subagent/manifest.ts",
+      "handlerPath": "packages/os/tools/subagent/handler.ts",
+      "schemaPath": "packages/os/tools/subagent/schema.ts",
+      "command": {
+        "script": "internal",
+        "internal": "subagent",
+        "arguments": []
+      },
+      "inputSchema": "SubagentInput",
+      "outputSchema": "SubagentOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "task.cleanup",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "task:cleanup",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "force",
+            "flag": "--force",
+            "kind": "boolean"
+          },
+          {
+            "source": "preview",
+            "flag": "--preview",
+            "kind": "boolean"
+          },
+          {
+            "source": "merged",
+            "flag": "--merged",
+            "kind": "boolean"
+          },
+          {
+            "source": "staleDays",
+            "flag": "--stale-days",
+            "kind": "value"
+          },
+          {
+            "source": "keep",
+            "flag": "--keep",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "TaskCleanupInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "task.current",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "internal",
+        "internal": "task.current",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "TaskCurrentOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "task.ensureSynced",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "internal",
+        "internal": "task.ensureSynced",
+        "arguments": []
+      },
+      "inputSchema": "BranchInput",
+      "outputSchema": "TaskEnsureSyncedOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "task.finish",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "task:finish",
+        "branchMode": "required",
+        "branchArgumentStyle": "flag",
+        "arguments": [
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "pr",
+            "flag": "--pr",
+            "kind": "value"
+          },
+          {
+            "source": "github",
+            "flag": "--github",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "BranchInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "task.init",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "task:init",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "area",
+            "flag": "--area",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "pr",
+            "flag": "--pr",
+            "kind": "value"
+          },
+          {
+            "source": "worktree",
+            "flag": "--worktree",
+            "kind": "value"
+          },
+          {
+            "source": "github",
+            "flag": "--github",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "TaskInitInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "task.merge",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "task:merge",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "pr",
+            "flag": "--pr",
+            "kind": "value"
+          },
+          {
+            "source": "wait",
+            "flag": "--wait",
+            "kind": "boolean"
+          },
+          {
+            "source": "squash",
+            "flag": "--squash",
+            "kind": "boolean"
+          },
+          {
+            "source": "github",
+            "flag": "--github",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "TaskMergeInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "task.pr",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "task:pr",
+        "branchMode": "required",
+        "branchArgumentStyle": "flag",
+        "arguments": [
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "taskOnly",
+            "flag": "--task-only",
+            "kind": "boolean"
+          },
+          {
+            "source": "draft",
+            "flag": "--draft",
+            "kind": "boolean"
+          },
+          {
+            "source": "ready",
+            "flag": "--ready",
+            "kind": "boolean"
+          },
+          {
+            "source": "bodyTemplate",
+            "flag": "--body-template",
+            "kind": "value"
+          },
+          {
+            "source": "pr",
+            "flag": "--pr",
+            "kind": "value"
+          },
+          {
+            "source": "github",
+            "flag": "--github",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "TaskPrInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "task.prs",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "task:prs",
+        "branchMode": "required",
+        "branchArgumentStyle": "flag",
+        "arguments": [
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "pr",
+            "flag": "--pr",
+            "kind": "value"
+          },
+          {
+            "source": "github",
+            "flag": "--github",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "BranchInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "task.push",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "task:push",
+        "branchMode": "required",
+        "branchArgumentStyle": "flag",
+        "arguments": [
+          {
+            "source": "branch",
+            "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "taskSession",
+            "flag": "--task-session",
+            "kind": "value"
+          },
+          {
+            "source": "message",
+            "flag": "--message",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "changed",
+            "flag": "--changed",
+            "kind": "boolean"
+          },
+          {
+            "source": "files",
+            "flag": "--files",
+            "kind": "array"
+          },
+          {
+            "source": "approved",
+            "flag": "--approved",
+            "kind": "boolean"
+          },
+          {
+            "source": "reason",
+            "flag": "--reason",
+            "kind": "value"
+          },
+          {
+            "source": "pr",
+            "flag": "--pr",
+            "kind": "value"
+          },
+          {
+            "source": "github",
+            "flag": "--github",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "TaskPushInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "task.start",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "task:start",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "area",
+            "flag": "--area",
+            "kind": "value"
+          },
+          {
+            "source": "title",
+            "flag": "--title",
+            "kind": "value"
+          },
+          {
+            "source": "workflow",
+            "flag": "--workflow",
+            "kind": "value"
+          },
+          {
+            "source": "bodyFile",
+            "flag": "--body-file",
+            "kind": "value"
+          },
+          {
+            "source": "startFrom",
+            "flag": "--start-from",
+            "kind": "value"
+          },
+          {
+            "source": "pr",
+            "flag": "--pr",
+            "kind": "value"
+          },
+          {
+            "source": "github",
+            "flag": "--github",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "inputSchema": "TaskStartInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "taskMeta.smoke",
+      "domain": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "handlerPath": "packages/os/tools/task-lifecycle/handler.ts",
+      "schemaPath": "packages/os/tools/task-lifecycle/schema.ts",
+      "command": {
+        "script": "task-meta:smoke",
+        "branchMode": "none",
+        "arguments": []
+      },
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "tmp",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "tmp",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "action",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "name",
+            "kind": "value"
+          },
+          {
+            "source": "content",
+            "kind": "value"
+          },
+          {
+            "source": "ext",
+            "flag": "--ext",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "TmpInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "tools.search",
+      "domain": "tool-discovery",
+      "sourcePath": "packages/os/tools/tool-discovery/manifest.ts",
+      "handlerPath": "packages/os/tools/tool-discovery/handler.ts",
+      "schemaPath": "packages/os/tools/tool-discovery/schema.ts",
+      "command": {
+        "script": "tools:search",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "query",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "limit",
+            "flag": "--limit",
+            "kind": "value"
+          },
+          {
+            "source": "category",
+            "flag": "--category",
+            "kind": "value"
+          },
+          {
+            "source": "readOnly",
+            "flag": "--read-only",
+            "kind": "boolean"
+          },
+          {
+            "source": "mutating",
+            "flag": "--mutating",
+            "kind": "boolean"
+          },
+          {
+            "source": "noDocs",
+            "flag": "--no-docs",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "ToolsSearchInput",
+      "outputSchema": "ToolsSearchOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "verify",
+      "domain": "review",
+      "sourcePath": "packages/os/tools/review/manifest.ts",
+      "handlerPath": "packages/os/tools/review/handler.ts",
+      "schemaPath": "packages/os/tools/review/schema.ts",
+      "command": {
+        "script": "verify",
+        "branchMode": "optional",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "base",
+            "flag": "--base",
+            "kind": "value"
+          },
+          {
+            "source": "noStamp",
+            "flag": "--no-stamp",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "VerifyInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "wait",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "wait",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "seconds",
+            "kind": "value"
+          },
+          {
+            "source": "duration",
+            "flag": "--duration",
+            "kind": "value"
+          },
+          {
+            "source": "detached",
+            "flag": "--detach",
+            "kind": "boolean"
+          },
+          {
+            "source": "status",
+            "flag": "--status",
+            "kind": "value"
+          },
+          {
+            "source": "list",
+            "flag": "--list",
+            "kind": "boolean"
+          },
+          {
+            "source": "reason",
+            "flag": "--reason",
+            "kind": "value"
+          },
+          {
+            "source": "deploy",
+            "flag": "--deploy",
+            "kind": "boolean"
+          },
+          {
+            "source": "pr",
+            "flag": "--pr",
+            "kind": "value"
+          }
+        ]
+      },
+      "inputSchema": "WaitInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    },
+    {
+      "name": "website.deploy",
+      "domain": "utilities",
+      "sourcePath": "packages/os/tools/utilities/manifest.ts",
+      "handlerPath": "packages/os/tools/utilities/handler.ts",
+      "schemaPath": "packages/os/tools/utilities/schema.ts",
+      "command": {
+        "script": "website:deploy",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "preview",
+            "flag": "--preview",
+            "kind": "boolean"
+          },
+          {
+            "source": "buildOnly",
+            "flag": "--build-only",
+            "kind": "boolean"
+          }
+        ]
+      },
+      "inputSchema": "WebsiteDeployInput",
+      "outputSchema": "RawOutput",
+      "requiredProfiles": [],
+      "requiredCommands": []
+    }
+  ]
+}

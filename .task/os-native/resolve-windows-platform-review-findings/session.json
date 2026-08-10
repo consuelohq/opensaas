@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_608d61e8500b",
+  "tmuxSession": "opensaas-os-native-resolve-windows-platform-review-findings-608d61e8",
+  "area": "os-native",
+  "stream": "stream/os-native",
+  "taskBranch": "task/os-native/resolve-windows-platform-review-findings",
+  "branch": "task/os-native/resolve-windows-platform-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-resolve-windows-platform-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-resolve-windows-platform-review-findings",
+  "prNumber": 1655,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1655",
+  "createdAt": "2026-07-25T02:45:45.582Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-resolve-windows-platform-review-findings/.task/os-native/resolve-windows-platform-review-findings/session.json"
+}

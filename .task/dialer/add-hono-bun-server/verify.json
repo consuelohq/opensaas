@@ -1,0 +1,268 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/add-hono-bun-server",
+  "base": "origin/stream/dialer",
+  "headSha": "796b188e2840a42612939e8c271dd00dd880ca41",
+  "changeHash": "cfb187e06d0cab04ae5d4b2d870120f2aa8b2e6d7283053c41b5340c96087fcb",
+  "changedFiles": [
+    "package.json",
+    "packages/dialer-server/README.md",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/project.json",
+    "packages/dialer-server/src/app.contract.test.ts",
+    "packages/dialer-server/src/app.ts",
+    "packages/dialer-server/src/application.ts",
+    "packages/dialer-server/src/architecture.test.ts",
+    "packages/dialer-server/src/contracts.ts",
+    "packages/dialer-server/src/effect-runner.ts",
+    "packages/dialer-server/src/errors.ts",
+    "packages/dialer-server/src/index.ts",
+    "packages/dialer-server/src/lifecycle.integration.test.ts",
+    "packages/dialer-server/src/main.ts",
+    "packages/dialer-server/src/middleware/auth.ts",
+    "packages/dialer-server/src/middleware/twilio.ts",
+    "packages/dialer-server/src/routes/call-sessions.ts",
+    "packages/dialer-server/src/routes/health.ts",
+    "packages/dialer-server/src/routes/twilio.ts",
+    "packages/dialer-server/src/runtime/auth.ts",
+    "packages/dialer-server/src/runtime/environment.ts",
+    "packages/dialer-server/src/runtime/twilio-signature.ts",
+    "packages/dialer-server/src/twilio-boundary.test.ts",
+    "packages/dialer-server/tsconfig.json",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js",
+    "scripts/code-review.sh",
+    "yarn.lock"
+  ],
+  "verifiedAt": "2026-07-23T23:37:55.361Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/add-hono-bun-server/current.json",
+        ".task/dialer/add-hono-bun-server/session.json",
+        ".task/dialer/add-hono-bun-server/verify.json",
+        ".task/dialer/add-hono-bun-server/workpad.md",
+        ".task/tasks/dialer/add-hono-bun-server.json",
+        "package.json",
+        "packages/dialer-server/README.md",
+        "packages/dialer-server/package.json",
+        "packages/dialer-server/project.json",
+        "packages/dialer-server/src/app.contract.test.ts",
+        "packages/dialer-server/src/app.ts",
+        "packages/dialer-server/src/application.ts",
+        "packages/dialer-server/src/architecture.test.ts",
+        "packages/dialer-server/src/contracts.ts",
+        "packages/dialer-server/src/effect-runner.ts",
+        "packages/dialer-server/src/errors.ts",
+        "packages/dialer-server/src/index.ts",
+        "packages/dialer-server/src/lifecycle.integration.test.ts",
+        "packages/dialer-server/src/main.ts",
+        "packages/dialer-server/src/middleware/auth.ts",
+        "packages/dialer-server/src/middleware/twilio.ts",
+        "packages/dialer-server/src/routes/call-sessions.ts",
+        "packages/dialer-server/src/routes/health.ts",
+        "packages/dialer-server/src/routes/twilio.ts",
+        "packages/dialer-server/src/runtime/auth.ts",
+        "packages/dialer-server/src/runtime/environment.ts",
+        "packages/dialer-server/src/runtime/twilio-signature.ts",
+        "packages/dialer-server/src/twilio-boundary.test.ts",
+        "packages/dialer-server/tsconfig.json",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js",
+        "scripts/code-review.sh",
+        "yarn.lock"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/README.md",
+            "packages/dialer-server/package.json",
+            "packages/dialer-server/project.json",
+            "packages/dialer-server/src/app.contract.test.ts",
+            "packages/dialer-server/src/app.ts",
+            "packages/dialer-server/src/application.ts",
+            "packages/dialer-server/src/architecture.test.ts",
+            "packages/dialer-server/src/contracts.ts",
+            "packages/dialer-server/src/effect-runner.ts",
+            "packages/dialer-server/src/errors.ts",
+            "packages/dialer-server/src/index.ts",
+            "packages/dialer-server/src/lifecycle.integration.test.ts",
+            "packages/dialer-server/src/main.ts",
+            "packages/dialer-server/src/middleware/auth.ts",
+            "packages/dialer-server/src/middleware/twilio.ts",
+            "packages/dialer-server/src/routes/call-sessions.ts",
+            "packages/dialer-server/src/routes/health.ts",
+            "packages/dialer-server/src/routes/twilio.ts",
+            "packages/dialer-server/src/runtime/auth.ts",
+            "packages/dialer-server/src/runtime/environment.ts",
+            "packages/dialer-server/src/runtime/twilio-signature.ts",
+            "packages/dialer-server/src/twilio-boundary.test.ts",
+            "packages/dialer-server/tsconfig.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/dialer-server:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/dialer-server.",
+          "matchedFiles": [
+            "packages/dialer-server/README.md",
+            "packages/dialer-server/package.json",
+            "packages/dialer-server/project.json",
+            "packages/dialer-server/src/app.contract.test.ts",
+            "packages/dialer-server/src/app.ts",
+            "packages/dialer-server/src/application.ts",
+            "packages/dialer-server/src/architecture.test.ts",
+            "packages/dialer-server/src/contracts.ts",
+            "packages/dialer-server/src/effect-runner.ts",
+            "packages/dialer-server/src/errors.ts",
+            "packages/dialer-server/src/index.ts",
+            "packages/dialer-server/src/lifecycle.integration.test.ts",
+            "packages/dialer-server/src/main.ts",
+            "packages/dialer-server/src/middleware/auth.ts",
+            "packages/dialer-server/src/middleware/twilio.ts",
+            "packages/dialer-server/src/routes/call-sessions.ts",
+            "packages/dialer-server/src/routes/health.ts",
+            "packages/dialer-server/src/routes/twilio.ts",
+            "packages/dialer-server/src/runtime/auth.ts",
+            "packages/dialer-server/src/runtime/environment.ts",
+            "packages/dialer-server/src/runtime/twilio-signature.ts",
+            "packages/dialer-server/src/twilio-boundary.test.ts",
+            "packages/dialer-server/tsconfig.json"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/dialer-server package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/dialer-server",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/dialer-server:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 994,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-add-hono-bun-server\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 740\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 526\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m   Start at \u001b[22m 19:37:54\n\u001b[2m   Duration \u001b[22m 805ms\u001b[2m (transform 8ms, setup 0ms, import 12ms, tests 740ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 335,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-server/src/app.contract.test.ts:\n(pass) dialer-server HTTP contracts > returns a deterministic health response without application dependencies [2.52ms]\n(pass) dialer-server HTTP contracts > starts one call session and propagates workspace and user identity exactly once [1.32ms]\n(pass) dialer-server HTTP contracts > loads and terminates a session through one shared use case per route [0.40ms]\n(pass) dialer-server HTTP contracts > fails closed before invoking an application use case when identity is absent [0.22ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.52ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.22ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.16ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.15ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.13ms]\n(pass) dialer-server HTTP contracts > maps %s to a stable redacted HTTP contract [0.13ms]\n\npackages/dialer-server/src/lifecycle.integration.test.ts:\n(pass) dialer-server in-memory lifecycle > starts through Hono, selects one winner, terminates the loser, completes, and releases locks [18.36ms]\n\npackages/dialer-server/src/architecture.test.ts:\n(pass) dialer-server architecture > is a private Hono package with a Bun-only process boundary [0.18ms]\n(pass) dialer-server architecture > has zero Twenty, NestJS, GraphQL, or LeadConnector branding leakage [0.54ms]\n(pass) dialer-server architecture > keeps dialer decisions out of route and middleware source [0.14ms]\n\npackages/dialer-server/src/twilio-boundary.test.ts:\n(pass) Twilio webhook boundary > verifies form callbacks against the exact forwarded public URL and parsed form fields [0.36ms]\n(pass) Twilio webhook boundary > verifies JSON callbacks against the exact raw body representation [0.17ms]\n(pass) Twilio webhook boundary > preserves provider-owned TwiML fields and returns XML [0.20ms]\n(pass) Twilio webhook boundary > rejects invalid signatures without invoking application behavior [0.13ms]\n\n 18 pass\n 0 fail\n 123 expect() calls\nRan 18 tests across 4 files. [328.00ms]\n"
+        },
+        {
+          "name": "@consuelo/dialer-server package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/dialer-server",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/dialer-server:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4,
+          "outputTail": "efault), ipv4first, ipv6first\n      --expose-gc                     Expose gc() on the global object. Has no effect on Bun.gc().\n      --no-deprecation                Suppress all reporting of the custom deprecation.\n      --throw-deprecation             Determine whether or not deprecation warnings result in errors.\n      --title=<val>                   Set the process title\n      --zero-fill-buffers             Boolean to force Buffer.allocUnsafe(size) to be zero-filled.\n      --use-system-ca                 Use the system's trusted certificate authorities\n      --use-openssl-ca                Use OpenSSL's default CA store\n      --use-bundled-ca                Use bundled CA store\n      --redis-preconnect              Preconnect to $REDIS_URL at startup\n      --sql-preconnect                Preconnect to PostgreSQL at startup\n      --no-addons                     Throw an error if process.dlopen is called, and disable export condition \"node-addons\"\n      --unhandled-rejections=<val>    One of \"strict\", \"throw\", \"warn\", \"none\", or \"warn-with-error-code\"\n      --console-depth=<val>           Set the default depth for console.log object inspection (default: 2)\n      --user-agent=<val>              Set the default User-Agent header for HTTP requests\n      --cron-title=<val>              Title for cron execution mode\n      --cron-period=<val>             Cron period for cron execution mode\n      --main-fields=<val>             Main fields to lookup in package.json. Defaults to --target dependent\n      --preserve-symlinks             Preserve symlinks when resolving files\n      --preserve-symlinks-main        Preserve symlinks when resolving the main entry point\n      --extension-order=<val>         Defaults to: .tsx,.ts,.jsx,.js,.json\n      --tsconfig-override=<val>       Specify custom tsconfig.json. Default <d>$cwd<r>/tsconfig.json\n  -d, --define=<val>                  Substitute K:V while parsing, e.g. --define process.env.NODE_ENV:\"development\". Values are parsed as JSON.\n      --drop=<val>                    Remove function calls, e.g. --drop=console removes all console.* calls.\n      --feature=<val>                 Enable a feature flag for dead-code elimination, e.g. --feature=SUPER_SECRET\n  -l, --loader=<val>                  Parse files with .ext:loader, e.g. --loader .js:jsx. Valid loaders: js, jsx, ts, tsx, json, toml, text, file, wasm, napi\n      --no-macros                     Disable macros from being executed in the bundler, transpiler and runtime\n      --jsx-factory=<val>             Changes the function called when compiling JSX elements using the classic JSX runtime\n      --jsx-fragment=<val>            Changes the function called when compiling JSX fragments\n      --jsx-import-source=<val>       Declares the module specifier to be used for importing the jsx and jsxs factory functions. Default: \"react\"\n      --jsx-runtime=<val>             \"automatic\" (default) or \"classic\"\n      --jsx-side-effects              Treat JSX elements as having side effects (disable pure annotations)\n      --ignore-dce-annotations        Ignore tree-shaking annotations such as @__PURE__\n      --env-file=<val>                Load environment variables from the specified file(s)\n      --no-env-file                   Disable automatic loading of .env files\n      --cwd=<val>                     Absolute path to resolve files & entry points from. This just changes the process' cwd.\n  -c, --config=<val>                  Specify path to Bun config file. Default <d>$cwd<r>/bunfig.toml\n  -h, --help                          Display this menu and exit\n\nExamples:\n  Run a JavaScript or TypeScript file\n  bun run ./index.js\n  bun run ./index.tsx\n\n  Run a package.json script\n  bun run dev\n  bun run lint\n\nFull documentation is available at https://bun.com/docs/cli/run\n\npackage.json scripts (3 found):\n  $ bun run test\n    bun test src\n\n  $ bun run typecheck\n    tsc --noEmit\n\n  $ bun run build\n    bun build ./src/main.ts --outdir ./dist --target bun\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

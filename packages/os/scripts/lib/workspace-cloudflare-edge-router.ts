@@ -1,4 +1,14 @@
-import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import {
+  createHash,
+  createHmac,
+  randomUUID,
+  timingSafeEqual,
+} from 'node:crypto';
+
+import {
+  createWorkspaceEdgeNodeHeaders,
+  deriveWorkspaceEdgeNodeSecret,
+} from './workspace-edge-node-auth';
 
 export type WorkspaceCloudflareEdgeRouteTarget =
   | {
@@ -18,6 +28,7 @@ export type WorkspaceCloudflareEdgeRouteTarget =
       versionId: string;
       manifestKey: string;
       htmlKey?: string;
+      contentHash?: string;
       contentType?: string;
       cachePolicy:
         | 'static-shell'
@@ -30,11 +41,21 @@ export type WorkspaceCloudflareEdgeRouteTarget =
       serviceName:
         | 'trace-sites-read-layer'
         | 'trace-sites-live-endpoints'
+        | 'configuration-sites-read-endpoints'
+        | 'configuration-sites-write-endpoints'
         | 'settings-sites-read-endpoints'
         | 'settings-sites-write-endpoints'
+        | 'environment-sites-read-endpoints'
+        | 'environment-sites-write-endpoints'
+        | 'secrets-sites-read-endpoints'
         | (string & {});
       gatewayRouteFamily: string;
       publicSiteRouteFamily: string;
+    }
+  | {
+      kind: 'redirect';
+      location: string;
+      statusCode: 301 | 302 | 307 | 308;
     };
 
 export type WorkspaceSitesEdgeCache = {
@@ -64,6 +85,13 @@ export type WorkspaceCloudflareEdgeRouteResolution =
       surface: 'os' | 'dialer' | 'app' | 'sites' | 'twenty';
       auth: 'public' | 'required' | 'workspace-session' | 'signed-connector';
       auditEvent: 'workspace.hostname.route.allowed';
+      nodeId?: string;
+      nodeConnector?: {
+        nodeId: string;
+        connectorId: string;
+        connectorStatus: 'connected' | 'disconnected';
+        tunnelOriginUrl: string;
+      };
       target: WorkspaceCloudflareEdgeRouteTarget;
     }
   | {
@@ -78,6 +106,9 @@ export type WorkspaceCloudflareEdgeRouteRegistry = {
     host: string;
     path: string;
     method: string;
+    nodeId?: string;
+    nowMs?: number;
+    requireOnlineNode?: boolean;
   }) => Promise<WorkspaceCloudflareEdgeRouteResolution>;
 };
 
@@ -88,28 +119,49 @@ export type WorkspaceCloudflareEdgeRouter = {
 export type WorkspaceCloudflareEdgeRouterInput = {
   registry: WorkspaceCloudflareEdgeRouteRegistry;
   internalSigningSecret?: string;
+  nodeSigningMasterSecret?: string;
   fetchUpstream?: (request: Request) => Promise<Response>;
+  authorizeWorkspaceSession?: (input: {
+    request: Request;
+    workspaceId: string;
+    workspaceHost: string;
+  }) => Promise<boolean>;
   siteSnapshots?: WorkspaceSitesSnapshotStore;
   workspaceBaseDomains?: string[];
   reservedHostnames?: string[];
   now?: () => number;
   createNonce?: () => string;
+  reportError?: (input: {
+    request: Request;
+    error: unknown;
+  }) => void | Promise<void>;
 };
 
 const EDGE_SIGNATURE_TIMESTAMP_HEADER = 'x-consuelo-edge-timestamp';
 const EDGE_SIGNATURE_NONCE_HEADER = 'x-consuelo-edge-nonce';
 const EDGE_SIGNATURE_MAX_AGE_MS = 5 * 60 * 1000;
-const PLATFORM_SAFETY_MESSAGE = 'This workspace is protected by Consuelo platform safety.';
-const PLATFORM_SAFETY_HELP_URL = 'https://os.consuelohq.com/help/workspace-access';
+const PLATFORM_SAFETY_MESSAGE =
+  'This workspace is protected by Consuelo platform safety.';
+const SITE_SNAPSHOT_UNAVAILABLE_MESSAGE =
+  'The workspace is connected, but this published page could not be loaded.';
+const PLATFORM_SAFETY_HELP_URL =
+  'https://os.consuelohq.com/help/workspace-access';
 
 const SAFE_ERROR_MESSAGES: Record<string, string> = {
   WORKSPACE_HOSTNAME_NOT_FOUND: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_HOSTNAME_RESERVED: PLATFORM_SAFETY_MESSAGE,
-  WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE: PLATFORM_SAFETY_MESSAGE,
+  WORKSPACE_HOSTNAME_OS_CONNECTOR_OFFLINE:
+    'The selected workspace node is currently unavailable.',
+  WORKSPACE_NODE_OFFLINE:
+    'The selected workspace node is currently unavailable.',
+  WORKSPACE_NODE_NOT_FOUND:
+    'The selected workspace node is currently unavailable.',
+  WORKSPACE_NODE_REVOKED:
+    'The selected workspace node is currently unavailable.',
   WORKSPACE_EDGE_ROUTER_ERROR: PLATFORM_SAFETY_MESSAGE,
   WORKSPACE_EDGE_AUTH_REQUIRED: PLATFORM_SAFETY_MESSAGE,
-  WORKSPACE_SITE_SNAPSHOT_UNAVAILABLE: PLATFORM_SAFETY_MESSAGE,
+  WORKSPACE_SITE_SNAPSHOT_UNAVAILABLE: SITE_SNAPSHOT_UNAVAILABLE_MESSAGE,
 };
 
 const SITE_SNAPSHOT_CACHE_AUTHORITY = 'sites-snapshot';
@@ -123,13 +175,22 @@ const DEFAULT_RESERVED_HOSTNAMES = [
   'www.consuelohq.com',
 ];
 
-const normalizeHostname = (host: string): string => host.trim().toLowerCase().replace(/\.$/, '');
+const normalizeHostname = (host: string): string =>
+  host.trim().toLowerCase().replace(/\.$/, '');
 
-const normalizeHostnameList = (values: readonly string[] | undefined, defaults: readonly string[]): string[] =>
+const normalizeHostnameList = (
+  values: readonly string[] | undefined,
+  defaults: readonly string[],
+): string[] =>
   (values && values.length > 0 ? values : defaults).map(normalizeHostname);
 
-const isReservedWorkspaceHostname = (host: string, reservedHostnames?: string[]): boolean =>
-  normalizeHostnameList(reservedHostnames, DEFAULT_RESERVED_HOSTNAMES).includes(normalizeHostname(host));
+const isReservedWorkspaceHostname = (
+  host: string,
+  reservedHostnames?: string[],
+): boolean =>
+  normalizeHostnameList(reservedHostnames, DEFAULT_RESERVED_HOSTNAMES).includes(
+    normalizeHostname(host),
+  );
 
 const requestIdFor = (request?: Request): string =>
   request?.headers.get('cf-ray')?.trim() || crypto.randomUUID();
@@ -140,13 +201,17 @@ const browserPrefersHtml = (request?: Request): boolean => {
 };
 
 const escapeHtml = (value: string): string =>
-  value.replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-  })[char] ?? char);
+  value.replace(
+    /[&<>"']/g,
+    (char) =>
+      ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[char] ?? char,
+  );
 
 const createPlatformSafetyHtml = (input: {
   request: Request;
@@ -155,15 +220,27 @@ const createPlatformSafetyHtml = (input: {
   requestId: string;
 }): string => {
   const url = new URL(input.request.url);
-  const visitorIp = input.request.headers.get('cf-connecting-ip')?.trim() || 'Unavailable';
+  const visitorIp =
+    input.request.headers.get('cf-connecting-ip')?.trim() || 'Unavailable';
   const now = new Date().toISOString();
+  const snapshotUnavailable =
+    input.code === 'WORKSPACE_SITE_SNAPSHOT_UNAVAILABLE';
+  const pageTitle = snapshotUnavailable
+    ? 'This workspace page is unavailable'
+    : 'This workspace is protected';
+  const eyebrow = snapshotUnavailable
+    ? 'Service unavailable'
+    : 'Platform safety';
+  const guidance = snapshotUnavailable
+    ? 'Try again shortly or contact the workspace owner with the request ID below.'
+    : 'This hostname is protected by Consuelo platform safety. If this is your workspace, sign in to Consuelo or contact the workspace owner with the request ID below.';
 
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>This workspace is protected</title>
+  <title>${escapeHtml(pageTitle)}</title>
   <style>
     :root { color-scheme: light dark; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #050505; color: #f4f4f1; }
@@ -182,10 +259,10 @@ const createPlatformSafetyHtml = (input: {
   <main>
     <section class="card">
       <div class="brand">consuelo.</div>
-      <p class="eyebrow">Platform safety</p>
-      <h1>This workspace is protected</h1>
+      <p class="eyebrow">${escapeHtml(eyebrow)}</p>
+      <h1>${escapeHtml(pageTitle)}</h1>
       <p>${escapeHtml(input.message)}</p>
-      <p>This hostname is protected by Consuelo platform safety. If this is your workspace, sign in to Consuelo or contact the workspace owner with the request ID below.</p>
+      <p>${escapeHtml(guidance)}</p>
       <dl>
         <dt>Error code</dt><dd>${escapeHtml(input.code)}</dd>
         <dt>Request ID</dt><dd>${escapeHtml(input.requestId)}</dd>
@@ -208,20 +285,23 @@ const createSafeErrorResponse = (input: {
   const requestId = requestIdFor(input.request);
 
   if (browserPrefersHtml(input.request) && input.request) {
-    return new Response(createPlatformSafetyHtml({
-      request: input.request,
-      code: input.code,
-      message,
-      requestId,
-    }), {
-      status: input.status,
-      headers: {
-        'cache-control': 'no-store',
-        'content-type': 'text/html; charset=utf-8',
-        'x-consuelo-error-code': input.code,
-        'x-consuelo-request-id': requestId,
+    return new Response(
+      createPlatformSafetyHtml({
+        request: input.request,
+        code: input.code,
+        message,
+        requestId,
+      }),
+      {
+        status: input.status,
+        headers: {
+          'cache-control': 'no-store',
+          'content-type': 'text/html; charset=utf-8',
+          'x-consuelo-error-code': input.code,
+          'x-consuelo-request-id': requestId,
+        },
       },
-    });
+    );
   }
 
   return Response.json(
@@ -243,6 +323,33 @@ const createSafeErrorResponse = (input: {
     },
   );
 };
+
+const createMcpNodeUnavailableResponse = (): Response =>
+  Response.json(
+    {
+      jsonrpc: '2.0',
+      id: null,
+      error: {
+        code: -32001,
+        message: 'Consuelo is restarting. Retry shortly.',
+        data: {
+          code: 'CONSUELO_NODE_UNAVAILABLE',
+          retryable: true,
+          retry_after_seconds: 2,
+        },
+      },
+    },
+    {
+      status: 503,
+      headers: {
+        'cache-control': 'no-store',
+        'retry-after': '2',
+        'x-content-type-options': 'nosniff',
+        'x-consuelo-error-code': 'CONSUELO_NODE_UNAVAILABLE',
+      },
+    },
+  );
+
 const buildUpstreamUrl = (input: {
   upstreamBaseUrl: string;
   inboundUrl: URL;
@@ -281,24 +388,35 @@ const signatureMatches = (left: string, right: string): boolean => {
   const leftBuffer = Buffer.from(left);
   const rightBuffer = Buffer.from(right);
 
-  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+  return (
+    leftBuffer.length === rightBuffer.length &&
+    timingSafeEqual(leftBuffer, rightBuffer)
+  );
 };
 
 const isSignedInternalEdgeRequest = (input: {
   request: Request;
-  resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }>;
+  resolution: Extract<
+    WorkspaceCloudflareEdgeRouteResolution,
+    { allowed: true }
+  >;
   internalSigningSecret: string;
   nowMs: number;
 }): boolean => {
   const inboundUrl = new URL(input.request.url);
-  const signature = input.request.headers.get('x-consuelo-edge-signature')?.trim();
-  const timestamp = input.request.headers.get(EDGE_SIGNATURE_TIMESTAMP_HEADER)?.trim();
+  const signature = input.request.headers
+    .get('x-consuelo-edge-signature')
+    ?.trim();
+  const timestamp = input.request.headers
+    .get(EDGE_SIGNATURE_TIMESTAMP_HEADER)
+    ?.trim();
   const nonce = input.request.headers.get(EDGE_SIGNATURE_NONCE_HEADER)?.trim();
   if (!signature || !timestamp || !nonce) return false;
   if (nonce.length < 8 || nonce.length > 128) return false;
   const timestampMs = Number(timestamp);
   if (!Number.isFinite(timestampMs)) return false;
-  if (Math.abs(input.nowMs - timestampMs) > EDGE_SIGNATURE_MAX_AGE_MS) return false;
+  if (Math.abs(input.nowMs - timestampMs) > EDGE_SIGNATURE_MAX_AGE_MS)
+    return false;
 
   const expectedSignature = signEdgeRequest({
     secret: input.internalSigningSecret,
@@ -315,7 +433,10 @@ const isSignedInternalEdgeRequest = (input: {
 
 const buildProxyRequest = (input: {
   request: Request;
-  resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }>;
+  resolution: Extract<
+    WorkspaceCloudflareEdgeRouteResolution,
+    { allowed: true }
+  >;
   upstreamUrl: string;
   internalSigningSecret: string;
   timestamp: string;
@@ -331,14 +452,25 @@ const buildProxyRequest = (input: {
   headers.delete(EDGE_SIGNATURE_TIMESTAMP_HEADER);
   headers.delete(EDGE_SIGNATURE_NONCE_HEADER);
   headers.delete('x-consuelo-connector-id');
+  headers.delete('x-consuelo-node-id');
 
   headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
   headers.set('x-consuelo-hostname', input.resolution.hostname);
   headers.set('x-consuelo-route', input.resolution.route);
   headers.set('x-consuelo-surface', input.resolution.surface);
 
-  if (input.resolution.target.kind === 'os-connector') {
-    headers.set('x-consuelo-connector-id', input.resolution.target.connectorId);
+  const nodeConnector =
+    input.resolution.target.kind === 'os-connector'
+      ? {
+          nodeId: input.resolution.nodeId,
+          connectorId: input.resolution.target.connectorId,
+        }
+      : input.resolution.nodeConnector;
+  if (nodeConnector) {
+    headers.set('x-consuelo-connector-id', nodeConnector.connectorId);
+    if (nodeConnector.nodeId) {
+      headers.set('x-consuelo-node-id', nodeConnector.nodeId);
+    }
   }
 
   headers.set(EDGE_SIGNATURE_TIMESTAMP_HEADER, input.timestamp);
@@ -370,6 +502,63 @@ const buildProxyRequest = (input: {
   return new Request(input.upstreamUrl, init);
 };
 
+const buildGatewayNodeProxyRequest = async (input: {
+  request: Request;
+  resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }> & {
+    nodeConnector: NonNullable<Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }>['nodeConnector']>;
+  };
+  upstreamUrl: string;
+  nodeSigningMasterSecret: string;
+  timestamp: string;
+  nonce: string;
+}): Promise<Request> => {
+  try {
+    const inboundUrl = new URL(input.request.url);
+    const bodyBytes =
+      input.request.method === 'GET' || input.request.method === 'HEAD'
+        ? new Uint8Array()
+        : new Uint8Array(await input.request.clone().arrayBuffer());
+    const headers = new Headers();
+    for (const name of ['accept', 'content-type', 'last-event-id']) {
+      const value = input.request.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+    headers.set('cache-control', 'no-store');
+    headers.set('x-consuelo-hostname', input.resolution.hostname);
+    headers.set('x-consuelo-route', input.resolution.route);
+    const signingSecret = deriveWorkspaceEdgeNodeSecret({
+      masterSecret: input.nodeSigningMasterSecret,
+      workspaceId: input.resolution.workspaceId,
+      nodeId: input.resolution.nodeConnector.nodeId,
+      connectorId: input.resolution.nodeConnector.connectorId,
+    });
+    const signedHeaders = createWorkspaceEdgeNodeHeaders({
+      signingSecret,
+      workspaceId: input.resolution.workspaceId,
+      nodeId: input.resolution.nodeConnector.nodeId,
+      connectorId: input.resolution.nodeConnector.connectorId,
+      surface: input.resolution.surface,
+      method: input.request.method,
+      pathWithSearch: `${inboundUrl.pathname}${inboundUrl.search}`,
+      body: bodyBytes,
+      timestamp: input.timestamp,
+      nonce: input.nonce,
+    });
+    for (const [name, value] of Object.entries(signedHeaders)) headers.set(name, value);
+    return new Request(input.upstreamUrl, {
+      method: input.request.method,
+      headers,
+      ...(input.request.method === 'GET' || input.request.method === 'HEAD'
+        ? {}
+        : { body: bodyBytes }),
+    });
+  } catch (error: unknown) {
+    throw new Error('workspace gateway node proxy request construction failed', {
+      cause: error,
+    });
+  }
+};
+
 type SiteSnapshotTarget = Extract<
   WorkspaceCloudflareEdgeRouteTarget,
   { kind: 'site-snapshot' }
@@ -382,7 +571,8 @@ const createSiteSnapshotCacheKey = (request: Request): Request => {
 };
 
 const isSiteSnapshotEdgeCacheable = (target: SiteSnapshotTarget): boolean =>
-  target.cachePolicy === 'versioned-asset' || target.cachePolicy === 'mutable-artifact';
+  target.cachePolicy === 'versioned-asset' ||
+  target.cachePolicy === 'mutable-artifact';
 
 const getDefaultSiteCache = (): WorkspaceSitesEdgeCache | undefined => {
   const maybeCaches = globalThis.caches as
@@ -403,7 +593,8 @@ const siteSnapshotCacheControl = (
   if (policy === 'mutable-artifact') {
     return 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400, stale-if-error=86400';
   }
-  if (policy === 'private-preview' || policy === 'static-shell') return 'no-store';
+  if (policy === 'private-preview' || policy === 'static-shell')
+    return 'no-store';
   return 'no-store';
 };
 
@@ -429,14 +620,18 @@ const readCachedSiteSnapshot = async (input: {
     if (input.request.method !== 'GET' && input.request.method !== 'HEAD') {
       return null;
     }
-    const cached = await input.cache?.match(createSiteSnapshotCacheKey(input.request));
+    const cached = await input.cache?.match(
+      createSiteSnapshotCacheKey(input.request),
+    );
     if (
       cached?.headers.get('x-consuelo-edge-cache-authority') !==
       SITE_SNAPSHOT_CACHE_AUTHORITY
     ) {
       return null;
     }
-    if (cached.headers.get('x-consuelo-site-version') !== input.target.versionId) {
+    if (
+      cached.headers.get('x-consuelo-site-version') !== input.target.versionId
+    ) {
       return null;
     }
     return withSiteSnapshotCacheState(cached, 'hit');
@@ -447,7 +642,10 @@ const readCachedSiteSnapshot = async (input: {
 
 const readSiteSnapshotHtml = async (input: {
   store?: WorkspaceSitesSnapshotStore;
-  target: Extract<WorkspaceCloudflareEdgeRouteTarget, { kind: 'site-snapshot' }>;
+  target: Extract<
+    WorkspaceCloudflareEdgeRouteTarget,
+    { kind: 'site-snapshot' }
+  >;
 }): Promise<string | null> => {
   try {
     const keys = [input.target.htmlKey, input.target.manifestKey].filter(
@@ -465,50 +663,73 @@ const readSiteSnapshotHtml = async (input: {
 
 const createSiteSnapshotResponse = (input: {
   html: string;
-  target: Extract<WorkspaceCloudflareEdgeRouteTarget, { kind: 'site-snapshot' }>;
-}): Response =>
-  new Response(input.html, {
-    status: 200,
-    headers: {
-      'cache-control': siteSnapshotCacheControl(input.target.cachePolicy),
-      'content-type': input.target.contentType ?? 'text/html; charset=utf-8',
-      'x-consuelo-edge-cache-authority': SITE_SNAPSHOT_CACHE_AUTHORITY,
-      'x-consuelo-site-version': input.target.versionId,
-    },
+  target: Extract<
+    WorkspaceCloudflareEdgeRouteTarget,
+    { kind: 'site-snapshot' }
+  >;
+}): Response => {
+  const contentHash = createHash('sha256').update(input.html).digest('hex');
+  if (
+    input.target.contentHash &&
+    input.target.contentHash !== contentHash
+  ) {
+    throw new Error('served site snapshot does not match its route content hash');
+  }
+  const headers = new Headers({
+    'cache-control': siteSnapshotCacheControl(input.target.cachePolicy),
+    'content-type': input.target.contentType ?? 'text/html; charset=utf-8',
+    'x-consuelo-edge-cache-authority': SITE_SNAPSHOT_CACHE_AUTHORITY,
+    'x-consuelo-site-version': input.target.versionId,
   });
+  headers.set('x-consuelo-site-content-hash', contentHash);
+  return new Response(input.html, { status: 200, headers });
+};
 
 const createConsueloGatewayServiceResponse = (input: {
-  resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }> & {
-    target: Extract<WorkspaceCloudflareEdgeRouteTarget, { kind: 'consuelo-gateway-service' }>;
+  resolution: Extract<
+    WorkspaceCloudflareEdgeRouteResolution,
+    { allowed: true }
+  > & {
+    target: Extract<
+      WorkspaceCloudflareEdgeRouteTarget,
+      { kind: 'consuelo-gateway-service' }
+    >;
   };
-}): Response => Response.json(
-  {
-    ok: true,
-    publicBoundary: 'consuelo-gateway',
-    workspace: {
-      workspaceId: input.resolution.workspaceId,
-      workspaceHost: input.resolution.hostname,
+}): Response =>
+  Response.json(
+    {
+      ok: true,
+      publicBoundary: 'consuelo-gateway',
+      workspace: {
+        workspaceId: input.resolution.workspaceId,
+        workspaceHost: input.resolution.hostname,
+      },
+      route: {
+        serviceName: input.resolution.target.serviceName,
+        gatewayServiceName: input.resolution.target.serviceName,
+        gatewayRouteFamily: input.resolution.target.gatewayRouteFamily,
+        publicSiteRouteFamily: input.resolution.target.publicSiteRouteFamily,
+      },
     },
-    route: {
-      serviceName: input.resolution.target.serviceName,
-      gatewayServiceName: input.resolution.target.serviceName,
-      gatewayRouteFamily: input.resolution.target.gatewayRouteFamily,
-      publicSiteRouteFamily: input.resolution.target.publicSiteRouteFamily,
+    {
+      status: 200,
+      headers: {
+        'cache-control': 'no-store',
+        'x-consuelo-edge-route-authority': 'consuelo-gateway-service',
+      },
     },
-  },
-  {
-    status: 200,
-    headers: {
-      'cache-control': 'no-store',
-      'x-consuelo-edge-route-authority': 'consuelo-gateway-service',
-    },
-  },
-);
+  );
 
 const serveSiteSnapshot = async (input: {
   request: Request;
-  resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }> & {
-    target: Extract<WorkspaceCloudflareEdgeRouteTarget, { kind: 'site-snapshot' }>;
+  resolution: Extract<
+    WorkspaceCloudflareEdgeRouteResolution,
+    { allowed: true }
+  > & {
+    target: Extract<
+      WorkspaceCloudflareEdgeRouteTarget,
+      { kind: 'site-snapshot' }
+    >;
   };
   store?: WorkspaceSitesSnapshotStore;
 }): Promise<Response> => {
@@ -563,12 +784,12 @@ const serveSiteSnapshot = async (input: {
   }
 };
 
-
 const OAUTH_AUTHORIZATION_SERVER = 'https://os.consuelohq.com';
 const MCP_OAUTH_SCOPES = [
   'mcp:read',
   'mcp:call',
   'workspace:read',
+  'workspace:nodes:manage',
   'os:tools',
   'route:/mcp:read',
   'tool:*:read',
@@ -629,11 +850,26 @@ export const createWorkspaceCloudflareEdgeRouter = (
   const fetchUpstream = input.fetchUpstream ?? globalThis.fetch;
   const now = input.now ?? Date.now;
   const createNonce = input.createNonce ?? randomUUID;
+  const reportError = async (report: {
+    request: Request;
+    error: unknown;
+  }): Promise<void> => {
+    try {
+      await input.reportError?.(report);
+    } catch {
+      // Observability failure must not replace the router's fail-closed response.
+    }
+  };
   return {
     async fetch(request: Request): Promise<Response> {
       try {
         const inboundUrl = new URL(request.url);
-        if (isReservedWorkspaceHostname(inboundUrl.hostname, input.reservedHostnames)) {
+        if (
+          isReservedWorkspaceHostname(
+            inboundUrl.hostname,
+            input.reservedHostnames,
+          )
+        ) {
           return createSafeErrorResponse({
             status: 404,
             code: 'WORKSPACE_HOSTNAME_RESERVED',
@@ -645,6 +881,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
             host: inboundUrl.hostname,
             path: '/mcp',
             method: 'POST',
+            requireOnlineNode: false,
           });
           if (!mcpResolution.allowed) {
             return createSafeErrorResponse({
@@ -669,6 +906,7 @@ export const createWorkspaceCloudflareEdgeRouter = (
             host: inboundUrl.hostname,
             path: '/mcp',
             method: 'POST',
+            requireOnlineNode: false,
           });
           if (!mcpResolution.allowed) {
             return createSafeErrorResponse({
@@ -690,6 +928,10 @@ export const createWorkspaceCloudflareEdgeRouter = (
           host: inboundUrl.hostname,
           path: inboundUrl.pathname,
           method: request.method,
+          ...(request.headers.get('x-consuelo-node-id')?.trim()
+            ? { nodeId: request.headers.get('x-consuelo-node-id')!.trim() }
+            : {}),
+          nowMs: now(),
         });
 
         if (!resolution.allowed) {
@@ -700,8 +942,69 @@ export const createWorkspaceCloudflareEdgeRouter = (
           });
         }
 
+        if (resolution.auth === 'workspace-session') {
+          const authorized = input.authorizeWorkspaceSession
+            ? await input.authorizeWorkspaceSession({
+                request,
+                workspaceId: resolution.workspaceId,
+                workspaceHost: resolution.hostname,
+              })
+            : false;
+          if (!authorized) {
+            const acceptsHtml =
+              request.method === 'GET' &&
+              (request.headers.get('accept') ?? '').includes('text/html');
+            if (acceptsHtml) {
+              const login = new URL(
+                '/login/google/start',
+                OAUTH_AUTHORIZATION_SERVER,
+              );
+              login.searchParams.set('purpose', 'web');
+              login.searchParams.set(
+                'return_to',
+                `${inboundUrl.pathname}${inboundUrl.search}`,
+              );
+              return new Response(null, {
+                status: 302,
+                headers: {
+                  location: login.toString(),
+                  'cache-control': 'no-store',
+                  'x-content-type-options': 'nosniff',
+                },
+              });
+            }
+            return new Response(
+              JSON.stringify({ error: 'workspace_session_required' }),
+              {
+                status: 401,
+                headers: {
+                  'content-type': 'application/json; charset=utf-8',
+                  'cache-control': 'no-store',
+                  'x-content-type-options': 'nosniff',
+                },
+              },
+            );
+          }
+        }
+
+        if (resolution.target.kind === 'redirect') {
+          const suffix = inboundUrl.pathname.slice(resolution.route.length);
+          const location = `${resolution.target.location.replace(/\/$/, '')}${suffix}${inboundUrl.search}`;
+          return new Response(null, {
+            status: resolution.target.statusCode,
+            headers: {
+              location: location || '/',
+              'cache-control': 'public, max-age=86400',
+              'x-consuelo-edge-route-authority': 'legacy-redirect',
+            },
+          });
+        }
+
         if (resolution.target.kind === 'site-snapshot') {
-          if (resolution.auth !== 'public') {
+          if (
+            resolution.auth !== 'public' &&
+            resolution.auth !== 'workspace-session'
+          ) {
             return createSafeErrorResponse({
               status: 503,
               code: 'WORKSPACE_EDGE_AUTH_REQUIRED',
@@ -725,9 +1028,12 @@ export const createWorkspaceCloudflareEdgeRouter = (
 
         if (resolution.target.kind === 'consuelo-gateway-service') {
           const internalSigningSecret = input.internalSigningSecret?.trim();
+          const nodeSigningMasterSecret =
+            input.nodeSigningMasterSecret?.trim() || internalSigningSecret;
 
           if (
             resolution.auth !== 'public' &&
+            resolution.auth !== 'workspace-session' &&
             (!internalSigningSecret ||
               !isSignedInternalEdgeRequest({
                 request,
@@ -742,18 +1048,44 @@ export const createWorkspaceCloudflareEdgeRouter = (
               request,
             });
           }
+          if (!nodeSigningMasterSecret) {
+            return createSafeErrorResponse({
+              status: 503,
+              code: 'WORKSPACE_EDGE_AUTH_REQUIRED',
+              request,
+            });
+          }
+          if (!resolution.nodeConnector) {
+            return createSafeErrorResponse({
+              status: 503,
+              code: 'WORKSPACE_NODE_NOT_FOUND',
+              request,
+            });
+          }
+          if (resolution.nodeConnector.connectorStatus !== 'connected') {
+            return createSafeErrorResponse({
+              status: 503,
+              code: 'WORKSPACE_NODE_OFFLINE',
+              request,
+            });
+          }
 
-          return createConsueloGatewayServiceResponse({
+          const upstreamUrl = buildUpstreamUrl({
+            upstreamBaseUrl: resolution.nodeConnector.tunnelOriginUrl,
+            inboundUrl,
+          });
+          const proxyRequest = await buildGatewayNodeProxyRequest({
+            request,
             resolution: resolution as Extract<
               WorkspaceCloudflareEdgeRouteResolution,
               { allowed: true }
-            > & {
-              target: Extract<
-                WorkspaceCloudflareEdgeRouteTarget,
-                { kind: 'consuelo-gateway-service' }
-              >;
-            },
+            > & { nodeConnector: NonNullable<typeof resolution.nodeConnector> },
+            upstreamUrl,
+            nodeSigningMasterSecret,
+            timestamp: String(now()),
+            nonce: createNonce(),
           });
+          return await fetchUpstream(proxyRequest);
         }
 
         if (
@@ -793,6 +1125,11 @@ export const createWorkspaceCloudflareEdgeRouter = (
 
         return await fetchUpstream(proxyRequest);
       } catch (error: unknown) {
+        await reportError({ request, error });
+        const requestUrl = new URL(request.url);
+        if (request.method === 'POST' && requestUrl.pathname === '/mcp') {
+          return createMcpNodeUnavailableResponse();
+        }
         return createSafeErrorResponse({
           status: 503,
           code: 'WORKSPACE_EDGE_ROUTER_ERROR',
@@ -802,8 +1139,3 @@ export const createWorkspaceCloudflareEdgeRouter = (
     },
   };
 };
-
-
-
-
-

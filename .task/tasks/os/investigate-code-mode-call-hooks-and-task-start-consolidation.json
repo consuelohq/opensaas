@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/investigate-code-mode-call-hooks-and-task-start-consolidation",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1541,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1541",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1541",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1541/investigate-code-mode-call-hooks-and-task-start-consolidation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1541",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1541/investigate-code-mode-call-hooks-and-task-start-consolidation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-investigate-code-mode-call-hooks-and-task-start-consolidation",
+  "taskSession": "tsk_0f8a64ee2acf",
+  "tmuxSession": "opensaas-os-investigate-code-mode-call-hooks-and-task-start--0f8a64ee",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-investigate-code-mode-call-hooks-and-task-start-consolidation/.task/os/investigate-code-mode-call-hooks-and-task-start-consolidation/session.json",
+  "createdAt": "2026-07-21T03:46:28.780Z"
+}

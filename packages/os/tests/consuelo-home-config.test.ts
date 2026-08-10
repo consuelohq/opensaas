@@ -61,6 +61,7 @@ describe('Consuelo home config boundaries', () => {
       activeWorkspace: 'ws_test',
       activeNode: 'node_mac_mini',
       runtime: { current: 'runtime/current' },
+      updates: { channel: 'stable', notifications: { mode: 'on' } },
     });
     expect(nodeConfig.workspaces).toEqual([{ id: 'ws_test', state: 'workspaces/ws_test/state' }]);
     expect(workspaceConfig.workspace).toEqual({

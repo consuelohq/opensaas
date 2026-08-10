@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/security/repair-hosted-workspace-site-snapshot-publication",
+  "events": [
+    {
+      "id": "35ab31aa-8d0d-4470-8931-066c36493622",
+      "occurred_at": "2026-07-28T03:24:17.354Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/repair-hosted-workspace-site-snapshot-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/repair-hosted-workspace-site-snapshot-publication"
+      }
+    },
+    {
+      "id": "86e3db71-e65d-4b68-b493-b80d3dad2295",
+      "occurred_at": "2026-07-28T03:24:18.559Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/cloudflare-edge-router.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/repair-hosted-workspace-site-snapshot-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/repair-hosted-workspace-site-snapshot-publication"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-28T03:24:18.617Z"
+}

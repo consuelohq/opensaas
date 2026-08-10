@@ -6,10 +6,13 @@ import {
 } from './env';
 import { internalError } from './middleware/errors';
 import { routeNotFoundResponse } from './middleware/fallback';
+import { createArtifactRoutes } from './routes/artifacts';
 import { createCallRoutes } from './routes/call';
 import { createHealthRoutes } from './routes/health';
 import { createMcpRoutes } from './routes/mcp';
-import { createSettingsRoutes } from './routes/settings';
+import { createConfigurationRoutes } from './routes/settings';
+import { createEnvironmentRoutes } from './routes/environments';
+import { createSecretRoutes } from './routes/secrets';
 import { createSteeringRoutes } from './routes/steering';
 import { createTraceRoutes } from './routes/traces';
 
@@ -19,8 +22,11 @@ export function createLocalOsApp(
   const app = new Hono();
 
   app.route('/', createHealthRoutes(config));
+  app.route('/', createArtifactRoutes());
   app.route('/', createTraceRoutes());
-  app.route('/', createSettingsRoutes());
+  app.route('/', createConfigurationRoutes());
+  app.route('/', createEnvironmentRoutes());
+  app.route('/', createSecretRoutes());
   app.route('/', createMcpRoutes());
   app.route('/', createSteeringRoutes());
   app.route('/', createCallRoutes());

@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://consuelohq.com/schemas/runtime-bundle.v1.json",
+  "title": "Consuelo OS Runtime Bundle Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "architecture",
+    "bundleId",
+    "files",
+    "kind",
+    "migrations",
+    "minimumUpdaterVersion",
+    "platform",
+    "policyVersion",
+    "provenance",
+    "releaseFingerprint",
+    "schemaVersion",
+    "signature",
+    "sourceCommit",
+    "version"
+  ],
+  "properties": {
+    "architecture": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bundleId": {
+      "$ref": "#/$defs/sha256"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/file"
+      }
+    },
+    "kind": {
+      "const": "consuelo-runtime-bundle"
+    },
+    "migrations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/migration"
+      }
+    },
+    "minimumUpdaterVersion": {
+      "$ref": "#/$defs/semver"
+    },
+    "platform": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policyVersion": {
+      "const": 1
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "releaseFingerprint": {
+      "$ref": "#/$defs/sha256"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "signature": {
+      "$ref": "#/$defs/signatureBoundary"
+    },
+    "sourceCommit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "$ref": "#/$defs/semver"
+    }
+  },
+  "$defs": {
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "digest",
+        "mode",
+        "path",
+        "role",
+        "size"
+      ],
+      "properties": {
+        "digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "mode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 511
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "role": {
+          "enum": [
+            "runtime",
+            "managed-skill",
+            "managed-tool",
+            "managed-site-template",
+            "platform-adapter",
+            "customer-provider"
+          ]
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "builder",
+        "builderVersion",
+        "reproducible",
+        "source"
+      ],
+      "properties": {
+        "builder": {
+          "const": "@consuelo/os/runtime-bundle"
+        },
+        "builderVersion": {
+          "const": 1
+        },
+        "reproducible": {
+          "const": true
+        },
+        "source": {
+          "const": "classified-source-tree"
+        }
+      }
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "signatureBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "format",
+        "signedFields"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "ed25519"
+        },
+        "format": {
+          "const": "detached"
+        },
+        "signedFields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

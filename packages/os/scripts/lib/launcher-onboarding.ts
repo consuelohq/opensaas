@@ -6,21 +6,63 @@ export type LauncherLocalAgent = {
 
 export type LauncherOnboardingOptions = {
   mcpUrl: string;
+  workspaceHostname?: string | null;
   localAgents?: LauncherLocalAgent[];
 };
 
 const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/apps#settings/Connectors';
 
 const launcherLinks = {
-  sites: [
-    { label: 'Go to market', href: 'https://sites.consuelohq.com/gtm' },
-    { label: 'Artifacts', href: 'https://sites.consuelohq.com/office' },
-    { label: 'Observability', href: 'https://sites.consuelohq.com/observability' },
-    { label: 'Code review', href: 'https://sites.consuelohq.com/diffs' },
-  ],
   guides: [{ label: 'Documentation', href: 'https://docs.consuelohq.com/' }],
-  writing: [{ label: 'Decision loops', href: '/writing/on-decision-loops' }],
+  writing: [
+    {
+      label: 'Decision loops',
+      href: 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/#the-future-interface-is-what-should-we-do-next',
+    },
+  ],
 } as const;
+
+const WORKSPACE_HOSTNAME_PATTERN =
+  /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.consuelohq\.com$/;
+
+const RESERVED_WORKSPACE_HOSTNAMES = new Set([
+  'api.consuelohq.com',
+  'app.consuelohq.com',
+  'diffs.consuelohq.com',
+  'docs.consuelohq.com',
+  'install.consuelohq.com',
+  'linear.consuelohq.com',
+  'os.consuelohq.com',
+  'sites.consuelohq.com',
+  'www.consuelohq.com',
+]);
+
+function normalizeWorkspaceHostname(
+  value: string | null | undefined,
+): string | null {
+  const hostname = value?.trim().toLowerCase().replace(/\.$/, '') ?? '';
+  if (!hostname) return null;
+  if (
+    !WORKSPACE_HOSTNAME_PATTERN.test(hostname) ||
+    RESERVED_WORKSPACE_HOSTNAMES.has(hostname)
+  ) {
+    throw new Error(`Invalid workspace hostname: ${value ?? ''}`);
+  }
+  return hostname;
+}
+
+function workspaceHref(hostname: string | null, pathname: string): string {
+  return hostname ? `https://${hostname}${pathname}` : pathname;
+}
+
+function workspaceLauncherLinks(hostname: string | null) {
+  return [
+    { label: 'Go to market', href: workspaceHref(hostname, '/gtm') },
+    { label: 'Artifacts', href: workspaceHref(hostname, '/artifacts') },
+    { label: 'Observability', href: workspaceHref(hostname, '/observability') },
+    { label: 'Code review', href: workspaceHref(hostname, '/diffs') },
+  ];
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -31,13 +73,15 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-function connectedAgentItems(localAgents: LauncherLocalAgent[]): string {
-  const connectedAgents = localAgents.filter((agent) => agent.status === 'verified');
-  if (connectedAgents.length === 0) {
-    return '<p class="muted">No local agents connected to workspace yet.</p>';
-  }
+function agentCountLabel(count: number): string {
+  return `Connected to ${count} local ${count === 1 ? 'agent' : 'agents'}`;
+}
 
-  return `<ul class="agent-list">${connectedAgents.map((agent) => `<li>${escapeHtml(agent.label)}</li>`).join('')}</ul>`;
+function connectedAgentItems(agents: LauncherLocalAgent[]): string {
+  const items = agents
+    .map((agent) => `<li>${escapeHtml(agent.label)}</li>`)
+    .join('');
+  return `<ul class="agent-list" data-agent-list>${items}</ul><p class="muted" data-agent-fallback hidden></p>`;
 }
 
 function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string {
@@ -48,8 +92,7 @@ function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string
 
 export function renderLauncherOnboarding(options: LauncherOnboardingOptions): string {
   const localAgents = options.localAgents ?? [];
-  const connectedLocalAgentCount = localAgents.filter((agent) => agent.status === 'verified').length;
-  const localAgentNoun = connectedLocalAgentCount === 1 ? 'agent' : 'agents';
+  const workspaceHostname = normalizeWorkspaceHostname(options.workspaceHostname);
   const escapedMcpUrl = escapeHtml(options.mcpUrl);
 
   return `<!doctype html>
@@ -108,6 +151,7 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
     .meta-item { display: grid; gap: 6px; }
     .meta-label, .section-title { color: var(--site-color-muted); font-size: 11px; line-height: 1.2; }
     .meta-value, .panel p, li { font-size: 15px; line-height: 1.45; }
+    .meta-value { margin: 0; }
     .panel { border-left: 1px solid var(--site-color-line); background: var(--site-color-panel); padding: clamp(28px, 4vw, 58px); display: flex; flex-direction: column; justify-content: space-between; gap: 52px; }
     .panel-stack { display: grid; gap: 44px; }
     .section { display: grid; gap: 13px; }
@@ -155,12 +199,8 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
           <p class="muted">ChatGPT is ready now.</p>
         </section>
         <section class="section">
-          <h2 class="section-title">Settings</h2>
-          ${navLinks([{ label: 'Configuration', href: '/settings' }])}
-        </section>
-        <section class="section">
           <h2 class="section-title">Sites</h2>
-          ${navLinks(launcherLinks.sites)}
+          ${navLinks(workspaceLauncherLinks(workspaceHostname))}
         </section>
         <section class="section">
           <h2 class="section-title">Guides and Tips</h2>
@@ -170,9 +210,17 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
           <h2 class="section-title">Writing</h2>
           ${navLinks(launcherLinks.writing)}
         </section>
+        <section class="section">
+          <h2 class="section-title">Configuration</h2>
+          ${navLinks([
+            { label: 'Tools', href: '/tools' },
+            { label: 'Environments', href: '/environments' },
+            { label: 'Secrets', href: '/secrets' },
+          ])}
+        </section>
       </div>
       <section class="status" aria-label="Local agents">
-        <p>Connected to ${connectedLocalAgentCount} local ${localAgentNoun}</p>
+        <p data-agent-count>${agentCountLabel(localAgents.length)}</p>
         ${connectedAgentItems(localAgents)}
       </section>
     </aside>
@@ -186,6 +234,61 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
         document.querySelector('[data-copy-target="mcp-url"]')?.setAttribute('data-copy-status', 'failed');
       }
     });
+
+    const launcherWorkspaceHost = ${JSON.stringify(workspaceHostname)};
+    const workspaceHost = window.location.hostname.toLowerCase();
+    if (launcherWorkspaceHost && workspaceHost === launcherWorkspaceHost) {
+      const agentStatusUrl = new URL('https://os.consuelohq.com/workspace/agents');
+      agentStatusUrl.searchParams.set('workspace_host', workspaceHost);
+      fetch(agentStatusUrl.toString(), {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      })
+        .then((response) => response.ok ? response.json() : Promise.reject(new Error('agent status unavailable')))
+        .then((payload) => {
+          const countElement = document.querySelector('[data-agent-count]');
+          const listElement = document.querySelector('[data-agent-list]');
+          const fallbackElement = document.querySelector('[data-agent-fallback]');
+          if (!(countElement instanceof HTMLElement) || !(listElement instanceof HTMLElement) || !(fallbackElement instanceof HTMLElement)) return;
+          if (!payload || !Array.isArray(payload.agents)) throw new Error('invalid agent status');
+          if (!['online', 'stale', 'offline', 'never_reported'].includes(payload.state)) throw new Error('invalid agent state');
+          const agents = payload.agents.filter((agent) =>
+            agent && typeof agent.name === 'string' && typeof agent.label === 'string',
+          );
+          if (agents.length !== payload.agents.length) throw new Error('invalid agent list');
+
+          const count = agents.length;
+          if (payload.state === 'online') {
+            countElement.textContent = 'Connected to ' + count + ' local ' + (count === 1 ? 'agent' : 'agents');
+          } else if (payload.state === 'stale') {
+            countElement.textContent = count + ' configured local ' + (count === 1 ? 'agent' : 'agents') + ' · node status stale';
+          } else if (payload.state === 'offline') {
+            countElement.textContent = count + ' configured local ' + (count === 1 ? 'agent' : 'agents') + ' · node offline';
+          } else if (payload.state === 'never_reported') {
+            countElement.textContent = 'No node has reported local agents yet.';
+          }
+
+          const fragment = document.createDocumentFragment();
+          for (const agent of agents) {
+            const item = document.createElement('li');
+            item.textContent = agent.label;
+            fragment.append(item);
+          }
+          listElement.replaceChildren(fragment);
+          fallbackElement.hidden = !(payload.state === 'online' && count === 0);
+          fallbackElement.textContent = 'No local agents connected to workspace yet.';
+        })
+        .catch(() => {
+          const countElement = document.querySelector('[data-agent-count]');
+          const fallbackElement = document.querySelector('[data-agent-fallback]');
+          // Keep the server-rendered agent list when a transient status probe fails.
+          if (countElement instanceof HTMLElement) countElement.setAttribute('data-agent-status', 'stale');
+          if (fallbackElement instanceof HTMLElement) fallbackElement.hidden = true;
+        });
+    } else {
+      const countElement = document.querySelector('[data-agent-count]');
+      if (countElement instanceof HTMLElement) countElement.textContent = 'Local agent status unavailable.';
+    }
   </script>
 </body>
 </html>

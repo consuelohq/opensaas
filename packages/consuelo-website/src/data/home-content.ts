@@ -12,6 +12,17 @@ export type HomeHeroContent = {
   description: string;
 };
 
+export type HomeHeroRotatingAssistantContent = {
+  ariaLabel: string;
+  prefix: string;
+  assistants: readonly [string, string];
+  suffix: string;
+  subtitle: string;
+  signInLabel: string;
+  copyLabel: string;
+  copyInstallAriaLabel: string;
+};
+
 export type HomeTab = {
   id: string;
   label: string;
@@ -188,6 +199,18 @@ export const homeHero: HomeHeroContent = {
   title: 'Decision infrastructure for revenue teams.',
   description:
         'Bring calls, GTM data, files, analytics, and agents into one workspace built to help your team decide what to do next.',
+};
+
+export const homeHeroRotatingAssistant: HomeHeroRotatingAssistantContent = {
+  ariaLabel: 'Make ChatGPT or Claude your true assistant',
+  prefix: 'Make',
+  assistants: ['ChatGPT', 'Claude'],
+  suffix: 'your true assistant',
+  subtitle:
+    'AI is coming to the workspace, with smarter search, faster drafting and summarization and intelligent organization',
+  signInLabel: 'SIGN IN',
+  copyLabel: 'COPY',
+  copyInstallAriaLabel: 'Copy install command',
 };
 
 export const INSTALL_COMMAND = 'curl -fsSL https://install.consuelohq.com/os | bash';
