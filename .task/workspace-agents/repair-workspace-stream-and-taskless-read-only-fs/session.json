@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d177cbd9847f",
+  "tmuxSession": "opensaas-workspace-agents-repair-workspace-stream-and-taskless-read-only-f-d177cbd9",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/repair-workspace-stream-and-taskless-read-only-fs",
+  "branch": "task/workspace-agents/repair-workspace-stream-and-taskless-read-only-fs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-repair-workspace-stream-and-taskless-read-only-fs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-repair-workspace-stream-and-taskless-read-only-fs",
+  "prNumber": 1807,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1807",
+  "createdAt": "2026-08-10T01:28:37.040Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-repair-workspace-stream-and-taskless-read-only-fs/.task/workspace-agents/repair-workspace-stream-and-taskless-read-only-fs/session.json"
+}

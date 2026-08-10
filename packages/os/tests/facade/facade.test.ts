@@ -570,6 +570,17 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('plans exact full-file fs reads', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('fs.read', {
+      path: 'AGENTS.md',
+      full: true,
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(plans[0].args).toContain('--full');
+  });
+
   it('plans fs.search path alias through paths argument', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-path-'));
     try {
@@ -727,6 +738,66 @@ describe('typed facade executor', () => {
     expect(plans).toHaveLength(2);
     expect(plans[0].args).not.toContain('--branch');
     expect(plans[1].args).not.toContain('--branch');
+  });
+
+  it('runs taskless read-only fs tools from the caller repo when task selection is ambiguous', async () => {
+    const plans: CommandPlan[] = [];
+    const ambiguousBranchResolver = () => ({
+      ok: false as const,
+      code: 'AMBIGUOUS_TASK_SELECTION' as const,
+      message: 'multiple active task worktrees found',
+      candidates: [
+        { branch: TEST_BRANCH, area: 'workspace-agents', worktree: '/tmp/a' },
+        { branch: 'task/workspace-agents/other', area: 'workspace-agents', worktree: '/tmp/b' },
+      ],
+    });
+    const options = {
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: ambiguousBranchResolver,
+      currentTask: null,
+      candidates: ambiguousBranchResolver().candidates,
+    };
+
+    const readResult = await executeTool('fs.read', { path: 'AGENTS.md' }, options);
+    const searchResult = await executeTool('fs.search', {
+      pattern: 'workspace',
+      paths: ['AGENTS.md'],
+      maxResults: 3,
+    }, options);
+    const listResult = await executeTool('fs.list', { path: '.', depth: 1 }, options);
+
+    expect(readResult.ok).toBe(true);
+    expect(searchResult.ok).toBe(true);
+    expect(listResult.ok).toBe(true);
+    expect(plans).toHaveLength(3);
+    for (const plan of plans) {
+      expect(plan.args).not.toContain('--branch');
+      expect(plan.args[1]).toBe('fs');
+    }
+  });
+
+  it('does not hide ambiguous routing when read-only fs receives an explicit branch', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('fs.read', {
+      branch: TEST_BRANCH,
+      path: 'AGENTS.md',
+    }, {
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: () => ({
+        ok: false,
+        code: 'AMBIGUOUS_TASK_SELECTION',
+        message: 'explicit branch was ambiguous',
+        candidates: [
+          { branch: TEST_BRANCH, area: 'workspace-agents', worktree: '/tmp/a' },
+          { branch: TEST_BRANCH, area: 'workspace-agents', worktree: '/tmp/b' },
+        ],
+      }),
+      currentTask: null,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('AMBIGUOUS_TASK_SELECTION');
+    expect(plans).toHaveLength(0);
   });
 
   it('uses options.env worktree root for taskSession discovery', async () => {
