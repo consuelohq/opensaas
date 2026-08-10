@@ -218,6 +218,28 @@ describe('canonical OS trace persistence', () => {
     });
   });
 
+  it('records a safe authenticated principal correlation key without raw identity material', () => {
+    const output = runScenario('auth-principal');
+    expect(output.recorded).toBe(true);
+    expect(output.rows).toHaveLength(1);
+    expect(output.rows?.[0]).toMatchObject({
+      source: 'gateway',
+      tool: 'authentication.mcp',
+      status: 'ok',
+      ok: 1,
+    });
+    const input = JSON.parse(output.rows?.[0]?.input_json ?? '{}') as Record<string, unknown>;
+    expect(input).toMatchObject({
+      workspaceId: 'workspace_trace_auth',
+      route: '/mcp',
+      requiredScope: 'mcp:read',
+      authMode: 'oauth',
+      principalKey: 'prn_0123456789abcdef0123456789abcdef',
+    });
+    expect(JSON.stringify(input)).not.toContain('google:');
+    expect(JSON.stringify(input)).not.toContain('chatgpt.com');
+  });
+
   it('exports the canonical trace path for the installed daemon', () => {
     const daemon = readFileSync(join(process.cwd(), 'scripts', 'start-consuelo-daemon.sh'), 'utf8');
     expect(daemon).toContain('CONSUELO_TRACE_DB');
