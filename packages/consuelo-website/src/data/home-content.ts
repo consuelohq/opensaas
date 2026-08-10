@@ -202,10 +202,10 @@ export const homeHero: HomeHeroContent = {
 };
 
 export const homeHeroRotatingAssistant: HomeHeroRotatingAssistantContent = {
-  ariaLabel: 'Make ChatGPT or Claude your true assistant',
+  ariaLabel: 'Make ChatGPT or Claude your digital worker',
   prefix: 'Make',
   assistants: ['ChatGPT', 'Claude'],
-  suffix: 'your true assistant',
+  suffix: 'your digital worker',
   subtitle:
     'AI is coming to the workspace, with smarter search, faster drafting and summarization and intelligent organization',
   signInLabel: 'SIGN IN',
