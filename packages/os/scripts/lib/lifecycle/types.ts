@@ -76,6 +76,7 @@ export type LifecycleProgressPhase =
   | 'activate'
   | 'service-restart'
   | 'health'
+  | 'connectivity'
   | 'repair-scan'
   | 'rollback'
   | 'retention'

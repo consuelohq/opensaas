@@ -6,6 +6,12 @@ import path from 'node:path';
 
 import { Effect } from 'effect';
 
+import {
+  LEGACY_MCP_PROTOCOL_VERSION,
+  MODERN_MCP_PROTOCOL_VERSION,
+  modernMcpClientMeta,
+} from './mcp-protocol';
+
 export type AgentName =
   | 'codex'
   | 'cursor'
@@ -1089,9 +1095,11 @@ function probeMcpCommand(input: {
     let settled = false;
     let stdout = Buffer.alloc(0);
     let stderr = '';
+    let discovered: JsonObject | undefined;
     let initialized: JsonObject | undefined;
     let tools: JsonObject | undefined;
     let toolsRequested = false;
+    let legacyInitializationRequested = false;
     const child = spawn(commandPath, [], {
       cwd: input.home,
       env: {
@@ -1138,17 +1146,49 @@ function probeMcpCommand(input: {
         stdout = parsed.remainder;
         for (const message of parsed.messages) {
           if (isJsonObject(message.error)) {
+            if (
+              message.id === 1
+              && message.error.code === -32601
+              && !legacyInitializationRequested
+            ) {
+              legacyInitializationRequested = true;
+              child.stdin.write(`${JSON.stringify({
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'initialize',
+                params: {
+                  protocolVersion: LEGACY_MCP_PROTOCOL_VERSION,
+                  capabilities: {},
+                  clientInfo: { name: 'consuelo-verifier', version: '1.0.0' },
+                },
+              })}\n`);
+              continue;
+            }
             throw new Error(`MCP request ${String(message.id ?? 'unknown')} failed: ${JSON.stringify(message.error)}`);
           }
           if (message.id === 1 && isJsonObject(message.result)) {
-            initialized = message.result;
+            discovered = message.result;
             if (!toolsRequested) {
               toolsRequested = true;
               child.stdin.write(`${JSON.stringify({
                 jsonrpc: '2.0',
-                method: 'notifications/initialized',
-                params: {},
+                id: 3,
+                method: 'tools/list',
+                params: {
+                  _meta: modernMcpClientMeta('consuelo-verifier'),
+                },
               })}\n`);
+            }
+          }
+          if (message.id === 2 && isJsonObject(message.result)) {
+            initialized = message.result;
+            child.stdin.write(`${JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'notifications/initialized',
+              params: {},
+            })}\n`);
+            if (!toolsRequested) {
+              toolsRequested = true;
               child.stdin.write(`${JSON.stringify({
                 jsonrpc: '2.0',
                 id: 3,
@@ -1159,7 +1199,16 @@ function probeMcpCommand(input: {
           }
           if (message.id === 3 && isJsonObject(message.result)) tools = message.result;
         }
-        const protocolVersion = initialized?.protocolVersion;
+        const supportedVersions = discovered?.supportedVersions;
+        const modernProtocolVersion = Array.isArray(supportedVersions)
+          && supportedVersions.includes(MODERN_MCP_PROTOCOL_VERSION)
+          ? MODERN_MCP_PROTOCOL_VERSION
+          : undefined;
+        const initializedProtocolVersion = initialized?.protocolVersion;
+        const legacyProtocolVersion = initializedProtocolVersion === LEGACY_MCP_PROTOCOL_VERSION
+          ? LEGACY_MCP_PROTOCOL_VERSION
+          : undefined;
+        const protocolVersion = modernProtocolVersion ?? legacyProtocolVersion;
         const toolList = tools?.tools;
         if (typeof protocolVersion === 'string' && Array.isArray(toolList)) {
           if (toolList.length === 0) {
@@ -1195,11 +1244,9 @@ function probeMcpCommand(input: {
     child.stdin.write(`${JSON.stringify({
       jsonrpc: '2.0',
       id: 1,
-      method: 'initialize',
+      method: 'server/discover',
       params: {
-        protocolVersion: '2024-11-05',
-        capabilities: {},
-        clientInfo: { name: 'consuelo-verifier', version: '1.0.0' },
+        _meta: modernMcpClientMeta('consuelo-verifier'),
       },
     })}\n`);
   });

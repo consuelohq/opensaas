@@ -472,6 +472,24 @@ export const createDefaultLifecycleEngine = (input: {
       url: `http://127.0.0.1:${port}/health`,
       expectedName: 'consuelo-os',
     }),
+    connectivity: {
+      async accept() {
+        const child = Bun.spawn([
+          process.execPath,
+          resolve(osRoot, 'scripts', 'verify-local-agents.ts'),
+        ], {
+          cwd: osRoot,
+          env: {
+            ...process.env,
+            CONSUELO_HOME: resolveLifecyclePaths(input.home).home,
+          },
+          stdin: 'ignore',
+          stdout: 'ignore',
+          stderr: 'ignore',
+        });
+        return await child.exited === 0;
+      },
+    },
     progress: input.quiet || input.json ? undefined : input.progress,
     onboarding: async () => {
       try {

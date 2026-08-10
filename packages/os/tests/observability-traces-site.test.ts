@@ -50,11 +50,8 @@ describe('Observability Traces shell', () => {
       'utf8',
     );
 
-    expect(source).toContain('Traces - Observability');
-    expect(source).toContain('/observability/traces');
-    expect(source).toContain('/gateway/traces/recent');
-    expect(source).toContain('/gateway/traces/summary');
-    expect(source).toContain('/gateway/traces/events');
+    expect(source).toContain('buildObservabilityTracesSite');
+    expect(source).toContain('set:html={tracesPage}');
     expect(source).not.toContain('cdn.jsdelivr.net');
     expect(source).not.toContain('Trace Burn Intelligence');
     expect(source).not.toMatch(/ReactDOM/);

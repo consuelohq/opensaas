@@ -565,7 +565,7 @@ function recordCredentialAuditEvent(
   route?: string,
 ): void {
   recordGatewayAuditEvent({
-    home: homeFromGeneratedAuthPath(config.generatedAuthPath),
+    home: consueloHomeFromGeneratedAuthPath(config.generatedAuthPath),
     event: {
       event,
       callerId: token.callerId,
@@ -1459,7 +1459,7 @@ export function verifyMachineRequest(input: {
     });
   }
 
-  const replayHome = homeFromGeneratedAuthPath(input.config.generatedAuthPath);
+  const replayHome = consueloHomeFromGeneratedAuthPath(input.config.generatedAuthPath);
   const replayScope = `machine:${token.workspaceId}:${token.tokenId}`;
   const legacyNonce = stored.seenNonces[nonce];
   if (isLegacyNonceActive(legacyNonce?.seenAt, nowTime)) {

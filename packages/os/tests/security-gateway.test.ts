@@ -564,6 +564,48 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(JSON.stringify([replay, expired, tampered, wrongWorkspace, callerMismatch, appMismatch])).not.toContain(token.secret);
   });
 
+  it('stores flattened node auth replay and usage state in the canonical Consuelo database', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: join(tempHome, 'node'),
+      workspaceId: 'workspace-acme',
+      workspaceSlug: 'acme',
+      workspaceHost: 'acme.consuelohq.com',
+    });
+    const token = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'chatgpt-app-1',
+      appId: 'chatgpt',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 300,
+    });
+    const signed = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      timestamp: '2026-06-09T20:00:00.000Z',
+      nonce: 'flattened-node-auth-nonce',
+    });
+
+    expect(await gateway.verifyMachineRequest({
+      config,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      headers: signed.headers,
+      workspaceId: 'workspace-acme',
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:00:01.000Z',
+    })).toMatchObject({ ok: true });
+
+    expect(gateway.getAgentAppCredentialStatus({ config, tokenId: token.tokenId })?.lastUsedAt)
+      .toBe('2026-06-09T20:00:01.000Z');
+    expect(existsSync(join(tempHome, 'node', 'db', 'consuelo.db'))).toBe(true);
+    expect(existsSync(join(tempHome, 'node', 'node', 'db', 'consuelo.db'))).toBe(false);
+  });
+
   it('honors active legacy auth.json nonces during replay-state migration', async () => {
     const gateway = await loadGatewayModule();
     const config = await gateway.createGatewaySecurityConfig({
