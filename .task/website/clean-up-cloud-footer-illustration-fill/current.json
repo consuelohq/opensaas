@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/clean-up-cloud-footer-illustration-fill",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1799,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1799",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1799",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1799/clean-up-cloud-footer-illustration-fill",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1799",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1799/clean-up-cloud-footer-illustration-fill",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-clean-up-cloud-footer-illustration-fill",
+  "taskSession": "tsk_e6434b794592",
+  "tmuxSession": "opensaas-website-clean-up-cloud-footer-illustration-fill-e6434b79",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-clean-up-cloud-footer-illustration-fill/.task/website/clean-up-cloud-footer-illustration-fill/session.json",
+  "createdAt": "2026-08-10T00:53:37.700Z"
+}
