@@ -14,6 +14,7 @@ const alphaThreshold = 8;
 const closureRadius = 1;
 const bodyClosureRadius = 5;
 const interiorRadius = 3;
+const cleanInteriorRadius = 2;
 const outputMargin = 12;
 
 const render = await sharp(sourcePath)
@@ -206,7 +207,7 @@ const whiteInkRegions = [
     [0.19, 0.73],
   ],
 ] as const;
-const scalePoints = (region: (typeof whiteInkRegions)[number]) =>
+const scalePoints = (region: ReadonlyArray<readonly [number, number]>) =>
   region
     .map(([x, y]) => `${Math.round(x * outputWidth)},${Math.round(y * outputHeight)}`)
     .join(' ');
@@ -216,9 +217,9 @@ const bodyRegionSvg = Buffer.from(`
     ${whiteInkRegions.map((region) => `<polygon points="${scalePoints(region)}" fill="#FFFFFF" />`).join('')}
     <ellipse
       cx="${Math.round(outputWidth * 0.275)}"
-      cy="${Math.round(outputHeight * 0.61)}"
-      rx="${Math.round(outputWidth * 0.19)}"
-      ry="${Math.round(outputHeight * 0.17)}"
+      cy="${Math.round(outputHeight * 0.535)}"
+      rx="${Math.round(outputWidth * 0.16)}"
+      ry="${Math.round(outputHeight * 0.115)}"
       fill="#000000"
     />
   </svg>
@@ -227,6 +228,48 @@ const bodyRegionMask = await sharp(bodyRegionSvg)
   .greyscale()
   .raw()
   .toBuffer();
+const cleanWhiteRegions = [
+  [
+    [0.44, 0.5],
+    [0.68, 0.48],
+    [0.7, 0.58],
+    [0.64, 0.76],
+    [0.59, 0.96],
+    [0.43, 0.96],
+    [0.4, 0.78],
+    [0.42, 0.62],
+  ],
+  [
+    [0.1, 0.62],
+    [0.38, 0.59],
+    [0.42, 0.66],
+    [0.39, 0.76],
+    [0.22, 0.79],
+    [0.08, 0.72],
+  ],
+] as const;
+const cleanWhiteRegionSvg = Buffer.from(`
+  <svg width="${outputWidth}" height="${outputHeight}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100%" height="100%" fill="#000000" />
+    ${cleanWhiteRegions.map((region) => `<polygon points="${scalePoints(region)}" fill="#FFFFFF" />`).join('')}
+    <ellipse
+      cx="${Math.round(outputWidth * 0.275)}"
+      cy="${Math.round(outputHeight * 0.535)}"
+      rx="${Math.round(outputWidth * 0.16)}"
+      ry="${Math.round(outputHeight * 0.115)}"
+      fill="#000000"
+    />
+  </svg>
+`);
+const cleanWhiteRegionMask = await sharp(cleanWhiteRegionSvg)
+  .greyscale()
+  .raw()
+  .toBuffer();
+const bodyShape = new Uint8Array(width * height);
+for (let index = 0; index < bodyShape.length; index += 1) {
+  bodyShape[index] = bodyOutside[index] === 0 ? 1 : 0;
+}
+const cleanBodyInterior = erode(bodyShape, cleanInteriorRadius);
 const bodyUnderlayMask = new Uint8Array(outputWidth * outputHeight);
 
 for (let y = 0; y < outputHeight; y += 1) {
@@ -256,8 +299,19 @@ for (let y = 0; y < outputHeight; y += 1) {
     const outputIndex = y * outputWidth + x;
     const alpha = render.data[sourceOffset + 3];
     const inBodyRegion = bodyRegionMask[outputIndex] > 128;
+    const forceCleanWhite =
+      cleanWhiteRegionMask[outputIndex] > 128 && cleanBodyInterior[sourceIndex] === 1;
     const hasWhiteUnderlay =
       bodyUnderlayMask[outputIndex] === 1 || detailOutside[sourceIndex] === 0;
+
+    if (forceCleanWhite) {
+      output[outputOffset] = 255;
+      output[outputOffset + 1] = 255;
+      output[outputOffset + 2] = 255;
+      output[outputOffset + 3] = 255;
+      whitePixels += 1;
+      continue;
+    }
 
     if (hasWhiteUnderlay) {
       output[outputOffset] = 255;
@@ -354,6 +408,7 @@ process.stdout.write(
       closureRadius,
       bodyClosureRadius,
       interiorRadius,
+      cleanInteriorRadius,
       outputScale,
     },
     null,
