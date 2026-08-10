@@ -8,6 +8,9 @@ import sharp from 'sharp';
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const artPath = join(packageRoot, 'public/generated/holding-world-editorial.png');
 const badgePath = join(packageRoot, 'public/generated/consuelo-footer-badge.png');
+const bodyFillMaskPath = join(packageRoot, 'public/images/home/holding-world-body-fill-mask.svg');
+const fillMaskPath = join(packageRoot, 'public/images/home/holding-world-white-fill-mask.svg');
+const generatorPath = join(packageRoot, 'scripts/generate-footer-art.ts');
 
 beforeAll(() => {
   const generated = Bun.spawnSync({
@@ -45,6 +48,23 @@ const countRegion = async (path, bounds) => {
 };
 
 describe('cloud footer editorial artwork', () => {
+  test('should use semantic smooth vector paths for the hand and sash fill mask', async () => {
+    const [bodyFillMask, fillMask, generator] = await Promise.all([
+      readFile(bodyFillMaskPath, 'utf8'),
+      readFile(fillMaskPath, 'utf8'),
+      readFile(generatorPath, 'utf8'),
+    ]);
+
+    expect(bodyFillMask).toContain('id="body-fill"');
+    expect(bodyFillMask).not.toContain('<polygon');
+    expect(bodyFillMask).toMatch(/<path[^>]+d="[^"]*[CQ][^"]*"/);
+    expect(fillMask).toContain('id="sash-fill"');
+    expect(fillMask).toContain('id="hand-fill"');
+    expect(fillMask).not.toContain('<polygon');
+    expect(fillMask).toMatch(/<path[^>]+d="[^"]*[CQ][^"]*"/);
+    expect(generator).toContain('holding-world-white-fill-mask.svg');
+  });
+
   test('should be a valid generated PNG with white figure regions and preserved blue ink', async () => {
     const bytes = await readFile(artPath);
     expect([...bytes.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
