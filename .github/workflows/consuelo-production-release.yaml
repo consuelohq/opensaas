@@ -61,7 +61,7 @@ jobs:
           fi
           git diff --name-only "$before" "$GITHUB_SHA" > "$RUNNER_TEMP/dialer-release-changes.txt"
           cat "$RUNNER_TEMP/dialer-release-changes.txt"
-          if grep -Eq '^(packages/(dialer|dialer-server|lead-connector)/|\.github/workflows/(consuelo-ci|consuelo-production-release|consuelo-dialer-rollback)\.yaml$|package\.json$|yarn\.lock$|\.yarnrc\.yml$|\.yarn/|nx\.json$|tsconfig[^/]*\.json$)' "$RUNNER_TEMP/dialer-release-changes.txt"; then
+          if grep -Eq '^(packages/(dialer|dialer-server|lead-connector|logger)/|\.github/workflows/(consuelo-ci|consuelo-production-release|consuelo-dialer-rollback)\.yaml$|package\.json$|yarn\.lock$|\.yarnrc\.yml$|\.yarn/|nx\.json$|tsconfig[^/]*\.json$)' "$RUNNER_TEMP/dialer-release-changes.txt"; then
             echo "release=true" >> "$GITHUB_OUTPUT"
           else
             echo "release=false" >> "$GITHUB_OUTPUT"
@@ -238,11 +238,13 @@ jobs:
           bun test packages/dialer/src
           bun test packages/dialer-server/src
           bun test packages/lead-connector/src
+          bun run --cwd packages/logger build
           bun run --cwd packages/dialer typecheck
           bun run --cwd packages/dialer-server typecheck
           bun run --cwd packages/lead-connector typecheck
+          bun run --cwd packages/dialer build
+          bun run --cwd packages/lead-connector build
           bun run --cwd packages/dialer-server build
-          bun run --cwd packages/lead-connector build:embed
 
       - name: Validate dialer deployment configuration
         env:

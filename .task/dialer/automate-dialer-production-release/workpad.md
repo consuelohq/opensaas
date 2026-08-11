@@ -38,16 +38,10 @@ started: 2026-08-11
 
 - `.github/workflows/consuelo-ci.yaml`
 - `.github/workflows/consuelo-production-release.yaml`
-- `.github/workflows/consuelo-dialer-rollback.yaml`
-- `packages/dialer-server/package.json`
-- `packages/dialer-server/scripts/{production-smoke,railway-deployment,rollback-production,write-release-manifest}.ts`
-- `packages/dialer-server/src/release/production-release.{ts,test.ts}`
-- `packages/lead-connector/EMBED.md`
-- `packages/lead-connector/package.json`
-- `packages/lead-connector/wrangler.jsonc`
-- `packages/lead-connector/scripts/{build-embed,configure-production-menu,read-wrangler-deployment,verify-production-edge}.ts`
-- `packages/lead-connector/src/deployment/{custom-menu,marketplace-bootstrap,production-menu.test,release-workflow.contract.test,worker-release}.ts` plus related tests
-- `packages/lead-connector/src/embed/cloudflare-worker.{ts,test.ts}`
+- `packages/dialer-server/Dockerfile`
+- `packages/dialer-server/railway.json`
+- `packages/lead-connector/src/deployment/release-workflow.contract.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -59,9 +53,6 @@ started: 2026-08-11
 
 ## workspace-owned: validation evidence
 
-- RED: initial release contracts failed only on missing production-menu/bootstrap/release modules and workflows.
-- Safety preflight: 69 Bun `test`/`spec` entrypoints across dialer, dialer-server, and LeadConnector scanned; zero prohibited destructive literals (`trc_6a43429bd00a`).
-- Focused release contracts: 20/20 pass (`trc_a06e97fa6487`).
 - Dialer suite: 174/174 pass (`trc_9aff647316d0`, first package result).
 - Dialer-server suite: 134/134 pass (`trc_3a5d4b916656`).
 - LeadConnector suite: 120/120 pass (`trc_3a5d4b916656`).
@@ -75,11 +66,23 @@ started: 2026-08-11
 - Pinned provider CLI contracts verified for Railway CLI 5.27.2 and project-local Wrangler rollback (`trc_7e5b6f77c8fc`).
 - Strict review: 0 owned issues, 0 blockers (`trc_cf43180c0b4f`).
 - Canonical verify: passed, `publishValid: true`, DB risk scan clean (`trc_837b77c769dc`).
+- Exact-head GitHub CI on `9633f27a1492f270d9196a111afd3980310e5f4d` exposed one clean-run prerequisite gap: `Consuelo / dialer` failed only in `Typecheck dialer release packages` because `@consuelo/logger` exports `dist` and had not been built on the fresh runner (`trc_3abf7ba80441`).
+- RED follow-up: release workflow contract failed on missing logger prerequisite/classification/watch patterns and missing Docker image proof (`trc_00dba4c9efce`, `trc_4e716c538afa`).
+- GREEN follow-up: logger -> three typechecks -> dialer -> LeadConnector -> dialer-server build sequence passes (`trc_33ecd21658d4`); clean-build workflow/Docker contract passes 4/4 (`trc_2862979f0012`).
+- PR gate now builds the exact Railway Dockerfile on GitHub runners; local Docker proof is unavailable because Docker is not installed on this Mac (`trc_091f2291a0aa`).
+- `packages/logger/**` now triggers dialer PR CI, main production release, and Railway watch patterns because logger is compiled into the dialer runtime.
+- Final clean-build contract: 4/4 pass, including logger classification, dependency-order Dockerfile, production path classification, and explicit rollback (`trc_3c801cedafbb`).
+- Final workflow YAML + formatting + `git diff --check`: pass (`trc_3c801cedafbb`).
+- Final workflow policy on the exact three changed workflows: zero findings (`trc_2f3640ce7061`).
+- GitHub PR gate now builds `packages/dialer-server/Dockerfile` directly, so the next exact-head CI run—not this Mac, which has no Docker binary—is the authoritative clean Linux container proof.
 - 2026-08-11 21:55:29 `review.run`: passed — OK
 - 2026-08-11 21:56:30 `review.run`: passed — OK
 - 2026-08-11 21:57:58 `review.run`: passed — OK
 - 2026-08-11 21:58:24 `verify`: passed — OK
 - 2026-08-11 21:59:02 `verify`: passed — OK
+- 2026-08-11 22:16:05 `review.run`: passed — OK
+- 2026-08-11 22:16:15 `review.run`: passed — OK
+- 2026-08-11 22:16:32 `verify`: passed — OK
 
 ## key decisions
 
@@ -107,11 +110,13 @@ started: 2026-08-11
 
 - `stream.sync` repeatedly lost MCP transport without changing the remote branch. Recovery used the authenticated GitHub merge API to perform the same non-force `main -> stream/dialer` merge, then verified `behindBy: 0`.
 - `fs.write` exposes a schema that rejects `force` while the underlying writer requires force for overwrites; workpad overwrite used task-scoped runtime as the narrow fallback.
+- The current `wait --pr` helper requests a removed GitHub CLI JSON field (`conclusion`); CI monitoring used the typed GitHub checks surface instead.
 
 ## issues and recovery
 
 - OS/MCP transport intermittently returned network errors for read/verify calls. No deploy/provider mutation was retried blindly; state was checked before retries.
 - Initial task start was sourced from `main` while PR base was `stream/dialer`. The task was validated with the stream merged locally, then `stream/dialer` was synced to `main` and merged into the task so the PR base is now a true ancestor without force-push/reset.
+- First pushed release head `9633f27a1492f270d9196a111afd3980310e5f4d` was correctly blocked by the new dialer CI gate on clean-run `@consuelo/logger` resolution. The fix builds logger before typecheck, builds all workspace runtime packages in dependency order, and makes the PR gate build the production Dockerfile.
 
 ---
 
@@ -132,6 +137,7 @@ bun run task:finish
 
 - `.github/workflows/consuelo-ci.yaml`
 - `.github/workflows/consuelo-production-release.yaml`
+- `packages/dialer-server/Dockerfile`
 - `packages/dialer-server/scripts/validate-local-runtime.ts`
 - `packages/dialer-server/src/architecture.test.ts`
 - `packages/dialer-server/src/release/production-release.test.ts`
@@ -139,7 +145,9 @@ bun run task:finish
 - `packages/dialer-server/src/routes/health.ts`
 - `packages/dialer-server/src/routes/lead-connector.ts`
 - `packages/dialer-server/src/routes/twilio.ts`
+- `packages/dialer-server/tsconfig.json`
 - `packages/dialer/package.json`
+- `packages/dialer/tsconfig.json`
 - `packages/lead-connector/EMBED.md`
 - `packages/lead-connector/scripts/build-embed.ts`
 - `packages/lead-connector/src/deployment/commercial-artifacts.test.ts`
@@ -151,15 +159,12 @@ bun run task:finish
 - `packages/lead-connector/src/embed/cloudflare-worker.test.ts`
 - `packages/lead-connector/src/embed/cloudflare-worker.ts`
 - `packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js`
+- `packages/lead-connector/tsconfig.json`
 - `packages/lead-connector/wrangler.jsonc`
+- `packages/logger/package.json`
 - `packages/workspace/scripts/ci/check-github-workflows.cjs`
 - `packages/workspace/scripts/stream-sync.js`
 
-- 2026-08-11 21:54:56 apply-patch: `.task/dialer/automate-dialer-production-release/workpad.md`
+- 2026-08-11 22:14:35 apply-patch: `.task/dialer/automate-dialer-production-release/workpad.md`
 
-- 2026-08-11 21:57:05 apply-patch: `packages/dialer-server/src/release/production-release.ts`
-- 2026-08-11 21:57:05 apply-patch: `packages/lead-connector/src/deployment/custom-menu.ts`
-- 2026-08-11 21:57:05 apply-patch: `packages/lead-connector/src/deployment/worker-release.ts`
-- 2026-08-11 21:57:05 apply-patch: `packages/lead-connector/src/deployment/worker-release.test.ts`
-
-- 2026-08-11 21:58:37 apply-patch: `.task/dialer/automate-dialer-production-release/workpad.md`
+- 2026-08-11 22:15:41 apply-patch: `.task/dialer/automate-dialer-production-release/workpad.md`

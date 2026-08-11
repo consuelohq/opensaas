@@ -11,6 +11,7 @@ describe('dialer GitHub release workflow contract', () => {
     const ci = read('.github', 'workflows', 'consuelo-ci.yaml');
     expect(ci).toContain('^packages/dialer-server/');
     expect(ci).toContain('^packages/lead-connector/');
+    expect(ci).toContain('^packages/logger/');
     expect(ci).toContain('bun test packages/dialer/src');
     expect(ci).toContain('bun test packages/dialer-server/src');
     expect(ci).toContain('bun test packages/lead-connector/src');
@@ -18,7 +19,31 @@ describe('dialer GitHub release workflow contract', () => {
     expect(ci).toContain('bun run --cwd packages/dialer-server typecheck');
     expect(ci).toContain('bun run --cwd packages/lead-connector typecheck');
     expect(ci).toContain('bun run --cwd packages/dialer-server build');
-    expect(ci).toContain('bun run --cwd packages/lead-connector build:embed');
+    expect(ci).toContain('bun run --cwd packages/lead-connector build');
+    expect(ci).toContain('docker build');
+    expect(ci).toContain('--file packages/dialer-server/Dockerfile');
+    expect(ci).toContain('bun run --cwd packages/logger build');
+    expect(ci.indexOf('bun run --cwd packages/logger build')).toBeLessThan(
+      ci.indexOf('bun run --cwd packages/dialer typecheck'),
+    );
+  });
+
+  it('builds clean Railway workspace dependencies in package order', () => {
+    const dockerfile = read('packages', 'dialer-server', 'Dockerfile');
+    const railway = read('packages', 'dialer-server', 'railway.json');
+    const builds = [
+      'bun run --cwd packages/logger build',
+      'bun run --cwd packages/dialer build',
+      'bun run --cwd packages/lead-connector build',
+      'bun run --cwd packages/dialer-server build',
+    ];
+    let cursor = -1;
+    for (const command of builds) {
+      const next = dockerfile.indexOf(command);
+      expect(next).toBeGreaterThan(cursor);
+      cursor = next;
+    }
+    expect(railway).toContain('packages/logger/**');
   });
 
   it('releases dialer changes from main in fail-closed provider order with deployment-only secrets', () => {
@@ -29,6 +54,13 @@ describe('dialer GitHub release workflow contract', () => {
     );
     expect(release).toContain('- dialer');
     expect(release).toContain('environment: consuelo dialer / production');
+    expect(release).toContain(
+      'packages/(dialer|dialer-server|lead-connector|logger)/',
+    );
+    expect(release).toContain('bun run --cwd packages/logger build');
+    expect(release.indexOf('bun run --cwd packages/logger build')).toBeLessThan(
+      release.indexOf('bun run --cwd packages/dialer typecheck'),
+    );
     const steps = [
       'Deploy dialer server to Railway',
       'Run safe dialer production smoke',

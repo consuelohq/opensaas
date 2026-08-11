@@ -92,6 +92,7 @@ jobs:
           if has_change '^packages/dialer/'; then dialer=true; verify=true; fi
           if has_change '^packages/dialer-server/'; then dialer=true; verify=true; fi
           if has_change '^packages/lead-connector/'; then dialer=true; verify=true; fi
+          if has_change '^packages/logger/'; then dialer=true; verify=true; fi
           if has_change '^packages/api/'; then verify=true; fi
           if has_change '^packages/consuelo-core/'; then verify=true; fi
           if has_change '^packages/consuelo-docs/'; then verify=true; fi
@@ -244,6 +245,10 @@ jobs:
           bun test packages/dialer-server/src
           bun test packages/lead-connector/src
 
+      - name: Build dialer typecheck prerequisites
+        if: needs.consuelo-changes.outputs.dialer == 'true'
+        run: bun run --cwd packages/logger build
+
       - name: Typecheck dialer release packages
         if: needs.consuelo-changes.outputs.dialer == 'true'
         run: |
@@ -254,8 +259,17 @@ jobs:
       - name: Build dialer release artifacts
         if: needs.consuelo-changes.outputs.dialer == 'true'
         run: |
+          bun run --cwd packages/dialer build
+          bun run --cwd packages/lead-connector build
           bun run --cwd packages/dialer-server build
-          bun run --cwd packages/lead-connector build:embed
+
+      - name: Build Railway dialer container
+        if: needs.consuelo-changes.outputs.dialer == 'true'
+        run: >-
+          docker build
+          --file packages/dialer-server/Dockerfile
+          --tag consuelo-dialer-ci:${{ github.sha }}
+          .
 
   sites-gateway-cloudflare:
     name: Consuelo / Sites Gateway + Cloudflare
