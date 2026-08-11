@@ -49,6 +49,7 @@ describe('skills registry generator', () => {
     const registry = buildSkillsRegistry();
     const names = registry.skills.map((skill) => skill.name);
 
+    expect(names).toContain('branch');
     expect(names).toContain('task');
     expect(names).toContain('artifacts');
     expect(names).toContain('senior-engineer');
