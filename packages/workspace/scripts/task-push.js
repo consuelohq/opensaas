@@ -21,11 +21,9 @@ const {
   updateBranchRef,
 } = require('./lib/github');
 const {
-  fetchOrigin,
+  assertApiPushBaseIsSynced,
   getTrackedChanges,
   getCurrentBranch,
-  getRefSha,
-  refExists,
   synchronizeApiPushedTaskBranch,
 } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
@@ -340,28 +338,6 @@ function resolveFilesFromPaths(args, repoRoot) {
   });
 }
 
-function assertChangedBranchIsSynced(repoRoot, branch) {
-  fetchOrigin(repoRoot);
-
-  const localRef = `refs/heads/${branch}`;
-  const remoteRef = `refs/remotes/origin/${branch}`;
-
-  if (!refExists(repoRoot, remoteRef)) {
-    throw new Error(
-      `origin/${branch} does not exist. sync the task branch with origin before running task:push --changed.`,
-    );
-  }
-
-  const localSha = getRefSha(repoRoot, localRef);
-  const remoteSha = getRefSha(repoRoot, remoteRef);
-
-  if (localSha !== remoteSha) {
-    throw new Error(
-      `local task branch is not synced with origin/${branch} (local ${localSha.slice(0, 8)} != remote ${remoteSha.slice(0, 8)}). sync the task worktree first, then rerun task:push --changed.`,
-    );
-  }
-}
-
 function resolveChangedFiles(repoRoot) {
   const changes = getTrackedChanges(repoRoot);
 
@@ -479,10 +455,6 @@ async function main() {
     writeStderr('warning: --approved provided but verify stamp is publish-valid; path not needed');
   }
 
-  if (args.changed) {
-    assertChangedBranchIsSynced(repoRoot, branch);
-  }
-
   const token = getToken();
   const userFiles = resolveFiles(args, repoRoot);
 
@@ -524,6 +496,8 @@ async function main() {
   if (!branchRef) {
     throw new Error(`remote branch not found: ${branch}`);
   }
+
+  assertApiPushBaseIsSynced(repoRoot, branch, branchRef.object.sha);
 
   const headCommit = await getCommit({
     token,

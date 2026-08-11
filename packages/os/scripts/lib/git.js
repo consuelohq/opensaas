@@ -105,6 +105,36 @@ function isBranchMerged(repoRoot, branch, into) {
   return isAncestor(repoRoot, `refs/heads/${branch}`, into);
 }
 
+function assertApiPushBaseIsSynced(repoRoot, branch, expectedSha) {
+  const currentBranch = getCurrentBranch(repoRoot);
+  if (currentBranch !== branch) {
+    throw new Error(`cannot prepare API push for ${branch}: checked out branch is ${currentBranch || '<detached>'}`);
+  }
+
+  fetchOrigin(repoRoot);
+
+  const localRef = `refs/heads/${branch}`;
+  const remoteRef = `refs/remotes/origin/${branch}`;
+  if (!refExists(repoRoot, remoteRef)) {
+    throw new Error(`origin/${branch} does not exist; sync the task branch before running task:push`);
+  }
+
+  const localSha = getRefSha(repoRoot, localRef);
+  const remoteSha = getRefSha(repoRoot, remoteRef);
+  if (remoteSha !== expectedSha) {
+    throw new Error(
+      `cannot prepare API push for ${branch}: GitHub head changed while preparing the push (expected ${expectedSha.slice(0, 8)}, fetched ${remoteSha.slice(0, 8)}); retry task:push from the refreshed branch`,
+    );
+  }
+  if (localSha !== expectedSha) {
+    throw new Error(
+      `local task branch is not synced with origin/${branch} (local ${localSha.slice(0, 8)} != remote ${remoteSha.slice(0, 8)}); sync the task worktree before running task:push`,
+    );
+  }
+
+  return { branch, sha: expectedSha };
+}
+
 function synchronizeApiPushedTaskBranch(repoRoot, branch, previousSha, nextSha) {
   const currentBranch = getCurrentBranch(repoRoot);
   if (currentBranch !== branch) {
@@ -180,6 +210,7 @@ function getTrackedChanges(repoRoot) {
 }
 
 module.exports = {
+  assertApiPushBaseIsSynced,
   branchExistsLocal,
   createOrResetLocalBranch,
   createWorktree,
