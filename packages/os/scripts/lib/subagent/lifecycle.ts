@@ -45,6 +45,8 @@ export type DurableSubagentRun = {
   updatedAt: number;
   stdoutLogPath: string;
   stderrLogPath: string;
+  stdoutChars?: number;
+  stderrChars?: number;
   finalMessage?: string;
   summary?: unknown;
   usage?: Record<string, number>;
@@ -56,6 +58,8 @@ export type DurableSubagentParser = (stdout: string, stderr: string) => {
   finalMessage?: string;
   summary?: unknown;
   usage?: Record<string, number>;
+  stdoutChars?: number;
+  stderrChars?: number;
 };
 
 export type DurableSubagentStartInput = {
@@ -491,7 +495,13 @@ function parseDurableRunOutput(
   run: DurableSubagentRun,
   parser: DurableSubagentParser,
 ): ReturnType<DurableSubagentParser> {
-  return parser(readFullLog(run.stdoutLogPath), readFullLog(run.stderrLogPath));
+  const stdout = readFullLog(run.stdoutLogPath);
+  const stderr = readFullLog(run.stderrLogPath);
+  return {
+    ...parser(stdout, stderr),
+    stdoutChars: stdout.length,
+    stderrChars: stderr.length,
+  };
 }
 
 function withParsed(
@@ -508,6 +518,8 @@ function withParsed(
     ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
     ...(parsed.summary !== undefined ? { summary: parsed.summary } : {}),
     ...(parsed.usage ? { usage: parsed.usage } : {}),
+    ...(typeof parsed.stdoutChars === 'number' ? { stdoutChars: parsed.stdoutChars } : {}),
+    ...(typeof parsed.stderrChars === 'number' ? { stderrChars: parsed.stderrChars } : {}),
     ...(error ? { error } : {}),
   };
 }
@@ -619,6 +631,8 @@ function reconcileOwnedExitMarker(
     ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
     ...(parsed.summary !== undefined ? { summary: parsed.summary } : {}),
     ...(parsed.usage ? { usage: parsed.usage } : {}),
+    ...(typeof parsed.stdoutChars === 'number' ? { stdoutChars: parsed.stdoutChars } : {}),
+    ...(typeof parsed.stderrChars === 'number' ? { stderrChars: parsed.stderrChars } : {}),
     ...(exit.error ? { error: exit.error } : {}),
   };
   return persistReconciledState(statePath, run, updated, true);

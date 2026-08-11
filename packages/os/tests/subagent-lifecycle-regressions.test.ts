@@ -13,6 +13,7 @@ import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it, vi } from 'vitest';
 
@@ -608,6 +609,65 @@ describe('durable subagent lifecycle regressions', () => {
       expect(await waitForProcessGroupExit(providerPid)).toBe(true);
     } finally {
       if (run) cancelDurableSubagentRun(run, makeEnvironment(home));
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('terminates an owned provider when runner setup fails after spawn', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-runner-setup-failure-'));
+    const runDirectory = join(home, 'run');
+    mkdirSync(runDirectory, { recursive: true });
+    const provider = writeExecutable(home, 'setup-failure-provider', [
+      '#!/bin/sh',
+      'sleep 2',
+    ].join('\n'));
+    const stdinPath = join(runDirectory, 'stdin.txt');
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerMarkerPath = join(runDirectory, 'missing-parent', 'owner.json');
+    const runId = 'run_setup_failure_cleanup';
+    writeFileSync(stdinPath, 'instruction');
+    writeFileSync(stdoutLogPath, '');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(join(runDirectory, 'launch.json'), JSON.stringify({
+      runId,
+      ownerToken: 'owner-setup-failure',
+      command: [provider],
+      cwd: home,
+      stdinPath,
+      stdoutLogPath,
+      stderrLogPath,
+      ownerMarkerPath,
+      exitMarkerPath,
+      timeoutMs: 5_000,
+      deadlineAt: Date.now() + 5_000,
+    }, null, 2));
+
+    const runnerPath = fileURLToPath(new URL('../scripts/lib/subagent/runner.ts', import.meta.url));
+    const runner = spawn('bun', [runnerPath, runDirectory], { stdio: 'ignore' });
+    let providerPid: number | undefined;
+    try {
+      const markerDeadline = Date.now() + 1_000;
+      while (!existsSync(exitMarkerPath) && Date.now() < markerDeadline) {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      expect(existsSync(exitMarkerPath)).toBe(true);
+      const marker = JSON.parse(readFileSync(exitMarkerPath, 'utf8')) as {
+        outcome?: unknown;
+        providerPid?: unknown;
+      };
+      expect(marker.outcome).toBe('failed');
+      expect(typeof marker.providerPid).toBe('number');
+      providerPid = marker.providerPid as number;
+      expect(await waitForProcessGroupExit(providerPid)).toBe(true);
+    } finally {
+      if (providerPid) {
+        try { process.kill(-providerPid, 'SIGKILL'); } catch {
+          try { process.kill(providerPid, 'SIGKILL'); } catch {}
+        }
+      }
+      try { process.kill(runner.pid || 0, 'SIGKILL'); } catch {}
       rmSync(home, { recursive: true, force: true });
     }
   });

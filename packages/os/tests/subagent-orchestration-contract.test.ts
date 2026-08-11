@@ -2,7 +2,7 @@ import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, wr
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { executeTool, getToolManifestEntry } from '../scripts/lib/facade/executor';
 import type { ToolInput, ToolRunner } from '../scripts/lib/facade/types';
@@ -63,6 +63,7 @@ function writeFakeCodex(root: string): { executable: string; argsPath: string; s
     'for arg in "$@"; do printf "%s\\n" "$arg" >> "$CODEX_ARGS_PATH"; done',
     'printf "%s\\n" spawn >> "$CODEX_SPAWN_PATH"',
     'cat > "$CODEX_PROMPT_PATH"',
+    'if [ -n "$CODEX_OUTPUT_PREFIX_BYTES" ]; then head -c "$CODEX_OUTPUT_PREFIX_BYTES" /dev/zero | tr \'\\0\' x; printf "\\n"; fi',
     'if [ -n "$CODEX_SLEEP" ]; then sleep "$CODEX_SLEEP"; fi',
     'printf "%s\\n" \'{"type":"item.completed","item":{"type":"agent_message","text":"fake complete"}}\'',
     'printf "%s\\n" \'{"type":"turn.completed","usage":{"input_tokens":11,"cached_input_tokens":2,"output_tokens":3,"reasoning_output_tokens":4}}\'',
@@ -367,6 +368,69 @@ describe('subagent orchestration contract', () => {
       expect(cancelled.data.status).toBe('cancelled');
       expect(cancelled.ok).toBe(true);
       expect(cancelled.code).toBe('OK');
+    } finally {
+      rmSync(durableHome, { recursive: true, force: true });
+      rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
+  it('returns TIMEOUT when a synchronous run reaches the durable provider deadline', async () => {
+    const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-run-timeout-'));
+    const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+    const parentNow = Date.now();
+    const dateNow = vi.spyOn(Date, 'now').mockReturnValue(parentNow);
+    try {
+      const fake = writeFakeCodex(durableHome);
+      const instructionPath = writeInstruction(worktree);
+      const result = await executeTool('subagent', input({
+        action: 'run',
+        instructionPath,
+        timeoutMs: 150,
+      }), options(worktree, {
+        ...process.env,
+        CONSUELO_HOME: durableHome,
+        WORKSPACE_SUBAGENT_CODEX_BIN: fake.executable,
+        CODEX_ARGS_PATH: fake.argsPath,
+        CODEX_SPAWN_PATH: fake.spawnPath,
+        CODEX_PROMPT_PATH: fake.promptPath,
+        CODEX_SLEEP: '2',
+      }));
+
+      expect(result.data.status).toBe('timed_out');
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('TIMEOUT');
+      expect(result.data.exitCode).not.toBe(0);
+    } finally {
+      dateNow.mockRestore();
+      rmSync(durableHome, { recursive: true, force: true });
+      rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
+  it('reports full durable output sizes while keeping returned log payloads bounded', async () => {
+    const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-log-size-'));
+    const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+    try {
+      const fake = writeFakeCodex(durableHome);
+      const instructionPath = writeInstruction(worktree);
+      const result = await executeTool('subagent', input({
+        action: 'run',
+        instructionPath,
+      }), options(worktree, {
+        ...process.env,
+        CONSUELO_HOME: durableHome,
+        WORKSPACE_SUBAGENT_CODEX_BIN: fake.executable,
+        CODEX_ARGS_PATH: fake.argsPath,
+        CODEX_SPAWN_PATH: fake.spawnPath,
+        CODEX_PROMPT_PATH: fake.promptPath,
+        CODEX_OUTPUT_PREFIX_BYTES: '9000',
+      }));
+
+      expect(result.ok).toBe(true);
+      expect(result.data.status).toBe('completed');
+      expect(result.data.stdout.length).toBeLessThanOrEqual(8_000);
+      expect(result.data.stdoutChars).toBeGreaterThan(result.data.stdout.length);
+      expect(result.data.stdoutChars).toBeGreaterThan(9_000);
     } finally {
       rmSync(durableHome, { recursive: true, force: true });
       rmSync(worktree, { recursive: true, force: true });

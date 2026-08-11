@@ -145,5 +145,9 @@ try {
     fs.closeSync(stderrFd);
   }
 } catch (error: unknown) {
+  if (provider && !finished) {
+    signalProviderProcess(provider, 'SIGTERM');
+    scheduleProviderProcessEscalation(provider, 250);
+  }
   finish('failed', 1, null, error instanceof Error ? error.message : String(error));
 }

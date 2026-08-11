@@ -46,10 +46,10 @@ started: 2026-08-10
 
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
-- `packages/os/scripts/lib/subagent/process-termination.ts`
 - `packages/os/scripts/lib/subagent/runner.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
-- `packages/os/tests/subagent-runner-termination.test.ts`
+- `packages/os/tests/subagent-orchestration-contract.test.ts`
+- `packages/os/tests/fixtures/tool-package-baseline.json`
 
 
 ## red evidence before production implementation
@@ -79,10 +79,6 @@ started: 2026-08-10
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:52:31 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:54:15 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:54:39 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:58:32 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:58:59 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:59:49 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 04:01:16 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -129,12 +125,13 @@ started: 2026-08-10
 - 2026-08-11 21:42:01 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:44:28 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:47:40 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:48:36 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:59:58 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 22:02:21 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 22:10:38 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- 2026-08-11 20:57:05 `review.run`: passed — OK
-- 2026-08-11 20:57:20 `verify`: passed — OK
-- 2026-08-11 20:57:36 `verify`: passed — OK
 - 2026-08-11 21:02:33 `review.run`: passed — OK
 - 2026-08-11 21:02:44 `verify`: passed — OK
 - 2026-08-11 21:03:02 `verify`: passed — OK
@@ -162,6 +159,9 @@ started: 2026-08-10
 - 2026-08-11 21:47:14 `review.run`: passed — OK
 - 2026-08-11 21:47:27 `verify`: passed — OK
 - 2026-08-11 21:47:50 `verify`: passed — OK
+- 2026-08-11 22:10:06 `review.run`: passed — OK
+- 2026-08-11 22:10:19 `verify`: passed — OK
+- 2026-08-11 22:10:44 `verify`: passed — OK
 
 ## key decisions
 
@@ -194,6 +194,9 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `.github/workflows/consuelo-ci.yaml`
+- `.github/workflows/consuelo-ci.yml`
+- `packages/os/SCRIPTS.md`
 - `packages/os/package.json`
 - `packages/os/scripts/build-runtime-bundle.ts`
 - `packages/os/scripts/check-syntax.js`
@@ -225,11 +228,15 @@ bun run task:finish
 - `packages/os/tests/distribution/release-publication-preparer.test.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
+- `packages/os/tests/local-os-server-review-findings.test.ts`
+- `packages/os/tests/security-gateway.test.ts`
 - `packages/os/tests/subagent-executable-discovery.test.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
 - `packages/os/tests/subagent-runner-termination.test.ts`
+- `packages/os/tests/tool-manifest.test.ts`
 - `packages/os/tests/trace-persistence.test.ts`
+- `packages/os/tests/workspace-gateway-contract.test.ts`
 - `packages/os/tools/subagent/handler.test.ts`
 - `packages/os/tools/subagent/handler.ts`
 - `packages/os/tools/subagent/manifest.ts`
@@ -1174,3 +1181,67 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamp + explicit-file task.push of lifecycle/runtime/process-termination/runner and the two regression files onto current remote head ba6a4a. Then freeze code and require terminal-green CI + fresh Codex review on exact next SHA before any task.pr merge.
 
 - 2026-08-11 21:47:40 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Candidate 3b1178f convergence wait — cycle 1
+- Start UTC: 2026-08-11T21:48:30Z
+- Wait reason: exact candidate `3b1178fdcb708adb882f73c0233fb98f213c30b0` has 0 failed / 16 pending checks; latest Codex review is still previous head `ba6a4a9310`.
+- Duration: 30s.
+- Resume action: read PR head, pr.checks, and pr.reviews; verify head unchanged, count failures/pending, and inspect newest Codex reviewed commit.
+- Expected signal: pending count decreases with zero failures and/or Codex reviews `3b1178f`.
+- Fallback: continue bounded polling if still pending; if any failure or new actionable exact-head review appears, stop merge path and inspect evidence.
+
+- 2026-08-11 21:48:36 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Exact-head Codex review + CI contract pass
+
+Test-first contract before production edits:
+- P1 runner setup cleanup: if provider spawn succeeds but runner setup later throws (owner marker/stdin setup), the owned provider/process group must be terminated before a terminal failed marker is published. Add deterministic runner-level regression proving cleanup.
+- P2 synchronous run timeout classification: when the durable runner reaches terminal `timed_out` before the outer wait deadline, `action: run` must return `code: TIMEOUT`, not `COMMAND_FAILED`. Add public orchestration regression.
+- P2 durable log size reporting: bounded stdout/stderr payloads stay bounded, but `stdoutChars`/`stderrChars` must report full durable file sizes so callers can detect truncation. Add public orchestration regression with >8KB output.
+- CI: current exact head 3b1178fd has one real failure, `Consuelo / OS contracts`; failed step is `Run OS contract tests`. Reproduce the exact three-file CI command after destructive-literal preflight and fix only if failure is owned by this task.
+- Existing patterns: process-group termination helpers in `process-termination.ts`; public result assertions in `subagent-orchestration-contract.test.ts`; durable lifecycle fixtures in `subagent-lifecycle-regressions.test.ts`.
+- Red-first requirement: each new regression must fail for the expected reason before production edits.
+
+- 2026-08-11 21:59:58 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Wait cycle — OS transport recovery
+- Start UTC: ~2026-08-11T22:00:50Z
+- Wait reason: two consecutive task-scoped OS calls failed with transport `network_error`; preserve task/worktree and avoid duplicate session/task creation.
+- Duration: requested 60s bounded pause; external timer surface itself timed out early, then wake verification was retried after elapsed wall time.
+- Resume action: task-scoped `fs.read` of `packages/os/tests/subagent-runner-termination.test.ts`.
+- Expected signal: successful structured file read proving taskSession/worktree routing is healthy.
+- Observed: successful read at 2026-08-11T22:02:13Z, trace `trc_01730f42fa4d`.
+- Decision: resume read-only safety preflight; no task recreation or code mutation occurred during outage.
+
+- 2026-08-11 22:02:21 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 22:03:56 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`
+- 2026-08-11 22:03:56 apply-patch: `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+
+- 2026-08-11 22:04:59 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+- 2026-08-11 22:05:06 apply-patch: `packages/os/scripts/lib/subagent/runtime.ts`
+- 2026-08-11 22:05:06 apply-patch: `packages/os/scripts/lib/subagent/runner.ts`
+- 2026-08-11 22:05:51 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`
+
+### Exact-head Codex/CI closure — green
+- Exact-head Codex review of 3b1178fd produced three actionable findings; all were reproduced red before implementation:
+  - runner setup failure left an already-spawned provider alive;
+  - synchronous `action: run` returned COMMAND_FAILED for durable timed_out;
+  - stdoutChars/stderrChars reported bounded response-tail lengths rather than full durable log sizes.
+- Fixes:
+  - runner catch now SIGTERMs an owned provider and schedules referenced SIGKILL escalation before publishing failed;
+  - synchronous run delegates terminal classification to durableTerminalOutcomeCode;
+  - terminal durable parsing persists full stdout/stderr character counts while response payloads remain bounded.
+- Added deterministic regressions for all three. Focused red -> green confirmed.
+- Reproduced sole real CI failure exactly: `Run OS contract tests` failed only because `tests/fixtures/tool-package-baseline.json` characterized the old subagent definition. Updated only the subagent baseline entry from the canonical generated manifest. Exact CI command now: 40 passed, 5 intentionally skipped.
+- Full repaired subagent suite: 38/38 green (lifecycle 16, orchestration 15, CLI 1, termination 6). Exact Luna argv still proves `--model gpt-5.6-luna` plus `model_reasoning_effort=\"xhigh\"`.
+- Durable trace regression: green. Its fixture emits the fs.read event before a 9,000-byte padding message, so this single test covers both originating-trace dedupe and beyond-response-tail parsing.
+- Executable discovery: 8/8 green.
+- Exact distribution harness: 12/12 files, 83 passed + 7 todo.
+- Syntax/type/static command `node ./scripts/check-syntax.js`: green.
+- Generated manifest consistency `bun ./scripts/generate-tool-manifest.ts --check`: green.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking.
+- Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: generate normal verify stamp, confirm remote PR head still 3b1178fd, explicit-file task.push of the final six runtime/test files plus baseline fixture. Do not task.pr yet; freeze code and require terminal-green CI + fresh Codex review on exact new SHA.
+
+- 2026-08-11 22:10:38 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`

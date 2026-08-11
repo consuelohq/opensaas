@@ -629,8 +629,8 @@ function durableSubagentResult(
     ...(run.usage ? { usage: run.usage } : {}),
     stdoutLogPath: run.stdoutLogPath,
     stderrLogPath: run.stderrLogPath,
-    stdoutChars: logs.stdout.length,
-    stderrChars: responseStderr.length,
+    stdoutChars: run.stdoutChars ?? logs.stdout.length,
+    stderrChars: run.stderrChars ?? logs.stderr.length,
     audit: {
       ...(run.taskSession ? { taskSession: run.taskSession } : {}),
       ...(run.branch ? { branch: run.branch } : {}),
@@ -796,7 +796,7 @@ async function executeCodexLifecycleSubagent(
   if (input.action === 'run') {
     const waited = await waitForDurableSubagentRun(run, context.env, input.timeoutMs, durableSubagentParser('codex', context.traceId));
     run = waited.run;
-    return durableSubagentResult(entry, context, run, input.action, waited.timedOut ? 'TIMEOUT' : run.status === 'completed' ? 'OK' : 'COMMAND_FAILED');
+    return durableSubagentResult(entry, context, run, input.action, waited.timedOut ? 'TIMEOUT' : durableTerminalOutcomeCode(run));
   }
   return durableSubagentResult(entry, context, run, input.action, 'OK');
 }
