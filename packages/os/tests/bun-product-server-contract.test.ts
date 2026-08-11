@@ -66,6 +66,10 @@ describe('Bun product server contract', () => {
     expect(manager).not.toContain('server.py');
 
     const server = source('scripts/server/main.ts');
+    expect(server).toContain("process.env.CONSUELO_OS_DAEMON_PROCESS = '1';");
+    expect(server.indexOf('CONSUELO_OS_DAEMON_PROCESS')).toBeLessThan(
+      server.indexOf('createLocalOsApp(config)'),
+    );
     expect(server).toContain('Bun.serve({');
     expect(server).toContain("hostname: '127.0.0.1'");
 

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-daemon-lifecycle-self-mutation-guard",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1830,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1830",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1830",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1830/fix-daemon-lifecycle-self-mutation-guard",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1830",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1830/fix-daemon-lifecycle-self-mutation-guard",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-daemon-lifecycle-self-mutation-guard",
+  "taskSession": "tsk_9637d18b5b5d",
+  "tmuxSession": "opensaas-os-fix-daemon-lifecycle-self-mutation-guard-9637d18b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-daemon-lifecycle-self-mutation-guard/.task/os/fix-daemon-lifecycle-self-mutation-guard/session.json",
+  "createdAt": "2026-08-11T18:38:38.638Z"
+}
