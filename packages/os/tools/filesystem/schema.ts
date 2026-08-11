@@ -13,6 +13,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired"
@@ -35,6 +36,9 @@ export const toolSchemas = [
       "defaultTimeout": 30000,
       "inputSchema": "FsApplyPatchInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": ["anchored", "patch", "hunk", "apply", "edit"]
+      },
       "exampleInput": {
         "branch": "task/workspace-agents/example",
         "patchFile": "/tmp/change.patch",
@@ -55,6 +59,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired"
@@ -77,6 +82,9 @@ export const toolSchemas = [
       "defaultTimeout": 30000,
       "inputSchema": "FsListInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "entities": ["directory", "directories", "folder", "folders", "tree"]
+      },
       "exampleInput": {
         "branch": "task/workspace-agents/example",
         "path": "packages/os/scripts",
@@ -97,6 +105,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired",
@@ -120,6 +129,9 @@ export const toolSchemas = [
       "defaultTimeout": 30000,
       "inputSchema": "FsReadInput",
       "outputSchema": "FsReadOutput",
+      "search": {
+        "entities": ["file", "files", "line", "lines", "contents"]
+      },
       "exampleInput": {
         "path": "packages/os/scripts/fs.js",
         "offset": 1,
@@ -167,6 +179,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired",
@@ -190,6 +203,9 @@ export const toolSchemas = [
       "defaultTimeout": 30000,
       "inputSchema": "FsSearchInput",
       "outputSchema": "FsSearchOutput",
+      "search": {
+        "keywords": ["grep", "ripgrep", "rg", "pattern", "contents", "codebase"]
+      },
       "exampleInput": {
         "pattern": "task:fs",
         "path": "packages/os/SCRIPTS.md"

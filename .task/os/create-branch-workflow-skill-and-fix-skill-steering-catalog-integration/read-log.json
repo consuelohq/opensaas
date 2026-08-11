@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".task/os/create-branch-workflow-skill-and-fix-skill-steering-catalog-integration/workpad.md",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/managed-component-install.ts",
+    "packages/os/scripts/lib/manifest-overlay.ts",
+    "packages/os/scripts/lib/onboarding-skills.ts",
+    "packages/os/scripts/lib/settings-snapshot.ts",
+    "packages/os/scripts/lib/skills.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/onboarding-skills.test.ts",
+    "packages/os/tests/os-get-steering-trace.test.ts"
+  ],
+  "updatedAt": "2026-08-11T21:31:09.500Z"
+}

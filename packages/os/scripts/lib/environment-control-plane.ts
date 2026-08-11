@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { Effect } from 'effect';
 
+import { nodeResourceLockPath, withNodeResourceLock } from './node-resource-lock';
 import {
   recordEnvironmentControlPlaneAuditEvent,
   type ControlPlaneAuditActor,
@@ -74,7 +75,6 @@ type EnvironmentRepository = {
   write(document: EnvironmentRegistryDocument): Promise<void>;
 };
 
-const mutationQueues = new Map<string, Promise<void>>();
 const SENSITIVE_KEY_PATTERN = /(^|[._-])(api[._-]?key|secret|token|password|credential|private[._-]?key|access[._-]?key|client[._-]?secret)($|[._-])/i;
 const SENSITIVE_VALUE_PATTERNS = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
@@ -308,21 +308,6 @@ export function environmentRegistryPath(home: string): string {
   return path.join(home, 'config', 'environments.json');
 }
 
-async function serializeMutation<A>(key: string, operation: () => Promise<A>): Promise<A> {
-  const previous = mutationQueues.get(key) ?? Promise.resolve();
-  let release: () => void = () => undefined;
-  const gate = new Promise<void>((resolve) => { release = resolve; });
-  const queued = previous.catch(() => undefined).then(() => gate);
-  mutationQueues.set(key, queued);
-  await previous.catch(() => undefined);
-  try {
-    return await operation();
-  } finally {
-    release();
-    if (mutationQueues.get(key) === queued) mutationQueues.delete(key);
-  }
-}
-
 function createFileEnvironmentRepository(home: string): EnvironmentRepository {
   const registryPath = environmentRegistryPath(home);
   return {
@@ -396,7 +381,10 @@ export function upsertEnvironmentEffect(input: {
   input: EnvironmentUpsertInput;
 }): Effect.Effect<{ created: boolean; environment: EnvironmentRecord; snapshot: EnvironmentSnapshot }, EnvironmentControlPlaneError> {
   return Effect.tryPromise({
-    try: () => serializeMutation(environmentRegistryPath(input.home), async () => {
+    try: () => withNodeResourceLock({
+      lockPath: nodeResourceLockPath(environmentRegistryPath(input.home)),
+      operationId: `environment:${input.workspaceId}`,
+    }, async () => {
       try {
         if (input.actor.workspaceId !== input.workspaceId) {
           throw environmentError('WorkspaceMismatch', 'Environment actor belongs to another workspace.', 403);
@@ -462,7 +450,10 @@ export function deleteEnvironmentEffect(input: {
   environmentId: string;
 }): Effect.Effect<{ deletedEnvironmentId: string; snapshot: EnvironmentSnapshot }, EnvironmentControlPlaneError> {
   return Effect.tryPromise({
-    try: () => serializeMutation(environmentRegistryPath(input.home), async () => {
+    try: () => withNodeResourceLock({
+      lockPath: nodeResourceLockPath(environmentRegistryPath(input.home)),
+      operationId: `environment:${input.workspaceId}`,
+    }, async () => {
       try {
         if (input.actor.workspaceId !== input.workspaceId) {
           throw environmentError('WorkspaceMismatch', 'Environment actor belongs to another workspace.', 403);

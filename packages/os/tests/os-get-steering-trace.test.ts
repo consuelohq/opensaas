@@ -59,6 +59,181 @@ afterEach(() => {
 });
 
 describe('OS steering execution recording', () => {
+  it('appends installed skill metadata without inlining skill bodies', () => {
+    const home = makeHome();
+    const skillsDir = path.join(home, 'skills');
+    const customSkillDir = path.join(skillsDir, 'custom-branch-planner');
+    fs.mkdirSync(customSkillDir, { recursive: true });
+    fs.writeFileSync(path.join(customSkillDir, 'SKILL.md'), '# Secret body\n\nbody-only-marker-must-not-appear\n');
+    fs.writeFileSync(path.join(skillsDir, 'skills.json'), `${JSON.stringify({
+      version: 1,
+      skills: [{
+        name: 'custom-branch-planner',
+        title: 'Custom Branch Planner',
+        description: 'Plan large work into aligned branch stacks.',
+        trigger: 'Invoke when a large project needs collaborative decomposition.',
+        entrypoint: 'SKILL.md',
+        load: { type: 'resource', path: 'skills/custom-branch-planner/SKILL.md' },
+        permission: 'guidance',
+        requiresApproval: false,
+        status: 'active',
+        capabilities: ['planning'],
+        tools: ['os.get_steering', 'os.call'],
+      }],
+    }, null, 2)}\n`);
+
+    const { steering } = runOsSnippet<{ steering: string }>(home, `
+      const { getSteering } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({ steering: getSteering() }));
+    `);
+
+    expect(steering).toContain('## Installed skills');
+    expect(steering).toContain('"name": "custom-branch-planner"');
+    expect(steering).toContain('Plan large work into aligned branch stacks.');
+    expect(steering).toContain('Invoke when a large project needs collaborative decomposition.');
+    expect(steering).not.toContain('body-only-marker-must-not-appear');
+  });
+
+  it('prefers the current selected-skill index over legacy or bundled catalogs', () => {
+    const home = makeHome();
+    const componentsDir = path.join(home, 'components');
+    const legacySkillsDir = path.join(home, 'skills');
+    fs.mkdirSync(componentsDir, { recursive: true });
+    fs.mkdirSync(legacySkillsDir, { recursive: true });
+    fs.writeFileSync(path.join(componentsDir, 'installed-skills.json'), `${JSON.stringify({
+      schemaVersion: 1,
+      kind: 'consuelo-installed-skill-index',
+      sourceBundle: { bundleId: 'sha256:fixture', version: '0.0.0-test' },
+      selected: [{
+        id: 'selected-branch-planner',
+        kind: 'skill',
+        ownership: 'bundled-managed',
+        sourcePath: 'skills/selected-branch-planner',
+        contentHash: 'fixture',
+        name: 'selected-branch-planner',
+        title: 'Selected Branch Planner',
+        description: 'Selected skill should be advertised.',
+        trigger: 'Invoke for selected branch planning.',
+        entrypoint: 'SKILL.md',
+        load: { type: 'resource', path: 'skills/selected-branch-planner/SKILL.md' },
+        permission: 'guidance',
+        requiresApproval: false,
+        status: 'active',
+        capabilities: ['planning'],
+        tools: ['os.get_steering', 'os.call'],
+      }],
+      legacyCustom: [],
+    }, null, 2)}\n`);
+    fs.writeFileSync(path.join(legacySkillsDir, 'skills.json'), `${JSON.stringify({
+      version: 1,
+      skills: [{
+        name: 'legacy-fallback-must-not-appear',
+        title: 'Legacy fallback',
+        description: 'Legacy fallback must not be advertised when the current index exists.',
+        trigger: 'Never.',
+        entrypoint: 'SKILL.md',
+        load: { type: 'resource', path: 'skills/legacy-fallback-must-not-appear/SKILL.md' },
+        status: 'active',
+      }],
+    }, null, 2)}\n`);
+
+    const { steering } = runOsSnippet<{ steering: string }>(home, `
+      const { getSteering } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({ steering: getSteering() }));
+    `);
+
+    expect(steering).toContain('"name": "selected-branch-planner"');
+    expect(steering).not.toContain('legacy-fallback-must-not-appear');
+  });
+
+  it('omits skills disabled by the manifest overlay', () => {
+    const home = makeHome();
+    const skillsDir = path.join(home, 'skills');
+    const overridesDir = path.join(home, 'security', 'overrides');
+    fs.mkdirSync(skillsDir, { recursive: true });
+    fs.mkdirSync(overridesDir, { recursive: true });
+    fs.writeFileSync(path.join(skillsDir, 'skills.json'), `${JSON.stringify({
+      version: 1,
+      skills: [
+        {
+          name: 'enabled-branch-planner',
+          title: 'Enabled Branch Planner',
+          description: 'Enabled skill should remain visible.',
+          trigger: 'Invoke for enabled planning.',
+          entrypoint: 'SKILL.md',
+          load: { type: 'resource', path: 'skills/enabled-branch-planner/SKILL.md' },
+          status: 'active',
+        },
+        {
+          name: 'disabled-branch-planner',
+          title: 'Disabled Branch Planner',
+          description: 'Disabled skill must not be advertised.',
+          trigger: 'Never advertise this disabled skill.',
+          entrypoint: 'SKILL.md',
+          load: { type: 'resource', path: 'skills/disabled-branch-planner/SKILL.md' },
+          status: 'active',
+        },
+      ],
+    }, null, 2)}\n`);
+    fs.writeFileSync(path.join(overridesDir, 'manifest.overlay.json'), `${JSON.stringify({
+      version: 1,
+      disabledSkills: ['disabled-branch-planner'],
+      disabledTools: [],
+      disabledWorkflows: [],
+      updatedAt: '2026-08-11T00:00:00.000Z',
+    }, null, 2)}\n`);
+
+    const { steering } = runOsSnippet<{ steering: string }>(home, `
+      const { getSteering } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({ steering: getSteering() }));
+    `);
+
+    expect(steering).toContain('"name": "enabled-branch-planner"');
+    expect(steering).not.toContain('disabled-branch-planner');
+  });
+
+  it('includes preserved custom skills from the current installed index', () => {
+    const home = makeHome();
+    const componentsDir = path.join(home, 'components');
+    const customDir = path.join(home, 'skills', 'custom-local-planner');
+    fs.mkdirSync(componentsDir, { recursive: true });
+    fs.mkdirSync(customDir, { recursive: true });
+    fs.writeFileSync(path.join(customDir, 'skill.json'), `${JSON.stringify({
+      name: 'custom-local-planner',
+      title: 'Custom Local Planner',
+      description: 'User-owned custom planning skill.',
+      trigger: 'Invoke for local custom planning.',
+      entrypoint: 'SKILL.md',
+      load: { type: 'resource', path: 'skills/custom-local-planner/SKILL.md' },
+      permission: 'guidance',
+      requiresApproval: false,
+      status: 'active',
+      capabilities: ['planning'],
+    }, null, 2)}\n`);
+    fs.writeFileSync(path.join(componentsDir, 'installed-skills.json'), `${JSON.stringify({
+      schemaVersion: 1,
+      kind: 'consuelo-installed-skill-index',
+      sourceBundle: { bundleId: 'sha256:fixture', version: '0.0.0-test' },
+      selected: [],
+      legacyCustom: [{
+        id: 'custom-local-planner',
+        kind: 'skill',
+        ownership: 'custom',
+        legacyPath: 'skills/custom-local-planner',
+        migrationRequired: true,
+      }],
+    }, null, 2)}\n`);
+
+    const { steering } = runOsSnippet<{ steering: string }>(home, `
+      const { getSteering } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({ steering: getSteering() }));
+    `);
+
+    expect(steering).toContain('"name": "custom-local-planner"');
+    expect(steering).toContain('User-owned custom planning skill.');
+    expect(steering).toContain('Invoke for local custom planning.');
+  });
+
   it('loads supported local steering files while excluding decision and legacy steering', () => {
     const home = makeHome();
     const steeringDir = path.join(

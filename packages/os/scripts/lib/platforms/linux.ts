@@ -156,7 +156,7 @@ export function resolveLinuxPlatformPaths(home: string, environment: NodeJS.Proc
     home: resolvedHome,
     systemdUserDir,
     unitPath: join(systemdUserDir, UNIT_NAME),
-    runtimeEntryPath: join(resolvedHome, 'runtime', 'current', 'scripts', 'server', 'main.ts'),
+    runtimeEntryPath: join(resolvedHome, 'runtime', 'current', 'scripts', 'server', 'supervisor.ts'),
     runsDir: join(resolvedHome, 'node', 'runs'),
     logsDir: join(resolvedHome, 'node', 'logs'),
     sessionStatePath: join(resolvedHome, 'node', 'runs', 'linux-session-process.json'),
