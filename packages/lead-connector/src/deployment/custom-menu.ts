@@ -44,6 +44,11 @@ type CustomMenuListResponse = { customMenus?: CustomMenuSummary[] };
 
 type CustomMenuMutationResponse = { customMenu?: { id?: string } };
 
+type CustomMenuRecord = Partial<LeadConnectorCustomMenu> & { id?: string };
+type CustomMenuGetResponse =
+  | CustomMenuRecord
+  | { customMenu?: CustomMenuRecord };
+
 export type LeadConnectorDeploymentFetch = (
   input: RequestInfo | URL,
   init?: RequestInit,
@@ -59,6 +64,103 @@ const parseJson = async <T>(response: Response): Promise<T> => {
   return body;
 };
 
+const deploymentHeaders = (accessToken: string) => ({
+  Accept: 'application/json',
+  Authorization: `Bearer ${accessToken}`,
+  'Content-Type': 'application/json',
+  Version: 'v3',
+});
+
+const readCustomMenuRecord = (
+  response: CustomMenuGetResponse,
+): CustomMenuRecord | undefined => {
+  if ('customMenu' in response) return response.customMenu;
+  if ('id' in response || 'title' in response || 'url' in response) {
+    return response as CustomMenuRecord;
+  }
+  return undefined;
+};
+
+const assertProductionMenuMatches = (
+  actual: Partial<LeadConnectorCustomMenu> | undefined,
+  expected: LeadConnectorCustomMenu,
+): void => {
+  if (!actual) {
+    throw new Error('LeadConnector custom menu read-back is missing');
+  }
+
+  const fields: Array<keyof LeadConnectorCustomMenu> = [
+    'title',
+    'url',
+    'icon',
+    'showOnCompany',
+    'showOnLocation',
+    'showToAllLocations',
+    'locations',
+    'openMode',
+    'userRole',
+    'allowCamera',
+    'allowMicrophone',
+  ];
+  for (const field of fields) {
+    if (JSON.stringify(actual[field]) !== JSON.stringify(expected[field])) {
+      throw new Error(`LeadConnector custom menu read-back mismatch: ${field}`);
+    }
+  }
+};
+
+export const updateLeadConnectorProductionMenu = async (
+  input: {
+    accessToken: string;
+    customMenuId: string;
+    embedUrl: string;
+    locationId: string;
+  },
+  fetcher: LeadConnectorDeploymentFetch = fetch,
+): Promise<{ customMenuId: string; menu: LeadConnectorCustomMenu }> => {
+  try {
+    const accessToken = input.accessToken.trim();
+    const customMenuId = input.customMenuId.trim();
+    if (!accessToken) {
+      throw new Error('LeadConnector production access token is required');
+    }
+    if (!customMenuId) {
+      throw new Error('LeadConnector production custom menu ID is required');
+    }
+
+    const menu = createLeadConnectorCustomMenu(input);
+    const url = `https://services.leadconnectorhq.com/custom-menus/${encodeURIComponent(customMenuId)}`;
+    const headers = deploymentHeaders(accessToken);
+    const before = await parseJson<CustomMenuGetResponse>(
+      await fetcher(url, { headers }),
+    );
+    if (readCustomMenuRecord(before)?.title !== menu.title) {
+      throw new Error(
+        'LeadConnector configured custom menu does not belong to Consuelo Dialer',
+      );
+    }
+
+    await parseJson<CustomMenuMutationResponse>(
+      await fetcher(url, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(menu),
+      }),
+    );
+
+    const readBack = await parseJson<CustomMenuGetResponse>(
+      await fetcher(url, { headers }),
+    );
+    assertProductionMenuMatches(readCustomMenuRecord(readBack), menu);
+    return { customMenuId, menu };
+  } catch (cause: unknown) {
+    if (cause instanceof Error) throw cause;
+    throw new Error('LeadConnector production custom menu update failed', {
+      cause,
+    });
+  }
+};
+
 export const upsertLeadConnectorSandboxMenu = async (
   input: {
     accessToken: string;
@@ -72,12 +174,7 @@ export const upsertLeadConnectorSandboxMenu = async (
     if (!accessToken)
       throw new Error('LeadConnector sandbox access token is required');
     const menu = createLeadConnectorCustomMenu(input);
-    const headers = {
-      Accept: 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      Version: 'v3',
-    };
+    const headers = deploymentHeaders(accessToken);
     const query = new URLSearchParams({
       locationId: input.locationId.trim(),
       query: menu.title,

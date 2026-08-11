@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/dialer/automate-dialer-production-release/workpad.md",
+    "packages/dialer-server/src/architecture.test.ts",
+    "packages/dialer/package.json",
+    "packages/lead-connector/EMBED.md",
+    "packages/workspace/scripts/ci/check-github-workflows.cjs"
+  ],
+  "updatedAt": "2026-08-11T21:54:34.630Z"
+}

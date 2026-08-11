@@ -8,6 +8,10 @@
     "typecheck": "tsc --noEmit",
     "build": "mkdir -p ./dist && bun build ./src/main.ts --compile --outfile ./dist/dialer-server",
     "start": "./dist/dialer-server",
+    "release:smoke": "bun ./scripts/production-smoke.ts",
+    "release:railway": "bun ./scripts/railway-deployment.ts",
+    "release:rollback-railway": "bun ./scripts/rollback-production.ts",
+    "release:manifest": "bun ./scripts/write-release-manifest.ts",
     "validate:local-runtime": "bun ./scripts/validate-local-runtime.ts",
     "validate:provider-test": "bun ./scripts/validate-provider-test.ts",
     "validate:groq-transcription": "bun ./scripts/validate-groq-transcription.ts"

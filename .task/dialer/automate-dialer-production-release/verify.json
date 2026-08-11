@@ -1,0 +1,196 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/automate-dialer-production-release",
+  "base": "origin/stream/dialer",
+  "headSha": "9e5769caa0f590ba85b7908427be8f25449162a9",
+  "changeHash": "83bce66f22eab4432349835bb3ae89fb6b383a6f2dda572754e44a4a6a31f2fc",
+  "changedFiles": [
+    ".github/workflows/consuelo-ci.yaml",
+    ".github/workflows/consuelo-dialer-rollback.yaml",
+    ".github/workflows/consuelo-production-release.yaml",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/scripts/production-smoke.ts",
+    "packages/dialer-server/scripts/railway-deployment.ts",
+    "packages/dialer-server/scripts/rollback-production.ts",
+    "packages/dialer-server/scripts/write-release-manifest.ts",
+    "packages/dialer-server/src/release/production-release.test.ts",
+    "packages/dialer-server/src/release/production-release.ts",
+    "packages/lead-connector/EMBED.md",
+    "packages/lead-connector/package.json",
+    "packages/lead-connector/scripts/build-embed.ts",
+    "packages/lead-connector/scripts/configure-production-menu.ts",
+    "packages/lead-connector/scripts/read-wrangler-deployment.ts",
+    "packages/lead-connector/scripts/verify-production-edge.ts",
+    "packages/lead-connector/src/deployment/custom-menu.ts",
+    "packages/lead-connector/src/deployment/marketplace-bootstrap.test.ts",
+    "packages/lead-connector/src/deployment/marketplace-bootstrap.ts",
+    "packages/lead-connector/src/deployment/production-menu.test.ts",
+    "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+    "packages/lead-connector/src/deployment/worker-release.test.ts",
+    "packages/lead-connector/src/deployment/worker-release.ts",
+    "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+    "packages/lead-connector/src/embed/cloudflare-worker.ts",
+    "packages/lead-connector/wrangler.jsonc"
+  ],
+  "verifiedAt": "2026-08-11T21:59:02.033Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-ci.yaml",
+        ".github/workflows/consuelo-dialer-rollback.yaml",
+        ".github/workflows/consuelo-production-release.yaml",
+        ".task/dialer/automate-dialer-production-release/current.json",
+        ".task/dialer/automate-dialer-production-release/evidence-log.json",
+        ".task/dialer/automate-dialer-production-release/read-log.json",
+        ".task/dialer/automate-dialer-production-release/session.json",
+        ".task/dialer/automate-dialer-production-release/verify.json",
+        ".task/dialer/automate-dialer-production-release/workpad.md",
+        ".task/tasks/dialer/automate-dialer-production-release.json",
+        "packages/dialer-server/package.json",
+        "packages/dialer-server/scripts/production-smoke.ts",
+        "packages/dialer-server/scripts/railway-deployment.ts",
+        "packages/dialer-server/scripts/rollback-production.ts",
+        "packages/dialer-server/scripts/write-release-manifest.ts",
+        "packages/dialer-server/src/release/production-release.test.ts",
+        "packages/dialer-server/src/release/production-release.ts",
+        "packages/lead-connector/EMBED.md",
+        "packages/lead-connector/package.json",
+        "packages/lead-connector/scripts/build-embed.ts",
+        "packages/lead-connector/scripts/configure-production-menu.ts",
+        "packages/lead-connector/scripts/read-wrangler-deployment.ts",
+        "packages/lead-connector/scripts/verify-production-edge.ts",
+        "packages/lead-connector/src/deployment/custom-menu.ts",
+        "packages/lead-connector/src/deployment/marketplace-bootstrap.test.ts",
+        "packages/lead-connector/src/deployment/marketplace-bootstrap.ts",
+        "packages/lead-connector/src/deployment/production-menu.test.ts",
+        "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+        "packages/lead-connector/src/deployment/worker-release.test.ts",
+        "packages/lead-connector/src/deployment/worker-release.ts",
+        "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+        "packages/lead-connector/src/embed/cloudflare-worker.ts",
+        "packages/lead-connector/wrangler.jsonc"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/package.json",
+            "packages/dialer-server/scripts/production-smoke.ts",
+            "packages/dialer-server/scripts/railway-deployment.ts",
+            "packages/dialer-server/scripts/rollback-production.ts",
+            "packages/dialer-server/scripts/write-release-manifest.ts",
+            "packages/dialer-server/src/release/production-release.test.ts",
+            "packages/dialer-server/src/release/production-release.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/EMBED.md",
+            "packages/lead-connector/package.json",
+            "packages/lead-connector/scripts/build-embed.ts",
+            "packages/lead-connector/scripts/configure-production-menu.ts",
+            "packages/lead-connector/scripts/read-wrangler-deployment.ts",
+            "packages/lead-connector/scripts/verify-production-edge.ts",
+            "packages/lead-connector/src/deployment/custom-menu.ts",
+            "packages/lead-connector/src/deployment/marketplace-bootstrap.test.ts",
+            "packages/lead-connector/src/deployment/marketplace-bootstrap.ts",
+            "packages/lead-connector/src/deployment/production-menu.test.ts",
+            "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+            "packages/lead-connector/src/deployment/worker-release.test.ts",
+            "packages/lead-connector/src/deployment/worker-release.ts",
+            "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+            "packages/lead-connector/src/embed/cloudflare-worker.ts",
+            "packages/lead-connector/wrangler.jsonc"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 664,
+          "outputTail": " number [0.06ms]\n(pass) Twilio provider test mode > passes the magic From number unchanged into the provider group request [0.05ms]\n(pass) Twilio provider test mode > does not claim carrier delivery or callbacks for test credentials [0.01ms]\n\npackages/dialer-server/src/runtime/railway.test.ts:\n(pass) LeadConnector dialer learning > records an atomic attempt and outcome for every completed carrier leg [0.17ms]\n(pass) LeadConnector dialer learning > does not fail carrier callback handling when learning persistence is unavailable [0.07ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.16ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.04ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.04ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [1.70ms]\n(pass) Railway dialer-server runtime composition > ranks predictive LeadConnector targets with shared model data before fanout [3.09ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from LeadConnector learned outcomes without Twenty model rows [0.62ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [0.45ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the attempt ledger before the outcome model tables [2.33ms]\n\npackages/dialer-server/src/release/production-release.test.ts:\n(pass) dialer production release safety > selects the new Railway deployment instead of racing the previous latest [0.13ms]\n(pass) dialer production release safety > smokes only non-mutating health/auth/signature boundaries [0.30ms]\n(pass) dialer production release safety > builds a secret-free release manifest from immutable deployment evidence [0.07ms]\n(pass) dialer production release safety > refuses to serialize a release manifest from non-green evidence [0.03ms]\n(pass) dialer production release safety > rolls Railway back to one explicit deployment id through the public API [0.13ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [2.11ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.22ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.28ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [22.11ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.13ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.16ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.18ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.13ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.07ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.96ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.11ms]\n\n 134 pass\n 0 fail\n 669 expect() calls\nRan 134 tests across 27 files. [655.00ms]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 791,
+          "outputTail": "the overlay through the supported Custom JS session context API [0.05ms]\n(pass) LeadConnector browser architecture and branding > anchors the launcher beside native Contacts and Opportunities controls [0.07ms]\n(pass) LeadConnector browser architecture and branding > publishes a separate wrapped Marketplace artifact while keeping the public script executable [0.20ms]\n(pass) LeadConnector browser architecture and branding > creates the iframe on demand and preserves a busy session across route changes [0.07ms]\n(pass) LeadConnector browser architecture and branding > keeps comma-separated selector literals safe for Marketplace editor persistence [0.19ms]\n(pass) LeadConnector browser architecture and branding > wires progressive commercial billing forms and confirmation actions to the controller [0.06ms]\n(pass) LeadConnector browser architecture and branding > restarts the trusted parent bootstrap exchange when authentication is retried [0.03ms]\n\npackages/lead-connector/src/embed/agent-voice.test.ts:\n(pass) LeadConnector browser agent voice > gets microphone permission, registers the device, and resolves after the agent call is accepted [0.43ms]\n(pass) LeadConnector browser agent voice > rejects if the media call fails before acceptance and disconnects the partial leg [0.18ms]\n\npackages/lead-connector/src/embed/idle-refresh.test.ts:\n(pass) LeadConnector idle refresh scheduling > uses focus and visible transitions without polling and fully cleans up across remounts [0.15ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.07ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.29ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.10ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.34ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.07ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.02ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.07ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.07ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.11ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.06ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.35ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.09ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.02ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.04ms]\n(pass) commercial deployment artifacts > centers a responsive modal backdrop while preserving a stable native launcher [0.07ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [2.49ms]\n\n 120 pass\n 0 fail\n 1019 expect() calls\nRan 120 tests across 26 files. [780.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

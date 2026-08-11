@@ -74,7 +74,41 @@ Pause and resume control client-side queue progression. They do not overwrite ac
 
 ## Public click-to-call asset
 
-The standalone package publishes executable JavaScript and a separate stylesheet for ordinary script-tag integrations. HighLevel Marketplace streams its Custom JS field as HTML, so `build:embed` also emits `consuelo-lead-connector-click-to-call.marketplace.html` with the executable source inside an inline `<script>` element. Paste the generated HTML artifact into the Marketplace Custom JS field and the generated CSS artifact into its CSS field. The script uses an explicit iframe target origin and the same versioned protocol as the embedded application. The legacy Twenty compatibility asset remains untouched until parity is proven and the cutover branch can remove it without selecting unrelated frontend baselines.
+The standalone package publishes executable JavaScript and a separate stylesheet for ordinary script-tag integrations. HighLevel Marketplace streams its Custom JS field as HTML, so `build:embed` emits two installation forms:
+
+- `consuelo-lead-connector-click-to-call.marketplace.html` contains the complete inline launcher and remains available for byte-for-byte manual Marketplace updates.
+- `consuelo-lead-connector-click-to-call.marketplace-loader.html` is the preferred one-time production bootstrap. It is a small stable `<link>` + `<script>` loader for the launcher assets on `https://calls.consuelohq.com`. Once that bootstrap is installed and verified in Marketplace, normal releases update the Cloudflare-hosted launcher assets and do not require Marketplace browser or developer-session credentials.
+
+The stable launcher asset paths are served with revalidation headers so a fixed Marketplace loader does not pin an old launcher indefinitely. The application shell itself remains content-versioned. The legacy Twenty compatibility asset remains untouched until parity is proven and the cutover branch can remove it without selecting unrelated frontend baselines.
+
+## Automated production release
+
+Dialer changes are validated in `Consuelo CI` across `packages/dialer`, `packages/dialer-server`, and `packages/lead-connector`. A matching push to `main` runs the dialer lane in `Consuelo Production Release` in this order:
+
+1. Re-run the three package test suites, typechecks, and production builds on the exact merged SHA.
+2. Deploy `dialer-server` to Railway and require a terminal `SUCCESS` deployment.
+3. Run non-mutating health, authentication, and unsigned-callback smoke checks.
+4. Deploy the LeadConnector Cloudflare Worker, capture its exact version ID, and verify `/`, `/admin`, `/overlay`, `/health`, CSP/permissions policy, and launcher asset SHA-256 values.
+5. Reconcile the configured GoHighLevel Custom Menu ID through the official v3 API and GET-read it back.
+6. Upload a release manifest containing the Git SHA, Railway deployment ID/status, Cloudflare version/build marker, launcher hashes, Custom Menu read-back evidence, and smoke results.
+
+The `consuelo dialer / production` GitHub Environment is deployment-only. It needs:
+
+- secret `RAILWAY_DIALER_PROJECT_TOKEN`;
+- secret `CLOUDFLARE_DIALER_WORKER_API_TOKEN`;
+- secret `LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN`;
+- variable `RAILWAY_DIALER_PROJECT_ID`;
+- variable `RAILWAY_DIALER_ENVIRONMENT_ID`;
+- variable `RAILWAY_DIALER_SERVICE_ID`;
+- variable `RAILWAY_DIALER_PUBLIC_ORIGIN`;
+- variable `CLOUDFLARE_ACCOUNT_ID`;
+- variable `LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID`;
+- variable `LEADCONNECTOR_PRODUCTION_LOCATION_ID`;
+- variable `LEADCONNECTOR_PRODUCTION_EMBED_URL`.
+
+Stripe credentials, Twilio credentials, Groq credentials, database/Redis URLs, encryption keys, and other application-runtime secrets remain in Railway. They must not be copied into GitHub Actions for deployment.
+
+`Consuelo Dialer Rollback` is manual and requires exact known-good Railway deployment and Cloudflare Worker version IDs. It never guesses a previous release.
 
 ## Validation
 
