@@ -92,6 +92,34 @@ describe('Consuelo OS reload lifecycle', () => {
     expect(result.stdout).toContain('started: healthy');
   });
 
+  it('should report the supervised worker pool in status output', () => {
+    const harness = createHarness({ launchdLoaded: true });
+    writeFileSync(harness.marker, 'ready');
+    const runs = join(harness.home, '.consuelo', 'node', 'runs');
+    mkdirSync(runs, { recursive: true });
+    writeFileSync(join(runs, 'os-worker-pool.json'), JSON.stringify({
+      schemaVersion: 1,
+      desiredWorkers: 2,
+      basePort: 46321,
+      generatedAt: '2026-08-11T00:00:00.000Z',
+      workers: [
+        { workerId: 'worker-0', state: 'ready', port: 46321, pid: 101, restartCount: 0 },
+        { workerId: 'worker-1', state: 'ready', port: 46322, pid: 102, restartCount: 1 },
+      ],
+    }));
+
+    const result = spawnSync(process.execPath, [reloadScript, 'status'], {
+      cwd: osRoot,
+      env: { ...harness.env, CONSUELO_HOME: join(harness.home, '.consuelo') },
+      encoding: 'utf8',
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('workers: 2/2 ready');
+    expect(result.stdout).toContain('worker-0: ready port=46321 pid=101 restarts=0');
+    expect(result.stdout).toContain('worker-1: ready port=46322 pid=102 restarts=1');
+  });
+
   it('should exit nonzero when LaunchAgent bootstrap fails', () => {
     const harness = createHarness({ bootstrapExit: 70 });
     const result = spawnSync(process.execPath, [reloadScript, 'start'], {

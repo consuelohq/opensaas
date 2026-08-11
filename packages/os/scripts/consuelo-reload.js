@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const { execFileSync, spawn } = require('child_process');
-const { existsSync } = require('fs');
+const { existsSync, readFileSync } = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -16,6 +16,8 @@ const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
 const EXPECTED_SERVER_NAME = 'consuelo-os';
 const CONFLICTING_LABELS = ['com.consuelo.workspace'];
+const CONSUELO_HOME = process.env.CONSUELO_HOME || path.join(HOME, '.consuelo');
+const WORKER_POOL_STATE = path.join(CONSUELO_HOME, 'node', 'runs', 'os-worker-pool.json');
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
@@ -61,6 +63,27 @@ function isExpectedHealth(result) {
   return result?.name === EXPECTED_SERVER_NAME;
 }
 
+function workerPoolState() {
+  try {
+    const parsed = JSON.parse(readFileSync(WORKER_POOL_STATE, 'utf8'));
+    if (!parsed || parsed.schemaVersion !== 1 || !Array.isArray(parsed.workers)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeWorkerPoolStatus() {
+  const pool = workerPoolState();
+  if (!pool) return;
+  const ready = pool.workers.filter((worker) => worker?.state === 'ready').length;
+  writeStdout(`  workers: ${ready}/${pool.desiredWorkers} ready`);
+  for (const worker of pool.workers) {
+    const pid = worker?.pid ? ` pid=${worker.pid}` : '';
+    writeStdout(`    ${worker.workerId}: ${worker.state} port=${worker.port}${pid} restarts=${worker.restartCount ?? 0}`);
+  }
+}
+
 function isLaunchdLoaded() {
   try {
     execFileSync('launchctl', ['print', `${LAUNCH_DOMAIN}/${LABEL}`], {
@@ -78,7 +101,7 @@ function findServerPid() {
 }
 
 function findServerPids() {
-  return parsePids(runBestEffort('pgrep', ['-f', 'packages/os/scripts/server/main.ts|scripts/server/main.ts']));
+  return parsePids(runBestEffort('pgrep', ['-f', 'packages/os/scripts/server/supervisor.ts|scripts/server/supervisor.ts|packages/os/scripts/server/main.ts|scripts/server/main.ts']));
 }
 
 function findPortPids() {
@@ -221,6 +244,7 @@ switch (command) {
       if (pids.length) writeStdout(`  pid: ${pids.join(', ')}`);
       writeStdout(`  mode: ${useLaunchd ? 'launchd' : 'direct'}`);
       writeStdout(`  health: ${HEALTH}`);
+      writeWorkerPoolStatus();
     } else {
       writeStdout('server not responding');
       if (result?.name) writeStdout(`  wrong server responding: ${result.name} (expected ${EXPECTED_SERVER_NAME})`);

@@ -22,7 +22,8 @@ The product runtime path is Bun/TypeScript.
 Current runtime layers:
 
 ```text
-scripts/server/main.ts -> local OS HTTP server
+scripts/server/supervisor.ts -> node supervisor / worker pool
+scripts/server/main.ts       -> individual local OS HTTP worker
 scripts/os.ts       -> Bun CLI and callable runtime spine
 scripts/revenue/*   -> skill implementation scripts
 scripts/lib/*       -> manifest, runtime state, GraphQL, artifacts

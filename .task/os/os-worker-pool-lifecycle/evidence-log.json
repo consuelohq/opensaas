@@ -1,0 +1,424 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/os-worker-pool-lifecycle",
+  "events": [
+    {
+      "id": "fb3c3aa9-f61e-4f92-95f9-284c07e2f1b9",
+      "occurred_at": "2026-08-11T21:49:19.220Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/os-worker-pool-lifecycle/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "11acab09-0f19-460b-828c-833b2b714de1",
+      "occurred_at": "2026-08-11T21:55:27.065Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/os-worker-pool-lifecycle/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "6e2094c4-db4f-49fe-acc7-79393bc4fe13",
+      "occurred_at": "2026-08-11T21:56:48.818Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/consuelo-reload.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "8c84e340-98ea-4d6b-8023-4862b6b71fe1",
+      "occurred_at": "2026-08-11T22:03:06.456Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "17fc33c8-c754-4007-8979-a080fccd0ac7",
+      "occurred_at": "2026-08-11T22:04:32.951Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "eb0d8fff-8c75-4a13-ace4-b3a5e3faea78",
+      "occurred_at": "2026-08-11T22:06:23.369Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "611907c2-a47d-4401-a284-1b434bf43681",
+      "occurred_at": "2026-08-11T22:06:52.375Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "4676ebaa-ab4a-4a85-8556-17e453970384",
+      "occurred_at": "2026-08-11T22:07:06.434Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "9fc38f05-1815-45ea-87f8-886a729bec08",
+      "occurred_at": "2026-08-11T23:23:08.061Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "a8eea5e1-d3f9-4c31-be79-caf2d49f6bd8",
+      "occurred_at": "2026-08-11T23:23:12.045Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/worker-pool.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "ab636afc-d5eb-4192-ab53-9a7c1b7f0fe8",
+      "occurred_at": "2026-08-11T23:23:45.759Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/app.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "909951f8-3dd0-4634-8604-abd76c2e0888",
+      "occurred_at": "2026-08-11T23:25:36.837Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/consuelo-reload.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "8a02b8f1-2e18-4643-8cbf-c92d139ee1b0",
+      "occurred_at": "2026-08-11T23:26:00.290Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/bun-product-server-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "750f47bc-0880-44b5-8842-e139bc211e35",
+      "occurred_at": "2026-08-11T23:27:08.745Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/routes/mcp.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "6be71c11-2eb0-4470-8979-1cf8b1429dfc",
+      "occurred_at": "2026-08-11T23:27:17.936Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/local-os-server-hono-architecture.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "78aa2abf-0267-4201-bdb8-84c378502d23",
+      "occurred_at": "2026-08-11T23:27:22.766Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/route-policies.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "d72074d2-1a4d-4f1e-b884-e9faccdfa0b0",
+      "occurred_at": "2026-08-11T23:27:38.398Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-device-authority-architecture.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "5e9e6ff2-9b42-4340-bdf6-c9d3df432b7f",
+      "occurred_at": "2026-08-11T23:27:55.946Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/routes/health.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "9e982fe0-51c2-40e7-865d-87d36d2a3f1d",
+      "occurred_at": "2026-08-11T23:28:30.946Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/distribution/runtime-bundle.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "7ec58c3b-c715-4277-807d-0173cd80e956",
+      "occurred_at": "2026-08-11T23:28:40.579Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-engine.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "08e6d342-61c3-4884-aae4-6fe35d35c29a",
+      "occurred_at": "2026-08-11T23:30:12.749Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/worker-pool-lifecycle.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "717f417a-c1b2-4f49-967c-f53793c3b4aa",
+      "occurred_at": "2026-08-11T23:32:59.744Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "49f3e207-0c37-46ba-b8d6-99f3790eaf45",
+      "occurred_at": "2026-08-11T23:33:04.952Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "0e886c94-f47f-4175-ba6b-98a0a58f0c75",
+      "occurred_at": "2026-08-11T23:34:17.198Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/os-worker-pool-lifecycle/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "e49a63c6-5be2-4e19-88b7-acc06204ec8e",
+      "occurred_at": "2026-08-11T23:35:36.887Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/supervisor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    },
+    {
+      "id": "0f7d321f-7a26-46ba-9769-2ff18fd1d844",
+      "occurred_at": "2026-08-11T23:38:02.854Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/os-worker-pool-lifecycle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/os-worker-pool-lifecycle"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-11T23:38:02.910Z"
+}
