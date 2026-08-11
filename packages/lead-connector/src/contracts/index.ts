@@ -43,6 +43,8 @@ export type LeadConnectorEmbedIdentity = {
   userId: string;
   installationId: string;
   locationId: string;
+  role: string;
+  contextType: 'agency' | 'location';
 };
 
 export type LeadConnectorHttpMethod = 'DELETE' | 'GET' | 'POST' | 'PUT';
@@ -91,10 +93,31 @@ export type LeadConnectorPipeline = {
   stages: LeadConnectorPipelineStage[];
 };
 
+export type LeadConnectorQueueCandidate = {
+  opportunityId: string;
+  contactId: string;
+  contactName: string;
+  phone: string;
+  status: string | null;
+  monetaryValue: number | null;
+};
+
+export type LeadConnectorQueuePreview = {
+  pipelineId: string;
+  pipelineName: string;
+  stageId: string;
+  stageName: string;
+  opportunityTotal: number;
+  callableTotal: number;
+  truncated: boolean;
+  candidates: LeadConnectorQueueCandidate[];
+};
+
 export type LeadConnectorWebhookEventType =
   | 'contact.created'
   | 'contact.deleted'
   | 'contact.updated'
+  | 'installation.uninstalled'
   | 'opportunity.created'
   | 'opportunity.deleted'
   | 'opportunity.updated';

@@ -14,6 +14,8 @@ describe('dialer-server embed sessions', () => {
       userId: 'user-1',
       installationId: 'installation-1',
       locationId: 'location-1',
+      role: 'admin',
+      contextType: 'location',
     });
     expect(issued.expiresAt).toBe('2025-06-15T15:11:40.000Z');
     const identity = await service.authenticate(
@@ -26,6 +28,8 @@ describe('dialer-server embed sessions', () => {
       userId: 'user-1',
       installationId: 'installation-1',
       locationId: 'location-1',
+      role: 'admin',
+      contextType: 'location',
     });
     expect(issued.token).not.toContain('workspace-1');
   });
@@ -42,6 +46,8 @@ describe('dialer-server embed sessions', () => {
       userId: 'user-1',
       installationId: 'installation-1',
       locationId: 'location-1',
+      role: 'admin',
+      contextType: 'location',
     });
     const request = (token: string) =>
       new Request('https://dialer.test/v1/call-sessions', {
@@ -59,6 +65,8 @@ describe('dialer-server embed sessions', () => {
       userId: string;
       installationId: string;
       locationId: string;
+      role: string;
+      contextType: 'agency' | 'location';
     }> = [];
     let activeInstallationId = 'installation-1';
     const service = createEmbedSessionService({
@@ -75,6 +83,8 @@ describe('dialer-server embed sessions', () => {
       userId: 'provider-user-1',
       installationId: 'installation-1',
       locationId: 'location-1',
+      role: 'user',
+      contextType: 'location',
     });
     const request = new Request('https://dialer.test/v1/call-sessions', {
       headers: { authorization: `Bearer ${issued.token}` },
@@ -85,6 +95,8 @@ describe('dialer-server embed sessions', () => {
       userId: 'provider-user-1',
       installationId: 'installation-1',
       locationId: 'location-1',
+      role: 'user',
+      contextType: 'location',
     });
     expect(validated).toEqual([
       {
@@ -92,6 +104,8 @@ describe('dialer-server embed sessions', () => {
         userId: 'provider-user-1',
         installationId: 'installation-1',
         locationId: 'location-1',
+        role: 'user',
+        contextType: 'location',
       },
     ]);
 

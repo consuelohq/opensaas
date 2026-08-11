@@ -85,3 +85,18 @@ test('partial or skipped gates are rejected', () => {
   writeVerifyStamp(repoRoot, validStamp(repoRoot, { db: { skipped: false, passed: true, warnOnly: true, risks: [], findings: [] } }));
   expect(getVerifyStampMismatch(repoRoot, 'main')).toContain('db');
 });
+
+
+test('verify keeps review semantic-only because selected suites own test execution', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+
+  expect(verifySource).toContain(
+    "'--summary-json', '--quiet', '--no-tests', ...args.reviewArgs",
+  );
+  expect(verifySource).toContain(
+    "test-selection.js', 'check', '--base', base, '--run', '--json'",
+  );
+});

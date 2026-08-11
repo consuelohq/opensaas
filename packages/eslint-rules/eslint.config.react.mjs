@@ -13,7 +13,7 @@ import unicornPlugin from 'eslint-plugin-unicorn';
 import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 import jsoncParser from 'jsonc-eslint-parser';
 
-const twentyRules = await nxPlugin.loadWorkspaceRules('packages/twenty-eslint-rules');
+const twentyRules = await nxPlugin.loadWorkspaceRules('packages/eslint-rules');
 
 export default [
   // Base JavaScript configuration

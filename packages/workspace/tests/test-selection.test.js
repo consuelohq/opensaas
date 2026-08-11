@@ -56,6 +56,36 @@ describe('test selection registry', () => {
     expect(
       registry.rules.some((rule) => rule.id === 'workspace-publish-gate'),
     ).toBe(true);
+    expect(
+      registry.rules.find((rule) => rule.id === 'frontend-lint-config-contract')
+        ?.exclusive,
+    ).toBe(true);
+    expect(
+      registry.rules.find(
+        (rule) => rule.id === 'auto:@consuelo/dialer-server:package-test',
+      ),
+    ).toBeUndefined();
+    expect(
+      registry.rules.find(
+        (rule) => rule.id === 'auto:@consuelo/lead-connector:package-test',
+      ),
+    ).toBeUndefined();
+    expect(
+      registry.rules.find(
+        (rule) => rule.id === 'auto:@consuelo/os:package-test',
+      )?.tests[0]?.command,
+    ).toEqual(['bun', 'run', '--cwd', 'packages/os', 'test']);
+    const explicitTwentyFront = registry.rules.find(
+      (rule) => rule.id === 'twenty-front-project',
+    );
+    expect(explicitTwentyFront?.tests[0]?.command).toEqual([
+      'npx',
+      'nx',
+      'test',
+      'twenty-front',
+      '--coverage=false',
+    ]);
+
     const autoTwentyShared = registry.rules.find(
       (rule) => rule.id === 'auto:twenty-shared:test',
     );
@@ -65,6 +95,101 @@ describe('test selection registry', () => {
       'test',
       'twenty-shared',
       '--coverage=false',
+    ]);
+  });
+
+  it('uses exclusive frontend config contracts instead of unrelated package suites', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/twenty-front/eslint.config.mjs',
+      '--changed-file',
+      'packages/twenty-ui/eslint.config.mjs',
+      '--changed-file',
+      'packages/eslint-rules/eslint.config.react.mjs',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('frontend-lint-config-contract');
+    expect(matchedRuleIds).not.toContain('twenty-front-project');
+    expect(matchedRuleIds).not.toContain('auto:twenty-front:test');
+    expect(matchedRuleIds).not.toContain('auto:twenty-ui:test');
+    expect(matchedRuleIds).not.toContain('auto:twenty-eslint-rules:test');
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'changed frontend lint helper tests',
+        'GitHub workflow policy tests',
+        'changed GitHub workflow security checks',
+        'changed frontend files lint',
+      ]),
+    );
+  });
+
+  it('keeps runtime source on the broader project suite alongside an exclusive config contract', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/twenty-front/eslint.config.mjs',
+      '--changed-file',
+      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const configRule = data.matchedRules.find(
+      (rule) => rule.id === 'frontend-lint-config-contract',
+    );
+    const projectRule = data.matchedRules.find(
+      (rule) => rule.id === 'twenty-front-project',
+    );
+
+    expect(configRule?.matchedFiles).toEqual([
+      'packages/twenty-front/eslint.config.mjs',
+    ]);
+    expect(projectRule?.matchedFiles).toEqual([
+      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
+    ]);
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'twenty-front test target',
+    );
+  });
+
+  it('uses the focused OS artifact contract for the metering manifest removal', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/artifacts-design.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('obsolete-metering-artifact-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'OS artifact manifest contract',
+    ]);
+  });
+
+  it('uses the focused native OS workflow contracts for Windows workflow assertions', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/windows-platform.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('native-os-workflow-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'native OS selector tests',
+      'native Windows workflow contracts',
+      'GitHub workflow policy tests',
+      'changed GitHub workflow security checks',
     ]);
   });
 
@@ -180,6 +305,53 @@ describe('test selection registry', () => {
 
     expect(data.level).toBe('pass');
     expect(data.zeroSuiteReason).toContain('changed files are docs');
+  });
+
+  it('propagates the selected base to suite commands', () => {
+    const registryPath = path.join(
+      os.tmpdir(),
+      `test-selection-base-${Date.now()}.json`,
+    );
+    fs.writeFileSync(
+      registryPath,
+      JSON.stringify({
+        version: 1,
+        rules: [
+          {
+            id: 'base-env-rule',
+            source: ['packages/base-env/**'],
+            critical: true,
+            origin: 'test',
+            tests: [
+              {
+                name: 'base environment suite',
+                command: [
+                  process.execPath,
+                  '-e',
+                  "if (process.env.NX_BASE !== 'origin/custom-base' || process.env.BASE_REF !== 'origin/custom-base') process.exit(1)",
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const result = run([
+      'check',
+      '--registry',
+      registryPath,
+      '--base',
+      'origin/custom-base',
+      '--changed-file',
+      'packages/base-env/src/index.ts',
+      '--run',
+      '--json',
+    ]);
+    const data = json(result);
+
+    expect(data.failedSuites).toHaveLength(0);
+    expect(data.runResults[0]?.status).toBe('passed');
   });
 
   it('fails timed out suite commands', () => {

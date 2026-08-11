@@ -634,6 +634,17 @@ describe('Windows native service and workflow source contracts', () => {
       ),
       'utf8',
     );
+    const nativeTestSelector = readFileSync(
+      resolve(
+        osRoot,
+        '..',
+        'workspace',
+        'scripts',
+        'ci',
+        'run-changed-os-native-tests.mjs',
+      ),
+      'utf8',
+    );
 
     expect(workflow).toContain('runner: windows-2025');
     expect(workflow).toContain('debian-linux-platform:');
@@ -652,13 +663,15 @@ describe('Windows native service and workflow source contracts', () => {
       'Remove Windows service build intermediates',
     );
     const distributionContracts = workflow.indexOf(
-      'Run distribution harness contracts',
+      'Run selected native distribution contracts',
     );
     expect(cleanup).toBeGreaterThan(nativeAcceptance);
     expect(cleanup).toBeLessThan(distributionContracts);
     expect(workflow).toContain(
-      'bun x vitest run tests/distribution --testTimeout 15000',
+      'node packages/workspace/scripts/ci/run-changed-os-native-tests.mjs',
     );
+    expect(nativeTestSelector).toContain("'tests/distribution'");
+    expect(nativeTestSelector).toContain("'15000'");
     expect(workflow).toContain('packages/os/native/windows-service/bin');
     expect(workflow).toContain('packages/os/native/windows-service/obj');
   });
