@@ -303,6 +303,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired"
@@ -325,6 +326,7 @@ export const toolSchemas = [
       "defaultTimeout": 120000,
       "inputSchema": "BranchInput",
       "outputSchema": "RawOutput",
+      "search": {"keywords":["links","pr links","pull request links"]},
       "exampleInput": {
         "branch": "task/workspace-agents/example"
       },

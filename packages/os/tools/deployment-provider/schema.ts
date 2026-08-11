@@ -73,10 +73,21 @@ const order = [
   'defaultTimeout',
   'inputSchema',
   'outputSchema',
+  'search',
   'command',
   'exampleInput',
   'sessionRequired',
 ] as const;
+
+const providerSearchMetadata = (search?: Record<string, unknown>): Record<string, unknown> => {
+  const extraAliases = Array.isArray(search?.domainAliases)
+    ? search.domainAliases.filter((value): value is string => typeof value === 'string')
+    : [];
+  return {
+    ...search,
+    domainAliases: [...new Set(['railway', 'vercel', 'cloudflare', ...extraAliases])],
+  };
+};
 
 const contribution = (
   name: string,
@@ -85,6 +96,7 @@ const contribution = (
   exampleInput: Record<string, unknown>,
   mutating = false,
   defaultTimeout = 120_000,
+  search?: Record<string, unknown>,
 ): ToolSchemaContribution => ({
   name,
   order,
@@ -103,6 +115,7 @@ const contribution = (
     defaultTimeout,
     inputSchema,
     outputSchema: 'RawOutput',
+    search: providerSearchMetadata(search),
     exampleInput,
     sessionRequired: false,
   },
@@ -148,6 +161,7 @@ export const toolSchemas = [
     { provider: 'railway', action: 'redeploy', serviceId: 'api', approved: true, approvalReason: 'Approved deployment mutation' },
     true,
     900_000,
+    { keywords: ['deploy', 'redeploy', 'promote', 'deployment'] },
   ),
   contribution(
     'deployment.environment',
@@ -162,5 +176,7 @@ export const toolSchemas = [
     'DeploymentRawInput',
     { provider: 'railway', args: ['status', '--json'], approved: true, approvalReason: 'Approved raw provider command' },
     true,
+    120_000,
+    { domainAliases: ['r2', 'd1', 'wrangler', 'worker', 'workers'], entities: ['r2', 'object', 'objects', 'bucket', 'buckets', 'd1', 'database', 'query', 'worker', 'workers'] },
   ),
 ] as const satisfies readonly ToolSchemaContribution[];
