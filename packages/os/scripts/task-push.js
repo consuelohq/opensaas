@@ -23,6 +23,7 @@ const {
   assertApiPushBaseIsSynced,
   getTrackedChanges,
   getCurrentBranch,
+  resolveApiPushSyncTarget,
   synchronizeApiPushedTaskBranch,
 } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
@@ -420,7 +421,8 @@ async function main() {
     throw new Error(`remote branch not found: ${branch}`);
   }
 
-  assertApiPushBaseIsSynced(repoRoot, branch, branchRef.object.sha);
+  const syncTarget = resolveApiPushSyncTarget(repoRoot, branch, args.repo, token);
+  assertApiPushBaseIsSynced(repoRoot, branch, branchRef.object.sha, syncTarget);
 
   const headCommit = await getCommit({
     token,
@@ -485,13 +487,13 @@ async function main() {
   try {
     localSyncResult = {
       ok: true,
-      ...synchronizeApiPushedTaskBranch(repoRoot, branch, branchRef.object.sha, commit.sha),
+      ...synchronizeApiPushedTaskBranch(repoRoot, branch, branchRef.object.sha, commit.sha, syncTarget),
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     localSyncResult = { ok: false, error: message };
     writeStderr(`local sync warning: remote push succeeded at ${commit.sha.slice(0, 8)} but local sync failed: ${message}`);
-    writeStderr(`recovery: git fetch --no-tags origin refs/heads/${branch}:refs/remotes/origin/${branch}`);
+    writeStderr(`recovery: git fetch --no-tags ${syncTarget.remote} refs/heads/${branch}:${syncTarget.trackingRef}`);
     writeStderr(`recovery: git reset --mixed ${commit.sha}`);
   }
 
