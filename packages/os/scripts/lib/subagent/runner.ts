@@ -2,7 +2,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { signalProviderProcess } from './process-termination.ts';
+import { preserveFirstTerminationOutcome, signalProviderProcess } from './process-termination.ts';
 
 type LaunchSpec = {
   runId: string;
@@ -63,7 +63,9 @@ function finish(
 }
 
 function terminate(outcome: 'timed_out' | 'cancelled'): void {
-  requestedOutcome = outcome;
+  const preserved = preserveFirstTerminationOutcome(requestedOutcome, outcome);
+  if (requestedOutcome) return;
+  requestedOutcome = preserved;
   if (provider) {
     signalProviderProcess(provider, 'SIGTERM');
     setTimeout(() => {

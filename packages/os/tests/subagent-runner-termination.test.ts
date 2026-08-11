@@ -1,8 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { signalProviderProcess } from '../scripts/lib/subagent/process-termination';
+import { preserveFirstTerminationOutcome, signalProviderProcess } from '../scripts/lib/subagent/process-termination';
 
 describe('subagent runner termination', () => {
+  it('preserves the first timeout or cancellation cause during escalation', () => {
+    expect(preserveFirstTerminationOutcome(undefined, 'timed_out')).toBe('timed_out');
+    expect(preserveFirstTerminationOutcome('timed_out', 'cancelled')).toBe('timed_out');
+    expect(preserveFirstTerminationOutcome('cancelled', 'timed_out')).toBe('cancelled');
+  });
+
   it('falls back to ChildProcess.kill on Windows', () => {
     const childKill = vi.fn(() => true);
     const groupKill = vi.fn(() => { throw new Error('negative pid unsupported'); });

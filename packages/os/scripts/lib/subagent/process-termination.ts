@@ -2,6 +2,14 @@ import type { ChildProcess } from 'node:child_process';
 
 type SignalableProvider = Pick<ChildProcess, 'pid' | 'kill'>;
 type GroupKill = (pid: number, signal: NodeJS.Signals) => boolean;
+export type ProviderTerminationOutcome = 'timed_out' | 'cancelled';
+
+export function preserveFirstTerminationOutcome(
+  current: ProviderTerminationOutcome | undefined,
+  next: ProviderTerminationOutcome,
+): ProviderTerminationOutcome {
+  return current ?? next;
+}
 
 export function signalProviderProcess(
   provider: SignalableProvider,

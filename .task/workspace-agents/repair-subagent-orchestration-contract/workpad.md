@@ -44,13 +44,9 @@ started: 2026-08-10
 
 ## files changed
 
-- `packages/os/scripts/lib/subagent/lifecycle.ts`
-- `packages/os/scripts/lib/subagent/runtime.ts`
 - `packages/os/scripts/lib/subagent/process-termination.ts`
 - `packages/os/scripts/lib/subagent/runner.ts`
-- `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-runner-termination.test.ts`
-- `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 
 
 ## red evidence before production implementation
@@ -66,18 +62,19 @@ started: 2026-08-10
 ## workspace-owned: files changed
 
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/lib/subagent/process-termination.ts`
+- `packages/os/scripts/lib/subagent/runner.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
 - `packages/os/scripts/subagent.ts`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 - `packages/os/tests/subagent-cli.test.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
+- `packages/os/tests/subagent-runner-termination.test.ts`
 - `packages/os/tests/trace-persistence.test.ts`
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:41:01 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:41:43 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:42:26 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:43:12 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:44:06 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -126,6 +123,8 @@ started: 2026-08-10
 - 2026-08-11 21:08:49 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:10:58 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:15:45 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:17:05 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:19:53 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -154,6 +153,9 @@ started: 2026-08-10
 - 2026-08-11 21:15:20 `review.run`: passed — OK
 - 2026-08-11 21:15:31 `verify`: passed — OK
 - 2026-08-11 21:15:52 `verify`: passed — OK
+- 2026-08-11 21:19:33 `review.run`: passed — OK
+- 2026-08-11 21:19:43 `verify`: passed — OK
+- 2026-08-11 21:20:01 `verify`: passed — OK
 
 ## key decisions
 
@@ -218,6 +220,7 @@ bun run task:finish
 - `packages/os/tests/subagent-executable-discovery.test.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
+- `packages/os/tests/subagent-runner-termination.test.ts`
 - `packages/os/tests/trace-persistence.test.ts`
 - `packages/os/tools/subagent/handler.test.ts`
 - `packages/os/tools/subagent/handler.ts`
@@ -1033,3 +1036,25 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamp + explicit-file task.push onto current remote head 49e1654; then freeze code and require fresh CI + Codex review on exact new SHA before any merge.
 
 - 2026-08-11 21:15:45 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Codex runner first-cause review on 49e / current 7f144a8
+- Latest Codex review still targeted 49e and included one additional valid P2: `terminate()` overwrites `requestedOutcome`, so a timeout followed by cancel (or reverse) during the 250ms escalation window can record the later cause instead of the first trigger.
+- Add a focused first-cause helper regression and make subsequent termination requests no-ops once an outcome is claimed; the first trigger retains ownership of SIGTERM/SIGKILL escalation and terminal classification.
+- 7f CI/review is superseded by this fix; do not merge until the next exact head is reviewed and terminal-green.
+
+- 2026-08-11 21:17:05 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 21:17:05 apply-patch: `packages/os/tests/subagent-runner-termination.test.ts`
+- 2026-08-11 21:17:16 apply-patch: `packages/os/scripts/lib/subagent/process-termination.ts`
+- 2026-08-11 21:17:16 apply-patch: `packages/os/scripts/lib/subagent/runner.ts`
+
+### Codex runner first-cause fix — green
+- Deterministic first-cause regression: timeout claims `timed_out`; a later cancel cannot relabel it, and cancellation-first similarly remains `cancelled`.
+- `preserveFirstTerminationOutcome` now centralizes first-writer-wins semantics; `runner.terminate()` ignores later termination requests once an outcome owns SIGTERM/SIGKILL escalation.
+- Full core lifecycle + public contract + CLI + termination: 28/28 green (11 + 13 + 1 + 3).
+- Relevant trace persistence: 2/2 green. Executable discovery: 8/8 green. Distribution runtime bundle: 20/20 green. OS syntax/typecheck green; generated manifests current.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking.
+- Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamped verify + explicit-file task.push onto current remote head 7f144a8; then freeze code and require fresh CI + Codex review on the exact candidate SHA before merge. No task.pr/task.merge/task.finish until convergence.
+
+- 2026-08-11 21:19:53 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
