@@ -44,9 +44,7 @@ started: 2026-08-10
 
 ## files changed
 
-- `packages/os/scripts/lib/subagent/process-termination.ts`
-- `packages/os/scripts/lib/subagent/runner.ts`
-- `packages/os/tests/subagent-runner-termination.test.ts`
+- `packages/os/tests/distribution/release-publication-preparer.test.ts`
 
 
 ## red evidence before production implementation
@@ -75,8 +73,6 @@ started: 2026-08-10
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:42:26 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:43:12 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:44:06 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:44:58 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:45:29 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -125,10 +121,11 @@ started: 2026-08-10
 - 2026-08-11 21:15:45 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:17:05 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:19:53 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:20:50 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:24:32 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- 2026-08-10 04:57:50 `review.run`: passed — OK
 - 2026-08-10 04:58:21 `review.run`: passed — OK
 - 2026-08-10 04:58:32 `verify`: passed — OK
 - 2026-08-10 05:03:34 `review.run`: passed — OK
@@ -156,6 +153,9 @@ started: 2026-08-10
 - 2026-08-11 21:19:33 `review.run`: passed — OK
 - 2026-08-11 21:19:43 `verify`: passed — OK
 - 2026-08-11 21:20:01 `verify`: passed — OK
+- 2026-08-11 21:24:08 `review.run`: passed — OK
+- 2026-08-11 21:24:21 `verify`: passed — OK
+- 2026-08-11 21:24:38 `verify`: passed — OK
 
 ## key decisions
 
@@ -215,6 +215,7 @@ bun run task:finish
 - `packages/os/scripts/subagent.ts`
 - `packages/os/scripts/tmp.js`
 - `packages/os/steering/system_prompt.md`
+- `packages/os/tests/distribution/release-publication-preparer.test.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 - `packages/os/tests/subagent-executable-discovery.test.ts`
@@ -1058,3 +1059,25 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamped verify + explicit-file task.push onto current remote head 7f144a8; then freeze code and require fresh CI + Codex review on the exact candidate SHA before merge. No task.pr/task.merge/task.finish until convergence.
 
 - 2026-08-11 21:19:53 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Candidate convergence wait — cycle 1
+- Start UTC: 2026-08-11T21:20:35Z
+- Wait reason: candidate `7ecaf8e5a8d4d1978f6913713b465c95679a0119` has fresh CI (0 failed / 15 pending) and Codex has not yet reviewed this head.
+- Duration: 30s.
+- Resume action: read PR head, `pr.checks`, and `pr.reviews`; verify head remains 7ecaf8e, count failed/pending checks, and inspect newest Codex reviewed commit.
+- Expected signal: CI pending count decreases with 0 failures and/or a Codex review appears for 7ecaf8e.
+- Fallback: if still pending, continue bounded polling; if any failure or new actionable review appears, stop merge path and inspect evidence.
+
+- 2026-08-11 21:20:50 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 21:23:43 apply-patch: `packages/os/tests/distribution/release-publication-preparer.test.ts`
+
+### Native distribution CI failure — reproduced and fixed
+- Candidate `7ecaf8e5a8d4d1978f6913713b465c95679a0119` produced two identical platform CI failures: `Consuelo OS / native linux` and `Consuelo OS / native macos`, both at step `Run distribution harness contracts`.
+- Exact local CI reproduction (`cd packages/os && bun x vitest run tests/distribution --testTimeout 15000`) failed only `release-publication-preparer.test.ts`: synthetic runtime source fixture omitted newly-required `scripts/lib/subagent/runner.ts`.
+- Fix is fixture-only: add a stub runner.ts to createRuntimeSource; no runtime/product behavior changed.
+- Exact distribution harness now green: 12/12 test files, 83 passed + 7 todo (90 total).
+- Strict review: 0 owned / 0 pre-existing / 0 blocking. Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamped verify + explicit-file task.push of the single fixture; then require CI + Codex review on the new exact head before merge.
+
+- 2026-08-11 21:24:32 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`

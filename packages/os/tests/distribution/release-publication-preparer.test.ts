@@ -50,6 +50,7 @@ function createRuntimeSource(root: string): string {
     'scripts/managed-components.ts': 'export const managedComponentsCliFixture = true;\n',
     'scripts/lib/managed-components.ts': 'export const managedComponentsFixture = true;\n',
     'scripts/lib/managed-component-install.ts': 'export const managedComponentInstallFixture = true;\n',
+    'scripts/lib/subagent/runner.ts': 'export const subagentRunnerFixture = true;\n',
     'manifests/generated/tool.manifest.json': '{"version":1,"kind":"consuelo-os-tool-manifest","tools":[]}\n',
     'manifests/generated/core.manifest.json': '{"version":1,"kind":"consuelo-os-core-manifest","tools":[]}\n',
     'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',

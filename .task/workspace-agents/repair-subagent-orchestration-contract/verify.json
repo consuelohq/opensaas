@@ -5,7 +5,7 @@
   "branch": "task/workspace-agents/repair-subagent-orchestration-contract",
   "base": "origin/stream/workspace-agents",
   "headSha": "861cd0b1080a1bc4740866a65162dd536dcc29d0",
-  "changeHash": "9208e13874f2d8f8416b0396fab13a2a8c7a881665f714d98b07356210620e40",
+  "changeHash": "2460125c2ab9b226ae6db3d9b54ea3cec8d8bceb5ab94229ddf6329a1da78f19",
   "changedFiles": [
     "packages/os/TOOLS.md",
     "packages/os/manifests/generated/tool.manifest.json",
@@ -20,6 +20,7 @@
     "packages/os/scripts/lib/subagent/runtime.ts",
     "packages/os/scripts/subagent.ts",
     "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/distribution/release-publication-preparer.test.ts",
     "packages/os/tests/distribution/runtime-bundle.test.ts",
     "packages/os/tests/fixtures/trace-persistence-runtime.ts",
     "packages/os/tests/subagent-cli.test.ts",
@@ -29,7 +30,7 @@
     "packages/os/tests/trace-persistence.test.ts",
     "packages/os/tools/subagent/schema.ts"
   ],
-  "verifiedAt": "2026-08-11T21:20:01.456Z",
+  "verifiedAt": "2026-08-11T21:24:38.052Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -63,6 +64,7 @@
         "packages/os/scripts/lib/subagent/runtime.ts",
         "packages/os/scripts/subagent.ts",
         "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/distribution/release-publication-preparer.test.ts",
         "packages/os/tests/distribution/runtime-bundle.test.ts",
         "packages/os/tests/fixtures/trace-persistence-runtime.ts",
         "packages/os/tests/subagent-cli.test.ts",
@@ -91,6 +93,7 @@
             "packages/os/scripts/lib/subagent/runtime.ts",
             "packages/os/scripts/subagent.ts",
             "packages/os/src/generated/workspace.d.ts",
+            "packages/os/tests/distribution/release-publication-preparer.test.ts",
             "packages/os/tests/distribution/runtime-bundle.test.ts",
             "packages/os/tests/fixtures/trace-persistence-runtime.ts",
             "packages/os/tests/subagent-cli.test.ts",
