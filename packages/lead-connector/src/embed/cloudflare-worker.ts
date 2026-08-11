@@ -29,6 +29,11 @@ const APPLICATION_SHELL_PATHS = new Set([
   '/overlay/',
 ]);
 
+const STABLE_MARKETPLACE_ASSET_PATHS = new Set([
+  '/consuelo-lead-connector-click-to-call.js',
+  '/consuelo-lead-connector-click-to-call.css',
+]);
+
 const shouldProxy = (pathname: string): boolean =>
   PROXY_PREFIXES.some((prefix) =>
     prefix.endsWith('/') ? pathname.startsWith(prefix) : pathname === prefix,
@@ -67,9 +72,13 @@ const originUrl = (request: Request, origin: string): URL => {
 const iframeSafeResponse = (
   response: Response,
   applicationShell: boolean,
+  pathname: string,
 ): Response => {
   const headers = new Headers(response.headers);
   if (applicationShell) headers.set('cache-control', 'no-store');
+  if (STABLE_MARKETPLACE_ASSET_PATHS.has(pathname)) {
+    headers.set('cache-control', 'no-cache, max-age=0, must-revalidate');
+  }
   headers.delete('x-frame-options');
   headers.set(
     'content-security-policy',
@@ -106,7 +115,7 @@ export const createLeadConnectorEdgeWorker = (
     }
     const asset = assetRequest(request);
     return environment.ASSETS.fetch(asset.request).then((response) =>
-      iframeSafeResponse(response, asset.applicationShell),
+      iframeSafeResponse(response, asset.applicationShell, source.pathname),
     );
   },
 });

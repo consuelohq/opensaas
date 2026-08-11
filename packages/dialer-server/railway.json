@@ -7,6 +7,7 @@
       "packages/dialer/**",
       "packages/dialer-server/**",
       "packages/lead-connector/**",
+      "packages/logger/**",
       "package.json",
       "yarn.lock",
       ".yarnrc.yml",

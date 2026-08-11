@@ -120,4 +120,23 @@ describe('LeadConnector Cloudflare embed edge', () => {
     expect(response.headers.get('permissions-policy')).toContain('microphone');
     expectTwilioVoiceConnectivity(response);
   });
+
+  it('forces the stable marketplace launcher assets to revalidate', async () => {
+    for (const pathname of [
+      '/consuelo-lead-connector-click-to-call.js',
+      '/consuelo-lead-connector-click-to-call.css',
+    ]) {
+      const fixture = createEnvironment();
+      const worker = createLeadConnectorEdgeWorker(
+        fixture.environment.fetchOrigin,
+      );
+      const response = await worker.fetch(
+        new Request(`https://dialer.example.test${pathname}`),
+        fixture.environment,
+      );
+      expect(response.headers.get('cache-control')).toBe(
+        'no-cache, max-age=0, must-revalidate',
+      );
+    }
+  });
 });

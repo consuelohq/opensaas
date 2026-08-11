@@ -9,6 +9,8 @@ import {
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { createLeadConnectorMarketplaceBootstrap } from '../src/deployment/marketplace-bootstrap.js';
+
 const packageRoot = fileURLToPath(new URL('..', import.meta.url));
 const outputDirectory = join(packageRoot, 'dist', 'embed-app');
 rmSync(outputDirectory, { recursive: true, force: true });
@@ -90,6 +92,15 @@ writeFileSync(
   ),
   `<script>\n${clickToCallSource}\n</script>\n`,
 );
+writeFileSync(
+  join(
+    outputDirectory,
+    'consuelo-lead-connector-click-to-call.marketplace-loader.html',
+  ),
+  createLeadConnectorMarketplaceBootstrap({
+    assetOrigin: 'https://calls.consuelohq.com',
+  }),
+);
 const marketplaceArtifacts = {
   javascript: 'consuelo-lead-connector-click-to-call.marketplace.js',
   css: 'consuelo-lead-connector-click-to-call.marketplace.css',
@@ -108,6 +119,8 @@ writeFileSync(
     {
       buildMarker: 'consuelo-lead-connector-commercial-v1',
       marketplace: marketplaceArtifacts,
+      marketplaceLoader:
+        'consuelo-lead-connector-click-to-call.marketplace-loader.html',
       hashes: {
         javascript: createHash('sha256')
           .update(clickToCallSource)
