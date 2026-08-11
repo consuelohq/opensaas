@@ -194,6 +194,47 @@ describe('subagent orchestration contract', () => {
     }
   });
 
+  it('rejects changed instruction content for the same requestId without overwriting the winning run', async () => {
+    const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
+    const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+    try {
+      const fake = writeFakeCodex(durableHome);
+      const instructionPath = writeInstruction(worktree, 'winner instruction');
+      const env = {
+        ...process.env,
+        CONSUELO_HOME: durableHome,
+        WORKSPACE_SUBAGENT_CODEX_BIN: fake.executable,
+        CODEX_ARGS_PATH: fake.argsPath,
+        CODEX_SPAWN_PATH: fake.spawnPath,
+        CODEX_PROMPT_PATH: fake.promptPath,
+        CODEX_SLEEP: '0.2',
+      };
+      const requestId = 'req_subagent_instruction_conflict';
+      const started = await executeTool('subagent', input({ action: 'start', instructionPath, requestId }), options(worktree, env));
+      expect(started.ok).toBe(true);
+      expect(started.data.runId).toMatch(/^run_/);
+      const persistedInstructionPath = started.data.instructionPath;
+      expect(readFileSync(persistedInstructionPath, 'utf8')).toBe('winner instruction');
+
+      writeFileSync(instructionPath, 'conflicting retry instruction');
+      const retried = await executeTool('subagent', input({ action: 'start', instructionPath, requestId }), options(worktree, env));
+
+      expect(retried.ok).toBe(false);
+      expect(retried.code).toBe('IDEMPOTENCY_CONFLICT');
+      expect(retried.data.runId).toBe(started.data.runId);
+      expect(readFileSync(persistedInstructionPath, 'utf8')).toBe('winner instruction');
+      const spawnDeadline = Date.now() + 1_000;
+      while (!existsSync(fake.spawnPath) && Date.now() < spawnDeadline) {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      expect(existsSync(fake.spawnPath)).toBe(true);
+      expect(readFileSync(fake.spawnPath, 'utf8').trim().split('\n')).toHaveLength(1);
+    } finally {
+      rmSync(durableHome, { recursive: true, force: true });
+      rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
   it('reports bounded waits and completion-unknown states without losing the run identity', async () => {
     const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
     const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));

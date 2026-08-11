@@ -1,4 +1,5 @@
 import { execFileSync, spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -659,22 +660,19 @@ async function executeCodexLifecycleSubagent(
   }
 
   const runId = deriveSubagentRunId(input.requestId, context.traceId);
-  const staged = stageSubagentInstruction(input.instructionPath, runId, context.env, context.traceId);
-  if (!staged.ok) {
-    return subagentToolResult(entry, context, {
-      ...input,
-      status: 'failed',
-      command: [codex, ...plan.args],
-      stdout: '',
-      stderr: staged.message,
-      exitCode: 1,
-      ok: false,
-      code: 'COMMAND_FAILED',
-      message: staged.message,
-    });
-  }
-
   const command = [codex, ...plan.args];
+  const instructionDigest = createHash('sha256').update(input.instruction, 'utf8').digest('hex');
+  const runDirectory = resolveSubagentRunDirectory(runId, context.env);
+  const stagedInstructionPath = path.join(runDirectory, 'instruction.md');
+  const handoffRoot = path.join(os.tmpdir(), 'opensaas-handoffs');
+  const provenance = JSON.stringify({
+    sourcePath: input.instructionPath,
+    sourceKind: isPathWithin(path.resolve(input.instructionPath), handoffRoot) ? 'canonical-os-handoff' : 'repo-or-task',
+    stagedPath: stagedInstructionPath,
+    instructionSha256: instructionDigest,
+    traceId: context.traceId,
+    stagedAt: new Date().toISOString(),
+  }, null, 2);
   const fingerprint = JSON.stringify({
     provider: 'codex',
     model: input.model,
@@ -682,6 +680,7 @@ async function executeCodexLifecycleSubagent(
     policy: input.policy,
     cwd: input.cwd,
     instructionPath: input.instructionPath,
+    instructionSha256: instructionDigest,
     command,
   });
   const started = startDurableSubagentRun({
@@ -692,10 +691,14 @@ async function executeCodexLifecycleSubagent(
     reasoningEffort: input.reasoningEffort,
     policy: input.policy,
     cwd: input.cwd,
-    instructionPath: staged.instructionPath,
+    instructionPath: stagedInstructionPath,
     command,
     env: context.env,
-    stdin: subagentInstruction({ ...input, instructionPath: staged.instructionPath, taskSession: input.audit.taskSession }),
+    stdin: subagentInstruction({ ...input, instructionPath: stagedInstructionPath, taskSession: input.audit.taskSession }),
+    artifacts: [
+      { path: stagedInstructionPath, content: input.instruction, mode: 0o600 },
+      { path: `${stagedInstructionPath}.provenance.json`, content: provenance, mode: 0o600 },
+    ],
     timeoutMs: input.timeoutMs,
     traceId: context.traceId,
   });
@@ -1355,33 +1358,6 @@ function resolveSubagentInstructionPath(
     return { ok: false, message: 'subagent instructionPath must point to an existing file' };
   }
   return { ok: true, instructionPath: resolved };
-}
-
-function stageSubagentInstruction(
-  sourcePath: string,
-  runId: string,
-  env: NodeJS.ProcessEnv,
-  traceId: string,
-): { ok: true; instructionPath: string } | { ok: false; message: string } {
-  try {
-    const runDirectory = resolveSubagentRunDirectory(runId, env);
-    fs.mkdirSync(runDirectory, { recursive: true, mode: 0o700 });
-    try { fs.chmodSync(runDirectory, 0o700); } catch { /* Best effort on non-POSIX filesystems. */ }
-    const instructionPath = path.join(runDirectory, 'instruction.md');
-    fs.writeFileSync(instructionPath, fs.readFileSync(sourcePath), { mode: 0o600 });
-    try { fs.chmodSync(instructionPath, 0o600); } catch { /* Best effort on non-POSIX filesystems. */ }
-    const handoffRoot = path.join(os.tmpdir(), 'opensaas-handoffs');
-    fs.writeFileSync(`${instructionPath}.provenance.json`, JSON.stringify({
-      sourcePath,
-      sourceKind: isPathWithin(path.resolve(sourcePath), handoffRoot) ? 'canonical-os-handoff' : 'repo-or-task',
-      stagedPath: instructionPath,
-      traceId,
-      stagedAt: new Date().toISOString(),
-    }, null, 2), { mode: 0o600 });
-    return { ok: true, instructionPath };
-  } catch (error: unknown) {
-    return { ok: false, message: error instanceof Error ? error.message : String(error) };
-  }
 }
 
 function isPathWithin(candidate: string, root: string): boolean {

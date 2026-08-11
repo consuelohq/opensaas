@@ -63,6 +63,11 @@ export type DurableSubagentStartInput = {
   command: string[];
   env: NodeJS.ProcessEnv;
   stdin: string;
+  artifacts?: Array<{
+    path: string;
+    content: string;
+    mode?: number;
+  }>;
   timeoutMs: number;
   traceId: string;
 };
@@ -151,6 +156,31 @@ export function startDurableSubagentRun(
   };
   const claim = claimInitialState(statePath, starting, input.fingerprint, hooks);
   if (!claim.claimed) return claim.result;
+
+  if (input.artifacts?.length) {
+    try {
+      for (const artifact of input.artifacts) {
+        const artifactPath = path.resolve(artifact.path);
+        const relative = path.relative(runDir, artifactPath);
+        if (relative.startsWith('..') || path.isAbsolute(relative)) {
+          throw new Error('subagent run artifact path must stay inside the run directory');
+        }
+        fs.mkdirSync(path.dirname(artifactPath), { recursive: true, mode: 0o700 });
+        fs.writeFileSync(artifactPath, artifact.content, { encoding: 'utf8', mode: artifact.mode ?? 0o600 });
+        try { fs.chmodSync(artifactPath, artifact.mode ?? 0o600); } catch { /* Best effort on non-POSIX filesystems. */ }
+      }
+    } catch (error: unknown) {
+      const failed: DurableSubagentRun = {
+        ...starting,
+        status: 'failed',
+        updatedAt: Date.now(),
+        exitCode: 1,
+        error: error instanceof Error ? error.message : String(error),
+      };
+      writeState(statePath, failed);
+      return { ok: false, code: 'COMMAND_FAILED', message: failed.error || 'subagent run artifact staging failed', run: failed };
+    }
+  }
   hooks.beforeRunnerSpawn?.(starting);
 
   try {

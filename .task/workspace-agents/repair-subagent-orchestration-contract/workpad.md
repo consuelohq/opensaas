@@ -105,6 +105,8 @@ started: 2026-08-10
 - 2026-08-10 04:33:38 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 04:34:42 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 04:35:05 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 20:40:05 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 20:43:44 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -113,6 +115,11 @@ started: 2026-08-10
 - 2026-08-10 04:58:32 `verify`: passed — OK
 - 2026-08-10 05:03:34 `review.run`: passed — OK
 - 2026-08-10 05:03:38 `verify`: passed — OK
+- 2026-08-11 20:43:17 `review.run`: passed — OK
+- 2026-08-11 20:43:23 `verify`: passed — OK
+- 2026-08-11 20:43:26 `review.run`: passed — OK
+- 2026-08-11 20:43:31 `verify`: passed — OK
+- 2026-08-11 20:44:16 `verify`: passed — OK
 
 ## key decisions
 
@@ -815,3 +822,33 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - 2026-08-10 04:58:07 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
 
 - 2026-08-10 05:01:55 apply-patch: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+## Orchestrator post-restart idempotency review
+- Pushed SHA `861cd0b1080a1bc4740866a65162dd536dcc29d0` independently re-reviewed after OS recovery.
+- Blocking race confirmed: `executeCodexLifecycleSubagent` stages `instruction.md` before `startDurableSubagentRun` obtains the exclusive `state.json` claim, and the fingerprint includes source path but not instruction content.
+- Red test required before implementation: first start with requestId/content A, mutate the same source path to content B, retry same requestId, assert `IDEMPOTENCY_CONFLICT`, exactly one provider spawn, and winner's persisted staged instruction remains content A.
+
+- 2026-08-11 20:40:05 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 20:40:06 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`
+
+- 2026-08-11 20:41:20 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+- 2026-08-11 20:41:20 apply-patch: `packages/os/scripts/lib/subagent/runtime.ts`
+- 2026-08-11 20:41:36 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`
+
+### Orchestrator post-restart fix + validation
+- Confirmed real pre-claim staging bug on pushed SHA `861cd0b1080a1bc4740866a65162dd536dcc29d0` with a new red regression: same requestId + same source path + changed instruction contents returned reuse and could replace the winner's staged instruction.
+- Fix: SHA-256 instruction content is now part of the idempotency fingerprint; run artifacts (`instruction.md` + provenance) are persisted by `startDurableSubagentRun` only after the exclusive `state.json` `wx` claim succeeds. Losing retries never write run artifacts. Artifact paths are constrained to the owned run directory.
+- New focused regression green: conflict returns `IDEMPOTENCY_CONFLICT`, winner instruction remains unchanged, exactly one provider spawn.
+- Lifecycle + public orchestration suites: 16/16 green (8 lifecycle + 8 public contract).
+- Executable discovery: 8/8 green.
+- Distribution runtime bundle: 20/20 green.
+- Focused subagent trace persistence: 1/1 green when invoked from its expected `packages/os` cwd.
+- `bun run typecheck`: green (`workspace script syntax checks passed`).
+- `bun run generate-tool-manifest:check`: green (`generated manifests are current`).
+- Standalone `runtime-bundle:verify` was not a valid invocation because it requires `--archive`; authoritative runtime-bundle test is green 20/20.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking.
+- Canonical verify against `origin/stream/workspace-agents`: `passed:true`, `publishValid:true`, DB scan clean.
+- Next: task.push only; do not call task.pr/task.merge/task.finish until orchestrator reviews GitHub checks.
+
+- 2026-08-11 20:43:44 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
