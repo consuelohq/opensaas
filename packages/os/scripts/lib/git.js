@@ -120,14 +120,22 @@ function synchronizeApiPushedTaskBranch(repoRoot, branch, previousSha, nextSha) 
     );
   }
 
-  runGit(['update-ref', remoteRef, nextSha, previousSha], { cwd: repoRoot });
-  try {
-    // Mixed reset advances the checked-out branch and index while preserving working-tree bytes.
-    runGit(['reset', '--mixed', nextSha], { cwd: repoRoot });
-  } catch (error) {
-    runGitMaybe(['update-ref', remoteRef, previousSha, nextSha], { cwd: repoRoot });
-    throw error;
+  // The commit was created through the GitHub API, so it does not exist in the
+  // local object database yet. Fetch the exact task branch before moving any
+  // local ref, and fail closed if the remote no longer points at the commit we
+  // just created.
+  runGit(['fetch', '--no-tags', 'origin', `refs/heads/${branch}:${remoteRef}`], { cwd: repoRoot });
+  const fetchedRemoteSha = getRefSha(repoRoot, remoteRef);
+  if (fetchedRemoteSha !== nextSha) {
+    throw new Error(
+      `cannot synchronize API-pushed task branch ${branch}: expected fetched origin ref at ${nextSha.slice(0, 8)}, received ${fetchedRemoteSha.slice(0, 8)}`,
+    );
   }
+
+  // Mixed reset advances the checked-out branch and index while preserving
+  // working-tree bytes. Keep origin/<branch> at the fetched remote truth even
+  // if the local reset itself fails.
+  runGit(['reset', '--mixed', nextSha], { cwd: repoRoot });
 
   const synchronizedLocal = getRefSha(repoRoot, localRef);
   const synchronizedRemote = getRefSha(repoRoot, remoteRef);

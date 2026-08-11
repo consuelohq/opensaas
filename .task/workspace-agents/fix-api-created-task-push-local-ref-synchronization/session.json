@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d9dd5764a136",
+  "tmuxSession": "opensaas-workspace-agents-fix-api-created-task-push-local-ref-synchronizat-d9dd5764",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-api-created-task-push-local-ref-synchronization",
+  "branch": "task/workspace-agents/fix-api-created-task-push-local-ref-synchronization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-api-created-task-push-local-ref-synchronization",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-api-created-task-push-local-ref-synchronization",
+  "prNumber": 1847,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1847",
+  "createdAt": "2026-08-11T23:22:24.662Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-api-created-task-push-local-ref-synchronization/.task/workspace-agents/fix-api-created-task-push-local-ref-synchronization/session.json"
+}
