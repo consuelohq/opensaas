@@ -5,6 +5,7 @@ import { join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildWorkspaceToolManifest, generateWorkspaceToolManifest } from '../scripts/generate-tool-manifest';
+import { getInputSchema, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 
 type JsonObject = Record<string, unknown>;
 
@@ -255,13 +256,21 @@ describe('workspace tool manifest generator', () => {
 
   it('should keep task.pr command metadata aligned when the CLI exposes the workpad escape hatch', () => {
     // Arrange
+    const schema = getInputSchema('TaskPrInput');
     const registry = buildWorkspaceToolManifest({ write: false });
     const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    const generatedTypes = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
 
     // Act
+    const parsed = schema?.safeParse({ ackWorkpadIncomplete: true });
     const command = taskPr?.definition.command;
 
     // Assert
+    expect(parsed?.success).toBe(true);
+    if (!parsed?.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true }));
+    expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
     expect(command).toMatchObject({ script: 'task:pr' });
     expect(command?.arguments).toContainEqual({
       source: 'ackWorkpadIncomplete',
