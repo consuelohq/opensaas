@@ -25,8 +25,10 @@ const {
   getCurrentBranch,
   getRefSha,
   refExists,
+  synchronizeApiPushedTaskBranch,
 } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
+const { dispatchHookEvent } = require('../hooks/dispatcher.js');
 const {
   assertCommitMessageFormat,
   assertTaskBranchName,
@@ -505,6 +507,8 @@ async function main() {
     sha: commit.sha,
   });
 
+  synchronizeApiPushedTaskBranch(repoRoot, branch, branchRef.object.sha, commit.sha);
+
   // save workpad to supabase memories for future agent context
   const workpadFile = path.join(repoRoot, '.task', 'workpad.md');
   if (fs.existsSync(workpadFile)) {
@@ -543,12 +547,33 @@ async function main() {
     }
   }
 
+  const workflowHookResult = dispatchHookEvent({
+    event: {
+      event: 'tool.postInvoke',
+      workflow: 'task',
+      tool: 'task.push',
+      taskSession: taskMeta?.data?.taskSession,
+      state: {
+        area: taskMeta?.data?.area,
+        taskSession: taskMeta?.data?.taskSession,
+        branch,
+      },
+      result: {
+        ok: true,
+        branch,
+        sha: commit.sha,
+        taskSession: taskMeta?.data?.taskSession,
+      },
+    },
+  });
+
   const result = {
     repo: args.repo,
     branch,
     sha: commit.sha,
     message: args.message,
     files: files.map((file) => ({ path: file.path, deleted: Boolean(file.deleted) })),
+    hookResult: workflowHookResult,
   };
 
   if (args.json) {

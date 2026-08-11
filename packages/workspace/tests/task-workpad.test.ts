@@ -138,6 +138,34 @@ describe('task workpad helpers', () => {
     }
   });
 
+  it('accepts meaningful agent-authored sections without a hidden heading allowlist', () => {
+    const root = makeWorktree([
+      '# workpad',
+      '',
+      '## What changed',
+      '',
+      '- Replaced the retrieval pipeline and removed the obsolete implementation.',
+      '',
+      '## Why',
+      '',
+      'The old path routed explicit provider queries into unrelated domains.',
+      '',
+      '## Validation',
+      '',
+      '- Focused tests passed and historical replay reduced payload size.',
+      '',
+      '## Issues / follow-ups',
+      '',
+      '- Stream handoff still needs lifecycle repair.',
+      '',
+    ].join('\n'));
+    try {
+      expect(checkWorkpadReady(root, meta).ok).toBe(true);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('treats an agent checkpoint as publish-ready', () => {
     const root = makeWorktree([
       '# workpad',

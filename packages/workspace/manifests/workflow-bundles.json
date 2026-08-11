@@ -661,6 +661,11 @@
                   "source": "bodyTemplate",
                   "flag": "--body-template",
                   "kind": "value"
+                },
+                {
+                  "source": "ackWorkpadIncomplete",
+                  "flag": "--ack-workpad-incomplete",
+                  "kind": "boolean"
                 }
               ],
               "jsonFlag": "--json"

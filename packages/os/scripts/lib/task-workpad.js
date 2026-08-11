@@ -243,12 +243,50 @@ function stripMarkdownNoise(value) {
 function sectionHasMeaningfulContent(content, heading) {
   const section = extractSection(content, heading);
   if (!section) return false;
+  return bodyHasMeaningfulAgentContent(section);
+}
+
+function bodyHasMeaningfulAgentContent(section) {
   const normalized = stripMarkdownNoise(section);
   if (!normalized) return false;
   if (section.includes(STARTER_ACCEPTANCE) || section.includes(STARTER_PLAN)) return false;
   if (normalized === 'noneyet') return false;
   if (normalized === 'taskstartedupdatethisbeforepublish') return false;
+  if (/^(?:behaviorundertest|existinglocalpattern|neworchangedtests|focusedredcommand|expectedredfailure).*pending/.test(normalized)
+      && !normalized.replace(/(?:behaviorundertest|existinglocalpattern|neworchangedtests|focusedredcommand|expectedredfailure|notestwaiver|pending|notapplicableunlessexplicitlyjustified)/g, '')) {
+    return false;
+  }
   return true;
+}
+
+const NON_AGENT_WORKPAD_HEADINGS = new Set([
+  'files changed',
+  'files read',
+  'activity log',
+  'validation evidence',
+  'test selection',
+  'tdd red evidence',
+  'tdd green evidence',
+  'tdd post evidence',
+  'publish checklist',
+]);
+
+function listMarkdownSections(content) {
+  const matches = [...String(content || '').matchAll(/^##\s+(.+?)\s*$/gm)];
+  return matches.map((match, index) => {
+    const start = match.index + match[0].length;
+    const end = index + 1 < matches.length ? matches[index + 1].index : content.length;
+    return { heading: match[1].trim(), body: content.slice(start, end).trim() };
+  });
+}
+
+function hasMeaningfulAgentSection(content) {
+  return listMarkdownSections(content).some(({ heading, body }) => {
+    const normalizedHeading = heading.toLowerCase();
+    if (normalizedHeading.startsWith('workspace-owned:')) return false;
+    if (NON_AGENT_WORKPAD_HEADINGS.has(normalizedHeading)) return false;
+    return bodyHasMeaningfulAgentContent(body);
+  });
 }
 
 function hasAgentCheckpoint(content) {
@@ -275,10 +313,7 @@ function checkWorkpadReady(worktreePath, taskMeta) {
     const missing = ['workpad file'];
     return { ok: false, path: current.path, missing, message: buildWorkpadMessage(current.path, missing) };
   }
-  const hasMeaningfulAgentSection = [
-    'acceptance criteria', 'plan', 'current status', 'key decisions', 'notes for ko', 'issues and recovery', 'errors i ran into', 'test-first contract',
-  ].some((heading) => sectionHasMeaningfulContent(content, heading));
-  const ready = hasMeaningfulAgentSection || hasAgentCheckpoint(content);
+  const ready = hasMeaningfulAgentSection(content) || hasAgentCheckpoint(content);
   const missing = ready ? [] : ['one meaningful agent-authored workpad update'];
   return { ok: ready, path: current.path, missing, message: ready ? '' : buildWorkpadMessage(current.path, missing) };
 }

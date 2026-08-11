@@ -357,6 +357,19 @@ describe('tool manifest generator', () => {
     expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain(`task.${'exec'}`);
   });
 
+  it('keeps task.pr facade input and command mapping aligned with the CLI workpad escape hatch', () => {
+    const schema = getInputSchema('TaskPrInput');
+    expect(schema.safeParse({ ackWorkpadIncomplete: true }).success).toBe(true);
+
+    const registry = buildToolManifest({ write: false });
+    const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    expect(taskPr?.definition.command?.arguments).toContainEqual({
+      source: 'ackWorkpadIncomplete',
+      flag: '--ack-workpad-incomplete',
+      kind: 'boolean',
+    });
+  });
+
   it('keeps OS task start wired to the OS runtime surface', () => {
     const registry = buildToolManifest({ write: false });
     const startEntry = registry.full.tools.find((entry) => entry.name === 'task.start');

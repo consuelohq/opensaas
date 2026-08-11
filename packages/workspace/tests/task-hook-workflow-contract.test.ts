@@ -101,6 +101,7 @@ describe('Workspace manifest-driven task workflow hooks contract', () => {
         expect.objectContaining({ event: 'tool.preInvoke', tool: 'task.start' }),
         expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' }),
         expect.objectContaining({ event: 'tool.preInvoke', tool: 'task.push' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.push' }),
         expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.pr' }),
       ]),
     );
@@ -235,6 +236,33 @@ describe('Workspace manifest-driven task workflow hooks contract', () => {
         expect.objectContaining({ capability: 'task.pr', input: { ready: true } }),
       ]),
     );
+    expect(guidance.notes.join('\n')).toContain('stream review PR');
+  });
+
+  test('successful task.push requires immediate promotion into the stream review surface', async () => {
+    const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
+    const registry = createTaskWorkflowHookRegistry({ manifest: manifestFixture, skillText: TASK_SKILL_EXCERPT });
+
+    const guidance = registry.handle({
+      event: 'tool.postInvoke',
+      tool: 'task.push',
+      workflow: 'task',
+      taskSession: 'tsk_publish',
+      result: { ok: true, branch: 'task/workspace-agents/example', sha: 'abc123' },
+      state: { taskSession: 'tsk_publish', area: 'workspace-agents' },
+    });
+
+    expect(guidance).toEqual(expect.objectContaining({
+      workflow: 'task',
+      stage: 'task-pr',
+      requiredNextAction: expect.objectContaining({
+        capability: 'task.pr',
+        tool: 'task.promote',
+        taskSession: 'tsk_publish',
+        taskSessionPlacement: 'top-level',
+        input: { ready: true },
+      }),
+    }));
     expect(guidance.notes.join('\n')).toContain('stream review PR');
   });
 

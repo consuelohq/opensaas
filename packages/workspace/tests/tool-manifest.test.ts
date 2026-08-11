@@ -253,6 +253,17 @@ describe('workspace tool manifest generator', () => {
     }
   });
 
+  it('keeps task.pr command metadata aligned with the CLI workpad escape hatch', () => {
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    expect(taskPr?.definition.command).toMatchObject({ script: 'task:pr' });
+    expect(taskPr?.definition.command?.arguments).toContainEqual({
+      source: 'ackWorkpadIncomplete',
+      flag: '--ack-workpad-incomplete',
+      kind: 'boolean',
+    });
+  });
+
   it('writes full and core manifests to override output paths', () => {
     const fullOutputPath = join(fixtureRoot, 'tool-manifest.json');
     const coreOutputPath = join(fixtureRoot, 'core-manifest.json');
