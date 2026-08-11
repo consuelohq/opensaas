@@ -22,7 +22,12 @@ export type DurableSubagentRun = {
   provider: string;
   model?: string;
   reasoningEffort?: string;
+  bundle?: string;
+  outputFormat?: string;
   policy: string;
+  workspaceOnly?: string | false;
+  taskSession?: string;
+  branch?: string;
   cwd: string;
   instructionPath: string;
   command: string[];
@@ -57,7 +62,12 @@ export type DurableSubagentStartInput = {
   provider: string;
   model?: string;
   reasoningEffort?: string;
+  bundle?: string;
+  outputFormat?: string;
   policy: string;
+  workspaceOnly?: string | false;
+  taskSession?: string;
+  branch?: string;
   cwd: string;
   instructionPath: string;
   command: string[];
@@ -139,7 +149,12 @@ export function startDurableSubagentRun(
     provider: input.provider,
     ...(input.model ? { model: input.model } : {}),
     ...(input.reasoningEffort ? { reasoningEffort: input.reasoningEffort } : {}),
+    ...(input.bundle ? { bundle: input.bundle } : {}),
+    ...(input.outputFormat ? { outputFormat: input.outputFormat } : {}),
     policy: input.policy,
+    ...(input.workspaceOnly !== undefined ? { workspaceOnly: input.workspaceOnly } : {}),
+    ...(input.taskSession ? { taskSession: input.taskSession } : {}),
+    ...(input.branch ? { branch: input.branch } : {}),
     cwd: input.cwd,
     instructionPath: input.instructionPath,
     command: input.command,

@@ -34,6 +34,18 @@ function writeInstruction(root: string, content = 'Return a short success messag
   return instructionPath;
 }
 
+function writeTaskSession(root: string, taskSession: string, branch = 'task/workspace-agents/subagent-contract'): void {
+  const sessionDir = join(root, '.task', 'workspace-agents', taskSession);
+  mkdirSync(sessionDir, { recursive: true });
+  writeFileSync(join(sessionDir, 'session.json'), JSON.stringify({
+    taskSession,
+    branch,
+    taskBranch: branch,
+    worktreePath: root,
+    worktree: root,
+  }, null, 2));
+}
+
 function writeFakeCodex(root: string): { executable: string; argsPath: string; spawnPath: string; promptPath: string } {
   const binDir = join(root, 'bin');
   mkdirSync(binDir, { recursive: true });
@@ -235,6 +247,97 @@ describe('subagent orchestration contract', () => {
     }
   });
 
+  it('treats every durable execution-affecting option as part of requestId idempotency', async () => {
+    const cases: Array<{ name: string; baseline: ToolInput; retry: ToolInput }> = [
+      { name: 'bundle', baseline: { bundle: 'core' }, retry: { bundle: 'media' } },
+      { name: 'outputFormat', baseline: { outputFormat: 'json' }, retry: { outputFormat: 'text' } },
+      { name: 'workspaceOnly', baseline: { workspaceOnly: 'preferred' }, retry: { workspaceOnly: false } },
+      { name: 'taskSession', baseline: { taskSession: 'tsk_fingerprint_a' }, retry: { taskSession: 'tsk_fingerprint_b' } },
+      { name: 'timeoutMs', baseline: { timeoutMs: 1_000 }, retry: { timeoutMs: 2_000 } },
+    ];
+
+    for (const testCase of cases) {
+      const durableHome = mkdtempSync(join(tmpdir(), `os-subagent-fingerprint-${testCase.name}-`));
+      const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+      try {
+        const fake = writeFakeCodex(durableHome);
+        const instructionPath = writeInstruction(worktree, 'stable instruction');
+        if (testCase.name === 'taskSession') {
+          writeTaskSession(worktree, 'tsk_fingerprint_a');
+          writeTaskSession(worktree, 'tsk_fingerprint_b');
+        }
+        const env = {
+          ...process.env,
+          CONSUELO_HOME: durableHome,
+          WORKSPACE_SUBAGENT_CODEX_BIN: fake.executable,
+          CODEX_ARGS_PATH: fake.argsPath,
+          CODEX_SPAWN_PATH: fake.spawnPath,
+          CODEX_PROMPT_PATH: fake.promptPath,
+          CODEX_SLEEP: '0.2',
+        };
+        const requestId = `req_subagent_fingerprint_${testCase.name}`;
+        const common = { action: 'start', policy: 'edit', instructionPath, requestId } as ToolInput;
+        const started = await executeTool('subagent', input({ ...common, ...testCase.baseline }), options(worktree, env));
+        expect(started.ok).toBe(true);
+
+        const retried = await executeTool('subagent', input({ ...common, ...testCase.retry }), options(worktree, env));
+        expect(retried.ok, testCase.name).toBe(false);
+        expect(retried.code, testCase.name).toBe('IDEMPOTENCY_CONFLICT');
+        expect(retried.data.runId, testCase.name).toBe(started.data.runId);
+      } finally {
+        rmSync(durableHome, { recursive: true, force: true });
+        rmSync(worktree, { recursive: true, force: true });
+      }
+    }
+  });
+
+  it('preserves durable invocation metadata across start and attachment responses', async () => {
+    const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-metadata-'));
+    const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+    try {
+      const fake = writeFakeCodex(durableHome);
+      const instructionPath = writeInstruction(worktree);
+      const metadataBranch = 'task/workspace-agents/metadata-contract';
+      writeTaskSession(worktree, 'tsk_metadata_contract', metadataBranch);
+      const env = {
+        ...process.env,
+        CONSUELO_HOME: durableHome,
+        WORKSPACE_SUBAGENT_CODEX_BIN: fake.executable,
+        CODEX_ARGS_PATH: fake.argsPath,
+        CODEX_SPAWN_PATH: fake.spawnPath,
+        CODEX_PROMPT_PATH: fake.promptPath,
+        CODEX_SLEEP: '0.5',
+      };
+      const started = await executeTool('subagent', input({
+        action: 'start',
+        policy: 'edit',
+        bundle: 'media',
+        outputFormat: 'text',
+        workspaceOnly: 'preferred',
+        taskSession: 'tsk_metadata_contract',
+        branch: metadataBranch,
+        instructionPath,
+        requestId: 'req_subagent_metadata_contract',
+      }), options(worktree, env));
+
+      expect(started.data.bundle).toBe('media');
+      expect(started.data.outputFormat).toBe('text');
+      expect(started.data.audit.workspaceOnly).toBe('preferred');
+      expect(started.data.audit.taskSession).toBe('tsk_metadata_contract');
+      expect(started.data.audit.branch).toBe(metadataBranch);
+
+      const status = await executeTool('subagent', { action: 'status', runId: started.data.runId }, options(durableHome, env));
+      expect(status.data.bundle).toBe('media');
+      expect(status.data.outputFormat).toBe('text');
+      expect(status.data.audit.workspaceOnly).toBe('preferred');
+      expect(status.data.audit.taskSession).toBe('tsk_metadata_contract');
+      expect(status.data.audit.branch).toBe(metadataBranch);
+    } finally {
+      rmSync(durableHome, { recursive: true, force: true });
+      rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
   it('reports bounded waits and completion-unknown states without losing the run identity', async () => {
     const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
     const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
@@ -259,6 +362,8 @@ describe('subagent orchestration contract', () => {
       const cancelled = await executeTool('subagent', { action: 'cancel', runId: started.data.runId }, options(durableHome, env));
       expect(cancelled.data.runId).toBe(started.data.runId);
       expect(cancelled.data.status).toBe('cancelled');
+      expect(cancelled.ok).toBe(true);
+      expect(cancelled.code).toBe('OK');
     } finally {
       rmSync(durableHome, { recursive: true, force: true });
       rmSync(worktree, { recursive: true, force: true });

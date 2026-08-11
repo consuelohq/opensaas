@@ -548,12 +548,18 @@ function durableSubagentResult(
   const provider = persistedSubagentProvider(run.provider) || 'codex';
   const logs = readDurableSubagentLogs(run);
   const status = action === 'wait' && run.status === 'starting' ? 'running' : run.status;
+  const bundle: SubagentBundle = run.bundle === 'media' ? 'media' : 'core';
+  const outputFormat: SubagentOutputFormat = run.outputFormat === 'text' ? 'text' : 'json';
+  const workspaceOnly: SubagentWorkspaceOnly = run.workspaceOnly === 'strict' || run.workspaceOnly === 'preferred'
+    ? run.workspaceOnly
+    : false;
+  const successfulCancel = action === 'cancel' && status === 'cancelled' && code === 'OK';
   return subagentToolResult(entry, context, {
     provider,
     ...(run.model ? { model: run.model } : {}),
     ...(run.reasoningEffort ? { reasoningEffort: run.reasoningEffort } : {}),
-    bundle: 'core',
-    outputFormat: 'json',
+    bundle,
+    outputFormat,
     mode: 'work',
     policy: run.policy === 'edit' ? 'edit' : 'read',
     action,
@@ -566,7 +572,7 @@ function durableSubagentResult(
     command: run.command,
     stdout: logs.stdout,
     stderr: logs.stderr,
-    exitCode: run.exitCode ?? (status === 'completed' ? 0 : 1),
+    exitCode: successfulCancel ? 0 : run.exitCode ?? (status === 'completed' ? 0 : 1),
     ...(run.finalMessage ? { finalMessage: run.finalMessage } : {}),
     ...(run.summary !== undefined ? { summary: run.summary as SubagentData['summary'] } : {}),
     ...(run.usage ? { usage: run.usage } : {}),
@@ -574,8 +580,15 @@ function durableSubagentResult(
     stderrLogPath: run.stderrLogPath,
     stdoutChars: logs.stdout.length,
     stderrChars: logs.stderr.length,
-    audit: { workspaceOnly: false, rawShellUsed: false },
-    ok: code === 'WAIT_TIMEOUT' || (code === 'OK' && (status === 'completed' || status === 'running' || status === 'starting')),
+    audit: {
+      ...(run.taskSession ? { taskSession: run.taskSession } : {}),
+      ...(run.branch ? { branch: run.branch } : {}),
+      workspaceOnly,
+      rawShellUsed: false,
+    },
+    ok: code === 'WAIT_TIMEOUT' || (code === 'OK' && (
+      status === 'completed' || status === 'running' || status === 'starting' || successfulCancel
+    )),
     code,
     message: code === 'WAIT_TIMEOUT'
       ? 'subagent wait timed out; run identity is preserved'
@@ -677,10 +690,15 @@ async function executeCodexLifecycleSubagent(
     provider: 'codex',
     model: input.model,
     reasoningEffort: input.reasoningEffort,
+    bundle: input.bundle,
+    outputFormat: input.outputFormat,
     policy: input.policy,
+    workspaceOnly: input.workspaceOnly,
+    taskSession: input.audit.taskSession,
     cwd: input.cwd,
     instructionPath: input.instructionPath,
     instructionSha256: instructionDigest,
+    timeoutMs: input.timeoutMs,
     command,
   });
   const started = startDurableSubagentRun({
@@ -689,7 +707,12 @@ async function executeCodexLifecycleSubagent(
     provider: 'codex',
     model: input.model,
     reasoningEffort: input.reasoningEffort,
+    bundle: input.bundle,
+    outputFormat: input.outputFormat,
     policy: input.policy,
+    workspaceOnly: input.workspaceOnly,
+    taskSession: input.audit.taskSession,
+    branch: input.audit.branch,
     cwd: input.cwd,
     instructionPath: stagedInstructionPath,
     command,

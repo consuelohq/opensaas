@@ -46,7 +46,6 @@ started: 2026-08-10
 
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
-- `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
 
 
@@ -64,6 +63,7 @@ started: 2026-08-10
 
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
 
 ## workspace-owned: activity log
@@ -115,6 +115,8 @@ started: 2026-08-10
 - 2026-08-11 20:43:44 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 20:46:37 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 20:49:39 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 20:54:11 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 20:57:30 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -131,6 +133,9 @@ started: 2026-08-10
 - 2026-08-11 20:49:09 `review.run`: passed — OK
 - 2026-08-11 20:49:19 `verify`: passed — OK
 - 2026-08-11 20:49:46 `verify`: passed — OK
+- 2026-08-11 20:57:05 `review.run`: passed — OK
+- 2026-08-11 20:57:20 `verify`: passed — OK
+- 2026-08-11 20:57:36 `verify`: passed — OK
 
 ## key decisions
 
@@ -893,3 +898,31 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamped verify + task.push --changed only. Do not task.pr/task.merge/task.finish until fresh GitHub CI is terminal and review comments are rechecked.
 
 - 2026-08-11 20:49:39 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Codex second-review adjudication on 973b7307 / current 1bc9d0d
+- P1 fingerprint every execution-affecting option: VALID/BLOCKING. Current fingerprint omits bundle, outputFormat, workspaceOnly, taskSession, and timeoutMs even though each changes prompt steering/format/session guidance or runner deadline. Add table-driven red conflicts for each field.
+- P2 preserve requested bundle/output format: VALID/BLOCKING. Durable run currently does not persist these and `durableSubagentResult` hardcodes `core`/`json`; attachment audit also loses workspaceOnly/taskSession/branch. Persist durable invocation metadata and return it with backward-compatible defaults.
+- P2 successful cancellation should be successful: VALID/BLOCKING. `cancel` can return `status:cancelled`, `code:OK`, `ok:false`. Extend existing cancel contract to require `ok:true`/`OK` for the cancel action.
+- These are being fixed before waiting for CI; current CI on 1bc9d0d will be superseded.
+
+- 2026-08-11 20:54:11 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 20:54:11 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`
+
+- 2026-08-11 20:55:09 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`
+
+- 2026-08-11 20:55:52 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+- 2026-08-11 20:55:52 apply-patch: `packages/os/scripts/lib/subagent/runtime.ts`
+
+### Codex second-review fixes — green
+- Execution-affecting requestId fingerprint now includes bundle, outputFormat, workspaceOnly, taskSession, timeoutMs in addition to provider/model/reasoning/policy/cwd/instruction path+digest/command. Table-driven test proves all five changed values return `IDEMPOTENCY_CONFLICT`, including two valid taskSession fixtures.
+- Durable run now persists invocation metadata (bundle/outputFormat/workspaceOnly/taskSession/branch) and start/status attachment responses preserve it. Older run records remain backward-compatible via core/json/false defaults.
+- Successful cancel action now returns a coherent success envelope: cancelled + OK + ok:true + exitCode 0. Non-cancel status of a cancelled run is not globally reclassified as success.
+- Core lifecycle + public orchestration: 20/20 green (9 + 11).
+- Executable discovery: 8/8 green. Distribution runtime bundle: 20/20 green. Focused trace persistence: 1/1 green.
+- OS syntax/typecheck green; generated manifests current.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking.
+- Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamped verify + explicit-file task.push onto current remote task head; no task.pr/task.merge/task.finish.
+
+- 2026-08-11 20:57:30 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
