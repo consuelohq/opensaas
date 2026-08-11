@@ -40,7 +40,9 @@ describe('lifecycle restart parity', () => {
     expect(watchdog).toContain('WORKSPACE_WATCHDOG_EXTERNAL_FAILURE_THRESHOLD');
     expect(watchdog).toContain('WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS');
     expect(watchdog).toContain('still inside restart gap');
-    expect(watchdog).toContain('launchctl kickstart -k');
+    expect(watchdog).toContain('consuelo_cli=');
+    expect(watchdog).toContain('"$consuelo_cli" restart --quiet');
+    expect(watchdog).toContain('restart_launchd_label');
   });
 
   it('routes the legacy server command through the lifecycle adapter instead of duplicating process control', () => {
