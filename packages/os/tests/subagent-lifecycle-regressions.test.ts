@@ -124,6 +124,114 @@ async function waitForProviderPid(run: DurableSubagentRun): Promise<number> {
 }
 
 describe('durable subagent lifecycle regressions', () => {
+  it('does not parse growing output on every live wait poll', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-live-poll-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_111122223333444455556666';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const ownerMarkerPath = join(runDirectory, 'owner.json');
+    const ownerToken = 'owner-live-poll';
+    writeFileSync(stdoutLogPath, 'x'.repeat(20_000));
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(ownerMarkerPath, JSON.stringify({
+      runId,
+      ownerToken,
+      runnerPid: process.pid,
+      providerPid: process.pid,
+      heartbeatAt: Date.now(),
+    }));
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_live_poll',
+      fingerprint: 'live-poll',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      pid: process.pid,
+      ownerToken,
+      ownerMarkerPath,
+      status: 'running',
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now(),
+      stdoutLogPath,
+      stderrLogPath,
+    };
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    let parserCalls = 0;
+    try {
+      const waited = await waitForDurableSubagentRun(run, environment, 120, () => {
+        parserCalls += 1;
+        return { completed: false };
+      });
+      expect(waited.run.status).toBe('running');
+      expect(waited.timedOut).toBe(true);
+      expect(parserCalls).toBe(0);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('uses the caller parser when cancellation observes a natural completion', () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-cancel-parser-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_777788889999aaaabbbbcccc';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerToken = 'owner-cancel-parser';
+    writeFileSync(stdoutLogPath, 'natural completion output');
+    writeFileSync(stderrLogPath, '');
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_cancel_parser',
+      fingerprint: 'cancel-parser',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      pid: process.pid,
+      ownerToken,
+      exitMarkerPath,
+      status: 'running',
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 1_000,
+      updatedAt: Date.now(),
+      stdoutLogPath,
+      stderrLogPath,
+    };
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    writeFileSync(exitMarkerPath, JSON.stringify({
+      runId,
+      ownerToken,
+      runnerPid: process.pid,
+      outcome: 'completed',
+      exitCode: 0,
+    }));
+    try {
+      const completed = cancelDurableSubagentRun(run, environment, () => ({
+        completed: true,
+        finalMessage: 'natural completion parsed',
+        summary: { source: 'cancel-parser' },
+        usage: { outputTokens: 3 },
+      }));
+      expect(completed.status).toBe('completed');
+      expect(completed.finalMessage).toBe('natural completion parsed');
+      expect(completed.summary).toEqual({ source: 'cancel-parser' });
+      expect(completed.usage).toEqual({ outputTokens: 3 });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('atomically claims a requestId so concurrent starts spawn exactly once', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-home-'));
     const instructionPath = join(home, 'instructions.md');

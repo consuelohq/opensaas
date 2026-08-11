@@ -8,11 +8,20 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   preserveFirstTerminationOutcome,
+  providerExitCodeForOutcome,
   scheduleProviderProcessEscalation,
   signalProviderProcess,
 } from '../scripts/lib/subagent/process-termination';
 
 describe('subagent runner termination', () => {
+  it('forces a nonzero exit code for timed-out providers', () => {
+    expect(providerExitCodeForOutcome('timed_out', 0)).toBe(124);
+    expect(providerExitCodeForOutcome('timed_out', null)).toBe(124);
+    expect(providerExitCodeForOutcome('timed_out', 143)).toBe(143);
+    expect(providerExitCodeForOutcome('cancelled', 0)).toBe(0);
+    expect(providerExitCodeForOutcome(undefined, 0)).toBe(0);
+  });
+
   it('preserves the first timeout or cancellation cause during escalation', () => {
     expect(preserveFirstTerminationOutcome(undefined, 'timed_out')).toBe('timed_out');
     expect(preserveFirstTerminationOutcome('timed_out', 'cancelled')).toBe('timed_out');

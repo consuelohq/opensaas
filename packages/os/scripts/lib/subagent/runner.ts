@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import {
   preserveFirstTerminationOutcome,
+  providerExitCodeForOutcome,
   scheduleProviderProcessEscalation,
   signalProviderProcess,
 } from './process-termination.ts';
@@ -135,7 +136,7 @@ try {
     ));
     provider.on('close', (exitCode, signal) => finish(
       requestedOutcome ?? (exitCode === 0 ? 'completed' : 'failed'),
-      exitCode ?? 1,
+      providerExitCodeForOutcome(requestedOutcome, exitCode),
       signal,
     ));
     provider.stdin?.end(fs.readFileSync(launch.stdinPath));

@@ -331,16 +331,13 @@ export function reconcileDurableSubagentRun(
   }
   const now = Date.now();
   const exit = readExitMarker(run);
-  const stdout = readFullLog(run.stdoutLogPath);
-  const stderr = readFullLog(run.stderrLogPath);
-  const parsed = parser(stdout, stderr);
 
   if (exit && isOwnedExitMarker(run, exit)) {
-    return reconcileOwnedExitMarker(statePath, run, exit, parsed, now);
+    return reconcileOwnedExitMarker(statePath, run, exit, parseDurableRunOutput(run, parser), now);
   }
 
   if (!run.pid && now - run.startedAt < STARTUP_GRACE_MS) {
-    const updated = withParsed(run, 'starting', parsed, now);
+    const updated: DurableSubagentRun = { ...run, status: 'starting', updatedAt: now };
     return persistReconciledState(statePath, run, updated);
   }
 
@@ -356,24 +353,24 @@ export function reconcileDurableSubagentRun(
   );
   if (ownerIsCurrent) {
     if (run.status === 'running') return run;
-    const updated = withParsed(run, 'running', parsed, now);
+    const updated: DurableSubagentRun = { ...run, status: 'running', updatedAt: now };
     return persistReconciledState(statePath, run, updated);
   }
 
   if (now - run.startedAt < STARTUP_GRACE_MS) {
-    const updated = withParsed(run, 'starting', parsed, now);
+    const updated: DurableSubagentRun = { ...run, status: 'starting', updatedAt: now };
     return persistReconciledState(statePath, run, updated);
   }
 
   const lateExit = readExitMarker(run);
   if (lateExit && isOwnedExitMarker(run, lateExit)) {
-    return reconcileOwnedExitMarker(statePath, run, lateExit, parsed, now);
+    return reconcileOwnedExitMarker(statePath, run, lateExit, parseDurableRunOutput(run, parser), now);
   }
 
   const updated = withParsed(
     run,
     'completion_unknown',
-    parsed,
+    parseDurableRunOutput(run, parser),
     now,
     !run.pid
       ? 'runner startup ownership was never published before startup grace expired; no provider was respawned'
@@ -416,7 +413,11 @@ export async function waitForDurableSubagentRun(
   return { run: current, timedOut: !isTerminal(current.status) && current.status !== 'cancelled' };
 }
 
-export function cancelDurableSubagentRun(run: DurableSubagentRun, env: NodeJS.ProcessEnv): DurableSubagentRun {
+export function cancelDurableSubagentRun(
+  run: DurableSubagentRun,
+  env: NodeJS.ProcessEnv,
+  parser: DurableSubagentParser = () => ({ completed: false }),
+): DurableSubagentRun {
   if (run.status === 'cancelled' || (isTerminal(run.status) && run.status !== 'completion_unknown')) return run;
   if (!run.ownerToken) {
     const unknown = {
@@ -437,7 +438,6 @@ export function cancelDurableSubagentRun(run: DurableSubagentRun, env: NodeJS.Pr
   if (!run.pid) return { ...run, status: 'starting', updatedAt: Date.now() };
   const deadline = Date.now() + 1_000;
   let current = run;
-  const parser: DurableSubagentParser = () => ({ completed: false });
   const signal = new Int32Array(new SharedArrayBuffer(4));
   while (Date.now() <= deadline) {
     current = reconcileDurableSubagentRun(current, env, parser);
@@ -483,8 +483,15 @@ function recoverCompletionUnknownFromExitMarker(
 ): DurableSubagentRun {
   const exit = readExitMarker(run);
   if (!exit || !isOwnedExitMarker(run, exit)) return run;
-  const parsed = parser(readFullLog(run.stdoutLogPath), readFullLog(run.stderrLogPath));
+  const parsed = parseDurableRunOutput(run, parser);
   return reconcileOwnedExitMarker(statePath, run, exit, parsed, Date.now());
+}
+
+function parseDurableRunOutput(
+  run: DurableSubagentRun,
+  parser: DurableSubagentParser,
+): ReturnType<DurableSubagentParser> {
+  return parser(readFullLog(run.stdoutLogPath), readFullLog(run.stderrLogPath));
 }
 
 function withParsed(

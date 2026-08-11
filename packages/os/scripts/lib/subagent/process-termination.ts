@@ -13,6 +13,14 @@ export function preserveFirstTerminationOutcome(
   return current ?? next;
 }
 
+export function providerExitCodeForOutcome(
+  outcome: ProviderTerminationOutcome | undefined,
+  exitCode: number | null,
+): number {
+  if (outcome === 'timed_out' && (exitCode === null || exitCode === 0)) return 124;
+  return exitCode ?? 1;
+}
+
 export function scheduleProviderProcessEscalation(
   provider: SignalableProvider,
   delayMs = 250,

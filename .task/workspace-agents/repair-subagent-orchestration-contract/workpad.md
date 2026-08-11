@@ -45,7 +45,9 @@ started: 2026-08-10
 ## files changed
 
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/lib/subagent/runtime.ts`
 - `packages/os/scripts/lib/subagent/process-termination.ts`
+- `packages/os/scripts/lib/subagent/runner.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-runner-termination.test.ts`
 
@@ -77,8 +79,6 @@ started: 2026-08-10
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:50:06 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:50:52 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:52:31 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:54:15 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:54:39 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -127,12 +127,11 @@ started: 2026-08-10
 - 2026-08-11 21:33:44 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:37:11 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:42:01 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:44:28 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:47:40 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- 2026-08-11 20:49:09 `review.run`: passed — OK
-- 2026-08-11 20:49:19 `verify`: passed — OK
-- 2026-08-11 20:49:46 `verify`: passed — OK
 - 2026-08-11 20:57:05 `review.run`: passed — OK
 - 2026-08-11 20:57:20 `verify`: passed — OK
 - 2026-08-11 20:57:36 `verify`: passed — OK
@@ -160,6 +159,9 @@ started: 2026-08-10
 - 2026-08-11 21:41:34 `review.run`: passed — OK
 - 2026-08-11 21:41:45 `verify`: passed — OK
 - 2026-08-11 21:42:12 `verify`: passed — OK
+- 2026-08-11 21:47:14 `review.run`: passed — OK
+- 2026-08-11 21:47:27 `verify`: passed — OK
+- 2026-08-11 21:47:50 `verify`: passed — OK
 
 ## key decisions
 
@@ -1147,3 +1149,28 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamped verify + explicit-file task.push of lifecycle.ts, process-termination.ts, lifecycle regression test, and runner termination test onto current remote head f1328a. Then freeze code and require terminal-green CI + a fresh Codex review on the exact next SHA before task.pr.
 
 - 2026-08-11 21:42:01 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Codex ninth-review adjudication on current remote ba6a4a
+- P2 growing-log reparsing: VALID. `reconcileDurableSubagentRun` currently reads/parses complete stdout+stderr before checking live ownership, so `waitForDurableSubagentRun` repeats O(n) parsing every 50ms and becomes quadratic on growing JSONL. Contract: live/start polling performs zero output parses; full parsing occurs only when consuming an owned exit marker or terminalizing uncertain state.
+- P2 cancellation parser: VALID. `cancelDurableSubagentRun` currently hardcodes a no-op parser; if natural completion wins the race, it can persist `completed` without finalMessage/summary/usage. Contract: caller may supply the real provider parser; runtime cancel must pass the originating-trace durable parser. Lifecycle-only callers retain a no-op default.
+- P2 timeout exit code: VALID. Runner can persist outcome `timed_out` with provider close code 0. Contract: a timeout terminal outcome must expose a nonzero exit code; preserve an existing nonzero provider code, use 124 when timeout closes 0/null.
+- Add deterministic red tests for all three before runtime changes. Current ba6a4a CI/review is superseded; do not merge.
+
+- 2026-08-11 21:44:28 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 21:45:12 apply-patch: `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+- 2026-08-11 21:45:12 apply-patch: `packages/os/tests/subagent-runner-termination.test.ts`
+- 2026-08-11 21:45:48 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+- 2026-08-11 21:45:48 apply-patch: `packages/os/scripts/lib/subagent/runtime.ts`
+- 2026-08-11 21:45:48 apply-patch: `packages/os/scripts/lib/subagent/process-termination.ts`
+- 2026-08-11 21:45:48 apply-patch: `packages/os/scripts/lib/subagent/runner.ts`
+
+### Codex ninth-review polling/cancel/timeout — green
+- Live wait polling no longer reads/parses complete growing logs every 50ms. Deterministic 20KB/120ms test dropped parser calls from 4 (red) to 0 (green). Full parsing is deferred to owned exit consumption or irreversible completion_unknown terminalization; public log reads remain bounded.
+- `cancelDurableSubagentRun` now accepts an optional provider parser (no-op default for internal lifecycle-only callers); runtime cancel passes the originating-trace durable parser. Natural completion winning a cancel race now preserves finalMessage/summary/usage.
+- `providerExitCodeForOutcome` normalizes timed_out + provider 0/null to exit 124 while preserving nonzero provider codes and non-timeout semantics; runner close handler uses it.
+- Full core lifecycle + public contract + CLI + termination: 35/35 green (15 + 13 + 1 + 6). Relevant trace persistence: 2/2 green. Exact distribution CI harness: 12/12 files, 83 passed + 7 todo. Executable discovery: 8/8. OS typecheck/syntax green; generated manifests current.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking. Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamp + explicit-file task.push of lifecycle/runtime/process-termination/runner and the two regression files onto current remote head ba6a4a. Then freeze code and require terminal-green CI + fresh Codex review on exact next SHA before any task.pr merge.
+
+- 2026-08-11 21:47:40 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`

@@ -538,7 +538,7 @@ async function executeSubagentAttachmentAction(
     );
   }
   if (action === 'cancel') {
-    run = cancelDurableSubagentRun(run, context.env);
+    run = cancelDurableSubagentRun(run, context.env, parser);
     return durableSubagentResult(entry, context, run, action, run.status === 'cancelled' ? 'OK' : durableTerminalOutcomeCode(run));
   }
   return durableSubagentResult(entry, context, run, action, 'OK');
