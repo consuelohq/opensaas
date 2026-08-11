@@ -737,6 +737,10 @@
       "status": "os-only-intentional",
       "reason": "scripts/lib/native-lifecycle-client.ts is an intentional OS-owned native lifecycle adapter with no workspace counterpart."
     },
+    "scripts/lib/node-resource-lock.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; same-node browser serialization depends on both facades using the same lock contract."
+    },
     "scripts/lib/nx-projects.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
