@@ -22,6 +22,32 @@
       ]
     },
     {
+      "name": "branch",
+      "title": "Branch Planner",
+      "description": "Align on large engineering projects, investigate hidden risks, and decompose them into dependency-aware branch and PR stacks that can be executed across focused chats or agents.",
+      "trigger": "Invoke when Ko asks to decompose or branch a large project into multiple PRs, chats, or agents; plan an epic across sequential and parallel workstreams; decide what can run in parallel; freeze a technical branch stack; or execute an established 'Branch N approved, go' plan. Do not invoke for ordinary Git branch commands or a single already-scoped repo task.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "packages/os/skills/branch/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "planning",
+        "repo",
+        "architecture",
+        "branch-decomposition",
+        "parallel-work"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
       "name": "browser",
       "title": "Browser",
       "description": "use for known-url browser work, rendered-page extraction, authenticated pages, live UI verification, Interact with docs and JS-heavy pages, screenshots, accessibility snapshots, and browser evidence. use when provided a URL to inspect, test or verify a webpage or UI, needs scraping/fetching from, wants screenshots or truth, or  pages that require clicking, filling, login state, tabs, accordions, or auth. use built-in web search for discovery first, and use browser known-url, use togther.",
