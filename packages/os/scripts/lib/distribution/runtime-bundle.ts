@@ -118,6 +118,7 @@ const REQUIRED_RUNTIME_INPUTS = [
   'scripts/os.ts',
   'scripts/native-lifecycle-operation.ts',
   'scripts/server/main.ts',
+  'scripts/server/supervisor.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
