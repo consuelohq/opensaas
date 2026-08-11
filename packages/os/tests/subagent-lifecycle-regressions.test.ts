@@ -568,6 +568,43 @@ describe('durable subagent lifecycle regressions', () => {
     }
   });
 
+  it('allows cancellation after owned runner state becomes completion_unknown', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-stale-cancel-'));
+    const instructionPath = join(home, 'instructions.md');
+    let run: DurableSubagentRun | undefined;
+    try {
+      const executable = writeExecutable(home, 'stale-cancellable-provider', [
+        '#!/bin/sh',
+        'sleep 5',
+      ].join(String.fromCharCode(10)));
+      writeFileSync(instructionPath, 'instruction');
+      const environment = makeEnvironment(home);
+      const started = startDurableSubagentRun(startInput(executable, home, instructionPath, 'req-stale-cancel'));
+      if (!started.ok) throw new Error(started.message);
+      run = started.run;
+      const providerPid = await waitForProviderPid(run);
+      const unknown: DurableSubagentRun = {
+        ...run,
+        status: 'completion_unknown',
+        updatedAt: Date.now(),
+        error: 'runner ownership marker is temporarily stale',
+      };
+      writeFileSync(
+        join(resolveSubagentRunDirectory(run.runId, environment), 'state.json'),
+        JSON.stringify(unknown, null, 2),
+      );
+
+      const cancelled = cancelDurableSubagentRun(unknown, environment);
+      expect(cancelled.status).toBe('cancelled');
+      const exitMarker = JSON.parse(readFileSync(run.exitMarkerPath || '', 'utf8')) as { outcome?: unknown };
+      expect(exitMarker.outcome).toBe('cancelled');
+      expect(await waitForProcessGroupExit(providerPid)).toBe(true);
+    } finally {
+      if (run) cancelDurableSubagentRun(run, makeEnvironment(home));
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('cancels safely when requested during starting before runner PID publication', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-home-'));
     const instructionPath = join(home, 'instructions.md');

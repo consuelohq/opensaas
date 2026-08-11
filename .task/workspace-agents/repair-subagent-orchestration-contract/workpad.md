@@ -45,7 +45,9 @@ started: 2026-08-10
 ## files changed
 
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/lib/subagent/process-termination.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+- `packages/os/tests/subagent-runner-termination.test.ts`
 
 
 ## red evidence before production implementation
@@ -75,7 +77,6 @@ started: 2026-08-10
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:48:49 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:50:06 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:50:52 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:52:31 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -125,12 +126,10 @@ started: 2026-08-10
 - 2026-08-11 21:31:47 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:33:44 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:37:11 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:42:01 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- 2026-08-11 20:43:26 `review.run`: passed — OK
-- 2026-08-11 20:43:31 `verify`: passed — OK
-- 2026-08-11 20:44:16 `verify`: passed — OK
 - 2026-08-11 20:49:09 `review.run`: passed — OK
 - 2026-08-11 20:49:19 `verify`: passed — OK
 - 2026-08-11 20:49:46 `verify`: passed — OK
@@ -158,6 +157,9 @@ started: 2026-08-10
 - 2026-08-11 21:36:49 `review.run`: passed — OK
 - 2026-08-11 21:36:59 `verify`: passed — OK
 - 2026-08-11 21:37:20 `verify`: passed — OK
+- 2026-08-11 21:41:34 `review.run`: passed — OK
+- 2026-08-11 21:41:45 `verify`: passed — OK
+- 2026-08-11 21:42:12 `verify`: passed — OK
 
 ## key decisions
 
@@ -1129,3 +1131,19 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamped verify + explicit-file task.push of lifecycle.ts and subagent-lifecycle-regressions.test.ts onto current remote head eb2d3a. Then freeze code and require terminal-green CI + fresh Codex review on exact next SHA before any task.pr merge.
 
 - 2026-08-11 21:37:11 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 21:39:08 apply-patch: `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+- 2026-08-11 21:39:08 apply-patch: `packages/os/tests/subagent-runner-termination.test.ts`
+- 2026-08-11 21:39:46 apply-patch: `packages/os/tests/subagent-runner-termination.test.ts`
+- 2026-08-11 21:39:46 apply-patch: `packages/os/scripts/lib/subagent/process-termination.ts`
+- 2026-08-11 21:39:46 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+
+### Codex eighth-review stale-cancel + referenced escalation — green
+- P1 stale-heartbeat cancellation reproduced exactly: a live owned run forced to durable `completion_unknown` returned unchanged from cancel. Fix keeps `completion_unknown` recoverable by an authoritative owned exit marker, permits cancel when ownerToken/PID remain known, polls through unknown until the runner writes its cancelled exit marker, and allows authoritative terminal state to supersede completion_unknown without respawning.
+- P1 escalation timer liveness reproduced at two levels: unit proved `unref()` was called; a real Node child-process probe with no other handles exited before its SIGKILL callback. Fix keeps the escalation timer referenced; the process now remains alive until the callback executes. First-cause and descendant-group escalation semantics remain intact.
+- Focused regressions red→green. Full core lifecycle + public contract + CLI + termination: 32/32 green (13 + 13 + 1 + 5).
+- Relevant trace persistence: 2/2 green. Exact distribution CI harness: 12/12 files, 83 passed + 7 todo (90 total). Executable discovery: 8/8. OS typecheck/syntax green; generated manifests current.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking. Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamped verify + explicit-file task.push of lifecycle.ts, process-termination.ts, lifecycle regression test, and runner termination test onto current remote head f1328a. Then freeze code and require terminal-green CI + a fresh Codex review on the exact next SHA before task.pr.
+
+- 2026-08-11 21:42:01 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`

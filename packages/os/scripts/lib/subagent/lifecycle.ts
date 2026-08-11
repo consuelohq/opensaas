@@ -310,11 +310,23 @@ export function reconcileDurableSubagentRun(
   env: NodeJS.ProcessEnv,
   parser: DurableSubagentParser,
 ): DurableSubagentRun {
-  if (run.status === 'cancelled' || isTerminal(run.status)) return run;
   const statePath = path.join(resolveSubagentRunDirectory(run.runId, env), 'state.json');
+  if (run.status === 'cancelled') return run;
+  if (isTerminal(run.status)) {
+    if (run.status === 'completion_unknown') {
+      return recoverCompletionUnknownFromExitMarker(statePath, run, parser);
+    }
+    return run;
+  }
   const persisted = readState(statePath);
   if (persisted?.runId === run.runId) {
-    if (persisted.status === 'cancelled' || isTerminal(persisted.status)) return persisted;
+    if (persisted.status === 'cancelled') return persisted;
+    if (isTerminal(persisted.status)) {
+      if (persisted.status === 'completion_unknown') {
+        return recoverCompletionUnknownFromExitMarker(statePath, persisted, parser);
+      }
+      return persisted;
+    }
     if (persisted.updatedAt > run.updatedAt) run = persisted;
   }
   const now = Date.now();
@@ -405,7 +417,7 @@ export async function waitForDurableSubagentRun(
 }
 
 export function cancelDurableSubagentRun(run: DurableSubagentRun, env: NodeJS.ProcessEnv): DurableSubagentRun {
-  if (isTerminal(run.status) || run.status === 'cancelled') return run;
+  if (run.status === 'cancelled' || (isTerminal(run.status) && run.status !== 'completion_unknown')) return run;
   if (!run.ownerToken) {
     const unknown = {
       ...run,
@@ -429,7 +441,7 @@ export function cancelDurableSubagentRun(run: DurableSubagentRun, env: NodeJS.Pr
   const signal = new Int32Array(new SharedArrayBuffer(4));
   while (Date.now() <= deadline) {
     current = reconcileDurableSubagentRun(current, env, parser);
-    if (isTerminal(current.status)) return current;
+    if (current.status === 'cancelled' || (isTerminal(current.status) && current.status !== 'completion_unknown')) return current;
     Atomics.wait(signal, 0, 0, 20);
     const read = readDurableSubagentRun(run.runId, env);
     if (!read.ok) break;
@@ -454,11 +466,25 @@ function persistReconciledState(
 ): DurableSubagentRun {
   const current = readState(statePath);
   if (current?.runId === previous.runId) {
-    if (current.status === 'cancelled' || isTerminal(current.status)) return current;
+    if (current.status === 'cancelled') return current;
+    if (isTerminal(current.status)) {
+      if (!(authoritativeTerminal && current.status === 'completion_unknown')) return current;
+    }
     if (!authoritativeTerminal && current.updatedAt > previous.updatedAt) return current;
   }
   writeState(statePath, candidate);
   return candidate;
+}
+
+function recoverCompletionUnknownFromExitMarker(
+  statePath: string,
+  run: DurableSubagentRun,
+  parser: DurableSubagentParser,
+): DurableSubagentRun {
+  const exit = readExitMarker(run);
+  if (!exit || !isOwnedExitMarker(run, exit)) return run;
+  const parsed = parser(readFullLog(run.stdoutLogPath), readFullLog(run.stderrLogPath));
+  return reconcileOwnedExitMarker(statePath, run, exit, parsed, Date.now());
 }
 
 function withParsed(

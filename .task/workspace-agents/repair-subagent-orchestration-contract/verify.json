@@ -5,7 +5,7 @@
   "branch": "task/workspace-agents/repair-subagent-orchestration-contract",
   "base": "origin/stream/workspace-agents",
   "headSha": "861cd0b1080a1bc4740866a65162dd536dcc29d0",
-  "changeHash": "28f17b1a2a918eca4d0ab108eb56b405b575f7f7278aea93497e604d998d0e67",
+  "changeHash": "2d8e20ea284d4c8195bf6228267ff7a82f2fd30361e1932fadcf00e25acbb36b",
   "changedFiles": [
     "packages/os/TOOLS.md",
     "packages/os/manifests/generated/tool.manifest.json",
@@ -30,7 +30,7 @@
     "packages/os/tests/trace-persistence.test.ts",
     "packages/os/tools/subagent/schema.ts"
   ],
-  "verifiedAt": "2026-08-11T21:37:20.877Z",
+  "verifiedAt": "2026-08-11T21:42:12.162Z",
   "review": {
     "skipped": false,
     "passed": true,

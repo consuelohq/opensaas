@@ -1,3 +1,9 @@
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -28,8 +34,29 @@ describe('subagent runner termination', () => {
     scheduled?.();
 
     expect(schedule).toHaveBeenCalledWith(expect.any(Function), 250);
-    expect(unref).toHaveBeenCalledTimes(1);
+    expect(unref).not.toHaveBeenCalled();
     expect(signal).toHaveBeenCalledWith(provider, 'SIGKILL');
+  });
+
+  it('keeps the runner process alive until the escalation callback executes', () => {
+    const root = mkdtempSync(join(tmpdir(), 'subagent-escalation-reference-'));
+    const marker = join(root, 'escalated.txt');
+    const script = join(root, 'probe.mjs');
+    const helperUrl = pathToFileURL(fileURLToPath(new URL('../scripts/lib/subagent/process-termination.ts', import.meta.url))).href;
+    writeFileSync(script, [
+      `import { scheduleProviderProcessEscalation } from ${JSON.stringify(helperUrl)};`,
+      `import { writeFileSync } from 'node:fs';`,
+      `const marker = ${JSON.stringify(marker)};`,
+      `scheduleProviderProcessEscalation({ pid: 7777, kill: () => true }, 50, undefined, (_provider, signal) => { writeFileSync(marker, signal); return true; });`,
+    ].join('\n'));
+
+    try {
+      const result = spawnSync(process.execPath, [script], { encoding: 'utf8' });
+      expect(result.status).toBe(0);
+      expect(readFileSync(marker, 'utf8')).toBe('SIGKILL');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it('falls back to ChildProcess.kill on Windows', () => {
