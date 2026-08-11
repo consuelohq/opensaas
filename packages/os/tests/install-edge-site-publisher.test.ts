@@ -140,7 +140,10 @@ contractDescribe('install edge site publisher', () => {
       'https://internal.consuelohq.com/secrets',
     ]);
     expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'traces', 'traces', 'traces', 'diffs', 'docs', 'configuration', 'tools', 'environments', 'secrets']);
-    expect(first.routeSql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
+    expect(first.routeSql).toMatch(/INSERT INTO workspace_route_registry/i);
+    expect(first.routeSql).toMatch(/ON CONFLICT\(hostname\) DO UPDATE/i);
+    expect(first.routeSql).toContain("'$.target.kind') = 'os-connector'");
+    expect(first.routeSql).toContain("'$.nodeTargets'");
     expect(first.routeSql).toMatch(/site-snapshot/);
     expect(first.routeSql).toMatch(/internal\.consuelohq\.com/);
     expect(first.routeSql).toMatch(/r2:\/\/consuelo-sites-snapshots\/sites\/workspace_internal\/launcher\//);
