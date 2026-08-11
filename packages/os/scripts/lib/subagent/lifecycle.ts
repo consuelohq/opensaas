@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { resolveLifecyclePaths } from '../lifecycle/paths';
+import { scheduleProviderProcessEscalation, signalProviderProcess } from './process-termination';
 
 export type DurableSubagentStatus =
   | 'starting'
@@ -92,6 +93,7 @@ export type DurableSubagentStartInput = {
 export type DurableSubagentClaimHooks = {
   beforeInitialClaim?: () => void;
   beforeRunnerSpawn?: (run: DurableSubagentRun) => void;
+  afterRunnerSpawn?: (run: DurableSubagentRun) => void;
 };
 
 export type DurableSubagentStartResult =
@@ -207,6 +209,7 @@ export function startDurableSubagentRun(
   }
   hooks.beforeRunnerSpawn?.(starting);
 
+  let child: ReturnType<typeof spawn> | undefined;
   try {
     fs.writeFileSync(path.join(runDir, 'stdin.txt'), input.stdin, { encoding: 'utf8', mode: 0o600 });
     writeJsonFile(path.join(runDir, 'launch.json'), {
@@ -222,7 +225,7 @@ export function startDurableSubagentRun(
       timeoutMs: input.timeoutMs,
       deadlineAt: starting.deadlineAt,
     });
-    const child = spawn(process.execPath, [RUNNER_PATH, runDir], {
+    child = spawn(process.execPath, [RUNNER_PATH, runDir], {
       cwd: input.cwd,
       env: input.env,
       detached: true,
@@ -236,9 +239,14 @@ export function startDurableSubagentRun(
       status: 'running',
       updatedAt: Date.now(),
     };
+    hooks.afterRunnerSpawn?.(running);
     writeState(statePath, running);
     return { ok: true, run: running, reused: false };
   } catch (error: unknown) {
+    if (child) {
+      signalProviderProcess(child, 'SIGTERM');
+      scheduleProviderProcessEscalation(child, 250);
+    }
     const failed: DurableSubagentRun = {
       ...starting,
       status: 'failed',

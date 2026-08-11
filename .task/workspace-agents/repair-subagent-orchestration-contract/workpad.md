@@ -45,11 +45,7 @@ started: 2026-08-10
 ## files changed
 
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
-- `packages/os/scripts/lib/subagent/runtime.ts`
-- `packages/os/scripts/lib/subagent/runner.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
-- `packages/os/tests/subagent-orchestration-contract.test.ts`
-- `packages/os/tests/fixtures/tool-package-baseline.json`
 
 
 ## red evidence before production implementation
@@ -70,6 +66,7 @@ started: 2026-08-10
 - `packages/os/scripts/lib/subagent/runtime.ts`
 - `packages/os/scripts/subagent.ts`
 - `packages/os/tests/distribution/release-publication-preparer.test.ts`
+- `packages/os/tests/fixtures/tool-package-baseline.json`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 - `packages/os/tests/subagent-cli.test.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
@@ -79,11 +76,6 @@ started: 2026-08-10
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:58:59 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:59:49 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 04:01:16 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 04:03:32 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 04:04:33 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 04:04:52 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 04:05:38 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 04:06:16 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -129,12 +121,14 @@ started: 2026-08-10
 - 2026-08-11 21:59:58 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 22:02:21 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 22:10:38 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 22:11:39 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 22:13:21 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 22:15:05 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 22:20:23 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 22:21:53 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- 2026-08-11 21:02:33 `review.run`: passed — OK
-- 2026-08-11 21:02:44 `verify`: passed — OK
-- 2026-08-11 21:03:02 `verify`: passed — OK
 - 2026-08-11 21:08:22 `review.run`: passed — OK
 - 2026-08-11 21:08:36 `verify`: passed — OK
 - 2026-08-11 21:08:55 `verify`: passed — OK
@@ -162,6 +156,9 @@ started: 2026-08-10
 - 2026-08-11 22:10:06 `review.run`: passed — OK
 - 2026-08-11 22:10:19 `verify`: passed — OK
 - 2026-08-11 22:10:44 `verify`: passed — OK
+- 2026-08-11 22:21:29 `review.run`: passed — OK
+- 2026-08-11 22:21:43 `verify`: passed — OK
+- 2026-08-11 22:21:59 `verify`: passed — OK
 
 ## key decisions
 
@@ -1245,3 +1242,56 @@ Test-first contract before production edits:
 - Next: generate normal verify stamp, confirm remote PR head still 3b1178fd, explicit-file task.push of the final six runtime/test files plus baseline fixture. Do not task.pr yet; freeze code and require terminal-green CI + fresh Codex review on exact new SHA.
 
 - 2026-08-11 22:10:38 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Candidate 14ccd507 convergence wait — cycle 1
+- Wait reason: exact candidate `14ccd50785ad716d91aabba37e168c55527b7d85` has 0 failed / 17 pending checks; latest Codex review is previous head `3b1178fdcb`.
+- Duration: 60 seconds.
+- Resume action: read PR head, pr.checks, and pr.reviews; verify head unchanged, count failures/pending, inspect newest Codex reviewed commit and any fresh exact-head inline comments.
+- Expected signal: pending count decreases with zero failures and/or Codex reviews `14ccd507`.
+- Fallback: continue bounded 60–120s polling if still pending; if any real failure or actionable exact-head review appears, stop merge path and inspect evidence before code changes.
+
+- 2026-08-11 22:11:39 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Candidate 14ccd507 convergence wait — cycle 1 result / cycle 2
+- Cycle 1 observed after elapsed wait: head unchanged at `14ccd50785ad716d91aabba37e168c55527b7d85`; 0 failed / 17 pending. Reported check count expanded 20 -> 33 as dependent jobs materialized. Codex latest remains `3b1178fdcb`. Decision: healthy progress, keep code frozen.
+- Wait reason: allow newly materialized CI jobs and automatic Codex review to converge.
+- Duration: 90 seconds.
+- Resume action: read exact PR head/checks/reviews and fresh inline comments if Codex reaches current head.
+- Expected signal: pending decreases toward zero with no failures; Codex review target becomes `14ccd507`.
+- Fallback: if pending remains but jobs are progressing, one more bounded wait; if a real failure or exact-head actionable review appears, stop merge path and adjudicate evidence.
+
+- 2026-08-11 22:13:21 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Candidate 14ccd507 convergence wait — cycle 2 result / cycle 3
+- Cycle 2 observed: head unchanged at `14ccd50785ad716d91aabba37e168c55527b7d85`; 0 failed / 10 pending, down from 17. Repaired `Consuelo / OS contracts` is running. Codex latest remains `3b1178fdcb`. Decision: CI progressing; keep code frozen.
+- Wait reason: allow remaining CI jobs to finish before exact-head merge decision.
+- Duration: 90 seconds.
+- Resume action: read exact PR head/checks/reviews. If Codex still has not reviewed `14ccd507`, explicitly post `@codex review` on the PR after the wake check.
+- Expected signal: pending count materially decreases with zero failures; ideally Codex advances to current head.
+- Fallback: inspect any real CI failure immediately; otherwise trigger exact-head Codex review and continue bounded polling.
+
+- 2026-08-11 22:15:05 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 22:19:07 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+- 2026-08-11 22:19:07 apply-patch: `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+### Exact-head 14ccd507 Codex P1 — red evidence
+- Fresh exact-head Codex review contained exactly one new actionable comment: P1 `Terminate the detached runner when state persistence fails` in `lifecycle.ts`.
+- Deterministic fault injection added at the post-spawn/pre-running-state boundary: first `renameSync(.../state.json)` after runner spawn throws EIO, afterRunnerSpawn captures runner PID and waits for provider owner marker/PID.
+- Red command: `bun x vitest run packages/os/tests/subagent-lifecycle-regressions.test.ts -t "terminates the detached runner and owned provider when running-state persistence fails"`.
+- Red result: 1 failed / 16 skipped. `waitForProcessGroupExit(runnerPid)` remained false after ~1s, proving the detached runner survives the startup persistence failure. Cleanup in test finally terminated the captured runner/provider groups.
+- Fix contract: after a detached runner has been spawned, any exception before successful running-state persistence must signal the spawned runner process group (SIGTERM + referenced SIGKILL escalation) before attempting to persist failed state. Do not broaden public API semantics.
+
+- 2026-08-11 22:20:23 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 22:20:30 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+
+### Exact-head 14ccd507 Codex P1 — green
+- Lifecycle startup cleanup now keeps the detached runner handle outside the spawn try scope. Any exception after runner spawn signals that runner process group with SIGTERM and schedules referenced SIGKILL escalation before failed-state persistence.
+- Internal lifecycle test hook `afterRunnerSpawn` is used only for deterministic fault injection at the post-spawn/pre-running-state boundary.
+- Focused P1 regression red -> green: captured runner and provider process groups both exit after simulated running-state persistence EIO.
+- Full repaired subagent suite: 39/39 green (lifecycle 17, orchestration 15, CLI 1, termination 6); exact Luna+xhigh argv still proven.
+- Durable trace regression: green. Executable discovery: 8/8. Exact distribution harness: 83 passed + 7 todo. Exact OS-contract CI command: 40 passed + 5 intentionally skipped. Syntax/static check and generated manifest consistency: green.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking. Canonical verify: passed:true, publishValid:true, DB clean.
+- Next: normal verify stamp, confirm remote head remains 14ccd507, explicit-file task.push of lifecycle.ts + lifecycle regression test only. Do not task.pr until exact new SHA has terminal-green CI and fresh Codex review with no actionable findings.
+
+- 2026-08-11 22:21:53 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`

@@ -1,4 +1,4 @@
-import {
+import fs, {
   chmodSync,
   existsSync,
   mkdirSync,
@@ -331,6 +331,70 @@ describe('durable subagent lifecycle regressions', () => {
       expect(retry.run.status).toBe('completion_unknown');
     }
     rmSync(home, { recursive: true, force: true });
+  });
+
+  it('terminates the detached runner and owned provider when running-state persistence fails', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-running-state-failure-'));
+    const instructionPath = join(home, 'instructions.md');
+    const providerPidPath = join(home, 'provider.pid');
+    const executable = writeExecutable(home, 'state-failure-provider', [
+      '#!/bin/sh',
+      'printf "%s\\n" "$$" > "$PROVIDER_PID_PATH"',
+      'sleep 5',
+    ].join('\n'));
+    writeFileSync(instructionPath, 'read only');
+    const input = startInput(executable, home, instructionPath, 'running-state-persist-failure');
+    input.env = { ...input.env, PROVIDER_PID_PATH: providerPidPath };
+    let runnerPid: number | undefined;
+    let providerPid: number | undefined;
+    let injectedFailure = false;
+    const renameSync = fs.renameSync.bind(fs);
+    const renameSpy = vi.spyOn(fs, 'renameSync').mockImplementation((oldPath, newPath) => {
+      if (!injectedFailure && String(newPath).endsWith('/state.json')) {
+        injectedFailure = true;
+        const error = new Error('simulated running-state persistence failure') as Error & { code?: string };
+        error.code = 'EIO';
+        throw error;
+      }
+      return renameSync(oldPath, newPath);
+    });
+
+    try {
+      const started = startDurableSubagentRun(input, {
+        afterRunnerSpawn: (run) => {
+          runnerPid = run.pid;
+          const deadline = Date.now() + 1_000;
+          const signal = new Int32Array(new SharedArrayBuffer(4));
+          while (!existsSync(run.ownerMarkerPath || '') && Date.now() < deadline) {
+            Atomics.wait(signal, 0, 0, 10);
+          }
+          if (existsSync(run.ownerMarkerPath || '')) {
+            const marker = JSON.parse(readFileSync(run.ownerMarkerPath || '', 'utf8')) as { providerPid?: unknown };
+            if (typeof marker.providerPid === 'number') providerPid = marker.providerPid;
+          }
+        },
+      });
+
+      expect(injectedFailure).toBe(true);
+      expect(started.ok).toBe(false);
+      expect(runnerPid).toEqual(expect.any(Number));
+      expect(providerPid).toEqual(expect.any(Number));
+      expect(await waitForProcessGroupExit(runnerPid!)).toBe(true);
+      expect(await waitForProcessGroupExit(providerPid!)).toBe(true);
+    } finally {
+      renameSpy.mockRestore();
+      if (runnerPid) {
+        try { process.kill(-runnerPid, 'SIGKILL'); } catch {
+          try { process.kill(runnerPid, 'SIGKILL'); } catch {}
+        }
+      }
+      if (providerPid) {
+        try { process.kill(-providerPid, 'SIGKILL'); } catch {
+          try { process.kill(providerPid, 'SIGKILL'); } catch {}
+        }
+      }
+      rmSync(home, { recursive: true, force: true });
+    }
   });
 
   it('does not terminalize a run during runner owner publication', async () => {
