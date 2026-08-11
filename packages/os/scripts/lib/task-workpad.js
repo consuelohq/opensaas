@@ -252,8 +252,9 @@ function bodyHasMeaningfulAgentContent(section) {
   if (section.includes(STARTER_ACCEPTANCE) || section.includes(STARTER_PLAN)) return false;
   if (normalized === 'noneyet') return false;
   if (normalized === 'taskstartedupdatethisbeforepublish') return false;
-  if (/^(?:behaviorundertest|existinglocalpattern|neworchangedtests|focusedredcommand|expectedredfailure).*pending/.test(normalized)
-      && !normalized.replace(/(?:behaviorundertest|existinglocalpattern|neworchangedtests|focusedredcommand|expectedredfailure|notestwaiver|pending|notapplicableunlessexplicitlyjustified)/g, '')) {
+  const placeholderNormalized = normalized.replace(/[^a-z0-9]/g, '');
+  if (/^(?:behaviorundertest|existinglocalpattern|neworchangedtests|focusedredcommand|expectedredfailure).*pending/.test(placeholderNormalized)
+      && !placeholderNormalized.replace(/(?:behaviorundertest|existinglocalpattern|neworchangedtests|focusedredcommand|expectedredfailure|notestwaiver|pending|notapplicableunlessexplicitlyjustified)/g, '')) {
     return false;
   }
   return true;

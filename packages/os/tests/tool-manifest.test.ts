@@ -362,6 +362,7 @@ describe('tool manifest generator', () => {
     const schema = getInputSchema('TaskPrInput');
     const registry = buildToolManifest({ write: false });
     const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    const generatedTypes = readFileSync(join(import.meta.dirname, '../src/generated/workspace.d.ts'), 'utf8');
 
     // Act
     const parsed = schema.safeParse({ ackWorkpadIncomplete: true });
@@ -369,6 +370,10 @@ describe('tool manifest generator', () => {
 
     // Assert
     expect(parsed.success).toBe(true);
+    if (!parsed.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true }));
+    expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
     expect(argumentsList).toContainEqual({
       source: 'ackWorkpadIncomplete',
       flag: '--ack-workpad-incomplete',
