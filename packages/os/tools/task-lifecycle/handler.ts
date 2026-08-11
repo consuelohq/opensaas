@@ -183,6 +183,11 @@ export const toolHandlers = [
           "kind": "value"
         },
         {
+          "source": "ackWorkpadIncomplete",
+          "flag": "--ack-workpad-incomplete",
+          "kind": "boolean"
+        },
+        {
           "source": "pr",
           "flag": "--pr",
           "kind": "value"

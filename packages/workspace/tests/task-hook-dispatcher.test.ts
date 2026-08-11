@@ -85,12 +85,11 @@ describe('Workspace hook dispatcher', () => {
     const source = readFileSync(taskStartScript, 'utf8');
 
     expect(source).toContain("require('../hooks/dispatcher.js')");
-    expect(source).toContain('dispatchHookEvent({');
-    expect(source).toContain("event: 'tool.postInvoke'");
-    expect(source).toContain("tool: 'task.start'");
-    expect(source).toContain("workflow: 'task'");
-    expect(source).toContain('task hook guidance failed');
-    expect(source).toContain('renderHookResult(guidance)');
+    expect(source).toContain("require('../hooks/intent.js')");
+    expect(source).toContain('createWorkflowIntentRuntime().start({');
+    expect(source).toContain('workflow: args.workflow');
+    expect(source).toContain('taskResult');
+    expect(source).toContain('renderHookResult(workflowStart.hookResult)');
     expect(source).not.toContain("getTaskHookGuidance('after-task-start'");
   });
 

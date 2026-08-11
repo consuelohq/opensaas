@@ -9,7 +9,7 @@ import { buildWorkspaceToolManifest, generateWorkspaceToolManifest } from '../sc
 type JsonObject = Record<string, unknown>;
 
 const packageRoot = join(import.meta.dirname, '..');
-const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'core.manifest.json');
+const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'generated', 'core.manifest.json');
 const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
 
 const expectedDescriptions = {
@@ -56,6 +56,8 @@ const oldContextToolNames = [
   'context.search',
   'context.trace',
 ] as const;
+
+const workspaceOnlyCoreToolNames = ['context'] as const;
 
 const retainedCoreToolNames = [
   'batch',
@@ -171,10 +173,12 @@ describe('workspace tool manifest generator', () => {
     const osCore = JSON.parse(readFileSync(osCoreManifestPath, 'utf8')) as { tools: Array<{ name: string }> };
     const workspaceSource = readJsonArray('tooling/tool-manifest.json');
     const workspaceNames = new Set(workspaceSource.map((entry) => String(entry.name)));
-    const expectedCoreNames = osCore.tools
-      .map((tool) => tool.name)
-      .filter((name) => workspaceNames.has(name))
-      .sort();
+    const expectedCoreNames = [
+      ...osCore.tools
+        .map((tool) => tool.name)
+        .filter((name) => workspaceNames.has(name)),
+      ...workspaceOnlyCoreToolNames,
+    ].sort();
 
     const registry = buildWorkspaceToolManifest({ write: false });
     const coreNames = names(registry.core.tools);
@@ -247,6 +251,17 @@ describe('workspace tool manifest generator', () => {
       expect(entry.definition.sessionRequired).toBe(true);
       expect(entry.definition.command.branchMode).toBe('required');
     }
+  });
+
+  it('keeps task.pr command metadata aligned with the CLI workpad escape hatch', () => {
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    expect(taskPr?.definition.command).toMatchObject({ script: 'task:pr' });
+    expect(taskPr?.definition.command?.arguments).toContainEqual({
+      source: 'ackWorkpadIncomplete',
+      flag: '--ack-workpad-incomplete',
+      kind: 'boolean',
+    });
   });
 
   it('writes full and core manifests to override output paths', () => {

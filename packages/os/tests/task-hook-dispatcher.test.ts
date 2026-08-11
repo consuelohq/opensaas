@@ -34,11 +34,11 @@ describe('OS hook dispatcher', () => {
     expect(result).toEqual(
       expect.objectContaining({
         workflow: 'task',
-        stage: 'post-task-start-guidance',
-        suggestedNextAction: expect.objectContaining({
-          capability: 'tool.batch',
-          tool: 'batch',
-          inputSchema: 'BatchInput',
+        stage: 'workpad-bootstrap',
+        requiredNextAction: expect.objectContaining({
+          capability: 'workpad.write',
+          tool: 'fs.write',
+          inputSchema: 'FsWriteInput',
           source: 'manifest',
           taskSessionPlacement: 'top-level',
           taskSession: 'tsk_dispatch',
@@ -49,7 +49,7 @@ describe('OS hook dispatcher', () => {
         }),
       }),
     );
-    expect(result.suggestedNextAction.input.steps).toHaveLength(6);
+    expect(result.requiredNextAction.input).toEqual(expect.objectContaining({ append: true, mkdirs: true }));
     expect(JSON.stringify(result)).not.toContain('fs.put');
   });
 
@@ -119,13 +119,8 @@ describe('OS hook dispatcher', () => {
 
     expect(eventResult.status).toBe(0);
     const parsed = JSON.parse(eventResult.stdout);
-    expect(parsed.stage).toBe('task-start-guidance');
-    expect(parsed.advisory).toEqual(
-      expect.objectContaining({
-        suggestedNextTool: 'stream.context',
-      }),
-    );
-    expect(parsed.examples[0].orderedActions[0]).toEqual(
+    expect(parsed.stage).toBe('stream-context');
+    expect(parsed.requiredNextAction).toEqual(
       expect.objectContaining({
         capability: 'stream.context',
         tool: 'stream.context',

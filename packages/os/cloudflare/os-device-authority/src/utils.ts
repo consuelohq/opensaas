@@ -212,6 +212,10 @@ export function validChatGptClientId(value: string): boolean {
     return false;
   }
 }
+
+export function isChatGptClientMetadataDocumentId(value: string): boolean {
+  return value !== CHATGPT_OAUTH_CLIENT_ID && validChatGptClientId(value);
+}
 export function cleanCode(value: string): string {
   return value
     .trim()

@@ -26,6 +26,7 @@ const SUBSCRIPTIONS = [
   { event: 'tool.postInvoke', workflow: TASK_WORKFLOW_ID, tool: 'task.start' },
   { event: 'workflow.stage.ready', workflow: TASK_WORKFLOW_ID, stage: 'validation' },
   { event: 'tool.preInvoke', workflow: TASK_WORKFLOW_ID, tool: 'task.push' },
+  { event: 'tool.postInvoke', workflow: TASK_WORKFLOW_ID, tool: 'task.push' },
   { event: 'tool.postInvoke', workflow: TASK_WORKFLOW_ID, tool: 'task.pr' },
   { event: 'workflow.stage.ready', workflow: TASK_WORKFLOW_ID, stage: 'task-finish' },
 ];
@@ -67,6 +68,10 @@ function createTaskWorkflowHookRegistry(options = {}) {
 
       if (event.event === 'workflow.stage.ready' && event.stage === 'validation') {
         return handleValidationReady(event, resolver);
+      }
+
+      if (event.event === 'tool.postInvoke' && event.tool === 'task.push') {
+        return handlePostTaskPush(event, resolver);
       }
 
       if (event.event === 'workflow.stage.ready' && event.stage === 'task-finish') {
@@ -115,43 +120,23 @@ function isTaskWorkflowEvent(event) {
 
 function handlePreTaskStart(event, resolver) {
   const state = event.state || {};
+  if (state.hasStreamContext === true) return null;
   const area = state.area || '<area>';
-  const title = state.title || '<task title>';
 
   return {
     workflow: TASK_WORKFLOW_ID,
-    stage: 'task-start-guidance',
+    stage: 'stream-context',
     event: event.event,
-    advisory: {
-      suggestedNextTool: 'stream.context',
-      reason: 'Next tool call should usually be stream.context if fresh stream context has not already been gathered for this area.',
-      skipWhen: 'If stream.context was already run recently in this conversation, call task.start directly with an explicit startFrom value.',
+    blockedAction: {
+      requestedTool: 'task.start',
+      reason: 'Fresh stream context is required before starting a task when it has not already been gathered.',
     },
-    examples: [
-      {
-        label: 'fresh stream context first, then start from stream',
-        orderedActions: [
-          resolver.action('stream.context', { input: { area } }),
-          resolver.action('task.start', { input: { area, title, startFrom: 'stream' } }),
-        ],
-      },
-      {
-        label: 'already have stream context; start from main',
-        orderedActions: [
-          resolver.action('task.start', { input: { area, title, startFrom: 'main' } }),
-        ],
-      },
-      {
-        label: 'already have stream context; start from stream',
-        orderedActions: [
-          resolver.action('task.start', { input: { area, title, startFrom: 'stream' } }),
-        ],
-      },
-    ],
+    requiredNextAction: resolver.action('stream.context', {
+      input: { area },
+    }),
     notes: [
-      'This hook is advisory only; it must not block task.start because prior stream.context calls are not tracked before task.start creates the task session.',
-      'Use startFrom exactly as "main" or "stream". Do not pass a branch name to startFrom.',
-      'Use stream only to override the target stream branch when the default stream/<area> is wrong.',
+      'The task workflow is just-in-time: gather stream context first, then call task.start with an explicit startFrom value.',
+      'If fresh stream context is already present, task.start proceeds directly.',
     ],
   };
 }
@@ -163,28 +148,42 @@ function handlePostTaskStart(event, resolver, anchors) {
   const branch = result.branch || result.data?.branch || `task/${area}/<task-slug>`;
   const worktreePath = result.worktreePath || result.data?.worktreePath || '<worktreePath>';
   const workpadPath = workpadPathForBranch(branch, area);
+  const contract = [
+    '',
+    '## Test-first contract',
+    '',
+    'behavior under test: pending',
+    'existing local pattern: pending',
+    'new or changed tests: pending',
+    'focused red command: pending',
+    'expected red failure: pending',
+    'no-test waiver: not applicable unless explicitly justified',
+    '',
+  ].join('\n');
 
   return {
     workflow: TASK_WORKFLOW_ID,
-    stage: 'post-task-start-guidance',
+    stage: 'workpad-bootstrap',
     event: event.event,
     contextInjection: {
       taskSession,
       worktreePath,
-      requiredBeforeProductionEdit: 'Before any meaningful production edit, record a task-shaped discovery batch, then add a Test-first contract and either a focused red test result or a no-test waiver.',
+      requiredBeforeProductionEdit: 'Before any meaningful production edit, update the scoped workpad with a Test-first contract and either run a focused test red or record an explicit no-test waiver.',
       skillAnchors: [anchors.taskSession, anchors.topLevelSession, anchors.workpad, anchors.testFirst],
-      discoveryGuidance: 'Batch the workpad update with direct explore plus Bun/Python code.call read-mode probes.',
     },
-    suggestedNextAction: resolver.action('tool.batch', {
+    requiredNextAction: resolver.action('workpad.write', {
       taskSession,
       input: {
-        steps: buildDiscoveryBatchSteps({ area, workpadPath }),
+        path: workpadPath,
+        content: contract,
+        append: true,
+        mkdirs: true,
       },
     }),
     notes: [
       'Place taskSession at the top level of every task-scoped call.',
-      'task.start already creates task metadata and the initial workpad; this hook is advisory next-step guidance.',
-      'Run a batch that updates the workpad and gathers direct explore plus Bun/Python code.call discovery evidence before production edits.',
+      'task.start creates the task metadata and starter workpad; this required action appends the test-first contract instead of replacing the workpad.',
+      'After the contract is recorded, use focused discovery and a red test/no-test waiver before production edits.',
     ],
   };
 }
@@ -226,6 +225,29 @@ function handleValidationReady(event, resolver) {
       'Validation must be recorded in the scoped workpad before task.push or task.pr.',
       'task.pr must promote into the stream and return the stream review PR, not only the intermediate task PR.',
       `Changed files: ${changedFiles.join(', ') || '<unknown>'}`,
+    ],
+  };
+}
+
+function handlePostTaskPush(event, resolver) {
+  const result = event.result || {};
+  const succeeded = result.ok !== false && !result.error && (result.sha || result.data?.sha || result.branch || result.data?.branch);
+  if (!succeeded) return null;
+  const state = event.state || {};
+  const taskSession = event.taskSession || state.taskSession || result.taskSession || result.data?.taskSession || '<taskSession>';
+
+  return {
+    workflow: TASK_WORKFLOW_ID,
+    stage: 'task-pr',
+    event: event.event,
+    requiredNextAction: resolver.action('task.pr', {
+      taskSession,
+      input: { ready: true },
+    }),
+    notes: [
+      'The task branch is an implementation branch, not the normal review surface.',
+      'Promote it into the stream immediately after a successful task.push so Ko and review automation review the stream review PR.',
+      'Use task-only mode only when Ko explicitly asks to keep a task branch separate from its stream.',
     ],
   };
 }

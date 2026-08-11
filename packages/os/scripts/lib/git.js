@@ -105,6 +105,38 @@ function isBranchMerged(repoRoot, branch, into) {
   return isAncestor(repoRoot, `refs/heads/${branch}`, into);
 }
 
+function synchronizeApiPushedTaskBranch(repoRoot, branch, previousSha, nextSha) {
+  const currentBranch = getCurrentBranch(repoRoot);
+  if (currentBranch !== branch) {
+    throw new Error(`cannot synchronize API-pushed task branch ${branch}: checked out branch is ${currentBranch || '<detached>'}`);
+  }
+  const localRef = `refs/heads/${branch}`;
+  const remoteRef = `refs/remotes/origin/${branch}`;
+  const localSha = getRefSha(repoRoot, localRef);
+  const remoteSha = getRefSha(repoRoot, remoteRef);
+  if (localSha !== previousSha || remoteSha !== previousSha) {
+    throw new Error(
+      `cannot synchronize API-pushed task branch ${branch}: expected local and origin refs at ${previousSha.slice(0, 8)}, received local ${localSha.slice(0, 8)} and origin ${remoteSha.slice(0, 8)}`,
+    );
+  }
+
+  runGit(['update-ref', remoteRef, nextSha, previousSha], { cwd: repoRoot });
+  try {
+    // Mixed reset advances the checked-out branch and index while preserving working-tree bytes.
+    runGit(['reset', '--mixed', nextSha], { cwd: repoRoot });
+  } catch (error) {
+    runGitMaybe(['update-ref', remoteRef, previousSha, nextSha], { cwd: repoRoot });
+    throw error;
+  }
+
+  const synchronizedLocal = getRefSha(repoRoot, localRef);
+  const synchronizedRemote = getRefSha(repoRoot, remoteRef);
+  if (synchronizedLocal !== nextSha || synchronizedRemote !== nextSha) {
+    throw new Error(`failed to synchronize local refs after API push for ${branch}`);
+  }
+  return { branch, previousSha, sha: nextSha };
+}
+
 function getTrackedChanges(repoRoot) {
   // use execFileSync directly — runGit trims leading spaces which breaks porcelain parsing.
   // exclude node_modules because task:start symlinks it into worktrees for local checks.
@@ -159,4 +191,5 @@ module.exports = {
   runGit,
   runGitMaybe,
   setBranchUpstream,
+  synchronizeApiPushedTaskBranch,
 };
