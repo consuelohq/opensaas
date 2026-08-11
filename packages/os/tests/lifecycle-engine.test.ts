@@ -964,6 +964,61 @@ describe('unified lifecycle engine', () => {
     });
   });
 
+  it('rejects a synchronous update inherited from the daemon when launchd rewrites XPC_SERVICE_NAME', async () => {
+    const engine = createEngine();
+    const update = vi.spyOn(engine, 'update');
+    const stderr: string[] = [];
+
+    const exitCode = await runLifecycleCli(
+      ['update', '--channel', 'dev', '--yes', '--json'],
+      {
+        engine,
+        environment: {
+          CONSUELO_OS_DAEMON_PROCESS: '1',
+          XPC_SERVICE_NAME: '0',
+        },
+        stdout: vi.fn(),
+        stderr: (value) => stderr.push(value),
+      },
+    );
+
+    expect(exitCode).toBe(1);
+    expect(update).not.toHaveBeenCalled();
+    expect(JSON.parse(stderr.join(''))).toMatchObject({
+      command: 'update',
+      ok: false,
+      error: {
+        message: expect.stringContaining('separate lifecycle process'),
+      },
+    });
+  });
+
+  it('rejects a synchronous repair inherited from the active daemon', async () => {
+    const engine = createEngine();
+    const repair = vi.spyOn(engine, 'repair');
+    const stderr: string[] = [];
+
+    const exitCode = await runLifecycleCli(['repair', '--json'], {
+      engine,
+      environment: {
+        CONSUELO_OS_DAEMON_PROCESS: '1',
+        XPC_SERVICE_NAME: '0',
+      },
+      stdout: vi.fn(),
+      stderr: (value) => stderr.push(value),
+    });
+
+    expect(exitCode).toBe(1);
+    expect(repair).not.toHaveBeenCalled();
+    expect(JSON.parse(stderr.join(''))).toMatchObject({
+      command: 'repair',
+      ok: false,
+      error: {
+        message: expect.stringContaining('separate lifecycle process'),
+      },
+    });
+  });
+
   it('allows status without installed release trust anchors', async () => {
     const publicKeysJson = process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON;
     const keyId = process.env.CONSUELO_RELEASE_KEY_ID;
