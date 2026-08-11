@@ -1165,6 +1165,45 @@ export function loadOsConfig(home?: string): OsConfig | null {
   return readJsonFile<OsConfig>(path.join(resolvedHome, 'config.json'));
 }
 
+export function updateSelectedSkillSelection(input: {
+  home?: string;
+  visibleUserRoot?: string;
+  selectedSkills: readonly string[];
+}): {
+  home: string;
+  configPath: string;
+  selectedSkills: string[];
+  actions: ReturnType<typeof provisionManagedComponentIndexes>;
+} {
+  const home = resolveOsHome(input.home);
+  const configPath = path.join(home, 'config.json');
+  const config = loadOsConfig(home);
+  if (!config) {
+    throw new Error(
+      `Consuelo OS is not installed at ${home}. Run consuelo install first.`,
+    );
+  }
+
+  const selectedSkills = normalizeSelectedSkillNames(input.selectedSkills);
+  const generatedAt = nowIso();
+  const visibleUserRoot = path.resolve(
+    input.visibleUserRoot ?? path.join(os.homedir(), 'Consuelo'),
+  );
+  const actions = provisionManagedComponentIndexes({
+    home,
+    selectedSkills,
+    dryRun: false,
+    generatedAt,
+    userRoot: visibleUserRoot,
+  });
+
+  config.selectedSkills = selectedSkills;
+  config.updatedAt = generatedAt;
+  writeJsonFile(configPath, config, false);
+
+  return { home, configPath, selectedSkills, actions };
+}
+
 export function detectAgents(
   home?: string,
   userHome: string = os.homedir(),
