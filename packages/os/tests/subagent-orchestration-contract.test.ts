@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import { executeTool, getToolManifestEntry } from '../scripts/lib/facade/executor';
 import type { ToolInput, ToolRunner } from '../scripts/lib/facade/types';
+import { resolveSubagentRunDirectory, type DurableSubagentRun } from '../scripts/lib/subagent/lifecycle';
 
 function runner(): ToolRunner {
   return async () => ({ stdout: '', stderr: '', exitCode: 0 });
@@ -366,6 +367,60 @@ describe('subagent orchestration contract', () => {
       expect(cancelled.data.status).toBe('cancelled');
       expect(cancelled.ok).toBe(true);
       expect(cancelled.code).toBe('OK');
+    } finally {
+      rmSync(durableHome, { recursive: true, force: true });
+      rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
+  it('surfaces durable runner errors while status and logs remain successful attachment operations', async () => {
+    const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-failed-attachment-'));
+    const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+    try {
+      const env = { ...process.env, CONSUELO_HOME: durableHome };
+      const runId = 'run_0123456789abcdef01234567';
+      const runDirectory = resolveSubagentRunDirectory(runId, env);
+      mkdirSync(runDirectory, { recursive: true });
+      const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+      const stderrLogPath = join(runDirectory, 'stderr.log');
+      writeFileSync(stdoutLogPath, '');
+      writeFileSync(stderrLogPath, '');
+      const failure = 'runner spawn failed: executable vanished';
+      const failedRun: DurableSubagentRun = {
+        runId,
+        traceId: 'trc_failed_attachment_origin',
+        fingerprint: 'failed-attachment-fixture',
+        provider: 'codex',
+        policy: 'read',
+        workspaceOnly: 'preferred',
+        rawShellUsed: true,
+        cwd: worktree,
+        instructionPath: join(runDirectory, 'instruction.md'),
+        command: ['codex', 'exec'],
+        status: 'failed',
+        exitCode: 1,
+        timeoutMs: 30_000,
+        startedAt: Date.now() - 5_000,
+        updatedAt: Date.now(),
+        stdoutLogPath,
+        stderrLogPath,
+        error: failure,
+      };
+      writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(failedRun, null, 2));
+
+      for (const action of ['status', 'logs'] as const) {
+        const attached = await executeTool('subagent', { action, runId }, options(durableHome, env));
+        expect(attached.ok, action).toBe(true);
+        expect(attached.code, action).toBe('OK');
+        expect(attached.data.status, action).toBe('failed');
+        expect(attached.data.stderr, action).toContain(failure);
+      }
+
+      const waited = await executeTool('subagent', { action: 'wait', runId, waitMs: 50 }, options(durableHome, env));
+      expect(waited.ok).toBe(false);
+      expect(waited.code).toBe('COMMAND_FAILED');
+      expect(waited.data.status).toBe('failed');
+      expect(waited.data.stderr).toContain(failure);
     } finally {
       rmSync(durableHome, { recursive: true, force: true });
       rmSync(worktree, { recursive: true, force: true });

@@ -44,11 +44,10 @@ started: 2026-08-10
 
 ## files changed
 
-- `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/subagent.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
-- `packages/os/tests/fixtures/trace-persistence-runtime.ts`
-- `packages/os/tests/trace-persistence.test.ts`
+- `packages/os/tests/subagent-cli.test.ts`
 
 
 ## red evidence before production implementation
@@ -65,13 +64,13 @@ started: 2026-08-10
 
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
+- `packages/os/tests/trace-persistence.test.ts`
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:37:46 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:38:15 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:38:59 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:39:44 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:41:01 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -120,6 +119,8 @@ started: 2026-08-10
 - 2026-08-11 20:57:30 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 20:59:32 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:02:56 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:04:38 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:08:49 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -142,6 +143,9 @@ started: 2026-08-10
 - 2026-08-11 21:02:33 `review.run`: passed — OK
 - 2026-08-11 21:02:44 `verify`: passed — OK
 - 2026-08-11 21:03:02 `verify`: passed — OK
+- 2026-08-11 21:08:22 `review.run`: passed — OK
+- 2026-08-11 21:08:36 `verify`: passed — OK
+- 2026-08-11 21:08:55 `verify`: passed — OK
 
 ## key decisions
 
@@ -960,3 +964,32 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamped verify + explicit-file task.push onto current remote head. No task.pr/task.merge/task.finish.
 
 - 2026-08-11 21:02:56 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Codex fourth-review adjudication on 30ff / current 210ff
+- P2 CLI requestId forwarding: VALID/BLOCKING. `packages/os/scripts/subagent.ts` must parse/document `--request-id` and forward `requestId`; otherwise CLI start retries derive new run IDs and duplicate agents. Add CLI-focused regression.
+- P2 originating trace ID: FIXED on 210ff. Durable run persists launch traceId; terminal child trace rows use it and end-to-end test proves status does not duplicate/reparent rows.
+- P2 durable runner errors: VALID/BLOCKING. `run.error` can contain artifact/runner-spawn diagnostics while durable response stderr/message stays generic/empty. Add failed-run response regression and surface run.error.
+- P2 failed attachment result codes: VALID/BLOCKING. status/logs can return code OK with ok:false for failed/timed_out/completion_unknown. Make attachment transport success distinct from underlying run outcome or map deterministic non-OK codes; add regression.
+- Do not merge until these are fixed, latest SHA CI is terminal-green, and Codex has reviewed latest head.
+
+- 2026-08-11 21:04:38 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 21:06:09 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`
+- 2026-08-11 21:06:10 apply-patch: `packages/os/tests/subagent-cli.test.ts`
+
+- 2026-08-11 21:06:56 apply-patch: `packages/os/scripts/subagent.ts`
+- 2026-08-11 21:06:56 apply-patch: `packages/os/scripts/lib/subagent/runtime.ts`
+- 2026-08-11 21:07:21 apply-patch: `packages/os/scripts/lib/subagent/runtime.ts`
+
+### Codex fourth-review fixes — green
+- CLI now exports a pure parse helper, guards execution with import.meta.main, documents `--request-id`, and forwards requestId into ToolInput. CLI focused test proves idempotency key forwarding without executing main on import.
+- Attachment parser now uses the persisted originating run traceId, so durable summaries as well as trace rows remain correlated to launch.
+- Durable responses surface `run.error` in stderr/message when logs are empty, preserving artifact/runner-spawn diagnostics.
+- status/logs are successful attachment/query operations (`OK`, ok:true) even when the underlying run status is failed/timed_out/completion_unknown; underlying status and error remain in data. wait maps underlying failed/completion_unknown/cancelled to COMMAND_FAILED and timed_out to TIMEOUT; successful cancel remains OK/ok:true.
+- Core lifecycle + public contract + CLI: 23/23 green (9 + 13 + 1).
+- Relevant trace persistence: 2/2 green. Executable discovery 8/8. Distribution runtime bundle 20/20. OS typecheck/syntax green; generated manifests current.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking.
+- Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamp + explicit-file task.push onto current remote head 210ff15; then freeze code and wait for fresh CI and Codex review on exact new SHA. No task.pr/task.merge/task.finish.
+
+- 2026-08-11 21:08:49 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`

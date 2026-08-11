@@ -3,8 +3,8 @@
 import { executeTool } from './lib/facade/executor';
 import type { ToolInput } from './lib/facade/types';
 
-function printHelp(): void {
-  process.stdout.write([
+export function subagentCliHelpText(): string {
+  return [
     'usage: bun run subagent -- [--action <run|start|status|wait|logs|cancel>] [options]',
     '',
     'runs the subagent runtime exposed through the workspace facade.',
@@ -12,6 +12,7 @@ function printHelp(): void {
     'options:',
     '  --action <id>                run, start, status, wait, logs, or cancel (default: run)',
     '  --run-id <id>                durable run identity for attachment actions',
+    '  --request-id <id>            idempotency key for run/start retries',
     '  --provider <id>              codex, pi, opencode, or grok',
     '  --model <name>               provider model override',
     '  --reasoning-effort <level>   provider-specific reasoning level',
@@ -31,7 +32,11 @@ function printHelp(): void {
     '  bun run subagent -- --provider grok --bundle media --output-format json --instruction-path .task/example/ko-social.md',
     '  bun run subagent -- --provider codex --policy edit --task-session tsk_123 --instruction-path .task/foo/work.md',
     '',
-  ].join('\n'));
+  ].join('\n');
+}
+
+function printHelp(): void {
+  process.stdout.write(subagentCliHelpText());
 }
 
 function readOption(args: string[], name: string): string | undefined {
@@ -53,14 +58,7 @@ function requireOption(value: string | undefined, name: string): string {
   return value;
 }
 
-async function main(): Promise<void> {
-  const args = process.argv.slice(2);
-  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
-    printHelp();
-    return;
-  }
-  if (args[0] === 'call') throw new Error('subagent has no call subcommand; pass flags directly after --');
-
+export function parseSubagentCliInput(args: string[]): ToolInput {
   const timeoutRaw = readOption(args, '--timeout-ms');
   const action = readOption(args, '--action') || 'run';
   const provider = readOption(args, '--provider');
@@ -72,6 +70,7 @@ async function main(): Promise<void> {
     ...(provider ? { provider } : {}),
     ...(instructionPath ? { instructionPath } : {}),
     ...(readOption(args, '--run-id') ? { runId: readOption(args, '--run-id') } : {}),
+    ...(readOption(args, '--request-id') ? { requestId: readOption(args, '--request-id') } : {}),
     ...(readOption(args, '--model') ? { model: readOption(args, '--model') } : {}),
     ...(readOption(args, '--reasoning-effort') ? { reasoningEffort: readOption(args, '--reasoning-effort') } : {}),
     ...(readOption(args, '--bundle') ? { bundle: readOption(args, '--bundle') } : {}),
@@ -89,12 +88,26 @@ async function main(): Promise<void> {
     input.instructionPath = requireOption(instructionPath, '--instruction-path');
   }
 
+  return input;
+}
+
+async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
+    printHelp();
+    return;
+  }
+  if (args[0] === 'call') throw new Error('subagent has no call subcommand; pass flags directly after --');
+
+  const input = parseSubagentCliInput(args);
   const result = await executeTool('subagent', input);
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   if (!result.ok) process.exitCode = result.exitCode || 1;
 }
 
-main().catch((error: unknown) => {
-  process.stderr.write(`${error instanceof Error ? error.stack || error.message : String(error)}\n`);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((error: unknown) => {
+    process.stderr.write(`${error instanceof Error ? error.stack || error.message : String(error)}\n`);
+    process.exit(1);
+  });
+}

@@ -523,16 +523,33 @@ async function executeSubagentAttachmentAction(
     });
   }
 
-  const parser = durableSubagentParser(provider, context.traceId);
+  const parser = durableSubagentParser(provider, read.run.traceId || context.traceId);
   let run = reconcileDurableSubagentRun(read.run, context.env, parser);
   if (action === 'wait') {
     const waitMs = typeof input.waitMs === 'number' ? Math.min(Math.max(0, input.waitMs), SUBAGENT_MAX_TIMEOUT_MS) : SUBAGENT_MAX_TIMEOUT_MS;
     const waited = await waitForDurableSubagentRun(run, context.env, waitMs, parser);
     run = waited.run;
-    return durableSubagentResult(entry, context, run, action, waited.timedOut ? 'WAIT_TIMEOUT' : 'OK');
+    return durableSubagentResult(
+      entry,
+      context,
+      run,
+      action,
+      waited.timedOut ? 'WAIT_TIMEOUT' : durableTerminalOutcomeCode(run),
+    );
   }
-  if (action === 'cancel') run = cancelDurableSubagentRun(run, context.env);
+  if (action === 'cancel') {
+    run = cancelDurableSubagentRun(run, context.env);
+    return durableSubagentResult(entry, context, run, action, run.status === 'cancelled' ? 'OK' : durableTerminalOutcomeCode(run));
+  }
   return durableSubagentResult(entry, context, run, action, 'OK');
+}
+
+function durableTerminalOutcomeCode(
+  run: DurableSubagentRun,
+): 'OK' | 'TIMEOUT' | 'COMMAND_FAILED' {
+  if (run.status === 'timed_out') return 'TIMEOUT';
+  if (run.status === 'failed' || run.status === 'completion_unknown' || run.status === 'cancelled') return 'COMMAND_FAILED';
+  return 'OK';
 }
 
 function durableSubagentParser(provider: SubagentProvider, traceId: string) {
@@ -570,7 +587,11 @@ function durableSubagentResult(
     ? run.workspaceOnly
     : false;
   const successfulCancel = action === 'cancel' && status === 'cancelled' && code === 'OK';
+  const successfulAttachmentRead = (action === 'status' || action === 'logs') && code === 'OK';
   const rawShellUsed = run.rawShellUsed ?? (provider === 'codex');
+  const responseStderr = run.error && !logs.stderr.includes(run.error)
+    ? [logs.stderr, run.error].filter(Boolean).join('\n')
+    : logs.stderr;
   if (status !== 'starting' && status !== 'running') {
     const events = parseSubagentTraceEvents(provider, logs.stdout);
     recordSubagentTraceEventsSafely({
@@ -600,7 +621,7 @@ function durableSubagentResult(
     instructionPath: run.instructionPath,
     command: run.command,
     stdout: logs.stdout,
-    stderr: logs.stderr,
+    stderr: responseStderr,
     exitCode: successfulCancel ? 0 : run.exitCode ?? (status === 'completed' ? 0 : 1),
     ...(run.finalMessage ? { finalMessage: run.finalMessage } : {}),
     ...(run.summary !== undefined ? { summary: run.summary as SubagentData['summary'] } : {}),
@@ -608,14 +629,14 @@ function durableSubagentResult(
     stdoutLogPath: run.stdoutLogPath,
     stderrLogPath: run.stderrLogPath,
     stdoutChars: logs.stdout.length,
-    stderrChars: logs.stderr.length,
+    stderrChars: responseStderr.length,
     audit: {
       ...(run.taskSession ? { taskSession: run.taskSession } : {}),
       ...(run.branch ? { branch: run.branch } : {}),
       workspaceOnly,
       rawShellUsed,
     },
-    ok: code === 'WAIT_TIMEOUT' || (code === 'OK' && (
+    ok: code === 'WAIT_TIMEOUT' || successfulAttachmentRead || (code === 'OK' && (
       status === 'completed' || status === 'running' || status === 'starting' || successfulCancel
     )),
     code,
@@ -623,7 +644,7 @@ function durableSubagentResult(
       ? 'subagent wait timed out; run identity is preserved'
       : code === 'IDEMPOTENCY_CONFLICT'
         ? 'requestId is already associated with a different subagent run specification'
-        : `subagent run ${status}`,
+        : run.error || `subagent run ${status}`,
   });
 }
 
