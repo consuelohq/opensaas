@@ -44,9 +44,8 @@ started: 2026-08-10
 
 ## files changed
 
-- `packages/os/scripts/lib/subagent/process-termination.ts`
-- `packages/os/scripts/lib/subagent/runner.ts`
-- `packages/os/tests/subagent-runner-termination.test.ts`
+- `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 
 
 ## red evidence before production implementation
@@ -76,8 +75,6 @@ started: 2026-08-10
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:45:29 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:46:14 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:48:49 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:50:06 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:50:52 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -126,12 +123,11 @@ started: 2026-08-10
 - 2026-08-11 21:24:32 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:25:26 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:31:47 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:33:44 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:37:11 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- 2026-08-10 05:03:38 `verify`: passed — OK
-- 2026-08-11 20:43:17 `review.run`: passed — OK
-- 2026-08-11 20:43:23 `verify`: passed — OK
 - 2026-08-11 20:43:26 `review.run`: passed — OK
 - 2026-08-11 20:43:31 `verify`: passed — OK
 - 2026-08-11 20:44:16 `verify`: passed — OK
@@ -159,6 +155,9 @@ started: 2026-08-10
 - 2026-08-11 21:31:23 `review.run`: passed — OK
 - 2026-08-11 21:31:36 `verify`: passed — OK
 - 2026-08-11 21:31:54 `verify`: passed — OK
+- 2026-08-11 21:36:49 `review.run`: passed — OK
+- 2026-08-11 21:36:59 `verify`: passed — OK
+- 2026-08-11 21:37:20 `verify`: passed — OK
 
 ## key decisions
 
@@ -1108,3 +1107,25 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamped verify + explicit-file task.push of process-termination.ts, runner.ts, and subagent-runner-termination.test.ts onto current remote task head 7a1a23. Then freeze code and require terminal-green CI plus a fresh Codex review on the exact candidate SHA before any task.pr merge.
 
 - 2026-08-11 21:31:47 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Codex seventh-review adjudication on current candidate eb2d3a
+- Complete latest inline review set contains one new P1: a provider older than STARTUP_GRACE_MS can publish its owned exit marker and exit after reconciliation's first marker read but during the subsequent liveness probe; current code then persists irreversible completion_unknown.
+- Test-first contract: deterministically intercept process.kill(pid, 0), create the owned completed exit marker during that probe, then report the PID dead. Expected red: reconciliation returns completion_unknown even though a valid marker now exists. Required green: re-read/consume an owned exit marker immediately before terminalizing completion_unknown, preserving parsed final message/usage/summary and never respawning.
+- No other new latest-review comments were returned for the same review window. Do not merge current CI candidate until this race is fixed and revalidated.
+
+- 2026-08-11 21:33:44 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 21:33:54 apply-patch: `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+
+- 2026-08-11 21:34:23 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+
+### Codex seventh-review late exit-marker race — green
+- Deterministic red reproduced the long-run marker race by creating an owned completed exit marker during `process.kill(pid, 0)` after reconciliation's initial marker read. Old behavior persisted irreversible `completion_unknown`; expected completed.
+- Fix centralizes owned exit finalization and re-reads the owned exit marker immediately before the irreversible `completion_unknown` transition. The late marker preserves terminal outcome, exit code, parsed final message, summary/usage, and uses the existing fresh-state terminal guard.
+- Focused regression red→green. Full core lifecycle + public contract + CLI + termination: 30/30 green (12 + 13 + 1 + 4).
+- Relevant trace persistence: 2/2 green. Exact distribution CI harness: 12/12 files, 83 passed + 7 todo (90 total). Executable discovery: 8/8. OS typecheck/syntax green; generated manifests current.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking.
+- Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamped verify + explicit-file task.push of lifecycle.ts and subagent-lifecycle-regressions.test.ts onto current remote head eb2d3a. Then freeze code and require terminal-green CI + fresh Codex review on exact next SHA before any task.pr merge.
+
+- 2026-08-11 21:37:11 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`

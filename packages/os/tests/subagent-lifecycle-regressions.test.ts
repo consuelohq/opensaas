@@ -14,7 +14,7 @@ import { spawn } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   cancelDurableSubagentRun,
@@ -345,6 +345,71 @@ describe('durable subagent lifecycle regressions', () => {
     expect(persisted.finalMessage).toBe('newer terminal result');
 
     rmSync(home, { recursive: true, force: true });
+  });
+
+  it('rechecks an owned exit marker before terminalizing a long-running dead runner', () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-late-exit-marker-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_fedcbafedcbafedcbafedcba';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    writeFileSync(stdoutLogPath, '');
+    writeFileSync(stderrLogPath, '');
+    const pid = 98_765_432;
+    const ownerToken = 'owner-late-exit-marker';
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_late_exit_marker',
+      fingerprint: 'late-exit-marker',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      pid,
+      ownerToken,
+      exitMarkerPath,
+      status: 'running',
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now() - 5_000,
+      stdoutLogPath,
+      stderrLogPath,
+    };
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+
+    const killSpy = vi.spyOn(process, 'kill').mockImplementation(((targetPid: number, signal?: NodeJS.Signals | number) => {
+      if (targetPid === pid && signal === 0) {
+        writeFileSync(exitMarkerPath, JSON.stringify({
+          runId,
+          ownerToken,
+          runnerPid: pid,
+          outcome: 'completed',
+          exitCode: 0,
+        }, null, 2));
+        throw new Error('runner already exited');
+      }
+      return true;
+    }) as typeof process.kill);
+
+    try {
+      const reconciled = reconcileDurableSubagentRun(run, environment, () => ({
+        completed: true,
+        finalMessage: 'late marker completion',
+      }));
+      expect(reconciled.status).toBe('completed');
+      expect(reconciled.exitCode).toBe(0);
+      expect(reconciled.finalMessage).toBe('late marker completion');
+      const persisted = JSON.parse(readFileSync(join(runDirectory, 'state.json'), 'utf8')) as DurableSubagentRun;
+      expect(persisted.status).toBe('completed');
+      expect(persisted.finalMessage).toBe('late marker completion');
+    } finally {
+      killSpy.mockRestore();
+      rmSync(home, { recursive: true, force: true });
+    }
   });
 
   it('parses the full durable log while keeping attachment log reads bounded', () => {

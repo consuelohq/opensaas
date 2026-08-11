@@ -324,17 +324,7 @@ export function reconcileDurableSubagentRun(
   const parsed = parser(stdout, stderr);
 
   if (exit && isOwnedExitMarker(run, exit)) {
-    const updated: DurableSubagentRun = {
-      ...run,
-      status: exit.outcome,
-      ...(exit.exitCode !== undefined ? { exitCode: exit.exitCode } : {}),
-      updatedAt: now,
-      ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
-      ...(parsed.summary !== undefined ? { summary: parsed.summary } : {}),
-      ...(parsed.usage ? { usage: parsed.usage } : {}),
-      ...(exit.error ? { error: exit.error } : {}),
-    };
-    return persistReconciledState(statePath, run, updated, true);
+    return reconcileOwnedExitMarker(statePath, run, exit, parsed, now);
   }
 
   if (!run.pid && now - run.startedAt < STARTUP_GRACE_MS) {
@@ -361,6 +351,11 @@ export function reconcileDurableSubagentRun(
   if (now - run.startedAt < STARTUP_GRACE_MS) {
     const updated = withParsed(run, 'starting', parsed, now);
     return persistReconciledState(statePath, run, updated);
+  }
+
+  const lateExit = readExitMarker(run);
+  if (lateExit && isOwnedExitMarker(run, lateExit)) {
+    return reconcileOwnedExitMarker(statePath, run, lateExit, parsed, now);
   }
 
   const updated = withParsed(
@@ -574,6 +569,26 @@ function readExitMarker(run: DurableSubagentRun): {
     exitCode?: number;
     error?: string;
   };
+}
+
+function reconcileOwnedExitMarker(
+  statePath: string,
+  run: DurableSubagentRun,
+  exit: NonNullable<ReturnType<typeof readExitMarker>>,
+  parsed: ReturnType<DurableSubagentParser>,
+  now: number,
+): DurableSubagentRun {
+  const updated: DurableSubagentRun = {
+    ...run,
+    status: exit.outcome,
+    ...(exit.exitCode !== undefined ? { exitCode: exit.exitCode } : {}),
+    updatedAt: now,
+    ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
+    ...(parsed.summary !== undefined ? { summary: parsed.summary } : {}),
+    ...(parsed.usage ? { usage: parsed.usage } : {}),
+    ...(exit.error ? { error: exit.error } : {}),
+  };
+  return persistReconciledState(statePath, run, updated, true);
 }
 
 function isOwnedExitMarker(
