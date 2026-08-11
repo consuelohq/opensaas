@@ -36,10 +36,7 @@ started: 2026-08-11
 
 ## files changed
 
-- `.github/workflows/consuelo-ci.yaml`
-- `.github/workflows/consuelo-production-release.yaml`
 - `packages/dialer-server/Dockerfile`
-- `packages/dialer-server/railway.json`
 - `packages/lead-connector/src/deployment/release-workflow.contract.test.ts`
 
 
@@ -53,8 +50,6 @@ started: 2026-08-11
 
 ## workspace-owned: validation evidence
 
-- Dialer suite: 174/174 pass (`trc_9aff647316d0`, first package result).
-- Dialer-server suite: 134/134 pass (`trc_3a5d4b916656`).
 - LeadConnector suite: 120/120 pass (`trc_3a5d4b916656`).
 - Typechecks: dialer, dialer-server, LeadConnector all pass (`trc_1df69044ed03`).
 - Production builds: dialer-server executable + LeadConnector embed pass (`trc_de7d1735c92f`).
@@ -83,6 +78,8 @@ started: 2026-08-11
 - 2026-08-11 22:16:05 `review.run`: passed — OK
 - 2026-08-11 22:16:15 `review.run`: passed — OK
 - 2026-08-11 22:16:32 `verify`: passed — OK
+- 2026-08-11 23:20:29 `review.run`: passed — OK
+- 2026-08-11 23:20:42 `verify`: passed — OK
 
 ## key decisions
 
@@ -117,6 +114,30 @@ started: 2026-08-11
 - OS/MCP transport intermittently returned network errors for read/verify calls. No deploy/provider mutation was retried blindly; state was checked before retries.
 - Initial task start was sourced from `main` while PR base was `stream/dialer`. The task was validated with the stream merged locally, then `stream/dialer` was synced to `main` and merged into the task so the PR base is now a true ancestor without force-push/reset.
 - First pushed release head `9633f27a1492f270d9196a111afd3980310e5f4d` was correctly blocked by the new dialer CI gate on clean-run `@consuelo/logger` resolution. The fix builds logger before typecheck, builds all workspace runtime packages in dependency order, and makes the PR gate build the production Dockerfile.
+
+## CI wait plan — corrected head
+
+- Start: 2026-08-11T22:19:07Z
+- Wait reason: exact-head GitHub CI for `e0c929939d60df382e1753bd808cf8c3b32e8419` must prove clean typecheck and Railway Docker image build.
+- Duration: 30-second bounded polls.
+- Resume action: `github pr.checks` for PR #1839, then exact `Consuelo / dialer` state when registered.
+- Expected signal: all checks terminal with zero failures; specifically `Consuelo / dialer` success.
+- Fallback: stop on any failure and diagnose its first causal step; do not merge partial green.
+- Poll 1 (2026-08-11T22:20:11Z): 15 checks registered, 11 pending, 0 failed. Consuelo changed-files classifier still running; continue 30-second poll.
+- Poll 2 (2026-08-11T22:21:02Z): 28 checks registered, 13 pending, 0 failed. `Consuelo / dialer` is in progress; continue 30-second poll for clean typecheck + Docker build.
+- Poll 3 (2026-08-11T22:22:09Z): 0 failures. Dialer job is still installing dependencies; tests, logger prerequisite, typecheck, package builds, and Docker build remain queued. Continue 30-second poll.
+- Poll 4 (2026-08-11T22:23:08Z): dialer job remains in dependency install; all five release-validation steps are pending and no failures are present. Continue bounded poll.
+- Poll 5 (2026-08-11T22:24:03Z): dependency install still active with all five release-validation steps pending and 0 failures. Increase next interval to 60 seconds, then re-check the same step states immediately.
+- Poll 6 (2026-08-11T22:24:59Z): wait transport timed out, wake verification ran immediately; dependency install remains active, five release steps pending, 0 failures. Continue one more 60-second interval, then inspect job diagnostics if unchanged.
+- Poll 7 (2026-08-11T22:26:05Z): dependency install, package tests, logger prerequisite, all three typechecks, and release artifact builds are SUCCESS. `Build Railway dialer container` started at 22:25:54Z and is the only remaining dialer step. Continue bounded poll.
+- Poll 8 (2026-08-11T22:27:00Z): Railway Docker build remains in progress, no failure conclusion. Continue 30-second poll.
+- Poll 9 (2026-08-11T22:27:55Z): Railway Docker build still in progress after ~2 minutes, with no failure. This is expected for a clean immutable dependency install + workspace build chain; keep the gate and continue polling.
+- Recovery after OS returned (2026-08-11T23:16Z): exact head `e0c929939d60df382e1753bd808cf8c3b32e8419` is terminal with 44 checks, 1 failure. The only failure is `Consuelo / dialer` -> `Build Railway dialer container`. Docker logs show Yarn post-install rejecting Node `v22.23.2` because the repo requires `^24.5.0`; all package tests, logger prerequisite, typechecks, and release artifact builds passed before that step.
+- Follow-up test-first contract: require the Railway dependency stage to use Node 24 rather than Node 22. Focused RED command: `bun test packages/lead-connector/src/deployment/release-workflow.contract.test.ts`. Expected RED: Dockerfile still starts from `node:22-bookworm-slim`.
+- Tooling recovery: primary `fs.applyPatch` mutation transport returned repeated `network_error` while reads remained healthy; the exact test/workpad edits used task-scoped `code.call` instead.
+- RED follow-up: 3/4 release workflow contracts passed; only the new Node-24 Docker dependency-stage assertion failed against `node:22-bookworm-slim` (`trc_9cbd30570543`).
+- GREEN follow-up: dependency stage changed to `node:24-bookworm-slim`; focused release workflow contract passes 4/4, 43 assertions (`trc_11f1a17595e6`).
+- Next proof: republish exact head and require GitHub `Consuelo / dialer` to pass the real Docker build; do not merge on partial green.
 
 ---
 
@@ -164,7 +185,5 @@ bun run task:finish
 - `packages/logger/package.json`
 - `packages/workspace/scripts/ci/check-github-workflows.cjs`
 - `packages/workspace/scripts/stream-sync.js`
-
-- 2026-08-11 22:14:35 apply-patch: `.task/dialer/automate-dialer-production-release/workpad.md`
-
-- 2026-08-11 22:15:41 apply-patch: `.task/dialer/automate-dialer-production-release/workpad.md`
+- `packages/workspace/senior-engineer.md`
+- `yarn.config.cjs`

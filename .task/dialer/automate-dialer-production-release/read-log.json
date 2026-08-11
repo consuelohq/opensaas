@@ -1,8 +1,6 @@
 {
   "files": [
-    ".github/workflows/consuelo-ci.yaml",
-    ".task/dialer/automate-dialer-production-release/workpad.md",
-    "packages/lead-connector/src/deployment/release-workflow.contract.test.ts"
+    "packages/dialer-server/Dockerfile"
   ],
-  "updatedAt": "2026-08-11T22:14:22.703Z"
+  "updatedAt": "2026-08-11T23:18:42.731Z"
 }

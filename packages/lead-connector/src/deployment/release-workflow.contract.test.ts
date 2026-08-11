@@ -31,6 +31,10 @@ describe('dialer GitHub release workflow contract', () => {
   it('builds clean Railway workspace dependencies in package order', () => {
     const dockerfile = read('packages', 'dialer-server', 'Dockerfile');
     const railway = read('packages', 'dialer-server', 'railway.json');
+    expect(dockerfile).toContain('FROM node:24-bookworm-slim AS dependencies');
+    expect(dockerfile).not.toContain(
+      'FROM node:22-bookworm-slim AS dependencies',
+    );
     const builds = [
       'bun run --cwd packages/logger build',
       'bun run --cwd packages/dialer build',
