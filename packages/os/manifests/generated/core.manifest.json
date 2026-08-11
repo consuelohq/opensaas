@@ -77,6 +77,37 @@
         "defaultTimeout": 180000,
         "inputSchema": "CodeCallInput",
         "outputSchema": "CodeCallOutput",
+        "search": {
+          "keywords": [
+            "structured",
+            "multi",
+            "summarize",
+            "summary",
+            "packet",
+            "bounded",
+            "transform",
+            "transformation",
+            "rewrite",
+            "codemod",
+            "codegen",
+            "generate",
+            "python",
+            "bun",
+            "bash",
+            "test",
+            "tests",
+            "typecheck",
+            "syntax",
+            "cli",
+            "reproduction",
+            "diagnostic",
+            "json",
+            "script",
+            "scripts",
+            "package",
+            "packages"
+          ]
+        },
         "command": {
           "script": "code-call",
           "branchMode": "none",
@@ -244,6 +275,15 @@
         "defaultTimeout": 30000,
         "inputSchema": "FsApplyPatchInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "anchored",
+            "patch",
+            "hunk",
+            "apply",
+            "edit"
+          ]
+        },
         "command": {
           "script": "task:fs",
           "subcommand": "apply-patch",
@@ -343,6 +383,24 @@
         "defaultTimeout": 120000,
         "inputSchema": "GithubInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "gh"
+          ],
+          "keywords": [
+            "coderabbit",
+            "codex",
+            "openai",
+            "chatgpt",
+            "qodo",
+            "pull request",
+            "pr review",
+            "reviews",
+            "comments",
+            "feedback",
+            "checks"
+          ]
+        },
         "command": {
           "script": "github",
           "branchMode": "none",
@@ -909,7 +967,7 @@
       "source": "tool-discovery",
       "sourcePath": "packages/os/tools/tool-discovery/manifest.ts",
       "category": "tooling",
-      "description": "search workspace tools by intent and return ranked usage guidance",
+      "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
       "core": true,
       "definition": {
         "name": "tools.search",
@@ -917,9 +975,9 @@
           "tools",
           "search"
         ],
-        "description": "search workspace tools by intent and return ranked usage guidance",
+        "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
         "category": "tooling",
-        "underlying": "workspace tools.search",
+        "underlying": "Consuelo OS tools.search",
         "capabilities": {
           "readOnly": true,
           "mutating": false,
@@ -931,6 +989,7 @@
         "outputSchema": "ToolsSearchOutput",
         "command": {
           "script": "tools:search",
+          "executionScope": "runtime",
           "branchMode": "none",
           "jsonFlag": "--json",
           "arguments": [
@@ -960,9 +1019,9 @@
               "kind": "boolean"
             },
             {
-              "source": "noDocs",
-              "flag": "--no-docs",
-              "kind": "boolean"
+              "source": "detail",
+              "flag": "--detail",
+              "kind": "value"
             }
           ]
         },

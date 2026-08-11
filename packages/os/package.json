@@ -58,6 +58,7 @@
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
     "tools:search": "bun ./scripts/tools-search.ts",
+    "tools:search:benchmark": "bun ./scripts/tools-search-benchmark.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",
     "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run",

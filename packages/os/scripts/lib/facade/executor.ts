@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Effect } from 'effect';
 
 import manifestJson from '../../../manifests/generated/tool.manifest.json';
@@ -67,6 +68,7 @@ type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
 
+const runtimePackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const MAX_LOG_COMMAND_CHARS = 4000;
 
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
@@ -1108,7 +1110,7 @@ function buildCommandPlan(
   return {
     command: 'bun',
     args,
-    cwd: resolveWorkspaceCommandCwd(cwd, script, input),
+    cwd: entry.command.executionScope === 'runtime' ? runtimePackageRoot : resolveWorkspaceCommandCwd(cwd, script, input),
     env: {
       ...env,
       ...(branch ? { TASK_BRANCH: branch } : {}),
