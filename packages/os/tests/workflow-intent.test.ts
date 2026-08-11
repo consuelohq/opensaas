@@ -137,6 +137,7 @@ describe('OS workflow intent bundles', () => {
     }));
     expect(result.hookResult?.requiredNextAction.tool).toBe('fs.write');
     expect(result.hookResult?.requiredNextAction.input).toEqual(expect.objectContaining({ append: true, mkdirs: true }));
+    expect(result.hookResult?.requiredNextAction.input.content).toContain('## Test-first contract');
   });
 
   test('should use a branch-shaped task handle when task intent has not started a task yet', () => {

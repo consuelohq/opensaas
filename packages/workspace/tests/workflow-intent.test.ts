@@ -125,6 +125,7 @@ describe('Workspace workflow intent bundles', () => {
     }));
     expect(result.hookResult?.requiredNextAction.tool).toBe('fs.write');
     expect(result.hookResult?.requiredNextAction.input).toEqual(expect.objectContaining({ append: true, mkdirs: true }));
+    expect(result.hookResult?.requiredNextAction.input.content).toContain('## Test-first contract');
   });
 
   test('should expose task.start as the sole public task workflow entrypoint', () => {

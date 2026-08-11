@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 const TASK_SKILL_EXCERPT = `
@@ -239,7 +241,7 @@ describe('OS manifest-driven task workflow hooks contract', () => {
     expect(guidance.notes.join('\n')).toContain('stream review PR');
   });
 
-  test('successful task.push requires immediate promotion into the stream review surface', async () => {
+  test('should require stream promotion when task.push succeeds', async () => {
     const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
     const registry = createTaskWorkflowHookRegistry({ manifest: manifestFixture, skillText: TASK_SKILL_EXCERPT });
 
@@ -264,6 +266,13 @@ describe('OS manifest-driven task workflow hooks contract', () => {
       }),
     }));
     expect(guidance.notes.join('\n')).toContain('stream review PR');
+  });
+
+  test('should define one Test-first contract template when post-task-start guidance builds workpad content', () => {
+    const source = readFileSync(join(import.meta.dirname, '../hooks/task/workflow.js'), 'utf8');
+    const templates = source.match(/'## Test-first contract'/g) ?? [];
+
+    expect(templates).toHaveLength(1);
   });
 
   test('publish guidance tolerates malformed changedFiles state', async () => {

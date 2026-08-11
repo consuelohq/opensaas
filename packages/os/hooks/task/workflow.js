@@ -448,49 +448,6 @@ process.exit(proc.exitCode ?? 1);`;
   ];
 }
 
-function buildInitialWorkpadContent({ area, branch, taskSession, worktreePath }) {
-  return [
-    `# ${slugFromBranch(branch)}`,
-    '',
-    `branch: ${branch}`,
-    `area: ${area}`,
-    `taskSession: ${taskSession}`,
-    `worktree: ${worktreePath}`,
-    '',
-    '## acceptance criteria',
-    '',
-    '- [ ] Fill from the user-approved task scope.',
-    '',
-    '## discovery packet',
-    '',
-    'Run a just-in-time discovery batch before production edits. Prefer direct explore plus task-shaped code.call probes:',
-    '',
-    '- [ ] direct explore query for likely implementation paths',
-    '- [ ] Bun structured repo scanner for broad file/symbol discovery',
-    '- [ ] Python targeted file/snippet ownership read for likely implementation files',
-    '- [ ] Python or Bun diagnostic for local state, schema, traces, config, or cache when relevant',
-    '- [ ] Bun exact CLI reproduction when behavior depends on command output',
-    '- [ ] workpad update batched with discovery findings',
-    '',
-    'Example batch shape: workpad edit + explore + Bun/read scanner + Python/read targeted packet + Python/read diagnostic + Bun/read exact reproduction.',
-    '',
-    '## plan',
-    '',
-    '- [ ] Run and record a task-shaped batch discovery packet.',
-    '- [ ] Define the Test-first contract before production edits.',
-    '',
-    '## Test-first contract',
-    '',
-    'behavior under test: pending',
-    'existing local pattern: pending',
-    'new or changed tests: pending',
-    'focused red command: pending',
-    'expected red failure: pending',
-    'no-test waiver: not applicable unless explicitly justified',
-    '',
-  ].join('\n');
-}
-
 module.exports = {
   createTaskWorkflowHookRegistry,
 };
