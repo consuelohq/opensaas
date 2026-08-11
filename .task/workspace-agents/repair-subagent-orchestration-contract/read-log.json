@@ -19,6 +19,7 @@
     "packages/os/scripts/lib/native-lifecycle-operation.ts",
     "packages/os/scripts/lib/runtime-state.ts",
     "packages/os/scripts/lib/subagent/lifecycle.ts",
+    "packages/os/scripts/lib/subagent/process-termination.ts",
     "packages/os/scripts/lib/subagent/runner.ts",
     "packages/os/scripts/lib/subagent/runtime.ts",
     "packages/os/scripts/lib/trace-persistence.ts",
@@ -46,7 +47,8 @@
     "packages/workspace/scripts/lib/facade/schemas.ts",
     "packages/workspace/scripts/subagent.ts",
     "packages/workspace/scripts/task-push.js",
+    "packages/workspace/senior-engineer.md",
     "packages/workspace/tests/facade/facade.test.ts"
   ],
-  "updatedAt": "2026-08-11T21:23:29.184Z"
+  "updatedAt": "2026-08-11T21:29:53.817Z"
 }

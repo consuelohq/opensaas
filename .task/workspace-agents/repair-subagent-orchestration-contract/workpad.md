@@ -44,7 +44,9 @@ started: 2026-08-10
 
 ## files changed
 
-- `packages/os/tests/distribution/release-publication-preparer.test.ts`
+- `packages/os/scripts/lib/subagent/process-termination.ts`
+- `packages/os/scripts/lib/subagent/runner.ts`
+- `packages/os/tests/subagent-runner-termination.test.ts`
 
 
 ## red evidence before production implementation
@@ -64,6 +66,7 @@ started: 2026-08-10
 - `packages/os/scripts/lib/subagent/runner.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
 - `packages/os/scripts/subagent.ts`
+- `packages/os/tests/distribution/release-publication-preparer.test.ts`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 - `packages/os/tests/subagent-cli.test.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
@@ -73,8 +76,6 @@ started: 2026-08-10
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:44:06 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:44:58 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:45:29 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:46:14 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:48:49 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -123,12 +124,11 @@ started: 2026-08-10
 - 2026-08-11 21:19:53 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:20:50 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:24:32 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:25:26 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:31:47 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- 2026-08-10 04:58:21 `review.run`: passed — OK
-- 2026-08-10 04:58:32 `verify`: passed — OK
-- 2026-08-10 05:03:34 `review.run`: passed — OK
 - 2026-08-10 05:03:38 `verify`: passed — OK
 - 2026-08-11 20:43:17 `review.run`: passed — OK
 - 2026-08-11 20:43:23 `verify`: passed — OK
@@ -156,6 +156,9 @@ started: 2026-08-10
 - 2026-08-11 21:24:08 `review.run`: passed — OK
 - 2026-08-11 21:24:21 `verify`: passed — OK
 - 2026-08-11 21:24:38 `verify`: passed — OK
+- 2026-08-11 21:31:23 `review.run`: passed — OK
+- 2026-08-11 21:31:36 `verify`: passed — OK
+- 2026-08-11 21:31:54 `verify`: passed — OK
 
 ## key decisions
 
@@ -206,6 +209,7 @@ bun run task:finish
 - `packages/os/scripts/lib/native-lifecycle-operation.ts`
 - `packages/os/scripts/lib/runtime-state.ts`
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/lib/subagent/process-termination.ts`
 - `packages/os/scripts/lib/subagent/runner.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
 - `packages/os/scripts/lib/trace-persistence.ts`
@@ -233,6 +237,7 @@ bun run task:finish
 - `packages/workspace/scripts/lib/facade/schemas.ts`
 - `packages/workspace/scripts/subagent.ts`
 - `packages/workspace/scripts/task-push.js`
+- `packages/workspace/senior-engineer.md`
 - `packages/workspace/tests/facade/facade.test.ts`
 
 ## Recovery and Luna round 2
@@ -1081,3 +1086,25 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamped verify + explicit-file task.push of the single fixture; then require CI + Codex review on the new exact head before merge.
 
 - 2026-08-11 21:24:32 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Codex sixth-review adjudication on 7ecaf8e / current fixture-only 7a1a23
+- P1 `Escalate the process group after its leader exits`: VALID/BLOCKING. `terminate()` schedules SIGKILL only when `provider && !finished`; provider `close` sets `finished=true`, so a descendant that ignored SIGTERM can survive after the leader exits and after a terminal marker is published.
+- Required fix: once a timeout/cancel trigger owns termination, the delayed group escalation must still run against the original provider/group PID even if the direct child has closed. Do not let ordinary successful provider completion schedule escalation when no termination outcome exists.
+- Add a focused helper/unit regression before runtime change, then rerun full core + distribution + platform packaging gates. Current 7a1a23 CI is superseded until this is fixed.
+
+- 2026-08-11 21:25:26 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 21:25:46 apply-patch: `packages/os/tests/subagent-runner-termination.test.ts`
+- 2026-08-11 21:26:06 apply-patch: `packages/os/scripts/lib/subagent/process-termination.ts`
+- 2026-08-11 21:26:06 apply-patch: `packages/os/scripts/lib/subagent/runner.ts`
+
+### Codex sixth-review process-group escalation — green
+- Valid P1 reproduced: after SIGTERM, a direct provider could close and set runner `finished=true`, causing the delayed SIGKILL guard to skip process-group escalation while descendants remained alive.
+- TDD fix: `scheduleProviderProcessEscalation` owns the delayed SIGKILL once termination starts and does not consult later direct-child close state. First-cause ownership remains intact; ordinary successful completion never schedules escalation.
+- Termination suite: 4/4 green. Full core lifecycle + public contract + CLI + termination: 29/29 green.
+- Relevant trace persistence: 2/2 green. Exact distribution CI harness: 12/12 files, 83 passed + 7 todo (90 total), including runtime-bundle 20/20. Executable discovery: 8/8 green. OS typecheck/syntax green; generated manifests current.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking.
+- Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamped verify + explicit-file task.push of process-termination.ts, runner.ts, and subagent-runner-termination.test.ts onto current remote task head 7a1a23. Then freeze code and require terminal-green CI plus a fresh Codex review on the exact candidate SHA before any task.pr merge.
+
+- 2026-08-11 21:31:47 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`

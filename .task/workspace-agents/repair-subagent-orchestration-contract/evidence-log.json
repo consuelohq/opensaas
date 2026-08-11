@@ -3,13 +3,13 @@
   "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
   "events": [
     {
-      "id": "a738ab21-add1-4c0e-9bd6-24508569ca43",
-      "occurred_at": "2026-08-11T21:12:47.496Z",
+      "id": "619a88c7-3d52-4c38-95af-4145c2dd4c1f",
+      "occurred_at": "2026-08-11T21:27:34.090Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+      "file_path": "packages/workspace/senior-engineer.md",
       "status": "observed",
       "confidence_delta": 0.03,
       "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
@@ -19,8 +19,24 @@
       }
     },
     {
-      "id": "3743ec43-014f-4d92-a549-260be06a684f",
-      "occurred_at": "2026-08-11T21:16:44.664Z",
+      "id": "a948d286-8549-4c3d-93be-fa5d6f3ad0bd",
+      "occurred_at": "2026-08-11T21:28:21.088Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/subagent/process-termination.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
+      }
+    },
+    {
+      "id": "0d7fa31d-56ff-4067-a72f-c1cc85d83220",
+      "occurred_at": "2026-08-11T21:29:53.874Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -33,40 +49,8 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
       }
-    },
-    {
-      "id": "f561efcb-ddc9-46b6-aa43-ae68321da714",
-      "occurred_at": "2026-08-11T21:16:53.847Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/tests/subagent-runner-termination.test.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "ff132bbf-18f5-4efe-97f3-d6a90061bbfd",
-      "occurred_at": "2026-08-11T21:23:29.248Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/tests/distribution/release-publication-preparer.test.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-08-11T21:23:29.308Z"
+  "updated_at": "2026-08-11T21:29:53.931Z"
 }

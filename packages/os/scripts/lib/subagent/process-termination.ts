@@ -2,6 +2,8 @@ import type { ChildProcess } from 'node:child_process';
 
 type SignalableProvider = Pick<ChildProcess, 'pid' | 'kill'>;
 type GroupKill = (pid: number, signal: NodeJS.Signals) => boolean;
+type ScheduleTimeout = (callback: () => void, delayMs: number) => { unref?: () => unknown };
+type ProviderSignal = (provider: SignalableProvider, signal: NodeJS.Signals) => boolean;
 export type ProviderTerminationOutcome = 'timed_out' | 'cancelled';
 
 export function preserveFirstTerminationOutcome(
@@ -9,6 +11,18 @@ export function preserveFirstTerminationOutcome(
   next: ProviderTerminationOutcome,
 ): ProviderTerminationOutcome {
   return current ?? next;
+}
+
+export function scheduleProviderProcessEscalation(
+  provider: SignalableProvider,
+  delayMs = 250,
+  schedule: ScheduleTimeout = (callback, delay) => setTimeout(callback, delay),
+  signal: ProviderSignal = signalProviderProcess,
+): void {
+  const timer = schedule(() => {
+    signal(provider, 'SIGKILL');
+  }, delayMs);
+  timer.unref?.();
 }
 
 export function signalProviderProcess(
