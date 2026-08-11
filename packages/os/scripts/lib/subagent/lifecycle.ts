@@ -18,6 +18,7 @@ export type DurableSubagentStatus =
 export type DurableSubagentRun = {
   runId: string;
   requestId?: string;
+  traceId?: string;
   fingerprint: string;
   provider: string;
   model?: string;
@@ -28,6 +29,7 @@ export type DurableSubagentRun = {
   workspaceOnly?: string | false;
   taskSession?: string;
   branch?: string;
+  rawShellUsed?: boolean;
   cwd: string;
   instructionPath: string;
   command: string[];
@@ -68,6 +70,7 @@ export type DurableSubagentStartInput = {
   workspaceOnly?: string | false;
   taskSession?: string;
   branch?: string;
+  rawShellUsed?: boolean;
   cwd: string;
   instructionPath: string;
   command: string[];
@@ -145,6 +148,7 @@ export function startDurableSubagentRun(
   const starting: DurableSubagentRun = {
     runId,
     ...(input.requestId ? { requestId: input.requestId } : {}),
+    traceId: input.traceId,
     fingerprint: input.fingerprint,
     provider: input.provider,
     ...(input.model ? { model: input.model } : {}),
@@ -155,6 +159,7 @@ export function startDurableSubagentRun(
     ...(input.workspaceOnly !== undefined ? { workspaceOnly: input.workspaceOnly } : {}),
     ...(input.taskSession ? { taskSession: input.taskSession } : {}),
     ...(input.branch ? { branch: input.branch } : {}),
+    ...(input.rawShellUsed !== undefined ? { rawShellUsed: input.rawShellUsed } : {}),
     cwd: input.cwd,
     instructionPath: input.instructionPath,
     command: input.command,

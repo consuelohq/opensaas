@@ -1,6 +1,7 @@
 import { Database } from 'bun:sqlite';
-import { mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 
 import { executeTool } from '../../scripts/lib/facade/executor';
 import type { CommandPlan } from '../../scripts/lib/facade/types';
@@ -187,6 +188,47 @@ async function run(): Promise<unknown> {
       events,
     });
       return { events, recorded, rows: traceRows() };
+    }
+
+    if (scenario === 'durable-subagent') {
+      const binDir = join(home, 'bin');
+      mkdirSync(binDir, { recursive: true });
+      const codex = join(binDir, 'codex');
+      writeFileSync(codex, [
+        '#!/bin/sh',
+        'if [ "$1" = "exec" ] && [ "$2" = "--help" ]; then',
+        '  printf "%s\\n" "Usage: codex exec [OPTIONS] [PROMPT]" "instructions are read from stdin" "--cd <DIR>" "--sandbox <SANDBOX_MODE>" "--json" "-m, --model <MODEL>" "-c, --config <key=value>"',
+        '  exit 0',
+        'fi',
+        'cat >/dev/null',
+        'printf "%s\\n" \'{"type":"item.completed","item":{"id":"item_trace","type":"mcp_tool_call","server":"consuelo","tool":"call","arguments":{"tool":"fs.read","input":{"path":"README.md"}},"result":{"ok":true,"code":"OK"}}}\'',
+        'printf "%s\\n" \'{"type":"item.completed","item":{"id":"item_message","type":"agent_message","text":"durable trace complete"}}\'',
+        'printf "%s\\n" \'{"type":"turn.completed","usage":{"input_tokens":21,"output_tokens":8,"reasoning_output_tokens":3}}\'',
+      ].join('\n'));
+      chmodSync(codex, 0o700);
+      const handoffRoot = join(tmpdir(), 'opensaas-handoffs');
+      mkdirSync(handoffRoot, { recursive: true });
+      const instructionPath = join(handoffRoot, `trace-durable-${process.pid}.md`);
+      writeFileSync(instructionPath, 'Return a durable trace message.');
+      process.env.WORKSPACE_SUBAGENT_CODEX_BIN = codex;
+      try {
+        const result = await executeTool('subagent', {
+          provider: 'codex',
+          action: 'run',
+          policy: 'read',
+          instructionPath,
+          requestId: 'req_durable_trace_persistence',
+        }, stableFacadeOptions());
+        const firstRows = traceRows().filter((row) => row.source === 'subagent');
+        const status = await executeTool('subagent', {
+          action: 'status',
+          runId: (result.data as { runId?: string } | undefined)?.runId,
+        }, stableFacadeOptions());
+        const secondRows = traceRows().filter((row) => row.source === 'subagent');
+        return { result, status, firstRows, secondRows };
+      } finally {
+        rmSync(instructionPath, { force: true });
+      }
     }
 
     if (scenario === 'auth') {

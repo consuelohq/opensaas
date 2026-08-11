@@ -244,6 +244,22 @@ export async function executeSubagent(
     });
   }
 
+  if (policy === 'edit' && !capabilities.edit) {
+    return subagentToolResult(entry, context, {
+      ...resultBase,
+      status: 'not_supported',
+      command: [],
+      stdout: '',
+      stderr: `provider ${provider} does not support edit execution`,
+      exitCode: 1,
+      audit: baseAudit,
+      ok: true,
+      code: 'CAPABILITY_NOT_SUPPORTED',
+      message: `provider ${provider} does not support edit execution`,
+      unsupportedCapabilities: ['edit'],
+    });
+  }
+
   if (action === 'start' && !capabilities.detachedExecution) {
     return subagentToolResult(entry, context, {
       ...resultBase,
@@ -554,6 +570,19 @@ function durableSubagentResult(
     ? run.workspaceOnly
     : false;
   const successfulCancel = action === 'cancel' && status === 'cancelled' && code === 'OK';
+  const rawShellUsed = run.rawShellUsed ?? (provider === 'codex');
+  if (status !== 'starting' && status !== 'running') {
+    const events = parseSubagentTraceEvents(provider, logs.stdout);
+    recordSubagentTraceEventsSafely({
+      provider,
+      parentTraceId: run.traceId || context.traceId,
+      cwd: run.cwd,
+      taskSession: run.taskSession,
+      branch: run.branch,
+      stdoutLogPath: run.stdoutLogPath,
+      events,
+    }, { env: context.env });
+  }
   return subagentToolResult(entry, context, {
     provider,
     ...(run.model ? { model: run.model } : {}),
@@ -584,7 +613,7 @@ function durableSubagentResult(
       ...(run.taskSession ? { taskSession: run.taskSession } : {}),
       ...(run.branch ? { branch: run.branch } : {}),
       workspaceOnly,
-      rawShellUsed: false,
+      rawShellUsed,
     },
     ok: code === 'WAIT_TIMEOUT' || (code === 'OK' && (
       status === 'completed' || status === 'running' || status === 'starting' || successfulCancel
@@ -713,6 +742,7 @@ async function executeCodexLifecycleSubagent(
     workspaceOnly: input.workspaceOnly,
     taskSession: input.audit.taskSession,
     branch: input.audit.branch,
+    rawShellUsed: true,
     cwd: input.cwd,
     instructionPath: stagedInstructionPath,
     command,

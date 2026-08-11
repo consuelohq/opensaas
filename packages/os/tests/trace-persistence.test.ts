@@ -34,6 +34,8 @@ type ScenarioResult = {
   codeCall?: Record<string, unknown>;
   batch?: Record<string, unknown>;
   rows?: TraceRow[];
+  firstRows?: TraceRow[];
+  secondRows?: TraceRow[];
   recent?: { events?: Array<Record<string, unknown>> };
   recorded?: boolean;
   events?: Array<Record<string, unknown>>;
@@ -194,6 +196,30 @@ describe('canonical OS trace persistence', () => {
       output_tokens: 40,
       total_tokens: 150,
     });
+  });
+
+  it('persists durable Codex child events once under the originating trace across later attachments', () => {
+    const output = runScenario('durable-subagent');
+    const result = output.result ?? {};
+    const firstRows = output.firstRows ?? [];
+    const secondRows = output.secondRows ?? [];
+
+    expect(result).toMatchObject({ ok: true, code: 'OK' });
+    expect(firstRows.length).toBeGreaterThanOrEqual(2);
+    expect(firstRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        mcp_trace_id: result.traceId,
+        source: 'subagent',
+        tool: 'codex.fs.read',
+      }),
+      expect.objectContaining({
+        mcp_trace_id: result.traceId,
+        source: 'subagent',
+        tool: 'codex.turn.completed',
+      }),
+    ]));
+    expect(secondRows).toHaveLength(firstRows.length);
+    expect(new Set(secondRows.map((row) => row.mcp_trace_id))).toEqual(new Set([result.traceId as string]));
   });
 
   it('records MISSING_SCOPE without persisting the bearer token', () => {

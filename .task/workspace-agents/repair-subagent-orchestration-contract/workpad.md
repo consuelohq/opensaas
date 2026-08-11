@@ -47,6 +47,8 @@ started: 2026-08-10
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
+- `packages/os/tests/fixtures/trace-persistence-runtime.ts`
+- `packages/os/tests/trace-persistence.test.ts`
 
 
 ## red evidence before production implementation
@@ -68,7 +70,6 @@ started: 2026-08-10
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:30:45 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:37:46 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:38:15 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:38:59 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -117,6 +118,8 @@ started: 2026-08-10
 - 2026-08-11 20:49:39 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 20:54:11 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 20:57:30 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 20:59:32 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:02:56 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -136,6 +139,9 @@ started: 2026-08-10
 - 2026-08-11 20:57:05 `review.run`: passed — OK
 - 2026-08-11 20:57:20 `verify`: passed — OK
 - 2026-08-11 20:57:36 `verify`: passed — OK
+- 2026-08-11 21:02:33 `review.run`: passed — OK
+- 2026-08-11 21:02:44 `verify`: passed — OK
+- 2026-08-11 21:03:02 `verify`: passed — OK
 
 ## key decisions
 
@@ -926,3 +932,31 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamped verify + explicit-file task.push onto current remote task head; no task.pr/task.merge/task.finish.
 
 - 2026-08-11 20:57:30 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Codex third-review adjudication on 1bc9d0d / current 30ff898
+- P2 edit capability enforcement: VALID/BLOCKING. Capability table marks OpenCode/Grok edit=false; OpenCode has a local refusal but Grok still executes. Make the generic capability table authoritative and reject policy=edit whenever capabilities.edit=false before provider invocation. Add table-driven OpenCode+Grok regression.
+- P2 durable trace persistence: VALID/BLOCKING. Durable Codex parser parses child events but does not call recordSubagentTraceEventsSafely; old compact path did. Add durable-runtime trace persistence regression and restore persistence without duplicate rows across repeated attachments.
+- P2 durable audit metadata: PARTIALLY SUPERSEDED by 30ff898. workspaceOnly/taskSession/branch are now persisted and tested. rawShellUsed remains falsely hardcoded false even though the prior synchronous Codex path reported true after invoking the external CLI. Preserve rawShellUsed in durable state; extend metadata regression.
+- Current CI on 30ff will be superseded by these fixes; do not merge while these contract gaps remain.
+
+- 2026-08-11 20:59:32 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 21:00:32 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`
+- 2026-08-11 21:00:32 apply-patch: `packages/os/tests/fixtures/trace-persistence-runtime.ts`
+- 2026-08-11 21:00:32 apply-patch: `packages/os/tests/trace-persistence.test.ts`
+- 2026-08-11 21:01:15 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+- 2026-08-11 21:01:15 apply-patch: `packages/os/scripts/lib/subagent/runtime.ts`
+
+### Codex third-review fixes — green
+- Generic edit capability gate now rejects policy=edit whenever capabilities.edit=false; table-driven OpenCode+Grok regression is green with CAPABILITY_NOT_SUPPORTED/not_supported and no provider launch.
+- Durable runs now persist originating traceId and rawShellUsed. Codex durable starts persist rawShellUsed=true; start/status metadata regression preserves true alongside workspaceOnly/taskSession/branch.
+- Terminal durable responses parse child events and call recordSubagentTraceEventsSafely with the originating run traceId and persisted cwd/taskSession/branch/stdout log. Persistence uses existing stable INSERT OR REPLACE IDs, so repeated terminal attachments do not duplicate child rows.
+- New Bun/SQLite end-to-end durable trace fixture: run persists codex.fs.read + turn.completed under original result.traceId; subsequent status leaves the same child row count and same parent trace.
+- Core lifecycle + public orchestration: 21/21 green (9 + 12).
+- Relevant trace persistence tests: 2/2 green (existing parsed-event persistence + new durable runtime persistence). Full trace suite has two unrelated task-worktree-sensitive fixtures: synthetic task/os branch expectation resolves to this real task branch here, and fail-open context fixture returns NOT_FOUND in this worktree. Neither is owned by this diff; focused owned trace gates are green.
+- Executable discovery: 8/8 green. Distribution runtime bundle: 20/20 green. OS typecheck/syntax green; generated manifests current.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking.
+- Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamped verify + explicit-file task.push onto current remote head. No task.pr/task.merge/task.finish.
+
+- 2026-08-11 21:02:56 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`

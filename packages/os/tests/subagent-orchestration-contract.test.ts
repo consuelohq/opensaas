@@ -325,6 +325,7 @@ describe('subagent orchestration contract', () => {
       expect(started.data.audit.workspaceOnly).toBe('preferred');
       expect(started.data.audit.taskSession).toBe('tsk_metadata_contract');
       expect(started.data.audit.branch).toBe(metadataBranch);
+      expect(started.data.audit.rawShellUsed).toBe(true);
 
       const status = await executeTool('subagent', { action: 'status', runId: started.data.runId }, options(durableHome, env));
       expect(status.data.bundle).toBe('media');
@@ -332,6 +333,7 @@ describe('subagent orchestration contract', () => {
       expect(status.data.audit.workspaceOnly).toBe('preferred');
       expect(status.data.audit.taskSession).toBe('tsk_metadata_contract');
       expect(status.data.audit.branch).toBe(metadataBranch);
+      expect(status.data.audit.rawShellUsed).toBe(true);
     } finally {
       rmSync(durableHome, { recursive: true, force: true });
       rmSync(worktree, { recursive: true, force: true });
@@ -437,6 +439,37 @@ describe('subagent orchestration contract', () => {
         expect(result.data.unsupportedCapabilities).toContain('detachedExecution');
         expect(result.data.command).toEqual([]);
         expect(result.data.runId).toBeUndefined();
+      }
+    } finally {
+      rmSync(durableHome, { recursive: true, force: true });
+      rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects edit policy for providers whose capability table disables edit execution', async () => {
+    const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
+    const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+    try {
+      const instructionPath = writeInstruction(worktree);
+      for (const provider of ['opencode', 'grok'] as const) {
+        const result = await executeTool('subagent', input({
+          provider,
+          action: 'run',
+          policy: 'edit',
+          instructionPath,
+        }), options(worktree, {
+          ...process.env,
+          CONSUELO_HOME: durableHome,
+          WORKSPACE_SUBAGENT_OPENCODE_BIN: join(worktree, 'missing-opencode'),
+          WORKSPACE_SUBAGENT_GROK_BIN: join(worktree, 'missing-grok'),
+        }));
+
+        expect(result.ok).toBe(true);
+        expect(result.code).toBe('CAPABILITY_NOT_SUPPORTED');
+        expect(result.data.status).toBe('not_supported');
+        expect(result.data.capabilities.edit).toBe(false);
+        expect(result.data.unsupportedCapabilities).toContain('edit');
+        expect(result.data.command).toEqual([]);
       }
     } finally {
       rmSync(durableHome, { recursive: true, force: true });
