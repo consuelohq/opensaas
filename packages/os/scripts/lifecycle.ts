@@ -10,6 +10,7 @@ import {
   createBunRuntimeMaterializer,
   createLifecycleEngine,
   createReloadServiceController,
+  lifecycleError,
   lifecycleFailureEnvelope,
   lifecycleReleaseChannels,
   lifecycleSuccessEnvelope,
@@ -639,13 +640,16 @@ export async function runLifecycleCli(
 
   try {
     const environment = dependencies.environment ?? process.env;
-    if (
-      parsed.command === 'update' &&
-      !parsed.check &&
-      environment.XPC_SERVICE_NAME === 'com.consuelo.system'
-    ) {
-      throw new Error(
-        'Consuelo OS cannot run a synchronous update inside its active daemon process. Run the update from Terminal or through the separate lifecycle process.',
+    const runsInsideActiveDaemon =
+      environment.CONSUELO_OS_DAEMON_PROCESS === '1' ||
+      environment.XPC_SERVICE_NAME === 'com.consuelo.system';
+    const mutatesDaemonSynchronously =
+      (parsed.command === 'update' && !parsed.check) ||
+      parsed.command === 'repair';
+    if (runsInsideActiveDaemon && mutatesDaemonSynchronously) {
+      throw lifecycleError(
+        'DAEMON_MUTATION_NOT_ALLOWED',
+        `Consuelo OS cannot run a synchronous ${parsed.command} inside its active daemon process. Run the ${parsed.command} from Terminal or through the separate lifecycle process.`,
       );
     }
     const engine =
