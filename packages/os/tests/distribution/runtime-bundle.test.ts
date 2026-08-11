@@ -843,6 +843,14 @@ describe('runtime bundle contract', () => {
           role: 'runtime',
         }),
         expect.objectContaining({
+          path: 'skills/branch/SKILL.md',
+          role: 'managed-skill',
+        }),
+        expect.objectContaining({
+          path: 'skills/branch/skill.json',
+          role: 'managed-skill',
+        }),
+        expect.objectContaining({
           path: 'scripts/lib/distribution/runtime-bundle.ts',
           role: 'runtime',
         }),
