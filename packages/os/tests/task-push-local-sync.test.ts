@@ -6,13 +6,39 @@ import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 
 const require = createRequire(import.meta.url);
-const { assertApiPushBaseIsSynced, synchronizeApiPushedTaskBranch } = require('../scripts/lib/git');
+const { assertApiPushBaseIsSynced, resolveApiPushSyncTarget, synchronizeApiPushedTaskBranch } = require('../scripts/lib/git');
 
 function git(cwd: string, args: string[], input?: string): string {
   return execFileSync('git', args, { cwd, encoding: 'utf8', input }).trim();
 }
 
 describe('task.push local branch synchronization', () => {
+  it('should keep GitHub credentials out of the fetch URL when the selected repository differs from origin', () => {
+    const root = mkdtempSync(join(tmpdir(), 'task-push-sync-target-'));
+    const branch = 'task/workspace-agents/example';
+    const token = 'test-secret-token';
+    try {
+      git(root, ['init']);
+      git(root, ['remote', 'add', 'origin', 'git@github.com:consuelohq/opensaas.git']);
+
+      const originTarget = resolveApiPushSyncTarget(root, branch, 'consuelohq/opensaas', token);
+      const alternateTarget = resolveApiPushSyncTarget(root, branch, 'example/private-repo', token);
+
+      expect(originTarget).toEqual({
+        remote: 'origin',
+        trackingRef: `refs/remotes/origin/${branch}`,
+        label: 'origin',
+      });
+      expect(alternateTarget.remote).toBe('https://github.com/example/private-repo.git');
+      expect(alternateTarget.remote).not.toContain(token);
+      expect(alternateTarget.trackingRef).toBe(`refs/consuelo/task-push/${branch}`);
+      expect(alternateTarget.env.GIT_CONFIG_VALUE_0).not.toContain(token);
+      expect(alternateTarget.env.GIT_TERMINAL_PROMPT).toBe('0');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('should refresh a stale origin tracking ref before publish when the local task branch matches the GitHub head', () => {
     const root = mkdtempSync(join(tmpdir(), 'task-push-preflight-'));
     const remote = join(root, 'remote.git');
@@ -54,6 +80,61 @@ describe('task.push local branch synchronization', () => {
     }
   });
 
+  it('should synchronize against the selected repository when it differs from local origin', () => {
+    const root = mkdtempSync(join(tmpdir(), 'task-push-selected-repo-'));
+    const origin = join(root, 'origin.git');
+    const selected = join(root, 'selected.git');
+    const producer = join(root, 'producer');
+    const local = join(root, 'local');
+    const branch = 'task/workspace-agents/example';
+    const selectedTrackingRef = `refs/consuelo/task-push/${branch}`;
+    const syncTarget = { remote: selected, trackingRef: selectedTrackingRef, label: 'selected-repo' };
+    try {
+      mkdirSync(producer);
+      git(root, ['init', '--bare', origin]);
+      git(root, ['init', '--bare', selected]);
+      git(producer, ['init']);
+      git(producer, ['config', 'user.email', 'test@example.com']);
+      git(producer, ['config', 'user.name', 'Test']);
+      writeFileSync(join(producer, 'file.txt'), 'base\n');
+      git(producer, ['add', 'file.txt']);
+      git(producer, ['commit', '-m', 'base']);
+      git(producer, ['checkout', '-b', branch]);
+      git(producer, ['remote', 'add', 'origin', origin]);
+      git(producer, ['remote', 'add', 'selected', selected]);
+      git(producer, ['push', '-u', 'origin', branch]);
+      git(producer, ['push', 'selected', branch]);
+      git(root, ['clone', '--branch', branch, origin, local]);
+      const originHead = git(local, ['rev-parse', 'HEAD']);
+
+      writeFileSync(join(producer, 'file.txt'), 'selected previous\n');
+      git(producer, ['add', 'file.txt']);
+      git(producer, ['commit', '-m', 'selected previous']);
+      const selectedPrevious = git(producer, ['rev-parse', 'HEAD']);
+      git(producer, ['push', 'selected', branch]);
+      git(local, ['fetch', selected, selectedPrevious]);
+      git(local, ['reset', '--mixed', selectedPrevious]);
+
+      assertApiPushBaseIsSynced(local, branch, selectedPrevious, syncTarget);
+      expect(git(local, ['rev-parse', selectedTrackingRef])).toBe(selectedPrevious);
+      expect(git(local, ['rev-parse', `refs/remotes/origin/${branch}`])).toBe(originHead);
+
+      writeFileSync(join(producer, 'file.txt'), 'selected next\n');
+      git(producer, ['add', 'file.txt']);
+      git(producer, ['commit', '-m', 'selected next']);
+      const selectedNext = git(producer, ['rev-parse', 'HEAD']);
+      git(producer, ['push', 'selected', branch]);
+
+      synchronizeApiPushedTaskBranch(local, branch, selectedPrevious, selectedNext, syncTarget);
+
+      expect(git(local, ['rev-parse', `refs/heads/${branch}`])).toBe(selectedNext);
+      expect(git(local, ['rev-parse', selectedTrackingRef])).toBe(selectedNext);
+      expect(git(local, ['rev-parse', `refs/remotes/origin/${branch}`])).toBe(originHead);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('should reject a stale local task branch during preflight when the GitHub head is newer', () => {
     const root = mkdtempSync(join(tmpdir(), 'task-push-preflight-stale-local-'));
     const remote = join(root, 'remote.git');
@@ -89,7 +170,10 @@ describe('task.push local branch synchronization', () => {
 
   it('should run ref preflight before any GitHub write when task-push publishes files', () => {
     const source = readFileSync(join(import.meta.dirname, '../scripts/task-push.js'), 'utf8');
-    const preflight = source.indexOf('assertApiPushBaseIsSynced(repoRoot, branch, branchRef.object.sha)');
+    expect(source).toContain('resolveApiPushSyncTarget(repoRoot, branch, args.repo, token)');
+    expect(source).toContain('assertApiPushBaseIsSynced(repoRoot, branch, branchRef.object.sha, syncTarget)');
+    expect(source).toContain('synchronizeApiPushedTaskBranch(repoRoot, branch, branchRef.object.sha, commit.sha, syncTarget)');
+    const preflight = source.indexOf('assertApiPushBaseIsSynced(repoRoot, branch, branchRef.object.sha, syncTarget)');
     expect(preflight).toBeGreaterThan(-1);
     for (const writeCall of ['createBlob({', 'createTree({', 'createCommit({', 'updateBranchRef({']) {
       expect(preflight).toBeLessThan(source.indexOf(writeCall));
