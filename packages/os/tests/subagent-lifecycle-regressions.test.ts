@@ -18,6 +18,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   cancelDurableSubagentRun,
+  readDurableSubagentLogs,
   reconcileDurableSubagentRun,
   resolveSubagentRunDirectory,
   startDurableSubagentRun,
@@ -295,6 +296,95 @@ describe('durable subagent lifecycle regressions', () => {
     }));
     expect(completed.status).toBe('completed');
     expect(completed.finalMessage).toBe('fast exit complete');
+
+    rmSync(home, { recursive: true, force: true });
+  });
+
+  it('does not let a stale reconciler overwrite a newer terminal state', () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-stale-reconcile-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_abcdefabcdefabcdefabcdef';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    writeFileSync(stdoutLogPath, '');
+    writeFileSync(stderrLogPath, '');
+    const stale: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_stale_reconcile',
+      fingerprint: 'stale-reconcile',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      pid: 99_999_999,
+      status: 'running',
+      exitCode: 1,
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now() - 5_000,
+      stdoutLogPath,
+      stderrLogPath,
+    };
+    const completed: DurableSubagentRun = {
+      ...stale,
+      status: 'completed',
+      exitCode: 0,
+      finalMessage: 'newer terminal result',
+      updatedAt: Date.now(),
+    };
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(completed, null, 2));
+
+    const reconciled = reconcileDurableSubagentRun(stale, environment, () => ({ completed: false }));
+    expect(reconciled.status).toBe('completed');
+    expect(reconciled.finalMessage).toBe('newer terminal result');
+    const persisted = JSON.parse(readFileSync(join(runDirectory, 'state.json'), 'utf8')) as DurableSubagentRun;
+    expect(persisted.status).toBe('completed');
+    expect(persisted.finalMessage).toBe('newer terminal result');
+
+    rmSync(home, { recursive: true, force: true });
+  });
+
+  it('parses the full durable log while keeping attachment log reads bounded', () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-full-parse-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_1234567890abcdef12345678';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const fullLog = `EARLY_TOOL_EVENT\n${'x'.repeat(9_500)}\nFINAL_EVENT\n`;
+    writeFileSync(stdoutLogPath, fullLog);
+    writeFileSync(stderrLogPath, '');
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_full_parse',
+      fingerprint: 'full-parse',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      status: 'running',
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now() - 5_000,
+      stdoutLogPath,
+      stderrLogPath,
+    };
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    let parsedStdout = '';
+    reconcileDurableSubagentRun(run, environment, (stdout) => {
+      parsedStdout = stdout;
+      return { completed: false };
+    });
+    expect(parsedStdout).toContain('EARLY_TOOL_EVENT');
+    expect(parsedStdout.length).toBe(fullLog.length);
+    const bounded = readDurableSubagentLogs(run);
+    expect(bounded.stdout.length).toBeLessThanOrEqual(8_000);
+    expect(bounded.stdout).not.toContain('EARLY_TOOL_EVENT');
 
     rmSync(home, { recursive: true, force: true });
   });

@@ -312,10 +312,15 @@ export function reconcileDurableSubagentRun(
 ): DurableSubagentRun {
   if (run.status === 'cancelled' || isTerminal(run.status)) return run;
   const statePath = path.join(resolveSubagentRunDirectory(run.runId, env), 'state.json');
+  const persisted = readState(statePath);
+  if (persisted?.runId === run.runId) {
+    if (persisted.status === 'cancelled' || isTerminal(persisted.status)) return persisted;
+    if (persisted.updatedAt > run.updatedAt) run = persisted;
+  }
   const now = Date.now();
   const exit = readExitMarker(run);
-  const stdout = readBoundedLog(run.stdoutLogPath);
-  const stderr = readBoundedLog(run.stderrLogPath);
+  const stdout = readFullLog(run.stdoutLogPath);
+  const stderr = readFullLog(run.stderrLogPath);
   const parsed = parser(stdout, stderr);
 
   if (exit && isOwnedExitMarker(run, exit)) {
@@ -329,14 +334,12 @@ export function reconcileDurableSubagentRun(
       ...(parsed.usage ? { usage: parsed.usage } : {}),
       ...(exit.error ? { error: exit.error } : {}),
     };
-    writeState(statePath, updated);
-    return updated;
+    return persistReconciledState(statePath, run, updated, true);
   }
 
   if (!run.pid && now - run.startedAt < STARTUP_GRACE_MS) {
     const updated = withParsed(run, 'starting', parsed, now);
-    writeState(statePath, updated);
-    return updated;
+    return persistReconciledState(statePath, run, updated);
   }
 
   const runnerAlive = run.pid ? isProcessAlive(run.pid) : false;
@@ -352,14 +355,12 @@ export function reconcileDurableSubagentRun(
   if (ownerIsCurrent) {
     if (run.status === 'running') return run;
     const updated = withParsed(run, 'running', parsed, now);
-    writeState(statePath, updated);
-    return updated;
+    return persistReconciledState(statePath, run, updated);
   }
 
   if (now - run.startedAt < STARTUP_GRACE_MS) {
     const updated = withParsed(run, 'starting', parsed, now);
-    writeState(statePath, updated);
-    return updated;
+    return persistReconciledState(statePath, run, updated);
   }
 
   const updated = withParsed(
@@ -373,8 +374,7 @@ export function reconcileDurableSubagentRun(
         ? 'runner ownership marker is missing or stale; no process was terminated'
         : 'runner exited without a durable exit marker; no provider was respawned',
   );
-  writeState(statePath, updated);
-  return updated;
+  return persistReconciledState(statePath, run, updated);
 }
 
 export async function waitForDurableSubagentRun(
@@ -443,8 +443,27 @@ export function cancelDurableSubagentRun(run: DurableSubagentRun, env: NodeJS.Pr
   return reconcileDurableSubagentRun(current, env, parser);
 }
 
-export function readDurableSubagentLogs(run: DurableSubagentRun): { stdout: string; stderr: string } {
-  return { stdout: readBoundedLog(run.stdoutLogPath), stderr: readBoundedLog(run.stderrLogPath) };
+export function readDurableSubagentLogs(
+  run: DurableSubagentRun,
+  options: { full?: boolean } = {},
+): { stdout: string; stderr: string } {
+  const readLog = options.full ? readFullLog : readBoundedLog;
+  return { stdout: readLog(run.stdoutLogPath), stderr: readLog(run.stderrLogPath) };
+}
+
+function persistReconciledState(
+  statePath: string,
+  previous: DurableSubagentRun,
+  candidate: DurableSubagentRun,
+  authoritativeTerminal = false,
+): DurableSubagentRun {
+  const current = readState(statePath);
+  if (current?.runId === previous.runId) {
+    if (current.status === 'cancelled' || isTerminal(current.status)) return current;
+    if (!authoritativeTerminal && current.updatedAt > previous.updatedAt) return current;
+  }
+  writeState(statePath, candidate);
+  return candidate;
 }
 
 function withParsed(
@@ -487,6 +506,10 @@ function readBoundedLog(filePath: string): string {
       return buffer.subarray(0, bytes).toString('utf8');
     } finally { fs.closeSync(fd); }
   } catch { return ''; }
+}
+
+function readFullLog(filePath: string): string {
+  try { return fs.readFileSync(filePath, 'utf8'); } catch { return ''; }
 }
 
 function readState(filePath: string): DurableSubagentRun | null {

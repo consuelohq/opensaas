@@ -44,10 +44,13 @@ started: 2026-08-10
 
 ## files changed
 
-- `packages/os/scripts/subagent.ts`
+- `packages/os/scripts/lib/subagent/lifecycle.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
-- `packages/os/tests/subagent-orchestration-contract.test.ts`
-- `packages/os/tests/subagent-cli.test.ts`
+- `packages/os/scripts/lib/subagent/process-termination.ts`
+- `packages/os/scripts/lib/subagent/runner.ts`
+- `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+- `packages/os/tests/subagent-runner-termination.test.ts`
+- `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 
 
 ## red evidence before production implementation
@@ -64,15 +67,15 @@ started: 2026-08-10
 
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/scripts/subagent.ts`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
+- `packages/os/tests/subagent-cli.test.ts`
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
 - `packages/os/tests/trace-persistence.test.ts`
 
 ## workspace-owned: activity log
 
-- 2026-08-10 03:38:59 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
-- 2026-08-10 03:39:44 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:41:01 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:41:43 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 03:42:26 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -121,6 +124,8 @@ started: 2026-08-10
 - 2026-08-11 21:02:56 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:04:38 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 21:08:49 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:10:58 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 21:15:45 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -146,6 +151,9 @@ started: 2026-08-10
 - 2026-08-11 21:08:22 `review.run`: passed — OK
 - 2026-08-11 21:08:36 `verify`: passed — OK
 - 2026-08-11 21:08:55 `verify`: passed — OK
+- 2026-08-11 21:15:20 `review.run`: passed — OK
+- 2026-08-11 21:15:31 `verify`: passed — OK
+- 2026-08-11 21:15:52 `verify`: passed — OK
 
 ## key decisions
 
@@ -993,3 +1001,35 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: stamp + explicit-file task.push onto current remote head 210ff15; then freeze code and wait for fresh CI and Codex review on exact new SHA. No task.pr/task.merge/task.finish.
 
 - 2026-08-11 21:08:49 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Codex fifth-review adjudication on 210ff / current 49e1654
+- P1 stale reconciler can overwrite terminal state: VALID/BLOCKING. Add deterministic stale-snapshot regression: persist a newer completed state, then reconcile an older running snapshot; reconciliation must return/preserve the newer terminal state. Guard terminal/unknown writes with fresh durable state + marker checks so an attachment never downgrades newer state.
+- P2 parse full durable log before truncating responses: VALID/BLOCKING. Keep status/log response payloads bounded to 8k, but reconciliation summaries and trace persistence must parse the full JSONL. Add >8k regression with an early tool event that must survive audit parsing.
+- P1 Windows process-group kill fallback: VALID/BLOCKING. Extract provider signaling helper; on Windows (or if negative-PID group signal fails) fall back to ChildProcess.kill(signal). Add injected win32/failing-group unit coverage.
+- Current 49e CI is superseded; freeze merge until these fixes pass and a fresh Codex review targets the next exact head.
+
+- 2026-08-11 21:10:58 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 21:10:59 apply-patch: `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+- 2026-08-11 21:10:59 apply-patch: `packages/os/tests/fixtures/trace-persistence-runtime.ts`
+- 2026-08-11 21:10:59 apply-patch: `packages/os/tests/subagent-runner-termination.test.ts`
+- 2026-08-11 21:11:48 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+- 2026-08-11 21:11:48 apply-patch: `packages/os/scripts/lib/subagent/runtime.ts`
+- 2026-08-11 21:11:48 apply-patch: `packages/os/scripts/lib/subagent/process-termination.ts`
+- 2026-08-11 21:11:48 apply-patch: `packages/os/scripts/lib/subagent/runner.ts`
+
+- 2026-08-11 21:12:54 apply-patch: `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+- 2026-08-11 21:14:21 apply-patch: `packages/os/scripts/lib/subagent/runner.ts`
+
+### Codex fifth-review fixes — green
+- Stale reconciliation: reconcile now refreshes newer durable state before decisions and routes writes through a fresh-state guard; deterministic stale running snapshot can no longer overwrite a newer completed state.
+- Full-log parsing: reconciliation and terminal trace persistence read complete stdout/stderr for parsing/audit, while public status/log payloads remain bounded to 8k. >9.5k lifecycle regression and padded end-to-end trace fixture both recover the early event.
+- Cross-platform termination: new `process-termination.ts` signals the POSIX process group when available, falls back to direct ChildProcess.kill if group signalling fails, and uses direct child signalling on win32. Unit coverage is green for Windows and POSIX fallback.
+- Raw runner bootstrap requires explicit `.ts` import because the detached runner is executed by `process.execPath` and Node raw-TS resolution does not resolve extensionless TS siblings. Integration regression caught this; explicit import restored all detached starts.
+- Core lifecycle + public contract + CLI + termination: 27/27 green (11 + 13 + 1 + 2).
+- Relevant trace persistence: 2/2 green. Executable discovery 8/8. Distribution runtime bundle 20/20. OS typecheck/syntax green; generated manifests current.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking.
+- Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamp + explicit-file task.push onto current remote head 49e1654; then freeze code and require fresh CI + Codex review on exact new SHA before any merge.
+
+- 2026-08-11 21:15:45 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`

@@ -593,7 +593,8 @@ function durableSubagentResult(
     ? [logs.stderr, run.error].filter(Boolean).join('\n')
     : logs.stderr;
   if (status !== 'starting' && status !== 'running') {
-    const events = parseSubagentTraceEvents(provider, logs.stdout);
+    const auditLogs = readDurableSubagentLogs(run, { full: true });
+    const events = parseSubagentTraceEvents(provider, auditLogs.stdout);
     recordSubagentTraceEventsSafely({
       provider,
       parentTraceId: run.traceId || context.traceId,

@@ -2,6 +2,8 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { signalProviderProcess } from './process-termination.ts';
+
 type LaunchSpec = {
   runId: string;
   ownerToken: string;
@@ -62,11 +64,11 @@ function finish(
 
 function terminate(outcome: 'timed_out' | 'cancelled'): void {
   requestedOutcome = outcome;
-  if (provider?.pid) {
-    try { process.kill(-provider.pid, 'SIGTERM'); } catch { /* The provider may already be gone. */ }
+  if (provider) {
+    signalProviderProcess(provider, 'SIGTERM');
     setTimeout(() => {
-      if (provider?.pid && !finished) {
-        try { process.kill(-provider.pid, 'SIGKILL'); } catch { /* The provider may already be gone. */ }
+      if (provider && !finished) {
+        signalProviderProcess(provider, 'SIGKILL');
       }
     }, 250).unref();
   }

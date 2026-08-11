@@ -202,6 +202,7 @@ async function run(): Promise<unknown> {
         'fi',
         'cat >/dev/null',
         'printf "%s\\n" \'{"type":"item.completed","item":{"id":"item_trace","type":"mcp_tool_call","server":"consuelo","tool":"call","arguments":{"tool":"fs.read","input":{"path":"README.md"}},"result":{"ok":true,"code":"OK"}}}\'',
+        `printf "%s\\n" '{"type":"item.completed","item":{"id":"item_padding","type":"agent_message","text":"${'x'.repeat(9_000)}"}}'`,
         'printf "%s\\n" \'{"type":"item.completed","item":{"id":"item_message","type":"agent_message","text":"durable trace complete"}}\'',
         'printf "%s\\n" \'{"type":"turn.completed","usage":{"input_tokens":21,"output_tokens":8,"reasoning_output_tokens":3}}\'',
       ].join('\n'));

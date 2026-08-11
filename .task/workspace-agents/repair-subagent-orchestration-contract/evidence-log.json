@@ -3,173 +3,13 @@
   "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
   "events": [
     {
-      "id": "a946974d-4b17-420f-8b14-4a72cd8bd1fc",
-      "occurred_at": "2026-08-11T20:54:56.842Z",
+      "id": "a738ab21-add1-4c0e-9bd6-24508569ca43",
+      "occurred_at": "2026-08-11T21:12:47.496Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/os/scripts/lib/facade/executor.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "870aa676-8d55-4950-957d-33d6d56c06d7",
-      "occurred_at": "2026-08-11T20:55:27.692Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/scripts/lib/subagent/lifecycle.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "ab832e65-e0b9-46c8-af80-1fb28ad4c466",
-      "occurred_at": "2026-08-11T20:55:35.096Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/scripts/lib/subagent/lifecycle.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "36723012-5b59-45eb-82d4-613cd2154323",
-      "occurred_at": "2026-08-11T20:58:22.065Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/tests/trace-persistence.test.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "ce45adb2-c118-4e3f-bffd-b04cff36001a",
-      "occurred_at": "2026-08-11T20:59:32.886Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/tests/fixtures/trace-persistence-runtime.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "1d7a50ea-072f-4e66-a4d3-0a2822fbdbb5",
-      "occurred_at": "2026-08-11T20:59:49.946Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/scripts/lib/subagent/runtime.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "543434b7-2143-4e44-94fc-a40d2f023308",
-      "occurred_at": "2026-08-11T20:59:57.639Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/tests/subagent-orchestration-contract.test.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "d08aa726-aed1-4818-b47b-b7cc4414f442",
-      "occurred_at": "2026-08-11T21:04:38.635Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/scripts/subagent.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "dd6402d0-3915-4727-b3b7-4bbaaa8b1465",
-      "occurred_at": "2026-08-11T21:05:43.568Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/tests/subagent-orchestration-contract.test.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "0e076e1a-a623-4234-aee4-b9a35fcb2671",
-      "occurred_at": "2026-08-11T21:05:54.135Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/scripts/lib/subagent/lifecycle.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/repair-subagent-orchestration-contract"
-      }
-    },
-    {
-      "id": "7fe3bdbc-807a-4193-9569-1b84cb4c2695",
-      "occurred_at": "2026-08-11T21:06:33.687Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/os/scripts/lib/subagent/runtime.ts",
+      "file_path": "packages/os/tests/subagent-lifecycle-regressions.test.ts",
       "status": "observed",
       "confidence_delta": 0.03,
       "worktree_id": "task/workspace-agents/repair-subagent-orchestration-contract",
@@ -180,5 +20,5 @@
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-08-11T21:06:33.743Z"
+  "updated_at": "2026-08-11T21:12:47.552Z"
 }
