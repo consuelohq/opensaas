@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -259,7 +260,8 @@ contractDescribe('workspace edge route seed contract', () => {
     }) as {
       routes: Array<{
         pathPrefix: string;
-        target: { kind: string; siteId?: string; manifestKey?: string };
+        auth: string;
+        target: { kind: string; siteId?: string; manifestKey?: string; versionId?: string };
       }>;
     };
 
@@ -281,6 +283,11 @@ contractDescribe('workspace edge route seed contract', () => {
       '/environments',
       '/secrets',
     ]);
+    expect(
+      snapshotRoutes
+        .filter((route) => route.target.siteId === 'traces')
+        .map((route) => route.auth),
+    ).toEqual(Array(5).fill('workspace-session'));
     expect(snapshotRoutes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/tools',
@@ -305,6 +312,148 @@ contractDescribe('workspace edge route seed contract', () => {
         }),
       }),
     ]));
+  });
+
+  it('should preserve live node and connector routing when a Site publication updates the hostname row', async () => {
+    const seed = await loadWorkspaceEdgeRouteSeedContract();
+    const connectorTarget = {
+      kind: 'os-connector',
+      connectorId: 'connector_primary',
+      connectorStatus: 'connected',
+      tunnelOriginUrl: 'https://connector-primary.example.test',
+    } as const;
+    const existingRecord = {
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      defaultNodeId: 'node_primary',
+      nodeTargets: [{
+        nodeId: 'node_primary',
+        connectorId: 'connector_primary',
+        connectorStatus: 'connected',
+        tunnelOriginUrl: 'https://connector-primary.example.test',
+        state: 'active',
+        lastSeenAt: 1_786_486_000_000,
+        heartbeatTtlMs: 90_000,
+      }],
+      routes: [
+        {
+          surface: 'os',
+          pathPrefix: '/gtm',
+          auth: 'workspace-session',
+          status: 'active',
+          target: connectorTarget,
+        },
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: connectorTarget,
+        },
+      ],
+      updatedAt: '2026-08-11T23:00:00.000Z',
+    };
+
+    const routeSql = seed.createWorkspaceEdgeRouteSeedSql({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      siteSnapshotKey: 'sites/workspace_internal/launcher/sha256-release/index.html',
+      siteVersionId: 'sha256-release',
+      publishedSiteIds: [
+        'launcher',
+        'artifacts',
+        'traces',
+        'diffs',
+        'docs',
+        'configuration',
+        'tools',
+        'environments',
+        'secrets',
+      ],
+    });
+
+    const state = JSON.parse(execFileSync('bun', ['-e', `
+      import { Database } from 'bun:sqlite';
+      const db = new Database(':memory:');
+      db.exec(\`
+        CREATE TABLE workspace_route_registry (
+          hostname TEXT PRIMARY KEY,
+          workspace_id TEXT NOT NULL,
+          workspace_slug TEXT NOT NULL,
+          workspace_host TEXT NOT NULL,
+          base_domain TEXT NOT NULL,
+          route_path_prefix TEXT NOT NULL,
+          route_surface TEXT NOT NULL,
+          route_status TEXT NOT NULL,
+          route_target_kind TEXT NOT NULL,
+          target_origin_url TEXT NOT NULL,
+          connector_id TEXT,
+          connector_status TEXT,
+          record_json TEXT NOT NULL,
+          revoked_at TEXT,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+      \`);
+      const existing = ${JSON.stringify(existingRecord)};
+      db.prepare(\`
+        INSERT INTO workspace_route_registry (
+          hostname, workspace_id, workspace_slug, workspace_host, base_domain,
+          route_path_prefix, route_surface, route_status, route_target_kind,
+          target_origin_url, connector_id, connector_status, record_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      \`).run(
+        existing.hostname,
+        existing.workspaceId,
+        existing.workspaceSlug,
+        existing.hostname,
+        existing.baseDomain,
+        '/gtm',
+        'os',
+        'active',
+        'os-connector',
+        ${JSON.stringify(connectorTarget.tunnelOriginUrl)},
+        ${JSON.stringify(connectorTarget.connectorId)},
+        ${JSON.stringify(connectorTarget.connectorStatus)},
+        JSON.stringify(existing),
+      );
+      db.exec(${JSON.stringify(routeSql)});
+      const row = db.query(\`
+        SELECT connector_id, connector_status, record_json
+        FROM workspace_route_registry
+        WHERE hostname = 'internal.consuelohq.com'
+      \`).get();
+      process.stdout.write(JSON.stringify(row));
+      db.close();
+    `], { encoding: 'utf8' })) as {
+      connector_id: string | null;
+      connector_status: string | null;
+      record_json: string;
+    };
+    const row = state;
+    const record = JSON.parse(row.record_json) as {
+      defaultNodeId?: string;
+      nodeTargets?: Array<{ nodeId: string; lastSeenAt: number }>;
+      routes: Array<{ pathPrefix: string; target: { kind: string; versionId?: string } }>;
+    };
+
+    expect(row.connector_id).toBe('connector_primary');
+    expect(row.connector_status).toBe('connected');
+    expect(record.defaultNodeId).toBe('node_primary');
+    expect(record.nodeTargets).toEqual([
+      expect.objectContaining({ nodeId: 'node_primary', lastSeenAt: 1_786_486_000_000 }),
+    ]);
+    expect(record.routes.filter((route) => route.pathPrefix === '/gtm')).toHaveLength(1);
+    expect(record.routes.filter((route) => route.pathPrefix === '/mcp')).toHaveLength(1);
+    expect(record.routes.find((route) => route.pathPrefix === '/trace-burn-intelligence')).toMatchObject({
+      target: { kind: 'site-snapshot', versionId: 'sha256-release' },
+    });
   });
 
   it('should reject invalid publication sets before creating route records', async () => {
@@ -357,7 +506,11 @@ contractDescribe('workspace edge route seed contract', () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
     const appOnlySql = seed.createWorkspaceEdgeRouteSeedSql();
 
-    expect(appOnlySql).toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
+    expect(appOnlySql).toMatch(/INSERT INTO workspace_route_registry/i);
+    expect(appOnlySql).toMatch(/ON CONFLICT\(hostname\) DO UPDATE SET/i);
+    expect(appOnlySql).not.toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
+    expect(appOnlySql).toMatch(/json_each\(workspace_route_registry\.record_json/);
+    expect(appOnlySql).toMatch(/os-connector/);
     expect(appOnlySql).toMatch(/internal\.consuelohq\.com/);
     expect(appOnlySql).not.toMatch(/workspace_connectors/i);
     expect(appOnlySql).not.toMatch(/api[_-]?key|access[_-]?token|refresh[_-]?token|credential[_-]?value|secret[_-]?value/i);
@@ -421,7 +574,7 @@ contractDescribe('workspace edge route seed contract', () => {
     });
 
     expect(osSql).not.toMatch(/INSERT OR REPLACE INTO workspace_connectors/i);
-    expect(osSql).not.toMatch(/os-connector/);
+    expect(osSql).not.toContain('"kind":"os-connector"');
   });
 
   it('should parse CLI flag values only when the next token is a value', async () => {

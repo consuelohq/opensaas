@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4e5fd8c23e86",
+  "tmuxSession": "opensaas-os-roll-out-observability-gateway-and-internal-work-4e5fd8c2",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/roll-out-observability-gateway-and-internal-workspace-surfaces",
+  "branch": "task/os/roll-out-observability-gateway-and-internal-workspace-surfaces",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces",
+  "prNumber": 1794,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1794",
+  "createdAt": "2026-08-11T22:07:55.718Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces/.task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/session.json"
+}

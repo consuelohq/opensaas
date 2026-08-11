@@ -1588,6 +1588,10 @@ bun ./scripts/os.ts sites publish \
 
 For `spec`, `plan`, and `guide`, render typed `content.json` through the canonical Consuelo reader shell before publishing. For an existing page, first read the current version from `sites/.data/pages/registry.json`, then publish with `--base-version <currentVersionId>`. A missing or stale base version is rejected. `--base-revision` is accepted as an alias for `--base-version`; `--force-publish` is reserved for intentional overwrite/recovery.
 
+The generated Observability traces site is intentionally different from ordinary reader pages. `scripts/lib/observability-traces-site.ts` packages the proven Trace Burn Intelligence v38 shell and interaction assets from `assets/observability-traces-v38` without redesigning them. The serialized development trace seed is replaced with an empty seed before those assets enter OS source. At runtime the canonical history/live client is wired only to authenticated same-origin `/gateway/traces/recent`; the static site must not contain a localhost, Tailnet, tunnel-origin, credential, or serialized production-trace fallback. Keep the copied v38 asset hashes protected by `tests/observability-traces-site.test.ts` so visual/interaction drift is explicit.
+
+Workspace-edge snapshot versions cover the complete published site set, not just the launcher HTML. A child-only change such as a new traces page must therefore create a new immutable snapshot version/key before R2 publication.
+
 ### Sites section patching and leases
 
 Use `sites patch` when an agent is changing one section of an existing typed page instead of republishing the whole page:

@@ -903,9 +903,12 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).not.toContain('header_up X-Forwarded-Host');
     expect(caddyfile).not.toContain('header_up X-Forwarded-Proto');
     expect(caddyfile).toContain('dial_timeout 5s');
-    expect(caddyfile).toContain('response_header_timeout 15s');
-    expect(caddyfile).toContain('read_timeout 60s');
-    expect(caddyfile).toContain('write_timeout 60s');
+    // The MCP application owns tool execution deadlines (up to 10 minutes today). Caddy must not
+    // terminate a healthy loopback request first; doing so makes a long-running tool look like an
+    // OS crash even though the daemon continues and finishes the operation behind the 504.
+    expect(caddyfile).not.toContain('response_header_timeout');
+    expect(caddyfile).not.toContain('read_timeout');
+    expect(caddyfile).not.toContain('write_timeout');
     expect(caddyfile).not.toContain('client_auth');
     expect(caddyfile).not.toContain('reverse_proxy 0.0.0.0:8850');
     expect(caddyfile).not.toContain('reverse_proxy :8850');
