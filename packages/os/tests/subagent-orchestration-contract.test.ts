@@ -307,6 +307,38 @@ describe('subagent orchestration contract', () => {
     }
   });
 
+  it('rejects start for providers without detached execution', async () => {
+    const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
+    const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+    try {
+      const instructionPath = writeInstruction(worktree);
+      for (const provider of ['pi', 'opencode', 'grok'] as const) {
+        const result = await executeTool('subagent', input({
+          provider,
+          action: 'start',
+          instructionPath,
+        }), options(worktree, {
+          ...process.env,
+          CONSUELO_HOME: durableHome,
+          WORKSPACE_SUBAGENT_PI_BIN: join(worktree, 'missing-pi'),
+          WORKSPACE_SUBAGENT_OPENCODE_BIN: join(worktree, 'missing-opencode'),
+          WORKSPACE_SUBAGENT_GROK_BIN: join(worktree, 'missing-grok'),
+        }));
+
+        expect(result.ok).toBe(true);
+        expect(result.code).toBe('CAPABILITY_NOT_SUPPORTED');
+        expect(result.data.status).toBe('not_supported');
+        expect(result.data.capabilities.detachedExecution).toBe(false);
+        expect(result.data.unsupportedCapabilities).toContain('detachedExecution');
+        expect(result.data.command).toEqual([]);
+        expect(result.data.runId).toBeUndefined();
+      }
+    } finally {
+      rmSync(durableHome, { recursive: true, force: true });
+      rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
   it('documents attach-only lifecycle and merge-sensitive task boundaries', () => {
     const description = getToolManifestEntry('subagent')?.description || '';
     expect(description).toContain('task.push publishes only the task branch');

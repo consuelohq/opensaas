@@ -336,7 +336,7 @@ export function reconcileDurableSubagentRun(
     return updated;
   }
 
-  if (runnerAlive && now - run.startedAt < STARTUP_GRACE_MS) {
+  if (now - run.startedAt < STARTUP_GRACE_MS) {
     const updated = withParsed(run, 'starting', parsed, now);
     writeState(statePath, updated);
     return updated;

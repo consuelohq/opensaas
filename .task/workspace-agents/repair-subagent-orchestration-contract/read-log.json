@@ -43,7 +43,8 @@
     "packages/workspace/scripts/lib/facade/executor.ts",
     "packages/workspace/scripts/lib/facade/schemas.ts",
     "packages/workspace/scripts/subagent.ts",
+    "packages/workspace/scripts/task-push.js",
     "packages/workspace/tests/facade/facade.test.ts"
   ],
-  "updatedAt": "2026-08-11T20:42:32.148Z"
+  "updatedAt": "2026-08-11T20:50:51.512Z"
 }

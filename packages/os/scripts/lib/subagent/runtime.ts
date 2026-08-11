@@ -244,18 +244,18 @@ export async function executeSubagent(
     });
   }
 
-  if (action !== 'run' && action !== 'start' && provider !== 'codex') {
+  if (action === 'start' && !capabilities.detachedExecution) {
     return subagentToolResult(entry, context, {
       ...resultBase,
       status: 'not_supported',
       command: [],
       stdout: '',
-      stderr: `action ${action} requires the Codex durable runner`,
+      stderr: `provider ${provider} does not support detached subagent execution`,
       exitCode: 1,
       audit: baseAudit,
       ok: true,
       code: 'CAPABILITY_NOT_SUPPORTED',
-      message: `provider ${provider} does not support durable subagent action ${action}`,
+      message: `provider ${provider} does not support durable subagent action start`,
       unsupportedCapabilities: ['detachedExecution'],
     });
   }

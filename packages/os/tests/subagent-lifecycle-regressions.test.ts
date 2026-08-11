@@ -1,5 +1,6 @@
 import {
   chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -156,7 +157,11 @@ describe('durable subagent lifecycle regressions', () => {
       ].join('\n');
       const env = { ...makeEnvironment(home, counterPath), CLAIM_BARRIER_DIR: barrierPath };
       const outputs = await Promise.all(Array.from({ length: 8 }, () => runConcurrentStarter(code, env)));
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      const spawnDeadline = Date.now() + 2_000;
+      while (!existsSync(counterPath) && Date.now() < spawnDeadline) {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      expect(existsSync(counterPath)).toBe(true);
       const spawnLines = readFileSync(counterPath, 'utf8').trim().split('\n').filter(Boolean);
       const results = outputs.map((output) => JSON.parse(output) as {
         ok: boolean;
@@ -244,6 +249,54 @@ describe('durable subagent lifecycle regressions', () => {
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
+  });
+
+  it('preserves startup grace when a published runner exits before its exit marker is observed', () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-fast-exit-grace-'));
+    const environment = makeEnvironment(home);
+    const executable = writeExecutable(home, 'fast-exit-provider', '#!/bin/sh\nexit 0\n');
+    const instructionPath = join(home, 'instructions.md');
+    writeFileSync(instructionPath, 'read only');
+    const input = startInput(executable, home, instructionPath, 'fast-exit-grace');
+    let claimed: DurableSubagentRun | undefined;
+
+    expect(() => startDurableSubagentRun(input, {
+      beforeRunnerSpawn: (run) => {
+        claimed = run;
+        throw new Error('capture claimed run before runner spawn');
+      },
+    })).toThrow('capture claimed run before runner spawn');
+    expect(claimed).toBeDefined();
+
+    const deadRunnerPid = 99_999_999;
+    const published = {
+      ...claimed,
+      pid: deadRunnerPid,
+      status: 'running',
+      startedAt: Date.now(),
+      updatedAt: Date.now(),
+    } as DurableSubagentRun;
+    const runDirectory = resolveSubagentRunDirectory(published.runId, environment);
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(published, null, 2));
+
+    const duringGrace = reconcileDurableSubagentRun(published, environment, () => ({ completed: false }));
+    expect(duringGrace.status).toBe('starting');
+
+    writeFileSync(published.exitMarkerPath!, JSON.stringify({
+      runId: published.runId,
+      ownerToken: published.ownerToken,
+      runnerPid: deadRunnerPid,
+      outcome: 'completed',
+      exitCode: 0,
+    }, null, 2));
+    const completed = reconcileDurableSubagentRun(duringGrace, environment, () => ({
+      completed: true,
+      finalMessage: 'fast exit complete',
+    }));
+    expect(completed.status).toBe('completed');
+    expect(completed.finalMessage).toBe('fast exit complete');
+
+    rmSync(home, { recursive: true, force: true });
   });
 
   it('recovers a final event from the bounded log tail', async () => {

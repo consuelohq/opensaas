@@ -44,7 +44,11 @@ started: 2026-08-10
 
 ## files changed
 
+- `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
+
 
 ## red evidence before production implementation
 
@@ -58,6 +62,8 @@ started: 2026-08-10
 
 ## workspace-owned: files changed
 
+- `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/lib/subagent/runtime.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
 
 ## workspace-owned: activity log
@@ -107,6 +113,8 @@ started: 2026-08-10
 - 2026-08-10 04:35:05 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 20:40:05 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 20:43:44 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 20:46:37 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-11 20:49:39 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -120,6 +128,9 @@ started: 2026-08-10
 - 2026-08-11 20:43:26 `review.run`: passed — OK
 - 2026-08-11 20:43:31 `verify`: passed — OK
 - 2026-08-11 20:44:16 `verify`: passed — OK
+- 2026-08-11 20:49:09 `review.run`: passed — OK
+- 2026-08-11 20:49:19 `verify`: passed — OK
+- 2026-08-11 20:49:46 `verify`: passed — OK
 
 ## key decisions
 
@@ -194,6 +205,7 @@ bun run task:finish
 - `packages/workspace/scripts/lib/facade/executor.ts`
 - `packages/workspace/scripts/lib/facade/schemas.ts`
 - `packages/workspace/scripts/subagent.ts`
+- `packages/workspace/scripts/task-push.js`
 - `packages/workspace/tests/facade/facade.test.ts`
 
 ## Recovery and Luna round 2
@@ -852,3 +864,32 @@ This design is cross-restart safe and removes the need for fragile PID command-l
 - Next: task.push only; do not call task.pr/task.merge/task.finish until orchestrator reviews GitHub checks.
 
 - 2026-08-11 20:43:44 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+### Post-push Codex review adjudication
+- Codex P1 `Preserve startup grace after the runner exits`: VALID on `973b7307`. `reconcileDurableSubagentRun` only preserves the second startup-grace branch when `runnerAlive`; a fast runner that exits after the initial exit-marker read but before liveness can be persisted as terminal `completion_unknown`. Red regression: a run with a published runner PID that is already dead but still inside `STARTUP_GRACE_MS` must remain nonterminal, then consume a subsequently published owned exit marker.
+- Codex P2 `Reject start for providers without detached execution`: VALID on `973b7307`. Gate explicitly exempts `action === 'start'`, then PI/OpenCode/Grok execute synchronously despite `detachedExecution:false`. Red regression: `start` for each non-detached provider must return structured `CAPABILITY_NOT_SUPPORTED` / `not_supported` and must not invoke a provider.
+- Codex staging immutability P1: FIXED on `973b7307` with content digest + claim-owned artifact staging and dedicated green regression.
+
+- 2026-08-11 20:46:37 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-11 20:47:03 apply-patch: `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+- 2026-08-11 20:47:03 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`
+- 2026-08-11 20:47:27 apply-patch: `packages/os/scripts/lib/subagent/lifecycle.ts`
+- 2026-08-11 20:47:27 apply-patch: `packages/os/scripts/lib/subagent/runtime.ts`
+
+- 2026-08-11 20:48:19 apply-patch: `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+
+### Codex review fixes — green
+- P1 fast-exit startup grace: red regression reproduced `completion_unknown` inside the 2s grace when a published runner PID was already dead. Fix preserves startup grace regardless of liveness after the initial exit-marker read; a subsequently published owned exit marker is consumed authoritatively. Focused green.
+- P2 non-detached provider start: red regression reproduced `OK`/synchronous behavior for `action:start` on PI. Fix rejects `start` for every provider whose capability has `detachedExecution:false` (PI/OpenCode/Grok), returning structured `CAPABILITY_NOT_SUPPORTED` / `not_supported`, no runId/provider launch. Table-driven focused green.
+- Existing concurrency regression hardened from a fixed 400ms detached-marker sleep to bounded marker polling; full parallel core run exposed the old fixed-delay flake.
+- Core lifecycle + public contract: 18/18 green.
+- Executable discovery: 8/8 green.
+- Distribution runtime bundle: 20/20 green.
+- Focused trace persistence: 1/1 green from expected packages/os cwd.
+- OS syntax/typecheck: green. Generated manifest check: green.
+- Strict review: 0 owned / 0 pre-existing / 0 blocking.
+- Canonical verify: passed:true, publishValid:true, DB scan clean.
+- Next: stamped verify + task.push --changed only. Do not task.pr/task.merge/task.finish until fresh GitHub CI is terminal and review comments are rechecked.
+
+- 2026-08-11 20:49:39 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
