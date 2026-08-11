@@ -16,6 +16,7 @@ import { registerDeploy } from './commands/deploy.js';
 import { registerDev } from './commands/dev.js';
 import { registerMigrate } from './commands/migrate.js';
 import { registerOs } from './commands/os.js';
+import { registerSkillCommands } from './commands/skills.js';
 import { registerUpdate } from './commands/update.js';
 import { analyticsCommand } from './commands/analytics.js';
 import { statusCommand, registerStatus } from './commands/status.js';
@@ -123,6 +124,7 @@ registerDev(program);
 registerMigrate(program);
 registerStatus(program);
 registerOs(program);
+registerSkillCommands(program);
 registerUpdate(program);
 
 // twenty-sdk platform commands (auth, app, entity, function)

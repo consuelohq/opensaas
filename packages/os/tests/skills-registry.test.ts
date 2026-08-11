@@ -84,6 +84,10 @@ describe('skills registry generator', () => {
     expect(registry.skills[0].name).toBe('task');
     expect(registry.skills[0].script).toBeUndefined();
     expect(registry.skills[0].artifactTypes).toBeUndefined();
+    expect(registry.skills[0].load).toEqual({
+      type: 'resource',
+      path: 'skills/task/SKILL.md',
+    });
   });
 
   it('fails on missing required fields', () => {
@@ -124,7 +128,7 @@ describe('skills registry generator', () => {
       name: 'sites',
       title: 'Sites',
       status: 'active',
-      load: { path: 'packages/os/skills/sites/SKILL.md' },
+      load: { path: 'skills/sites/SKILL.md' },
     });
     expect(sitesSkill?.capabilities).toEqual([
       'sites',

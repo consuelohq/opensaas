@@ -9,7 +9,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/artifacts/SKILL.md"
+        "path": "skills/artifacts/SKILL.md"
       },
       "permission": "draft",
       "requiresApproval": false,
@@ -29,7 +29,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/branch/SKILL.md"
+        "path": "skills/branch/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -55,7 +55,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/browser/SKILL.md"
+        "path": "skills/browser/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -79,7 +79,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/debugger/SKILL.md"
+        "path": "skills/debugger/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -105,7 +105,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/handoff/SKILL.md"
+        "path": "skills/handoff/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -129,7 +129,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/research-ingest/SKILL.md"
+        "path": "skills/research-ingest/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -153,7 +153,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/senior-engineer/SKILL.md"
+        "path": "skills/senior-engineer/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -177,7 +177,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/sites/SKILL.md"
+        "path": "skills/sites/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -202,7 +202,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/skill-creator/SKILL.md"
+        "path": "skills/skill-creator/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -227,7 +227,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/task/SKILL.md"
+        "path": "skills/task/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -251,7 +251,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/teach/SKILL.md"
+        "path": "skills/teach/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
