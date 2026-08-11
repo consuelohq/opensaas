@@ -66,8 +66,10 @@ describe('Bun product server contract', () => {
     expect(manager).not.toContain('server.py');
 
     const server = source('scripts/server/main.ts');
-    expect(server).toContain("process.env.CONSUELO_OS_DAEMON_PROCESS = '1';");
-    expect(server.indexOf('CONSUELO_OS_DAEMON_PROCESS')).toBeLessThan(
+    const daemonProcessMarker =
+      'process.env.CONSUELO_OS_DAEMON_PROCESS = \'1\';';
+    expect(server).toContain(daemonProcessMarker);
+    expect(server.indexOf(daemonProcessMarker)).toBeLessThan(
       server.indexOf('createLocalOsApp(config)'),
     );
     expect(server).toContain('Bun.serve({');

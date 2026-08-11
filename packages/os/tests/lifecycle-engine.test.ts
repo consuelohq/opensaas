@@ -964,7 +964,7 @@ describe('unified lifecycle engine', () => {
     });
   });
 
-  it('rejects a synchronous update inherited from the daemon when launchd rewrites XPC_SERVICE_NAME', async () => {
+  it('should reject a synchronous update when inherited daemon context survives launchd rewriting XPC_SERVICE_NAME', async () => {
     const engine = createEngine();
     const update = vi.spyOn(engine, 'update');
     const stderr: string[] = [];
@@ -988,12 +988,13 @@ describe('unified lifecycle engine', () => {
       command: 'update',
       ok: false,
       error: {
+        code: 'DAEMON_MUTATION_NOT_ALLOWED',
         message: expect.stringContaining('separate lifecycle process'),
       },
     });
   });
 
-  it('rejects a synchronous repair inherited from the active daemon', async () => {
+  it('should reject a synchronous repair when inherited from the active daemon', async () => {
     const engine = createEngine();
     const repair = vi.spyOn(engine, 'repair');
     const stderr: string[] = [];
@@ -1014,6 +1015,7 @@ describe('unified lifecycle engine', () => {
       command: 'repair',
       ok: false,
       error: {
+        code: 'DAEMON_MUTATION_NOT_ALLOWED',
         message: expect.stringContaining('separate lifecycle process'),
       },
     });

@@ -10,6 +10,7 @@ import {
   createBunRuntimeMaterializer,
   createLifecycleEngine,
   createReloadServiceController,
+  lifecycleError,
   lifecycleFailureEnvelope,
   lifecycleReleaseChannels,
   lifecycleSuccessEnvelope,
@@ -646,7 +647,8 @@ export async function runLifecycleCli(
       (parsed.command === 'update' && !parsed.check) ||
       parsed.command === 'repair';
     if (runsInsideActiveDaemon && mutatesDaemonSynchronously) {
-      throw new Error(
+      throw lifecycleError(
+        'DAEMON_MUTATION_NOT_ALLOWED',
         `Consuelo OS cannot run a synchronous ${parsed.command} inside its active daemon process. Run the ${parsed.command} from Terminal or through the separate lifecycle process.`,
       );
     }
