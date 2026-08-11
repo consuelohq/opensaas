@@ -138,7 +138,8 @@ describe('task workpad helpers', () => {
     }
   });
 
-  it('accepts meaningful agent-authored sections without a hidden heading allowlist', () => {
+  it('should accept meaningful agent-authored sections when headings are not on a hidden allowlist', () => {
+    // Arrange
     const root = makeWorktree([
       '# workpad',
       '',
@@ -160,7 +161,36 @@ describe('task workpad helpers', () => {
       '',
     ].join('\n'));
     try {
-      expect(checkWorkpadReady(root, meta).ok).toBe(true);
+      // Act
+      const readiness = checkWorkpadReady(root, meta);
+
+      // Assert
+      expect(readiness.ok).toBe(true);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('should reject a checkpoint heading when its body has no meaningful content', () => {
+    const root = makeWorktree([
+      '# workpad',
+      '',
+      '## acceptance criteria',
+      '',
+      '- [ ] Define explicit task acceptance criteria before coding.',
+      '',
+      '## plan',
+      '',
+      '1. Read the relevant code and update this plan before editing.',
+      '',
+      '## Summary',
+      '',
+    ].join('\n'));
+    try {
+      const readiness = checkWorkpadReady(root, meta);
+
+      expect(readiness.ok).toBe(false);
+      expect(readiness.missing).toContain('one meaningful agent-authored workpad update');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

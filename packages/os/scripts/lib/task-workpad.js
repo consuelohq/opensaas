@@ -289,10 +289,6 @@ function hasMeaningfulAgentSection(content) {
   });
 }
 
-function hasAgentCheckpoint(content) {
-  return /^##\s+(implementation checkpoint|final validation|findings|review checkpoint|debugging notes|handoff|summary|current status)\b/im.test(content);
-}
-
 function buildWorkpadMessage(workpadPath, missing) {
   return [
     'Workpad update needed before publishing.',
@@ -313,7 +309,7 @@ function checkWorkpadReady(worktreePath, taskMeta) {
     const missing = ['workpad file'];
     return { ok: false, path: current.path, missing, message: buildWorkpadMessage(current.path, missing) };
   }
-  const ready = hasMeaningfulAgentSection(content) || hasAgentCheckpoint(content);
+  const ready = hasMeaningfulAgentSection(content);
   const missing = ready ? [] : ['one meaningful agent-authored workpad update'];
   return { ok: ready, path: current.path, missing, message: ready ? '' : buildWorkpadMessage(current.path, missing) };
 }

@@ -27,7 +27,7 @@ const {
   synchronizeApiPushedTaskBranch,
 } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
-const { dispatchHookEvent } = require('../hooks/dispatcher.js');
+const { dispatchHookEvent, renderHookResult } = require('../hooks/dispatcher.js');
 const { resolvePrRefNumber } = require('./lib/pr-ref');
 const {
   assertCommitMessageFormat,
@@ -558,7 +558,19 @@ async function main() {
     sha: commit.sha,
   });
 
-  synchronizeApiPushedTaskBranch(repoRoot, branch, branchRef.object.sha, commit.sha);
+  let localSyncResult;
+  try {
+    localSyncResult = {
+      ok: true,
+      ...synchronizeApiPushedTaskBranch(repoRoot, branch, branchRef.object.sha, commit.sha),
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    localSyncResult = { ok: false, error: message };
+    writeStderr(`local sync warning: remote push succeeded at ${commit.sha.slice(0, 8)} but local sync failed: ${message}`);
+    writeStderr(`recovery: git fetch --no-tags origin refs/heads/${branch}:refs/remotes/origin/${branch}`);
+    writeStderr(`recovery: git reset --mixed ${commit.sha}`);
+  }
 
   // save workpad to supabase memories for future agent context
   const workpadFile = taskMeta?.data ? getTaskWorkpadPath(repoRoot, taskMeta.data) : path.join(repoRoot, '.task', 'workpad.md');
@@ -600,25 +612,32 @@ async function main() {
 
   const hooks = await runPostTaskPushHooks({ repo: args.repo, taskMeta: taskMeta?.data });
 
-  const workflowHookResult = dispatchHookEvent({
-    event: {
-      event: 'tool.postInvoke',
-      workflow: 'task',
-      tool: 'task.push',
-      taskSession: taskMeta?.data?.taskSession,
-      state: {
-        area: taskMeta?.data?.area,
+  let workflowHookResult;
+  try {
+    workflowHookResult = dispatchHookEvent({
+      event: {
+        event: 'tool.postInvoke',
+        workflow: 'task',
+        tool: 'task.push',
         taskSession: taskMeta?.data?.taskSession,
-        branch,
+        state: {
+          area: taskMeta?.data?.area,
+          taskSession: taskMeta?.data?.taskSession,
+          branch,
+        },
+        result: {
+          ok: true,
+          branch,
+          sha: commit.sha,
+          taskSession: taskMeta?.data?.taskSession,
+        },
       },
-      result: {
-        ok: true,
-        branch,
-        sha: commit.sha,
-        taskSession: taskMeta?.data?.taskSession,
-      },
-    },
-  });
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    workflowHookResult = { ok: false, error: message };
+    writeStderr(`hook warning: remote push succeeded but task workflow hook failed: ${message}`);
+  }
 
   const result = {
     repo: args.repo,
@@ -629,6 +648,7 @@ async function main() {
     approvalReason: args.approved && verifyMismatch ? args.reason : undefined,
     files: files.map((file) => ({ path: file.path, deleted: Boolean(file.deleted) })),
     hooks,
+    localSync: localSyncResult,
     hookResult: workflowHookResult,
   };
 
@@ -638,6 +658,10 @@ async function main() {
   }
 
   writeStdout(`pushed ${commit.sha.slice(0, 8)} to ${branch}`);
+  if (workflowHookResult?.requiredNextAction) {
+    writeStdout('');
+    writeStdout(renderHookResult(workflowHookResult).trimEnd());
+  }
 }
 
 main().catch((error) => {

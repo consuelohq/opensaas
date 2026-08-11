@@ -357,13 +357,19 @@ describe('tool manifest generator', () => {
     expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain(`task.${'exec'}`);
   });
 
-  it('keeps task.pr facade input and command mapping aligned with the CLI workpad escape hatch', () => {
+  it('should keep task.pr facade input and command mapping aligned when the CLI exposes the workpad escape hatch', () => {
+    // Arrange
     const schema = getInputSchema('TaskPrInput');
-    expect(schema.safeParse({ ackWorkpadIncomplete: true }).success).toBe(true);
-
     const registry = buildToolManifest({ write: false });
     const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
-    expect(taskPr?.definition.command?.arguments).toContainEqual({
+
+    // Act
+    const parsed = schema.safeParse({ ackWorkpadIncomplete: true });
+    const argumentsList = taskPr?.definition.command?.arguments;
+
+    // Assert
+    expect(parsed.success).toBe(true);
+    expect(argumentsList).toContainEqual({
       source: 'ackWorkpadIncomplete',
       flag: '--ack-workpad-incomplete',
       kind: 'boolean',

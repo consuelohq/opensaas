@@ -92,7 +92,7 @@ describe('OS hook dispatcher', () => {
     expect(source).toContain("require('../hooks/intent.js')");
     expect(source).toContain('createWorkflowIntentRuntime().start({');
     expect(source).toContain('workflow: args.workflow');
-    expect(source).toContain('taskResult');
+    expect(source).toMatch(/createWorkflowIntentRuntime\(\)\.start\(\{[\s\S]*?\btaskResult,\s*\}\);/);
     expect(source).toContain('renderHookResult(workflowStart.hookResult)');
     expect(source).not.toContain("getTaskHookGuidance('after-task-start'");
   });
