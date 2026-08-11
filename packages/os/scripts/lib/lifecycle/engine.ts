@@ -28,6 +28,7 @@ import {
 import {
   clearLifecycleActivationJournal,
   pruneLifecycleReleases,
+  readLifecycleActivationJournal,
   readLifecycleReleaseReference,
   recoverInterruptedLifecycleActivation,
   writeLifecycleActivationJournal,
@@ -70,6 +71,7 @@ export type LifecycleEngineDependencies = {
     | (() => Record<string, string>);
   service: LifecycleServiceController;
   health: LifecycleHealthAcceptance;
+  connectivity?: LifecycleHealthAcceptance;
   migration?: LifecycleMigrationRunner;
   runtime?: LifecycleRuntimeMaterializer;
   hooks?: LifecycleHooks;
@@ -184,9 +186,35 @@ export function createLifecycleEngine(
         }),
         (release) => {
           emit('lock', { recoveredStaleLock: release.recoveredStaleLock });
-          return Effect.sync(() =>
-            recoverInterruptedLifecycleActivation(home),
-          ).pipe(Effect.flatMap(() => use()));
+          return tryPromise({
+            try: async () => {
+              const journal = readLifecycleActivationJournal(home);
+              if (!journal) return;
+              let candidateAccepted = false;
+              try {
+                const current = readLifecycleReleaseReference(home, 'current');
+                if (current?.path === journal.nextReleasePath) {
+                  const candidate = verifyInstalledRuntimeRelease(
+                    journal.nextReleasePath,
+                  );
+                  candidateAccepted = await dependencies.health.accept({
+                    bundleId: candidate.bundleId,
+                    version: candidate.version,
+                  });
+                }
+              } catch {
+                candidateAccepted = false;
+              }
+              if (candidateAccepted) {
+                clearLifecycleActivationJournal(home);
+                return;
+              }
+              recoverInterruptedLifecycleActivation(home);
+            },
+            code: 'ROLLBACK_FAILED',
+            message: 'failed to recover interrupted lifecycle activation',
+            phase: 'recovery',
+          }).pipe(Effect.flatMap(() => use()));
         },
         (release) => Effect.promise(() => release()),
       ),
@@ -213,12 +241,28 @@ export function createLifecycleEngine(
         'health',
       );
     }
-    if (healthy) return;
-    if (dependencies.hooks?.onHealthFailure) {
-      await dependencies.hooks.onHealthFailure({ home, ...hooksInput });
+    if (!healthy) {
+      if (dependencies.hooks?.onHealthFailure) {
+        await dependencies.hooks.onHealthFailure({ home, ...hooksInput });
+      }
+      throw lifecycleError('HEALTH_REJECTED', 'runtime health was not accepted', {
+        phase: 'health',
+      });
     }
-    throw lifecycleError('HEALTH_REJECTED', 'runtime health was not accepted', {
-      phase: 'health',
+    if (!dependencies.connectivity) return;
+    let connected = false;
+    let diagnostic = 'not-verified';
+    try {
+      connected = await dependencies.connectivity.accept(expected);
+      diagnostic = connected ? 'verified' : 'not-verified';
+    } catch {
+      diagnostic = 'check-failed';
+    }
+    emit('connectivity', {
+      ...expected,
+      advisory: true,
+      connected,
+      diagnostic,
     });
   };
 
@@ -619,6 +663,7 @@ export function createLifecycleEngine(
         bundleId: manifest.bundleId,
       } satisfies LifecycleOperationResult;
     });
+    if (input.check) return runEffect(program);
     return input.lockHeld
       ? runEffect(program)
       : exclusive(operationId, input.emit, () => program);
@@ -674,7 +719,6 @@ export function createLifecycleEngine(
         return applyRelease({
           operation: 'install',
           channel: input.channel ?? preferences.channel,
-          existingState: initialState,
           emit,
         });
       }
@@ -750,7 +794,7 @@ export function createLifecycleEngine(
           channel: input.channel ?? preferences.channel,
           check: input.check,
           expectedVersion: input.expectedVersion,
-          existingState: state,
+          ...(input.check ? { existingState: state } : {}),
           emit,
         });
       } catch (error: unknown) {
@@ -898,7 +942,6 @@ export function createLifecycleEngine(
           const updated = await applyRelease({
             operation: 'update',
             channel: preferences.channel,
-            existingState: state,
             emit,
           });
           return { ...updated, operation: 'repair' };

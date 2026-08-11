@@ -32,6 +32,7 @@ import {
   createLifecycleEngine,
   inspectLifecycleInstallState,
   loadLifecyclePreferences,
+  writeLifecycleActivationJournal,
   noOpLifecycleMigrationRunner,
   verifySignedReleaseManifest,
   type LifecycleEngine,
@@ -44,6 +45,7 @@ import {
 import {
   runLifecycleCli,
   trustedReleaseKeysFromEnvironment,
+  waitForAdvisoryProcessExit,
 } from '../scripts/lifecycle';
 
 const osRoot = resolve(import.meta.dirname, '..');
@@ -62,6 +64,7 @@ const requiredRuntimePaths = [
   'hooks/dispatcher.js',
   'steering/system_prompt.md',
   'streams/tools/AGENTS.md',
+  'streams/dialer/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',
 ];
@@ -234,6 +237,7 @@ function createEngine(input: {
   now?: () => Date;
   serviceFailure?: Error;
   health?: boolean | boolean[];
+  connectivity?: boolean;
   stagingFailure?: Error;
   onboarding?: () => Promise<void>;
   runtime?: LifecycleRuntimeMaterializer;
@@ -269,6 +273,14 @@ function createEngine(input: {
         return input.health ?? true;
       },
     },
+    ...(input.connectivity === undefined ? {} : {
+      connectivity: {
+        async accept() {
+          serviceOperations.push('connectivity');
+          return input.connectivity ?? true;
+        },
+      },
+    }),
     hooks: {
       async beforeStage() {
         if (input.stagingFailure) throw input.stagingFailure;
@@ -419,6 +431,79 @@ describe('unified lifecycle engine', () => {
     expect(bundleFetches).toBe(0);
     expect(check.serviceOperations).toEqual([]);
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
+  });
+
+  it('keeps check-only updates read-only when an activation journal is present', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    await createEngine({ bundle: bundle110 }).update({ channel: 'dev', yes: true });
+    writeLifecycleActivationJournal({
+      home: tempHome,
+      operationId: 'interrupted-check',
+      previousReleasePath: runtimeReleasePathFor(bundle100),
+      nextReleasePath: runtimeReleasePathFor(bundle110),
+    });
+    const check = createEngine({ bundle: bundle110 });
+
+    await expect(
+      check.update({ channel: 'dev', check: true }),
+    ).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.1.0',
+    });
+
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(true);
+    expect(check.serviceOperations).toEqual([]);
+  });
+
+  it('finalizes an interrupted candidate that is already current and healthy', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    await createEngine({ bundle: bundle110 }).update({ channel: 'dev', yes: true });
+    writeLifecycleActivationJournal({
+      home: tempHome,
+      operationId: 'interrupted-healthy-candidate',
+      previousReleasePath: runtimeReleasePathFor(bundle100),
+      nextReleasePath: runtimeReleasePathFor(bundle110),
+    });
+    const recovery = createEngine({ bundle: bundle110, health: true });
+
+    await expect(recovery.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.1.0',
+    });
+
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+    expect(recovery.serviceOperations).toEqual(['health']);
+  });
+
+  it('re-inspects post-recovery state before applying an interrupted unhealthy candidate', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    await createEngine({ bundle: bundle110 }).update({ channel: 'dev', yes: true });
+    writeLifecycleActivationJournal({
+      home: tempHome,
+      operationId: 'interrupted-unhealthy-candidate',
+      previousReleasePath: runtimeReleasePathFor(bundle100),
+      nextReleasePath: runtimeReleasePathFor(bundle110),
+    });
+    const recovery = createEngine({ bundle: bundle110, health: [false, true] });
+
+    await expect(recovery.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: true,
+      updateAvailable: false,
+      version: '1.1.0',
+    });
+
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
+    expect(recovery.serviceOperations).toEqual([
+      'health',
+      'preflight',
+      'restart',
+      'health',
+    ]);
   });
 
   it('rejects a concurrent update lock without touching current', async () => {
@@ -676,6 +761,71 @@ describe('unified lifecycle engine', () => {
     await expect(failedRestart.restart()).rejects.toMatchObject({ code: 'SERVICE_RESTART_FAILED' });
   });
 
+  it('should terminate an advisory process when its lifecycle deadline expires', async () => {
+    const kill = vi.fn();
+    const exitCode = await waitForAdvisoryProcessExit({
+      exited: new Promise<number>(() => {}),
+      kill,
+    }, 10);
+
+    expect(exitCode).toBeNull();
+    expect(kill).toHaveBeenCalledTimes(1);
+  });
+
+  it('accepts local MCP connectivity after repaired runtime health', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const repair = createEngine({ connectivity: true });
+
+    await expect(repair.repair()).resolves.toMatchObject({
+      operation: 'repair',
+      changed: true,
+    });
+    expect(repair.serviceOperations).toEqual([
+      'preflight',
+      'restart',
+      'health',
+      'connectivity',
+    ]);
+  });
+
+  it('reports failed local MCP connectivity as advisory after repair', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const events: LifecycleProgressEvent[] = [];
+    const repair = createEngine({ connectivity: false, events });
+
+    await expect(repair.repair()).resolves.toMatchObject({
+      operation: 'repair',
+      changed: true,
+    });
+    expect(events).toContainEqual(expect.objectContaining({
+      phase: 'connectivity',
+      detail: expect.objectContaining({
+        advisory: true,
+        connected: false,
+        diagnostic: 'not-verified',
+      }),
+    }));
+  });
+
+  it('should keep optional local-agent connectivity out of update acceptance when connectivity fails', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const update = createEngine({
+      bundle: bundle110,
+      connectivity: false,
+    });
+
+    await expect(update.update({ channel: 'dev' })).resolves.toMatchObject({
+      operation: 'update',
+      changed: true,
+      version: bundle110.manifest.version,
+    });
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
+    expect(update.serviceOperations).toContain('connectivity');
+  });
+
   it('persists channel and notification preferences and expires snooze at read time', async () => {
     writeInstalledIdentity();
     const now = new Date('2026-07-23T00:00:00.000Z');
@@ -780,6 +930,94 @@ describe('unified lifecycle engine', () => {
         installState: 'partial',
         preferences: { channel: 'dev', notifications: { mode: 'on' } },
       }),
+    });
+  });
+
+  it('rejects a synchronous self-hosted update before lifecycle activation', async () => {
+    const engine = createEngine();
+    const update = vi.spyOn(engine, 'update');
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+
+    const exitCode = await runLifecycleCli(
+      ['update', '--channel', 'dev', '--yes', '--json'],
+      {
+        engine,
+        environment: {
+          XPC_SERVICE_NAME: 'com.consuelo.system',
+        },
+        stdout: (value) => stdout.push(value),
+        stderr: (value) => stderr.push(value),
+      },
+    );
+
+    expect(exitCode).toBe(1);
+    expect(update).not.toHaveBeenCalled();
+    expect(stdout).toEqual([]);
+    expect(JSON.parse(stderr.join(''))).toMatchObject({
+      schemaVersion: 1,
+      command: 'update',
+      ok: false,
+      error: {
+        message: expect.stringContaining('separate lifecycle process'),
+      },
+    });
+  });
+
+  it('should reject a synchronous update when inherited daemon context survives launchd rewriting XPC_SERVICE_NAME', async () => {
+    const engine = createEngine();
+    const update = vi.spyOn(engine, 'update');
+    const stderr: string[] = [];
+
+    const exitCode = await runLifecycleCli(
+      ['update', '--channel', 'dev', '--yes', '--json'],
+      {
+        engine,
+        environment: {
+          CONSUELO_OS_DAEMON_PROCESS: '1',
+          XPC_SERVICE_NAME: '0',
+        },
+        stdout: vi.fn(),
+        stderr: (value) => stderr.push(value),
+      },
+    );
+
+    expect(exitCode).toBe(1);
+    expect(update).not.toHaveBeenCalled();
+    expect(JSON.parse(stderr.join(''))).toMatchObject({
+      command: 'update',
+      ok: false,
+      error: {
+        code: 'DAEMON_MUTATION_NOT_ALLOWED',
+        message: expect.stringContaining('separate lifecycle process'),
+      },
+    });
+  });
+
+  it('should reject a synchronous repair when inherited from the active daemon', async () => {
+    const engine = createEngine();
+    const repair = vi.spyOn(engine, 'repair');
+    const stderr: string[] = [];
+
+    const exitCode = await runLifecycleCli(['repair', '--json'], {
+      engine,
+      environment: {
+        CONSUELO_OS_DAEMON_PROCESS: '1',
+        XPC_SERVICE_NAME: '0',
+      },
+      stdout: vi.fn(),
+      stderr: (value) => stderr.push(value),
+    });
+
+    expect(exitCode).toBe(1);
+    expect(repair).not.toHaveBeenCalled();
+    expect(JSON.parse(stderr.join(''))).toMatchObject({
+      command: 'repair',
+      ok: false,
+      error: {
+        code: 'DAEMON_MUTATION_NOT_ALLOWED',
+        message: expect.stringContaining('separate lifecycle process'),
+      },
     });
   });
 

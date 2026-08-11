@@ -1172,10 +1172,11 @@ bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 
 ### tool-batch — run typed workspace tools in sequence
 
-runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
+runs a JSON array of facade steps, or an object with `taskSession` and `steps`. the outer task session, task ID, metadata ID, or task branch is resolved once and inherited by every child. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
 
 ```bash
 bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}}]'
+bun run tool-batch -- '{"taskSession":"tsk_example","steps":[{"tool":"fs.read","input":{"path":"packages/workspace/package.json"}}]}'
 bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 

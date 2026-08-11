@@ -755,7 +755,11 @@ async function executeInternalTool<TData>(
 
   if (internal === 'batch') {
     const steps = Array.isArray(input.steps) ? input.steps : [];
-    const result = await runBatch(steps, context.options) as ToolResult<TData>;
+    const result = await runBatch(steps, context.options, {
+      taskSession: typeof input.taskSession === 'string' ? input.taskSession : undefined,
+      branch: typeof input.branch === 'string' ? input.branch : undefined,
+      taskWorktree: typeof input.taskWorktree === 'string' ? input.taskWorktree : undefined,
+    }) as ToolResult<TData>;
     logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
       input: context.rawInput,
       resolvedInput: input,
@@ -1054,7 +1058,13 @@ function resolveBranchIfNeeded(
     candidates: options.candidates,
   });
 
-  if (branchMode === 'optional' && !resolution.ok && resolution.code === 'WORKTREE_NOT_FOUND') {
+  const hasExplicitRepoTarget = Boolean(explicitBranch);
+  if (
+    branchMode === 'optional'
+    && !hasExplicitRepoTarget
+    && !resolution.ok
+    && (resolution.code === 'WORKTREE_NOT_FOUND' || resolution.code === 'AMBIGUOUS_TASK_SELECTION')
+  ) {
     return { ok: true, branch: '', source: 'none' };
   }
 
@@ -1295,7 +1305,11 @@ function logResult(
     ? resolvedInput.mcpTraceId
     : typeof resolvedInput.parentTraceId === 'string'
       ? resolvedInput.parentTraceId
-      : undefined;
+      : typeof rawInput.mcpTraceId === 'string'
+        ? rawInput.mcpTraceId
+        : typeof rawInput.parentTraceId === 'string'
+          ? rawInput.parentTraceId
+          : undefined;
   const effectiveBranch = branch ?? (typeof resolvedInput.branch === 'string' ? resolvedInput.branch : undefined);
 
   logToolExecution({

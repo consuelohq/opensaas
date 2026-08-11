@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
 import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
 import { createConnectorOriginHostname } from '../scripts/lib/connector-origin-hostname';
+import { deriveWorkspaceEdgeNodeSecret } from '../scripts/lib/workspace-edge-node-auth';
 import {
   CONSUELO_DEVICE_CODE_URL,
   CONSUELO_DEVICE_VERIFICATION_URL,
@@ -147,6 +148,22 @@ const googleFetch: typeof fetch = async (input) => {
         sub: 'google-sub-123',
         email: 'ko@example.com',
         email_verified: 'true',
+      }),
+      {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      },
+    );
+  }
+  if (
+    url.startsWith('https://chatgpt.com/oauth/') &&
+    url.endsWith('/client.json')
+  ) {
+    return new Response(
+      JSON.stringify({
+        client_id: url,
+        client_name: 'ChatGPT',
+        redirect_uris: ['https://chatgpt.com/connector/oauth/callback'],
       }),
       {
         status: 200,
@@ -697,6 +714,7 @@ describe('os device authority worker', () => {
     );
     const code = callbackLocation.searchParams.get('code') ?? '';
     expect(code).toMatch(/^coa_code_/);
+    expect(callbackLocation.searchParams.get('iss')).toBe(origin);
 
     const mismatchedTokenResponse = await handler(
       new Request(`${origin}/oauth/token`, {
@@ -772,6 +790,54 @@ describe('os device authority worker', () => {
       resource,
       scopes: ['mcp:read', 'mcp:call', 'tool:*:read', 'route:/mcp:read'],
     });
+  });
+
+  it('should reject a ChatGPT Client ID Metadata Document that does not bind the requested redirect URI', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const clientId =
+      'https://chatgpt.com/oauth/consuelo-os/untrusted-redirect/client.json';
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: async (input, init) => {
+        const url =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input.url;
+        if (url === clientId) {
+          return new Response(JSON.stringify({
+            client_id: clientId,
+            client_name: 'ChatGPT',
+            redirect_uris: ['https://chatgpt.com/connector/oauth/other-callback'],
+          }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        return await googleFetch(input, init);
+      },
+    });
+
+    const response = await handler(new Request(
+      `${origin}/oauth/authorize?${new URLSearchParams({
+        response_type: 'code',
+        client_id: clientId,
+        redirect_uri: 'https://chatgpt.com/connector/oauth/callback',
+        scope: 'mcp:read',
+        resource: 'https://workspace.consuelohq.com/mcp',
+        state: 'chatgpt-state',
+        code_challenge: 'metadata-document-test-challenge',
+        code_challenge_method: 'S256',
+      })}`,
+    ));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({ error: 'invalid_client' });
   });
 
   it('should issue and introspect OAuth access tokens for workspace MCP resources through Google approval', async () => {
@@ -2160,12 +2226,14 @@ describe('os device authority worker', () => {
 
   it('serves hardened GitHub-shaped device auth endpoints on os.consuelohq.com', async () => {
     let currentMs = Date.parse('2026-06-13T00:00:00.000Z');
+    const workspaceEdgeSigningMasterSecret = 'test-workspace-edge-signing-master';
     const handler = createOsDeviceAuthorityHandler({
       ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => currentMs,
       approvalAssertionSecret,
+      workspaceEdgeInternalSigningSecret: workspaceEdgeSigningMasterSecret,
     });
 
     const { codeJson, deviceKeyPair } = await startGrant(handler);
@@ -2307,6 +2375,17 @@ describe('os device authority worker', () => {
     expect(approvedJson.workspace_slug).toBe('testing');
     expect(approvedJson.workspace_host).toBe('testing.consuelohq.com');
     expect(approvedJson.connector_id).toBe('connector_testing');
+    expect(approvedJson.edge_request_signing_secret).toBe(
+      deriveWorkspaceEdgeNodeSecret({
+        masterSecret: workspaceEdgeSigningMasterSecret,
+        workspaceId: String(approvedJson.workspace_id),
+        nodeId: String(approvedJson.node_id),
+        connectorId: 'connector_testing',
+      }),
+    );
+    expect(approvedJson.edge_request_signing_secret).not.toContain(
+      workspaceEdgeSigningMasterSecret,
+    );
     expect(approvedJson.connector_bootstrap_token).toMatch(/^cbt_/);
     expect(approvedJson.access_token).toMatch(/^osat_/);
     expect(approvedJson.device_public_key_thumbprint).toMatch(/^dpk_/);

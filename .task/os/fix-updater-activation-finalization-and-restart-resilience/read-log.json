@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os/fix-updater-activation-finalization-and-restart-resilience/workpad.md",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/lifecycle/retention.ts",
+    "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+    "packages/os/scripts/lib/native-lifecycle-operation.ts",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/os/tests/native-lifecycle-operation.test.ts"
+  ],
+  "updatedAt": "2026-08-05T22:27:35.948Z"
+}

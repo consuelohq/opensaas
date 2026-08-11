@@ -974,6 +974,7 @@ export const startDefaultNativeLifecycleEndpoint = async (
     const operationLauncher = createDetachedNativeLifecycleOperationLauncher({
       home,
       env,
+      platform: process.platform,
     });
     const controller = createNativeLifecycleEndpointController({
       engine,

@@ -261,6 +261,7 @@ const FsReadFileInput = z.object({
   limit: z.number().int().positive().optional(),
   from: z.number().int().positive().optional(),
   to: z.number().int().positive().optional(),
+  full: z.boolean().optional(),
 });
 
 export const FsReadInput = z.object({
@@ -272,11 +273,12 @@ export const FsReadInput = z.object({
   limit: z.number().int().positive().optional(),
   from: z.number().int().positive().optional(),
   to: z.number().int().positive().optional(),
+  full: z.boolean().optional(),
 }).refine((input) => Boolean(input.path) !== Boolean(input.files), {
   message: 'provide exactly one of path or files',
   path: ['path'],
-}).refine((input) => !input.files || (input.offset === undefined && input.limit === undefined && input.from === undefined && input.to === undefined), {
-  message: 'top-level pagination fields cannot be used with files; put offset, limit, from, or to on each file entry instead',
+}).refine((input) => !input.files || (input.offset === undefined && input.limit === undefined && input.from === undefined && input.to === undefined && input.full === undefined), {
+  message: 'top-level read fields cannot be used with files; put offset, limit, from, to, or full on each file entry instead',
   path: ['files'],
 });
 
@@ -1353,7 +1355,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"artifacts\" | \"media\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
-  FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })',
+  FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; full?: boolean; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number; full?: boolean }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; full?: never; branch?: string; requestId?: string; taskSession?: string })',
   FsSearchInput: '{ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
   FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1455,7 +1457,7 @@ export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
   MediaScreenshotResult: '{ schema: \"media.screenshot-result.v1\"; ok: true; id: string; source: { path: string }; output: { path: string; width: number; height: number; format: \"png\"; fileSizeBytes: number }; template: { theme: \"dark\" | \"light\"; accent: string; background: string; padding: number; fit: \"contain\" | \"cover\"; pattern: \"grid\" | \"lines\" | \"none\" }; toolVersions: Record<string, string>; deterministic: true }',
   BatchOutput: '{ results: Array<ToolResult<unknown>>; completed: number }',
-  FsReadOutput: '({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: string; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: string; path?: string; message: string } }> }',
+  FsReadOutput: '({ type: "text-full"; path: string; mime: string; encoding: "utf8"; sizeBytes: number; lines: number; content: string } | { type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: string; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-full"; path: string; mime: string; encoding: "utf8"; sizeBytes: number; lines: number; content: string } | { type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: string; path?: string; message: string } }> }',
   FsSearchOutput: '{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: ({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: { type: "error"; code: string; path?: string; message: string } }> }',
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',
   TaskPinOutput: '{ branch: string }',

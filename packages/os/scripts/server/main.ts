@@ -10,6 +10,8 @@ import { createLocalOsApp } from './app';
 import { loadLocalOsServerConfig } from './env';
 
 if (import.meta.main) {
+  process.env.CONSUELO_OS_DAEMON_PROCESS = '1';
+
   const config = loadLocalOsServerConfig();
   const app = createLocalOsApp(config);
 

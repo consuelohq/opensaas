@@ -204,6 +204,7 @@ if you see slop, fix it before pushing. a clean diff is a fast review.
 after finishing a task, ask: "did i discover anything non-obvious?" if yes, write it to the nearest AGENTS.md:
 
 - **project-wide** → root `AGENTS.md`
+- **stream-wide product/architecture context** → update both `packages/os/streams/<area>/AGENTS.md` and `packages/workspace/streams/<area>/AGENTS.md`
 - **package-specific** → `packages/foo/AGENTS.md`
 - **feature-specific** → `src/auth/AGENTS.md`
 
@@ -776,11 +777,13 @@ bad: bun run stream:sync
 
 ### stream:context — show stream context
 
-shows recent PRs, divergence from main, and current state of a stream.
+shows the selected stream's durable `AGENTS.md` instructions first, followed by decisions, worktrees, task PRs, workpads, commits, and divergence. JSON includes an explicit `instructions` object; a missing file is a valid optional empty state.
+
+OS reads `packages/os/streams/<area>/AGENTS.md`; Workspace reads the byte-identical mirror under `packages/workspace/streams/<area>/AGENTS.md`. Dialer instructions are also synchronized during install/update to visible `~/Consuelo/Steering/dialer-AGENTS.md`, never hidden `~/.consuelo`.
 
 ```bash
 bun run stream:context -- --area dialer
-bun run stream:context -- --json
+bun run stream:context -- --area dialer --json
 ```
 
 ---
@@ -1006,10 +1009,11 @@ bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 
 ### tool-batch — run typed workspace tools in sequence
 
-runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
+runs a JSON array of facade steps, or an object with `taskSession` and `steps`. the outer task session, task ID, metadata ID, or task branch is resolved once and inherited by every child. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
 
 ```bash
 bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}}]'
+bun run tool-batch -- '{"taskSession":"tsk_example","steps":[{"tool":"fs.read","input":{"path":"packages/os/package.json"}}]}'
 bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 

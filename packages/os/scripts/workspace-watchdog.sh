@@ -247,6 +247,17 @@ maybe_restart() {
   printf '%s\n' "$now" > "$stamp_file"
   rm -f "$degraded_file"
   log "restarting $label because $reason"
+  if ! launchctl print "$launch_domain/$label" >/dev/null 2>&1; then
+    local plist="${HOME:-/Users/$(id -un)}/Library/LaunchAgents/${label}.plist"
+    if [ ! -f "$plist" ]; then
+      log "restart command failed for $label; launchd label is missing and $plist is not installed"
+      return 0
+    fi
+    if ! launchctl bootstrap "$launch_domain" "$plist"; then
+      log "restart command failed for $label; launchd could not bootstrap $plist"
+      return 0
+    fi
+  fi
   if ! launchctl kickstart -k "$launch_domain/$label"; then
     log "restart command failed for $label; launchd will remain the primary process supervisor"
   fi

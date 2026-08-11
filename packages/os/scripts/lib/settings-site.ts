@@ -489,12 +489,74 @@ function renderToolPanels(): string {
         </section>`;
 }
 
-function renderPlannedPanel(page: 'secrets'): string {
+// Metadata only. No value column and no reveal control are rendered.
+function secretsClientScript(): string {
   return `
-      <section class="state-panel" aria-live="polite">
-        <strong>Secret connections are not available yet</strong>
-        <p class="muted">This route is ready for the credential broker. Never paste a credential into an agent conversation.</p>
-      </section>`;
+    const byId = (id) => document.getElementById(id);
+    const setHidden = (id, value) => { const element = byId(id); if (element) element.hidden = value; };
+    const setText = (id, value) => { const element = byId(id); if (element) element.textContent = value; };
+    const renderBindingRow = (binding) => {
+      const row = document.createElement('tr');
+      for (const value of [binding.bindingId, binding.nodeId, binding.status, binding.updatedAt]) {
+        const cell = document.createElement('td');
+        cell.textContent = String(value ?? '');
+        row.append(cell);
+      }
+      return row;
+    };
+    fetch('/gateway/secrets/bindings', {
+      headers: { Accept: 'application/json' },
+      credentials: 'same-origin',
+      cache: 'no-store',
+    })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('secrets unavailable')))
+      .then((payload) => {
+        const bindings = Array.isArray(payload && payload.bindings) ? payload.bindings : [];
+        const rows = byId('secret-rows');
+        if (rows) {
+          rows.replaceChildren();
+          if (bindings.length) {
+            for (const binding of bindings) rows.append(renderBindingRow(binding));
+          } else {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 4;
+            cell.className = 'empty';
+            cell.textContent = 'No credentials are connected yet.';
+            row.append(cell);
+            rows.append(row);
+          }
+        }
+        setText('secret-summary', bindings.length + (bindings.length === 1 ? ' binding' : ' bindings'));
+        setHidden('secret-loading', true);
+        setHidden('secret-error', true);
+        setHidden('secret-content', false);
+      })
+      .catch(() => {
+        setHidden('secret-loading', true);
+        setHidden('secret-content', true);
+        setHidden('secret-error', false);
+      });
+  `;
+}
+
+function renderSecretsContent(): string {
+  return `
+      <section id="secret-loading" class="state-panel" aria-live="polite">
+        <strong>Loading secret connections</strong>
+        <p class="muted">Checking your workspace session and node connection.</p>
+      </section>
+      <section id="secret-error" class="state-panel" aria-live="polite" hidden>
+        <strong>Secret connections unavailable</strong>
+        <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
+      </section>
+      <div id="secret-content" hidden>
+        <section class="panel-section">
+          <header class="panel-header"><h2>Connected credentials</h2><p id="secret-summary" class="muted">0 bindings</p></header>
+          <p class="muted">Values are never returned to this page or to an agent. Never paste a credential into an agent conversation.</p>
+          <div class="table-wrap"><table><thead><tr><th>Binding</th><th>Node</th><th>Status</th><th>Updated</th></tr></thead><tbody id="secret-rows"></tbody></table></div>
+        </section>
+      </div>`;
 }
 
 function renderEnvironmentContent(): string {
@@ -553,12 +615,12 @@ export function renderConfigurationSite(page: ConfigurationPageId = 'configurati
     ? renderHydratedContent(page)
     : page === 'environments'
       ? renderEnvironmentContent()
-      : renderPlannedPanel(page);
+      : renderSecretsContent();
   const clientScript = requiresConfigurationSnapshot
     ? configurationClientScript()
     : page === 'environments'
       ? environmentClientScript()
-      : '';
+      : secretsClientScript();
 
   return `<!doctype html>
 <html lang="en">

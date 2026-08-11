@@ -282,19 +282,29 @@ describe('tool manifest generator', () => {
 
 
 
-  it('should model read-only fs read and search as session-optional when building manifests', () => {
+  it('should model read-only fs operations as session-optional when building manifests', () => {
     const registry = buildToolManifest({ write: false });
-    const byName = new Map(registry.full.tools.map((entry) => [entry.name, entry]));
+    const fsEntries = registry.full.tools.filter((entry) => entry.name.startsWith('fs.'));
+    const readOnlyEntries = fsEntries.filter((entry) => entry.definition.capabilities.readOnly === true);
+    const mutatingEntries = fsEntries.filter((entry) => entry.definition.capabilities.mutating === true);
+    const byName = new Map(fsEntries.map((entry) => [entry.name, entry]));
 
-    for (const toolName of ['fs.read', 'fs.search']) {
-      const entry = byName.get(toolName);
-      expect(entry?.definition.capabilities).toMatchObject({ readOnly: true, mutating: false });
-      expect(entry?.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'optional' });
-      expect(entry?.definition.sessionRequired).toBe(false);
+    expect(readOnlyEntries.map((entry) => entry.name).sort()).toEqual(['fs.list', 'fs.read', 'fs.search']);
+    expect(mutatingEntries.map((entry) => entry.name).sort()).toEqual(['fs.apply_patch', 'fs.trash', 'fs.write']);
+
+    for (const entry of readOnlyEntries) {
+      expect(entry.definition.capabilities).toMatchObject({ readOnly: true, mutating: false });
+      expect(entry.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'optional' });
+      expect(entry.definition.sessionRequired).toBe(false);
     }
 
-    expect(byName.get('fs.write')?.definition.sessionRequired).toBe(true);
-    expect(byName.get('fs.apply_patch')?.definition.sessionRequired).toBe(true);
+    expect(byName.get('fs.read')?.definition.command.arguments).toContainEqual({ source: 'full', flag: '--full', kind: 'boolean' });
+
+    for (const entry of mutatingEntries) {
+      expect(entry.definition.capabilities).toMatchObject({ readOnly: false, mutating: true });
+      expect(entry.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'required' });
+      expect(entry.definition.sessionRequired).toBe(true);
+    }
   });
 
   it('keeps public execution surface on code.call while task lifecycle stays full-manifest only', async () => {

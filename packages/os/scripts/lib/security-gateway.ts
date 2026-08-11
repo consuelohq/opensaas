@@ -17,10 +17,17 @@ import {
 } from './manifest';
 import { resolveOverlayHome } from './manifest-overlay';
 import {
+  claimGatewayReplayNonce,
+  readGatewayCredentialLastUsedAt,
+  recordGatewayCredentialUsage,
+} from './runtime-state';
+import {
   grantsRequiredScope,
   normalizeGrantedScopes,
+  resolveToolActionCategory,
 } from './tool-scope-authorization';
 import { PLACEHOLDER_WORKSPACE_ID } from './unenrolled-placeholder-identity';
+import { verifyWorkspaceEdgeNodeRequest } from './workspace-edge-node-auth';
 
 type JsonObject = Record<string, unknown>;
 type SignatureAlgorithm = 'ed25519';
@@ -192,6 +199,15 @@ type StoredNonce = {
   seenAt: string;
 };
 
+type StoredEdgeProxyAuth = {
+  version: 1;
+  nodeId: string;
+  connectorId: string;
+  signingSecret: string;
+  seenNonces: Record<string, string>;
+  updatedAt: string;
+};
+
 type StoredAuthConfig = {
   version: 1;
   kind: 'consuelo-generated';
@@ -204,6 +220,7 @@ type StoredAuthConfig = {
   publicGateway: PublicGatewayMetadata;
   tokens: Record<string, StoredToken>;
   seenNonces: Record<string, StoredNonce>;
+  edgeProxy?: StoredEdgeProxyAuth;
   createdAt: string;
   updatedAt: string;
 };
@@ -279,6 +296,7 @@ function publicTokenFromStored(
 
 function credentialStatusFromStored(
   token: StoredToken,
+  lastUsedAt: string | undefined = token.lastUsedAt,
 ): AgentAppCredentialStatus {
   return {
     tokenId: token.tokenId,
@@ -296,7 +314,7 @@ function credentialStatusFromStored(
     updatedAt: token.updatedAt,
     ...(token.rotatedAt ? { rotatedAt: token.rotatedAt } : {}),
     ...(token.revokedAt ? { revokedAt: token.revokedAt } : {}),
-    ...(token.lastUsedAt ? { lastUsedAt: token.lastUsedAt } : {}),
+    ...(lastUsedAt ? { lastUsedAt } : {}),
     ...(token.rotationOfTokenId
       ? { rotationOfTokenId: token.rotationOfTokenId }
       : {}),
@@ -489,15 +507,6 @@ function normalizeStoredTokens(
   return normalized;
 }
 
-function pruneSeenNonces(stored: StoredAuthConfig, nowTime: number): void {
-  const cutoffTime = nowTime - MAX_TIMESTAMP_SKEW_MS;
-  for (const [nonce, record] of Object.entries(stored.seenNonces)) {
-    const seenTime = Date.parse(record.seenAt);
-    if (!Number.isFinite(seenTime) || seenTime < cutoffTime)
-      delete stored.seenNonces[nonce];
-  }
-}
-
 function writeStoredAuth(
   config: GatewaySecurityConfig,
   stored: StoredAuthConfig,
@@ -507,6 +516,45 @@ function writeStoredAuth(
 
 function homeFromGeneratedAuthPath(generatedAuthPath: string): string {
   return path.dirname(path.dirname(path.dirname(generatedAuthPath)));
+}
+
+function consueloHomeFromGeneratedAuthPath(generatedAuthPath: string): string {
+  const securityHome = homeFromGeneratedAuthPath(generatedAuthPath);
+  return path.basename(securityHome) === 'node'
+    ? path.dirname(securityHome)
+    : securityHome;
+}
+
+function isLegacyNonceActive(seenAt: string | undefined, nowTime: number): boolean {
+  if (!seenAt || !Number.isFinite(nowTime)) return false;
+  const seenTime = Date.parse(seenAt);
+  return Number.isFinite(seenTime) &&
+    seenTime >= nowTime - MAX_TIMESTAMP_SKEW_MS &&
+    seenTime <= nowTime;
+}
+
+function latestTimestamp(left?: string, right?: string | null): string | undefined {
+  if (!left) return right ?? undefined;
+  if (!right) return left;
+  const leftTime = Date.parse(left);
+  const rightTime = Date.parse(right);
+  if (!Number.isFinite(leftTime)) return right;
+  if (!Number.isFinite(rightTime)) return left;
+  return rightTime >= leftTime ? right : left;
+}
+
+function credentialStatusForConfig(
+  config: GatewaySecurityConfig,
+  token: StoredToken,
+): AgentAppCredentialStatus {
+  const runtimeLastUsedAt = readGatewayCredentialLastUsedAt({
+    home: consueloHomeFromGeneratedAuthPath(config.generatedAuthPath),
+    tokenId: token.tokenId,
+  });
+  return credentialStatusFromStored(
+    token,
+    latestTimestamp(token.lastUsedAt, runtimeLastUsedAt),
+  );
 }
 
 function recordCredentialAuditEvent(
@@ -614,17 +662,6 @@ const DANGEROUS_TOOL_NAMES = new Set([
 ]);
 
 const ELEVATED_OS_PERMISSIONS = new Set(['execute', 'external', 'admin']);
-
-function resolveToolActionCategory(
-  toolName: string,
-  toolInput: unknown,
-): 'read' | 'write' | 'dangerous' | null {
-  if (toolName !== 'mac.process') return null;
-
-  return isJsonObject(toolInput) && toolInput.action === 'list'
-    ? 'read'
-    : 'dangerous';
-}
 
 function activeToolManifestForScope(): ReturnType<typeof readFullToolManifest> {
   const home = resolveOverlayHome();
@@ -776,6 +813,7 @@ export function createGatewaySecurityConfig(input: {
   upstreamPort?: number;
   ingressPort?: number;
   mtls?: { enabled: boolean; caFile: string };
+  edgeProxy?: { nodeId: string; connectorId: string; signingSecret: string };
 }): GatewaySecurityConfig {
   ensureSecurityDirs(input.home);
   const generatedAuthPath = authPathForHome(input.home);
@@ -820,6 +858,24 @@ export function createGatewaySecurityConfig(input: {
           existing.seenNonces,
           existing.updatedAt ?? existing.createdAt ?? nowIso(),
         ),
+        ...(input.edgeProxy
+          ? {
+              edgeProxy: {
+                version: 1 as const,
+                nodeId: input.edgeProxy.nodeId.trim(),
+                connectorId: input.edgeProxy.connectorId.trim(),
+                signingSecret: input.edgeProxy.signingSecret.trim(),
+                seenNonces:
+                  existing.edgeProxy?.nodeId === input.edgeProxy.nodeId.trim() &&
+                  existing.edgeProxy?.connectorId === input.edgeProxy.connectorId.trim()
+                    ? { ...existing.edgeProxy.seenNonces }
+                    : {},
+                updatedAt: nowIso(),
+              },
+            }
+          : existing.edgeProxy
+            ? { edgeProxy: existing.edgeProxy }
+            : {}),
         updatedAt: nowIso(),
       }
     : {
@@ -834,6 +890,18 @@ export function createGatewaySecurityConfig(input: {
         publicGateway,
         tokens: {},
         seenNonces: {},
+        ...(input.edgeProxy
+          ? {
+              edgeProxy: {
+                version: 1 as const,
+                nodeId: input.edgeProxy.nodeId.trim(),
+                connectorId: input.edgeProxy.connectorId.trim(),
+                signingSecret: input.edgeProxy.signingSecret.trim(),
+                seenNonces: {},
+                updatedAt: nowIso(),
+              },
+            }
+          : {}),
         createdAt: nowIso(),
         updatedAt: nowIso(),
       };
@@ -860,6 +928,113 @@ export function loadGatewaySecurityConfig(input: {
     throw new Error('auth config is not Consuelo-generated');
   }
   return toPublicConfig(stored, input.authConfigPath);
+}
+
+export function reconcileGatewayWorkspaceEdgeProxyAuth(input: {
+  authConfigPath: string;
+  workspaceId: string;
+  nodeId: string;
+  connectorId: string;
+  signingSecret: string;
+  now?: string;
+}): boolean {
+  const workspaceId = input.workspaceId.trim();
+  const nodeId = input.nodeId.trim();
+  const connectorId = input.connectorId.trim();
+  const signingSecret = input.signingSecret.trim();
+  if (!workspaceId || !nodeId || !connectorId || !signingSecret) {
+    throw new Error('workspace edge proxy identity and signing secret are required');
+  }
+  const stored = readStoredAuthFile(input.authConfigPath);
+  if (stored.kind !== 'consuelo-generated') {
+    throw new Error('auth config is not Consuelo-generated');
+  }
+  if (stored.workspaceId !== workspaceId) {
+    throw new Error('workspace edge proxy auth belongs to a different workspace');
+  }
+  const existing = stored.edgeProxy;
+  if (
+    existing?.version === 1 &&
+    existing.nodeId === nodeId &&
+    existing.connectorId === connectorId &&
+    existing.signingSecret === signingSecret
+  ) {
+    return false;
+  }
+  const updatedAt = input.now ?? nowIso();
+  stored.edgeProxy = {
+    version: 1,
+    nodeId,
+    connectorId,
+    signingSecret,
+    seenNonces: {},
+    updatedAt,
+  };
+  writeJsonSecure(input.authConfigPath, { ...stored, updatedAt });
+  return true;
+}
+
+export function verifyWorkspaceEdgeProxyRequest(input: {
+  config: GatewaySecurityConfig;
+  method: string;
+  pathWithSearch: string;
+  body: string;
+  headers: Record<string, string>;
+  now: string;
+}): VerificationResult {
+  const stored = readStoredAuth(input.config);
+  const edgeProxy = stored.edgeProxy;
+  if (!edgeProxy || edgeProxy.version !== 1 || !edgeProxy.signingSecret) {
+    return safeError(401, 'EDGE_AUTH_NOT_CONFIGURED', 'Workspace edge authentication is not configured for this node.');
+  }
+  const nowTime = Date.parse(input.now);
+  if (!Number.isFinite(nowTime)) {
+    return safeError(
+      401,
+      'EDGE_SIGNATURE_EXPIRED',
+      'Workspace edge signature timestamp is invalid.',
+    );
+  }
+  const replayHome = consueloHomeFromGeneratedAuthPath(input.config.generatedAuthPath);
+  const replayScope = `edge:${stored.workspaceId}:${edgeProxy.nodeId}:${edgeProxy.connectorId}`;
+  const result = verifyWorkspaceEdgeNodeRequest({
+    signingSecret: edgeProxy.signingSecret,
+    workspaceId: stored.workspaceId,
+    nodeId: edgeProxy.nodeId,
+    connectorId: edgeProxy.connectorId,
+    surface: input.headers['x-consuelo-surface'] ?? '',
+    method: input.method,
+    pathWithSearch: input.pathWithSearch,
+    body: input.body,
+    headers: input.headers,
+    nowMs: nowTime,
+    nonceSeen: (nonce) =>
+      isLegacyNonceActive(edgeProxy.seenNonces?.[nonce], nowTime),
+  });
+  if (!result.ok) return safeError(result.status, result.code, result.message);
+  const claimed = claimGatewayReplayNonce({
+    home: replayHome,
+    scope: replayScope,
+    nonce: result.nonce,
+    nowMs: nowTime,
+    windowMs: MAX_TIMESTAMP_SKEW_MS,
+  });
+  if (!claimed) {
+    return safeError(401, 'EDGE_NONCE_REPLAY', 'Workspace edge nonce has already been used.');
+  }
+  return {
+    ok: true,
+    caller: {
+      workspaceId: stored.workspaceId,
+      subjectId: 'workspace-edge',
+      deviceId: edgeProxy.nodeId,
+      connectorId: edgeProxy.connectorId,
+      connectionId: `edge:${edgeProxy.connectorId}`,
+      callerId: 'workspace-edge',
+      appId: 'workspace-sites',
+      scopes: ['gateway:proxy'],
+    },
+  };
 }
 
 export function issueAgentAppToken(input: {
@@ -991,7 +1166,7 @@ export function listAgentAppCredentialStatuses(input: {
 }): AgentAppCredentialStatus[] {
   const stored = readStoredAuth(input.config);
   return Object.values(stored.tokens)
-    .map(credentialStatusFromStored)
+    .map((token) => credentialStatusForConfig(input.config, token))
     .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 }
 
@@ -1001,7 +1176,7 @@ export function getAgentAppCredentialStatus(input: {
 }): AgentAppCredentialStatus | null {
   const stored = readStoredAuth(input.config);
   const token = stored.tokens[input.tokenId];
-  return token ? credentialStatusFromStored(token) : null;
+  return token ? credentialStatusForConfig(input.config, token) : null;
 }
 
 export function updateAgentAppTokenScopes(input: {
@@ -1023,7 +1198,7 @@ export function updateAgentAppTokenScopes(input: {
     token.scopes.length === scopes.length &&
     token.scopes.every((scope, index) => scope === scopes[index])
   ) {
-    return credentialStatusFromStored(token);
+    return credentialStatusForConfig(input.config, token);
   }
 
   const updated: StoredToken = {
@@ -1039,7 +1214,7 @@ export function updateAgentAppTokenScopes(input: {
   );
   stored.tokens[input.tokenId] = updated;
   writeStoredAuth(input.config, stored);
-  return credentialStatusFromStored(updated);
+  return credentialStatusForConfig(input.config, updated);
 }
 
 export function signMachineRequest(input: {
@@ -1281,8 +1456,10 @@ export function verifyMachineRequest(input: {
     });
   }
 
-  pruneSeenNonces(stored, nowTime);
-  if (stored.seenNonces[nonce]) {
+  const replayHome = consueloHomeFromGeneratedAuthPath(input.config.generatedAuthPath);
+  const replayScope = `machine:${token.workspaceId}:${token.tokenId}`;
+  const legacyNonce = stored.seenNonces[nonce];
+  if (isLegacyNonceActive(legacyNonce?.seenAt, nowTime)) {
     return denyCredentialUse({
       config: input.config,
       token,
@@ -1345,10 +1522,24 @@ export function verifyMachineRequest(input: {
     });
   }
 
-  const verifiedAt = new Date(nowTime).toISOString();
-  stored.seenNonces[nonce] = { tokenId, seenAt: verifiedAt };
-  token.lastUsedAt = verifiedAt;
-  token.updatedAt = verifiedAt;
+  const claimed = claimGatewayReplayNonce({
+    home: replayHome,
+    scope: replayScope,
+    nonce,
+    nowMs: nowTime,
+    windowMs: MAX_TIMESTAMP_SKEW_MS,
+  });
+  if (!claimed) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'REPLAYED_NONCE',
+      message: 'Gateway nonce has already been used.',
+      decision: 'replayed_nonce',
+      route: input.path,
+    });
+  }
   recordCredentialAuditEvent(
     input.config,
     token,
@@ -1357,7 +1548,11 @@ export function verifyMachineRequest(input: {
     'allowed',
     input.path,
   );
-  writeStoredAuth(input.config, stored);
+  recordGatewayCredentialUsage({
+    home: replayHome,
+    tokenId: token.tokenId,
+    nowMs: nowTime,
+  });
   return {
     ok: true,
     caller: {
@@ -1441,9 +1636,6 @@ export function verifyBearerMcpRequest(input: {
       route: input.path,
     });
   }
-  const verifiedAt = new Date(nowTime).toISOString();
-  token.lastUsedAt = verifiedAt;
-  token.updatedAt = verifiedAt;
   recordCredentialAuditEvent(
     input.config,
     token,
@@ -1452,7 +1644,11 @@ export function verifyBearerMcpRequest(input: {
     'allowed',
     input.path,
   );
-  writeStoredAuth(input.config, stored);
+  recordGatewayCredentialUsage({
+    home: consueloHomeFromGeneratedAuthPath(input.config.generatedAuthPath),
+    tokenId: token.tokenId,
+    nowMs: nowTime,
+  });
   return {
     ok: true,
     caller: {

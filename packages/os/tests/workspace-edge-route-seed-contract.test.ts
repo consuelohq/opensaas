@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { Database } from 'bun:sqlite';
 import { describe, expect, it } from 'vitest';
 
 const runContract =
@@ -20,6 +21,7 @@ type WorkspaceEdgeRouteSeedInput = {
   connectorId?: string;
   tunnelOriginUrl?: string;
   localServiceUrl?: string;
+  preserveExistingConnectorState?: boolean;
 };
 
 type WorkspaceEdgeRouteSeedContract = {
@@ -100,6 +102,7 @@ contractDescribe('workspace edge route seed contract', () => {
       '/gateway/environments/upsert',
       '/gateway/environments/delete',
       '/gateway/environments',
+      '/gateway/secrets',
       '/gateway/artifacts',
       '/office',
       '/design-wiki',
@@ -116,7 +119,7 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/gateway/traces/events',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'trace-sites-live-endpoints',
@@ -126,7 +129,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/traces',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'trace-sites-read-layer',
@@ -136,7 +139,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/configuration/overlay',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'configuration-sites-write-endpoints',
@@ -146,7 +149,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/configuration',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'configuration-sites-read-endpoints',
@@ -156,7 +159,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/settings/overlay',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'configuration-sites-write-endpoints',
@@ -166,7 +169,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/settings',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'configuration-sites-read-endpoints',
@@ -176,7 +179,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/environments/upsert',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'environment-sites-write-endpoints',
@@ -186,7 +189,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/environments/delete',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'environment-sites-write-endpoints',
@@ -196,7 +199,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/environments',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'environment-sites-read-endpoints',
@@ -211,7 +214,7 @@ contractDescribe('workspace edge route seed contract', () => {
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/artifacts',
-        auth: 'required',
+        auth: 'workspace-session',
         target: expect.objectContaining({
           kind: 'consuelo-gateway-service',
           serviceName: 'artifacts-sites-read-layer',
@@ -269,8 +272,10 @@ contractDescribe('workspace edge route seed contract', () => {
       '/',
       '/artifacts',
       '/observability',
+      '/observability/traces',
       '/traces',
       '/tracing',
+      '/trace-burn-intelligence',
       '/diffs',
       '/docs',
       '/configuration',
@@ -408,6 +413,116 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(gtmIndex).toBeGreaterThanOrEqual(0);
     expect(gtmIndex).toBeLessThan(mcpIndex);
     expect(gtmIndex).toBeLessThan(launcherIndex);
+  });
+
+  it('should preserve connector routes and node targets when a Sites-only seed refreshes the hostname', async () => {
+    const seed = await loadWorkspaceEdgeRouteSeedContract();
+    const db = new Database(':memory:');
+    db.exec(`
+      CREATE TABLE workspace_connectors (
+        connector_id TEXT PRIMARY KEY,
+        workspace_id TEXT NOT NULL,
+        workspace_host TEXT NOT NULL,
+        transport TEXT NOT NULL,
+        local_service_url TEXT NOT NULL,
+        connector_status TEXT NOT NULL,
+        revoked_at TEXT,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE workspace_route_registry (
+        hostname TEXT PRIMARY KEY,
+        workspace_id TEXT NOT NULL,
+        workspace_slug TEXT NOT NULL,
+        workspace_host TEXT NOT NULL,
+        base_domain TEXT NOT NULL,
+        route_path_prefix TEXT NOT NULL,
+        route_surface TEXT NOT NULL,
+        route_status TEXT NOT NULL,
+        route_target_kind TEXT NOT NULL,
+        target_origin_url TEXT NOT NULL,
+        connector_id TEXT,
+        connector_status TEXT,
+        record_json TEXT NOT NULL,
+        revoked_at TEXT,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    db.exec(seed.createWorkspaceEdgeRouteSeedSql({
+      connectorId: 'connector_home',
+      tunnelOriginUrl: 'https://connector-home.example.test',
+      localServiceUrl: 'http://127.0.0.1:46320',
+    }));
+    const initialRow = db
+      .query<{ record_json: string }, []>(
+        'SELECT record_json FROM workspace_route_registry WHERE hostname = \'internal.consuelohq.com\'',
+      )
+      .get();
+    if (!initialRow) throw new Error('initial route row was not created');
+    const initialRecord = JSON.parse(initialRow.record_json) as Record<string, unknown>;
+    initialRecord.defaultNodeId = 'node_home';
+    initialRecord.nodeTargets = [
+      {
+        nodeId: 'node_home',
+        connectorId: 'connector_home',
+        connectorStatus: 'connected',
+        tunnelOriginUrl: 'https://connector-home.example.test',
+        state: 'active',
+        lastSeenAt: 1_786_473_600_000,
+        heartbeatTtlMs: 60_000,
+      },
+    ];
+    db.query(
+      'UPDATE workspace_route_registry SET record_json = ? WHERE hostname = ?',
+    ).run(JSON.stringify(initialRecord), 'internal.consuelohq.com');
+
+    db.exec(seed.createWorkspaceEdgeRouteSeedSql({
+      siteSnapshotKey:
+        'sites/workspace_internal/launcher/sha256-sites-refresh/index.html',
+      siteVersionId: 'sha256-sites-refresh',
+      preserveExistingConnectorState: true,
+    }));
+
+    const refreshedRow = db
+      .query<{
+        connector_id: string | null;
+        connector_status: string | null;
+        record_json: string;
+      }, []>(
+        'SELECT connector_id, connector_status, record_json FROM workspace_route_registry WHERE hostname = \'internal.consuelohq.com\'',
+      )
+      .get();
+    if (!refreshedRow) throw new Error('refreshed route row was not created');
+    const refreshedRecord = JSON.parse(refreshedRow.record_json) as {
+      defaultNodeId?: string;
+      nodeTargets?: Array<{ nodeId: string; connectorId: string }>;
+      routes: Array<{
+        pathPrefix: string;
+        target: { kind: string; connectorId?: string; versionId?: string };
+      }>;
+    };
+    expect(refreshedRow.connector_id).toBe('connector_home');
+    expect(refreshedRow.connector_status).toBe('connected');
+    expect(refreshedRecord.defaultNodeId).toBe('node_home');
+    expect(refreshedRecord.nodeTargets).toEqual([
+      expect.objectContaining({
+        nodeId: 'node_home',
+        connectorId: 'connector_home',
+      }),
+    ]);
+    expect(refreshedRecord.routes.find((route) => route.pathPrefix === '/mcp')).toMatchObject({
+      target: {
+        kind: 'os-connector',
+        connectorId: 'connector_home',
+      },
+    });
+    expect(refreshedRecord.routes.find((route) => route.pathPrefix === '/')).toMatchObject({
+      target: {
+        kind: 'site-snapshot',
+        versionId: 'sha256-sites-refresh',
+      },
+    });
   });
 
   it('should ignore incomplete connector inputs instead of persisting empty connector routes', async () => {

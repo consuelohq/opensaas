@@ -10,6 +10,7 @@ import {
   createBunRuntimeMaterializer,
   createLifecycleEngine,
   createReloadServiceController,
+  lifecycleError,
   lifecycleFailureEnvelope,
   lifecycleReleaseChannels,
   lifecycleSuccessEnvelope,
@@ -34,6 +35,7 @@ export type LifecycleCliIo = {
 
 export type LifecycleCliDependencies = Partial<LifecycleCliIo> & {
   engine?: LifecycleEngine;
+  environment?: NodeJS.ProcessEnv;
 };
 
 type ManagedCloudNodeOnboardingDescriptor = {
@@ -438,6 +440,28 @@ export function createDefaultLifecycleServiceController(input: {
   return createReloadServiceController({ osRoot: input.osRoot, platform });
 }
 
+const DEFAULT_ADVISORY_PROCESS_TIMEOUT_MS = 30_000;
+
+export async function waitForAdvisoryProcessExit(
+  child: { exited: Promise<number>; kill(): void },
+  timeoutMs: number,
+): Promise<number | null> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      child.exited,
+      new Promise<null>((resolveTimeout) => {
+        timeout = setTimeout(() => {
+          child.kill();
+          resolveTimeout(null);
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
 export const createDefaultLifecycleEngine = (input: {
   home?: string;
   quiet: boolean;
@@ -471,6 +495,27 @@ export const createDefaultLifecycleEngine = (input: {
       url: `http://127.0.0.1:${port}/health`,
       expectedName: 'consuelo-os',
     }),
+    connectivity: {
+      async accept() {
+        const child = Bun.spawn([
+          process.execPath,
+          resolve(osRoot, 'scripts', 'verify-local-agents.ts'),
+        ], {
+          cwd: osRoot,
+          env: {
+            ...process.env,
+            CONSUELO_HOME: resolveLifecyclePaths(input.home).home,
+          },
+          stdin: 'ignore',
+          stdout: 'ignore',
+          stderr: 'ignore',
+        });
+        return await waitForAdvisoryProcessExit(
+          child,
+          DEFAULT_ADVISORY_PROCESS_TIMEOUT_MS,
+        ) === 0;
+      },
+    },
     progress: input.quiet || input.json ? undefined : input.progress,
     onboarding: async () => {
       try {
@@ -594,6 +639,19 @@ export async function runLifecycleCli(
   }
 
   try {
+    const environment = dependencies.environment ?? process.env;
+    const runsInsideActiveDaemon =
+      environment.CONSUELO_OS_DAEMON_PROCESS === '1' ||
+      environment.XPC_SERVICE_NAME === 'com.consuelo.system';
+    const mutatesDaemonSynchronously =
+      (parsed.command === 'update' && !parsed.check) ||
+      parsed.command === 'repair';
+    if (runsInsideActiveDaemon && mutatesDaemonSynchronously) {
+      throw lifecycleError(
+        'DAEMON_MUTATION_NOT_ALLOWED',
+        `Consuelo OS cannot run a synchronous ${parsed.command} inside its active daemon process. Run the ${parsed.command} from Terminal or through the separate lifecycle process.`,
+      );
+    }
     const engine =
       dependencies.engine ??
       createDefaultLifecycleEngine({

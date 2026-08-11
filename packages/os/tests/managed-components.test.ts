@@ -530,6 +530,32 @@ describe('managed metadata migration and ownership', () => {
   });
 });
 
+describe('visible steering provisioning integration', () => {
+  it('synchronizes dialer instructions into the configured visible user root', () => {
+    const actions = provisionManagedComponentIndexes({
+      home,
+      selectedSkills: [],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:00:00.000Z',
+      userRoot,
+    });
+    const target = join(userRoot, 'Steering', 'dialer-AGENTS.md');
+
+    expect(readFileSync(target, 'utf8')).toContain(
+      '# Consuelo Dialer agent instructions',
+    );
+    expect(actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'seed_steering',
+          path: target,
+          status: 'created',
+        }),
+      ]),
+    );
+  });
+});
+
 describe('managed component provisioning integration', () => {
   it('should run built-in tool wrappers from the active runtime with persisted Bun', () => {
     provisionManagedComponentIndexes({

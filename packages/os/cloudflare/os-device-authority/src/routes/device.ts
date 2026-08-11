@@ -190,7 +190,7 @@ async function handleDeviceRequest(
         nowMs: now(),
       });
       await input.store.del(g.hash);
-      return json(approvedJson(g));
+      return json(approvedJson(g, runtime.workspaceEdgeInternalSigningSecret));
     }
 
     if (url.pathname === '/login/device/approve') {
@@ -349,7 +349,7 @@ async function handleDeviceRequest(
         );
       }
       await input.store.del(g.hash);
-      return json(approvedJson(g));
+      return json(approvedJson(g, runtime.workspaceEdgeInternalSigningSecret));
     }
     return new Response('Not found\n', { status: 404 });
   } catch (error: unknown) {

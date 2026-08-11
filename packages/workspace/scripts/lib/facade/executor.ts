@@ -35,6 +35,8 @@ export const manifestEntries = manifestJson as ToolManifestEntry[];
 
 type TaskSessionMetadata = {
   taskSession: string;
+  taskId?: string;
+  id?: string;
   tmuxSession?: string;
   branch?: string;
   taskBranch?: string;
@@ -641,7 +643,11 @@ async function executeInternalTool<TData>(
 
   if (internal === 'batch') {
     const steps = Array.isArray(input.steps) ? input.steps : [];
-    return runBatch(steps, context.options) as Promise<ToolResult<TData>>;
+    return runBatch(steps, context.options, {
+      taskSession: typeof input.taskSession === 'string' ? input.taskSession : undefined,
+      branch: typeof input.branch === 'string' ? input.branch : undefined,
+      taskWorktree: typeof input.taskWorktree === 'string' ? input.taskWorktree : undefined,
+    }) as Promise<ToolResult<TData>>;
   }
 
   if (internal === 'code.call') {
@@ -775,11 +781,18 @@ function getWorktreeRoot(env: NodeJS.ProcessEnv = process.env): string {
   return env.WORKSPACE_WORKTREE_ROOT || env.OPENSAAS_WORKTREE_ROOT || path.join(os.tmpdir(), 'opensaas-worktrees');
 }
 
-function isTaskSessionMetadata(value: unknown, expectedTaskSession: string): value is TaskSessionMetadata {
+function isTaskSessionMetadata(value: unknown, expectedTaskHandle: string): value is TaskSessionMetadata {
   if (typeof value !== 'object' || value === null) return false;
   const candidate = value as Partial<TaskSessionMetadata>;
   const branch = candidate.branch || candidate.taskBranch;
-  return candidate.taskSession === expectedTaskSession && typeof branch === 'string' && branch.length > 0;
+  const handles = [
+    candidate.taskSession,
+    candidate.branch,
+    candidate.taskBranch,
+    candidate.taskId,
+    candidate.id,
+  ].filter((handle): handle is string => typeof handle === 'string' && handle.length > 0);
+  return handles.includes(expectedTaskHandle) && typeof branch === 'string' && branch.length > 0;
 }
 
 function addSessionCandidates(candidates: Array<{ path: string; warn: boolean }>, worktreePath: string, warn: boolean): void {
@@ -856,7 +869,13 @@ function resolveBranchIfNeeded(
     candidates: options.candidates,
   });
 
-  if (branchMode === 'optional' && !resolution.ok && resolution.code === 'WORKTREE_NOT_FOUND') {
+  const hasExplicitRepoTarget = Boolean(explicitBranch || explicitPrNumber);
+  if (
+    branchMode === 'optional'
+    && !hasExplicitRepoTarget
+    && !resolution.ok
+    && (resolution.code === 'WORKTREE_NOT_FOUND' || resolution.code === 'AMBIGUOUS_TASK_SELECTION')
+  ) {
     return { ok: true, branch: '', source: 'none' };
   }
 

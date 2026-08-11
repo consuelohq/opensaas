@@ -2,6 +2,7 @@ import {
   createWorkspaceCloudflareD1RouteRegistry,
   type WorkspaceRouteD1Resolution,
 } from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
+import { resolveCentralMcpFacadeScope } from '../../../../scripts/lib/tool-scope-authorization';
 import { json } from '../http';
 import type { Store, WorkspaceRouteRegistryBinding } from '../types';
 import { hasGrantedScope, hash } from '../utils';
@@ -37,6 +38,41 @@ export function centralMcpSafeError(input: {
     { error: { code: input.code, message: input.message ?? input.code } },
     { status: input.status },
   );
+}
+
+export async function centralMcpOperationScope(request: Request): Promise<string | null> {
+  if (request.method !== 'POST') return null;
+  let payload: unknown;
+  try {
+    payload = await request.clone().json();
+  } catch {
+    return 'mcp:call';
+  }
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return 'mcp:call';
+  }
+  const record = payload as Record<string, unknown>;
+  if (record.method !== 'tools/call') return null;
+  const requestParams = record.params;
+  if (
+    !requestParams ||
+    typeof requestParams !== 'object' ||
+    Array.isArray(requestParams)
+  ) {
+    return 'mcp:call';
+  }
+  const params = requestParams as Record<string, unknown>;
+  if (params.name === 'get_steering') return 'route:/mcp:read';
+  if (params.name !== 'call') return 'mcp:call';
+  const args = params.arguments;
+  if (!args || typeof args !== 'object' || Array.isArray(args)) {
+    return 'mcp:call';
+  }
+  const facadeArgs = args as Record<string, unknown>;
+  const toolName = facadeArgs.tool;
+  return typeof toolName === 'string' && toolName.trim()
+    ? resolveCentralMcpFacadeScope(toolName, facadeArgs.input)
+    : 'mcp:call';
 }
 
 export function centralMcpUpstreamUrl(input: {
@@ -192,6 +228,14 @@ export async function proxyCentralMcpRequest(input: {
         status: 403,
         code: 'MISSING_SCOPE',
         message: 'OAuth token does not grant MCP route access.',
+      });
+    }
+    const operationScope = await centralMcpOperationScope(input.request);
+    if (operationScope && !hasGrantedScope(stored.scopes, operationScope)) {
+      return centralMcpSafeError({
+        status: 403,
+        code: 'MISSING_SCOPE',
+        message: 'OAuth token does not grant the requested MCP operation.',
       });
     }
     if (!input.routeRegistry) {

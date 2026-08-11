@@ -10,6 +10,7 @@ import {
   type ArtifactCatalog,
 } from './artifacts';
 import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
+import { buildObservabilityTracesSite } from './observability-traces-site';
 import {
   renderLauncherOnboarding,
   type LauncherLocalAgent,
@@ -656,14 +657,6 @@ function buildReservedSitePage(site: ReservedSite): string {
 `;
 }
 
-function buildTracesSite(): string {
-  return `<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Traces - Consuelo OS</title><style>${baseStyles()}</style></head>
-<body><main><header><h1>Traces</h1><p>The trace viewer is served by the authenticated local OS Hono application.</p></header><section><div class="section-header"><h2>Canonical trace viewer</h2></div><p style="padding: 18px;">This generated Sites page is a compatibility notice only. <a href="/traces">Open authenticated traces</a>.</p></section></main></body></html>
-`;
-}
-
 export function getSitesPaths(home: string): SitesPaths {
   const sitesDir = path.join(home, 'sites');
   const pagesDir = path.join(sitesDir, 'pages');
@@ -734,7 +727,7 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
     );
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     refreshArtifactsSite(options.home, data);
-    fs.writeFileSync(paths.tracesIndexPath, buildTracesSite(), { mode: 0o600 });
+    fs.writeFileSync(paths.tracesIndexPath, buildObservabilityTracesSite(), { mode: 0o600 });
     for (const site of RESERVED_SITES) fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), buildReservedSitePage(site), { mode: 0o600 });
     materializeConfigurationSite(options.home);
   }

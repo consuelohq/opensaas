@@ -5,14 +5,29 @@ import '../../styles/primitives.css';
 
 const chatGptConnectorsUrl = 'https://chatgpt.com/apps#settings/Connectors';
 const mcpUrl = 'https://os.consuelohq.com/mcp';
+const workspaceOrigin = new URL(
+  import.meta.env.PUBLIC_CONSUELO_WORKSPACE_ORIGIN?.trim()
+    || 'https://workspace.consuelohq.com',
+);
+const workspaceUrl = (pathname: string) => new URL(pathname, workspaceOrigin).toString();
 const siteLinks = [
-  { label: 'Go to market', href: 'https://sites.consuelohq.com/gtm' },
-  { label: 'Artifacts', href: 'https://sites.consuelohq.com/office' },
-  { label: 'Observability', href: 'https://sites.consuelohq.com/observability' },
-  { label: 'Code review', href: 'https://sites.consuelohq.com/diffs' },
+  { label: 'Go to market', href: workspaceUrl('/gtm') },
+  { label: 'Artifacts', href: workspaceUrl('/artifacts') },
+  { label: 'Observability', href: workspaceUrl('/observability') },
+  { label: 'Code review', href: workspaceUrl('/diffs') },
 ];
 const guideLinks = [{ label: 'Documentation', href: 'https://docs.consuelohq.com/' }];
-const writingLinks = [{ label: 'Decision loops', href: '/writing/on-decision-loops' }];
+const writingLinks = [
+  {
+    label: 'Decision loops',
+    href: 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/#the-future-interface-is-what-should-we-do-next',
+  },
+];
+const configurationLinks = [
+  { label: 'Tools', href: workspaceUrl('/tools') },
+  { label: 'Environments', href: workspaceUrl('/environments') },
+  { label: 'Secrets', href: workspaceUrl('/secrets') },
+];
 
 const description = 'Connect ChatGPT and workspace agents to Consuelo OS.';
 ---
@@ -55,6 +70,10 @@ const description = 'Connect ChatGPT and workspace agents to Consuelo OS.';
         <section>
           <h2>Writing</h2>
           <ul>{writingLinks.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+        </section>
+        <section>
+          <h2>Configuration</h2>
+          <ul>{configurationLinks.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
         </section>
       </div>
       <section class="os-launcher__status" aria-label="Local agents">

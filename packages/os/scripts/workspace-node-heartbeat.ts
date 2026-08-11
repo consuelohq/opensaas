@@ -11,7 +11,9 @@ import {
 import {
   createWorkspaceNodeHeartbeatClient,
   type WorkspaceNodeHeartbeatConfig,
+  type WorkspaceNodeHeartbeatResult,
 } from './lib/workspace-node-heartbeat-client';
+import { reconcileGatewayWorkspaceEdgeProxyAuth } from './lib/security-gateway';
 
 type WorkspaceNodeHeartbeatFileConfig = WorkspaceNodeHeartbeatConfig & {
   osHome?: string;
@@ -82,6 +84,27 @@ function normalizeConnectorHealthUrl(value: string): URL {
   return url;
 }
 
+export function reconcileHeartbeatEdgeProxyAuth(input: {
+  configPath: string;
+  config: WorkspaceNodeHeartbeatFileConfig;
+  result: WorkspaceNodeHeartbeatResult;
+}): boolean {
+  if (!input.result.connectorId || !input.result.edgeRequestSigningSecret) {
+    return false;
+  }
+  if (input.result.nodeId !== input.config.nodeId) {
+    throw new Error('workspace node heartbeat returned a different node identity');
+  }
+  const authConfigPath = path.join(path.dirname(input.configPath), 'auth.json');
+  return reconcileGatewayWorkspaceEdgeProxyAuth({
+    authConfigPath,
+    workspaceId: input.config.workspaceId,
+    nodeId: input.result.nodeId,
+    connectorId: input.result.connectorId,
+    signingSecret: input.result.edgeRequestSigningSecret,
+  });
+}
+
 export async function resolveHeartbeatConnectorStatus(input: {
   config: WorkspaceNodeHeartbeatFileConfig;
   fetchImpl?: typeof fetch;
@@ -133,7 +156,9 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
       agents,
       fetchImpl: input.fetchImpl,
     });
-    return await client.send();
+    const result = await client.send();
+    reconcileHeartbeatEdgeProxyAuth({ configPath, config, result });
+    return result;
   } catch (error: unknown) {
     if (error instanceof Error) throw error;
     throw new Error('workspace node heartbeat failed', { cause: error });
