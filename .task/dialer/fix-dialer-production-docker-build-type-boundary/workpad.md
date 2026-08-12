@@ -28,11 +28,15 @@ started: 2026-08-12
 - `stream.sync` for `stream/dialer` was attempted first and stopped on five real workspace test-selection conflicts. Those conflicts are outside this repair; the task therefore starts from current `main` and validates against `origin/main`.
 - Implementation is complete: the package now has a build-only TypeScript config, while the ordinary `tsconfig.json` continues to typecheck test sources.
 - Focused and affected dependency builds are green; task is ready for strict review/verify.
+- CodeRabbit correctly identified that the Nx `build` target still bypassed the package build script. A follow-up audit also found both Twenty production Dockerfiles directly running bare Dialer `tsc --declaration`. All production entrypoints now delegate to `yarn build`, making the package script and `tsconfig.build.json` the single build boundary.
 
 ## files changed
 
 - `packages/dialer/package.json`
+- `packages/dialer/project.json`
 - `packages/dialer/tsconfig.build.json`
+- `packages/twenty-docker/twenty/Dockerfile`
+- `packages/twenty-docker/twenty/Dockerfile.worker`
 
 
 ## workspace-owned: files changed
@@ -57,12 +61,15 @@ started: 2026-08-12
 - 2026-08-12 19:06:21 `verify`: passed — OK
 - 2026-08-12 19:06:42 `review.run`: passed — OK
 - 2026-08-12 19:09:57 `verify`: passed — OK
+- 2026-08-12 19:19:49 `review.run`: passed — OK
+- 2026-08-12 19:21:34 `verify`: passed — OK
 
 ## key decisions
 
 - Fix the production/test compilation boundary rather than adding Bun typings just to make production `tsc` accept test-only code.
 - Do not resolve unrelated `stream/dialer` workspace conflicts as part of this side quest.
 - Use a dedicated `tsconfig.build.json` rather than exclusions in the general config. This preserves normal test typechecking (`18` test/mock sources remain in the general TypeScript program) while keeping production emit Node-safe and test-free.
+- Route Nx and both Twenty Docker production builds through the package `yarn build` script instead of repeating TypeScript flags in three places. The package script is now the single source of truth for production Dialer compilation.
 
 ## notes for ko
 
@@ -77,6 +84,8 @@ started: 2026-08-12
 - `stream.sync` could not merge current `main` into `stream/dialer` because of real conflicts in workspace test-selection implementation/config/tests. No stream merge was completed. This task was isolated from `main` instead of widening scope.
 - One parallel validation batch hit an MCP network error. It was retried as the smallest independent calls; the exact Twenty build and diff inspection then completed normally.
 - Promotion preflight confirmed this is not a safe normal stream handoff: `stream/dialer...task` is diverged by 62/27 commits and about 300 files, and PR #1896 is `DIRTY`. By contrast `main...task` is cleanly ahead by two task commits with only the task metadata plus the two intended Dialer build files. The scope-preserving hotfix path is therefore to retarget this already-main-based task PR to `main`, not resolve unrelated stale-stream conflicts.
+- The first PR CI `Consuelo / verify` failure was infrastructure-only: `oven-sh/setup-bun@v2` retried the Bun 1.3.14 download and failed on repeated `socket hang up` errors before repository verification began. A fresh task push will replace that stale CI result; the gate is not being bypassed.
+- An Nx validation inspected an already-populated local `packages/dialer/dist` and saw stale test/mock artifacts left by earlier pre-fix bare `tsc` runs. The authoritative clean-output proof compiles into a fresh temporary directory: 172 production files emitted, 0 test/mock artifacts. Fresh Docker stages also start without those stale outputs.
 
 ## Test-first contract
 
@@ -93,6 +102,11 @@ started: 2026-08-12
 - `bun test packages/dialer/src`: 171 pass, 0 fail across 16 files; destructive-literal preflight found zero findings.
 - `yarn workspace @consuelo/dialer build`: pass, 172 emitted files, zero test/mock artifacts.
 - Exact affected dependency path `npx nx run twenty-server:build --skip-nx-cache`: pass; `@consuelo/dialer:build` runs and the full Twenty server dependency build completes successfully.
+- Review follow-up: `npx nx run @consuelo/dialer:build --skip-nx-cache` passes and shows the Nx target invoking `yarn build`.
+- Review follow-up: both `packages/twenty-docker/twenty/Dockerfile` and `.worker` now invoke `yarn build` for Dialer; repository search finds no remaining production bare Dialer `tsc` invocation. The remaining `tsc --noEmit` in `project.json` is intentionally the test-inclusive typecheck target.
+- Review follow-up fresh-output proof: `npx tsc -p tsconfig.build.json --declaration --outDir <fresh-temp>` emits 172 files and 0 test/mock artifacts.
+- Review follow-up `npx nx run twenty-server:build --skip-nx-cache`: pass with `@consuelo/dialer:build -> yarn build`; no `bun:test`, `Bun`, or `redis-parallel-store.test.ts` diagnostics.
+- Review follow-up Dialer suite: 171 pass, 0 fail, 362 assertions.
 
 ---
 
@@ -108,6 +122,11 @@ bun run task:finish
 
 - `package.json`
 - `packages/dialer/package.json`
+- `packages/dialer/project.json`
 - `packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts`
 - `packages/dialer/tsconfig.json`
+- `packages/twenty-docker/twenty/Dockerfile`
+- `packages/twenty-docker/twenty/Dockerfile.worker`
 - `packages/workspace/scripts/lib/git.js`
+
+- 2026-08-12 19:18:55 apply-patch: `.task/dialer/fix-dialer-production-docker-build-type-boundary/workpad.md`

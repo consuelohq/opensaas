@@ -49,7 +49,7 @@ RUN cd /app/packages/agent && npx tsc
 RUN cd /app/packages/logger && npx tsc
 RUN cd /app/packages/coaching && npx tsc --declaration
 RUN cd /app/packages/contacts && npx tsc
-RUN cd /app/packages/dialer && npx tsc --declaration
+RUN cd /app/packages/dialer && yarn build
 RUN cd /app/packages/api && npx tsc
 
 RUN yarn workspaces focus --production twenty-shared twenty-server @consuelo/agent @consuelo/api @consuelo/dialer @consuelo/coaching @consuelo/contacts @consuelo/logger
