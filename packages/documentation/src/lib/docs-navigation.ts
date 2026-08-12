@@ -185,6 +185,7 @@ const memoryItems: SidebarItem[] = [
   { label: 'Handoffs', slug: 'memory/handoffs' },
   { label: 'Streams', slug: 'memory/streams' },
   { label: 'Memory tool and traces', slug: 'memory/saved-memory-and-traces' },
+  { label: 'Shared memory and context', slug: 'build/shared-memory-and-context' },
   { label: 'Files and artifacts', slug: 'build/files-and-artifacts' },
 ];
 
@@ -202,6 +203,7 @@ const secureItems: SidebarItem[] = [
     ],
   },
   { label: 'Approvals', slug: 'secure/approvals' },
+  { label: 'Build approvals', slug: 'build/approvals' },
   { label: 'Nodes and network access', slug: 'secure/nodes-and-network-access' },
   { label: 'Tailscale', slug: 'secure/tailscale' },
   { label: 'Hosted MCP ingress', slug: 'secure/hosted-mcp-ingress' },

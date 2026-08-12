@@ -35,6 +35,7 @@ const {
   setBranchUpstream,
 } = require('./lib/git');
 const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
+const { getTaskWorkpadPathFromMeta } = require('./lib/task-workpad');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
 const { compactTaskStartOutput } = require('./lib/task-start-output');
 const { renderHookResult } = require('../hooks/dispatcher.js');
@@ -527,7 +528,8 @@ async function main() {
     await saveTaskMetaMemory(taskMeta);
 
     // create fresh workpad — always overwrite, never reuse from previous task
-    const workpadPath = path.join(worktreePath, '.task', 'workpad.md');
+    const workpadPath = getTaskWorkpadPathFromMeta(worktreePath, taskMeta);
+    fs.mkdirSync(path.dirname(workpadPath), { recursive: true });
     const slug = taskBranch.split('/').pop();
     const workpad = [
       `# ${args.title}`,
