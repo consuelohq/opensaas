@@ -211,5 +211,18 @@ describe('Build with OS documentation contract', () => {
       expect(existsSync(packageFile(`src/content/docs/${sourcePath}`))).toBe(false);
       expect(redirects).toContain(redirect);
     }
+
+    expect(redirects).not.toMatch(/:\s*'\/build\/tools\/office\/'/);
+    for (const legacyCalendarPath of [
+      '/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo',
+      '/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo',
+      '/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects',
+      '/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user',
+      '/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records',
+    ]) {
+      const start = redirects.indexOf(`'${legacyCalendarPath}':`);
+      expect(start).toBeGreaterThanOrEqual(0);
+      expect(redirects.slice(start, start + 180)).toContain("'/build/tools/artifacts/'");
+    }
   });
 });

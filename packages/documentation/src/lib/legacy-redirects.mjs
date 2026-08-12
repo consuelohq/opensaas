@@ -138,15 +138,15 @@ export const legacyRedirects = {
   '/user-guide/calendar-emails/capabilities/calendar': '/connect/apps-and-services/google-calendar/',
   '/user-guide/calendar-emails/capabilities/mailbox': '/connect/apps-and-services/gmail/',
   '/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo':
-    '/build/tools/office/',
+    '/build/tools/artifacts/',
   '/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo':
-    '/build/tools/office/',
+    '/build/tools/artifacts/',
   '/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects':
-    '/build/tools/office/',
+    '/build/tools/artifacts/',
   '/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user':
-    '/build/tools/office/',
+    '/build/tools/artifacts/',
   '/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records':
-    '/build/tools/office/',
+    '/build/tools/artifacts/',
   '/user-guide/calendar-emails/how-tos/limit-emails-imported': '/build/tools/artifacts/',
   '/user-guide/calendar-emails/overview': '/connect/apps-and-services/google-workspace/',
   '/user-guide/dashboards/capabilities/chart-settings': '/',

@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createServer } from 'node:net';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -11,6 +11,15 @@ const temporaryHomes: string[] = [];
 
 const sleep = (milliseconds: number): Promise<void> =>
   new Promise((resolveSleep) => setTimeout(resolveSleep, milliseconds));
+
+function resolveBunExecutable(): string {
+  const executable = process.env.BUN_BINARY || 'bun';
+  const probe = spawnSync(executable, ['--version'], { encoding: 'utf8' });
+  if (probe.error || probe.status !== 0) {
+    throw new Error(`Bun runtime prerequisite is unavailable: ${probe.error?.message ?? probe.stderr ?? 'unknown error'}`);
+  }
+  return executable;
+}
 
 async function assertPortAvailable(port: number): Promise<void> {
   await new Promise<void>((resolveAvailable, reject) => {
@@ -72,7 +81,7 @@ describe('OS worker pool process integration', () => {
     const basePort = await contiguousPorts();
     const statePath = join(home, 'node', 'runs', 'os-worker-pool.json');
     const supervisor = spawn(
-      'bun',
+      resolveBunExecutable(),
       [resolve(osRoot, 'scripts/server/supervisor.ts')],
       {
         cwd: osRoot,
@@ -87,7 +96,8 @@ describe('OS worker pool process integration', () => {
         stdio: ['ignore', 'pipe', 'pipe'],
       },
     );
-    const supervisorExited = new Promise<number>((resolveExit) => {
+    const supervisorExited = new Promise<number>((resolveExit, rejectExit) => {
+      supervisor.once('error', rejectExit);
       supervisor.once('exit', (code) => resolveExit(code ?? 1));
     });
 
@@ -158,5 +168,5 @@ describe('OS worker pool process integration', () => {
       supervisor.kill('SIGTERM');
       await supervisorExited;
     }
-  });
+  }, 60_000);
 });
