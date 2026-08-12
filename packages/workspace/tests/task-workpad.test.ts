@@ -138,6 +138,96 @@ describe('task workpad helpers', () => {
     }
   });
 
+  it('should accept meaningful agent-authored sections when headings are not on a hidden allowlist', () => {
+    // Arrange
+    const root = makeWorktree([
+      '# workpad',
+      '',
+      '## What changed',
+      '',
+      '- Replaced the retrieval pipeline and removed the obsolete implementation.',
+      '',
+      '## Why',
+      '',
+      'The old path routed explicit provider queries into unrelated domains.',
+      '',
+      '## Validation',
+      '',
+      '- Focused tests passed and historical replay reduced payload size.',
+      '',
+      '## Issues / follow-ups',
+      '',
+      '- Stream handoff still needs lifecycle repair.',
+      '',
+    ].join('\n'));
+    try {
+      // Act
+      const readiness = checkWorkpadReady(root, meta);
+
+      // Assert
+      expect(readiness.ok).toBe(true);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('should reject a checkpoint heading when its body has no meaningful content', () => {
+    const root = makeWorktree([
+      '# workpad',
+      '',
+      '## acceptance criteria',
+      '',
+      '- [ ] Define explicit task acceptance criteria before coding.',
+      '',
+      '## plan',
+      '',
+      '1. Read the relevant code and update this plan before editing.',
+      '',
+      '## Summary',
+      '',
+    ].join('\n'));
+    try {
+      const readiness = checkWorkpadReady(root, meta);
+
+      expect(readiness.ok).toBe(false);
+      expect(readiness.missing).toContain('one meaningful agent-authored workpad update');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('should reject the untouched Test-first contract when every field is still pending', () => {
+    const root = makeWorktree([
+      '# workpad',
+      '',
+      '## acceptance criteria',
+      '',
+      '- [ ] Define explicit task acceptance criteria before coding.',
+      '',
+      '## plan',
+      '',
+      '1. Read the relevant code and update this plan before editing.',
+      '',
+      '## Test-first contract',
+      '',
+      'behavior under test: pending',
+      'existing local pattern: pending',
+      'new or changed tests: pending',
+      'focused red command: pending',
+      'expected red failure: pending',
+      'no-test waiver: not applicable unless explicitly justified',
+      '',
+    ].join('\n'));
+    try {
+      const readiness = checkWorkpadReady(root, meta);
+
+      expect(readiness.ok).toBe(false);
+      expect(readiness.missing).toContain('one meaningful agent-authored workpad update');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('treats an agent checkpoint as publish-ready', () => {
     const root = makeWorktree([
       '# workpad',

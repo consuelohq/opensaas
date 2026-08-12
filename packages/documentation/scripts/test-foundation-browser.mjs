@@ -3,6 +3,7 @@ import {
   startDocumentationServer,
   stopDocumentationServer,
 } from './lib/documentation-browser-test.mjs';
+import { readFileSync } from 'node:fs';
 
 const port = 4327;
 const origin = `http://127.0.0.1:${port}`;
@@ -34,7 +35,7 @@ try {
   if ((await page.locator('main h1#_top').count()) !== 1) throw new Error('Homepage must render one page title');
   const globalLinks = page.locator('#starlight__sidebar a.global-section-link');
   const globalCount = await globalLinks.count();
-  if (globalCount !== 7) throw new Error(`Expected 7 direct global section links, found ${globalCount}`);
+  if (globalCount !== 9) throw new Error(`Expected 9 direct global section links, found ${globalCount}`);
   if ((await page.locator('#starlight__sidebar details').count()) !== 0) throw new Error('Global sidebar must not render dropdown groups');
   const startGlobalLink = page.locator('#starlight__sidebar').getByRole('link', { name: 'Start', exact: true });
   if ((await startGlobalLink.getAttribute('href')) !== '/start/') throw new Error('Start must link directly to its overview');
@@ -44,6 +45,12 @@ try {
   const localGroups = page.locator('#starlight__sidebar details');
   if ((await localGroups.count()) !== 1) throw new Error('Section sidebar must show one group');
   if (!(await localGroups.first().evaluate((element) => element.open))) throw new Error('Section sidebar must start expanded');
+  const activeStartStyle = await page.locator('#starlight__sidebar a[aria-current="page"]').evaluate((element) => ({
+    backgroundColor: getComputedStyle(element).backgroundColor,
+    boxShadow: getComputedStyle(element).boxShadow,
+  }));
+  if (activeStartStyle.boxShadow !== 'none') throw new Error(`Active sidebar item still has an accent bar: ${activeStartStyle.boxShadow}`);
+  if (activeStartStyle.backgroundColor === 'rgba(0, 0, 0, 0)') throw new Error('Active sidebar item must keep a neutral gray background');
 
   const startRoutes = [
     ['Overview', '/start/'],
@@ -137,9 +144,18 @@ try {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`${origin}/build/tools/how-tools-work/`, { waitUntil: 'networkidle' });
   const breadcrumbs = page.getByRole('navigation', { name: 'Breadcrumb' });
-  for (const label of ['Build with OS', 'Tools', 'How tools work']) {
+  for (const label of ['Tools', 'How tools work']) {
     if (!(await breadcrumbs.getByText(label, { exact: true }).isVisible())) throw new Error(`Missing breadcrumb: ${label}`);
   }
+  if ((await breadcrumbs.getByText('Build with OS', { exact: true }).count()) !== 0) throw new Error('Build with OS must not remain in promoted breadcrumbs');
+
+  const toolManifest = JSON.parse(readFileSync(new URL('../../os/manifests/generated/tool.manifest.json', import.meta.url), 'utf8'));
+  const expectedToolNames = toolManifest.tools.map((tool) => tool.name).filter(Boolean).sort((left, right) => left.localeCompare(right));
+  await page.goto(`${origin}/tools/tool-list/`, { waitUntil: 'networkidle' });
+  const toolTocLabels = (await page.locator('starlight-toc a').allTextContents()).map((label) => label.trim());
+  const missingToolTocEntries = expectedToolNames.filter((name) => !toolTocLabels.includes(name));
+  if (missingToolTocEntries.length !== 0) throw new Error(`Tool List TOC is missing ${missingToolTocEntries.length} tools: ${missingToolTocEntries.slice(0, 5).join(', ')}`);
+  await page.goto(`${origin}/build/tools/how-tools-work/`, { waitUntil: 'networkidle' });
   const siteFooter = page.locator('[data-docs-site-footer]');
   if ((await siteFooter.count()) !== 1) throw new Error('Missing dedicated site footer');
   const siteFooterPlacement = await siteFooter.evaluate((element) => ({
@@ -167,7 +183,7 @@ try {
   if (shellStyles.nestedGuideWidth !== '0px') throw new Error(`Nested sidebar guide remains ${shellStyles.nestedGuideWidth}`);
 
   const registry = page.locator('.docs-registry-grid');
-  if ((await registry.locator('.docs-registry-column').count()) !== 7) throw new Error('Footer registry must contain seven sections');
+  if ((await registry.locator('.docs-registry-column').count()) !== 9) throw new Error('Footer registry must contain nine sections');
   const desktopColumns = await registry.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
   if (desktopColumns !== 7) throw new Error(`Footer registry must use seven desktop columns, found ${desktopColumns}`);
   const lastHeadingY = await page.locator('#tools-skills-and-scripts').evaluate(

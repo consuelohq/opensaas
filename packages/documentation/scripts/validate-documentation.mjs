@@ -292,14 +292,20 @@ const navigation = read('src/lib/docs-navigation.ts');
 for (const required of [
   'Start',
   'Connect',
-  'Build with OS',
-  'Sites',
+  'Tools',
+  'Skills',
+  'Steering',
+  'Memory',
   'Observe',
   'Secure',
   'Reference',
 ]) {
   assert(navigation.includes(`label: '${required}'`), `navigation missing ${required}`);
 }
+assert(
+  !navigation.includes("label: 'Build with OS'"),
+  'Build with OS must not remain a top-level navigation section',
+);
 for (const required of [
   'docsSidebar',
   'customCss',

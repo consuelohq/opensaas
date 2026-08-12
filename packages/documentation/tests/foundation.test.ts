@@ -110,27 +110,43 @@ describe('documentation navigation', () => {
   ] satisfies DocsSidebarEntry[];
 
   test('derives direct global links, breadcrumbs, and footer columns from one registry', () => {
-    expect(globalSectionLinks).toHaveLength(7);
-    expect(globalSectionLinks[0]).toEqual({ label: 'Start', href: '/start/' });
-    expect(globalSectionLinks.at(-1)).toEqual({ label: 'Reference', href: '/reference/' });
+    expect(globalSectionLinks).toEqual([
+      { label: 'Start', href: '/start/' },
+      { label: 'Connect', href: '/connect/' },
+      { label: 'Tools', href: '/tools/' },
+      { label: 'Skills', href: '/skills/' },
+      { label: 'Steering', href: '/steering/' },
+      { label: 'Memory', href: '/memory/' },
+      { label: 'Observe', href: '/observe/' },
+      { label: 'Secure', href: '/secure/' },
+      { label: 'Reference', href: '/reference/' },
+    ]);
 
     expect(getBreadcrumbs('/')).toEqual([]);
     expect(getBreadcrumbs('/start/')).toEqual([
       { label: 'Start', href: '/start/', current: true },
     ]);
     expect(getBreadcrumbs('/build/tools/how-tools-work/')).toEqual([
-      { label: 'Build with OS', href: '/build/' },
-      { label: 'Tools' },
+      { label: 'Tools', href: '/tools/' },
       { label: 'How tools work', href: '/build/tools/how-tools-work/', current: true },
     ]);
+    expect(getBreadcrumbs('/build/skills/how-skills-work/')).toEqual([
+      { label: 'Skills', href: '/skills/' },
+      { label: 'How skills work', href: '/build/skills/how-skills-work/', current: true },
+    ]);
+    expect(getBreadcrumbs('/sites/publish/')).toEqual([
+      { label: 'Tools', href: '/tools/' },
+      { label: 'Sites' },
+      { label: 'Publish', href: '/sites/publish/', current: true },
+    ]);
 
-    expect(footerSections).toHaveLength(7);
+    expect(footerSections).toHaveLength(9);
     expect(footerSections.find((section) => section.label === 'Start')?.links).toContainEqual({
       label: 'Install Consuelo OS',
       href: '/start/install-consuelo-os/',
     });
-    expect(footerSections.find((section) => section.label === 'Build with OS')?.links).toContainEqual({
-      label: 'Tools',
+    expect(footerSections.find((section) => section.label === 'Tools')?.links).toContainEqual({
+      label: 'How tools work',
       href: '/build/tools/how-tools-work/',
     });
   });
@@ -151,12 +167,13 @@ describe('documentation navigation', () => {
 describe('foundation source contract', () => {
   const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
-  test('declares the seven approved top-level areas and Starlight overrides', () => {
+  test('declares the nine approved top-level areas and Starlight overrides', () => {
     const config = read('astro.config.mjs');
     const navigation = read('src/lib/docs-navigation.ts');
-    for (const label of ['Start', 'Connect', 'Build with OS', 'Sites', 'Observe', 'Secure', 'Reference']) {
+    for (const label of ['Start', 'Connect', 'Tools', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference']) {
       expect(navigation).toContain(`label: '${label}'`);
     }
+    expect(navigation).not.toContain("label: 'Build with OS'");
     expect(config).toContain('PageTitle:');
     expect(config).toContain('Sidebar:');
     expect(config).toContain('Footer:');
@@ -164,7 +181,7 @@ describe('foundation source contract', () => {
   });
 
   test('scaffolds every top-level route', () => {
-    for (const route of ['start', 'connect', 'build', 'sites', 'observe', 'secure', 'reference']) {
+    for (const route of ['start', 'connect', 'tools', 'skills', 'steering', 'memory', 'observe', 'secure', 'reference']) {
       expect(existsSync(new URL(`../src/content/docs/${route}/index.mdx`, import.meta.url))).toBe(true);
     }
   });
@@ -208,6 +225,9 @@ describe('foundation source contract', () => {
     expect(card).toContain(':focus:not(:focus-visible)');
     expect(css).toContain("#starlight__sidebar a:focus:not(:focus-visible)");
     expect(css).toContain("#starlight__sidebar a[aria-current='page']");
+    expect(css).toContain('var(--sl-color-gray');
+    expect(css).toContain('box-shadow: none');
+    expect(css).not.toContain('box-shadow: inset 3px 0 0 var(--sl-color-text-accent)');
     expect(css).toContain('#starlight__sidebar ul ul li');
     expect(css).toContain('border-inline-start: 0');
     expect(css).toContain('.page > .docs-site-footer');

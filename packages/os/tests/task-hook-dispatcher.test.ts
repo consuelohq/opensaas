@@ -34,11 +34,11 @@ describe('OS hook dispatcher', () => {
     expect(result).toEqual(
       expect.objectContaining({
         workflow: 'task',
-        stage: 'post-task-start-guidance',
-        suggestedNextAction: expect.objectContaining({
-          capability: 'tool.batch',
-          tool: 'batch',
-          inputSchema: 'BatchInput',
+        stage: 'workpad-bootstrap',
+        requiredNextAction: expect.objectContaining({
+          capability: 'workpad.write',
+          tool: 'fs.write',
+          inputSchema: 'FsWriteInput',
           source: 'manifest',
           taskSessionPlacement: 'top-level',
           taskSession: 'tsk_dispatch',
@@ -49,7 +49,7 @@ describe('OS hook dispatcher', () => {
         }),
       }),
     );
-    expect(result.suggestedNextAction.input.steps).toHaveLength(6);
+    expect(result.requiredNextAction.input).toEqual(expect.objectContaining({ append: true, mkdirs: true }));
     expect(JSON.stringify(result)).not.toContain('fs.put');
   });
 
@@ -87,12 +87,23 @@ describe('OS hook dispatcher', () => {
 
   test('task-start script emits post-start guidance through the dispatcher', () => {
     const source = readFileSync(taskStartScript, 'utf8');
+    const mainSource = source.slice(source.indexOf('async function main()'));
+    const preflight = mainSource.indexOf('resolveStreamContextBeforeTaskMutation({');
 
     expect(source).toContain("require('../hooks/dispatcher.js')");
     expect(source).toContain("require('../hooks/intent.js')");
+    expect(source).toContain("getTaskWorkpadPathFromMeta");
+    expect(source).toContain('const workpadPath = getTaskWorkpadPathFromMeta(worktreePath, taskMeta);');
+    expect(source).toContain('fs.mkdirSync(path.dirname(workpadPath), { recursive: true });');
+    expect(source).not.toContain("path.join(worktreePath, '.task', 'workpad.md')");
+    expect(source).toContain("path.join(__dirname, 'stream-context.js')");
+    expect(preflight).toBeGreaterThan(-1);
+    for (const mutation of ['ensureRemoteStreamBranch({', 'ensureRemoteTaskBranch({', 'createWorktree(', 'createBootstrapCommit({', 'createPullRequest({']) {
+      expect(preflight).toBeLessThan(mainSource.indexOf(mutation));
+    }
     expect(source).toContain('createWorkflowIntentRuntime().start({');
     expect(source).toContain('workflow: args.workflow');
-    expect(source).toContain('taskResult');
+    expect(source).toMatch(/createWorkflowIntentRuntime\(\)\.start\(\{[\s\S]*?\btaskResult,\s*\}\);/);
     expect(source).toContain('renderHookResult(workflowStart.hookResult)');
     expect(source).not.toContain("getTaskHookGuidance('after-task-start'");
   });
@@ -119,13 +130,8 @@ describe('OS hook dispatcher', () => {
 
     expect(eventResult.status).toBe(0);
     const parsed = JSON.parse(eventResult.stdout);
-    expect(parsed.stage).toBe('task-start-guidance');
-    expect(parsed.advisory).toEqual(
-      expect.objectContaining({
-        suggestedNextTool: 'stream.context',
-      }),
-    );
-    expect(parsed.examples[0].orderedActions[0]).toEqual(
+    expect(parsed.stage).toBe('stream-context');
+    expect(parsed.requiredNextAction).toEqual(
       expect.objectContaining({
         capability: 'stream.context',
         tool: 'stream.context',
