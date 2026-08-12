@@ -166,6 +166,7 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-12 03:04:25 `review.run`: passed — OK
 - 2026-08-12 03:16:39 `review.run`: passed — OK
 - 2026-08-12 03:29:47 `review.run`: passed — OK
+- 2026-08-12 03:42:19 `review.run`: passed — OK
 
 ## key decisions
 
@@ -300,3 +301,4 @@ bun run task:finish
 - Immutable selector verification: against pinned base `70b25928`, committed-only selection chose exactly 7 focused suites (workspace test selection; CI immutable-base contract; Trace gateway/Trace Burn; canonical TraceStore boundary; edge publisher; edge route preservation; lifecycle MCP scrub) and all 7 passed locally.
 - CI diagnostics: exact current synthetic diff selected 8 focused suites locally (adds workspace verification stamp tests) and all 8 passed. CI still reported registry failure without naming the suite, so `verify` now emits only failed suite name + exit code (no test payload) in human output; regression test added red-first/green.
 - CI runner root cause: the three CI-only failures were the publisher, route-preservation, and lifecycle suites. Root Vitest with repo cwd breaks tests that resolve OS modules from `process.cwd()`, while the OS package `test` script launches Node and cannot load `bun:sqlite`. The stable contract runner is Bun runtime + `packages/os` cwd + root-installed Vitest (`bun --cwd packages/os ../../node_modules/vitest/vitest.mjs ...`). Publisher 7/7, route/gateway 23/23, lifecycle 10/10 pass with that combination; registry command contract added red-first/green.
+- Stream integration catch: after explicitly merging current `stream/os` into the task branch, `finish-line-lifecycle-contract` reproduced the CI failure: stream had reintroduced Caddy `response_header_timeout 30s`, `read_timeout 1h`, and `write_timeout 1h`, contradicting this rollout's long-call invariant and the 15s-crash fix. Removed those proxy execution timeouts again while retaining `dial_timeout 5s`; merged-head lifecycle contract is now 10/10 and OS typecheck passes.

@@ -794,7 +794,7 @@ function requirePrivateUpstream(upstream: {
   if (!privateHosts.has(upstream.host)) {
     throw new Error('Gateway upstream must be a private localhost server.');
   }
-  if (!Number.isInteger(upstream.port) || upstream.port <= 0) {
+  if (!Number.isInteger(upstream.port) || upstream.port <= 0 || upstream.port > 65_535) {
     throw new Error('Gateway upstream port must be valid.');
   }
 }
