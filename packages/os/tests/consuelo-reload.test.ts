@@ -24,6 +24,15 @@ function executable(path: string, source: string): void {
   chmodSync(path, 0o755);
 }
 
+function writeCaddyPool(consueloHome: string, ports: number[]): void {
+  const caddyDirectory = join(consueloHome, 'node', 'caddy');
+  mkdirSync(caddyDirectory, { recursive: true });
+  writeFileSync(
+    join(caddyDirectory, 'Caddyfile'),
+    `http://:8080 {\n  reverse_proxy ${ports.map((port) => `127.0.0.1:${port}`).join(' ')} {\n    lb_policy round_robin\n  }\n}\n`,
+  );
+}
+
 function createHarness(input: { bootstrapExit?: number; launchdLoaded?: boolean } = {}) {
   const home = mkdtempSync(join(tmpdir(), 'consuelo-reload-test-'));
   temporaryHomes.push(home);
@@ -32,9 +41,10 @@ function createHarness(input: { bootstrapExit?: number; launchdLoaded?: boolean 
   const marker = join(home, 'launchd-bootstrapped');
   const launchLog = join(home, 'launchctl.log');
   const signalLog = join(home, 'kill.log');
+  const launchAgent = join(launchAgents, 'com.consuelo.system.plist');
   mkdirSync(bin, { recursive: true });
   mkdirSync(launchAgents, { recursive: true });
-  writeFileSync(join(launchAgents, 'com.consuelo.system.plist'), '<plist/>');
+  writeFileSync(launchAgent, '<plist/>');
 
   executable(join(bin, 'launchctl'), `#!/bin/sh
 printf '%s\\n' "$*" >> "${launchLog}"
@@ -65,6 +75,7 @@ exit 22
     marker,
     launchLog,
     signalLog,
+    launchAgent,
     env: {
       ...process.env,
       HOME: home,
@@ -117,6 +128,7 @@ describe('Consuelo OS reload lifecycle', () => {
         { workerId: 'worker-1', state: 'ready', port: 46322, pid: 102, restartCount: 1 },
       ],
     }));
+    writeCaddyPool(join(harness.home, '.consuelo'), [46321, 46322]);
 
     const result = spawnSync(process.execPath, [reloadScript, 'status'], {
       cwd: osRoot,
@@ -126,6 +138,9 @@ describe('Consuelo OS reload lifecycle', () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('workers: 2/2 ready');
+    expect(result.stdout).toContain('worker states: desired=2 ready=2 draining=0 failed=0');
+    expect(result.stdout).toContain('caddy upstreams: 127.0.0.1:46321, 127.0.0.1:46322');
+    expect(result.stdout).toContain('HA: ready');
     expect(result.stdout).toContain('worker-0: ready port=46321 pid=101 restarts=0');
     expect(result.stdout).toContain('worker-1: ready port=46322 pid=102 restarts=1');
   });
@@ -158,6 +173,35 @@ describe('Consuelo OS reload lifecycle', () => {
     expect(result.stdout).toContain('reloaded: healthy');
   });
 
+  it('scrubs the retired generic MCP credential and reloads the LaunchAgent definition before restart', () => {
+    const harness = createHarness({ launchdLoaded: true });
+    writeFileSync(
+      harness.launchAgent,
+      [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<plist version="1.0"><dict>',
+        '<key>Label</key><string>com.consuelo.system</string>',
+        '<key>EnvironmentVariables</key><dict>',
+        '<key>HOME</key><string>/tmp</string>',
+        '<key>MCP_BEARER_TOKEN</key>',
+        '<string>retired-fixture-value</string>',
+        '</dict></dict></plist>',
+      ].join('\n'),
+    );
+
+    const result = spawnSync(process.execPath, [reloadScript, 'restart-now'], {
+      cwd: osRoot,
+      env: harness.env,
+      encoding: 'utf8',
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    expect(readFileSync(harness.launchAgent, 'utf8')).not.toContain('MCP_BEARER_TOKEN');
+    const launchctl = readFileSync(harness.launchLog, 'utf8');
+    expect(launchctl).toContain('bootout');
+    expect(launchctl).toContain('bootstrap');
+  });
+
   it('should roll a healthy supervised worker pool on reload without restarting launchd', () => {
     const harness = createHarness({ launchdLoaded: true });
     writeFileSync(harness.marker, 'ready');
@@ -176,6 +220,7 @@ describe('Consuelo OS reload lifecycle', () => {
         { workerId: 'worker-1', workerInstanceId: 'old-1', state: 'ready', port: 46322, pid: 102, restartCount: 0 },
       ],
     }));
+    writeCaddyPool(consueloHome, [46321, 46322]);
 
     const result = spawnSync(process.execPath, [reloadScript, 'reload-now'], {
       cwd: osRoot,
@@ -202,6 +247,40 @@ describe('Consuelo OS reload lifecycle', () => {
     ]);
     expect(rolled.workers.every((entry) => entry.state === 'ready')).toBe(true);
     expect(result.stdout).toContain('reloaded: healthy');
+  });
+
+  it('should refuse rolling reload when Caddy upstreams do not exactly match the ready HA pool', () => {
+    const harness = createHarness({ launchdLoaded: true });
+    writeFileSync(harness.marker, 'ready');
+    const consueloHome = join(harness.home, '.consuelo');
+    const runs = join(consueloHome, 'node', 'runs');
+    mkdirSync(runs, { recursive: true });
+    const poolPath = join(runs, 'os-worker-pool.json');
+    writeFileSync(poolPath, JSON.stringify({
+      schemaVersion: 1,
+      desiredWorkers: 2,
+      basePort: 46321,
+      supervisorPid: 900,
+      generatedAt: '2026-08-11T00:00:00.000Z',
+      workers: [
+        { workerId: 'worker-0', workerInstanceId: 'old-0', state: 'ready', port: 46321, pid: 101, restartCount: 0 },
+        { workerId: 'worker-1', workerInstanceId: 'old-1', state: 'ready', port: 46322, pid: 102, restartCount: 0 },
+      ],
+    }));
+    writeCaddyPool(consueloHome, [46321]);
+
+    const result = spawnSync(process.execPath, [reloadScript, 'reload-now'], {
+      cwd: osRoot,
+      env: {
+        ...harness.env,
+        CONSUELO_HOME: consueloHome,
+        CONSUELO_RELOAD_TEST_POOL_PATH: poolPath,
+      },
+      encoding: 'utf8',
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('Caddy worker upstreams do not match the ready worker pool');
   });
 
   it('should bootstrap an unloaded LaunchAgent before kickstarting a reload', () => {

@@ -142,6 +142,7 @@ contractDescribe('install edge site publisher', () => {
     expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'traces', 'traces', 'traces', 'diffs', 'docs', 'configuration', 'tools', 'environments', 'secrets']);
     expect(first.routeSql).toMatch(/INSERT INTO workspace_route_registry/i);
     expect(first.routeSql).toMatch(/ON CONFLICT\(hostname\) DO UPDATE/i);
+    expect(first.routeSql).not.toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
     expect(first.routeSql).toContain("'$.target.kind') = 'os-connector'");
     expect(first.routeSql).toContain("'$.nodeTargets'");
     expect(first.routeSql).toMatch(/site-snapshot/);
@@ -192,7 +193,15 @@ contractDescribe('install edge site publisher', () => {
           url,
           accept: headers.get('accept'),
         });
-        if (url === expectedPlan.verifyUrl) {
+        const snapshot = expectedPlan.snapshots.find(
+          (candidate) => candidate.verifyUrl === url,
+        );
+        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
+        if (
+          ['launcher', 'traces', 'configuration', 'tools', 'environments', 'secrets'].includes(
+            snapshot.siteId,
+          )
+        ) {
           return Response.json(
             { error: 'workspace_session_required' },
             {
@@ -201,10 +210,6 @@ contractDescribe('install edge site publisher', () => {
             },
           );
         }
-        const snapshot = expectedPlan.snapshots.find(
-          (candidate) => candidate.verifyUrl === url,
-        );
-        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
         const sourceHtml = fs.readFileSync(snapshot.snapshotPath, 'utf8');
         return new Response(`${sourceHtml}\n<script>downstream edge transform</script>`, {
           status: 200,

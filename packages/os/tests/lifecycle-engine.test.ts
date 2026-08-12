@@ -26,14 +26,17 @@ import { provisionLocalOs } from '../scripts/lib/install-state';
 import { writeYamlConfig } from '../scripts/lib/consuelo-home';
 import {
   acquireLifecycleLock,
+  activateRuntimeRelease,
   createBunRuntimeMaterializer,
   createHttpHealthAcceptance,
   createLifecycleProgressEmitter,
   createLifecycleEngine,
   inspectLifecycleInstallState,
   loadLifecyclePreferences,
+  materializeRuntimeBundleDownload,
   writeLifecycleActivationJournal,
   noOpLifecycleMigrationRunner,
+  stageVerifiedRuntimeBundle,
   verifySignedReleaseManifest,
   type LifecycleEngine,
   type LifecycleRuntimeMaterializer,
@@ -56,6 +59,16 @@ const requiredRuntimePaths = [
   'scripts/native-lifecycle-operation.ts',
   'scripts/server/main.ts',
   'scripts/server/supervisor.ts',
+  'scripts/server/routes/mcp.ts',
+  'scripts/lib/mcp-protocol.ts',
+  'scripts/lib/mcp-gateway.ts',
+  'scripts/lib/worker-pool.ts',
+  'scripts/lib/security-gateway.ts',
+  'scripts/consuelo-reload.js',
+  'scripts/workspace-watchdog.sh',
+  'scripts/lib/lifecycle/connector-readiness.ts',
+  'scripts/workspace-node-heartbeat.ts',
+  'scripts/lib/workspace-node-heartbeat-client.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
@@ -78,6 +91,7 @@ let bundle100: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 let bundle110: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 let bundle190: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 let bundle1100: Awaited<ReturnType<typeof buildRuntimeBundle>>;
+let legacyRecoveryBundle: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 
 function runtimeReleaseDirectoryFor(
   bundle: Awaited<ReturnType<typeof buildRuntimeBundle>>,
@@ -137,6 +151,20 @@ beforeAll(async () => {
     sourceRoot: osRoot,
     version: '1.10.0',
   });
+  legacyRecoveryBundle = await buildRuntimeBundle({
+    architecture: 'arm64',
+    includePaths: requiredRuntimePaths.filter(
+      (runtimePath) =>
+        runtimePath !== 'scripts/lib/lifecycle/connector-readiness.ts' &&
+        runtimePath !== 'scripts/workspace-node-heartbeat.ts' &&
+        runtimePath !== 'scripts/lib/workspace-node-heartbeat-client.ts',
+    ),
+    minimumUpdaterVersion: '1.0.0',
+    platform: 'darwin',
+    sourceCommit: 'fixture-legacy-recovery',
+    sourceRoot: osRoot,
+    version: '0.9.0',
+  });
 });
 
 beforeEach(() => {
@@ -160,6 +188,7 @@ function signedManifest(
     releaseFingerprint: bundle.manifest.releaseFingerprint,
     publishedAt: '2026-07-23T00:00:00.000Z',
     sourceCommit: bundle.manifest.sourceCommit,
+    capabilities: [...(bundle.manifest.capabilities ?? [])],
     ...overrides,
   };
   const payload = {
@@ -171,6 +200,7 @@ function signedManifest(
       architecture: process.arch,
       archiveDigest: resolved.bundleDigest,
       bundleId: resolved.bundleId,
+      capabilities: resolved.capabilities,
       cloudflareObjectKey: resolved.bundleUrl,
       githubAssetName: `consuelo-os-runtime-${resolved.version}.tar.gz`,
       platform: process.platform,
@@ -239,6 +269,7 @@ function createEngine(input: {
   serviceFailure?: Error;
   health?: boolean | boolean[];
   connectivity?: boolean;
+  publicReadiness?: boolean;
   stagingFailure?: Error;
   onboarding?: () => Promise<void>;
   runtime?: LifecycleRuntimeMaterializer;
@@ -279,6 +310,14 @@ function createEngine(input: {
         async accept() {
           serviceOperations.push('connectivity');
           return input.connectivity ?? true;
+        },
+      },
+    }),
+    ...(input.publicReadiness === undefined ? {} : {
+      connectorReadiness: {
+        async accept() {
+          serviceOperations.push('connector-readiness');
+          return input.publicReadiness ?? true;
         },
       },
     }),
@@ -544,6 +583,59 @@ describe('unified lifecycle engine', () => {
     expect(existsSync(join(tempHome, 'runtime', 'current'))).toBe(false);
   });
 
+  it('rejects a signed release when its source commit disagrees with the verified runtime archive', async () => {
+    writeInstalledIdentity();
+    const manifest = signedManifest(bundle100, {
+      sourceCommit: 'different-signed-source-commit',
+    });
+    const engine = createEngine({ source: sourceFor(bundle100, manifest) });
+
+    await expect(engine.update({ channel: 'dev' })).rejects.toMatchObject({
+      code: 'BUNDLE_VERIFY_FAILED',
+    });
+    expect(existsSync(join(tempHome, 'runtime', 'current'))).toBe(false);
+  });
+
+  it('rejects a signed release that omits any required runtime recovery capability', () => {
+    const capabilities = [...(bundle100.manifest.capabilities ?? [])];
+    capabilities.shift();
+    const manifest = signedManifest(bundle100, { capabilities });
+
+    expect(() =>
+      verifySignedReleaseManifest(
+        manifest,
+        { [releaseKeyId]: publicKeyPem },
+        { platform: process.platform, architecture: process.arch },
+      ),
+    ).toThrowError(
+      expect.objectContaining({ code: 'RUNTIME_CAPABILITY_MISMATCH' }),
+    );
+  });
+
+  it('refuses to repair a valid installed runtime that predates required recovery capabilities', async () => {
+    writeInstalledIdentity();
+    const operationId = 'legacy-recovery-runtime';
+    const archivePath = materializeRuntimeBundleDownload({
+      home: tempHome,
+      operationId,
+      bytes: legacyRecoveryBundle.archiveBytes,
+    });
+    const { releasePath } = stageVerifiedRuntimeBundle({
+      home: tempHome,
+      operationId,
+      archivePath,
+      manifest: legacyRecoveryBundle.manifest,
+    });
+    activateRuntimeRelease({ home: tempHome, releasePath, operationId });
+    const engine = createEngine({ bundle: bundle100 });
+
+    await expect(engine.repair()).rejects.toMatchObject({
+      code: 'RUNTIME_CAPABILITY_MISMATCH',
+      phase: 'repair-scan',
+    });
+    expect(engine.serviceOperations).toEqual([]);
+  });
+
   it('rejects signed manifests with malformed platform collections using structured errors', () => {
     const valid = signedManifest(bundle100);
     for (const platforms of [null, ['invalid-platform-entry']]) {
@@ -747,13 +839,47 @@ describe('unified lifecycle engine', () => {
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
-  it('restarts only the service adapter and never invokes onboarding', async () => {
+  it('restarts the service, waits for local health, and never invokes onboarding', async () => {
     writeInstalledIdentity();
     const engine = createEngine();
 
-    await expect(engine.restart()).resolves.toMatchObject({ operation: 'restart', changed: true });
+    await expect(engine.restart()).resolves.toMatchObject({
+      operation: 'restart',
+      changed: true,
+      detail: { scheduled: false, localHealthy: true, connectorReady: true },
+    });
     expect(engine.onboardingCalls).toBe(0);
-    expect(engine.serviceOperations).toEqual(['restart']);
+    expect(engine.serviceOperations).toEqual(['restart', 'health']);
+  });
+
+  it('fails restart closed when the public MCP connector is not ready after local health', async () => {
+    writeInstalledIdentity();
+    const engine = createEngine({ publicReadiness: false });
+
+    await expect(engine.restart()).rejects.toMatchObject({
+      code: 'CONNECTOR_READINESS_FAILED',
+    });
+    expect(engine.serviceOperations).toEqual([
+      'restart',
+      'health',
+      'connector-readiness',
+    ]);
+  });
+
+  it('fails repair closed when the public MCP connector remains unavailable', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const repair = createEngine({ publicReadiness: false });
+
+    await expect(repair.repair()).rejects.toMatchObject({
+      code: 'CONNECTOR_READINESS_FAILED',
+    });
+    expect(repair.serviceOperations).toEqual([
+      'preflight',
+      'restart',
+      'health',
+      'connector-readiness',
+    ]);
   });
 
   it('reports reply-safe restart scheduling failures as typed lifecycle errors', async () => {
@@ -1388,7 +1514,7 @@ describe('lifecycle transaction hardening regressions', () => {
     await expect(repair.repair()).resolves.toMatchObject({
       operation: 'repair',
       changed: true,
-      detail: { repaired: ['dependencies', 'migrations', 'service'] },
+      detail: { repaired: ['dependencies', 'migrations', 'service', 'connector'] },
     });
     expect(materialized).toEqual([
       runtimeReleasePathFor(bundle100),

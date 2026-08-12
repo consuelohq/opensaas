@@ -54,6 +54,7 @@ describe('workspace node heartbeat client', () => {
         return Response.json({
           nodeId: 'node_member',
           presence: 'online',
+          routeReady: true,
           connectorId: 'connector_member',
           edgeRequestSigningSecret: 'wen_heartbeat_reconciled_secret',
         });
@@ -67,6 +68,7 @@ describe('workspace node heartbeat client', () => {
     expect(first).toEqual({
       nodeId: 'node_member',
       presence: 'online',
+      routeReady: true,
       connectorId: 'connector_member',
       edgeRequestSigningSecret: 'wen_heartbeat_reconciled_secret',
     });

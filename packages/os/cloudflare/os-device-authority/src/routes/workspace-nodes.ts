@@ -7,6 +7,7 @@ import {
 import { deriveWorkspaceEdgeNodeSecret } from '../../../../scripts/lib/workspace-edge-node-auth';
 import { json } from '../http';
 import { normalizeWorkspaceAgentNames } from '../services/agents';
+import { reconcileWorkspaceRouteState } from '../services/connectors';
 import {
   safeWorkspaceNode,
   WORKSPACE_NODE_HEARTBEAT_TTL_MS,
@@ -410,15 +411,39 @@ async function handleHeartbeat(
     lastSeenAt: nowMs,
     updatedAt: nowMs,
   };
+  let routeReady = false;
   if (runtime.workspaceRouteRegistry) {
-    await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
-      hostname: node.workspaceHost,
-      nodeId,
-      connectorStatus,
-      state: 'active',
-      lastSeenAt: nowMs,
-      heartbeatTtlMs: WORKSPACE_NODE_HEARTBEAT_TTL_MS,
-    });
+    const workspace = await runtime.store.byAccountWorkspace(node.accountId);
+    if (!workspace || workspace.workspaceHost !== node.workspaceHost) {
+      return serviceUnavailableResponse();
+    }
+    const nodes = await runtime.store.listWorkspaceNodes(node.accountId);
+    const desiredNodes = nodes.map((candidate) =>
+      candidate.nodeId === nodeId ? updated : candidate,
+    );
+    try {
+      routeReady = await reconcileWorkspaceRouteState({
+        routeRegistry: runtime.workspaceRouteRegistry,
+        workspace,
+        nodes: desiredNodes,
+        currentNodeId: nodeId,
+        nowMs,
+        defaultSiteSnapshot: runtime.defaultSiteSnapshot,
+      });
+    } catch {
+      return errorResponse(
+        503,
+        'WORKSPACE_ROUTE_RECONCILIATION_FAILED',
+        'Workspace connector route state could not be reconciled.',
+      );
+    }
+    if (connectorStatus === 'connected' && !routeReady) {
+      return errorResponse(
+        503,
+        'WORKSPACE_ROUTE_NOT_READY',
+        'Workspace connector route is not ready for this node.',
+      );
+    }
   }
   try {
     await runtime.store.putWorkspaceNode(updated);
@@ -440,6 +465,7 @@ async function handleHeartbeat(
   return json(
     {
       ...safeNode,
+      routeReady,
       ...(runtime.workspaceEdgeInternalSigningSecret?.trim() && connectorId
         ? {
             edgeRequestSigningSecret: deriveWorkspaceEdgeNodeSecret({

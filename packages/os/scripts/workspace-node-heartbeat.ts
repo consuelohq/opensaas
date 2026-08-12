@@ -151,6 +151,17 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
       config,
       fetchImpl: input.fetchImpl,
     });
+    // Do not turn a transient public-health failure during restart into an authority-side
+    // disconnect. Heartbeat TTL will classify a sustained outage if the connector stays down.
+    if (connectorStatus === 'disconnected') {
+      return {
+        nodeId: config.nodeId,
+        presence: 'offline' as const,
+        routeReady: false,
+        skipped: true as const,
+        reason: 'connector_health_failed' as const,
+      };
+    }
     const client = createWorkspaceNodeHeartbeatClient({
       config: { ...config, connectorStatus },
       agents,
@@ -170,7 +181,14 @@ async function main(): Promise<void> {
     parseConfigPath(process.argv.slice(2)),
   );
   process.stdout.write(
-    `${JSON.stringify({ nodeId: result.nodeId, presence: result.presence })}\n`,
+    `${JSON.stringify({
+      nodeId: result.nodeId,
+      presence: result.presence,
+      routeReady: result.routeReady,
+      ...('skipped' in result && result.skipped
+        ? { skipped: true, reason: result.reason }
+        : {}),
+    })}\n`,
   );
 }
 
