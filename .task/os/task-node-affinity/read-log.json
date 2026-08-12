@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/task-node-affinity/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/scripts/lib/mcp-node-routing.ts",
+    "packages/os/scripts/lib/task-start-output.js",
+    "packages/os/tests/workspace-node-registry-routing.test.ts"
+  ],
+  "updatedAt": "2026-08-12T14:35:35.733Z"
+}

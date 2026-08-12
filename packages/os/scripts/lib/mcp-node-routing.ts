@@ -3,7 +3,7 @@ type JsonObject = Record<string, unknown>;
 export const MCP_NODE_CONTEXT_HEADER = 'x-consuelo-node-context';
 export const MCP_ROUTE_SOURCE_HEADER = 'x-consuelo-route-source';
 
-export type McpNodeRouteSource = 'default' | 'explicit';
+export type McpNodeRouteSource = 'default' | 'explicit' | 'task';
 
 export type McpNodeSummary = {
   nodeId: string;
@@ -34,8 +34,21 @@ export function normalizeMcpNodeId(value: unknown): string | undefined | null {
   return nodeId.length > 0 && nodeId.length <= 160 ? nodeId : null;
 }
 
+export function normalizeMcpTaskSession(value: unknown): string | undefined | null {
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string') return null;
+  const taskSession = value.trim();
+  return taskSession.length > 0 && taskSession.length <= 240 ? taskSession : null;
+}
+
 export type McpNodeRoutingInspection =
-  | { ok: true; nodeId?: string; getSteering: boolean }
+  | {
+      ok: true;
+      nodeId?: string;
+      taskSession?: string;
+      facadeTool?: string;
+      getSteering: boolean;
+    }
   | { ok: false; code: 'INVALID_NODE_ROUTE'; message: string };
 
 export function inspectMcpNodeRoutingBody(body: string): McpNodeRoutingInspection {
@@ -62,10 +75,23 @@ export function inspectMcpNodeRoutingBody(body: string): McpNodeRoutingInspectio
       message: 'call nodeId must be a non-empty node identifier.',
     };
   }
+  const taskSession = normalizeMcpTaskSession(args.taskSession);
+  if (taskSession === null) {
+    return {
+      ok: false,
+      code: 'INVALID_NODE_ROUTE',
+      message: 'call taskSession must be a non-empty task session identifier.',
+    };
+  }
+  const facadeTool = typeof args.tool === 'string' && args.tool.trim()
+    ? args.tool.trim()
+    : undefined;
   return {
     ok: true,
     getSteering: false,
     ...(nodeId ? { nodeId } : {}),
+    ...(taskSession ? { taskSession } : {}),
+    ...(facadeTool ? { facadeTool } : {}),
   };
 }
 
@@ -97,7 +123,11 @@ export function decodeMcpNodeRoutingContext(value: string | null): McpNodeRoutin
     const currentNodeId = normalizeMcpNodeId(parsed.currentNodeId);
     const defaultNodeId = normalizeMcpNodeId(parsed.defaultNodeId);
     if (!workspaceId || !currentNodeId || defaultNodeId === null) return null;
-    if (parsed.routeSource !== 'default' && parsed.routeSource !== 'explicit') return null;
+    if (
+      parsed.routeSource !== 'default' &&
+      parsed.routeSource !== 'explicit' &&
+      parsed.routeSource !== 'task'
+    ) return null;
     if (!Array.isArray(parsed.nodes) || parsed.nodes.length > 32) return null;
     const nodes: McpNodeSummary[] = [];
     for (const raw of parsed.nodes) {

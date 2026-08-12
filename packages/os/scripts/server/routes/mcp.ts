@@ -188,9 +188,12 @@ export function createMcpRoutes(
         workspaceId: authentication.principal.workspaceId,
       });
       const routeSourceHeader = request.headers.get(MCP_ROUTE_SOURCE_HEADER)?.trim();
-      const routeSource = routeSourceHeader === 'default' || routeSourceHeader === 'explicit'
-        ? routeSourceHeader
-        : undefined;
+      const routeSource =
+        routeSourceHeader === 'default' ||
+        routeSourceHeader === 'explicit' ||
+        routeSourceHeader === 'task'
+          ? routeSourceHeader
+          : undefined;
       queueGatewayAuthenticationTraceSafely({
         workspaceId: authentication.principal.workspaceId ?? '',
         route: MCP_PATH,
