@@ -96,3 +96,8 @@ Pending targeted baseline run before test edits.
 - 2026-08-12 00:18:42 `review.run`: passed — OK
 - 2026-08-12 00:19:16 `review.run`: passed — OK
 - 2026-08-12 00:19:38 `verify`: passed — OK
+- 2026-08-12 00:27:08 `verify`: passed — OK
+- 2026-08-12 00:27:08 `verify`: passed — OK
+
+## Current status
+Branch 6 implementation is complete and publish-ready. Caddy load-balances the supervised worker pool, reload rolls worker slots without replacing the supervisor, hard restart remains canonical for supervisor/update recovery, the real two-worker process proof passes, strict review has zero blockers, and full verify is publish-valid. The only deferred items are pre-existing repository audit debt and direct Caddy binary validation because Caddy is not installed locally. No Branch 7 work is included.
