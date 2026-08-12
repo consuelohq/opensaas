@@ -99,9 +99,22 @@ Implementation complete. Focused tests and strict review are green. Full `verify
 
 - 2026-08-12 14:39:01 `verify`: passed — OK
 - 2026-08-12 14:41:57 `verify`: passed — OK
+- 2026-08-12 14:49:36 `verify`: passed — OK
 
 ## Publish readiness
 - Working-tree changes were published to task PR #1888 as commit `83e874cd16154a7425c0e79f5626cd64f7f0694e`.
 - Canonical full verify completed after the focused suites with `publishValid: true`; no branch-owned blocking review findings were reported.
 - No Mac, cloud node, Cloudflare Worker, or runtime deployment was performed. This PR changes source/control-plane behavior only.
 - Integration must preserve other agents' parallel stream work; use the task/stream lifecycle tooling rather than force-updating shared refs.
+
+## workspace-owned: files read
+
+- none yet
+
+## Implementation checkpoint
+Branch 9 is implemented and verified: task ownership is centrally bound on successful start, honored across default-node changes, rejected on explicit-owner conflicts, and released only after successful finish. Focused routing/security tests, strict review, Wrangler dry-run, and full verify are green. No runtime was deployed.
+## Stream reconciliation
+- Before integration, `stream/os` had advanced with the parallel node-observability branch and conflicted in MCP/trace seams.
+- Reconciled `origin/stream/os` into this task semantically: Branch 9 task-affinity routing was preserved while the parallel branch's resolved-node-name and trace-routing propagation were also preserved.
+- Post-reconciliation validation: task-affinity routing 34/34, merged MCP/trace/observability regression set 61/61, MCP action-scope tests 11/11, Wrangler device-authority dry-run passed, and full `verify --base stream/os` returned `publishValid: true` with 0 branch/review issues.
+- The reconciliation merge commit is `3eb9d036ea26dc2ee1ba8a4447afc8f83ef3f45d`; no runtime or Cloudflare deployment was performed.
