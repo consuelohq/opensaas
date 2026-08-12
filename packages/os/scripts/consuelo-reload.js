@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const { execFileSync, spawn } = require('child_process');
-const { existsSync, readFileSync } = require('fs');
+const { existsSync, readFileSync, writeFileSync } = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -19,6 +19,8 @@ const EXPECTED_SERVER_NAME = 'consuelo-os';
 const CONFLICTING_LABELS = ['com.consuelo.workspace'];
 const CONSUELO_HOME = process.env.CONSUELO_HOME || path.join(HOME, '.consuelo');
 const WORKER_POOL_STATE = path.join(CONSUELO_HOME, 'node', 'runs', 'os-worker-pool.json');
+const CADDYFILE = path.join(CONSUELO_HOME, 'node', 'caddy', 'Caddyfile');
+const RETIRED_LAUNCHD_ENV_KEYS = ['MCP_BEARER_TOKEN'];
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
@@ -29,6 +31,27 @@ function runBestEffort(command, args = []) {
   } catch (error) {
     return error.stdout?.trim() || '';
   }
+}
+
+function scrubRetiredLaunchdCredentials() {
+  if (!existsSync(PLIST)) return false;
+  let source;
+  try {
+    source = readFileSync(PLIST, 'utf8');
+  } catch {
+    return false;
+  }
+  let next = source;
+  for (const key of RETIRED_LAUNCHD_ENV_KEYS) {
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    next = next.replace(
+      new RegExp(`\\n\\s*<key>${escaped}</key>\\s*\\n\\s*<string>[^<]*</string>`, 'g'),
+      '',
+    );
+  }
+  if (next === source) return false;
+  writeFileSync(PLIST, next);
+  return true;
 }
 
 function runRequired(command, args, label) {
@@ -74,11 +97,79 @@ function workerPoolState() {
   }
 }
 
+function caddyWorkerUpstreams() {
+  try {
+    const source = readFileSync(CADDYFILE, 'utf8');
+    const match = source.match(/^\s*reverse_proxy\s+([^\n{]+)\s*\{/m);
+    if (!match?.[1]) return [];
+    return [...new Set(
+      match[1]
+        .trim()
+        .split(/\s+/)
+        .filter((value) => /^127\.0\.0\.1:\d+$/.test(value)),
+    )].sort((left, right) => {
+      const leftPort = Number(left.slice(left.lastIndexOf(':') + 1));
+      const rightPort = Number(right.slice(right.lastIndexOf(':') + 1));
+      return leftPort - rightPort;
+    });
+  } catch {
+    return [];
+  }
+}
+
+function workerPoolSummary(pool) {
+  const workers = Array.isArray(pool?.workers) ? pool.workers : [];
+  return {
+    desired: Number.isInteger(pool?.desiredWorkers) ? pool.desiredWorkers : 0,
+    ready: workers.filter((worker) => worker?.state === 'ready').length,
+    draining: workers.filter((worker) => worker?.state === 'draining').length,
+    failed: workers.filter((worker) => worker?.state === 'failed').length,
+  };
+}
+
+function expectedReadyUpstreams(pool) {
+  if (!Array.isArray(pool?.workers)) return [];
+  return pool.workers
+    .filter((worker) => worker?.state === 'ready' && Number.isInteger(worker?.port))
+    .map((worker) => `127.0.0.1:${worker.port}`)
+    .sort((left, right) => {
+      const leftPort = Number(left.slice(left.lastIndexOf(':') + 1));
+      const rightPort = Number(right.slice(right.lastIndexOf(':') + 1));
+      return leftPort - rightPort;
+    });
+}
+
+function caddyMatchesReadyPool(pool) {
+  const expected = expectedReadyUpstreams(pool);
+  const actual = caddyWorkerUpstreams();
+  return expected.length > 0
+    && expected.length === actual.length
+    && expected.every((value, index) => value === actual[index]);
+}
+
+function isHighAvailabilityReady(pool) {
+  const summary = workerPoolSummary(pool);
+  return Boolean(
+    pool
+    && summary.desired >= 2
+    && summary.ready === summary.desired
+    && summary.draining === 0
+    && summary.failed === 0
+    && caddyMatchesReadyPool(pool)
+  );
+}
+
 function writeWorkerPoolStatus() {
   const pool = workerPoolState();
   if (!pool) return;
-  const ready = pool.workers.filter((worker) => worker?.state === 'ready').length;
-  writeStdout(`  workers: ${ready}/${pool.desiredWorkers} ready`);
+  const summary = workerPoolSummary(pool);
+  const upstreams = caddyWorkerUpstreams();
+  writeStdout(`  workers: ${summary.ready}/${pool.desiredWorkers} ready`);
+  writeStdout(
+    `  worker states: desired=${summary.desired} ready=${summary.ready} draining=${summary.draining} failed=${summary.failed}`,
+  );
+  writeStdout(`  caddy upstreams: ${upstreams.length ? upstreams.join(', ') : 'unavailable'}`);
+  writeStdout(`  HA: ${isHighAvailabilityReady(pool) ? 'ready' : 'unavailable'}`);
   for (const worker of pool.workers) {
     const pid = worker?.pid ? ` pid=${worker.pid}` : '';
     writeStdout(`    ${worker.workerId}: ${worker.state} port=${worker.port}${pid} restarts=${worker.restartCount ?? 0}`);
@@ -190,7 +281,7 @@ function isHealthyRollingPool(pool) {
     && Number.isInteger(pool.supervisorPid)
     && pool.supervisorPid > 0
     && Number.isInteger(pool.desiredWorkers)
-    && pool.desiredWorkers > 0
+    && pool.desiredWorkers >= 2
     && pool.workers.length === pool.desiredWorkers
     && pool.workers.every((worker) =>
       worker
@@ -241,11 +332,18 @@ function tryRollingReload() {
   if (process.platform === 'win32') return false;
   const pool = workerPoolState();
   if (!isHealthyRollingPool(pool)) return false;
+  if (!caddyMatchesReadyPool(pool)) {
+    throw new Error('Caddy worker upstreams do not match the ready worker pool.');
+  }
   const supervisorPid = String(pool.supervisorPid);
   if (!findServerPids().includes(supervisorPid)) return false;
   runRequired('kill', ['-USR2', supervisorPid], 'rolling worker reload signal');
   if (!waitForRollingReload(pool)) {
     throw new Error('Consuelo OS worker pool did not complete rolling reload.');
+  }
+  const reloadedPool = workerPoolState();
+  if (!isHighAvailabilityReady(reloadedPool)) {
+    throw new Error('Consuelo OS worker pool lost HA quorum or Caddy upstream parity after rolling reload.');
   }
   if (!waitForHealth('reloaded', 1)) {
     throw new Error('Consuelo OS did not remain healthy after rolling reload.');
@@ -255,14 +353,16 @@ function tryRollingReload() {
 
 function runReload({ useLaunchd }) {
   if (useLaunchd && existsSync(PLIST)) {
+    const scrubbedRetiredCredential = scrubRetiredLaunchdCredentials();
     stopConflictingLaunchAgents();
-    if (isLaunchdLoaded()) {
+    if (isLaunchdLoaded() && !scrubbedRetiredCredential) {
       runRequired(
         'launchctl',
         ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`],
         'launchctl kickstart',
       );
     } else {
+      if (scrubbedRetiredCredential && isLaunchdLoaded()) bootoutLaunchAgent();
       bootstrapLaunchAgent();
     }
   } else {
@@ -336,9 +436,11 @@ switch (command) {
       break;
     }
     if (hasLaunchdPlist) {
-      if (useLaunchd) {
+      const scrubbedRetiredCredential = scrubRetiredLaunchdCredentials();
+      if (useLaunchd && !scrubbedRetiredCredential) {
         runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
       } else {
+        if (scrubbedRetiredCredential && useLaunchd) bootoutLaunchAgent();
         bootstrapLaunchAgent();
       }
     } else {

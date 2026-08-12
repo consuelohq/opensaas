@@ -1,4 +1,5 @@
 export * from './config';
+export * from './connector-readiness';
 export * from './diagnostics';
 export * from './engine';
 export * from './errors';

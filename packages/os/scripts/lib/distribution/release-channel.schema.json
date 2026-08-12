@@ -65,6 +65,19 @@
         "bundleId": {
           "$ref": "#/$defs/sha256"
         },
+        "capabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "caddy-worker-pool",
+              "canonical-watchdog",
+              "public-connector-readiness",
+              "stateless-mcp-2026",
+              "supervised-worker-pool"
+            ]
+          }
+        },
         "cloudflareObjectKey": {
           "type": "string",
           "minLength": 1
