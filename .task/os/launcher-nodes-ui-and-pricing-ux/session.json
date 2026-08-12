@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cf51f00b8469",
+  "tmuxSession": "opensaas-os-launcher-nodes-ui-and-pricing-ux-cf51f00b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/launcher-nodes-ui-and-pricing-ux",
+  "branch": "task/os/launcher-nodes-ui-and-pricing-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-launcher-nodes-ui-and-pricing-ux",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-launcher-nodes-ui-and-pricing-ux",
+  "prNumber": 1890,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1890",
+  "createdAt": "2026-08-12T14:14:46.065Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-launcher-nodes-ui-and-pricing-ux/.task/os/launcher-nodes-ui-and-pricing-ux/session.json"
+}

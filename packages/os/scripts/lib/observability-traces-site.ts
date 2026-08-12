@@ -18,6 +18,24 @@ const launcherNavigation = `<script id="consuelo-trace-launcher-navigation">
 (()=>{const close=document.querySelector('button[data-close-traces]');if(!close)return;close.addEventListener('click',()=>{location.assign('/');});})();
 </script>`;
 
+const nodeObservabilityStyle = `<style id="consuelo-trace-node-observability">
+#tbmLiveTraceModal .trxNode{min-width:0;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+#tbmLiveTraceModal .trxNodeName{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d8d0c1}
+#tbmLiveTraceModal .trxNodeRoute{display:block;font:10px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#918a7f;text-transform:uppercase;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(min-width:761px){
+  #tbmLiveTraceModal .trxTable{min-width:2160px!important}
+  #tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:2160px!important;grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) 150px minmax(350px,.96fr) minmax(350px,.96fr) 180px 78px 92px!important}
+  #tbmLiveTraceModal .trxSkeletonRows{min-width:2160px!important}
+  #tbmLiveTraceModal .trxSkeletonRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) 150px minmax(350px,.96fr) minmax(350px,.96fr) 180px 78px 92px!important}
+}
+@media(max-width:760px){
+  #tbmLiveTraceModal.open .trxTable,#tbmLiveTraceModal.open .trxHead,#tbmLiveTraceModal.open .trxRow{min-width:1760px!important}
+  #tbmLiveTraceModal.open .trxHead,#tbmLiveTraceModal.open .trxRow{grid-template-columns:34px 140px 156px 82px 76px minmax(280px,1fr) 140px minmax(270px,.9fr) minmax(270px,.9fr) 150px 70px 86px!important}
+  #tbmLiveTraceModal .trxSkeletonRows,#tbmLiveTraceModal .trxSkeletonRow{min-width:1760px!important}
+  #tbmLiveTraceModal .trxSkeletonRow{grid-template-columns:34px 140px 156px 82px 76px minmax(280px,1fr) 140px minmax(270px,.9fr) minmax(270px,.9fr) 150px 70px 86px!important}
+}
+</style>`;
+
 function replaceExactlyOnce(
   html: string,
   pattern: RegExp,
@@ -348,6 +366,20 @@ export function buildObservabilityTracesSite(): string {
     '/trace-burn-intelligence/_astro/trace-inspector-v38.css',
     'trace-burn-v38-inspector',
     canonicalAsset('inspector.css'),
+  );
+
+  html = replaceExactlyOnce(
+    html,
+    /<\/head>/i,
+    `${nodeObservabilityStyle}</head>`,
+    'document head close',
+  );
+
+  html = replaceExactlyOnce(
+    html,
+    /<div class="trxHead"><div><\/div><div>Time<\/div><div>Tool<\/div><div>Latency<\/div><div>Tokens<\/div><div>Branch<\/div><div>Input<\/div><div>Output<\/div><div>Trace<\/div><div>Status<\/div><div>Cost<\/div><\/div>/i,
+    '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Node</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
+    'trace table header',
   );
 
   html = inlineScript(

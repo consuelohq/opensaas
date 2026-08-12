@@ -132,6 +132,7 @@ export type SitesCommandResult = {
   docsIndexPath: string;
   configurationIndexPath: string;
   toolsIndexPath: string;
+  nodesIndexPath: string;
   environmentsIndexPath: string;
   secretsIndexPath: string;
   url: string;
@@ -145,6 +146,7 @@ export type SitesCommandResult = {
   docsIndexExists: boolean;
   configurationIndexExists: boolean;
   toolsIndexExists: boolean;
+  nodesIndexExists: boolean;
   environmentsIndexExists: boolean;
   secretsIndexExists: boolean;
   message: string;
@@ -258,6 +260,7 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     docsIndexPath: sitesPaths.docsIndexPath,
     configurationIndexPath: sitesPaths.configurationIndexPath,
     toolsIndexPath: sitesPaths.toolsIndexPath,
+    nodesIndexPath: sitesPaths.nodesIndexPath,
     environmentsIndexPath: sitesPaths.environmentsIndexPath,
     secretsIndexPath: sitesPaths.secretsIndexPath,
     url: pathToFileURL(sitesPaths.indexPath).href,
@@ -271,6 +274,7 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     docsIndexExists: fs.existsSync(sitesPaths.docsIndexPath),
     configurationIndexExists: fs.existsSync(sitesPaths.configurationIndexPath),
     toolsIndexExists: fs.existsSync(sitesPaths.toolsIndexPath),
+    nodesIndexExists: fs.existsSync(sitesPaths.nodesIndexPath),
     environmentsIndexExists: fs.existsSync(sitesPaths.environmentsIndexPath),
     secretsIndexExists: fs.existsSync(sitesPaths.secretsIndexPath),
     message: `Sites index: ${sitesPaths.indexPath}`,

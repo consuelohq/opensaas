@@ -38,7 +38,8 @@ describe('configuration site', () => {
     expect(html).toContain('aria-label="Configuration navigation"');
     expect(html).toContain('href="/configuration" class="is-active"');
     expect(html).toContain('href="/tools"');
-    expect(html).toContain('href="/environments"');
+    expect(html).toContain('href="/nodes"');
+    expect(html).not.toContain('href="/environments"');
     expect(html).toContain('href="/secrets"');
     expect(html).toContain('/gateway/configuration/snapshot');
     expect(html).toContain('Loading workspace configuration');
@@ -66,9 +67,9 @@ describe('configuration site', () => {
   });
 
 
-  it('renders route-aware Tools, Environments, and Secrets shells without private embedded data', () => {
+  it('renders route-aware Tools, Nodes, and Secrets shells without private embedded data', () => {
     const toolsHtml = renderConfigurationSite('tools');
-    const environmentsHtml = renderConfigurationSite('environments');
+    const nodesHtml = renderConfigurationSite('nodes' as never);
     const secretsHtml = renderConfigurationSite('secrets');
 
     expect(toolsHtml).toContain('<title>Tools - Consuelo OS</title>');
@@ -82,20 +83,36 @@ describe('configuration site', () => {
     expect(toolsHtml).not.toContain('id="connections"');
     expect(toolsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
 
-    expect(environmentsHtml).toContain('<title>Environments - Consuelo OS</title>');
-    expect(environmentsHtml).toContain('<h1>Environments</h1>');
-    expect(environmentsHtml).toContain('href="/environments" class="is-active"');
-    expect(environmentsHtml).toContain('id="environment-form"');
-    expect(environmentsHtml).toContain('id="environment-list"');
-    expect(environmentsHtml).toContain('/gateway/environments/snapshot');
-    expect(environmentsHtml).toContain('/gateway/environments/upsert');
-    expect(environmentsHtml).toContain('/gateway/environments/delete');
-    expect(environmentsHtml).not.toContain('Environment registry is not available yet');
-    expect(environmentsHtml).not.toContain('/gateway/configuration/snapshot');
-    expect(environmentsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
-    const environmentScript = environmentsHtml.match(/<script>([\s\S]*)<\/script>/)?.[1];
-    expect(environmentScript).toBeTruthy();
-    expect(() => new Function(environmentScript!)).not.toThrow();
+    expect(nodesHtml).toContain('<title>Nodes - Consuelo OS</title>');
+    expect(nodesHtml).toContain('<h1>Nodes</h1>');
+    expect(nodesHtml).toContain('href="/nodes" class="is-active"');
+    expect(nodesHtml).toContain('id="node-list"');
+    expect(nodesHtml).toContain('id="add-node-dialog"');
+    expect(nodesHtml).toContain('Create cloud node');
+    expect(nodesHtml).toContain('Always available');
+    expect(nodesHtml).toContain('Starter');
+    expect(nodesHtml).toContain('Standard');
+    expect(nodesHtml).toContain('Recommended');
+    expect(nodesHtml).toContain('Performance');
+    expect(nodesHtml).toContain('Power');
+    expect(nodesHtml).toContain('Max');
+    expect(nodesHtml).toContain('/gateway/nodes/snapshot');
+    expect(nodesHtml).toContain('/gateway/nodes/default');
+    expect(nodesHtml).toContain('/gateway/nodes/pricing');
+    expect(nodesHtml).toContain('Make default');
+    expect(nodesHtml).toContain('Provisioning coming soon');
+    expect(nodesHtml).not.toMatch(/e2-(?:medium|standard)/);
+    expect(nodesHtml).not.toContain('machineType');
+    expect(nodesHtml).not.toContain('providerCost');
+    expect(nodesHtml).not.toContain('targetGrossMargin');
+    expect(nodesHtml).not.toContain('/gateway/configuration/snapshot');
+    expect(nodesHtml).not.toContain('window.__CONSUELO_SETTINGS__');
+    const nodesScript = nodesHtml.match(/<script>([\s\S]*)<\/script>/)?.[1];
+    expect(nodesScript).toBeTruthy();
+    expect(nodesScript).toContain('pricingRequestGeneration');
+    expect(nodesScript).toContain('const requestGeneration = ++pricingRequestGeneration');
+    expect(nodesScript).toContain('requestGeneration !== pricingRequestGeneration');
+    expect(() => new Function(nodesScript!)).not.toThrow();
 
     expect(secretsHtml).toContain('<title>Secrets - Consuelo OS</title>');
     expect(secretsHtml).toContain('<h1>Secrets</h1>');

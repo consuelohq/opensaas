@@ -13,6 +13,7 @@ import type {
   TraceSitesDashboardSummary,
 } from './trace-sites-gateway-contract';
 import { redactTraceJson, redactTraceText } from './redaction';
+import { ensureTraceDatabaseSchema } from './trace-database-schema';
 
 export type LocalTraceSitesReadBackendOptions = {
   dbPath: string;
@@ -33,6 +34,11 @@ type TraceRow = {
   task_session?: string | null;
   branch?: string | null;
   worktree?: string | null;
+  requested_node_id?: string | null;
+  resolved_node_id?: string | null;
+  resolved_node_name?: string | null;
+  default_node_id?: string | null;
+  route_source?: string | null;
   status?: string | null;
   ok?: number | null;
   code?: string | null;
@@ -59,6 +65,11 @@ const TRACE_HISTORY_PAGE_SQL = [
   '  task_session,',
   '  branch,',
   '  worktree,',
+  '  requested_node_id,',
+  '  resolved_node_id,',
+  '  resolved_node_name,',
+  '  default_node_id,',
+  '  route_source,',
   '  status,',
   '  ok,',
   '  code,',
@@ -113,6 +124,12 @@ const RECENT_TRACE_EVENTS_SQL = [
 export function createLocalTraceSitesReadBackend(
   options: LocalTraceSitesReadBackendOptions,
 ): TraceSitesGatewayReadBackendAdapter {
+  let schemaReady = false;
+  const prepareExistingDatabaseForRead = (): void => {
+    if (schemaReady || !existsSync(options.dbPath)) return;
+    ensureTraceDatabaseSchema(options.dbPath);
+    schemaReady = true;
+  };
   return {
     resolveHealth() {
       return {
@@ -123,12 +140,15 @@ export function createLocalTraceSitesReadBackend(
       };
     },
     readRecentEvents(input) {
+      prepareExistingDatabaseForRead();
       return readRecentTraceEvents(options.dbPath, input);
     },
     readHistoryPage(input) {
+      prepareExistingDatabaseForRead();
       return readTraceHistoryPage(options.dbPath, input);
     },
     readNewerPage(input) {
+      prepareExistingDatabaseForRead();
       return readNewerTracePage(options.dbPath, input);
     },
     readCachedAggregate(): TraceSitesGatewayCachedAggregate {
@@ -282,6 +302,11 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
   );
   const rawResultJson = sanitizeTracePayloadJson(cleanString(row.result_json));
   const rawStderr = sanitizeLocalTraceText(cleanString(row.stderr));
+  const requestedNodeId = cleanString(row.requested_node_id);
+  const resolvedNodeId = cleanString(row.resolved_node_id);
+  const resolvedNodeName = cleanString(row.resolved_node_name);
+  const defaultNodeId = cleanString(row.default_node_id);
+  const routeSource = cleanString(row.route_source);
   const resultMessage = resultMessageFromJson(rawResultJson);
   const batchResults =
     tool === 'batch' ? batchResultsFromJson(rawResultJson) : [];
@@ -296,6 +321,13 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
       cleanString(row.branch) || cleanString(row.task_session) || 'no-branch',
     taskSession: cleanString(row.task_session),
     worktree: sanitizeLocalTraceText(cleanString(row.worktree)),
+    ...(requestedNodeId ? { requestedNodeId } : {}),
+    ...(resolvedNodeId ? { resolvedNodeId, nodeId: resolvedNodeId } : {}),
+    ...(resolvedNodeName
+      ? { resolvedNodeName, nodeName: resolvedNodeName }
+      : {}),
+    ...(defaultNodeId ? { defaultNodeId } : {}),
+    ...(routeSource ? { routeSource } : {}),
     status: success ? 'success' : cleanString(row.status) || 'error',
     ok: success,
     code: cleanString(row.code) || (success ? 'OK' : 'ERROR'),
@@ -313,6 +345,11 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
       rowid: row.rowid,
       source: cleanString(row.source),
       mcpTraceId: cleanString(row.mcp_trace_id),
+      ...(requestedNodeId ? { requestedNodeId } : {}),
+      ...(resolvedNodeId ? { resolvedNodeId } : {}),
+      ...(resolvedNodeName ? { resolvedNodeName } : {}),
+      ...(defaultNodeId ? { defaultNodeId } : {}),
+      ...(routeSource ? { routeSource } : {}),
     },
     input: compactPayload(rawResolvedInputJson || rawInputJson),
     output: resultMessage || compactPayload(rawResultJson) || rawStderr,

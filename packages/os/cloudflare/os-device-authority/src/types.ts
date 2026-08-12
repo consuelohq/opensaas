@@ -1,5 +1,6 @@
 import type { WorkspaceRouteD1Database } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import type { WorkspaceSiteSnapshotId } from '../../../scripts/lib/workspace-edge-route-seed';
+import type { ManagedCloudPricingRuntime } from './services/managed-cloud-pricing';
 
 export type GrantStatus = 'pending' | 'approved' | 'denied' | 'failed';
 export type GrantFailureCode = 'workspace_route_setup_failed';
@@ -93,6 +94,22 @@ export type WorkspaceNode = {
   updatedAt: number;
   lastSeenAt?: number;
   revokedAt?: number;
+};
+
+export type WorkspaceTaskAffinity = {
+  accountId: string;
+  workspaceId?: string;
+  workspaceHost: string;
+  taskSession: string;
+  ownerNodeId: string;
+  createdAt: number;
+  updatedAt: number;
+  expiresAt?: number;
+};
+
+export type WorkspaceTaskAffinityClaim = {
+  status: 'created' | 'existing' | 'conflict';
+  affinity: WorkspaceTaskAffinity;
 };
 
 export type WorkspaceAgentName =
@@ -331,6 +348,21 @@ export type Store = {
     expiresAt: number,
     nowMs: number,
   ): Promise<boolean>;
+  byWorkspaceTaskAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    taskSession: string;
+    nowMs?: number;
+  }): Promise<WorkspaceTaskAffinity | undefined>;
+  claimWorkspaceTaskAffinity(
+    affinity: WorkspaceTaskAffinity,
+  ): Promise<WorkspaceTaskAffinityClaim>;
+  releaseWorkspaceTaskAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    taskSession: string;
+    ownerNodeId: string;
+  }): Promise<boolean>;
   putNodeBootstrapCredential(
     credential: NodeBootstrapCredential,
   ): Promise<void>;
@@ -347,6 +379,7 @@ export type StorageTransactionLike = {
   get<T>(key: string): Promise<T | undefined>;
   put<T>(key: string, value: T): Promise<void>;
   delete(key: string): Promise<boolean>;
+  list?<T>(options?: { prefix?: string }): Promise<Map<string, T>>;
 };
 export type StorageLike = StorageTransactionLike & {
   list?<T>(options?: { prefix?: string }): Promise<Map<string, T>>;
@@ -377,6 +410,25 @@ export type Env = {
   OS_DEVICE_AUTH_WORKSPACE_EDGE_HOSTNAME?: string;
   OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL?: string;
   OS_DEVICE_AUTH_CLOUDFLARE_API_BASE_URL?: string;
+  OS_MANAGED_CLOUD_PRICING_POLICY_JSON?: string;
+  OS_MANAGED_CLOUD_RATE_CARDS_JSON?: string;
+  OS_DEVICE_AUTH_LOGGER?: DeviceAuthorityLogger;
+};
+
+export type DeviceAuthorityOperationalLogContext = {
+  component: 'os-device-authority';
+  operation: 'mcp-node-directory' | 'task-affinity-bookkeeping';
+  accountId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  failure: string;
+  taskSession?: string;
+  nodeId?: string;
+  outcome?: 'conflict' | 'error';
+};
+
+export type DeviceAuthorityLogger = {
+  warn: (message: string, context: DeviceAuthorityOperationalLogContext) => void;
 };
 
 export type DeviceAuthorityRuntime = {
@@ -391,4 +443,6 @@ export type DeviceAuthorityRuntime = {
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
+  managedCloudPricing?: ManagedCloudPricingRuntime;
+  operationalLogger?: DeviceAuthorityLogger;
 };

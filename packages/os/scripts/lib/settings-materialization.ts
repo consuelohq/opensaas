@@ -10,6 +10,7 @@ import {
 export const CONFIGURATION_SITE_PAGES: ConfigurationPageId[] = [
   'configuration',
   'tools',
+  'nodes',
   'environments',
   'secrets',
 ];
@@ -21,6 +22,8 @@ export type ConfigurationMaterializationPaths = {
   configurationSnapshotPath: string;
   toolsDir: string;
   toolsIndexPath: string;
+  nodesDir: string;
+  nodesIndexPath: string;
   environmentsDir: string;
   environmentsIndexPath: string;
   secretsDir: string;
@@ -38,6 +41,7 @@ export function getConfigurationMaterializationPaths(
   const configurationDir = path.join(sitesDir, 'configuration');
   const configurationDataDir = path.join(sitesDir, '.data', 'configuration');
   const toolsDir = path.join(sitesDir, 'tools');
+  const nodesDir = path.join(sitesDir, 'nodes');
   const environmentsDir = path.join(sitesDir, 'environments');
   const secretsDir = path.join(sitesDir, 'secrets');
 
@@ -48,6 +52,8 @@ export function getConfigurationMaterializationPaths(
     configurationSnapshotPath: path.join(configurationDataDir, 'snapshot.json'),
     toolsDir,
     toolsIndexPath: path.join(toolsDir, 'index.html'),
+    nodesDir,
+    nodesIndexPath: path.join(nodesDir, 'index.html'),
     environmentsDir,
     environmentsIndexPath: path.join(environmentsDir, 'index.html'),
     secretsDir,
@@ -65,6 +71,7 @@ export function materializeConfigurationSite(
     paths.configurationDir,
     paths.configurationDataDir,
     paths.toolsDir,
+    paths.nodesDir,
     paths.environmentsDir,
     paths.secretsDir,
   ]) {
@@ -74,6 +81,7 @@ export function materializeConfigurationSite(
   const pagePaths: Array<[ConfigurationPageId, string]> = [
     ['configuration', paths.configurationIndexPath],
     ['tools', paths.toolsIndexPath],
+    ['nodes', paths.nodesIndexPath],
     ['environments', paths.environmentsIndexPath],
     ['secrets', paths.secretsIndexPath],
   ];

@@ -111,12 +111,16 @@ type MutableTraceTableFilterState = {
   query: string;
   branches: Set<string>;
   tools: Set<string>;
+  nodes: Set<string>;
+  routes: Set<string>;
   statuses: Set<string>;
 };
 const filters: MutableTraceTableFilterState = {
   query: '',
   branches: new Set(),
   tools: new Set(),
+  nodes: new Set(),
+  routes: new Set(),
   statuses: new Set(),
 };
 const expandedFilterKinds = new Set<keyof TraceFilterFacets>();
@@ -129,6 +133,8 @@ let hoverTarget: HTMLElement | null = null;
 let currentFacets: TraceFilterFacets = {
   tools: [],
   branches: [],
+  nodes: [],
+  routes: [],
   statuses: [],
 };
 
@@ -667,6 +673,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     setTraceTooltip(cell, branch);
     cell.style.setProperty('--branch-color', branchColor(branch));
   });
+  appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
     setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
   });
@@ -722,6 +729,7 @@ function appendChildCells(
   );
   appendCell(button, 'trxTokens', formatCompact(totalTokens(child)));
   appendCell(button, 'trxBranch', stripTaskPrefix(branch));
+  appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
     setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
   });
@@ -736,6 +744,30 @@ function appendChildCells(
     cell.append(badge);
   });
   appendCell(button, 'trxCost', clean(child.costLabel) || '—');
+}
+
+function appendNodeCell(
+  row: HTMLElement,
+  nodeLabel: string,
+  routeLabel: string,
+  nodeId: string,
+): void {
+  appendCell(row, 'trxNode', '', (cell) => {
+    const name = document.createElement('span');
+    name.className = 'trxNodeName';
+    name.textContent = nodeLabel || '—';
+    cell.append(name);
+    if (routeLabel) {
+      const route = document.createElement('small');
+      route.className = 'trxNodeRoute';
+      route.textContent = routeLabel;
+      cell.append(route);
+    }
+    setTraceTooltip(
+      cell,
+      [nodeLabel || nodeId, routeLabel].filter(Boolean).join(' · '),
+    );
+  });
 }
 
 function appendCell(
@@ -800,6 +832,8 @@ function renderTraceFilterPanel(): void {
   fragment.append(
     createFilterSection('tools', 'Tools', currentFacets.tools),
     createFilterSection('branches', 'Branches', currentFacets.branches),
+    createFilterSection('nodes', 'Nodes', currentFacets.nodes),
+    createFilterSection('routes', 'Routing', currentFacets.routes),
     createFilterSection('statuses', 'Status', currentFacets.statuses),
   );
   content.replaceChildren(fragment);
@@ -1067,6 +1101,8 @@ function mergeTraceFilterFacets(
   return {
     tools: mergeFacetList(current.tools, incoming.tools),
     branches: mergeFacetList(current.branches, incoming.branches),
+    nodes: mergeFacetList(current.nodes, incoming.nodes),
+    routes: mergeFacetList(current.routes, incoming.routes),
     statuses: mergeFacetList(current.statuses, incoming.statuses),
   };
 }
@@ -1108,6 +1144,8 @@ function resetFilters(): void {
   filters.query = '';
   filters.branches.clear();
   filters.tools.clear();
+  filters.nodes.clear();
+  filters.routes.clear();
   filters.statuses.clear();
   filterSearch = '';
   expandedFilterKinds.clear();
@@ -1119,7 +1157,11 @@ function resetFilters(): void {
 }
 
 function filterKind(value: string | undefined): keyof TraceFilterFacets | null {
-  return value === 'tools' || value === 'branches' || value === 'statuses'
+  return value === 'tools' ||
+    value === 'branches' ||
+    value === 'nodes' ||
+    value === 'routes' ||
+    value === 'statuses'
     ? value
     : null;
 }

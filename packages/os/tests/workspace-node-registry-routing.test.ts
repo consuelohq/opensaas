@@ -151,6 +151,7 @@ async function seedWorkspace(
 async function seedRoutes(
   db: ReturnType<typeof createInMemoryWorkspaceRouteD1>,
   nowMs = baseNow,
+  presence?: { homeLastSeenAt?: number; memberLastSeenAt?: number },
 ): Promise<void> {
   await migrateWorkspaceRouteD1(db);
   await upsertWorkspaceHostnameInD1(db, {
@@ -169,7 +170,7 @@ async function seedRoutes(
         connectorStatus: 'connected',
         tunnelOriginUrl: 'https://home.connector.test',
         state: 'active',
-        lastSeenAt: nowMs,
+        lastSeenAt: presence?.homeLastSeenAt ?? nowMs,
         heartbeatTtlMs,
       },
       {
@@ -178,7 +179,7 @@ async function seedRoutes(
         connectorStatus: 'connected',
         tunnelOriginUrl: 'https://member.connector.test',
         state: 'active',
-        lastSeenAt: nowMs,
+        lastSeenAt: presence?.memberLastSeenAt ?? nowMs,
         heartbeatTtlMs,
       },
     ],
@@ -665,6 +666,194 @@ describe('workspace node management and presence', () => {
       ),
     ).toBe(false);
     expect(transactions).toBe(2);
+  });
+
+  it('should preserve task affinity ownership when claims race across nodes and workspaces', async () => {
+    const values = new Map<string, unknown>();
+    let transactions = 0;
+    const storage: StorageLike = {
+      get: async <T>(key: string) => values.get(key) as T | undefined,
+      put: async (key: string, value: unknown) => {
+        values.set(key, value);
+      },
+      delete: async (key: string) => values.delete(key),
+      transaction: async <T>(
+        callback: (transaction: StorageTransactionLike) => Promise<T>,
+      ) => {
+        transactions += 1;
+        return callback(storage);
+      },
+    };
+    const store = new DurableStore(storage);
+    const affinity = {
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession: 'tsk_transactional_owner',
+      ownerNodeId: 'node-home',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+    };
+
+    await expect(store.claimWorkspaceTaskAffinity(affinity)).resolves.toMatchObject({
+      status: 'created',
+      affinity: { ownerNodeId: 'node-home' },
+    });
+    await expect(store.claimWorkspaceTaskAffinity(affinity)).resolves.toMatchObject({
+      status: 'existing',
+      affinity: { ownerNodeId: 'node-home' },
+    });
+    await expect(store.claimWorkspaceTaskAffinity({
+      ...affinity,
+      ownerNodeId: 'node-member',
+    })).resolves.toMatchObject({
+      status: 'conflict',
+      affinity: { ownerNodeId: 'node-home' },
+    });
+    await expect(store.claimWorkspaceTaskAffinity({
+      ...affinity,
+      accountId: 'account_other_workspace',
+      workspaceId: 'workspace_other',
+      workspaceHost: 'other.consuelohq.com',
+      ownerNodeId: 'node-other',
+    })).resolves.toMatchObject({
+      status: 'created',
+      affinity: { ownerNodeId: 'node-other' },
+    });
+
+    await expect(store.releaseWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: affinity.taskSession,
+      ownerNodeId: 'node-member',
+    })).resolves.toBe(false);
+    await expect(store.releaseWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: affinity.taskSession,
+      ownerNodeId: 'node-home',
+    })).resolves.toBe(true);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: affinity.taskSession,
+    })).resolves.toBeUndefined();
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId: 'account_other_workspace',
+      workspaceHost: 'other.consuelohq.com',
+      taskSession: affinity.taskSession,
+    })).resolves.toMatchObject({ ownerNodeId: 'node-other' });
+    expect(transactions).toBe(6);
+  });
+
+  it('should expire task affinity when its bounded lifetime has elapsed', async () => {
+    const values = new Map<string, unknown>();
+    const storage: StorageLike = {
+      get: async <T>(key: string) => values.get(key) as T | undefined,
+      put: async (key: string, value: unknown) => { values.set(key, value); },
+      delete: async (key: string) => values.delete(key),
+      list: async <T>({ prefix } = {}) => new Map(
+        [...values.entries()]
+          .filter(([key]) => !prefix || key.startsWith(prefix))
+          .map(([key, value]) => [key, value as T]),
+      ),
+      transaction: async <T>(callback: (transaction: StorageTransactionLike) => Promise<T>) =>
+        callback(storage),
+    };
+    const store = new DurableStore(storage);
+    const taskSession = 'tsk_expired_owner';
+    await store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession,
+      ownerNodeId: 'node-home',
+      createdAt: baseNow - 10_000,
+      updatedAt: baseNow - 10_000,
+      expiresAt: baseNow - 1,
+    });
+
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession,
+      nowMs: baseNow,
+    })).resolves.toBeUndefined();
+    await expect(store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession,
+      ownerNodeId: 'node-member',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+      expiresAt: baseNow + 60_000,
+    })).resolves.toMatchObject({
+      status: 'created',
+      affinity: { ownerNodeId: 'node-member' },
+    });
+  });
+
+  it('should remove task affinity when its owner node is deleted', async () => {
+    const values = new Map<string, unknown>();
+    const storage: StorageLike = {
+      get: async <T>(key: string) => values.get(key) as T | undefined,
+      put: async (key: string, value: unknown) => { values.set(key, value); },
+      delete: async (key: string) => values.delete(key),
+      list: async <T>({ prefix } = {}) => new Map(
+        [...values.entries()]
+          .filter(([key]) => !prefix || key.startsWith(prefix))
+          .map(([key, value]) => [key, value as T]),
+      ),
+      transaction: async <T>(callback: (transaction: StorageTransactionLike) => Promise<T>) =>
+        callback(storage),
+    };
+    const store = new DurableStore(storage);
+    const owner = node({
+      nodeId: 'node-affinity-owner',
+      displayName: 'Affinity Owner',
+      role: 'member',
+      connectorId: 'connector_affinity_owner',
+      publicKeyJwk: '{"kty":"OKP","crv":"Ed25519","x":"affinity-owner"}',
+      publicKeyThumbprint: 'dpk_affinity_owner',
+    });
+    await store.putWorkspaceNode(owner);
+    await store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession: 'tsk_deleted_owner',
+      ownerNodeId: owner.nodeId,
+      createdAt: baseNow,
+      updatedAt: baseNow,
+      expiresAt: baseNow + 60_000,
+    });
+
+    await expect(store.delWorkspaceNodeIfMatch({
+      accountId,
+      nodeId: owner.nodeId,
+      updatedAt: owner.updatedAt + 1,
+      devicePublicKeyThumbprint: owner.devicePublicKeyThumbprint,
+    })).resolves.toBe(false);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: 'tsk_deleted_owner',
+      nowMs: baseNow,
+    })).resolves.toMatchObject({ ownerNodeId: owner.nodeId });
+
+    await expect(store.delWorkspaceNodeIfMatch({
+      accountId,
+      nodeId: owner.nodeId,
+      updatedAt: owner.updatedAt,
+      devicePublicKeyThumbprint: owner.devicePublicKeyThumbprint,
+    })).resolves.toBe(true);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: 'tsk_deleted_owner',
+      nowMs: baseNow,
+    })).resolves.toBeUndefined();
   });
 
   it('bounds durable heartbeat nonces per node and prunes expired claims', async () => {
@@ -1608,7 +1797,7 @@ describe('multi-node connector routing', () => {
     expect(upstreams).toHaveLength(2);
   });
 
-  it('uses os.call nodeId as the central selector and rejects conflicting selectors', async () => {
+  it('should use os.call nodeId as the central selector when body and header selectors are evaluated', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-body-node-token', {
@@ -1681,7 +1870,7 @@ describe('multi-node connector routing', () => {
     expect(upstreams).toHaveLength(2);
   });
 
-  it('adds a safe workspace node directory to central get_steering requests', async () => {
+  it('should add a safe workspace node directory when central get_steering is requested', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-steering-node-token', {
@@ -1749,7 +1938,69 @@ describe('multi-node connector routing', () => {
     expect(serialized).not.toContain('spoofed-client-value');
   });
 
-  it('honors explicit node targeting on the workspace edge and forwards only the resolved node', async () => {
+  it('should report node-directory lookup failures when central steering remains fail-open', async () => {
+    const backingStore = createMemoryDeviceGrantStore();
+    await seedWorkspace(backingStore);
+    await authorizeWorkspace(backingStore, 'central-steering-warning-token', {
+      scopes: ['route:/mcp:read'],
+    });
+    const store = {
+      ...backingStore,
+      async listWorkspaceNodes(): Promise<WorkspaceNode[]> {
+        throw new Error('simulated node directory outage');
+      },
+    };
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const operationalEvents: unknown[] = [];
+    let upstreamRequest: Request | undefined;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      operationalLogger: {
+        warn: (message, context) => operationalEvents.push({ message, context }),
+      },
+      fetchImpl: async (request) => {
+        upstreamRequest = request instanceof Request ? request : new Request(request);
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-steering-warning-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 21,
+        method: 'tools/call',
+        params: { name: 'get_steering', arguments: {} },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(upstreamRequest).toBeDefined();
+    expect(upstreamRequest!.headers.get(MCP_NODE_CONTEXT_HEADER)).toBeNull();
+    expect(operationalEvents).toEqual([
+      expect.objectContaining({
+        message: '[OsDeviceAuthority] MCP node directory unavailable',
+        context: expect.objectContaining({
+          component: 'os-device-authority',
+          operation: 'mcp-node-directory',
+          accountId,
+          workspaceId,
+          workspaceHost,
+          failure: 'Error',
+        }),
+      }),
+    ]);
+  });
+
+  it('should forward only the resolved node when workspace-edge targeting is explicit', async () => {
     const db = createInMemoryWorkspaceRouteD1();
     await seedRoutes(db);
     const upstreams: Request[] = [];
@@ -1782,6 +2033,578 @@ describe('multi-node connector routing', () => {
     expect(upstreams[0]?.headers.get('x-consuelo-connector-id')).toBe(
       'connector_node_member',
     );
+  });
+
+  it('should keep task-scoped calls on their owner when the workspace default changes', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-task-affinity-token', {
+      scopes: [
+        'workspace:read',
+        'workspace:nodes:manage',
+        'route:/mcp:read',
+        'mcp:call',
+      ],
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const upstreams: string[] = [];
+    const routeSources: Array<string | null> = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        const upstream = request instanceof Request ? request : new Request(request);
+        upstreams.push(upstream.url);
+        routeSources.push(upstream.headers.get('x-consuelo-route-source'));
+        const payload = await upstream.clone().json() as {
+          id?: unknown;
+          params?: { arguments?: { tool?: string } };
+        };
+        const tool = payload.params?.arguments?.tool;
+        const facadeResult = tool === 'task.start'
+          ? { ok: true, code: 'OK', data: { taskSession: 'tsk_owner_home' } }
+          : { ok: true, code: 'OK', data: { routed: true } };
+        return Response.json({
+          jsonrpc: '2.0',
+          id: payload.id ?? null,
+          result: {
+            content: [{ type: 'text', text: JSON.stringify(facadeResult) }],
+            isError: false,
+          },
+        });
+      },
+    });
+    const auth = {
+      authorization: 'Bearer central-task-affinity-token',
+      'content-type': 'application/json',
+    };
+    const callBody = (
+      id: number,
+      tool: string,
+      input: Record<string, unknown>,
+      taskSession?: string,
+    ) => JSON.stringify({
+      jsonrpc: '2.0',
+      id,
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool,
+          input,
+          ...(taskSession ? { taskSession } : {}),
+        },
+      },
+    });
+
+    const start = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: auth,
+      body: callBody(30, 'task.start', { area: 'os', title: 'Affinity task' }),
+    }));
+    expect(start.status).toBe(200);
+    expect(upstreams).toEqual(['https://home.connector.test/mcp']);
+
+    const select = await handler(new Request(`${origin}/workspace/nodes/default`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ nodeId: 'node-member' }),
+    }));
+    expect(select.status).toBe(200);
+
+    const followup = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: auth,
+      body: callBody(31, 'fs.read', { path: 'README.md' }, 'tsk_owner_home'),
+    }));
+    expect(followup.status).toBe(200);
+    expect(upstreams).toEqual([
+      'https://home.connector.test/mcp',
+      'https://home.connector.test/mcp',
+    ]);
+    expect(routeSources).toEqual(['default', 'task']);
+  });
+
+  it('should reject explicit node targeting when it conflicts with the task owner', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-task-conflict-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    await store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession: 'tsk_conflict',
+      ownerNodeId: 'node-home',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    let upstreamCalls = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async () => {
+        upstreamCalls += 1;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-task-conflict-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 40,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            taskSession: 'tsk_conflict',
+            nodeId: 'node-member',
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'TASK_NODE_MISMATCH' },
+    });
+    expect(upstreamCalls).toBe(0);
+  });
+
+  it('should fail without fallback when the task owner is offline', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-task-offline-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    await store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession: 'tsk_offline_owner',
+      ownerNodeId: 'node-home',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db, baseNow, {
+      homeLastSeenAt: baseNow - heartbeatTtlMs * 4,
+      memberLastSeenAt: baseNow,
+    });
+    let upstreamCalls = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async () => {
+        upstreamCalls += 1;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-task-offline-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 41,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            taskSession: 'tsk_offline_owner',
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'WORKSPACE_NODE_OFFLINE' },
+    });
+    expect(upstreamCalls).toBe(0);
+  });
+
+  it('should release task affinity when task.finish succeeds', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-task-finish-token', {
+      scopes: [
+        'workspace:read',
+        'workspace:nodes:manage',
+        'route:/mcp:read',
+        'mcp:call',
+      ],
+    });
+    await store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession: 'tsk_finish_owner',
+      ownerNodeId: 'node-home',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const upstreams: string[] = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        const upstream = request instanceof Request ? request : new Request(request);
+        upstreams.push(upstream.url);
+        const payload = await upstream.clone().json() as { id?: unknown };
+        return Response.json({
+          jsonrpc: '2.0',
+          id: payload.id ?? null,
+          result: {
+            content: [{ type: 'text', text: JSON.stringify({ ok: true, code: 'OK', data: {} }) }],
+            isError: false,
+          },
+        });
+      },
+    });
+    const auth = {
+      authorization: 'Bearer central-task-finish-token',
+      'content-type': 'application/json',
+    };
+
+    const select = await handler(new Request(`${origin}/workspace/nodes/default`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({ nodeId: 'node-member' }),
+    }));
+    expect(select.status).toBe(200);
+
+    const finish = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 42,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'task.finish',
+            input: {},
+            taskSession: 'tsk_finish_owner',
+          },
+        },
+      }),
+    }));
+    expect(finish.status).toBe(200);
+    expect(upstreams).toEqual(['https://home.connector.test/mcp']);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: 'tsk_finish_owner',
+    })).resolves.toBeUndefined();
+
+    const after = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 43,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            taskSession: 'tsk_finish_owner',
+          },
+        },
+      }),
+    }));
+    expect(after.status).toBe(200);
+    expect(upstreams).toEqual([
+      'https://home.connector.test/mcp',
+      'https://member.connector.test/mcp',
+    ]);
+  });
+
+  it('should keep task affinity when task.finish fails', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-task-finish-fail-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    await store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession: 'tsk_finish_fail',
+      ownerNodeId: 'node-home',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const upstreams: string[] = [];
+    let requestCount = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        requestCount += 1;
+        const upstream = request instanceof Request ? request : new Request(request);
+        upstreams.push(upstream.url);
+        const payload = await upstream.clone().json() as { id?: unknown };
+        const facade = requestCount === 1
+          ? { ok: false, code: 'FAILED', data: null }
+          : { ok: true, code: 'OK', data: {} };
+        return Response.json({
+          jsonrpc: '2.0',
+          id: payload.id ?? null,
+          result: {
+            content: [{ type: 'text', text: JSON.stringify(facade) }],
+            isError: facade.ok === false,
+          },
+        });
+      },
+    });
+    const auth = {
+      authorization: 'Bearer central-task-finish-fail-token',
+      'content-type': 'application/json',
+    };
+
+    const finish = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 44, method: 'tools/call',
+        params: { name: 'call', arguments: { tool: 'task.finish', input: {}, taskSession: 'tsk_finish_fail' } },
+      }),
+    }));
+    expect(finish.status).toBe(200);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: 'tsk_finish_fail',
+    })).resolves.toMatchObject({ ownerNodeId: 'node-home' });
+
+    const followup = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: auth,
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 45, method: 'tools/call',
+        params: { name: 'call', arguments: { tool: 'fs.read', input: { path: 'README.md' }, taskSession: 'tsk_finish_fail' } },
+      }),
+    }));
+    expect(followup.status).toBe(200);
+    expect(upstreams).toEqual([
+      'https://home.connector.test/mcp',
+      'https://home.connector.test/mcp',
+    ]);
+  });
+
+  it('should not bind task affinity when task.start fails', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-task-start-fail-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async () => Response.json({
+        jsonrpc: '2.0',
+        id: 46,
+        result: {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              ok: false,
+              code: 'TASK_START_FAILED',
+              data: { taskSession: 'tsk_failed_start' },
+            }),
+          }],
+          isError: true,
+        },
+      }),
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-task-start-fail-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 46, method: 'tools/call',
+        params: { name: 'call', arguments: { tool: 'task.start', input: { area: 'os', title: 'Fail' } } },
+      }),
+    }));
+    expect(response.status).toBe(200);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: 'tsk_failed_start',
+    })).resolves.toBeUndefined();
+  });
+
+  it('should not create task affinity when an unbound taskSession is used by a non-start call', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-unbound-task-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        const payload = await (request instanceof Request ? request : new Request(request)).clone().json() as { id?: unknown };
+        return Response.json({
+          jsonrpc: '2.0',
+          id: payload.id ?? null,
+          result: {
+            content: [{ type: 'text', text: JSON.stringify({ ok: true, code: 'OK', data: {} }) }],
+            isError: false,
+          },
+        });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-unbound-task-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 47, method: 'tools/call',
+        params: { name: 'call', arguments: { tool: 'fs.read', input: { path: 'README.md' }, taskSession: 'tsk_unbound_non_start' } },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: 'tsk_unbound_non_start',
+      nowMs: baseNow,
+    })).resolves.toBeUndefined();
+  });
+
+  it('should preserve the upstream task.start response when affinity bookkeeping fails after execution', async () => {
+    for (const mode of ['conflict', 'throw'] as const) {
+      const backingStore = createMemoryDeviceGrantStore();
+      await seedWorkspace(backingStore);
+      await authorizeWorkspace(backingStore, `central-post-upstream-${mode}-token`, {
+        scopes: ['route:/mcp:read', 'mcp:call'],
+      });
+      const affinity = {
+        accountId,
+        workspaceId,
+        workspaceHost,
+        taskSession: `tsk_post_upstream_${mode}`,
+        ownerNodeId: 'node-member',
+        createdAt: baseNow,
+        updatedAt: baseNow,
+        expiresAt: baseNow + 60_000,
+      };
+      const store = {
+        ...backingStore,
+        async claimWorkspaceTaskAffinity() {
+          if (mode === 'throw') throw new Error('simulated affinity storage failure');
+          return { status: 'conflict' as const, affinity };
+        },
+      };
+      const db = createInMemoryWorkspaceRouteD1();
+      await seedRoutes(db);
+      const warnings: Array<{ message: string; context: Record<string, unknown> }> = [];
+      const handler = createOsDeviceAuthorityHandler({
+        store,
+        origin,
+        now: () => baseNow,
+        workspaceRouteRegistry: db,
+        operationalLogger: {
+          warn: (message, context) => warnings.push({ message, context }),
+        },
+        fetchImpl: async () => Response.json({
+          jsonrpc: '2.0',
+          id: 48,
+          result: {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                ok: true,
+                code: 'OK',
+                data: { taskSession: `tsk_post_upstream_${mode}` },
+              }),
+            }],
+            isError: false,
+          },
+        }),
+      });
+
+      const response = await handler(new Request(`${origin}/mcp`, {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer central-post-upstream-${mode}-token`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0', id: 48, method: 'tools/call',
+          params: { name: 'call', arguments: { tool: 'task.start', input: { area: 'os', title: 'Post-upstream bookkeeping' } } },
+        }),
+      }));
+
+      expect(response.status).toBe(200);
+      const body = await response.json() as { result?: { content?: Array<{ text?: string }> } };
+      expect(body.result?.content?.[0]?.text).toContain(`tsk_post_upstream_${mode}`);
+      expect(warnings).toEqual([
+        expect.objectContaining({
+          message: '[OsDeviceAuthority] Task affinity bookkeeping failed',
+          context: expect.objectContaining({
+            component: 'os-device-authority',
+            operation: 'task-affinity-bookkeeping',
+            accountId,
+            workspaceId,
+            workspaceHost,
+            taskSession: `tsk_post_upstream_${mode}`,
+            nodeId: 'node-home',
+            outcome: mode === 'conflict' ? 'conflict' : 'error',
+          }),
+        }),
+      ]);
+    }
   });
 
   it('keeps OAuth discovery available when the default node is stale while normal MCP routing remains offline', async () => {

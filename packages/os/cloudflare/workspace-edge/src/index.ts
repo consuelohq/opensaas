@@ -83,6 +83,56 @@ function closedAuthResponse(): Response {
   });
 }
 
+const NODE_CONTROL_PATHS = new Map<string, { authorityPath: string; method: 'GET' | 'POST' }>([
+  ['/gateway/nodes/snapshot', { authorityPath: '/internal/workspace/nodes', method: 'GET' }],
+  ['/gateway/nodes/default', { authorityPath: '/internal/workspace/nodes/default', method: 'POST' }],
+  ['/gateway/nodes/pricing', { authorityPath: '/internal/workspace/nodes/pricing', method: 'GET' }],
+]);
+
+async function proxyNodeControlRequest(input: {
+  request: Request;
+  stub: AuthorityStub;
+  internalAuthSecret: string;
+}): Promise<Response | undefined> {
+  try {
+    const incoming = new URL(input.request.url);
+    const route = NODE_CONTROL_PATHS.get(incoming.pathname);
+    if (!route) return undefined;
+    if (input.request.method !== route.method) {
+      return new Response(JSON.stringify({ error: 'method_not_allowed' }), {
+        status: 405,
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+          'cache-control': 'no-store',
+          allow: route.method,
+        },
+      });
+    }
+    const target = new URL('https://os.consuelohq.com' + route.authorityPath);
+    target.search = incoming.search;
+    const headers = new Headers({
+      'x-consuelo-internal-auth-secret': input.internalAuthSecret,
+      'x-consuelo-workspace-host': incoming.hostname.toLowerCase(),
+      accept: 'application/json',
+    });
+    for (const name of ['cookie', 'origin', 'x-consuelo-csrf-token', 'content-type']) {
+      const value = input.request.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+    const body = route.method === 'POST' ? await input.request.clone().arrayBuffer() : undefined;
+    return input.stub.fetch(
+      new Request(target, {
+        method: route.method,
+        headers,
+        ...(body ? { body } : {}),
+      }),
+    );
+
+  } catch {
+    return closedAuthResponse();
+  }
+}
+
 export function createWorkspaceEdgeHandler(
   env: WorkspaceEdgeEnvironment,
   options: WorkspaceEdgeHandlerOptions = {},
@@ -139,6 +189,12 @@ export function createWorkspaceEdgeHandler(
       ) {
         if (!stub) return closedAuthResponse();
         return await stub.fetch(request);
+      }
+      if (url.pathname.startsWith('/gateway/nodes/')) {
+        const internalAuthSecret = env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?.trim();
+        if (!stub || !internalAuthSecret) return closedAuthResponse();
+        const response = await proxyNodeControlRequest({ request, stub, internalAuthSecret });
+        if (response) return response;
       }
       return await router.fetch(request);
     } catch (error: unknown) {

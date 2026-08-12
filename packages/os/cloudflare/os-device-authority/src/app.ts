@@ -12,11 +12,13 @@ import { registerWorkspaceNodeRoutes } from './routes/workspace-nodes';
 import { registerWebAuthRoutes } from './routes/web-auth';
 import type {
   DefaultSiteSnapshot,
+  DeviceAuthorityLogger,
   DeviceAuthorityRuntime,
   Store,
   WorkspaceConnectorProvisioner,
   WorkspaceRouteRegistryBinding,
 } from './types';
+import type { ManagedCloudPricingRuntime } from './services/managed-cloud-pricing';
 
 export type CreateDeviceAuthorityHandlerInput = {
   store: Store;
@@ -30,6 +32,8 @@ export type CreateDeviceAuthorityHandlerInput = {
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
+  managedCloudPricing?: ManagedCloudPricingRuntime;
+  operationalLogger?: DeviceAuthorityLogger;
 };
 
 export function createOsDeviceAuthorityApp(

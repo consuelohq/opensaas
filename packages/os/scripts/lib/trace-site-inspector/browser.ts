@@ -8,6 +8,8 @@ import {
   isFailure,
   parseMaybeJson,
   stableTraceKey,
+  traceNodeLabel,
+  traceRouteLabel,
   totalTokens,
   type TraceRecord,
 } from './model';
@@ -291,6 +293,8 @@ function summaryMarkup(
       ${fact('Code', clean(row.code) || 'OK')}
       ${fact('Latency', clean(row.latency) || formatDuration(row.durationMs))}
       ${fact('Tokens', formatCompact(totalTokens(row)))}
+      ${fact('Node', traceNodeLabel(row) || '—')}
+      ${fact('Route', traceRouteLabel(row) || '—')}
       ${fact('Branch calls', branch.calls)}
       ${fact('Failures', branch.failures)}
     </section>
@@ -422,10 +426,14 @@ function selectedContentMarkup(
 }
 
 function selectedContentSignature(row: TraceRecord): string {
-  return inspectorContentSignature(
-    row,
-    inspectorStore.getSnapshot().displayMode,
-  );
+  return [
+    inspectorContentSignature(
+      row,
+      inspectorStore.getSnapshot().displayMode,
+    ),
+    traceNodeLabel(row),
+    traceRouteLabel(row),
+  ].join(':');
 }
 
 function inspectorMarkup(row: TraceRecord): string {
