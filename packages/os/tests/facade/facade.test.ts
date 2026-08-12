@@ -973,6 +973,94 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('should preserve documentation opportunities when compacting review.run full-json output', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'os-review-docs-compact-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_review_docs_compact', TEST_BRANCH);
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('review.run', {
+        taskSession: 'tsk_review_docs_compact',
+        noTests: true,
+      }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify({
+            base: 'origin/main',
+            branch: TEST_BRANCH,
+            files: 1,
+            affectedProjects: [],
+            yours: [],
+            preExisting: [],
+            documentationOpportunities: [{
+              rule: 'DOCS_OPPORTUNITY',
+              surface: 'skills',
+              sourceFiles: ['packages/os/scripts/lib/skill-selection.ts'],
+              docs: ['packages/documentation/src/content/docs/build/skills/install-a-skill.mdx'],
+              blocking: false,
+              reason: 'Skill lifecycle changed.',
+              suggestedAction: 'Invoke documentation-writer.',
+            }],
+            testResults: [],
+            confidence: null,
+          }),
+          stderr: '',
+          exitCode: 0,
+        }), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      const data = result.data as {
+        checksRun: string[];
+        summary: { documentationOpportunities: number };
+        documentationOpportunities: Array<{ surface: string; blocking: boolean }>;
+      };
+      expect(data.checksRun).toContain('documentation_opportunities');
+      expect(data.summary.documentationOpportunities).toBe(1);
+      expect(data.documentationOpportunities).toEqual([
+        expect.objectContaining({ surface: 'skills', blocking: false }),
+      ]);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should not claim documentation opportunity checks ran when legacy review output omits them', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'os-review-docs-absent-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_review_docs_absent', TEST_BRANCH);
+      const result = await executeTool('review.run', {
+        taskSession: 'tsk_review_docs_absent',
+        noTests: true,
+      }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify({
+            base: 'origin/main',
+            branch: TEST_BRANCH,
+            files: 1,
+            affectedProjects: [],
+            yours: [],
+            preExisting: [],
+            testResults: [],
+            confidence: null,
+          }),
+          stderr: '',
+          exitCode: 0,
+        })),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      const data = result.data as { checksRun: string[] };
+      expect(data.checksRun).not.toContain('documentation_opportunities');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('should compact full verify packets when raw tails are large', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-compact-'));
     try {

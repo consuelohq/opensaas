@@ -1,0 +1,52 @@
+---
+title: Skill Creator
+description: "Use this OS operator skill when creating, migrating, editing, validating, or reviewing opensaas/Consuelo OS skills. It turns skill workflows into repo-backed skill folders, skill.json metadata, migration fixtures, replacement allowlists, registry generation, install seeding, and tests, with exact-copy guardrails unless Ko explicitly approves a rewrite."
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/skill-creator/skill.json
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: Bundled metadata and registry inclusion for `skill-creator` were verified on 2026-08-11.
+  - source: packages/os/skills/skill-creator/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The current guidance entrypoint and declared load contract were inspected on 2026-08-11.
+---
+
+`skill-creator` is a bundled Consuelo OS skill. Creates, migrates, edits, validates, and reviews Consuelo OS skills, including SKILL.md guidance, skill.json metadata, registry wiring, install behavior, and tests.
+
+## When to use it
+
+Use this OS operator skill when creating, migrating, editing, validating, or reviewing opensaas/Consuelo OS skills. It turns skill workflows into repo-backed skill folders, skill.json metadata, migration fixtures, replacement allowlists, registry generation, install seeding, and tests, with exact-copy guardrails unless Ko explicitly approves a rewrite.
+
+Typical requests include:
+
+- “Turn this repeated workflow into an OS skill.”
+- “Migrate this skill without losing its existing operating instructions.”
+
+## Enable it
+
+```bash
+consuelo add skill skill-creator
+```
+
+Run `consuelo add skill` without a name to choose from the skills that are not currently selected. Remove it with:
+
+```bash
+consuelo remove skill skill-creator
+```
+
+## What the agent loads
+
+The installed metadata points to `skills/skill-creator/SKILL.md` in the immutable OS runtime. The compact steering catalog advertises the active skill by name and description; the full `SKILL.md` body is loaded only when the workflow applies.
+
+Metadata for this skill currently declares permission `guidance` and `requiresApproval: no`. Those fields describe the skill contract; individual tools called by the skill still enforce their own authorization and safety rules.
+
+## Boundary
+
+This skill is for Consuelo OS skills. Preserve known-good guidance during migrations; rewrite only when the intended workflow actually changes.
+
+## Verify
+
+After enabling it, confirm `~/Consuelo/Skills/skill-creator/SKILL.md` exists and that `skill-creator` appears in `<CONSUELO_HOME>/components/installed-skills.json`. A newly bootstrapped agent should then see `skill-creator` in the Installed skills portion of steering.

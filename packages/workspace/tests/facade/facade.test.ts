@@ -918,6 +918,15 @@ describe('typed facade executor', () => {
           affectedProjects: [],
           yours: [{ rule: 'TYPECHECK', file: 'src/a.ts', line: 2, msg: longMessage }],
           preExisting: [{ rule: 'ESLINT', file: 'src/b.ts', line: 3, msg: longMessage }],
+          documentationOpportunities: [{
+            rule: 'DOCS_OPPORTUNITY',
+            surface: 'cli',
+            sourceFiles: ['packages/os/scripts/lifecycle.ts'],
+            docs: ['packages/documentation/src/content/docs/reference/cli.mdx'],
+            blocking: false,
+            reason: 'Public CLI behavior changed.',
+            suggestedAction: 'Invoke documentation-writer.',
+          }],
           testResults: [],
           confidence: null,
         }),
@@ -937,13 +946,52 @@ describe('typed facade executor', () => {
       expect(plans[0].args).toContain('--json');
       expect(plans[0].args).not.toContain('--summary-json');
       expect((result.data as { schema?: string }).schema).toBe('review.summary.v1');
-      const data = result.data as { summary: { yourIssues: number; preExistingIssues: number }; mustFix: Array<{ message: string; messageTruncated: boolean }>; preExistingDigest: { sample: Array<{ message: string; messageTruncated: boolean }> } };
+      const data = result.data as { summary: { yourIssues: number; preExistingIssues: number; documentationOpportunities: number }; checksRun: string[]; documentationOpportunities: Array<{ surface: string; docs: string[]; blocking: boolean }>; mustFix: Array<{ message: string; messageTruncated: boolean }>; preExistingDigest: { sample: Array<{ message: string; messageTruncated: boolean }> } };
       expect(data.summary.yourIssues).toBe(1);
       expect(data.summary.preExistingIssues).toBe(1);
+      expect(data.summary.documentationOpportunities).toBe(1);
+      expect(data.checksRun).toContain('documentation_opportunities');
+      expect(data.documentationOpportunities).toEqual([expect.objectContaining({ surface: 'cli', blocking: false })]);
       expect(data.mustFix[0].message.length).toBeLessThan(600);
       expect(data.mustFix[0].messageTruncated).toBe(true);
       expect(data.preExistingDigest.sample[0].message.length).toBeLessThan(600);
       expect(data.preExistingDigest.sample[0].messageTruncated).toBe(true);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not advertise documentation opportunity checks when review output omits the field', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-review-docs-absent-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      writeTaskSession(tempRoot, 'tsk_review_docs_absent', TEST_BRANCH);
+      const result = await executeTool('review.run', { taskSession: 'tsk_review_docs_absent', noTests: true }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify({
+            base: 'origin/main',
+            branch: TEST_BRANCH,
+            files: 1,
+            affectedProjects: [],
+            yours: [],
+            preExisting: [],
+            testResults: [],
+            confidence: null,
+          }),
+          stderr: '',
+          exitCode: 0,
+        })),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      const data = result.data as { checksRun: string[] };
+      expect(data.checksRun).not.toContain('documentation_opportunities');
     } finally {
       if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
       else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
