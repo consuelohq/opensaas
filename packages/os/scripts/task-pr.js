@@ -41,6 +41,7 @@ const {
   validateBranchMatch,
   writeTaskMeta,
 } = require('./lib/task-meta');
+const { assertWorkpadReady } = require('./lib/task-workpad');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -68,6 +69,7 @@ function printHelp() {
   writeStdout('  --body-file <path>       final review pr body markdown file');
   writeStdout('  --body-template area     generate an area-context body template for the final review pr');
   writeStdout('  --task-only              stop after creating or refreshing the task/* -> stream/* pr');
+  writeStdout('  --ack-workpad-incomplete allow publish when Ko explicitly approved an incomplete workpad');
   writeStdout('  --draft                  create or keep the final review pr as draft');
   writeStdout('  --no-draft               create the final review pr as ready-for-review (default)');
   writeStdout('  --ready                  convert an existing draft final review pr to ready');
@@ -98,7 +100,8 @@ function parseArgs(argv) {
       flag === '--json' ||
       flag === '--help' ||
       flag === '--ready' ||
-      flag === '--task-only';
+      flag === '--task-only' ||
+      flag === '--ack-workpad-incomplete';
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -139,6 +142,9 @@ function parseArgs(argv) {
         break;
       case '--task-only':
         args.taskOnly = true;
+        break;
+      case '--ack-workpad-incomplete':
+        args.ackWorkpadIncomplete = true;
         break;
       case '--draft':
         args.draft = true;
@@ -703,6 +709,12 @@ async function main() {
   }
 
   const context = getPrContext(args);
+  const workpadReadiness = context.taskMeta?.data
+    ? assertWorkpadReady(context.repoRoot, context.taskMeta.data, { ackIncomplete: args.ackWorkpadIncomplete })
+    : { ok: true };
+  if (!workpadReadiness.ok && args.ackWorkpadIncomplete) {
+    writeStderr(`warning: publishing with incomplete workpad: ${workpadReadiness.path}`);
+  }
   const token = getToken();
   const reviewBody = readReviewBody(args, context);
 
