@@ -244,6 +244,10 @@ describe('canonical OS trace persistence', () => {
       }),
     ]));
     expect(secondRows).toHaveLength(firstRows.length);
+    const eventKeys = (rows: typeof firstRows) => rows
+      .map((row) => `${row.mcp_trace_id}:${row.source}:${row.tool}`)
+      .sort();
+    expect(eventKeys(secondRows)).toEqual(eventKeys(firstRows));
     expect(new Set(secondRows.map((row) => row.mcp_trace_id))).toEqual(new Set([result.traceId as string]));
   });
 

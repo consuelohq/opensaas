@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_05be898e565c",
+  "tmuxSession": "opensaas-os-fix-remaining-stream-os-review-comments-05be898e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-remaining-stream-os-review-comments",
+  "branch": "task/os/fix-remaining-stream-os-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-remaining-stream-os-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-remaining-stream-os-review-comments",
+  "prNumber": 1895,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1895",
+  "createdAt": "2026-08-12T18:01:52.544Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-remaining-stream-os-review-comments/.task/os/fix-remaining-stream-os-review-comments/session.json"
+}

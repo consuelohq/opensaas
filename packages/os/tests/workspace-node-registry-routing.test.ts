@@ -668,7 +668,7 @@ describe('workspace node management and presence', () => {
     expect(transactions).toBe(2);
   });
 
-  it('claims task affinity transactionally without allowing cross-node reassignment or cross-workspace bleed', async () => {
+  it('should preserve task affinity ownership when claims race across nodes and workspaces', async () => {
     const values = new Map<string, unknown>();
     let transactions = 0;
     const storage: StorageLike = {
@@ -744,6 +744,116 @@ describe('workspace node management and presence', () => {
       taskSession: affinity.taskSession,
     })).resolves.toMatchObject({ ownerNodeId: 'node-other' });
     expect(transactions).toBe(6);
+  });
+
+  it('should expire task affinity when its bounded lifetime has elapsed', async () => {
+    const values = new Map<string, unknown>();
+    const storage: StorageLike = {
+      get: async <T>(key: string) => values.get(key) as T | undefined,
+      put: async (key: string, value: unknown) => { values.set(key, value); },
+      delete: async (key: string) => values.delete(key),
+      list: async <T>({ prefix } = {}) => new Map(
+        [...values.entries()]
+          .filter(([key]) => !prefix || key.startsWith(prefix))
+          .map(([key, value]) => [key, value as T]),
+      ),
+      transaction: async <T>(callback: (transaction: StorageTransactionLike) => Promise<T>) =>
+        callback(storage),
+    };
+    const store = new DurableStore(storage);
+    const taskSession = 'tsk_expired_owner';
+    await store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession,
+      ownerNodeId: 'node-home',
+      createdAt: baseNow - 10_000,
+      updatedAt: baseNow - 10_000,
+      expiresAt: baseNow - 1,
+    });
+
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession,
+      nowMs: baseNow,
+    })).resolves.toBeUndefined();
+    await expect(store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession,
+      ownerNodeId: 'node-member',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+      expiresAt: baseNow + 60_000,
+    })).resolves.toMatchObject({
+      status: 'created',
+      affinity: { ownerNodeId: 'node-member' },
+    });
+  });
+
+  it('should remove task affinity when its owner node is deleted', async () => {
+    const values = new Map<string, unknown>();
+    const storage: StorageLike = {
+      get: async <T>(key: string) => values.get(key) as T | undefined,
+      put: async (key: string, value: unknown) => { values.set(key, value); },
+      delete: async (key: string) => values.delete(key),
+      list: async <T>({ prefix } = {}) => new Map(
+        [...values.entries()]
+          .filter(([key]) => !prefix || key.startsWith(prefix))
+          .map(([key, value]) => [key, value as T]),
+      ),
+      transaction: async <T>(callback: (transaction: StorageTransactionLike) => Promise<T>) =>
+        callback(storage),
+    };
+    const store = new DurableStore(storage);
+    const owner = node({
+      nodeId: 'node-affinity-owner',
+      displayName: 'Affinity Owner',
+      role: 'member',
+      connectorId: 'connector_affinity_owner',
+      publicKeyJwk: '{"kty":"OKP","crv":"Ed25519","x":"affinity-owner"}',
+      publicKeyThumbprint: 'dpk_affinity_owner',
+    });
+    await store.putWorkspaceNode(owner);
+    await store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession: 'tsk_deleted_owner',
+      ownerNodeId: owner.nodeId,
+      createdAt: baseNow,
+      updatedAt: baseNow,
+      expiresAt: baseNow + 60_000,
+    });
+
+    await expect(store.delWorkspaceNodeIfMatch({
+      accountId,
+      nodeId: owner.nodeId,
+      updatedAt: owner.updatedAt + 1,
+      devicePublicKeyThumbprint: owner.devicePublicKeyThumbprint,
+    })).resolves.toBe(false);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: 'tsk_deleted_owner',
+      nowMs: baseNow,
+    })).resolves.toMatchObject({ ownerNodeId: owner.nodeId });
+
+    await expect(store.delWorkspaceNodeIfMatch({
+      accountId,
+      nodeId: owner.nodeId,
+      updatedAt: owner.updatedAt,
+      devicePublicKeyThumbprint: owner.devicePublicKeyThumbprint,
+    })).resolves.toBe(true);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: 'tsk_deleted_owner',
+      nowMs: baseNow,
+    })).resolves.toBeUndefined();
   });
 
   it('bounds durable heartbeat nonces per node and prunes expired claims', async () => {
@@ -1890,7 +2000,7 @@ describe('multi-node connector routing', () => {
     ]);
   });
 
-  it('honors explicit node targeting on the workspace edge and forwards only the resolved node', async () => {
+  it('should forward only the resolved node when workspace-edge targeting is explicit', async () => {
     const db = createInMemoryWorkspaceRouteD1();
     await seedRoutes(db);
     const upstreams: Request[] = [];
@@ -1925,7 +2035,7 @@ describe('multi-node connector routing', () => {
     );
   });
 
-  it('keeps task-scoped calls on the node that created the task after the workspace default changes', async () => {
+  it('should keep task-scoped calls on their owner when the workspace default changes', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-task-affinity-token', {
@@ -2018,7 +2128,7 @@ describe('multi-node connector routing', () => {
     expect(routeSources).toEqual(['default', 'task']);
   });
 
-  it('rejects an explicit node that conflicts with the task owner before proxying', async () => {
+  it('should reject explicit node targeting when it conflicts with the task owner', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-task-conflict-token', {
@@ -2076,7 +2186,7 @@ describe('multi-node connector routing', () => {
     expect(upstreamCalls).toBe(0);
   });
 
-  it('fails on an offline task owner instead of falling back to another online node', async () => {
+  it('should fail without fallback when the task owner is offline', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-task-offline-token', {
@@ -2136,7 +2246,7 @@ describe('multi-node connector routing', () => {
     expect(upstreamCalls).toBe(0);
   });
 
-  it('releases task affinity only after a successful task.finish', async () => {
+  it('should release task affinity when task.finish succeeds', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-task-finish-token', {
@@ -2239,7 +2349,7 @@ describe('multi-node connector routing', () => {
     ]);
   });
 
-  it('keeps task affinity when task.finish fails', async () => {
+  it('should keep task affinity when task.finish fails', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-task-finish-fail-token', {
@@ -2316,7 +2426,7 @@ describe('multi-node connector routing', () => {
     ]);
   });
 
-  it('does not bind a taskSession returned by a failed task.start', async () => {
+  it('should not bind task affinity when task.start fails', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-task-start-fail-token', {
@@ -2363,6 +2473,138 @@ describe('multi-node connector routing', () => {
       workspaceHost,
       taskSession: 'tsk_failed_start',
     })).resolves.toBeUndefined();
+  });
+
+  it('should not create task affinity when an unbound taskSession is used by a non-start call', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-unbound-task-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        const payload = await (request instanceof Request ? request : new Request(request)).clone().json() as { id?: unknown };
+        return Response.json({
+          jsonrpc: '2.0',
+          id: payload.id ?? null,
+          result: {
+            content: [{ type: 'text', text: JSON.stringify({ ok: true, code: 'OK', data: {} }) }],
+            isError: false,
+          },
+        });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-unbound-task-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 47, method: 'tools/call',
+        params: { name: 'call', arguments: { tool: 'fs.read', input: { path: 'README.md' }, taskSession: 'tsk_unbound_non_start' } },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession: 'tsk_unbound_non_start',
+      nowMs: baseNow,
+    })).resolves.toBeUndefined();
+  });
+
+  it('should preserve the upstream task.start response when affinity bookkeeping fails after execution', async () => {
+    for (const mode of ['conflict', 'throw'] as const) {
+      const backingStore = createMemoryDeviceGrantStore();
+      await seedWorkspace(backingStore);
+      await authorizeWorkspace(backingStore, `central-post-upstream-${mode}-token`, {
+        scopes: ['route:/mcp:read', 'mcp:call'],
+      });
+      const affinity = {
+        accountId,
+        workspaceId,
+        workspaceHost,
+        taskSession: `tsk_post_upstream_${mode}`,
+        ownerNodeId: 'node-member',
+        createdAt: baseNow,
+        updatedAt: baseNow,
+        expiresAt: baseNow + 60_000,
+      };
+      const store = {
+        ...backingStore,
+        async claimWorkspaceTaskAffinity() {
+          if (mode === 'throw') throw new Error('simulated affinity storage failure');
+          return { status: 'conflict' as const, affinity };
+        },
+      };
+      const db = createInMemoryWorkspaceRouteD1();
+      await seedRoutes(db);
+      const warnings: Array<{ message: string; context: Record<string, unknown> }> = [];
+      const handler = createOsDeviceAuthorityHandler({
+        store,
+        origin,
+        now: () => baseNow,
+        workspaceRouteRegistry: db,
+        operationalLogger: {
+          warn: (message, context) => warnings.push({ message, context }),
+        },
+        fetchImpl: async () => Response.json({
+          jsonrpc: '2.0',
+          id: 48,
+          result: {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                ok: true,
+                code: 'OK',
+                data: { taskSession: `tsk_post_upstream_${mode}` },
+              }),
+            }],
+            isError: false,
+          },
+        }),
+      });
+
+      const response = await handler(new Request(`${origin}/mcp`, {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer central-post-upstream-${mode}-token`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0', id: 48, method: 'tools/call',
+          params: { name: 'call', arguments: { tool: 'task.start', input: { area: 'os', title: 'Post-upstream bookkeeping' } } },
+        }),
+      }));
+
+      expect(response.status).toBe(200);
+      const body = await response.json() as { result?: { content?: Array<{ text?: string }> } };
+      expect(body.result?.content?.[0]?.text).toContain(`tsk_post_upstream_${mode}`);
+      expect(warnings).toEqual([
+        expect.objectContaining({
+          message: '[OsDeviceAuthority] Task affinity bookkeeping failed',
+          context: expect.objectContaining({
+            component: 'os-device-authority',
+            operation: 'task-affinity-bookkeeping',
+            accountId,
+            workspaceId,
+            workspaceHost,
+            taskSession: `tsk_post_upstream_${mode}`,
+            nodeId: 'node-home',
+            outcome: mode === 'conflict' ? 'conflict' : 'error',
+          }),
+        }),
+      ]);
+    }
   });
 
   it('keeps OAuth discovery available when the default node is stale while normal MCP routing remains offline', async () => {
