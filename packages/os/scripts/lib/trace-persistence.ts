@@ -260,6 +260,10 @@ type GatewayAuthenticationTraceInput = {
   requiredScope: string;
   authMode: AuthenticatedMcpAuthMode;
   principalKey: string;
+  requestedNodeId?: string;
+  resolvedNodeId?: string;
+  defaultNodeId?: string;
+  routeSource?: 'default' | 'explicit';
 };
 
 function gatewayAuthenticationToolTrace(
@@ -279,6 +283,10 @@ function gatewayAuthenticationToolTrace(
       requiredScope: input.requiredScope,
       authMode: input.authMode,
       principalKey: input.principalKey,
+      ...(input.requestedNodeId ? { requestedNodeId: input.requestedNodeId } : {}),
+      ...(input.resolvedNodeId ? { resolvedNodeId: input.resolvedNodeId } : {}),
+      ...(input.defaultNodeId ? { defaultNodeId: input.defaultNodeId } : {}),
+      ...(input.routeSource ? { routeSource: input.routeSource } : {}),
     },
     result: { ok: true },
   };

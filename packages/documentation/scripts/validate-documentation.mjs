@@ -281,8 +281,8 @@ for (const file of translationInvariantFiles) {
 
 const config = read('astro.config.mjs');
 assert(
-  config.includes("title: 'Consuelo Docs'"),
-  'Starlight title must be Consuelo Docs',
+  config.includes("title: 'Consuelo OS'"),
+  'Starlight title must be Consuelo OS',
 );
 assert(
   config.includes('RuntimeLanguageSelect.astro'),

@@ -3,10 +3,19 @@ import {
   type WorkspaceRouteD1Resolution,
 } from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { resolveCentralMcpFacadeScope } from '../../../../scripts/lib/tool-scope-authorization';
+import {
+  encodeMcpNodeRoutingContext,
+  inspectMcpNodeRoutingBody,
+  MCP_NODE_CONTEXT_HEADER,
+  MCP_ROUTE_SOURCE_HEADER,
+  type McpNodeRoutingContext,
+  type McpNodeRouteSource,
+} from '../../../../scripts/lib/mcp-node-routing';
 import { json } from '../http';
 import type { Store, WorkspaceRouteRegistryBinding } from '../types';
 import { hasGrantedScope, hash } from '../utils';
 import { mcpResourceUrl } from './mcp-oauth';
+import { workspaceDefaultNodeId, workspaceNodePresence } from './nodes';
 
 export function bearerToken(request: Request): string | undefined {
   const authorization = request.headers.get('authorization')?.trim() ?? '';
@@ -132,6 +141,8 @@ export async function centralMcpProxyRequest(input: {
   request: Request;
   resolution: Extract<WorkspaceRouteD1Resolution, { allowed: true }>;
   upstreamUrl: string;
+  routeSource?: McpNodeRouteSource;
+  nodeRoutingContext?: McpNodeRoutingContext;
   internalSigningSecret?: string;
 }): Promise<Request> {
   try {
@@ -146,6 +157,8 @@ export async function centralMcpProxyRequest(input: {
     headers.delete('x-consuelo-edge-nonce');
     headers.delete('x-consuelo-connector-id');
     headers.delete('x-consuelo-node-id');
+    headers.delete(MCP_NODE_CONTEXT_HEADER);
+    headers.delete(MCP_ROUTE_SOURCE_HEADER);
 
     headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
     headers.set('x-consuelo-hostname', input.resolution.hostname);
@@ -160,6 +173,13 @@ export async function centralMcpProxyRequest(input: {
       if (input.resolution.nodeId) {
         headers.set('x-consuelo-node-id', input.resolution.nodeId);
       }
+    }
+    if (input.routeSource) headers.set(MCP_ROUTE_SOURCE_HEADER, input.routeSource);
+    if (input.nodeRoutingContext) {
+      headers.set(
+        MCP_NODE_CONTEXT_HEADER,
+        encodeMcpNodeRoutingContext(input.nodeRoutingContext),
+      );
     }
 
     const internalSigningSecret = input.internalSigningSecret?.trim();
@@ -199,6 +219,60 @@ export async function centralMcpProxyRequest(input: {
         ? error.message
         : 'central MCP proxy request failed',
     );
+  }
+}
+
+async function centralMcpNodeRoutingContext(input: {
+  store: Store;
+  accountId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  currentNodeId: string;
+  routeSource: McpNodeRouteSource;
+  nowMs: number;
+}): Promise<McpNodeRoutingContext | undefined> {
+  try {
+    const workspace = await input.store.byAccountWorkspace(input.accountId);
+    if (!workspace || workspace.workspaceHost !== input.workspaceHost) return undefined;
+    const defaultNodeId = workspaceDefaultNodeId(workspace);
+    const nodes = (await input.store.listWorkspaceNodes(input.accountId))
+      .filter(
+        (node) =>
+          node.workspaceHost === input.workspaceHost &&
+          (node.state ?? 'active') !== 'revoked',
+      )
+      .sort((left, right) => {
+        const leftPriority = left.nodeId === input.currentNodeId
+          ? 0
+          : left.nodeId === defaultNodeId
+            ? 1
+            : 2;
+        const rightPriority = right.nodeId === input.currentNodeId
+          ? 0
+          : right.nodeId === defaultNodeId
+            ? 1
+            : 2;
+        return leftPriority - rightPriority || left.createdAt - right.createdAt;
+      })
+      .slice(0, 32)
+      .map((node) => ({
+        nodeId: node.nodeId,
+        displayName: (node.displayName ?? node.nodeName).trim().slice(0, 120),
+        role: node.role,
+        platform: (node.platform ?? 'unknown').trim().slice(0, 40),
+        presence: workspaceNodePresence(node, input.nowMs),
+        state: (node.state ?? 'active').trim().slice(0, 40),
+      }));
+    return {
+      version: 1,
+      workspaceId: input.workspaceId,
+      currentNodeId: input.currentNodeId,
+      ...(defaultNodeId ? { defaultNodeId } : {}),
+      routeSource: input.routeSource,
+      nodes,
+    };
+  } catch {
+    return undefined;
   }
 }
 
@@ -246,8 +320,31 @@ export async function proxyCentralMcpRequest(input: {
     }
 
     const inboundUrl = new URL(input.request.url);
-    const requestedNodeId =
+    const routingInspection = inspectMcpNodeRoutingBody(
+      input.request.method === 'POST' ? await input.request.clone().text() : '',
+    );
+    if (!routingInspection.ok) {
+      return centralMcpSafeError({
+        status: 400,
+        code: routingInspection.code,
+        message: routingInspection.message,
+      });
+    }
+    const headerNodeId =
       input.request.headers.get('x-consuelo-node-id')?.trim() || undefined;
+    if (
+      routingInspection.nodeId &&
+      headerNodeId &&
+      routingInspection.nodeId !== headerNodeId
+    ) {
+      return centralMcpSafeError({
+        status: 400,
+        code: 'NODE_ROUTE_MISMATCH',
+        message: 'MCP body nodeId does not match the explicit node routing header.',
+      });
+    }
+    const requestedNodeId = routingInspection.nodeId ?? headerNodeId;
+    const routeSource: McpNodeRouteSource = requestedNodeId ? 'explicit' : 'default';
     const resolution = await createWorkspaceCloudflareD1RouteRegistry(
       input.routeRegistry,
     ).resolve({
@@ -271,6 +368,18 @@ export async function proxyCentralMcpRequest(input: {
       });
     }
 
+    const nodeRoutingContext = routingInspection.getSteering && resolution.nodeId
+      ? await centralMcpNodeRoutingContext({
+          store: input.store,
+          accountId: stored.accountId,
+          workspaceId: resolution.workspaceId,
+          workspaceHost: stored.workspaceHost,
+          currentNodeId: resolution.nodeId,
+          routeSource,
+          nowMs: input.nowMs,
+        })
+      : undefined;
+
     const proxyRequest = await centralMcpProxyRequest({
       request: input.request,
       resolution,
@@ -278,6 +387,8 @@ export async function proxyCentralMcpRequest(input: {
         tunnelOriginUrl: resolution.target.tunnelOriginUrl,
         inboundUrl,
       }),
+      routeSource,
+      nodeRoutingContext,
       internalSigningSecret: input.internalSigningSecret,
     });
 
