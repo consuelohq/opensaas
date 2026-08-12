@@ -25,7 +25,7 @@ const {
   mergePullRequest,
   updatePullRequest,
 } = require('./lib/github');
-const { fetchOrigin, getCurrentBranch, runGit } = require('./lib/git');
+const { getCurrentBranch, getRefSha, resolveApiPushSyncTarget, runGit } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
 const { findActiveTaskResult } = require('./lib/task-selection');
 const {
@@ -474,18 +474,36 @@ function getConflictFiles(worktreePath) {
   return output ? output.split('\n').filter(Boolean) : [];
 }
 
-function syncTaskBranchWithBaseMetadataConflicts(context) {
+function syncTaskBranchWithBaseMetadataConflicts(context, { repository, token }) {
   if (!context.taskMeta || !context.taskMeta.dir) {
     return { resolved: false, reason: 'no local task metadata record' };
   }
 
   const worktreePath = context.taskMeta.dir;
-  fetchOrigin(worktreePath);
+  const taskTarget = resolveApiPushSyncTarget(worktreePath, context.taskBranch, repository, token);
+  const baseTarget = resolveApiPushSyncTarget(worktreePath, context.streamBranch, repository, token);
+  runGit(['-C', worktreePath, 'fetch', '--no-tags', taskTarget.remote, `refs/heads/${context.taskBranch}:${taskTarget.trackingRef}`], {
+    cwd: worktreePath,
+    env: taskTarget.env,
+  });
+  runGit(['-C', worktreePath, 'fetch', '--no-tags', baseTarget.remote, `refs/heads/${context.streamBranch}:${baseTarget.trackingRef}`], {
+    cwd: worktreePath,
+    env: baseTarget.env,
+  });
+  const localTaskSha = getRefSha(worktreePath, `refs/heads/${context.taskBranch}`);
+  const selectedTaskSha = getRefSha(worktreePath, taskTarget.trackingRef);
+  if (localTaskSha !== selectedTaskSha) {
+    return {
+      resolved: false,
+      reason: 'local task branch differs from selected repository',
+      localTaskSha,
+      selectedTaskSha,
+    };
+  }
 
+  let resolution = { resolved: true, conflictFiles: [], alreadyMergedCleanly: true };
   try {
-    runGit(['-C', worktreePath, 'merge', '--no-ff', '--no-edit', `origin/${context.streamBranch}`], { cwd: worktreePath });
-    runGit(['-C', worktreePath, 'push', 'origin', context.taskBranch], { cwd: worktreePath });
-    return { resolved: true, conflictFiles: [], alreadyMergedCleanly: true };
+    runGit(['-C', worktreePath, 'merge', '--no-ff', '--no-edit', baseTarget.trackingRef], { cwd: worktreePath });
   } catch {
     const conflictFiles = getConflictFiles(worktreePath);
     if (!isOnlyTaskMetadataConflict(conflictFiles)) {
@@ -498,7 +516,7 @@ function syncTaskBranchWithBaseMetadataConflicts(context) {
       };
     }
 
-    const resolution = resolveTaskMetadataConflicts(worktreePath, conflictFiles, {
+    resolution = resolveTaskMetadataConflicts(worktreePath, conflictFiles, {
       currentBranch: context.taskBranch,
       taskBranch: context.taskBranch,
     });
@@ -509,9 +527,13 @@ function syncTaskBranchWithBaseMetadataConflicts(context) {
     }
 
     runGit(['-C', worktreePath, 'commit', '--no-edit'], { cwd: worktreePath });
-    runGit(['-C', worktreePath, 'push', 'origin', context.taskBranch], { cwd: worktreePath });
-    return resolution;
   }
+
+  runGit(['-C', worktreePath, 'push', taskTarget.remote, `${context.taskBranch}:refs/heads/${context.taskBranch}`], {
+    cwd: worktreePath,
+    env: taskTarget.env,
+  });
+  return resolution;
 }
 
 async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr, context }) {
@@ -552,7 +574,7 @@ async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr, context
       throw mergeError;
     }
 
-    const resolution = syncTaskBranchWithBaseMetadataConflicts(context);
+    const resolution = syncTaskBranchWithBaseMetadataConflicts(context, { repository, token });
 
     if (!resolution.resolved) {
       throw new GitHubRequestError(

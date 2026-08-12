@@ -303,6 +303,54 @@ describe('task.push local branch synchronization', () => {
     }
   });
 
+  it('should preserve pre-existing staged entries when the API-created commit advances other paths', () => {
+    const root = mkdtempSync(join(tmpdir(), 'task-push-sync-staged-index-'));
+    const remote = join(root, 'remote.git');
+    const producer = join(root, 'producer');
+    const local = join(root, 'local');
+    const branch = 'task/workspace-agents/example';
+    try {
+      mkdirSync(producer);
+      git(root, ['init', '--bare', remote]);
+      git(producer, ['init']);
+      git(producer, ['config', 'user.email', 'test@example.com']);
+      git(producer, ['config', 'user.name', 'Test']);
+      writeFileSync(join(producer, 'pushed.txt'), 'base pushed\n');
+      writeFileSync(join(producer, 'staged.txt'), 'base staged\n');
+      git(producer, ['add', 'pushed.txt', 'staged.txt']);
+      git(producer, ['commit', '-m', 'base']);
+      git(producer, ['checkout', '-b', branch]);
+      git(producer, ['remote', 'add', 'origin', remote]);
+      git(producer, ['push', '-u', 'origin', branch]);
+      git(root, ['clone', '--branch', branch, remote, local]);
+      git(local, ['config', 'user.email', 'test@example.com']);
+      git(local, ['config', 'user.name', 'Test']);
+      const previousSha = git(local, ['rev-parse', 'HEAD']);
+
+      writeFileSync(join(local, 'staged.txt'), 'caller staged content\n');
+      git(local, ['add', 'staged.txt']);
+      const stagedBlobBefore = git(local, ['rev-parse', ':staged.txt']);
+      const stagedPathsBefore = git(local, ['diff', '--cached', '--name-only']);
+      expect(stagedPathsBefore).toBe('staged.txt');
+
+      writeFileSync(join(local, 'pushed.txt'), 'api pushed content\n');
+      writeFileSync(join(producer, 'pushed.txt'), 'api pushed content\n');
+      git(producer, ['add', 'pushed.txt']);
+      git(producer, ['commit', '-m', 'api push']);
+      const nextSha = git(producer, ['rev-parse', 'HEAD']);
+      git(producer, ['push', 'origin', branch]);
+
+      synchronizeApiPushedTaskBranch(local, branch, previousSha, nextSha);
+
+      expect(git(local, ['rev-parse', ':staged.txt'])).toBe(stagedBlobBefore);
+      expect(git(local, ['diff', '--cached', '--name-only'])).toBe('staged.txt');
+      expect(git(local, ['diff', '--name-only'])).toBe('');
+      expect(git(local, ['show', ':staged.txt'])).toBe('caller staged content');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('should fail closed without moving the local ref when previousSha no longer matches local refs', () => {
     const root = mkdtempSync(join(tmpdir(), 'task-push-sync-stale-previous-'));
     const remote = join(root, 'remote.git');
