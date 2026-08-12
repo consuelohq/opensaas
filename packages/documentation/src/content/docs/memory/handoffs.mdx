@@ -1,0 +1,34 @@
+---
+title: Handoffs
+description: Save continuation-ready context so another agent can resume without the original conversation.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/handoff/SKILL.md
+    tests:
+      - packages/os/tests/memory-adjacent.test.ts
+      - packages/os/tests/skill-migration.test.ts
+    runtime: The current handoff save and retrieval contract was inspected on 2026-08-11.
+---
+
+A **handoff** is saved, continuation-ready context for a future agent. It is deliberately different from a transcript: the next agent should be able to act without knowing the conversation that produced it.
+
+## What makes a handoff useful
+
+A strong handoff states the goal, what is already decided, current status, proven evidence, important files and systems, exact blockers, and the first actions the next agent should take. It should label uncertainty instead of making the next agent infer it.
+
+The design target is **zero-context execution**: a fresh agent should not need to ask what “this,” “we,” or “the thing from earlier” means.
+
+## Saving a handoff
+
+The handoff workflow saves the **full handoff**, not a short summary, to memory after the save is explicitly requested or approved. Saved handoffs use a descriptive title and the `handoff` category so they can be found later.
+
+That explicit save boundary matters. A draft handoff can still be changing; saved memory should represent the version that is ready to continue from.
+
+## Retrieving a handoff
+
+The next agent can use the `memory` tool to search by title or content, then read the full matching memory before starting new work. Good handoffs include retrieval keywords or tags when those make the record easier to find.
+
+In practice, the handoff is the deliberate transfer packet, while the workpad and stream context provide surrounding evidence about the task and the wider line of work.
+
+Implementation evidence: `packages/os/skills/handoff/SKILL.md`.
