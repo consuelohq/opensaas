@@ -1,6 +1,7 @@
 {
   "files": [
-    "packages/os/tests/local-os-server-review-findings.test.ts"
+    "packages/os/tests/local-os-server-review-findings.test.ts",
+    "packages/workspace/senior-engineer.md"
   ],
-  "updatedAt": "2026-08-12T02:02:21.632Z"
+  "updatedAt": "2026-08-12T03:54:01.541Z"
 }

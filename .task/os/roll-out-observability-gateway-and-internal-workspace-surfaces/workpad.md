@@ -76,8 +76,7 @@ resumed task session: `tsk_4e5fd8c23e86`
 
 ## files changed
 
-- `packages/workspace/scripts/verify.js`
-- `packages/workspace/tests/verification.test.js`
+- `packages/os/scripts/lib/security-gateway.ts`
 
 
 ## workspace-owned: files changed
@@ -282,12 +281,6 @@ bun run task:finish
 - `security-gateway.ts`
 - `stream/os`
 
-### CI downstream checkout SHA correction
-
-- A second GitHub Actions race remained after fixing the comparison base: `consuelo-changes` checked out one synthetic merge, but each downstream job performed a fresh default `actions/checkout`, which can resolve the moving `refs/pull/<n>/merge` to a newer synthetic merge while still consuming the earlier base output. That reproduced unrelated `auto:twenty-sdk:test` selection even with a correct `HEAD^1` base.
-- TDD now requires `consuelo-changes` to emit both the synthetic merge `head_sha` and its first-parent `base_ref`, and all six downstream Consuelo jobs to checkout exactly `${{ needs.consuelo-changes.outputs.head_sha }}`. This pins changed-file classification and every verification job to the same immutable merge object.
-- Focused static CI contract is green after the fix.
-
 ## 2026-08-12 trace interaction follow-up
 - User acceptance: preserve exact v38 shell; fix generic trace labels, token visibility, child batches, keyboard navigation/copy/filter/home confirmation, clear stale selection; merge to main; update local runtime through supported updater if release is available.
 - Test-first contract: add focused browser/runtime contracts for row summaries/tokens/children and keyboard state before implementation. Initial interaction suite failed because the interaction module did not exist; implementation then made it pass 6/6.
@@ -302,3 +295,6 @@ bun run task:finish
 - CI diagnostics: exact current synthetic diff selected 8 focused suites locally (adds workspace verification stamp tests) and all 8 passed. CI still reported registry failure without naming the suite, so `verify` now emits only failed suite name + exit code (no test payload) in human output; regression test added red-first/green.
 - CI runner root cause: the three CI-only failures were the publisher, route-preservation, and lifecycle suites. Root Vitest with repo cwd breaks tests that resolve OS modules from `process.cwd()`, while the OS package `test` script launches Node and cannot load `bun:sqlite`. The stable contract runner is Bun runtime + `packages/os` cwd + root-installed Vitest (`bun --cwd packages/os ../../node_modules/vitest/vitest.mjs ...`). Publisher 7/7, route/gateway 23/23, lifecycle 10/10 pass with that combination; registry command contract added red-first/green.
 - Stream integration catch: after explicitly merging current `stream/os` into the task branch, `finish-line-lifecycle-contract` reproduced the CI failure: stream had reintroduced Caddy `response_header_timeout 30s`, `read_timeout 1h`, and `write_timeout 1h`, contradicting this rollout's long-call invariant and the 15s-crash fix. Removed those proxy execution timeouts again while retaining `dial_timeout 5s`; merged-head lifecycle contract is now 10/10 and OS typecheck passes.
+
+- 2026-08-12 final CI recovery: reproduced the exact pinned synthetic merge `8bcfff46ad7858356f28a421a152498e05007696` from CI in an isolated `/tmp` archive. The lifecycle contract failed only because GitHub merged `stream/os` timeout additions back into `security-gateway.ts`; the task branch did not yet have `stream/os` as an ancestor, so the earlier `task.push` could not encode the timeout removal relative to the synthetic merge base.
+- Recovery: merged `stream/os` SHA `70b2592804c82aa56ff1c6e9860ef2c2d358aab8` into the remote task branch through GitHub's non-force merge API (`898ae538976bdb68c93c6bc13e26823adb92e6a6`). The working diff against that merged remote now contains exactly the intended removal of Caddy `response_header_timeout` / `read_timeout` / `write_timeout`; `dial_timeout 5s` remains. This makes the app-owned execution-deadline fix explicit after stream integration instead of relying on synthetic merge conflict behavior.
