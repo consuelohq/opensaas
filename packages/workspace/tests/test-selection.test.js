@@ -360,4 +360,20 @@ describe('test selection registry', () => {
     expect(data.selectedSuites).toEqual([]);
   });
 
+
+  it('runs focused Consuelo OS contracts with Bun, OS cwd, and root Vitest', () => {
+    const registry = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'packages/workspace/test-selection.registry.json'), 'utf8'));
+    const rules = new Map(registry.rules.map((rule) => [rule.id, rule]));
+    for (const id of ['os-workspace-edge-rollout', 'os-lifecycle-legacy-mcp-scrub']) {
+      const rule = rules.get(id);
+      expect(rule).toBeTruthy();
+      for (const suite of rule.tests) {
+        const offset = suite.command[0] === 'env' ? 2 : 0;
+        expect(suite.command.slice(offset, offset + 5)).toEqual([
+          'bun', '--cwd', 'packages/os', '../../node_modules/vitest/vitest.mjs', 'run',
+        ]);
+      }
+    }
+  });
+
 });

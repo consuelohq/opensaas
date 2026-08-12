@@ -233,7 +233,7 @@
             "bun",
             "--cwd",
             "packages/os",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
             "tests/install-edge-site-publisher.test.ts"
           ]
@@ -246,7 +246,7 @@
             "bun",
             "--cwd",
             "packages/os",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
             "tests/workspace-edge-route-seed-contract.test.ts",
             "tests/workspace-edge-sites-gateway-integration.test.ts"
@@ -267,10 +267,10 @@
           "name": "OS lifecycle legacy MCP environment scrub contract",
           "command": [
             "bun",
-            "node_modules/vitest/vitest.mjs",
-            "run",
-            "--root",
+            "--cwd",
             "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
             "tests/finish-line-lifecycle-contract.test.ts"
           ]
         }
