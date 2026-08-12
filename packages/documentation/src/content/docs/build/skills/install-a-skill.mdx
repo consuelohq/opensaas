@@ -14,7 +14,7 @@ evidence:
     runtime: Clean removal and locally modified skill preservation were verified on 2026-08-11.
 ---
 
-Consuelo OS ships with bundled skills that you can enable or remove after installation.
+Consuelo OS ships with skill templates that you can enable or remove after installation.
 
 ## Add a skill
 
@@ -24,7 +24,7 @@ Run the picker:
 consuelo add skill
 ```
 
-The picker shows only bundled skills that are not currently selected.
+The picker shows only skill templates that are not currently selected.
 
 To add one or more skills directly:
 
@@ -77,8 +77,8 @@ After adding a skill, check that:
 3. `~/Consuelo/Skills/<name>/SKILL.md` exists;
 4. a fresh agent bootstrap lists it in Installed skills.
 
-See the individual pages in [Bundled skills](/build/skills/bundled/) for each skill's purpose and boundary.
+See the individual pages in [Skill Templates](/build/skills/bundled/) for each skill's purpose and boundary.
 
 ## Custom skill note
 
-The current `add skill` command selects bundled skills. Existing custom skills from the legacy hidden `<CONSUELO_HOME>/skills/` tree are preserved for migration; the CLI does not treat an arbitrary new folder name as a bundled install.
+The current `add skill` command selects skill templates. Existing custom skills from the legacy hidden `<CONSUELO_HOME>/skills/` tree are preserved for migration; the CLI does not treat an arbitrary new folder name as a bundled install.

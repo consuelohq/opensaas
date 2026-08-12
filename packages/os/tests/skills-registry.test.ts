@@ -55,6 +55,12 @@ describe('skills registry generator', () => {
     expect(names).toContain('senior-engineer');
   });
 
+  it('uses the canonical public titles for Branch and Task', () => {
+    const registry = buildSkillsRegistry();
+    expect(registry.skills.find((skill) => skill.name === 'branch')?.title).toBe('Branch');
+    expect(registry.skills.find((skill) => skill.name === 'task')?.title).toBe('Task');
+  });
+
   it('sorts skills by name', () => {
     writeSkill('zulu', validSkill('zulu'));
     writeSkill('alpha', validSkill('alpha'));

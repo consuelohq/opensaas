@@ -23,7 +23,7 @@
     },
     {
       "name": "branch",
-      "title": "Branch Planner",
+      "title": "Branch",
       "description": "Align on large engineering projects, investigate hidden risks, and decompose them into dependency-aware branch and PR stacks that can be executed across focused chats or agents.",
       "trigger": "Invoke when Ko asks to decompose or branch a large project into multiple PRs, chats, or agents; plan an epic across sequential and parallel workstreams; decide what can run in parallel; freeze a technical branch stack; or execute an established 'Branch N approved, go' plan. Do not invoke for ordinary Git branch commands or a single already-scoped repo task.",
       "entrypoint": "SKILL.md",
@@ -221,7 +221,7 @@
     },
     {
       "name": "task",
-      "title": "Task Workflow",
+      "title": "Task",
       "description": "Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context → task.start → task.push → task.pr → task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/<area> → main review PR instead of the intermediate task PR.",
       "trigger": "Invoke when the user asks to start, run, validate, publish, promote, inspect, recover, or finish repo/task-scoped work in a stream.",
       "entrypoint": "SKILL.md",

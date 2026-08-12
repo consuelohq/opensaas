@@ -16,9 +16,9 @@ const buildPages = [
   ['build/skills/install-a-skill.mdx', 'Install a skill'],
   ['build/skills/create-a-skill.mdx', 'Create a skill'],
   ['build/skills/skill-structure.mdx', 'Skill structure'],
-  ['build/skills/bundled/index.mdx', 'Bundled skills'],
+  ['build/skills/bundled/index.mdx', 'Skill Templates'],
   ['build/skills/bundled/artifacts.mdx', 'Artifacts'],
-  ['build/skills/bundled/branch.mdx', 'Branch Planner'],
+  ['build/skills/bundled/branch.mdx', 'Branch'],
   ['build/skills/bundled/browser.mdx', 'Browser'],
   ['build/skills/bundled/debugger.mdx', 'Debugger'],
   ['build/skills/bundled/handoff.mdx', 'Handoff'],
@@ -26,7 +26,7 @@ const buildPages = [
   ['build/skills/bundled/senior-engineer.mdx', 'Senior Engineer'],
   ['build/skills/bundled/sites.mdx', 'Sites'],
   ['build/skills/bundled/skill-creator.mdx', 'Skill Creator'],
-  ['build/skills/bundled/task.mdx', 'Task Workflow'],
+  ['build/skills/bundled/task.mdx', 'Task'],
   ['build/skills/bundled/teach.mdx', 'Teach'],
   ['build/steering/how-steering-works.mdx', 'How steering works'],
   ['build/steering/workspace-steering.mdx', 'Workspace steering'],
@@ -53,7 +53,7 @@ describe('Build with OS documentation contract', () => {
       "label: 'Install a skill'",
       "label: 'Create a skill'",
       "label: 'Skill structure'",
-      "label: 'Bundled skills'",
+      "label: 'Skill Templates'",
       "slug: 'build/skills/bundled'",
       "slug: 'build/skills/bundled/artifacts'",
       "slug: 'build/skills/bundled/branch'",
@@ -114,7 +114,7 @@ describe('Build with OS documentation contract', () => {
     }
   });
 
-  test('documents every bundled OS skill in the final Skills subgroup', () => {
+  test('documents every skill template in the final Skills subgroup', () => {
     const registry = JSON.parse(readFileSync(repoFile('packages/os/skills/skills.json'), 'utf8')) as { skills: Array<{ name: string }> };
     const expected = registry.skills.map((skill) => skill.name).sort();
     const documented = buildPages
@@ -125,10 +125,50 @@ describe('Build with OS documentation contract', () => {
 
     const navigation = read('src/lib/docs-navigation.ts');
     const skillStructureIndex = navigation.indexOf("label: 'Skill structure'");
-    const bundledIndex = navigation.indexOf("label: 'Bundled skills'", skillStructureIndex);
+    const bundledIndex = navigation.indexOf("label: 'Skill Templates'", skillStructureIndex);
     const steeringIndex = navigation.indexOf("label: 'Steering'", bundledIndex);
     expect(bundledIndex).toBeGreaterThan(skillStructureIndex);
     expect(steeringIndex).toBeGreaterThan(bundledIndex);
+  });
+
+  test('renders each skill template from the exact skill metadata and SKILL.md source', () => {
+    const registry = JSON.parse(readFileSync(repoFile('packages/os/skills/skills.json'), 'utf8')) as {
+      skills: Array<{ name: string; title: string; description: string }>;
+    };
+    for (const skill of registry.skills) {
+      const page = read(`src/content/docs/build/skills/bundled/${skill.name}.mdx`);
+      const skillSource = readFileSync(repoFile(`packages/os/skills/${skill.name}/SKILL.md`), 'utf8');
+      expect(page).toContain(`title: ${JSON.stringify(skill.title)}`);
+      expect(page).toContain(`description: ${JSON.stringify(skill.description)}`);
+      expect(page.indexOf('## Enable it')).toBeLessThan(page.indexOf('## Description'));
+      expect(page.indexOf('## Description')).toBeLessThan(page.indexOf('## SKILL.md'));
+      expect(page).toContain(`consuelo add skill ${skill.name}`);
+      expect(page).toContain(`consuelo remove skill ${skill.name}`);
+      const renderedDescription = skill.description.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+      expect(page).toContain(`\n${renderedDescription}\n`);
+
+      const startMarker = '{/* skill-source:start */}';
+      const authored = page.slice(0, page.indexOf(startMarker));
+      expect(authored).not.toContain('## When to use it');
+      expect(authored).not.toContain('## What the agent loads');
+      expect(authored).not.toContain('## Boundary');
+      expect(authored).not.toContain('## Verify');
+
+      const endMarker = '{/* skill-source:end */}';
+      const start = page.indexOf(startMarker);
+      const end = page.indexOf(endMarker, start + startMarker.length);
+      expect(start).toBeGreaterThanOrEqual(0);
+      expect(end).toBeGreaterThan(start);
+      const fenced = page.slice(start + startMarker.length, end).trim();
+      const firstNewline = fenced.indexOf('\n');
+      const lastNewline = fenced.lastIndexOf('\n');
+      expect(firstNewline).toBeGreaterThan(0);
+      expect(lastNewline).toBeGreaterThan(firstNewline);
+      const openingFence = fenced.slice(0, firstNewline).match(/^(`{4,})markdown$/)?.[1];
+      expect(openingFence).toBeTruthy();
+      expect(fenced.slice(lastNewline + 1)).toBe(openingFence);
+      expect(fenced.slice(firstNewline + 1, lastNewline)).toBe(skillSource.replace(/\n$/, ''));
+    }
   });
 
   test('teaches the verified tool, skill, script, and workflow boundaries', () => {
