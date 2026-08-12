@@ -27,8 +27,21 @@ COPY ./packages/logger/package.json /app/packages/logger/
 COPY ./packages/metering/package.json /app/packages/metering/
 COPY ./packages/sdk/package.json /app/packages/sdk/
 
-# Install all dependencies
-RUN yarn && yarn cache clean && npx nx reset
+# Install all dependencies. Native packages such as sharp/canvas download
+# prebuilt artifacts outside Yarn's normal fetch retry path, so retry the
+# install as a unit before falling back to a hard failure.
+RUN set -eux; \
+    attempt=1; \
+    until yarn; do \
+      if [ "$attempt" -ge 3 ]; then \
+        exit 1; \
+      fi; \
+      echo "yarn install failed (attempt $attempt/3); retrying"; \
+      attempt=$((attempt + 1)); \
+      sleep 5; \
+    done; \
+    yarn cache clean; \
+    npx nx reset
 
 
 # Build the back
@@ -51,7 +64,7 @@ RUN cd /app/packages/agent && npx tsc
 RUN cd /app/packages/logger && npx tsc
 RUN cd /app/packages/coaching && npx tsc --declaration
 RUN cd /app/packages/contacts && npx tsc
-RUN cd /app/packages/dialer && npx tsc --declaration
+RUN cd /app/packages/dialer && yarn build
 RUN cd /app/packages/api && npx tsc
 
 RUN yarn workspaces focus --production twenty-shared twenty-server @consuelo/agent @consuelo/api @consuelo/dialer @consuelo/coaching @consuelo/contacts @consuelo/logger
