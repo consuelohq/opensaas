@@ -31,6 +31,7 @@ started: 2026-08-12
 - 2026-08-12 04:41:23 fs.write: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
 - 2026-08-12 04:44:15 fs.write: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
 - 2026-08-12 04:47:19 fs.write: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
+- 2026-08-12 04:49:12 fs.write: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -103,3 +104,12 @@ bun run task:finish
 - GREEN target: strict review has 0 blocking findings and focused settings/Diffs/edge tests remain green.
 
 - 2026-08-12 04:47:19 append: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
+
+## Diffs error-boundary GREEN evidence
+
+- Focused runtime packet after refactor: 52 pass / 0 fail / 359 assertions across Configuration shell, Diffs Hono, source-control config, Diffs adapter, route-seed, Sites/Gateway integration, and install-edge publisher.
+- Strict review against `origin/main`: 0 blocking issues / 0 must-fix findings.
+- Full verify against `origin/main`: passed, publish-valid; DB guard reported the expected route-seed script warning with 0 findings.
+- Installed Consuelo OS remains untouched.
+
+- 2026-08-12 04:49:12 append: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
