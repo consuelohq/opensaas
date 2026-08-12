@@ -9,7 +9,6 @@ import { pathToFileURL } from 'node:url';
 import {
   findManifestEntry,
   getPackageRoot,
-  readEffectiveCoreManifest,
 } from './lib/manifest';
 import { validateManifestGuardrails } from './lib/local-guardrails';
 import {
@@ -36,7 +35,7 @@ import type { SitePageKind } from './lib/sites';
 import { readArtifactCatalog } from './lib/artifacts';
 import { loadOsConfig } from './lib/install-state';
 import { runConfigurationOverlayCommand } from './lib/settings-overlay-command';
-import { readSteeringSkillCatalog } from './lib/steering-skills';
+import { readSteeringSnapshot } from './lib/steering-snapshot-cache';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -55,48 +54,9 @@ function readIfExists(filePath: string): string {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
 }
 
-const PRIMARY_STEERING_FILES = ['system_prompt.md'] as const;
-// example-system.md is documentation for the user, not instructions for an agent. It is excluded
-// by name so its sample rules can never be mistaken for real ones.
-const EXCLUDED_STEERING_FILES = new Set([
-  'steering.md',
-  'decision.md',
-  'example-system.md',
-]);
-
 function visibleSteeringDir(): string {
   const userHome = process.env.CONSUELO_USER_HOME?.trim() || os.homedir();
   return path.join(userHome, 'Consuelo', 'Steering');
-}
-
-function isSupportedSteeringMarkdown(fileName: string): boolean {
-  return fileName.endsWith('.md') && !EXCLUDED_STEERING_FILES.has(fileName.toLowerCase());
-}
-
-function readSteeringMarkdownFiles(steeringDir: string): Array<{ name: string; content: string }> {
-  const sections: Array<{ name: string; content: string }> = [];
-  const seen = new Set<string>();
-
-  for (const fileName of PRIMARY_STEERING_FILES) {
-    const content = readIfExists(path.join(steeringDir, fileName));
-    seen.add(fileName);
-    if (content) sections.push({ name: fileName, content });
-  }
-
-  if (!fs.existsSync(steeringDir)) return sections;
-
-  const additionalFiles = fs.readdirSync(steeringDir)
-    .filter((fileName) => !seen.has(fileName) && isSupportedSteeringMarkdown(fileName))
-    .sort((left, right) => left.localeCompare(right));
-
-  for (const fileName of additionalFiles) {
-    const filePath = path.join(steeringDir, fileName);
-    if (!fs.statSync(filePath).isFile()) continue;
-    const content = readIfExists(filePath);
-    if (content) sections.push({ name: fileName, content });
-  }
-
-  return sections;
 }
 
 function createTraceId(): string {
@@ -502,7 +462,7 @@ function renderSitesCommandResult(result: SitesCommandResult): string {
     `Artifact count: ${result.artifacts}`,
   ].join('\n');
 }
-export function getSteering(): string {
+export function getSteering(options: { forceSnapshotRefresh?: boolean } = {}): string {
   const runtimePaths = ensureRuntimePaths();
   const packageRoot = getPackageRoot();
   const sections = [
@@ -514,43 +474,12 @@ export function getSteering(): string {
     safeJson(envPresence()),
     '```',
   ];
-
-  for (const file of readSteeringMarkdownFiles(
-    path.join(packageRoot, 'steering'),
-  )) {
-    sections.push('', `# bundled ${file.name}`, '', file.content);
-  }
-
-  for (const file of readSteeringMarkdownFiles(visibleSteeringDir())) {
-    sections.push('', `# ${file.name}`, '', file.content);
-  }
-
-  sections.push(
-    '',
-    '## Installed skills',
-    '',
-    'These compact entries describe the active skill catalog. When a request matches a skill trigger, load its entrypoint before proceeding. Skill bodies are not inlined here.',
-    '',
-    '```json',
-    safeJson(readSteeringSkillCatalog({
-      home: runtimePaths.home,
-      packageRoot,
-    })),
-    '```',
-  );
-
-  sections.push(
-    '',
-    '# tool discovery routing',
-    '',
-    'Use core tools directly when present. Use tools.search when a tool, provider, deployment surface, product area, or workflow is mentioned but is not in core steering.',
-    '',
-    '# raw core tool manifest',
-    '',
-    '```json',
-    safeJson(readEffectiveCoreManifest(runtimePaths.home)),
-    '```',
-  );
+  sections.push(readSteeringSnapshot({
+    home: runtimePaths.home,
+    packageRoot,
+    visibleSteeringDir: visibleSteeringDir(),
+    forceRefresh: options.forceSnapshotRefresh,
+  }));
   return sections.join('\n');
 }
 
@@ -777,7 +706,7 @@ export function executeGetSteering(
 
 export function executeRefreshSteering(
   reason: string,
-  buildSteering: () => string = getSteering,
+  buildSteering: (() => string) | undefined = undefined,
   options: SteeringGuardOptions = {},
 ): string {
   ensureRuntimePaths();
@@ -817,7 +746,9 @@ export function executeRefreshSteering(
       return steering;
     }
 
-    const steering = buildSteering();
+    const steering = buildSteering
+      ? buildSteering()
+      : getSteering({ forceSnapshotRefresh: true });
     finishSteeringExecution({
       traceId,
       name: 'refresh_steering',

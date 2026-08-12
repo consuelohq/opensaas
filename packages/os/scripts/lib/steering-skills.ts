@@ -108,7 +108,11 @@ function readJson(filePath: string): unknown {
   return JSON.parse(fs.readFileSync(filePath, 'utf8')) as unknown;
 }
 
-function readCustomSkillMetadata(home: string, value: unknown): unknown {
+function readCustomSkillMetadata(
+  home: string,
+  value: unknown,
+  onDependency?: (filePath: string) => void,
+): unknown {
   if (!isRecord(value)) return value;
   const legacyPath = boundedString(value.legacyPath, MAX_LONG_TEXT);
   if (!legacyPath) return value;
@@ -118,8 +122,10 @@ function readCustomSkillMetadata(home: string, value: unknown): unknown {
   const relative = path.relative(resolvedHome, customDir);
   if (relative.startsWith('..') || path.isAbsolute(relative)) return value;
 
+  const metadataPath = path.join(customDir, 'skill.json');
+  onDependency?.(metadataPath);
   try {
-    return readJson(path.join(customDir, 'skill.json'));
+    return readJson(metadataPath);
   } catch {
     return value;
   }
@@ -128,9 +134,11 @@ function readCustomSkillMetadata(home: string, value: unknown): unknown {
 export function readSteeringSkillCatalog(input: {
   home: string;
   packageRoot: string;
+  onDependency?: (filePath: string) => void;
 }): SteeringSkillCatalog {
   const disabledSkills = new Set(readManifestOverlay(input.home).disabledSkills);
   const installedPath = path.join(input.home, 'components', 'installed-skills.json');
+  input.onDependency?.(installedPath);
   if (fs.existsSync(installedPath)) {
     try {
       const value = readJson(installedPath);
@@ -138,7 +146,11 @@ export function readSteeringSkillCatalog(input: {
         return { source: 'invalid-installed', skills: [], truncated: 0 };
       }
       const custom = Array.isArray(value.legacyCustom)
-        ? value.legacyCustom.map((skill) => readCustomSkillMetadata(input.home, skill))
+        ? value.legacyCustom.map((skill) => readCustomSkillMetadata(
+          input.home,
+          skill,
+          input.onDependency,
+        ))
         : [];
       const compacted = compactSkills([...value.selected, ...custom], disabledSkills);
       return { source: 'installed-selected', ...compacted };
@@ -148,6 +160,7 @@ export function readSteeringSkillCatalog(input: {
   }
 
   const legacyPath = path.join(input.home, 'skills', 'skills.json');
+  input.onDependency?.(legacyPath);
   if (fs.existsSync(legacyPath)) {
     try {
       const value = readJson(legacyPath);
@@ -162,6 +175,7 @@ export function readSteeringSkillCatalog(input: {
   }
 
   const bundledPath = path.join(input.packageRoot, 'skills', 'skills.json');
+  input.onDependency?.(bundledPath);
   try {
     const value = readJson(bundledPath);
     if (isRecord(value) && Array.isArray(value.skills)) {
