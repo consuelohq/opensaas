@@ -14,13 +14,15 @@ export default defineConfig({
   }),
   integrations: [
     starlight({
-      title: 'Consuelo Docs',
-      favicon: 'https://consuelohq.com/favicon.svg',
+      title: 'Consuelo OS',
+      favicon: '/favicon.svg',
       customCss: ['./src/styles/docs.css'],
       components: {
+        Head: './src/components/Head.astro',
         LanguageSelect: './src/components/translation/RuntimeLanguageSelect.astro',
         PageTitle: './src/components/PageTitle.astro',
         Sidebar: './src/components/Sidebar.astro',
+        SiteTitle: './src/components/SiteTitle.astro',
         Footer: './src/components/Footer.astro',
       },
       sidebar: docsSidebar,
