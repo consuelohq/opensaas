@@ -1,5 +1,5 @@
 import { Database } from 'bun:sqlite';
-import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -9,6 +9,8 @@ import { createGatewaySecurityConfig } from '../../scripts/lib/security-gateway'
 import { parseSubagentTraceEvents } from '../../scripts/lib/subagent/runtime';
 import { createLocalTraceSitesReadBackend } from '../../scripts/lib/trace-sites-local-read-backend';
 import {
+  queueGatewayAuthenticationTraceSafely,
+  recordGatewayAuthenticationTraceSafely,
   recordSubagentTraceEventsSafely,
   recordToolTraceSafely,
   resolveCanonicalTraceDbPath,
@@ -257,6 +259,33 @@ async function run(): Promise<unknown> {
         body: response ? await response.json() : null,
         rows: traceRows(),
       };
+    }
+
+    if (scenario === 'auth-principal-queued') {
+      const dbPath = resolveCanonicalTraceDbPath();
+      for (const principalKey of ['prn_first', 'prn_second']) {
+        queueGatewayAuthenticationTraceSafely({
+          workspaceId: 'workspace_trace_auth',
+          route: '/mcp',
+          requiredScope: 'mcp:read',
+          authMode: 'oauth',
+          principalKey,
+        });
+      }
+      const immediateDbExists = existsSync(dbPath);
+      await Bun.sleep(25);
+      return { immediateDbExists, rows: traceRows() };
+    }
+
+    if (scenario === 'auth-principal') {
+      const recorded = recordGatewayAuthenticationTraceSafely({
+        workspaceId: 'workspace_trace_auth',
+        route: '/mcp',
+        requiredScope: 'mcp:read',
+        authMode: 'oauth',
+        principalKey: 'prn_0123456789abcdef0123456789abcdef',
+      });
+      return { recorded, rows: traceRows() };
     }
 
     throw new Error(`unknown scenario: ${scenario}`);

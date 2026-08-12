@@ -45,9 +45,7 @@ started: 2026-08-10
 ## files changed
 
 - `packages/os/scripts/lib/facade/schemas.ts`
-- `packages/os/tests/tool-manifest.test.ts`
-- `packages/os/src/generated/workspace.d.ts`
-- `packages/os/TOOLS.md`
+- `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 
 
 ## red evidence before production implementation
@@ -1326,3 +1324,7 @@ Test-first contract before production edits:
 - 2026-08-12 04:34:10 apply-patch: `packages/os/tests/tool-manifest.test.ts`
 
 - 2026-08-12 04:34:36 apply-patch: `packages/os/scripts/lib/facade/schemas.ts`
+
+- 2026-08-12 04:42:55 apply-patch: `packages/os/scripts/lib/facade/schemas.ts`
+- 2026-08-12 04:43:03 apply-patch: `packages/os/scripts/lib/facade/schemas.ts`
+- 2026-08-12 04:43:37 apply-patch: `packages/os/tests/fixtures/trace-persistence-runtime.ts`
