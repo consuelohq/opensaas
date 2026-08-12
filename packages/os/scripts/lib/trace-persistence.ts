@@ -272,7 +272,7 @@ type GatewayAuthenticationTraceInput = {
   resolvedNodeId?: string;
   resolvedNodeName?: string;
   defaultNodeId?: string;
-  routeSource?: string;
+  routeSource?: 'default' | 'explicit' | 'task';
 };
 
 function gatewayAuthenticationToolTrace(

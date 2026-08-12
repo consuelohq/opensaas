@@ -12,6 +12,7 @@ import { createHealthRoutes } from './routes/health';
 import { createMcpRoutes } from './routes/mcp';
 import { createConfigurationRoutes } from './routes/settings';
 import { createEnvironmentRoutes } from './routes/environments';
+import { createDiffsRoutes } from './routes/diffs';
 import { createSecretRoutes } from './routes/secrets';
 import { createSteeringRoutes } from './routes/steering';
 import { createTraceRoutes } from './routes/traces';
@@ -63,6 +64,7 @@ export function createLocalOsApp(
   app.route('/', createTraceRoutes());
   app.route('/', createConfigurationRoutes());
   app.route('/', createEnvironmentRoutes());
+  app.route('/', createDiffsRoutes());
   app.route('/', createSecretRoutes());
   app.route('/', createMcpRoutes());
   app.route('/', createSteeringRoutes());

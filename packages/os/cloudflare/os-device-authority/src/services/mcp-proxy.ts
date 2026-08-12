@@ -6,6 +6,7 @@ import { resolveCentralMcpFacadeScope } from '../../../../scripts/lib/tool-scope
 import {
   encodeMcpNodeRoutingContext,
   inspectMcpNodeRoutingBody,
+  normalizeMcpTaskSession,
   MCP_NODE_CONTEXT_HEADER,
   MCP_ROUTE_SOURCE_HEADER,
   type McpNodeRoutingContext,
@@ -82,6 +83,43 @@ export async function centralMcpOperationScope(request: Request): Promise<string
   return typeof toolName === 'string' && toolName.trim()
     ? resolveCentralMcpFacadeScope(toolName, facadeArgs.input)
     : 'mcp:call';
+}
+
+type CentralMcpFacadeOutcome = {
+  ok: boolean;
+  taskSession?: string;
+};
+
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+async function centralMcpFacadeOutcome(response: Response): Promise<CentralMcpFacadeOutcome> {
+  if (!response.ok) return { ok: false };
+  try {
+    const envelope = await response.clone().json() as unknown;
+    if (!isJsonObject(envelope) || 'error' in envelope) return { ok: false };
+    const result = envelope.result;
+    if (!isJsonObject(result) || result.isError === true || !Array.isArray(result.content)) {
+      return { ok: false };
+    }
+    const textItem = result.content.find(
+      (item) => isJsonObject(item) && item.type === 'text' && typeof item.text === 'string',
+    );
+    if (!isJsonObject(textItem) || typeof textItem.text !== 'string') return { ok: false };
+    const facade = JSON.parse(textItem.text) as unknown;
+    if (!isJsonObject(facade) || facade.ok !== true) return { ok: false };
+    const data = facade.data;
+    const taskSession = isJsonObject(data)
+      ? normalizeMcpTaskSession(data.taskSession)
+      : undefined;
+    return {
+      ok: true,
+      ...(taskSession ? { taskSession } : {}),
+    };
+  } catch {
+    return { ok: false };
+  }
 }
 
 export function centralMcpUpstreamUrl(input: {
@@ -344,14 +382,37 @@ export async function proxyCentralMcpRequest(input: {
       });
     }
     const requestedNodeId = routingInspection.nodeId ?? headerNodeId;
-    const routeSource: McpNodeRouteSource = requestedNodeId ? 'explicit' : 'default';
+    const taskAffinity = routingInspection.taskSession
+      ? await input.store.byWorkspaceTaskAffinity({
+          accountId: stored.accountId,
+          workspaceHost: stored.workspaceHost,
+          taskSession: routingInspection.taskSession,
+        })
+      : undefined;
+    if (
+      taskAffinity &&
+      requestedNodeId &&
+      requestedNodeId !== taskAffinity.ownerNodeId
+    ) {
+      return centralMcpSafeError({
+        status: 409,
+        code: 'TASK_NODE_MISMATCH',
+        message: 'The requested node does not own this task session.',
+      });
+    }
+    const resolvedNodeId = taskAffinity?.ownerNodeId ?? requestedNodeId;
+    const routeSource: McpNodeRouteSource = taskAffinity
+      ? 'task'
+      : requestedNodeId
+        ? 'explicit'
+        : 'default';
     const resolution = await createWorkspaceCloudflareD1RouteRegistry(
       input.routeRegistry,
     ).resolve({
       host: stored.workspaceHost,
       path: inboundUrl.pathname,
       method: input.request.method,
-      ...(requestedNodeId ? { nodeId: requestedNodeId } : {}),
+      ...(resolvedNodeId ? { nodeId: resolvedNodeId } : {}),
       nowMs: input.nowMs,
     });
     if (resolution.allowed === false) {
@@ -365,6 +426,17 @@ export async function proxyCentralMcpRequest(input: {
       return centralMcpSafeError({
         status: 404,
         code: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
+      });
+    }
+
+    if (
+      taskAffinity?.workspaceId &&
+      taskAffinity.workspaceId !== resolution.workspaceId
+    ) {
+      return centralMcpSafeError({
+        status: 409,
+        code: 'TASK_WORKSPACE_MISMATCH',
+        message: 'Task affinity does not belong to the resolved workspace.',
       });
     }
 
@@ -392,7 +464,46 @@ export async function proxyCentralMcpRequest(input: {
       internalSigningSecret: input.internalSigningSecret,
     });
 
-    return await input.fetchImpl(proxyRequest);
+    const upstreamResponse = await input.fetchImpl(proxyRequest);
+    if (
+      resolution.nodeId &&
+      routingInspection.facadeTool &&
+      input.request.method === 'POST'
+    ) {
+      const outcome = await centralMcpFacadeOutcome(upstreamResponse);
+      if (outcome.ok) {
+        const taskSession = routingInspection.facadeTool === 'task.start'
+          ? outcome.taskSession
+          : routingInspection.taskSession;
+        if (taskSession && routingInspection.facadeTool === 'task.finish') {
+          await input.store.releaseWorkspaceTaskAffinity({
+            accountId: stored.accountId,
+            workspaceHost: stored.workspaceHost,
+            taskSession,
+            ownerNodeId: resolution.nodeId,
+          });
+        } else if (taskSession && (!taskAffinity || routingInspection.facadeTool === 'task.start')) {
+          const claimed = await input.store.claimWorkspaceTaskAffinity({
+            accountId: stored.accountId,
+            workspaceId: resolution.workspaceId,
+            workspaceHost: stored.workspaceHost,
+            taskSession,
+            ownerNodeId: resolution.nodeId,
+            createdAt: input.nowMs,
+            updatedAt: input.nowMs,
+          });
+          if (claimed.status === 'conflict') {
+            return centralMcpSafeError({
+              status: 409,
+              code: 'TASK_AFFINITY_CONFLICT',
+              message: 'Task session is already owned by another node.',
+            });
+          }
+        }
+      }
+    }
+
+    return upstreamResponse;
   } catch {
     return centralMcpSafeError({
       status: 500,

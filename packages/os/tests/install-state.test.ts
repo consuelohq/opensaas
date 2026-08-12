@@ -808,7 +808,7 @@ describe('local OS install state', () => {
     expect(sitesIndex).toContain('<code id="mcp-url">https://os.consuelohq.com/mcp</code>');
     expect(sitesIndex).toContain('support@consuelohq.com');
     expect(sitesIndex).toContain('Systems Engineer');
-    expect(sitesIndex).toContain('Go to market');
+    expect(sitesIndex).not.toContain('Go to market');
     expect(sitesIndex).toContain('Artifacts');
     expect(sitesIndex).toContain('Observability');
     expect(sitesIndex).toContain('Code review');

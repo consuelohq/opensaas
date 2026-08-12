@@ -95,6 +95,21 @@ export type WorkspaceNode = {
   revokedAt?: number;
 };
 
+export type WorkspaceTaskAffinity = {
+  accountId: string;
+  workspaceId?: string;
+  workspaceHost: string;
+  taskSession: string;
+  ownerNodeId: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type WorkspaceTaskAffinityClaim = {
+  status: 'created' | 'existing' | 'conflict';
+  affinity: WorkspaceTaskAffinity;
+};
+
 export type WorkspaceAgentName =
   | 'codex'
   | 'cursor'
@@ -331,6 +346,20 @@ export type Store = {
     expiresAt: number,
     nowMs: number,
   ): Promise<boolean>;
+  byWorkspaceTaskAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    taskSession: string;
+  }): Promise<WorkspaceTaskAffinity | undefined>;
+  claimWorkspaceTaskAffinity(
+    affinity: WorkspaceTaskAffinity,
+  ): Promise<WorkspaceTaskAffinityClaim>;
+  releaseWorkspaceTaskAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    taskSession: string;
+    ownerNodeId: string;
+  }): Promise<boolean>;
   putNodeBootstrapCredential(
     credential: NodeBootstrapCredential,
   ): Promise<void>;

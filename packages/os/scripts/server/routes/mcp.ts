@@ -211,9 +211,12 @@ export function createMcpRoutes(
         workspaceId: authentication.principal.workspaceId,
       });
       const routeSourceHeader = request.headers.get(MCP_ROUTE_SOURCE_HEADER)?.trim();
-      const routeSource = routeSourceHeader === 'default' || routeSourceHeader === 'explicit'
-        ? routeSourceHeader
-        : undefined;
+      const routeSource =
+        routeSourceHeader === 'default' ||
+        routeSourceHeader === 'explicit' ||
+        routeSourceHeader === 'task'
+          ? routeSourceHeader
+          : undefined;
       const resolvedNodeId = request.headers.get('x-consuelo-node-id')?.trim() || undefined;
       const requestedNodeId = routingInspection.ok ? routingInspection.nodeId : undefined;
       const traceRouting = resolveTraceRoutingContext({

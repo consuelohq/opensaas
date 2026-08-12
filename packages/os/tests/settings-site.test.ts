@@ -44,6 +44,14 @@ describe('configuration site', () => {
     expect(html).toContain('Loading workspace configuration');
     expect(html).toContain('Configuration unavailable');
     expect(html).toContain('/gateway/configuration/overlay');
+    expect(html).toContain('Source control');
+    expect(html).toContain('id="source-control-form"');
+    expect(html).toContain('id="source-control-repository-list"');
+    expect(html).toContain('/gateway/configuration/source-control');
+    expect(html).toContain('connection binding');
+    expect(html).toContain('href="/secrets"');
+    expect(html).not.toContain('credentialValue');
+    expect(html).not.toContain('githubToken');
     expect(html).not.toContain('/gateway/settings/');
     expect(html).not.toContain('Settings');
     expect(html).not.toContain('window.__CONSUELO_SETTINGS__');
@@ -92,7 +100,9 @@ describe('configuration site', () => {
     expect(secretsHtml).toContain('<title>Secrets - Consuelo OS</title>');
     expect(secretsHtml).toContain('<h1>Secrets</h1>');
     expect(secretsHtml).toContain('href="/secrets" class="is-active"');
-    expect(secretsHtml).toContain('Secret connections are not available yet');
+    expect(secretsHtml).toContain('Connected credentials');
+    expect(secretsHtml).toContain('/gateway/secrets/bindings');
+    expect(secretsHtml).toContain('Values are never returned to this page or to an agent');
     expect(secretsHtml).not.toContain('/gateway/configuration/snapshot');
     expect(secretsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
   });
