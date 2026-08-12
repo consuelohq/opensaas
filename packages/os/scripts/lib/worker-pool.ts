@@ -44,6 +44,7 @@ export type WorkerPoolSnapshot = {
 export type WorkerPoolSupervisor = {
   start(): Promise<void>;
   stop(): Promise<void>;
+  replaceAllRolling(): Promise<void>;
   snapshot(): WorkerPoolSnapshot;
 };
 
@@ -135,6 +136,7 @@ export function createWorkerPoolSupervisor(input: {
   const now = input.now ?? (() => new Date());
   let started = false;
   let stopping = false;
+  let rollingReplacement: Promise<void> | null = null;
 
   const snapshot = (): WorkerPoolSnapshot => ({
     schemaVersion: 1,
@@ -230,6 +232,54 @@ export function createWorkerPoolSupervisor(input: {
     publish();
   };
 
+  const waitForReplacement = async (
+    slotIndex: number,
+    previousInstanceId: string,
+  ): Promise<void> => {
+    const timeoutMs = Math.max(60_000, input.configuration.drainTimeoutMs + 20_000);
+    const pollMs = 100;
+    const attempts = Math.max(1, Math.ceil(timeoutMs / pollMs));
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      if (stopping) throw new Error('worker pool stopped during rolling replacement');
+      const current = slots.get(slotIndex);
+      if (
+        current
+        && current.workerInstanceId !== previousInstanceId
+        && current.state === 'ready'
+        && current.process
+      ) return;
+      try {
+        await sleep(pollMs);
+      } catch (error: unknown) {
+        throw new Error(`worker-${slotIndex} readiness wait failed`, { cause: error });
+      }
+    }
+    throw new Error(`worker-${slotIndex} did not become ready after rolling replacement`);
+  };
+
+  const replaceAllRolling = async (): Promise<void> => {
+    if (!started || stopping) {
+      throw new Error('worker pool must be running before rolling replacement');
+    }
+    for (let slotIndex = 0; slotIndex < input.configuration.desiredWorkers; slotIndex += 1) {
+      const current = slots.get(slotIndex);
+      if (!current?.process || current.state !== 'ready') {
+        throw new Error(`worker-${slotIndex} is not ready for rolling replacement`);
+      }
+      const previousInstanceId = current.workerInstanceId;
+      current.state = 'draining';
+      publish();
+      try {
+        current.process.kill('SIGTERM');
+      } catch (error: unknown) {
+        current.state = 'failed';
+        publish();
+        throw new Error(`worker-${slotIndex} could not begin rolling replacement`, { cause: error });
+      }
+      await waitForReplacement(slotIndex, previousInstanceId);
+    }
+  };
+
   return {
     async start() {
       if (started) return;
@@ -238,6 +288,13 @@ export function createWorkerPoolSupervisor(input: {
       await Promise.all(
         input.configuration.workerPorts.map((_port, index) => launchSlot(index, 0)),
       );
+    },
+    async replaceAllRolling() {
+      if (rollingReplacement) return rollingReplacement;
+      rollingReplacement = replaceAllRolling().finally(() => {
+        rollingReplacement = null;
+      });
+      return rollingReplacement;
     },
     async stop() {
       if (!started) return;

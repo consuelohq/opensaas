@@ -50,6 +50,7 @@ import { validateBundledSkills } from './skills';
 import { STANDARD_OS_MCP_SCOPES } from './tool-scope-authorization';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 import { PLACEHOLDER_NODE_ID } from './unenrolled-placeholder-identity';
+import { resolveWorkerPoolConfiguration } from './worker-pool';
 
 export type OsMode = 'local' | 'cloud';
 export type { AgentName, AgentConnectionStatus } from './local-agent-connectivity';
@@ -1858,12 +1859,17 @@ export function provisionLocalOs(
   }
 
   if (!dryRun) {
+    const workerPoolConfiguration = resolveWorkerPoolConfiguration({
+      ...process.env,
+      CONSUELO_OS_PORT: String(gatewayPort),
+    });
     const gatewayConfig = createGatewaySecurityConfig({
       home: layout.nodeDir,
       workspaceId: workspaceIdentity.workspaceId,
       workspaceSlug: workspaceIdentity.workspaceSlug,
       workspaceHost: workspaceIdentity.workspaceHost,
       upstreamPort: gatewayPort,
+      upstreamPorts: workerPoolConfiguration.workerPorts,
       ingressPort: DEFAULT_INGRESS_PORT,
       ...(workspaceBootstrap?.nodeId && workspaceBootstrap.edgeRequestSigningSecret
         ? {
