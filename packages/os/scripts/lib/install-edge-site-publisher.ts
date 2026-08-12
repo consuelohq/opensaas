@@ -70,6 +70,7 @@ const snapshotSites = [
   { siteId: 'docs', pathPrefix: '/docs', relativePath: ['docs', 'index.html'] },
   { siteId: 'configuration', pathPrefix: '/configuration', relativePath: ['configuration', 'index.html'] },
   { siteId: 'tools', pathPrefix: '/tools', relativePath: ['tools', 'index.html'] },
+  { siteId: 'nodes', pathPrefix: '/nodes', relativePath: ['nodes', 'index.html'] },
   { siteId: 'environments', pathPrefix: '/environments', relativePath: ['environments', 'index.html'] },
   { siteId: 'secrets', pathPrefix: '/secrets', relativePath: ['secrets', 'index.html'] },
 ] as const;

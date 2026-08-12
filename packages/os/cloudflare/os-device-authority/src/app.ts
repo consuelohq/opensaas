@@ -17,6 +17,7 @@ import type {
   WorkspaceConnectorProvisioner,
   WorkspaceRouteRegistryBinding,
 } from './types';
+import type { ManagedCloudPricingRuntime } from './services/managed-cloud-pricing';
 
 export type CreateDeviceAuthorityHandlerInput = {
   store: Store;
@@ -30,6 +31,7 @@ export type CreateDeviceAuthorityHandlerInput = {
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
+  managedCloudPricing?: ManagedCloudPricingRuntime;
 };
 
 export function createOsDeviceAuthorityApp(

@@ -216,6 +216,7 @@ function makeHome(html = '<!doctype html><title>Trace shell</title><main>Hosted 
     ['docs', 'index.html'],
     ['configuration', 'index.html'],
     ['tools', 'index.html'],
+    ['nodes', 'index.html'],
     ['environments', 'index.html'],
     ['secrets', 'index.html'],
   ];
@@ -227,7 +228,7 @@ function makeHome(html = '<!doctype html><title>Trace shell</title><main>Hosted 
   return home;
 }
 
-function siteSnapshotTarget(siteId: 'launcher' | 'artifacts' | 'traces' | 'diffs' | 'docs' | 'configuration' | 'tools' | 'environments' | 'secrets' = 'launcher'): SiteSnapshotTarget {
+function siteSnapshotTarget(siteId: 'launcher' | 'artifacts' | 'traces' | 'diffs' | 'docs' | 'configuration' | 'tools' | 'nodes' | 'environments' | 'secrets' = 'launcher'): SiteSnapshotTarget {
   return {
     kind: 'site-snapshot',
     siteId,
@@ -367,6 +368,7 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
       { surface: 'sites', pathPrefix: '/docs', auth: 'public', status: 'active', target: siteSnapshotTarget('docs') },
       { surface: 'sites', pathPrefix: '/configuration', auth: 'public', status: 'active', target: siteSnapshotTarget('configuration') },
       { surface: 'sites', pathPrefix: '/tools', auth: 'public', status: 'active', target: siteSnapshotTarget('tools') },
+      { surface: 'sites', pathPrefix: '/nodes', auth: 'public', status: 'active', target: siteSnapshotTarget('nodes') },
       { surface: 'sites', pathPrefix: '/environments', auth: 'public', status: 'active', target: siteSnapshotTarget('environments') },
       { surface: 'sites', pathPrefix: '/secrets', auth: 'public', status: 'active', target: siteSnapshotTarget('secrets') },
       { surface: 'sites', pathPrefix: '/settings', auth: 'public', status: 'active', target: { kind: 'redirect', location: '/configuration', statusCode: 308 } },
@@ -449,6 +451,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
         'docs',
         'configuration',
         'tools',
+        'nodes',
         'environments',
         'secrets',
       ],
@@ -469,7 +472,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       auth: 'workspace-session',
       target: { kind: 'site-snapshot', siteId: 'traces' },
     });
-    for (const pathPrefix of ['/configuration', '/tools', '/environments', '/secrets']) {
+    for (const pathPrefix of ['/configuration', '/tools', '/nodes', '/environments', '/secrets']) {
       expect(record.routes.find((route) => route.pathPrefix === pathPrefix)).toMatchObject({
         surface: 'sites',
         auth: 'workspace-session',
@@ -495,6 +498,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       '/docs',
       '/configuration',
       '/tools',
+      '/nodes',
       '/environments',
       '/secrets',
     ]);
@@ -776,7 +780,7 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       },
     });
 
-    for (const route of ['configuration', 'tools', 'environments', 'secrets'] as const) {
+    for (const route of ['configuration', 'tools', 'nodes', 'environments', 'secrets'] as const) {
       const response = await router.fetch(new Request(`https://internal.consuelohq.com/${route}`));
       const body = await response.text();
       expect(response.status).toBe(200);
@@ -788,6 +792,7 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
     expect(r2Reads).toEqual([
       'sites/workspace_internal/configuration/version_trace_shell/index.html',
       'sites/workspace_internal/tools/version_trace_shell/index.html',
+      'sites/workspace_internal/nodes/version_trace_shell/index.html',
       'sites/workspace_internal/environments/version_trace_shell/index.html',
       'sites/workspace_internal/secrets/version_trace_shell/index.html',
     ]);
@@ -935,7 +940,7 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
           (candidate) => candidate.verifyUrl === url,
         );
         if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
-        if (['launcher', 'traces', 'configuration', 'tools', 'environments', 'secrets'].includes(snapshot.siteId)) {
+        if (['launcher', 'traces', 'configuration', 'tools', 'nodes', 'environments', 'secrets'].includes(snapshot.siteId)) {
           return Response.json(
             { error: 'workspace_session_required' },
             { status: 401 },
@@ -979,6 +984,7 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
       'https://internal.consuelohq.com/docs',
       'https://internal.consuelohq.com/configuration',
       'https://internal.consuelohq.com/tools',
+      'https://internal.consuelohq.com/nodes',
       'https://internal.consuelohq.com/environments',
       'https://internal.consuelohq.com/secrets',
     ]);
@@ -996,6 +1002,7 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
           'https://internal.consuelohq.com/docs',
         'https://internal.consuelohq.com/configuration',
         'https://internal.consuelohq.com/tools',
+        'https://internal.consuelohq.com/nodes',
         'https://internal.consuelohq.com/environments',
         'https://internal.consuelohq.com/secrets',
       ],

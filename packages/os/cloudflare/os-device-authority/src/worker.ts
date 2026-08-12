@@ -5,6 +5,7 @@ import {
   ORIGIN,
 } from './constants';
 import { createWorkspaceConnectorProvisionerFromEnv } from './services/connectors';
+import { managedCloudPricingFromJson } from './services/managed-cloud-pricing';
 import { DurableStore } from './stores';
 import type { Env, StateLike } from './types';
 
@@ -25,6 +26,10 @@ export class OsDeviceGrantDurableObject {
       ),
       workspaceEdgeInternalSigningSecret:
         env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+      managedCloudPricing: managedCloudPricingFromJson({
+        policyJson: env.OS_MANAGED_CLOUD_PRICING_POLICY_JSON,
+        rateCardsJson: env.OS_MANAGED_CLOUD_RATE_CARDS_JSON,
+      }),
       defaultSiteSnapshot: {
         key:
           env.OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY ??

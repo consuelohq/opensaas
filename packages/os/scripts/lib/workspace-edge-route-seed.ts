@@ -38,6 +38,7 @@ export const WORKSPACE_SITE_SNAPSHOT_IDS = [
   'docs',
   'configuration',
   'tools',
+  'nodes',
   'environments',
   'secrets',
 ] as const;
@@ -49,6 +50,7 @@ const WORKSPACE_PRIVATE_SITE_SNAPSHOT_IDS = new Set<WorkspaceSiteSnapshotId>([
   'traces',
   'configuration',
   'tools',
+  'nodes',
   'environments',
   'secrets',
 ]);
@@ -75,6 +77,7 @@ const SITE_SNAPSHOT_ROUTES: ReadonlyArray<{
   { pathPrefix: '/docs', siteId: 'docs' },
   { pathPrefix: '/configuration', siteId: 'configuration' },
   { pathPrefix: '/tools', siteId: 'tools' },
+  { pathPrefix: '/nodes', siteId: 'nodes' },
   { pathPrefix: '/environments', siteId: 'environments' },
   { pathPrefix: '/secrets', siteId: 'secrets' },
 ] as const;
