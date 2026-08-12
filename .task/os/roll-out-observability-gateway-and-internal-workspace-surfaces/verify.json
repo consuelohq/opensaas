@@ -5,14 +5,14 @@
   "branch": "task/os/roll-out-observability-gateway-and-internal-workspace-surfaces",
   "base": "origin/task/os/roll-out-observability-gateway-and-internal-workspace-surfaces",
   "headSha": "efcd583eae71389906bc05585f34f1c4b5b639d5",
-  "changeHash": "252a06e19b1995891cb0343b94b2ae7291748e33e038c67741485dd41792d02e",
+  "changeHash": "92f94642311d9c0d8e586d7d8f086469766b0512358944b0478a0b7e560367f7",
   "changedFiles": [
     ".github/workflows/consuelo-ci.yaml",
     "packages/os/tests/local-os-server-review-findings.test.ts",
     "packages/workspace/test-selection.registry.json",
     "packages/workspace/test-selection.rules.json"
   ],
-  "verifiedAt": "2026-08-12T01:54:04.295Z",
+  "verifiedAt": "2026-08-12T02:04:20.791Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -27,6 +27,9 @@
       "passed": true,
       "changedFiles": [
         ".github/workflows/consuelo-ci.yaml",
+        ".task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/evidence-log.json",
+        ".task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/read-log.json",
+        ".task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/verify.json",
         ".task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/workpad.md",
         "packages/os/tests/local-os-server-review-findings.test.ts",
         "packages/workspace/test-selection.registry.json",
@@ -108,8 +111,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 1242,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 971\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 646\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:54:02\n\u001b[2m   Duration \u001b[22m 1.04s\u001b[2m (transform 9ms, setup 0ms, import 14ms, tests 971ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 1231,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 965\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 643\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:04:19\n\u001b[2m   Duration \u001b[22m 1.03s\u001b[2m (transform 9ms, setup 0ms, import 14ms, tests 965ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "Consuelo CI immutable base and local server review contracts",
@@ -126,8 +129,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 364,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m19 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 23\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m19 passed\u001b[39m\u001b[22m\u001b[90m (19)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:54:03\n\u001b[2m   Duration \u001b[22m 167ms\u001b[2m (transform 51ms, setup 0ms, import 86ms, tests 23ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-12T01:54:04.033Z\"}\n"
+          "durationMs": 348,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m19 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m19 passed\u001b[39m\u001b[22m\u001b[90m (19)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:04:20\n\u001b[2m   Duration \u001b[22m 153ms\u001b[2m (transform 39ms, setup 0ms, import 74ms, tests 22ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-12T02:04:20.528Z\"}\n"
         }
       ],
       "failedSuites": []

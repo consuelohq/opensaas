@@ -76,39 +76,11 @@ resumed task session: `tsk_4e5fd8c23e86`
 
 ## files changed
 
-- `.task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/workpad.md`
-- `packages/os/assets/observability-traces-v38/base.css` (deleted)
-- `packages/os/assets/observability-traces-v38/gsap.js` (deleted)
-- `packages/os/assets/observability-traces-v38/inspector.css` (deleted)
-- `packages/os/assets/observability-traces-v38/inspector.js` (deleted)
-- `packages/os/assets/observability-traces-v38/mobile.css` (deleted)
-- `packages/os/assets/observability-traces-v38/scroll.js` (deleted)
-- `packages/os/assets/observability-traces-v38/table-overview.js` (deleted)
-- `packages/os/assets/observability-traces-v38/template.html` (deleted)
-- `packages/os/assets/vendor/observability-traces-v38/base.css`
-- `packages/os/assets/vendor/observability-traces-v38/gsap.js`
-- `packages/os/assets/vendor/observability-traces-v38/inspector.css`
-- `packages/os/assets/vendor/observability-traces-v38/inspector.js`
-- `packages/os/assets/vendor/observability-traces-v38/mobile.css`
-- `packages/os/assets/vendor/observability-traces-v38/scroll.js`
-- `packages/os/assets/vendor/observability-traces-v38/table-overview.js`
-- `packages/os/assets/vendor/observability-traces-v38/template.html`
-- `packages/os/SCRIPTS.md`
-- `packages/os/scripts/consuelo-reload.js`
-- `packages/os/scripts/lib/install-edge-site-publisher.ts`
-- `packages/os/scripts/lib/observability-traces-site.ts`
-- `packages/os/scripts/lib/security-gateway.ts`
-- `packages/os/scripts/lib/workspace-edge-route-seed.ts`
-- `packages/os/tests/finish-line-lifecycle-contract.test.ts`
-- `packages/os/tests/fixtures/trace-persistence-runtime.ts`
-- `packages/os/tests/install-edge-site-publisher.test.ts`
-- `packages/os/tests/observability-traces-site.test.ts`
-- `packages/os/tests/runtime-bundle-managed-site-assets.test.ts`
-- `packages/os/tests/security-gateway.test.ts`
-- `packages/os/tests/trace-site-inspector-os-owned.test.ts`
-- `packages/os/tests/trace-sites-history-endpoint-contract.test.ts`
-- `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
-- `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
+- `.github/workflows/consuelo-ci.yaml`
+- `packages/os/tests/local-os-server-review-findings.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+
 
 ## workspace-owned: files changed
 
@@ -189,6 +161,8 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-12 01:35:08 `verify`: passed — OK
 - 2026-08-12 01:53:46 `review.run`: passed — OK
 - 2026-08-12 01:54:04 `verify`: passed — OK
+- 2026-08-12 02:03:56 `review.run`: passed — OK
+- 2026-08-12 02:04:20 `verify`: passed — OK
 
 ## key decisions
 
@@ -275,6 +249,7 @@ bun run task:finish
 - `packages/os/tests/finish-line-lifecycle-contract.test.ts`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 - `packages/os/tests/install-edge-site-publisher.test.ts`
+- `packages/os/tests/local-os-server-review-findings.test.ts`
 - `packages/os/tests/observability-traces-site.test.ts`
 - `packages/os/tests/redaction.test.ts`
 - `packages/os/tests/runtime-bundle-managed-site-assets.test.ts`
@@ -302,31 +277,8 @@ bun run task:finish
 - `security-gateway.ts`
 - `stream/os`
 
-### Runtime-bundle v38 asset closure evidence
+### Synthetic-merge parent correction evidence
 
-- Fixed the clean-host/new-user distribution defect from PR CI: all eight assets actually consumed by `buildObservabilityTracesSite()` are now discovered and classified as `managed-site-template` in the customer runtime bundle.
-- Rebuilt the OS-owned Trace inspector runtime with Bun `--minify`. This removes Bun's absolute dependency-source comments while preserving browser behavior; the resulting `inspector.js` is 49,547 bytes, has no machine-specific absolute path, and contains no deprecated Workspace Trace inspector dependency.
-- Safe TDD `runtime-bundle-managed-site-assets.test.ts` is green 3/3: classification, portable browser artifact, and real release-fingerprint inclusion.
-- Updated the explicit critical Trace verification rule so changes to runtime-bundle distribution and this asset-closure test stay covered without selecting the unsafe broad OS package suite. Final selected safe verification is green: selector 11/11; Trace gateway/Trace Burn including asset closure 40/40; TraceStore boundary 3/3; publisher 7/7; route preservation/integration 23/23; lifecycle scrub 10/10.
-- OS typecheck, public Astro build, and `git diff --check` all pass after the distribution fix. This closes the Linux/macOS CI failure where a clean install could not open `assets/vendor/observability-traces-v38/template.html`.
-
-### Runtime-bundle follow-up final validation
-
-- Strict review against `origin/stream/os` after the CI-discovered clean-host fix: 28 task files reviewed, 0 issues, 0 blockers, 0 must-fix findings.
-- Typed full verify for the post-CI delta: `passed=true`, `publishValid=true`; review and DB guards are green.
-- The safe branch-selected suite is fully green after making tests caller-CWD/minification independent: selector 11/11; Trace gateway/Trace Burn + runtime asset closure 40/40; TraceStore 3/3; publisher 7/7; route preservation/integration 23/23; lifecycle scrub 10/10.
-
-### CI immutable-base verification follow-up — 2026-08-11/12
-
-- PR #1794's task-caused Linux/macOS clean-host distribution failures are fixed. The remaining Consuelo `workspace-contracts` and `verify` failures were CI-only: GitHub's virtual merge checkout selected unrelated `auto:twenty-sdk:test`, while the exact virtual merge commit with the correct base SHA selected only task-owned suites.
-- Root cause: `consuelo-changes` emitted mutable `origin/${github.base_ref}`. Downstream jobs start later in fresh checkouts, so a moving `stream/os` could change the comparison base after GitHub created the PR merge commit.
-- TDD: added a focused static contract in `local-os-server-review-findings.test.ts`; it failed against the mutable base, then passed after the workflow fix. Pull requests now use `github.event.pull_request.base.sha`; merge groups prefer `merge_group.base_sha`; ref-style fallbacks are canonicalized with `git rev-parse ...^{commit}` before the SHA is emitted downstream.
-- Added explicit critical `consuelo-ci-immutable-base` test-selection ownership so the workflow/test change does not re-enable the unsafe broad OS package suite. The focused suite uses the `packages/os` test script and passes 19/19.
-- Final safe branch selection is green: workspace selector 11/11; immutable-base/local-server contract 19/19; Trace gateway/Trace Burn/runtime asset closure 40/40; TraceStore 3/3; publisher 7/7; route preservation/integration 23/23; lifecycle scrub 10/10. No `auto:@consuelo/os:package-test` or `auto:twenty-sdk:test` suite is selected.
-- OS typecheck and `git diff --check` pass after the CI fix.
-
-### Immutable-base CI fix validation
-
-- Focused static workflow contract: 19/19 green after the pull-request/merge-group base was pinned to immutable commit SHA.
-- Full safe selected suite: 7 suites green (workspace selector 11, immutable-base/local-server 19, Trace contracts 40, TraceStore 3, publisher 7, route preservation/integration 23, lifecycle scrub 10). No broad OS or unrelated Twenty SDK suite selected.
-- Strict review against current `origin/stream/os`: 29 task files, 0 issues, 0 blockers. Typed full verify for the unpushed CI delta: `passed=true`, `publishValid=true`. OS typecheck and `git diff --check` pass.
+- Reproduced the second CI race with Git data: emitted event base `146ddd35...`, checked-out PR merge `d9c86bfc...`, actual first parent `65251d8d...`; diffing the stale event base added unrelated docs/skills and selected `auto:twenty-sdk:test`.
+- CI now uses the checked-out synthetic merge's `HEAD^1` for pull-request and merge-group comparisons, with event SHA only as fallback if a synthetic parent is unavailable; manual/ref inputs are still resolved to immutable commit SHA.
+- Focused TDD is green and the full seven safe selected suites pass after the correction.

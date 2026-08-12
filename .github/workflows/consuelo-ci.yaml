@@ -44,10 +44,18 @@ jobs:
 
           case "${{ github.event_name }}" in
             pull_request)
-              base_ref="${{ github.event.pull_request.base.sha }}"
+              fallback_base="${{ github.event.pull_request.base.sha }}"
+              base_ref="$(git rev-parse HEAD^1 2>/dev/null || true)"
+              if [[ -z "$base_ref" ]]; then
+                base_ref="$fallback_base"
+              fi
               ;;
             merge_group)
-              base_ref="$(jq -r '.merge_group.base_sha // empty' "$GITHUB_EVENT_PATH")"
+              fallback_base="$(jq -r '.merge_group.base_sha // empty' "$GITHUB_EVENT_PATH")"
+              base_ref="$(git rev-parse HEAD^1 2>/dev/null || true)"
+              if [[ -z "$base_ref" ]]; then
+                base_ref="$fallback_base"
+              fi
               if [[ -z "$base_ref" ]]; then
                 merge_base_ref="$(jq -r '.merge_group.base_ref // "refs/heads/main"' "$GITHUB_EVENT_PATH")"
                 base_ref="${merge_base_ref#refs/heads/}"

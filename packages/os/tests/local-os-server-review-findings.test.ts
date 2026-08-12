@@ -59,7 +59,10 @@ describe('local OS server review findings', () => {
     );
 
     expect(workflow).toContain(
-      'base_ref="${{ github.event.pull_request.base.sha }}"',
+      'base_ref="$(git rev-parse HEAD^1 2>/dev/null || true)"',
+    );
+    expect(workflow).toContain(
+      'fallback_base="${{ github.event.pull_request.base.sha }}"',
     );
     expect(workflow).toContain(
       "jq -r '.merge_group.base_sha // empty' \"$GITHUB_EVENT_PATH\"",
