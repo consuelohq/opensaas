@@ -127,11 +127,11 @@ const buildItems: SidebarItem[] = [
       { label: 'Create a skill', slug: 'build/skills/create-a-skill' },
       { label: 'Skill structure', slug: 'build/skills/skill-structure' },
       {
-        label: 'Bundled skills',
+        label: 'Skill Templates',
         items: [
           { label: 'Overview', slug: 'build/skills/bundled' },
           { label: 'Artifacts', slug: 'build/skills/bundled/artifacts' },
-          { label: 'Branch Planner', slug: 'build/skills/bundled/branch' },
+          { label: 'Branch', slug: 'build/skills/bundled/branch' },
           { label: 'Browser', slug: 'build/skills/bundled/browser' },
           { label: 'Debugger', slug: 'build/skills/bundled/debugger' },
           { label: 'Handoff', slug: 'build/skills/bundled/handoff' },
@@ -139,7 +139,7 @@ const buildItems: SidebarItem[] = [
           { label: 'Senior Engineer', slug: 'build/skills/bundled/senior-engineer' },
           { label: 'Sites', slug: 'build/skills/bundled/sites' },
           { label: 'Skill Creator', slug: 'build/skills/bundled/skill-creator' },
-          { label: 'Task Workflow', slug: 'build/skills/bundled/task' },
+          { label: 'Task', slug: 'build/skills/bundled/task' },
           { label: 'Teach', slug: 'build/skills/bundled/teach' },
         ],
       },

@@ -184,6 +184,9 @@ describe('foundation source contract', () => {
     }
     expect(component).toContain('page-action-icon');
     expect(component).toContain('page-breadcrumbs');
+    expect(component).toContain('data-copy-state');
+    expect(component).toContain('page-action-success-icon');
+    expect(component).toContain("copyState = 'success'");
     expect(component).not.toContain('Ask AI');
   });
 
