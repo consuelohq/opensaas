@@ -1,7 +1,6 @@
 {
   "files": [
-    ".task/workspace-agents/fix-merged-docs-stale-office-link/verify.json",
-    ".task/workspace-agents/fix-merged-docs-stale-office-link/workpad.md"
+    "packages/os/skills/task/SKILL.md"
   ],
-  "updatedAt": "2026-08-12T01:25:08.690Z"
+  "updatedAt": "2026-08-12T01:31:33.950Z"
 }
