@@ -33,9 +33,10 @@ import {
 } from './lib/sites';
 import type { SitePageKind } from './lib/sites';
 import { readArtifactCatalog } from './lib/artifacts';
-import { loadOsConfig } from './lib/install-state';
+import { loadOsConfig, readLocalNodeIdentity } from './lib/install-state';
 import { runConfigurationOverlayCommand } from './lib/settings-overlay-command';
 import { readSteeringSnapshot } from './lib/steering-snapshot-cache';
+import type { McpNodeRoutingContext } from './lib/mcp-node-routing';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -63,12 +64,53 @@ function createTraceId(): string {
   return `trc_${randomUUID().replaceAll('-', '').slice(0, 12)}`;
 }
 
-function envPresence(): Record<string, unknown> {
+function envPresence(nodeRouting?: McpNodeRoutingContext): Record<string, unknown> {
   const graphqlUrl = process.env.CONSUELO_GRAPHQL_URL;
   const paths = getRuntimePaths();
+  const config = loadOsConfig(paths.home);
+  const localNode = readLocalNodeIdentity(paths.home);
+  const trustedNodeRouting = nodeRouting &&
+    (!config?.workspace?.id || nodeRouting.workspaceId === config.workspace.id) &&
+    (!localNode?.nodeId || nodeRouting.currentNodeId === localNode.nodeId)
+    ? nodeRouting
+    : undefined;
+  const workspace = config?.workspace
+    ? {
+        id: config.workspace.id,
+        slug: config.workspace.slug,
+        host: config.workspace.host,
+      }
+    : trustedNodeRouting?.workspaceId
+      ? { id: trustedNodeRouting.workspaceId }
+      : process.env.CONSUELO_WORKSPACE_ID
+      ? { id: process.env.CONSUELO_WORKSPACE_ID }
+      : null;
   return {
-    workspaceId: process.env.CONSUELO_WORKSPACE_ID ?? null,
-    userId: process.env.CONSUELO_USER_ID ?? null,
+    workspace,
+    node: localNode
+      ? {
+          id: localNode.nodeId,
+          name: localNode.nodeName,
+          ...(localNode.nodeRole ? { role: localNode.nodeRole } : {}),
+        }
+      : null,
+    ...(trustedNodeRouting
+      ? {
+          routing: {
+            currentNodeId: trustedNodeRouting.currentNodeId,
+            defaultNodeId: trustedNodeRouting.defaultNodeId ?? null,
+            routeSource: trustedNodeRouting.routeSource,
+            availableNodes: trustedNodeRouting.nodes.map((node) => ({
+              nodeId: node.nodeId,
+              displayName: node.displayName,
+              ...(node.role ? { role: node.role } : {}),
+              ...(node.platform ? { platform: node.platform } : {}),
+              ...(node.presence ? { presence: node.presence } : {}),
+              ...(node.state ? { state: node.state } : {}),
+            })),
+          },
+        }
+      : {}),
     graphqlUrlHost: graphqlUrl ? new URL(graphqlUrl).host : null,
     hasGraphqlApiKey: Boolean(process.env.CONSUELO_INTERNAL_GRAPHQL_API_KEY),
     consueloHome: paths.home,
@@ -462,7 +504,10 @@ function renderSitesCommandResult(result: SitesCommandResult): string {
     `Artifact count: ${result.artifacts}`,
   ].join('\n');
 }
-export function getSteering(options: { forceSnapshotRefresh?: boolean } = {}): string {
+export function getSteering(options: {
+  forceSnapshotRefresh?: boolean;
+  nodeRouting?: McpNodeRoutingContext;
+} = {}): string {
   const runtimePaths = ensureRuntimePaths();
   const packageRoot = getPackageRoot();
   const sections = [
@@ -471,7 +516,7 @@ export function getSteering(options: { forceSnapshotRefresh?: boolean } = {}): s
     '## Runtime identity',
     '',
     '```json',
-    safeJson(envPresence()),
+    safeJson(envPresence(options.nodeRouting)),
     '```',
   ];
   sections.push(readSteeringSnapshot({

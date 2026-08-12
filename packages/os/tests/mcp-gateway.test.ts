@@ -16,6 +16,12 @@ import {
 } from '../scripts/lib/security-gateway';
 import { createWorkspaceEdgeNodeHeaders } from '../scripts/lib/workspace-edge-node-auth';
 import {
+  encodeMcpNodeRoutingContext,
+  MCP_NODE_CONTEXT_HEADER,
+  MCP_ROUTE_SOURCE_HEADER,
+  type McpNodeRoutingContext,
+} from '../scripts/lib/mcp-node-routing';
+import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
 } from '../scripts/lib/mcp-gateway';
@@ -585,6 +591,7 @@ describe('MCP gateway adapter', () => {
           tool: 'explore',
           input: { query: 'status' },
           taskSession: 'tsk_test',
+          nodeId: 'node_cloud_test',
           timeout: 12_000,
         },
       },
@@ -617,6 +624,63 @@ describe('MCP gateway adapter', () => {
 });
 
 describe('MCP gateway server route', () => {
+  it('passes matching node routing context into guarded steering', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const nodeRouting: McpNodeRoutingContext = {
+      version: 1,
+      workspaceId: config.workspaceId,
+      currentNodeId: 'node_cloud_test',
+      defaultNodeId: 'node_cloud_test',
+      routeSource: 'explicit',
+      nodes: [
+        {
+          nodeId: 'node_cloud_test',
+          displayName: 'Cloud Node',
+          role: 'home',
+          platform: 'linux',
+          presence: 'online',
+          state: 'active',
+        },
+      ],
+    };
+    const getSteering = vi.fn(async () => '# OS steering');
+    const app = createMcpRoutes({
+      getSteering,
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'steering-node-routing',
+      method: 'tools/call',
+      params: { name: 'get_steering', arguments: {} },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-steering-node-routing',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        ...signed.headers,
+        'x-consuelo-node-id': nodeRouting.currentNodeId,
+        [MCP_ROUTE_SOURCE_HEADER]: nodeRouting.routeSource,
+        [MCP_NODE_CONTEXT_HEADER]: encodeMcpNodeRoutingContext(nodeRouting),
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(getSteering).toHaveBeenCalledOnce();
+    expect(getSteering.mock.calls[0]?.[1]).toEqual(nodeRouting);
+  });
+
   it('should serve modern MCP discovery without creating a transport session', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);

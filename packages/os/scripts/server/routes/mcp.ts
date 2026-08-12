@@ -6,6 +6,13 @@ import {
   resolveMcpGatewayRequiredScope,
 } from '../../lib/mcp-gateway';
 import { validateModernMcpHttpRequest } from '../../lib/mcp-protocol';
+import {
+  decodeMcpNodeRoutingContext,
+  inspectMcpNodeRoutingBody,
+  MCP_NODE_CONTEXT_HEADER,
+  MCP_ROUTE_SOURCE_HEADER,
+  type McpNodeRoutingContext,
+} from '../../lib/mcp-node-routing';
 import { hasAnyWorkspaceEdgeNodeHeaders } from '../../lib/workspace-edge-node-auth';
 import {
   authenticateBearerMcpRequest,
@@ -30,12 +37,32 @@ import { readGuardedLocalOsSteering } from '../services/steering-service';
 const MCP_PATH = '/mcp';
 
 type McpRouteDependencies = {
-  getSteering: (callerKey: string) => Promise<string>;
+  getSteering: (
+    callerKey: string,
+    nodeRouting?: McpNodeRoutingContext,
+  ) => Promise<string>;
   executeFacadeTool: (
     toolName: string,
     toolInput: Record<string, unknown>,
   ) => Promise<unknown>;
 };
+
+function trustedNodeRoutingContext(input: {
+  request: Request;
+  workspaceId?: string;
+}): McpNodeRoutingContext | undefined {
+  const context = decodeMcpNodeRoutingContext(
+    input.request.headers.get(MCP_NODE_CONTEXT_HEADER),
+  );
+  if (!context || !input.workspaceId || context.workspaceId !== input.workspaceId) {
+    return undefined;
+  }
+  const resolvedNodeId = input.request.headers.get('x-consuelo-node-id')?.trim();
+  if (!resolvedNodeId || resolvedNodeId !== context.currentNodeId) return undefined;
+  const routeSource = input.request.headers.get(MCP_ROUTE_SOURCE_HEADER)?.trim();
+  if (routeSource !== context.routeSource) return undefined;
+  return context;
+}
 
 const defaultDependencies: McpRouteDependencies = {
   getSteering: readGuardedLocalOsSteering,
@@ -155,12 +182,29 @@ export function createMcpRoutes(
             requiredScope: mcpScope.requiredScope,
           });
       if (!authentication.ok) return authentication.response;
+      const routingInspection = inspectMcpNodeRoutingBody(body);
+      const nodeRouting = trustedNodeRoutingContext({
+        request,
+        workspaceId: authentication.principal.workspaceId,
+      });
+      const routeSourceHeader = request.headers.get(MCP_ROUTE_SOURCE_HEADER)?.trim();
+      const routeSource = routeSourceHeader === 'default' || routeSourceHeader === 'explicit'
+        ? routeSourceHeader
+        : undefined;
       queueGatewayAuthenticationTraceSafely({
         workspaceId: authentication.principal.workspaceId ?? '',
         route: MCP_PATH,
         requiredScope: mcpScope.requiredScope,
         authMode: authentication.principal.authMode,
         principalKey: authentication.principal.principalKey,
+        ...(routingInspection.ok && routingInspection.nodeId
+          ? { requestedNodeId: routingInspection.nodeId }
+          : {}),
+        ...(request.headers.get('x-consuelo-node-id')?.trim()
+          ? { resolvedNodeId: request.headers.get('x-consuelo-node-id')!.trim() }
+          : {}),
+        ...(nodeRouting?.defaultNodeId ? { defaultNodeId: nodeRouting.defaultNodeId } : {}),
+        ...(routeSource ? { routeSource } : {}),
       });
 
       const protocol = validateModernMcpHttpRequest(body, request.headers);
@@ -177,7 +221,7 @@ export function createMcpRoutes(
         principalKey: authentication.principal.principalKey,
       });
       const result = await handleMcpGatewayJsonRpc(body, {
-        getSteering: () => dependencies.getSteering(steeringCallerKey),
+        getSteering: () => dependencies.getSteering(steeringCallerKey, nodeRouting),
         executeFacadeTool: dependencies.executeFacadeTool,
       });
       const response = jsonResponse(result);

@@ -247,6 +247,10 @@ describe('canonical OS trace persistence', () => {
       requiredScope: 'mcp:read',
       authMode: 'oauth',
       principalKey: 'prn_0123456789abcdef0123456789abcdef',
+      requestedNodeId: 'node_cloud',
+      resolvedNodeId: 'node_cloud',
+      defaultNodeId: 'node_home',
+      routeSource: 'explicit',
     });
     expect(JSON.stringify(input)).not.toContain('google:');
     expect(JSON.stringify(input)).not.toContain('chatgpt.com');
