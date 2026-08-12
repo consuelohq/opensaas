@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/tests/daemon-bun-path.test.ts",
+    "packages/os/tests/finish-line-lifecycle-contract.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-12T04:56:52.842Z"
+}
