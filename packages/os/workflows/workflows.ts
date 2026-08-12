@@ -65,6 +65,11 @@ export const workflows = [
       {
         "event": "tool.postInvoke",
         "workflow": "task",
+        "tool": "task.push"
+      },
+      {
+        "event": "tool.postInvoke",
+        "workflow": "task",
         "tool": "task.pr"
       },
       {

@@ -88,7 +88,10 @@ describe('OS workflow intent bundles', () => {
     expect(task.roles).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'workpad.write']));
     expect(toolNames(task)).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'fs.write']));
     expect(task.subscriptions).toEqual(
-      expect.arrayContaining([expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.push' }),
+      ]),
     );
 
     expect(artifacts.aliases).toEqual([]);
