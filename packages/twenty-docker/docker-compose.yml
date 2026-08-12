@@ -107,7 +107,7 @@ services:
     restart: always
 
   db:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
