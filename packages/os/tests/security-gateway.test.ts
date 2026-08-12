@@ -1083,9 +1083,9 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).not.toContain('header_up X-Forwarded-Host');
     expect(caddyfile).not.toContain('header_up X-Forwarded-Proto');
     expect(caddyfile).toContain('dial_timeout 5s');
-    expect(caddyfile).toContain('response_header_timeout 30s');
-    expect(caddyfile).toContain('read_timeout 1h');
-    expect(caddyfile).toContain('write_timeout 1h');
+    expect(caddyfile).not.toContain('response_header_timeout');
+    expect(caddyfile).not.toContain('read_timeout');
+    expect(caddyfile).not.toContain('write_timeout');
     expect(caddyfile).not.toContain('client_auth');
     expect(caddyfile).not.toContain('reverse_proxy 0.0.0.0:8850');
     expect(caddyfile).not.toContain('reverse_proxy :8850');
@@ -1110,9 +1110,9 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).toContain('health_timeout 1s');
     expect(caddyfile).toContain('lb_try_duration 10s');
     expect(caddyfile).toContain('lb_try_interval 100ms');
-    expect(caddyfile).toContain('response_header_timeout 30s');
-    expect(caddyfile).toContain('read_timeout 1h');
-    expect(caddyfile).toContain('write_timeout 1h');
+    expect(caddyfile).not.toContain('response_header_timeout');
+    expect(caddyfile).not.toContain('read_timeout');
+    expect(caddyfile).not.toContain('write_timeout');
     expect(caddyfile).not.toContain('lb_retry_match');
 
     expect(() => gateway.renderCaddyGatewayConfig({

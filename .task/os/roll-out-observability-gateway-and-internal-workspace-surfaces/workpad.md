@@ -257,6 +257,7 @@ bun run task:finish
 - `packages/os/tests/observability-traces-site.test.ts`
 - `packages/os/tests/redaction.test.ts`
 - `packages/os/tests/runtime-bundle-managed-site-assets.test.ts`
+- `packages/os/tests/security-gateway.test.ts`
 - `packages/os/tests/sites-cli.test.ts`
 - `packages/os/tests/trace-gateway-workspace-host.test.ts`
 - `packages/os/tests/trace-history-redaction.test.ts`
@@ -298,3 +299,4 @@ bun run task:finish
 
 - 2026-08-12 final CI recovery: reproduced the exact pinned synthetic merge `8bcfff46ad7858356f28a421a152498e05007696` from CI in an isolated `/tmp` archive. The lifecycle contract failed only because GitHub merged `stream/os` timeout additions back into `security-gateway.ts`; the task branch did not yet have `stream/os` as an ancestor, so the earlier `task.push` could not encode the timeout removal relative to the synthetic merge base.
 - Recovery: merged `stream/os` SHA `70b2592804c82aa56ff1c6e9860ef2c2d358aab8` into the remote task branch through GitHub's non-force merge API (`898ae538976bdb68c93c6bc13e26823adb92e6a6`). The working diff against that merged remote now contains exactly the intended removal of Caddy `response_header_timeout` / `read_timeout` / `write_timeout`; `dial_timeout 5s` remains. This makes the app-owned execution-deadline fix explicit after stream integration instead of relying on synthetic merge conflict behavior.
+- Final OS-contract reconciliation: after the stream-integrated timeout removal made verify/workspace/Sites/workflow-security green, `Consuelo / OS contracts` exposed two stale `security-gateway.test.ts` expectations that still required `response_header_timeout 30s`, `read_timeout 1h`, and `write_timeout 1h`. The lifecycle contract intentionally requires those execution deadlines to be absent, so the security-gateway assertions were updated to match the app-owned deadline contract. Focused Node-backed package tests are green: 2/2 Caddy rendering assertions and 10/10 lifecycle assertions; `git diff --check` is clean. A Bun-driven direct Vitest attempt hit the already-documented Vite/Zod runtime mismatch before assertions, so the canonical package test runner was used.
