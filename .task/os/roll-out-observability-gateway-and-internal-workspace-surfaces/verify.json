@@ -4,15 +4,13 @@
   "mode": "full",
   "branch": "task/os/roll-out-observability-gateway-and-internal-workspace-surfaces",
   "base": "origin/task/os/roll-out-observability-gateway-and-internal-workspace-surfaces",
-  "headSha": "efcd583eae71389906bc05585f34f1c4b5b639d5",
-  "changeHash": "92f94642311d9c0d8e586d7d8f086469766b0512358944b0478a0b7e560367f7",
+  "headSha": "a3c282ee867c0fe74e523d9aba8bb06087203abb",
+  "changeHash": "88dbbaaf33d1035793f0e8a445be2fb461e5c533ae338a58bd7b9be2815eab3d",
   "changedFiles": [
     ".github/workflows/consuelo-ci.yaml",
-    "packages/os/tests/local-os-server-review-findings.test.ts",
-    "packages/workspace/test-selection.registry.json",
-    "packages/workspace/test-selection.rules.json"
+    "packages/os/tests/local-os-server-review-findings.test.ts"
   ],
-  "verifiedAt": "2026-08-12T02:04:20.791Z",
+  "verifiedAt": "2026-08-12T02:15:47.819Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -31,21 +29,9 @@
         ".task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/read-log.json",
         ".task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/verify.json",
         ".task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/workpad.md",
-        "packages/os/tests/local-os-server-review-findings.test.ts",
-        "packages/workspace/test-selection.registry.json",
-        "packages/workspace/test-selection.rules.json"
+        "packages/os/tests/local-os-server-review-findings.test.ts"
       ],
       "matchedRules": [
-        {
-          "id": "workspace-test-selection",
-          "critical": true,
-          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
-          "matchedFiles": [
-            "packages/workspace/test-selection.registry.json",
-            "packages/workspace/test-selection.rules.json"
-          ],
-          "origin": "explicit"
-        },
         {
           "id": "consuelo-ci-immutable-base",
           "critical": true,
@@ -68,18 +54,6 @@
       ],
       "selectedSuites": [
         {
-          "name": "workspace test selection tests",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/workspace/tests/test-selection.test.js"
-          ],
-          "ruleId": "workspace-test-selection",
-          "critical": true
-        },
-        {
           "name": "Consuelo CI immutable base and local server review contracts",
           "command": [
             "bun",
@@ -97,24 +71,6 @@
       "run": true,
       "runResults": [
         {
-          "name": "workspace test selection tests",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/workspace/tests/test-selection.test.js"
-          ],
-          "ruleId": "workspace-test-selection",
-          "critical": true,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 1231,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 965\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 643\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:04:19\n\u001b[2m   Duration \u001b[22m 1.03s\u001b[2m (transform 9ms, setup 0ms, import 14ms, tests 965ms, environment 0ms)\u001b[22m\n\n"
-        },
-        {
           "name": "Consuelo CI immutable base and local server review contracts",
           "command": [
             "bun",
@@ -129,8 +85,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 348,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m19 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m19 passed\u001b[39m\u001b[22m\u001b[90m (19)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:04:20\n\u001b[2m   Duration \u001b[22m 153ms\u001b[2m (transform 39ms, setup 0ms, import 74ms, tests 22ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-12T02:04:20.528Z\"}\n"
+          "durationMs": 581,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m19 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 27\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m19 passed\u001b[39m\u001b[22m\u001b[90m (19)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:15:47\n\u001b[2m   Duration \u001b[22m 222ms\u001b[2m (transform 58ms, setup 0ms, import 120ms, tests 27ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-12T02:15:47.522Z\"}\n"
         }
       ],
       "failedSuites": []

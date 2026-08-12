@@ -25,6 +25,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       base_ref: ${{ steps.classify.outputs.base_ref }}
+      head_sha: ${{ steps.classify.outputs.head_sha }}
       verify: ${{ steps.classify.outputs.verify }}
       workflow_security: ${{ steps.classify.outputs.workflow_security }}
       workspace_contracts: ${{ steps.classify.outputs.workspace_contracts }}
@@ -109,6 +110,7 @@ jobs:
           if has_change '(^packages/os/cloudflare/|gateway|sites-gateway|workspace-edge|wrangler\.toml$)'; then sites_gateway_cloudflare=true; os_contracts=true; verify=true; fi
 
           write_output base_ref "$base_ref"
+          write_output head_sha "$(git rev-parse HEAD)"
           write_output verify "$verify"
           write_output workflow_security "$workflow_security"
           write_output workspace_contracts "$workspace_contracts"
@@ -129,6 +131,7 @@ jobs:
       - uses: actions/checkout@v4
         if: needs.consuelo-changes.outputs.workflow_security == 'true'
         with:
+          ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
       - name: Review changed workflows
@@ -148,6 +151,7 @@ jobs:
       - uses: actions/checkout@v4
         if: needs.consuelo-changes.outputs.verify == 'true'
         with:
+          ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
@@ -174,6 +178,7 @@ jobs:
       - uses: actions/checkout@v4
         if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
         with:
+          ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
@@ -200,6 +205,7 @@ jobs:
       - uses: actions/checkout@v4
         if: needs.consuelo-changes.outputs.os_contracts == 'true'
         with:
+          ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
@@ -236,6 +242,7 @@ jobs:
       - uses: actions/checkout@v4
         if: needs.consuelo-changes.outputs.dialer == 'true'
         with:
+          ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
@@ -262,6 +269,7 @@ jobs:
       - uses: actions/checkout@v4
         if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'
         with:
+          ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2

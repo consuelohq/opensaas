@@ -78,8 +78,6 @@ resumed task session: `tsk_4e5fd8c23e86`
 
 - `.github/workflows/consuelo-ci.yaml`
 - `packages/os/tests/local-os-server-review-findings.test.ts`
-- `packages/workspace/test-selection.registry.json`
-- `packages/workspace/test-selection.rules.json`
 
 
 ## workspace-owned: files changed
@@ -163,6 +161,8 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-12 01:54:04 `verify`: passed — OK
 - 2026-08-12 02:03:56 `review.run`: passed — OK
 - 2026-08-12 02:04:20 `verify`: passed — OK
+- 2026-08-12 02:15:27 `review.run`: passed — OK
+- 2026-08-12 02:15:47 `verify`: passed — OK
 
 ## key decisions
 
@@ -212,6 +212,7 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `.github/workflows/consuelo-ci.yaml`
 - `bun run typecheck`
 - `packages/consuelo-website/src/pages/os/observability/traces.astro`
 - `packages/os/SCRIPTS.md`
@@ -277,8 +278,8 @@ bun run task:finish
 - `security-gateway.ts`
 - `stream/os`
 
-### Synthetic-merge parent correction evidence
+### CI downstream checkout SHA correction
 
-- Reproduced the second CI race with Git data: emitted event base `146ddd35...`, checked-out PR merge `d9c86bfc...`, actual first parent `65251d8d...`; diffing the stale event base added unrelated docs/skills and selected `auto:twenty-sdk:test`.
-- CI now uses the checked-out synthetic merge's `HEAD^1` for pull-request and merge-group comparisons, with event SHA only as fallback if a synthetic parent is unavailable; manual/ref inputs are still resolved to immutable commit SHA.
-- Focused TDD is green and the full seven safe selected suites pass after the correction.
+- A second GitHub Actions race remained after fixing the comparison base: `consuelo-changes` checked out one synthetic merge, but each downstream job performed a fresh default `actions/checkout`, which can resolve the moving `refs/pull/<n>/merge` to a newer synthetic merge while still consuming the earlier base output. That reproduced unrelated `auto:twenty-sdk:test` selection even with a correct `HEAD^1` base.
+- TDD now requires `consuelo-changes` to emit both the synthetic merge `head_sha` and its first-parent `base_ref`, and all six downstream Consuelo jobs to checkout exactly `${{ needs.consuelo-changes.outputs.head_sha }}`. This pins changed-file classification and every verification job to the same immutable merge object.
+- Focused static CI contract is green after the fix.

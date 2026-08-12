@@ -74,6 +74,15 @@ describe('local OS server review findings', () => {
       'write_output base_ref "$base_ref"',
     );
     expect(workflow).toContain(
+      'head_sha: ${{ steps.classify.outputs.head_sha }}',
+    );
+    expect(workflow).toContain(
+      'write_output head_sha "$(git rev-parse HEAD)"',
+    );
+    expect(
+      workflow.match(/ref: \$\{\{ needs\.consuelo-changes\.outputs\.head_sha \}\}/g)?.length ?? 0,
+    ).toBeGreaterThanOrEqual(6);
+    expect(workflow).toContain(
       'bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --no-stamp --review-arg --no-tests',
     );
     expect(workflow).not.toContain(
