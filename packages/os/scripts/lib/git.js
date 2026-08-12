@@ -136,10 +136,11 @@ function resolveApiPushSyncTarget(repoRoot, branch, repository, token) {
   if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository))) {
     throw new Error(`invalid GitHub repository for task push synchronization: ${repository}`);
   }
+  const repositoryKey = String(repository).toLowerCase();
 
   return {
     remote: `https://github.com/${repository}.git`,
-    trackingRef: `refs/consuelo/task-push/${branch}`,
+    trackingRef: `refs/consuelo/task-push/${repositoryKey}/${branch}`,
     label: String(repository),
     env: githubGitAuthEnv(token),
   };
@@ -221,8 +222,8 @@ function synchronizeApiPushedTaskBranch(repoRoot, branch, previousSha, nextSha, 
   }
 
   // Mixed reset advances the checked-out branch and index while preserving
-  // working-tree bytes. Keep origin/<branch> at the fetched remote truth even
-  // if the local reset itself fails.
+  // working-tree bytes. Keep the selected repository tracking ref at fetched
+  // remote truth even if the local reset itself fails.
   runGit(['reset', '--mixed', nextSha], { cwd: repoRoot });
 
   const synchronizedLocal = getRefSha(repoRoot, localRef);

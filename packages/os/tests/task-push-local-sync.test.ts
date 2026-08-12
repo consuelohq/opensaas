@@ -31,9 +31,86 @@ describe('task.push local branch synchronization', () => {
       });
       expect(alternateTarget.remote).toBe('https://github.com/example/private-repo.git');
       expect(alternateTarget.remote).not.toContain(token);
-      expect(alternateTarget.trackingRef).toBe(`refs/consuelo/task-push/${branch}`);
+      expect(alternateTarget.trackingRef).toBe(`refs/consuelo/task-push/example/private-repo/${branch}`);
       expect(alternateTarget.env.GIT_CONFIG_VALUE_0).not.toContain(token);
       expect(alternateTarget.env.GIT_TERMINAL_PROMPT).toBe('0');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('should keep diverged selected repositories in independent tracking refs when the same task branch switches repositories', () => {
+    const root = mkdtempSync(join(tmpdir(), 'task-push-multi-repo-'));
+    const origin = join(root, 'origin.git');
+    const selectedA = join(root, 'selected-a.git');
+    const selectedB = join(root, 'selected-b.git');
+    const seed = join(root, 'seed');
+    const producerA = join(root, 'producer-a');
+    const producerB = join(root, 'producer-b');
+    const local = join(root, 'local');
+    const branch = 'task/workspace-agents/example';
+    const token = 'test-secret-token';
+    try {
+      mkdirSync(seed);
+      git(root, ['init', '--bare', origin]);
+      git(root, ['init', '--bare', selectedA]);
+      git(root, ['init', '--bare', selectedB]);
+      git(seed, ['init']);
+      git(seed, ['config', 'user.email', 'test@example.com']);
+      git(seed, ['config', 'user.name', 'Test']);
+      writeFileSync(join(seed, 'file.txt'), 'base\n');
+      git(seed, ['add', 'file.txt']);
+      git(seed, ['commit', '-m', 'base']);
+      git(seed, ['checkout', '-b', branch]);
+      git(seed, ['remote', 'add', 'origin', origin]);
+      git(seed, ['remote', 'add', 'selected-a', selectedA]);
+      git(seed, ['remote', 'add', 'selected-b', selectedB]);
+      git(seed, ['push', '-u', 'origin', branch]);
+      git(seed, ['push', 'selected-a', branch]);
+      git(seed, ['push', 'selected-b', branch]);
+
+      git(root, ['clone', '--branch', branch, origin, local]);
+      git(root, ['clone', '--branch', branch, selectedA, producerA]);
+      git(root, ['clone', '--branch', branch, selectedB, producerB]);
+      for (const producer of [producerA, producerB]) {
+        git(producer, ['config', 'user.email', 'test@example.com']);
+        git(producer, ['config', 'user.name', 'Test']);
+      }
+
+      writeFileSync(join(producerA, 'file.txt'), 'repository a\n');
+      git(producerA, ['add', 'file.txt']);
+      git(producerA, ['commit', '-m', 'repo a']);
+      const headA = git(producerA, ['rev-parse', 'HEAD']);
+      git(producerA, ['push', 'origin', branch]);
+
+      writeFileSync(join(producerB, 'file.txt'), 'repository b\n');
+      git(producerB, ['add', 'file.txt']);
+      git(producerB, ['commit', '-m', 'repo b']);
+      const headB = git(producerB, ['rev-parse', 'HEAD']);
+      git(producerB, ['push', 'origin', branch]);
+
+      const targetA = {
+        ...resolveApiPushSyncTarget(local, branch, 'example/repo-a', token),
+        remote: selectedA,
+        env: undefined,
+      };
+      const targetB = {
+        ...resolveApiPushSyncTarget(local, branch, 'example/repo-b', token),
+        remote: selectedB,
+        env: undefined,
+      };
+      expect(targetA.trackingRef).not.toBe(targetB.trackingRef);
+
+      git(local, ['fetch', selectedA, headA]);
+      git(local, ['reset', '--mixed', headA]);
+      assertApiPushBaseIsSynced(local, branch, headA, targetA);
+
+      git(local, ['fetch', selectedB, headB]);
+      git(local, ['reset', '--mixed', headB]);
+      assertApiPushBaseIsSynced(local, branch, headB, targetB);
+
+      expect(git(local, ['rev-parse', targetA.trackingRef])).toBe(headA);
+      expect(git(local, ['rev-parse', targetB.trackingRef])).toBe(headB);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
