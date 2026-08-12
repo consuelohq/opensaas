@@ -83,8 +83,19 @@ resumed task session: `tsk_4e5fd8c23e86`
 - `packages/os/assets/vendor/observability-traces-v38/scroll.js`
 - `packages/os/assets/vendor/observability-traces-v38/table-overview.js`
 - `packages/os/assets/vendor/observability-traces-v38/template.html`
+- `packages/os/SCRIPTS.md`
+- `packages/os/scripts/consuelo-reload.js`
+- `packages/os/scripts/lib/install-edge-site-publisher.ts`
 - `packages/os/scripts/lib/observability-traces-site.ts`
+- `packages/os/scripts/lib/security-gateway.ts`
+- `packages/os/scripts/lib/workspace-edge-route-seed.ts`
+- `packages/os/tests/finish-line-lifecycle-contract.test.ts`
+- `packages/os/tests/fixtures/trace-persistence-runtime.ts`
+- `packages/os/tests/install-edge-site-publisher.test.ts`
 - `packages/os/tests/observability-traces-site.test.ts`
+- `packages/os/tests/security-gateway.test.ts`
+- `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
+- `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
 
 ## workspace-owned: files changed
 
@@ -105,8 +116,19 @@ resumed task session: `tsk_4e5fd8c23e86`
 - `packages/os/assets/vendor/observability-traces-v38/scroll.js`
 - `packages/os/assets/vendor/observability-traces-v38/table-overview.js`
 - `packages/os/assets/vendor/observability-traces-v38/template.html`
+- `packages/os/SCRIPTS.md`
+- `packages/os/scripts/consuelo-reload.js`
+- `packages/os/scripts/lib/install-edge-site-publisher.ts`
 - `packages/os/scripts/lib/observability-traces-site.ts`
+- `packages/os/scripts/lib/security-gateway.ts`
+- `packages/os/scripts/lib/workspace-edge-route-seed.ts`
+- `packages/os/tests/finish-line-lifecycle-contract.test.ts`
+- `packages/os/tests/fixtures/trace-persistence-runtime.ts`
+- `packages/os/tests/install-edge-site-publisher.test.ts`
 - `packages/os/tests/observability-traces-site.test.ts`
+- `packages/os/tests/security-gateway.test.ts`
+- `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
+- `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
 
 ## workspace-owned: activity log
 
@@ -129,12 +151,14 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-11 23:43:41 fs.trash: `packages/os/assets/observability-traces-v38/scroll.js`
 - 2026-08-11 23:43:42 fs.trash: `packages/os/assets/observability-traces-v38/table-overview.js`
 - 2026-08-11 23:43:42 fs.trash: `packages/os/assets/observability-traces-v38/template.html`
+- 2026-08-12 00:13:02 fs.trash: `.task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/staged-home`
 - maintained by tooling
 
 ## workspace-owned: validation evidence
 
 - 2026-08-11 23:42:01 `review.run`: passed — OK
 - 2026-08-11 23:44:07 `review.run`: passed — OK
+- 2026-08-12 00:13:59 `review.run`: passed — OK
 
 ## key decisions
 
@@ -155,6 +179,17 @@ resumed task session: `tsk_4e5fd8c23e86`
 
 ## issues and recovery
 
+- 2026-08-11 follow-up from Ko screenshots: exact v38 Trace Burn shell is visible but remains at `0 traces`, while Tools/Environments/Secrets render their public static shells and then show the generic `Configuration unavailable` state. The installed local runtime is already healthy/current on dev `0.1.26` (`updateAvailable: false`), and the canonical local trace DB is non-empty, so this is not a user-update problem.
+- Current local request logs contain no `/gateway/traces`, `/gateway/configuration`, `/gateway/environments`, or `/gateway/secrets` request from the failing browser session. That means the failure is occurring at the workspace edge/session boundary before the request reaches the home node.
+- Test-first follow-up contract: (1) private workspace state shells (`traces`, `configuration`, `tools`, `environments`, `secrets`, plus launcher) must require `workspace-session` so an unauthenticated/stale session cannot render a misleading shell whose API is guaranteed to fail; (2) the v38 red window control must navigate back to the launcher `/` without modifying the byte-locked vendor assets; (3) authenticated gateway history must continue to read the canonical trace DB and unauthenticated access must fail closed.
+- Root cause for the authenticated-but-unavailable private APIs was a stale production `consuelo-workspace-edge` Worker. Its last production deployment was `a32cdc48-ac50-4a47-b385-2948524c278f` at `2026-07-28T04:05:46.236272Z`, while the node-scoped gateway proxy signing implementation (`nodeSigningMasterSecret`, `nodeConnector`, `buildGatewayNodeProxyRequest`) landed in workspace-edge/router source after that deployment. The home node and device authority were current, so the stale edge Worker could serve/session-gate Site HTML but could not proxy current signed gateway requests to the home node correctly.
+- Direct signed tunnel probes using the installed node-scoped edge credential (never printed) proved the home-node path itself is healthy: `/gateway/configuration/snapshot` 200, `/gateway/environments/snapshot` 200, `/gateway/secrets/bindings` 200, and `/gateway/traces/recent?...includeRawPayload=true` 200 with 5 rows + a next cursor. Only status/count/key names were emitted; no secret or trace payload values were printed.
+- Production workspace-edge was deployed through the repository release-readiness wrapper (`bun run cloudflare:workspace-edge:deploy`) after confirming no typed Cloudflare deployment tool exists. Deployment `1cfa50c2-3fbe-47a7-9de3-6d227272dd67`, version `99f2ca97-9274-4482-ae29-43fd06919dbf`, is 100% active from `2026-08-12T00:09:47.243216Z`.
+- Private Site route auth is now consistent with private gateway auth: `/`, all five Trace aliases, `/configuration`, `/tools`, `/environments`, and `/secrets` require `workspace-session`. `/artifacts`, `/diffs`, and `/docs` remain public. Unauthenticated HTML requests to all private shells now 302 to `os.consuelohq.com`; the four checked private gateway APIs return 401 `workspace_session_required`; public Artifacts/Diffs/Docs remain HTTP 200.
+- Final Site snapshot publish is `sha256-0cadcd0798397856`. Trace content hash is `b1e42eeb7559043ab6d11eafe82f946eb1935ecec1e5a0c3146c2aab62de94a7`; all other surface content hashes are unchanged from the prior verified snapshot. A read-back of all 9 unique R2 objects matched every expected SHA-256. D1 points every Site route at the new version, the default node remains present/fresh, and active `/gtm` + `/mcp` connector routes are preserved.
+- The first red-button implementation accidentally selected the v38 backdrop because both the backdrop and the red window button carry `data-close-traces`. A real headless Chrome click test exposed the strict two-element match. The implementation now targets `button[data-close-traces]`; the unit test is green and a real Chrome click navigated `/observability` -> `/` and displayed the launcher. Vendor v38 files remain byte-identical.
+- Real-browser Trace rendering was independently exercised against the canonical production `traces.db` through the actual local read backend: the generated v38 page made 5 history requests, rendered 25 row elements, and reported a non-zero count (`60`) in headless Chrome. This isolates any former `0 traces` state to the edge/proxy/session path rather than the UI renderer or database.
+- Final focused verification after the follow-up fixes: 36/36 gateway publisher/route/Trace tests pass, `bun run typecheck` passes, and strict workspace review reports 0 blockers. The full `verify` wrapper was intentionally not rerun because it unconditionally invokes automatic test selection, whose `@consuelo/os` package suite would include `security-gateway.test.ts`; that file contains destructive-literal temp cleanup (`rmSync`) and steering requires exact target preflight before execution. Publication therefore uses the user's standing rollout approval plus the focused green evidence instead of bypassing the safety rule.
 - Two large `batch` discovery calls returned transient MCP network errors after restart. Single typed OS calls are healthy, so recovery is to continue with focused single calls rather than treating the connector as down.
 - The old Tailscale preview process on port 53935 is not listening after restart (`ERR_CONNECTION_REFUSED`). Canonical tracked source and generated local archive are still available for direct inspection.
 - Runtime browser reproduction: `https://internal.consuelohq.com/trace-burn-intelligence` returned the correct v38 document with HTTP 200 while its same-origin trace history calls returned 401. This is the concrete failure to drive the next test-first fix.
@@ -175,16 +210,25 @@ bun run task:finish
 
 - `packages/consuelo-website/src/pages/os/observability/traces.astro`
 - `packages/os/SCRIPTS.md`
+- `packages/os/assets/vendor/observability-traces-v38/inspector.js`
+- `packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts`
+- `packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts`
 - `packages/os/cloudflare/workspace-edge/migrations/0001_workspace_route_registry.sql`
+- `packages/os/cloudflare/workspace-edge/src/index.ts`
 - `packages/os/package.json`
 - `packages/os/scripts/consuelo-reload.js`
+- `packages/os/scripts/deploy-cloudflare-worker.ts`
 - `packages/os/scripts/generate-system-daemons.sh`
+- `packages/os/scripts/lib/cloudflare-worker-release-readiness.ts`
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/install-edge-site-publisher.ts`
 - `packages/os/scripts/lib/observability-traces-site.ts`
 - `packages/os/scripts/lib/security-gateway.ts`
+- `packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts`
 - `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
 - `packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
 - `packages/os/scripts/lib/workspace-edge-route-seed.ts`
 - `packages/os/scripts/lib/workspace-node-heartbeat-client.ts`
 - `packages/os/scripts/workspace-node-heartbeat.ts`
@@ -198,23 +242,7 @@ bun run task:finish
 - `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
 - `packages/workspace/scripts/review.js`
 - `packages/workspace/scripts/trace-site-inspector/pagination-browser.ts`
+- `packages/workspace/scripts/verify.js`
 - `packages/workspace/senior-engineer.md`
 
-- 2026-08-11 23:43:11 write: `packages/os/assets/vendor/observability-traces-v38/base.css`
-
-- 2026-08-11 23:43:12 write: `packages/os/assets/vendor/observability-traces-v38/gsap.js`
-
-- 2026-08-11 23:43:12 write: `packages/os/assets/vendor/observability-traces-v38/inspector.css`
-
-- 2026-08-11 23:43:12 write: `packages/os/assets/vendor/observability-traces-v38/inspector.js`
-
-- 2026-08-11 23:43:13 write: `packages/os/assets/vendor/observability-traces-v38/mobile.css`
-
-- 2026-08-11 23:43:13 write: `packages/os/assets/vendor/observability-traces-v38/scroll.js`
-
-- 2026-08-11 23:43:14 write: `packages/os/assets/vendor/observability-traces-v38/table-overview.js`
-
-- 2026-08-11 23:43:14 write: `packages/os/assets/vendor/observability-traces-v38/template.html`
-
-- 2026-08-11 23:43:30 apply-patch: `packages/os/scripts/lib/observability-traces-site.ts`
-- 2026-08-11 23:43:30 apply-patch: `packages/os/tests/observability-traces-site.test.ts`
+- 2026-08-12 00:15:33 apply-patch: `.task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/workpad.md`

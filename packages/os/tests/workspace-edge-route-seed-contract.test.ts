@@ -288,6 +288,16 @@ contractDescribe('workspace edge route seed contract', () => {
         .filter((route) => route.target.siteId === 'traces')
         .map((route) => route.auth),
     ).toEqual(Array(5).fill('workspace-session'));
+    expect(
+      snapshotRoutes
+        .filter((route) => ['launcher', 'traces', 'configuration', 'tools', 'environments', 'secrets'].includes(route.target.siteId ?? ''))
+        .every((route) => route.auth === 'workspace-session'),
+    ).toBe(true);
+    expect(
+      snapshotRoutes
+        .filter((route) => ['artifacts', 'diffs', 'docs'].includes(route.target.siteId ?? ''))
+        .every((route) => route.auth === 'public'),
+    ).toBe(true);
     expect(snapshotRoutes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/tools',

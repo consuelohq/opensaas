@@ -59,6 +59,14 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).not.toContain('cdn.jsdelivr.net');
   });
 
+  it('returns to the workspace launcher when the v38 red window control is clicked', () => {
+    const html = buildObservabilityTracesSite();
+
+    expect(html).toContain('data-close-traces');
+    expect(html).toContain("querySelector('button[data-close-traces]')");
+    expect(html).toContain("location.assign('/')");
+  });
+
   it('ships no serialized trace backlog or private network origin in the static snapshot', () => {
     const html = buildObservabilityTracesSite();
     const seed = /<script[^>]*id="trace-seed-data"[^>]*>([\s\S]*?)<\/script>/i.exec(html)?.[1];

@@ -441,6 +441,13 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       auth: 'workspace-session',
       target: { kind: 'site-snapshot', siteId: 'traces' },
     });
+    for (const pathPrefix of ['/configuration', '/tools', '/environments', '/secrets']) {
+      expect(record.routes.find((route) => route.pathPrefix === pathPrefix)).toMatchObject({
+        surface: 'sites',
+        auth: 'workspace-session',
+        target: { kind: 'site-snapshot' },
+      });
+    }
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot').map((route) => route.pathPrefix)).toEqual([
       '/',
       '/artifacts',
@@ -893,7 +900,7 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
           (candidate) => candidate.verifyUrl === url,
         );
         if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
-        if (snapshot.siteId === 'launcher' || snapshot.siteId === 'traces') {
+        if (['launcher', 'traces', 'configuration', 'tools', 'environments', 'secrets'].includes(snapshot.siteId)) {
           return Response.json(
             { error: 'workspace_session_required' },
             { status: 401 },

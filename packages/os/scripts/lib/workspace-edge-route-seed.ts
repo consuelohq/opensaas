@@ -43,6 +43,19 @@ export const WORKSPACE_SITE_SNAPSHOT_IDS = [
 export type WorkspaceSiteSnapshotId =
   (typeof WORKSPACE_SITE_SNAPSHOT_IDS)[number];
 
+const WORKSPACE_PRIVATE_SITE_SNAPSHOT_IDS = new Set<WorkspaceSiteSnapshotId>([
+  'launcher',
+  'traces',
+  'configuration',
+  'tools',
+  'environments',
+  'secrets',
+]);
+
+export const workspaceSiteSnapshotRequiresSession = (
+  siteId: WorkspaceSiteSnapshotId,
+): boolean => WORKSPACE_PRIVATE_SITE_SNAPSHOT_IDS.has(siteId);
+
 const DEFAULT_SITE_ID: WorkspaceSiteSnapshotId = 'launcher';
 const DEFAULT_SITE_VERSION_ID = 'seeded-workspace-site-shell';
 const DEFAULT_SITE_MANIFEST_KEY = `sites/${DEFAULT_WORKSPACE_ID}/${DEFAULT_SITE_ID}/${DEFAULT_SITE_VERSION_ID}/index.html`;
@@ -154,7 +167,9 @@ const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
   published: boolean;
 }): WorkspaceRouteD1Route => {
   const isLauncher = input.pathPrefix === '/' && input.siteId === 'launcher';
-  const requiresWorkspaceSession = isLauncher || input.siteId === 'traces';
+  const requiresWorkspaceSession = workspaceSiteSnapshotRequiresSession(
+    input.siteId,
+  );
   return {
     surface: 'sites',
     pathPrefix: input.pathPrefix,

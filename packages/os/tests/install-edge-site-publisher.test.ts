@@ -226,7 +226,7 @@ contractDescribe('install edge site publisher', () => {
           (candidate) => candidate.verifyUrl === url,
         );
         if (!expectedSnapshot) throw new Error(`unexpected verification URL: ${url}`);
-        if (expectedSnapshot.siteId === 'launcher' || expectedSnapshot.siteId === 'traces') {
+        if (['launcher', 'traces', 'configuration', 'tools', 'environments', 'secrets'].includes(expectedSnapshot.siteId)) {
           return Response.json(
             { error: 'workspace_session_required' },
             {

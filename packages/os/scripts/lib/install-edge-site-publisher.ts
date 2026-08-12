@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   createWorkspaceEdgeRouteSeedSql,
   type WorkspaceSiteSnapshotId,
+  workspaceSiteSnapshotRequiresSession,
 } from './workspace-edge-route-seed';
 
 // Internal Consuelo operator helper. Public install must consume scoped bootstrap
@@ -204,6 +205,7 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
   }
   await run(runner, plan, 'd1_upsert', log, entries, ['wrangler', 'd1', 'execute', d1, '--remote', '--config', wranglerConfig, '--file', routeSqlPath]);
   let response: Response | null = null;
+  let publicHttpStatus = 0;
   let cacheAuthority: string | null = null;
   let sitesCache: string | null = null;
   const snapshotsByUrl = new Map(plan.snapshots.map((snapshot) => [snapshot.verifyUrl, snapshot]));
@@ -213,14 +215,12 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
       if (!expectedSnapshot) throw new Error(`missing snapshot plan for ${verifyUrl}`);
       response = await (input.fetchImpl ?? defaultFetch)(verifyUrl, { headers: { accept: 'application/json', 'cache-control': 'no-cache', 'user-agent': 'Consuelo-OS-Install' } });
       const body = await response.text();
-      cacheAuthority = response.headers.get('x-consuelo-edge-cache-authority');
-      sitesCache = response.headers.get('x-consuelo-sites-cache');
       const sourceContentHash = response.headers.get('x-consuelo-site-content-hash');
       const siteVersion = response.headers.get('x-consuelo-site-version');
       const bodyHash = hash(body);
-      const privateSnapshot =
-        (expectedSnapshot.siteId === 'launcher' && expectedSnapshot.pathPrefix === '/')
-        || expectedSnapshot.siteId === 'traces';
+      const privateSnapshot = workspaceSiteSnapshotRequiresSession(
+        expectedSnapshot.siteId,
+      );
       if (privateSnapshot) {
         const workspaceSessionRequired = isWorkspaceSessionRequired(response, body);
         entries.push({ stage: 'edge_verify', url: verifyUrl, status: response.status, access: workspaceSessionRequired ? 'workspace-session-required' : 'unexpected-private-site-access' });
@@ -230,6 +230,9 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
         }
         continue;
       }
+      publicHttpStatus = response.status;
+      cacheAuthority = response.headers.get('x-consuelo-edge-cache-authority');
+      sitesCache = response.headers.get('x-consuelo-sites-cache');
       entries.push({ stage: 'edge_verify', url: verifyUrl, status: response.status, cacheAuthority, sitesCache, siteVersion, sourceContentHash, responseBodyHash: bodyHash });
       if (response.status !== 200 || cacheAuthority !== 'sites-snapshot' || siteVersion !== expectedSnapshot.versionId || sourceContentHash !== expectedSnapshot.contentHash) {
         writeLog(log, entries);
@@ -242,5 +245,5 @@ export async function publishWorkspaceEdgeSnapshot(input: PublishInput): Promise
     throw new InstallEdgePublishError({ stage: 'edge_verify', workspaceHost: plan.workspaceHost, snapshotKey: plan.snapshotKey, logPath: log, message: `install edge publish verification failed for ${plan.verifyUrl}`, diagnostics: { error: error instanceof Error ? error.message : String(error) }, cause: error });
   }
   writeLog(log, entries);
-  return { status: 'succeeded', workspaceId: plan.workspaceId, workspaceSlug: plan.workspaceSlug, workspaceHost: plan.workspaceHost, siteId, versionId: plan.versionId, snapshotKey: plan.snapshotKey, snapshotPath: plan.snapshotPath, verifyUrl: plan.verifyUrl, verifiedUrls: plan.verifiedUrls, snapshots: plan.snapshots, logPath: log, httpStatus: response?.status ?? 0, cacheAuthority, sitesCache };
+  return { status: 'succeeded', workspaceId: plan.workspaceId, workspaceSlug: plan.workspaceSlug, workspaceHost: plan.workspaceHost, siteId, versionId: plan.versionId, snapshotKey: plan.snapshotKey, snapshotPath: plan.snapshotPath, verifyUrl: plan.verifyUrl, verifiedUrls: plan.verifiedUrls, snapshots: plan.snapshots, logPath: log, httpStatus: publicHttpStatus || response?.status || 0, cacheAuthority, sitesCache };
 }
