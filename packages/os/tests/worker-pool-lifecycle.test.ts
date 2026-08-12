@@ -153,12 +153,52 @@ describe('OS worker pool lifecycle', () => {
 
     await supervisor.start();
     exits[0]?.resolve(1);
-    await waitFor(() => supervisor.snapshot().workers[0]?.restartCount >= 2);
+    await waitFor(() => (supervisor.snapshot().workers[0]?.restartCount ?? 0) >= 2);
     expect(supervisor.snapshot().workers[0]).toMatchObject({
       state: 'ready',
       restartCount: 2,
     });
     expect(spawnAttempts).toBe(3);
+    await supervisor.stop();
+  });
+
+  it('backs off replacement spawn failures and stops retrying after a bounded budget', async () => {
+    let spawnAttempts = 0;
+    let firstExit: ((exitCode: number) => void) | undefined;
+    const sleeps: number[] = [];
+    const supervisor = createWorkerPoolSupervisor({
+      configuration: resolveWorkerPoolConfiguration({
+        CONSUELO_OS_WORKER_COUNT: '1',
+        CONSUELO_OS_PORT: '47025',
+        CONSUELO_OS_WORKER_RESTART_DELAY_MS: '0',
+      }),
+      spawnWorker(): WorkerProcessHandle {
+        spawnAttempts += 1;
+        if (spawnAttempts > 1) throw new Error('permanent spawn failure');
+        const exit = deferredExit();
+        firstExit = exit.resolve;
+        return {
+          pid: 2500,
+          exited: exit.promise,
+          kill() { exit.resolve(0); return true; },
+        };
+      },
+      probeReady: async () => true,
+      writeSnapshot: () => {},
+      sleep: async (milliseconds) => { sleeps.push(milliseconds); },
+    });
+
+    await supervisor.start();
+    firstExit?.(1);
+    await waitFor(() => {
+      const worker = supervisor.snapshot().workers[0];
+      return worker?.state === 'failed' && (worker.restartCount ?? 0) >= 5;
+    });
+
+    expect(spawnAttempts).toBeLessThanOrEqual(6);
+    expect(sleeps.length).toBeLessThanOrEqual(6);
+    expect(sleeps.some((delay) => delay > 0)).toBe(true);
+    expect(sleeps).toEqual([...sleeps].sort((left, right) => left - right));
     await supervisor.stop();
   });
 

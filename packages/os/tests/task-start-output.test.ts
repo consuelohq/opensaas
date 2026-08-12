@@ -43,9 +43,12 @@ describe('OS task.start public output', () => {
       taskSession: 'tsk_compact_output',
       worktreePath: '/tmp/compact-task-start-output',
     }));
-    expect(compact.hookResult.suggestedNextAction.tools).toEqual(
-      expect.arrayContaining(['code.call', 'explore']),
-    );
+    expect(compact.hookResult.requiredNextAction).toEqual(expect.objectContaining({
+      capability: 'workpad.write',
+      tool: 'fs.write',
+      taskSession: 'tsk_compact_output',
+      input: expect.objectContaining({ append: true, mkdirs: true }),
+    }));
     expect(serialized).not.toContain('definition');
     expect(serialized).not.toContain('Bun structured repo scanner');
     expect(serialized.length).toBeLessThan(JSON.stringify(full).length / 3);

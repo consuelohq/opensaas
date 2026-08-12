@@ -1,4 +1,6 @@
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 const require = createRequire(import.meta.url);
@@ -51,6 +53,26 @@ describe('review documentation opportunities', () => {
       'packages/documentation/src/content/docs/reference/tools.mdx',
       'packages/documentation/src/content/docs/build/workflows.mdx',
     ]));
+  });
+
+  test('maps active packages/os/tools implementation changes to the tools documentation surface', () => {
+    const opportunities = findDocumentationOpportunities([
+      'packages/os/tools/memory/manifest.ts',
+      'packages/os/tools/memory/schema.ts',
+    ]);
+
+    expect(opportunities).toHaveLength(1);
+    expect(opportunities[0]).toMatchObject({
+      surface: 'tools',
+      docs: ['packages/documentation/src/content/docs/reference/tools.mdx'],
+    });
+  });
+
+  test('review --all marks documentation opportunity detection as skipped instead of executed', () => {
+    const source = readFileSync(resolve(import.meta.dirname, '../scripts/review.js'), 'utf8');
+    expect(source).toContain('const documentationCheckRan = !args.all');
+    expect(source).toContain("if (documentationCheckRan) checksRun.push('documentation_opportunities')");
+    expect(source).toContain('...(documentationCheckRan ? { documentationOpportunities } : {})');
   });
 
   test('does not create documentation noise for unrelated internal implementation changes', () => {

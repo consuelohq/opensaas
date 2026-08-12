@@ -320,6 +320,7 @@ export const TaskPushInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+  repo: optionalString,
   message: z.string().min(1),
   changed: z.boolean().optional(),
   files: stringArray,
@@ -331,10 +332,12 @@ export const TaskPrInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+  repo: optionalString,
   taskOnly: z.boolean().optional(),
   draft: z.boolean().optional(),
   ready: z.boolean().optional(),
   bodyTemplate: optionalString,
+  ackWorkpadIncomplete: z.boolean().optional(),
 });
 
 export const TaskMergeInput = z.object({
@@ -1149,8 +1152,8 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskStartInput: '{ stream?: string; area?: string; title: string; workflow?: "task"; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskPushInput: '{ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskPrInput: '{ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskPushInput: '{ branch?: string; repo?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskPrInput: '{ branch?: string; repo?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; ackWorkpadIncomplete?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskMergeInput: '{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',

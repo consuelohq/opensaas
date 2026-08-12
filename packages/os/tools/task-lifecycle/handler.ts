@@ -163,6 +163,11 @@ export const toolHandlers = [
           "kind": "value"
         },
         {
+          "source": "repo",
+          "flag": "--repo",
+          "kind": "value"
+        },
+        {
           "source": "taskOnly",
           "flag": "--task-only",
           "kind": "boolean"
@@ -181,6 +186,11 @@ export const toolHandlers = [
           "source": "bodyTemplate",
           "flag": "--body-template",
           "kind": "value"
+        },
+        {
+          "source": "ackWorkpadIncomplete",
+          "flag": "--ack-workpad-incomplete",
+          "kind": "boolean"
         },
         {
           "source": "pr",
@@ -232,6 +242,11 @@ export const toolHandlers = [
         {
           "source": "branch",
           "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "repo",
+          "flag": "--repo",
           "kind": "value"
         },
         {

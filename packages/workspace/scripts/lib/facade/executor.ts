@@ -507,16 +507,18 @@ function compactReviewData(data: unknown): unknown {
   const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
   const testResults = asArray(data.testResults);
   const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  const documentationCheckRan = Object.prototype.hasOwnProperty.call(data, 'documentationOpportunities');
   const documentationOpportunities = asArray(data.documentationOpportunities);
+  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (documentationCheckRan) checksRun.push('documentation_opportunities');
+  if (testResults.length > 0) checksRun.push('tests');
   return {
     schema: 'review.summary.v1',
     base: data.base,
     branch: data.branch,
     files: data.files,
     affectedProjects: data.affectedProjects,
-    checksRun: testResults.length > 0
-      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'documentation_opportunities', 'tests']
-      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'documentation_opportunities'],
+    checksRun,
     summary: {
       yourIssues: yours.length,
       preExistingIssues: preExisting.length,

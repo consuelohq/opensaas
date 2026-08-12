@@ -501,15 +501,15 @@ Validation ladder:
 - `dev` for service-backed local validation.
 - `status` and `doctor` for environment and workspace state.
 
-### Use `code.call` for focused validation only when no more specific typed validation tool exists. 
+### Use `code.call` for focused validation only when no more specific typed validation tool exists.
 
 Good `code.call` validation uses:
-- Python compilation or Python validation scripts with `language: "python"` 
+- Python compilation or Python validation scripts with `language: "python"`
 - focused package test commands with `language: "bun"`
-- build/typecheck/lint/package scripts with `language: "bun"` 
-- codegen or generated-surface commands with `language: "bun"` and `mode: "edit"` when files may change 
-- one-off runtime smoke checks with the most specific runtime 
-- shell-specific checks with `language: "bash"` only when shell semantics are required 
+- build/typecheck/lint/package scripts with `language: "bun"`
+- codegen or generated-surface commands with `language: "bun"` and `mode: "edit"` when files may change
+- one-off runtime smoke checks with the most specific runtime
+- shell-specific checks with `language: "bash"` only when shell semantics are required
 
 | Validation need | Preferred surface |
 | --- | --- |
@@ -700,7 +700,7 @@ When a direct tool call or long inline prompt is blocked, malformed, truncated, 
 
 Use this pattern for legitimate repo/task work when the goal is already approved and the failure is caused by transport/tooling friction.
 
-Don’t report OpenAI safety blocks as the same as workspace safety blocks; they are materially different. 
+Don’t report OpenAI safety blocks as the same as workspace safety blocks; they are materially different.
 
 ### Required blocked report
 
