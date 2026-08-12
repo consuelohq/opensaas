@@ -15,12 +15,14 @@ import {
   recordToolTraceSafely,
   resolveCanonicalTraceDbPath,
 } from '../../scripts/lib/trace-persistence';
+import { withTraceRoutingContext } from '../../scripts/lib/trace-routing-context';
 import { authorizeConsueloOAuthMcpRequest } from '../../scripts/server/services/oauth-introspection';
 
 type TraceRow = Record<string, unknown>;
 
 const TRACE_ROWS_SQL = [
   'SELECT trace_id, mcp_trace_id, source, tool, task_session, branch, worktree,',
+  'requested_node_id, resolved_node_id, resolved_node_name, default_node_id, route_source,',
   'status, ok, code, exit_code, duration_ms, input_json,',
   'resolved_input_json, result_json, stderr,',
   'input_tokens, output_tokens, total_tokens',
@@ -86,9 +88,15 @@ function stableFacadeOptions() {
 async function run(): Promise<unknown> {
   try {
     if (scenario === 'facade') {
-    const result = await executeTool('task.current', {
+    const result = await withTraceRoutingContext({
+      requestedNodeId: 'node_cloud',
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      defaultNodeId: 'node_home',
+      routeSource: 'explicit',
+    }, () => executeTool('task.current', {
       apiKey: 'sk_test_secret_value_1234567890',
-    }, stableFacadeOptions());
+    }, stableFacadeOptions()));
     const backend = createLocalTraceSitesReadBackend({
       dbPath: resolveCanonicalTraceDbPath(),
     });
@@ -100,7 +108,15 @@ async function run(): Promise<unknown> {
       cursor: '000000000000',
       limit: 10,
     });
-      return { result, rows: traceRows(), recent };
+    const history = await backend.readHistoryPage?.({
+      workspaceId: 'workspace_trace_test',
+      workspaceHost: 'trace-test.consuelohq.com',
+      site: 'trace',
+      sourceMode: 'local-networked',
+      cursor: 'latest',
+      limit: 10,
+    });
+      return { result, rows: traceRows(), recent, history };
     }
 
     if (scenario === 'migration') {
@@ -128,6 +144,12 @@ async function run(): Promise<unknown> {
       inputTokens: 12,
       outputTokens: 34,
       totalTokens: 46,
+      routing: {
+        resolvedNodeId: 'node_migrated',
+        resolvedNodeName: 'Migrated Node',
+        defaultNodeId: 'node_migrated',
+        routeSource: 'default',
+      },
     });
       return { recorded, rows: traceRows() };
     }
@@ -282,6 +304,7 @@ async function run(): Promise<unknown> {
         principalKey: 'prn_0123456789abcdef0123456789abcdef',
         requestedNodeId: 'node_cloud',
         resolvedNodeId: 'node_cloud',
+        resolvedNodeName: 'Cloud Node',
         defaultNodeId: 'node_home',
         routeSource: 'explicit',
       });

@@ -6,6 +6,7 @@ import path from 'node:path';
 import type { AuthenticatedMcpAuthMode } from '../server/security/authenticated-principal';
 import { expandHome, resolveConsueloHomeLayout } from './consuelo-home';
 import { redactJson, redactTraceJson, redactTraceText } from './redaction';
+import type { TraceRoutingContext } from './trace-routing-context';
 
 const require = createRequire(import.meta.url);
 let persistenceWarningEmitted = false;
@@ -34,6 +35,7 @@ export type ToolTraceInput = {
   inputTokens?: number;
   outputTokens?: number;
   totalTokens?: number;
+  routing?: TraceRoutingContext;
 };
 
 export type SubagentTraceEvent = {
@@ -93,6 +95,11 @@ const TRACE_COLUMNS: Array<{ name: string; alterSql: string }> = [
   { name: 'task_session', alterSql: 'ALTER TABLE tool_traces ADD COLUMN task_session TEXT;' },
   { name: 'branch', alterSql: 'ALTER TABLE tool_traces ADD COLUMN branch TEXT;' },
   { name: 'worktree', alterSql: 'ALTER TABLE tool_traces ADD COLUMN worktree TEXT;' },
+  { name: 'requested_node_id', alterSql: 'ALTER TABLE tool_traces ADD COLUMN requested_node_id TEXT;' },
+  { name: 'resolved_node_id', alterSql: 'ALTER TABLE tool_traces ADD COLUMN resolved_node_id TEXT;' },
+  { name: 'resolved_node_name', alterSql: 'ALTER TABLE tool_traces ADD COLUMN resolved_node_name TEXT;' },
+  { name: 'default_node_id', alterSql: 'ALTER TABLE tool_traces ADD COLUMN default_node_id TEXT;' },
+  { name: 'route_source', alterSql: 'ALTER TABLE tool_traces ADD COLUMN route_source TEXT;' },
   { name: 'status', alterSql: 'ALTER TABLE tool_traces ADD COLUMN status TEXT;' },
   { name: 'ok', alterSql: 'ALTER TABLE tool_traces ADD COLUMN ok INTEGER;' },
   { name: 'code', alterSql: 'ALTER TABLE tool_traces ADD COLUMN code TEXT;' },
@@ -110,10 +117,11 @@ const TRACE_COLUMNS: Array<{ name: string; alterSql: string }> = [
 const INSERT_TOOL_TRACE_SQL = [
   'INSERT OR REPLACE INTO tool_traces (',
   'id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch, worktree,',
+  'requested_node_id, resolved_node_id, resolved_node_name, default_node_id, route_source,',
   'status, ok, code, exit_code, duration_ms,',
   'input_json, resolved_input_json, result_json, stderr,',
   'input_tokens, output_tokens, total_tokens',
-  ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 ].join(' ');
 
 export function resolveCanonicalTraceDbPath(
@@ -262,6 +270,7 @@ type GatewayAuthenticationTraceInput = {
   principalKey: string;
   requestedNodeId?: string;
   resolvedNodeId?: string;
+  resolvedNodeName?: string;
   defaultNodeId?: string;
   routeSource?: 'default' | 'explicit' | 'task';
 };
@@ -277,6 +286,13 @@ function gatewayAuthenticationToolTrace(
     ok: true,
     code: 'OK',
     exitCode: 0,
+    routing: {
+      ...(input.requestedNodeId ? { requestedNodeId: input.requestedNodeId } : {}),
+      ...(input.resolvedNodeId ? { resolvedNodeId: input.resolvedNodeId } : {}),
+      ...(input.resolvedNodeName ? { resolvedNodeName: input.resolvedNodeName } : {}),
+      ...(input.defaultNodeId ? { defaultNodeId: input.defaultNodeId } : {}),
+      ...(input.routeSource ? { routeSource: input.routeSource } : {}),
+    },
     input: {
       workspaceId: input.workspaceId,
       route: input.route,
@@ -285,6 +301,7 @@ function gatewayAuthenticationToolTrace(
       principalKey: input.principalKey,
       ...(input.requestedNodeId ? { requestedNodeId: input.requestedNodeId } : {}),
       ...(input.resolvedNodeId ? { resolvedNodeId: input.resolvedNodeId } : {}),
+      ...(input.resolvedNodeName ? { resolvedNodeName: input.resolvedNodeName } : {}),
       ...(input.defaultNodeId ? { defaultNodeId: input.defaultNodeId } : {}),
       ...(input.routeSource ? { routeSource: input.routeSource } : {}),
     },
@@ -348,6 +365,11 @@ function ensureToolTraceSchema(db: TraceDatabase): void {
       task_session TEXT,
       branch TEXT,
       worktree TEXT,
+      requested_node_id TEXT,
+      resolved_node_id TEXT,
+      resolved_node_name TEXT,
+      default_node_id TEXT,
+      route_source TEXT,
       status TEXT NOT NULL,
       ok INTEGER NOT NULL,
       code TEXT,
@@ -382,6 +404,8 @@ function ensureToolTraceSchema(db: TraceDatabase): void {
     CREATE INDEX IF NOT EXISTS tool_traces_status_idx ON tool_traces(status);
     CREATE INDEX IF NOT EXISTS tool_traces_task_session_idx ON tool_traces(task_session);
     CREATE INDEX IF NOT EXISTS tool_traces_branch_idx ON tool_traces(branch);
+    CREATE INDEX IF NOT EXISTS tool_traces_resolved_node_id_idx ON tool_traces(resolved_node_id);
+    CREATE INDEX IF NOT EXISTS tool_traces_route_source_idx ON tool_traces(route_source);
   `);
 }
 
@@ -396,6 +420,11 @@ function insertToolTrace(db: TraceDatabase, input: ToolTraceInput): void {
     input.taskSession ?? null,
     input.branch ?? null,
     input.worktree ?? null,
+    input.routing?.requestedNodeId ?? null,
+    input.routing?.resolvedNodeId ?? null,
+    input.routing?.resolvedNodeName ?? null,
+    input.routing?.defaultNodeId ?? null,
+    input.routing?.routeSource ?? null,
     input.status,
     input.ok ? 1 : 0,
     input.code ?? null,
