@@ -78,7 +78,14 @@ Implementation complete. Focused tests and strict review are green. Full `verify
 
 ## files changed
 
-- none yet
+- `packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts`
+- `packages/os/cloudflare/os-device-authority/src/stores.ts`
+- `packages/os/cloudflare/os-device-authority/src/types.ts`
+- `packages/os/scripts/lib/mcp-node-routing.ts`
+- `packages/os/scripts/lib/trace-persistence.ts`
+- `packages/os/scripts/server/routes/mcp.ts`
+- `packages/os/tests/workspace-node-registry-routing.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -91,3 +98,10 @@ Implementation complete. Focused tests and strict review are green. Full `verify
 ## workspace-owned: validation evidence
 
 - 2026-08-12 14:39:01 `verify`: passed — OK
+- 2026-08-12 14:41:57 `verify`: passed — OK
+
+## Publish readiness
+- Working-tree changes were published to task PR #1888 as commit `83e874cd16154a7425c0e79f5626cd64f7f0694e`.
+- Canonical full verify completed after the focused suites with `publishValid: true`; no branch-owned blocking review findings were reported.
+- No Mac, cloud node, Cloudflare Worker, or runtime deployment was performed. This PR changes source/control-plane behavior only.
+- Integration must preserve other agents' parallel stream work; use the task/stream lifecycle tooling rather than force-updating shared refs.
