@@ -20,7 +20,6 @@ type FacadeCall = {
   tool: string;
   input: JsonObject;
   taskSession?: string;
-  nodeId?: string;
   timeout?: number;
 };
 
@@ -174,8 +173,7 @@ function parseFacadeCall(params: unknown): FacadeCall | null {
     return null;
   }
 
-  const nodeId = normalizeMcpNodeId(args.nodeId);
-  if (nodeId === null) return null;
+  if (normalizeMcpNodeId(args.nodeId) === null) return null;
 
   const timeout = args.timeout;
   if (
@@ -189,7 +187,6 @@ function parseFacadeCall(params: unknown): FacadeCall | null {
     tool,
     input: callInput,
     ...(typeof taskSession === 'string' ? { taskSession: taskSession.trim() } : {}),
-    ...(nodeId ? { nodeId } : {}),
     ...(typeof timeout === 'number' ? { timeout } : {}),
   };
 }

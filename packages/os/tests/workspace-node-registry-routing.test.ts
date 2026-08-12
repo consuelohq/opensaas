@@ -1687,7 +1687,7 @@ describe('multi-node connector routing', () => {
     expect(upstreams).toHaveLength(2);
   });
 
-  it('uses os.call nodeId as the central selector and rejects conflicting selectors', async () => {
+  it('should use os.call nodeId as the central selector when body and header selectors are evaluated', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-body-node-token', {
@@ -1760,7 +1760,7 @@ describe('multi-node connector routing', () => {
     expect(upstreams).toHaveLength(2);
   });
 
-  it('adds a safe workspace node directory to central get_steering requests', async () => {
+  it('should add a safe workspace node directory when central get_steering is requested', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-steering-node-token', {
@@ -1826,6 +1826,68 @@ describe('multi-node connector routing', () => {
     expect(serialized).not.toContain('connector_node_');
     expect(serialized).not.toContain('publicKey');
     expect(serialized).not.toContain('spoofed-client-value');
+  });
+
+  it('should report node-directory lookup failures when central steering remains fail-open', async () => {
+    const backingStore = createMemoryDeviceGrantStore();
+    await seedWorkspace(backingStore);
+    await authorizeWorkspace(backingStore, 'central-steering-warning-token', {
+      scopes: ['route:/mcp:read'],
+    });
+    const store = {
+      ...backingStore,
+      async listWorkspaceNodes(): Promise<WorkspaceNode[]> {
+        throw new Error('simulated node directory outage');
+      },
+    };
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const operationalEvents: unknown[] = [];
+    let upstreamRequest: Request | undefined;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      operationalLogger: {
+        warn: (message, context) => operationalEvents.push({ message, context }),
+      },
+      fetchImpl: async (request) => {
+        upstreamRequest = request instanceof Request ? request : new Request(request);
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-steering-warning-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 21,
+        method: 'tools/call',
+        params: { name: 'get_steering', arguments: {} },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(upstreamRequest).toBeDefined();
+    expect(upstreamRequest!.headers.get(MCP_NODE_CONTEXT_HEADER)).toBeNull();
+    expect(operationalEvents).toEqual([
+      expect.objectContaining({
+        message: '[OsDeviceAuthority] MCP node directory unavailable',
+        context: expect.objectContaining({
+          component: 'os-device-authority',
+          operation: 'mcp-node-directory',
+          accountId,
+          workspaceId,
+          workspaceHost,
+          failure: 'Error',
+        }),
+      }),
+    ]);
   });
 
   it('honors explicit node targeting on the workspace edge and forwards only the resolved node', async () => {

@@ -27,11 +27,20 @@ function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export function normalizeMcpNodeId(value: unknown): string | undefined | null {
+function normalizeBoundedIdentifier(
+  value: unknown,
+  maximumLength: number,
+): string | undefined | null {
   if (value === undefined) return undefined;
   if (typeof value !== 'string') return null;
-  const nodeId = value.trim();
-  return nodeId.length > 0 && nodeId.length <= 160 ? nodeId : null;
+  const identifier = value.trim();
+  return identifier.length > 0 && identifier.length <= maximumLength
+    ? identifier
+    : null;
+}
+
+export function normalizeMcpNodeId(value: unknown): string | undefined | null {
+  return normalizeBoundedIdentifier(value, 160);
 }
 
 export function normalizeMcpTaskSession(value: unknown): string | undefined | null {
@@ -119,7 +128,7 @@ export function decodeMcpNodeRoutingContext(value: string | null): McpNodeRoutin
   try {
     const parsed = JSON.parse(decodeBase64Url(value)) as unknown;
     if (!isJsonObject(parsed) || parsed.version !== 1) return null;
-    const workspaceId = normalizeMcpNodeId(parsed.workspaceId);
+    const workspaceId = normalizeBoundedIdentifier(parsed.workspaceId, 160);
     const currentNodeId = normalizeMcpNodeId(parsed.currentNodeId);
     const defaultNodeId = normalizeMcpNodeId(parsed.defaultNodeId);
     if (!workspaceId || !currentNodeId || defaultNodeId === null) return null;

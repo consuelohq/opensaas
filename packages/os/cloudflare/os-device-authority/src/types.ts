@@ -409,6 +409,20 @@ export type Env = {
   OS_DEVICE_AUTH_CLOUDFLARE_API_BASE_URL?: string;
   OS_MANAGED_CLOUD_PRICING_POLICY_JSON?: string;
   OS_MANAGED_CLOUD_RATE_CARDS_JSON?: string;
+  OS_DEVICE_AUTH_LOGGER?: DeviceAuthorityLogger;
+};
+
+export type DeviceAuthorityOperationalLogContext = {
+  component: 'os-device-authority';
+  operation: 'mcp-node-directory';
+  accountId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  failure: string;
+};
+
+export type DeviceAuthorityLogger = {
+  warn: (message: string, context: DeviceAuthorityOperationalLogContext) => void;
 };
 
 export type DeviceAuthorityRuntime = {
@@ -424,4 +438,5 @@ export type DeviceAuthorityRuntime = {
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
+  operationalLogger?: DeviceAuthorityLogger;
 };

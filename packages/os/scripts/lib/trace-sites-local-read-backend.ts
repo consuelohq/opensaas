@@ -13,6 +13,7 @@ import type {
   TraceSitesDashboardSummary,
 } from './trace-sites-gateway-contract';
 import { redactTraceJson, redactTraceText } from './redaction';
+import { ensureTraceDatabaseSchema } from './trace-database-schema';
 
 export type LocalTraceSitesReadBackendOptions = {
   dbPath: string;
@@ -123,6 +124,12 @@ const RECENT_TRACE_EVENTS_SQL = [
 export function createLocalTraceSitesReadBackend(
   options: LocalTraceSitesReadBackendOptions,
 ): TraceSitesGatewayReadBackendAdapter {
+  let schemaReady = false;
+  const prepareExistingDatabaseForRead = (): void => {
+    if (schemaReady || !existsSync(options.dbPath)) return;
+    ensureTraceDatabaseSchema(options.dbPath);
+    schemaReady = true;
+  };
   return {
     resolveHealth() {
       return {
@@ -133,12 +140,15 @@ export function createLocalTraceSitesReadBackend(
       };
     },
     readRecentEvents(input) {
+      prepareExistingDatabaseForRead();
       return readRecentTraceEvents(options.dbPath, input);
     },
     readHistoryPage(input) {
+      prepareExistingDatabaseForRead();
       return readTraceHistoryPage(options.dbPath, input);
     },
     readNewerPage(input) {
+      prepareExistingDatabaseForRead();
       return readNewerTracePage(options.dbPath, input);
     },
     readCachedAggregate(): TraceSitesGatewayCachedAggregate {

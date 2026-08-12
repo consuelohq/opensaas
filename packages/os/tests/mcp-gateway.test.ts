@@ -624,7 +624,7 @@ describe('MCP gateway adapter', () => {
 });
 
 describe('MCP gateway server route', () => {
-  it('passes matching node routing context into guarded steering', async () => {
+  it('should pass matching node routing context when guarded steering is requested', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);
     const nodeRouting: McpNodeRoutingContext = {
@@ -681,7 +681,7 @@ describe('MCP gateway server route', () => {
     expect(getSteering.mock.calls[0]?.[1]).toEqual(nodeRouting);
   });
 
-  it('propagates resolved node routing into facade tracing without leaking nodeId into tool input', async () => {
+  it('should propagate resolved node routing without leaking nodeId when facade tracing executes', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read', 'tool:explore:read']);
     const nodeRouting: McpNodeRoutingContext = {

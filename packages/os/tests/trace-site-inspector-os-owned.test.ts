@@ -5,6 +5,7 @@ import {
   isDefaultTraceTableRowVisible,
   matchesTraceTableFilters,
   traceFilterFacets,
+  type TraceTableFilterState,
   type TraceTableRecord,
 } from '../scripts/lib/trace-site-inspector/table-formatters';
 import { childTraceRecords } from '../scripts/lib/trace-site-inspector/model';
@@ -25,6 +26,18 @@ const record = (overrides: Partial<TraceTableRecord> = {}): TraceTableRecord => 
   ok: true,
   code: 'OK',
   input: '{}',
+  ...overrides,
+});
+
+const filterState = (
+  overrides: Partial<TraceTableFilterState> = {},
+): TraceTableFilterState => ({
+  query: '',
+  branches: new Set(),
+  tools: new Set(),
+  nodes: new Set(),
+  routes: new Set(),
+  statuses: new Set(),
   ...overrides,
 });
 
@@ -66,7 +79,23 @@ describe('OS-owned Trace Burn table formatting', () => {
     expect(formatted.inputLabel).not.toBe('request details');
   });
 
-  it('formats, inherits, searches, and filters node routing metadata', () => {
+  it('should format node routing metadata when a trace resolves an explicit node', () => {
+    const parent = record({
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      defaultNodeId: 'node_home',
+      routeSource: 'explicit',
+    });
+
+    expect(formatTraceTableRow(parent)).toMatchObject({
+      nodeId: 'node_cloud',
+      nodeLabel: 'Cloud Node',
+      routeSource: 'explicit',
+      routeLabel: 'Explicit',
+    });
+  });
+
+  it('should inherit direct parent routing metadata when a batch child omits routing fields', () => {
     const parent = record({
       resolvedNodeId: 'node_cloud',
       resolvedNodeName: 'Cloud Node',
@@ -76,40 +105,67 @@ describe('OS-owned Trace Burn table formatting', () => {
         { tool: 'fs.read', ok: true, code: 'OK', input: { path: 'README.md' } },
       ]),
     });
-    const formatted = formatTraceTableRow(parent);
-    const child = childTraceRecords(parent)[0];
 
-    expect(formatted).toMatchObject({
-      nodeId: 'node_cloud',
-      nodeLabel: 'Cloud Node',
-      routeSource: 'explicit',
-      routeLabel: 'Explicit',
-    });
+    const child = childTraceRecords(parent)[0];
     expect(formatTraceTableRow(child)).toMatchObject({
       nodeId: 'node_cloud',
       nodeLabel: 'Cloud Node',
       routeLabel: 'Explicit',
     });
-    expect(traceFilterFacets([parent])).toMatchObject({
+  });
+
+  it('should inherit metadata-only parent routing when a batch child omits routing fields', () => {
+    const parent = record({
+      metadata: {
+        requestedNodeId: 'node_cloud',
+        resolvedNodeId: 'node_cloud',
+        resolvedNodeName: 'Metadata Cloud Node',
+        defaultNodeId: 'node_home',
+        routeSource: 'task',
+      },
+      batchResultsJson: JSON.stringify([
+        { tool: 'fs.read', ok: true, code: 'OK', input: { path: 'README.md' } },
+      ]),
+    });
+
+    const child = childTraceRecords(parent)[0];
+    expect(formatTraceTableRow(child)).toMatchObject({
+      nodeId: 'node_cloud',
+      nodeLabel: 'Metadata Cloud Node',
+      routeSource: 'task',
+      routeLabel: 'Task',
+    });
+  });
+
+  it('should expose only non-empty node and route facets when traces include mixed routing metadata', () => {
+    const routed = record({
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      routeSource: 'explicit',
+    });
+    const historic = record({ traceId: 'historic-without-routing' });
+
+    expect(traceFilterFacets([routed, historic])).toMatchObject({
       nodes: [{ value: 'Cloud Node', count: 1 }],
       routes: [{ value: 'Explicit', count: 1 }],
     });
-    expect(matchesTraceTableFilters(parent, {
+  });
+
+  it('should match node and route filters when routing labels are selected', () => {
+    const parent = record({
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      routeSource: 'explicit',
+    });
+
+    expect(matchesTraceTableFilters(parent, filterState({
       query: 'cloud',
-      branches: new Set(),
-      tools: new Set(),
       nodes: new Set(['Cloud Node']),
       routes: new Set(['Explicit']),
-      statuses: new Set(),
-    })).toBe(true);
-    expect(matchesTraceTableFilters(parent, {
-      query: '',
-      branches: new Set(),
-      tools: new Set(),
+    }))).toBe(true);
+    expect(matchesTraceTableFilters(parent, filterState({
       nodes: new Set(['Local Mac']),
-      routes: new Set(),
-      statuses: new Set(),
-    })).toBe(false);
+    }))).toBe(false);
   });
 
   it('summarizes wait and status plumbing without request-details placeholders', () => {
