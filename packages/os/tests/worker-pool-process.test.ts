@@ -51,6 +51,7 @@ type PoolSnapshot = {
   supervisorPid?: number;
   workers: Array<{
     workerId: string;
+    workerInstanceId: string;
     pid?: number;
     port: number;
     state: string;
@@ -128,6 +129,29 @@ describe('OS worker pool process integration', () => {
       });
 
       expect(replaced.workers.find((worker) => worker.workerId === 'worker-1')?.pid).toBe(stable?.pid);
+      await expect(fetch(`http://127.0.0.1:${basePort}/ready`)).resolves.toMatchObject({ ok: true });
+      await expect(fetch(`http://127.0.0.1:${basePort + 1}/ready`)).resolves.toMatchObject({ ok: true });
+
+      const beforeRolling = new Map(
+        replaced.workers.map((worker) => [worker.workerId, worker.workerInstanceId]),
+      );
+      process.kill(supervisor.pid!, 'SIGUSR2');
+      const rolled = await waitFor<PoolSnapshot>(() => {
+        try {
+          const snapshot = JSON.parse(readFileSync(statePath, 'utf8')) as PoolSnapshot;
+          return snapshot.workers.length === 2
+            && snapshot.workers.every((worker) =>
+              worker.state === 'ready'
+              && worker.workerInstanceId !== beforeRolling.get(worker.workerId)
+            )
+            ? snapshot
+            : undefined;
+        } catch {
+          return undefined;
+        }
+      });
+
+      expect(rolled.supervisorPid).toBe(supervisor.pid);
       await expect(fetch(`http://127.0.0.1:${basePort}/ready`)).resolves.toMatchObject({ ok: true });
       await expect(fetch(`http://127.0.0.1:${basePort + 1}/ready`)).resolves.toMatchObject({ ok: true });
     } finally {

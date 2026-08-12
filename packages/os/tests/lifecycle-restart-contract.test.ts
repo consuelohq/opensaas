@@ -12,7 +12,9 @@ describe('lifecycle restart parity', () => {
   it('preserves reply-safe detached reload and canonical launchd/direct execution', () => {
     const reload = source('scripts/consuelo-reload.js');
 
-    expect(reload).toContain("spawn(process.execPath, [__filename, 'reload-now']");
+    expect(reload).toContain("spawn(process.execPath, [__filename, command]");
+    expect(reload).toContain("scheduleReload({ useLaunchd: hasLaunchdPlist, command: 'reload-now' });");
+    expect(reload).toContain("scheduleReload({ useLaunchd: hasLaunchdPlist, command: 'restart-now' });");
     expect(reload).toContain('detached: true');
     expect(reload).toContain("CONSUELO_OS_RELOAD_CHILD: '1'");
     expect(reload).toContain('if (useLaunchd && existsSync(PLIST))');

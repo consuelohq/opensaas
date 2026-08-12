@@ -125,9 +125,28 @@ if (import.meta.main) {
   }
 
   let closing = false;
+  let rollingReload: Promise<void> | null = null;
+  const requestRollingReload = (): void => {
+    if (closing || rollingReload) return;
+    process.stderr.write('[Consuelo OS] rolling worker reload requested\n');
+    rollingReload = pool.replaceAllRolling()
+      .then(() => {
+        process.stderr.write('[Consuelo OS] rolling worker reload complete\n');
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`[Consuelo OS] rolling worker reload failed: ${message}\n`);
+      })
+      .finally(() => {
+        rollingReload = null;
+      });
+  };
+  if (process.platform !== 'win32') process.on('SIGUSR2', requestRollingReload);
+
   const stopSupervisor = async (): Promise<void> => {
     if (closing) return;
     closing = true;
+    if (process.platform !== 'win32') process.off('SIGUSR2', requestRollingReload);
     let failure: unknown;
     try {
       await pool.stop();

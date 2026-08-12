@@ -162,6 +162,67 @@ describe('OS worker pool lifecycle', () => {
     await supervisor.stop();
   });
 
+  it('rolls worker slots one at a time and waits for each replacement to become ready', async () => {
+    let nextPid = 3000;
+    let nextInstance = 0;
+    const events: string[] = [];
+    const supervisor = createWorkerPoolSupervisor({
+      configuration: resolveWorkerPoolConfiguration({
+        CONSUELO_OS_WORKER_COUNT: '2',
+        CONSUELO_OS_PORT: '47030',
+        CONSUELO_OS_WORKER_RESTART_DELAY_MS: '0',
+      }),
+      instanceId: () => `rolling-${++nextInstance}`,
+      spawnWorker(spec): WorkerProcessHandle {
+        const exit = deferredExit();
+        const pid = nextPid++;
+        events.push(`spawn:${spec.workerId}:${spec.workerInstanceId}`);
+        return {
+          pid,
+          exited: exit.promise,
+          kill(signal) {
+            events.push(`kill:${spec.workerId}:${spec.workerInstanceId}:${signal ?? 'SIGTERM'}`);
+            queueMicrotask(() => exit.resolve(0));
+            return true;
+          },
+        };
+      },
+      probeReady: async (spec) => {
+        events.push(`ready:${spec.workerId}:${spec.workerInstanceId}`);
+        return true;
+      },
+      writeSnapshot: () => {},
+      sleep: async () => {
+        await new Promise<void>((resolveSleep) => setTimeout(resolveSleep, 0));
+      },
+    });
+
+    await supervisor.start();
+    const before = supervisor.snapshot();
+    const originalWorker0 = before.workers[0]?.workerInstanceId;
+    const originalWorker1 = before.workers[1]?.workerInstanceId;
+
+    await supervisor.replaceAllRolling();
+
+    const after = supervisor.snapshot();
+    expect(after.workers.every((entry) => entry.state === 'ready')).toBe(true);
+    expect(after.workers[0]?.workerInstanceId).not.toBe(originalWorker0);
+    expect(after.workers[1]?.workerInstanceId).not.toBe(originalWorker1);
+    expect(after.workers[0]?.restartCount).toBe(1);
+    expect(after.workers[1]?.restartCount).toBe(1);
+
+    const worker0ReplacementReady = events.findIndex((event) =>
+      event === `ready:worker-0:${after.workers[0]?.workerInstanceId}`,
+    );
+    const worker1Drain = events.findIndex((event) =>
+      event === `kill:worker-1:${originalWorker1}:SIGTERM`,
+    );
+    expect(worker0ReplacementReady).toBeGreaterThan(-1);
+    expect(worker1Drain).toBeGreaterThan(worker0ReplacementReady);
+
+    await supervisor.stop();
+  });
+
   it('tracks active work and refuses new work after draining starts', async () => {
     const state = createWorkerRuntimeState({
       workerId: 'worker-0',

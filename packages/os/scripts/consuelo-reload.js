@@ -183,6 +183,59 @@ function bootstrapLaunchAgent() {
   runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
 }
 
+function isHealthyRollingPool(pool) {
+  return Boolean(
+    pool
+    && Number.isInteger(pool.supervisorPid)
+    && pool.supervisorPid > 0
+    && Number.isInteger(pool.desiredWorkers)
+    && pool.desiredWorkers > 0
+    && pool.workers.length === pool.desiredWorkers
+    && pool.workers.every((worker) =>
+      worker
+      && worker.state === 'ready'
+      && typeof worker.workerInstanceId === 'string'
+      && worker.workerInstanceId.length > 0
+      && Number.isInteger(worker.pid)
+      && worker.pid > 0
+    )
+  );
+}
+
+function waitForRollingReload(before, attempts = RELOAD_WAIT_ATTEMPTS) {
+  const previousInstances = new Map(
+    before.workers.map((worker) => [worker.workerId, worker.workerInstanceId]),
+  );
+  for (let index = 0; index < attempts; index += 1) {
+    const current = workerPoolState();
+    if (
+      isHealthyRollingPool(current)
+      && current.supervisorPid === before.supervisorPid
+      && current.workers.every((worker) =>
+        previousInstances.get(worker.workerId) !== worker.workerInstanceId
+      )
+    ) return true;
+    sleep(0.5);
+  }
+  return false;
+}
+
+function tryRollingReload() {
+  if (process.platform === 'win32') return false;
+  const pool = workerPoolState();
+  if (!isHealthyRollingPool(pool)) return false;
+  const supervisorPid = String(pool.supervisorPid);
+  if (!findServerPids().includes(supervisorPid)) return false;
+  runRequired('kill', ['-USR2', supervisorPid], 'rolling worker reload signal');
+  if (!waitForRollingReload(pool)) {
+    throw new Error('Consuelo OS worker pool did not complete rolling reload.');
+  }
+  if (!waitForHealth('reloaded', 1)) {
+    throw new Error('Consuelo OS did not remain healthy after rolling reload.');
+  }
+  return true;
+}
+
 function runReload({ useLaunchd }) {
   if (useLaunchd && existsSync(PLIST)) {
     stopConflictingLaunchAgents();
@@ -206,8 +259,8 @@ function runReload({ useLaunchd }) {
   }
 }
 
-function scheduleReload({ useLaunchd }) {
-  const child = spawn(process.execPath, [__filename, 'reload-now'], {
+function scheduleReload({ useLaunchd, command = 'reload-now' }) {
+  const child = spawn(process.execPath, [__filename, command], {
     detached: true,
     stdio: ['ignore', 'ignore', 'ignore'],
     cwd: OS_DIR,
@@ -224,7 +277,7 @@ function scheduleReload({ useLaunchd }) {
 
 const args = process.argv.slice(2);
 if (args.includes('--help')) {
-  writeStdout('usage: bun run consuelo-reload -- [reload|reload-now|status|stop|start|logs]');
+  writeStdout('usage: bun run consuelo-reload -- [reload|reload-now|restart|restart-now|status|stop|start|logs]');
   writeStdout('manages the local Consuelo OS Bun server and user LaunchAgent.');
   process.exit(0);
 }
@@ -281,11 +334,20 @@ switch (command) {
 
   case 'consuelo-reload':
   case 'reload':
+    scheduleReload({ useLaunchd: hasLaunchdPlist, command: 'reload-now' });
+    break;
+
   case 'restart':
-    scheduleReload({ useLaunchd: hasLaunchdPlist });
+    scheduleReload({ useLaunchd: hasLaunchdPlist, command: 'restart-now' });
     break;
 
   case 'reload-now':
+    sleep(0.5);
+    if (!tryRollingReload()) {
+      runReload({ useLaunchd: process.env.CONSUELO_OS_RELOAD_LAUNCHD === '1' || hasLaunchdPlist });
+    }
+    break;
+
   case 'restart-now':
     sleep(0.5);
     runReload({ useLaunchd: process.env.CONSUELO_OS_RELOAD_LAUNCHD === '1' || hasLaunchdPlist });
