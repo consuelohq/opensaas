@@ -59,7 +59,6 @@ const SITE_SNAPSHOT_ROUTES: ReadonlyArray<{
   { pathPrefix: '/traces', siteId: 'traces' },
   { pathPrefix: '/tracing', siteId: 'traces' },
   { pathPrefix: '/trace-burn-intelligence', siteId: 'traces' },
-  { pathPrefix: '/diffs', siteId: 'diffs' },
   { pathPrefix: '/docs', siteId: 'docs' },
   { pathPrefix: '/configuration', siteId: 'configuration' },
   { pathPrefix: '/tools', siteId: 'tools' },
@@ -155,10 +154,11 @@ const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
   published: boolean;
 }): WorkspaceRouteD1Route => {
   const isLauncher = input.pathPrefix === '/' && input.siteId === 'launcher';
+  const requiresWorkspaceSession = isLauncher;
   return {
     surface: 'sites',
     pathPrefix: input.pathPrefix,
-    auth: isLauncher ? 'workspace-session' : 'public',
+    auth: requiresWorkspaceSession ? 'workspace-session' : 'public',
     status: input.published ? 'active' : 'disabled',
     target: {
       kind: 'site-snapshot',
@@ -174,7 +174,7 @@ const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
         ? { contentHash: normalizedContentHash(input.contentHash) }
         : {}),
       contentType: DEFAULT_SITE_CONTENT_TYPE,
-      cachePolicy: isLauncher ? 'private-preview' : 'static-shell',
+      cachePolicy: requiresWorkspaceSession ? 'private-preview' : 'static-shell',
     },
   };
 };
@@ -368,6 +368,45 @@ const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   },
 ];
 
+const buildDiffsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/diffs/write',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'diffs-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/diffs/*',
+      publicSiteRouteFamily: '/diffs/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/diffs',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'diffs-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/diffs/*',
+      publicSiteRouteFamily: '/diffs/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/diffs',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'diffs-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/diffs/*',
+      publicSiteRouteFamily: '/diffs/*',
+    },
+  },
+];
+
 const buildLegacyConfigurationRedirectRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
@@ -459,6 +498,7 @@ export const createWorkspaceEdgeRouteSeedRecord = (
     ...buildEnvironmentGatewayRoutes(),
     ...buildSecretGatewayRoutes(),
     ...buildArtifactsGatewayRoutes(),
+    ...buildDiffsGatewayRoutes(),
     ...buildLegacyArtifactRedirectRoutes(),
   ];
 

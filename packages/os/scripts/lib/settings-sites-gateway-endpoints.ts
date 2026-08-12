@@ -2,6 +2,11 @@ import { randomUUID } from 'node:crypto';
 
 import type { ConsueloGatewaySessionScope } from './consuelo-sites-gateway-types';
 import {
+  parseWorkspaceSourceControlConfiguration,
+  readWorkspaceSourceControlConfiguration,
+  updateWorkspaceSourceControlConfiguration,
+} from './source-control-config';
+import {
   applySettingsGatewayOverlayPatch,
   isSettingsGatewayRoute,
   readSettingsGatewaySnapshot,
@@ -31,6 +36,7 @@ const CONFIGURATION_WRITE_ROUTES = new Set([
   '/gateway/configuration/overlay',
   '/gateway/settings/overlay',
 ]);
+const CONFIGURATION_SOURCE_CONTROL_ROUTE = '/gateway/configuration/source-control';
 
 function vocabularyForPath(pathname: string): ConfigurationVocabulary {
   return pathname.startsWith('/gateway/settings/') ? 'settings' : 'configuration';
@@ -68,6 +74,60 @@ export function createSettingsSitesGatewayEndpoints(
               : 'Configuration gateway scope resolution failed.',
           },
         }, 403);
+      }
+
+      if (url.pathname === CONFIGURATION_SOURCE_CONTROL_ROUTE) {
+        if (request.method !== 'GET' && request.method !== 'POST') {
+          return jsonResponse({
+            ok: false,
+            publicBoundary: 'consuelo-gateway',
+            error: { code: 'METHOD_NOT_ALLOWED', message: 'Source-control configuration requires GET or POST.' },
+          }, 405);
+        }
+        const operation: ConfigurationOperation = request.method === 'GET' ? 'read' : 'write';
+        if (!scope.capabilities.includes(requiredCapability(url.pathname, operation))) {
+          return jsonResponse({
+            ok: false,
+            publicBoundary: 'consuelo-gateway',
+            error: {
+              code: 'CAPABILITY_SCOPE_DENIED',
+              message: `Source-control configuration ${operation} is not allowed for this session.`,
+            },
+          }, 403);
+        }
+        try {
+          const snapshot = request.method === 'GET'
+            ? readWorkspaceSourceControlConfiguration({
+              home: options.home,
+              workspaceId: scope.workspaceId,
+            })
+            : updateWorkspaceSourceControlConfiguration({
+              home: options.home,
+              workspaceId: scope.workspaceId,
+              configuration: parseWorkspaceSourceControlConfiguration(
+                JSON.parse(await request.clone().text()),
+              ),
+            });
+          return jsonResponse({
+            ok: true,
+            publicBoundary: 'consuelo-gateway',
+            route: url.pathname,
+            workspace: { workspaceId: scope.workspaceId, workspaceHost: scope.workspaceHost },
+            snapshot,
+          });
+        } catch (error: unknown) {
+          return jsonResponse({
+            ok: false,
+            publicBoundary: 'consuelo-gateway',
+            route: url.pathname,
+            error: {
+              code: 'INVALID_SOURCE_CONTROL_CONFIGURATION',
+              message: error instanceof Error
+                ? error.message.slice(0, 240)
+                : 'Source-control configuration is invalid.',
+            },
+          }, 400);
+        }
       }
 
       if (CONFIGURATION_READ_ROUTES.has(url.pathname)) {

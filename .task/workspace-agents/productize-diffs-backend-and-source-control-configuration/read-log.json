@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/workspace-agents/productize-diffs-backend-and-source-control-configuration/workpad.md",
+    "packages/os/scripts/lib/settings-sites-gateway-endpoints.ts",
+    "packages/os/scripts/server/routes/settings.ts",
+    "packages/os/tests/launcher-astro-source.test.ts",
+    "packages/os/tests/settings-sites-gateway-endpoints.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-08-12T03:34:57.342Z"
+}
