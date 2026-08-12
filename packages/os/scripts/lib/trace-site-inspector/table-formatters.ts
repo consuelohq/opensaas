@@ -5,6 +5,10 @@ import {
   extractTraceError,
   isFailure,
   parseMaybeJson,
+  traceNodeId,
+  traceNodeLabel,
+  traceRouteLabel,
+  traceRouteSource,
   type TraceRecord,
 } from './model';
 
@@ -16,6 +20,10 @@ export type TraceTableRowFormat = {
   outputLabel: string;
   inputFull: string;
   outputFull: string;
+  nodeId: string;
+  nodeLabel: string;
+  routeSource: string;
+  routeLabel: string;
   isError: boolean;
   statusLabel: 'success' | 'error';
 };
@@ -24,6 +32,8 @@ export type TraceTableFilterState = {
   query: string;
   tools: ReadonlySet<string>;
   branches: ReadonlySet<string>;
+  nodes: ReadonlySet<string>;
+  routes: ReadonlySet<string>;
   statuses: ReadonlySet<string>;
 };
 
@@ -35,6 +45,8 @@ export type TraceFilterFacet = {
 export type TraceFilterFacets = {
   tools: TraceFilterFacet[];
   branches: TraceFilterFacet[];
+  nodes: TraceFilterFacet[];
+  routes: TraceFilterFacet[];
   statuses: TraceFilterFacet[];
 };
 
@@ -57,6 +69,10 @@ export function formatTraceTableRow(row: TraceRecord): TraceTableRowFormat {
   const isError = isFailure(row);
   const inputLabel = summarizeInput(row, input, toolLabel);
   const outputLabel = summarizeOutput(row, input, toolLabel, isError);
+  const nodeId = traceNodeId(row);
+  const nodeLabel = traceNodeLabel(row);
+  const routeSource = traceRouteSource(row);
+  const routeLabel = traceRouteLabel(row);
   return {
     toolLabel,
     inputLabel,
@@ -76,6 +92,10 @@ export function formatTraceTableRow(row: TraceRecord): TraceTableRowFormat {
           row.output ??
           row.summary,
       ) || outputLabel,
+    nodeId,
+    nodeLabel,
+    routeSource,
+    routeLabel,
     isError,
     statusLabel: isError ? 'error' : 'success',
   };
@@ -127,10 +147,14 @@ export function semanticToolLabel(
 export function traceFilterFacets(rows: TraceRecord[]): TraceFilterFacets {
   const toolCounts = new Map<string, number>();
   const branchCounts = new Map<string, number>();
+  const nodeCounts = new Map<string, number>();
+  const routeCounts = new Map<string, number>();
   const statusCounts = new Map<string, number>();
   for (const row of rows) {
     if (!isDefaultTraceTableRowVisible(row)) continue;
     increment(branchCounts, branchName(row));
+    increment(nodeCounts, traceNodeLabel(row));
+    increment(routeCounts, traceRouteLabel(row));
     increment(statusCounts, isFailure(row) ? 'error' : 'success');
     const labels = new Set([
       formatTraceTableRow(row).toolLabel,
@@ -143,6 +167,8 @@ export function traceFilterFacets(rows: TraceRecord[]): TraceFilterFacets {
   return {
     tools: sortedFacets(toolCounts),
     branches: sortedFacets(branchCounts),
+    nodes: sortedFacets(nodeCounts),
+    routes: sortedFacets(routeCounts),
     statuses: sortedFacets(statusCounts),
   };
 }
@@ -153,6 +179,10 @@ export function matchesTraceTableFilters(
 ): boolean {
   const branch = branchName(row);
   if (filters.branches.size && !filters.branches.has(branch)) return false;
+  const node = traceNodeLabel(row);
+  if (filters.nodes.size && !filters.nodes.has(node)) return false;
+  const route = traceRouteLabel(row);
+  if (filters.routes.size && !filters.routes.has(route)) return false;
   const status = isFailure(row) ? 'error' : 'success';
   if (filters.statuses.size && !filters.statuses.has(status)) return false;
   const records = [row, ...childTraceRecords(row)];
@@ -172,6 +202,8 @@ export function matchesTraceTableFilters(
       formatted.toolLabel,
       formatted.inputLabel,
       formatted.outputLabel,
+      formatted.nodeLabel,
+      formatted.routeLabel,
       branchName(record),
       clean(record.traceId ?? record.trace),
       clean(record.code),

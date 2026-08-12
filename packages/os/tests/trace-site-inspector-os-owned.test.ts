@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
   formatTraceTableRow,
   isDefaultTraceTableRowVisible,
+  matchesTraceTableFilters,
+  traceFilterFacets,
   type TraceTableRecord,
 } from '../scripts/lib/trace-site-inspector/table-formatters';
+import { childTraceRecords } from '../scripts/lib/trace-site-inspector/model';
 import {
   deriveTraceHistoryCursor,
   parseTraceHistoryResponse,
@@ -61,6 +64,52 @@ describe('OS-owned Trace Burn table formatting', () => {
 
     expect(formatted.inputLabel).toBe('OAuth · /mcp · mcp:read');
     expect(formatted.inputLabel).not.toBe('request details');
+  });
+
+  it('formats, inherits, searches, and filters node routing metadata', () => {
+    const parent = record({
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      defaultNodeId: 'node_home',
+      routeSource: 'explicit',
+      batchResultsJson: JSON.stringify([
+        { tool: 'fs.read', ok: true, code: 'OK', input: { path: 'README.md' } },
+      ]),
+    });
+    const formatted = formatTraceTableRow(parent);
+    const child = childTraceRecords(parent)[0];
+
+    expect(formatted).toMatchObject({
+      nodeId: 'node_cloud',
+      nodeLabel: 'Cloud Node',
+      routeSource: 'explicit',
+      routeLabel: 'Explicit',
+    });
+    expect(formatTraceTableRow(child)).toMatchObject({
+      nodeId: 'node_cloud',
+      nodeLabel: 'Cloud Node',
+      routeLabel: 'Explicit',
+    });
+    expect(traceFilterFacets([parent])).toMatchObject({
+      nodes: [{ value: 'Cloud Node', count: 1 }],
+      routes: [{ value: 'Explicit', count: 1 }],
+    });
+    expect(matchesTraceTableFilters(parent, {
+      query: 'cloud',
+      branches: new Set(),
+      tools: new Set(),
+      nodes: new Set(['Cloud Node']),
+      routes: new Set(['Explicit']),
+      statuses: new Set(),
+    })).toBe(true);
+    expect(matchesTraceTableFilters(parent, {
+      query: '',
+      branches: new Set(),
+      tools: new Set(),
+      nodes: new Set(['Local Mac']),
+      routes: new Set(),
+      statuses: new Set(),
+    })).toBe(false);
   });
 
   it('summarizes wait and status plumbing without request-details placeholders', () => {

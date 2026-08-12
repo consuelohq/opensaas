@@ -681,6 +681,79 @@ describe('MCP gateway server route', () => {
     expect(getSteering.mock.calls[0]?.[1]).toEqual(nodeRouting);
   });
 
+  it('propagates resolved node routing into facade tracing without leaking nodeId into tool input', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read', 'tool:explore:read']);
+    const nodeRouting: McpNodeRoutingContext = {
+      version: 1,
+      workspaceId: config.workspaceId,
+      currentNodeId: 'node_cloud_test',
+      defaultNodeId: 'node_home_test',
+      routeSource: 'explicit',
+      nodes: [
+        {
+          nodeId: 'node_cloud_test',
+          displayName: 'Cloud Node',
+          role: 'member',
+          platform: 'linux',
+          presence: 'online',
+          state: 'active',
+        },
+      ],
+    };
+    const executeFacadeTool = vi.fn(async () => ({ ok: true, code: 'OK' }));
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'node-traced-call',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'explore',
+          nodeId: 'node_cloud_test',
+          input: { query: 'status' },
+        },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-node-traced-call',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        ...signed.headers,
+        'x-consuelo-node-id': 'node_cloud_test',
+        [MCP_ROUTE_SOURCE_HEADER]: 'explicit',
+        [MCP_NODE_CONTEXT_HEADER]: encodeMcpNodeRoutingContext(nodeRouting),
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(executeFacadeTool).toHaveBeenCalledWith(
+      'explore',
+      { query: 'status' },
+      {
+        requestedNodeId: 'node_cloud_test',
+        resolvedNodeId: 'node_cloud_test',
+        resolvedNodeName: 'Cloud Node',
+        defaultNodeId: 'node_home_test',
+        routeSource: 'explicit',
+      },
+    );
+  });
+
   it('should serve modern MCP discovery without creating a transport session', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);
