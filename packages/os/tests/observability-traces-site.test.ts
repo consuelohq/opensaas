@@ -12,6 +12,11 @@ const canonicalAssetDir = resolve(
   '../assets/vendor/observability-traces-v38',
 );
 
+const osTraceInspectorDir = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../scripts/lib/trace-site-inspector',
+);
+
 const assetHash = (name: string) =>
   createHash('sha256')
     .update(readFileSync(resolve(canonicalAssetDir, name)))
@@ -82,7 +87,31 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).not.toMatch(/\bBearer\s+[A-Za-z0-9._~+/=-]{12,}/i);
   });
 
-  it('keeps the copied v38 shell and built interaction assets byte-identical to the proven local version', () => {
+  it('owns the maintained Trace Burn browser source in OS with no deprecated workspace dependency', () => {
+    const sourceFiles = [
+      'model.ts',
+      'inspector-state.ts',
+      'pagination-browser.ts',
+      'trace-list.ts',
+      'table-formatters.ts',
+      'virtual-list-browser.ts',
+      'browser.ts',
+    ];
+    const source = sourceFiles
+      .map((name) => readFileSync(resolve(osTraceInspectorDir, name), 'utf8'))
+      .join('\n');
+    const runtime = readFileSync(resolve(canonicalAssetDir, 'inspector.js'), 'utf8');
+    const packageJson = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), '../package.json'),
+      'utf8',
+    );
+
+    expect(source).not.toContain('packages/workspace');
+    expect(runtime).not.toContain('packages/workspace/scripts/trace-site-inspector');
+    expect(packageJson).toContain('\"@tanstack/virtual-core\"');
+  });
+
+  it('keeps the copied v38 visual shell assets byte-identical while OS owns the rebuilt browser runtime', () => {
     expect(assetHash('template.html')).toBe(
       '07ac31363ae72831ae79b3785e65630b1e67ee0eee1542acb93a2f56c005bda7',
     );
@@ -103,9 +132,6 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     );
     expect(assetHash('scroll.js')).toBe(
       '8e0d8d1827ce101fee60b046400b32333d0c4f558875eeec88d629c9b9010e4c',
-    );
-    expect(assetHash('inspector.js')).toBe(
-      '6b3897d2db5171cec4445d7b9f515a51e7bc871cd706bd1f3eea7cfaa36c7489',
     );
   });
 });

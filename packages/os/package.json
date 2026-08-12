@@ -111,6 +111,7 @@
     "media:test:svg": "vitest run tests/media/31-svg-convert.test.ts",
     "media:svg": "python3 ./scripts/media-svg.py",
     "trace:watch": "bun ./scripts/trace-watch.ts",
+    "build:observability-traces-runtime": "bun build ./scripts/lib/trace-site-inspector/browser.ts --outfile ./assets/vendor/observability-traces-v38/inspector.js --target browser --format iife",
     "generate-tool-manifest:check": "bun ./scripts/generate-tool-manifest.ts --check",
     "lifecycle": "bun ./scripts/lifecycle.ts",
     "windows-platform": "bun ./scripts/windows-platform.ts",
@@ -123,6 +124,7 @@
   "dependencies": {
     "@clack/prompts": "^1.0.1",
     "@supabase/supabase-js": "latest",
+    "@tanstack/virtual-core": "^3.17.3",
     "chalk": "^5.6.2",
     "effect": "^3.21.3",
     "execa": "^9.6.1",

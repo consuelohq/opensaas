@@ -96,7 +96,9 @@
     {
       "id": "trace-watch",
       "critical": true,
-      "source": ["packages/os/scripts/trace-watch.ts"],
+      "source": [
+        "packages/os/scripts/trace-watch.ts"
+      ],
       "tests": [
         {
           "name": "OS trace watcher behavior",
@@ -138,60 +140,108 @@
       "id": "trace-site-pagination",
       "critical": true,
       "source": [
+        "packages/os/assets/vendor/observability-traces-v38/inspector.js",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/scripts/lib/trace-site-inspector/**",
         "packages/os/scripts/lib/trace-sites-gateway-*.ts",
         "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/scripts/lib/trace-persistence.ts",
+        "packages/os/scripts/lib/redaction.ts",
         "packages/os/scripts/server/services/trace-gateway.ts",
-        "packages/os/tests/trace-gateway-service.test.ts",
-        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
-        "packages/workspace/scripts/office.ts",
-        "packages/workspace/scripts/trace-site-inspector/**",
-        "packages/workspace/tests/trace-site-inspector.test.ts"
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/redaction.test.ts",
+        "packages/os/tests/trace-history-redaction.test.ts",
+        "packages/os/tests/trace-site-inspector-os-owned.test.ts",
+        "packages/os/tests/trace-sites-gateway-read-layer.test.ts",
+        "packages/os/tests/trace-sites-history-endpoint-contract.test.ts",
+        "packages/os/tests/trace-sites-runtime-boundary.test.ts"
       ],
       "tests": [
         {
-          "name": "trace gateway history endpoints",
+          "name": "OS trace gateway and Trace Burn contracts",
           "command": [
             "bun",
             "node_modules/vitest/vitest.mjs",
             "run",
             "--root",
             "packages/os",
-            "tests/trace-sites-gateway-live-endpoints.test.ts"
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts"
           ]
         },
         {
-          "name": "trace gateway DB resolution",
+          "name": "OS canonical TraceStore runtime boundary",
           "command": [
-            "node",
-            "node_modules/vitest/vitest.mjs",
-            "run",
-            "--root",
+            "bun",
+            "--cwd",
             "packages/os",
-            "tests/trace-gateway-service.test.ts"
-          ]
-        },
-        {
-          "name": "trace site inspector pagination",
-          "command": [
-            "node",
-            "node_modules/vitest/vitest.mjs",
-            "run",
-            "--root",
-            "packages/workspace",
-            "tests/trace-site-inspector.test.ts"
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
           ]
         }
       ],
-      "reason": "Trace-site gateway and browser changes must prove authenticated history paging, DB resolution, and virtual-list behavior."
+      "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior."
+    },
+    {
+      "id": "os-workspace-edge-rollout",
+      "critical": true,
+      "source": [
+        "packages/os/scripts/lib/install-edge-site-publisher.ts",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/tests/install-edge-site-publisher.test.ts",
+        "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS workspace edge snapshot publisher contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-edge-site-publisher.test.ts"
+          ]
+        },
+        {
+          "name": "OS workspace edge route preservation contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ]
+        }
+      ],
+      "reason": "Workspace edge rollout changes must preserve immutable snapshots and live node/connector route state without relying on a broad package test."
     },
     {
       "id": "dialer-package",
       "critical": true,
-      "source": ["packages/dialer/**"],
+      "source": [
+        "packages/dialer/**"
+      ],
       "tests": [
         {
           "name": "dialer specs",
-          "command": ["bun", "test", "packages/dialer/src"]
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ]
         }
       ],
       "reason": "Dialer changes are call-path critical and must run package specs."
@@ -199,11 +249,17 @@
     {
       "id": "dialer-server-package",
       "critical": true,
-      "source": ["packages/dialer-server/**"],
+      "source": [
+        "packages/dialer-server/**"
+      ],
       "tests": [
         {
           "name": "dialer-server Hono contracts",
-          "command": ["bun", "test", "packages/dialer-server/src"]
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ]
         }
       ],
       "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts."
@@ -211,11 +267,17 @@
     {
       "id": "lead-connector-package",
       "critical": true,
-      "source": ["packages/lead-connector/**"],
+      "source": [
+        "packages/lead-connector/**"
+      ],
       "tests": [
         {
           "name": "LeadConnector provider contracts",
-          "command": ["bun", "test", "packages/lead-connector/src"]
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ]
         }
       ],
       "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts."
@@ -223,7 +285,9 @@
     {
       "id": "api-package",
       "critical": true,
-      "source": ["packages/api/**"],
+      "source": [
+        "packages/api/**"
+      ],
       "tests": [
         {
           "name": "api specs",
@@ -249,7 +313,12 @@
       "tests": [
         {
           "name": "twenty-server affected test target",
-          "command": ["npx", "nx", "test", "twenty-server"]
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server"
+          ]
         }
       ],
       "reason": "Server changes have the broadest backend impact and should run the project test target."
@@ -257,11 +326,18 @@
     {
       "id": "twenty-front-project",
       "critical": false,
-      "source": ["packages/twenty-front/**"],
+      "source": [
+        "packages/twenty-front/**"
+      ],
       "tests": [
         {
           "name": "twenty-front test target",
-          "command": ["npx", "nx", "test", "twenty-front"]
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-front"
+          ]
         }
       ],
       "reason": "Frontend package changes should run the project test target."

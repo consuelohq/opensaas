@@ -286,13 +286,34 @@ function sourceCodeFiles(files) {
 }
 
 function select(registry, files) {
+  const matches = registry.rules
+    .map((rule) => ({
+      rule,
+      matchedFiles: files.filter((file) =>
+        rule.source.some((pattern) => matchesPattern(file, pattern)),
+      ),
+    }))
+    .filter((entry) => entry.matchedFiles.length > 0);
+  const explicitCriticalFiles = new Set(
+    matches
+      .filter(
+        ({ rule }) => rule.origin === 'explicit' && rule.critical === true,
+      )
+      .flatMap(({ matchedFiles }) => matchedFiles),
+  );
   const matchedRules = [];
   const suites = [];
   const seen = new Set();
-  for (const rule of registry.rules) {
-    const matchedFiles = files.filter((file) => rule.source.some((pattern) => matchesPattern(file, pattern)));
-    if (matchedFiles.length === 0) continue;
+  for (const { rule, matchedFiles } of matches) {
     matchedRules.push({ id: rule.id, critical: rule.critical, reason: rule.reason, matchedFiles, origin: rule.origin });
+    const autoPackageCodeFiles =
+      rule.origin === 'auto' && rule.id.endsWith(':package-test')
+        ? sourceCodeFiles(matchedFiles)
+        : [];
+    const fullyCoveredByExplicitCriticalRule =
+      autoPackageCodeFiles.length > 0 &&
+      autoPackageCodeFiles.every((file) => explicitCriticalFiles.has(file));
+    if (fullyCoveredByExplicitCriticalRule) continue;
     for (const test of rule.tests) {
       const key = commandKey(test.command);
       if (seen.has(key)) continue;

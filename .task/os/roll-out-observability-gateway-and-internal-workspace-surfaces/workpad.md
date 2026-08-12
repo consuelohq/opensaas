@@ -47,6 +47,16 @@ resumed task session: `tsk_4e5fd8c23e86`
 - Focused red commands: `bunx vitest run tests/workspace-edge-route-seed-contract.test.ts` and `bunx vitest run tests/install-edge-site-publisher.test.ts` from `packages/os` with `CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1`.
 - Expected red failures: Trace Burn aliases are currently generated with `auth: 'public'`; the publisher currently writes a fresh Site-only `INSERT OR REPLACE` D1 record without first preserving live node/connector state, and its verifier expects child trace snapshots to be anonymously readable.
 
+### Follow-up: OS-owned Trace inspector, auth-noise suppression, and useful safe summaries
+
+- Behavior under test: the production Trace Burn browser/runtime implementation is owned by `packages/os`; it must not import from or require deprecated `packages/workspace/scripts/trace-site-inspector/*` to build, run, or maintain the current OS surface.
+- Behavior under test: successful internal `authentication.mcp` audit records remain persisted in the canonical trace DB but are hidden from the normal Trace Burn table/facets/count by default; authentication/authorization failures remain visible.
+- Behavior under test: safe diagnostic metadata (including trace/request IDs, task session, branch, worktree, operation names, routes, scopes, and other non-secret identifiers) survives the gateway history sanitizer, while actual credentials, bearer material, secret-bearing environment/prompt/message payloads, cookies, and authorization material remain redacted.
+- Behavior under test: table summaries use OS-owned formatting and produce useful human labels for supported records instead of generic `request details`; an MCP authentication record should summarize its safe auth mode, route, and required scope.
+- Existing implementation to migrate: the v38 browser modules currently embedded in `packages/os/assets/vendor/observability-traces-v38/inspector.js` were originally built from `packages/workspace/scripts/trace-site-inspector/{model,inspector-state,pagination-browser,trace-list,table-formatters,virtual-list-browser,browser}.ts`. Copy the required source into OS ownership, then make the OS-owned source the rebuild authority for the browser asset.
+- Focused tests to add/change: OS-owned table formatter/visibility unit tests; local trace-history sanitizer coverage for safe metadata versus true secret fields; observability Trace Site coverage proving the shipped browser runtime is generated from OS-owned source and contains no deprecated workspace-source dependency.
+- Expected red failures before implementation: OS-owned trace-inspector source modules do not yet exist; successful `authentication.mcp` rows are currently included in default table rows/facets/count; the local history sanitizer currently redacts `taskSession` via an over-broad `session` field-name match; unsupported structured inputs still fall back to `request details`.
+
 ## current status
 
 - OS connector is back after Ko’s `consuelo restart`; `os.get_steering` and subsequent single typed OS calls succeed.
@@ -94,6 +104,8 @@ resumed task session: `tsk_4e5fd8c23e86`
 - `packages/os/tests/install-edge-site-publisher.test.ts`
 - `packages/os/tests/observability-traces-site.test.ts`
 - `packages/os/tests/security-gateway.test.ts`
+- `packages/os/tests/trace-site-inspector-os-owned.test.ts`
+- `packages/os/tests/trace-sites-history-endpoint-contract.test.ts`
 - `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
 - `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
 
@@ -127,6 +139,8 @@ resumed task session: `tsk_4e5fd8c23e86`
 - `packages/os/tests/install-edge-site-publisher.test.ts`
 - `packages/os/tests/observability-traces-site.test.ts`
 - `packages/os/tests/security-gateway.test.ts`
+- `packages/os/tests/trace-site-inspector-os-owned.test.ts`
+- `packages/os/tests/trace-sites-history-endpoint-contract.test.ts`
 - `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
 - `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
 
@@ -152,6 +166,8 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-11 23:43:42 fs.trash: `packages/os/assets/observability-traces-v38/table-overview.js`
 - 2026-08-11 23:43:42 fs.trash: `packages/os/assets/observability-traces-v38/template.html`
 - 2026-08-12 00:13:02 fs.trash: `.task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/staged-home`
+- 2026-08-12 00:40:55 fs.write: `packages/os/tests/trace-site-inspector-os-owned.test.ts`
+- 2026-08-12 00:57:46 fs.write: `packages/os/tests/trace-sites-history-endpoint-contract.test.ts`
 - maintained by tooling
 
 ## workspace-owned: validation evidence
@@ -159,6 +175,11 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-11 23:42:01 `review.run`: passed — OK
 - 2026-08-11 23:44:07 `review.run`: passed — OK
 - 2026-08-12 00:13:59 `review.run`: passed — OK
+- 2026-08-12 00:51:48 `review.run`: passed — OK
+- 2026-08-12 00:52:04 `verify`: failed — COMMAND_FAILED
+- 2026-08-12 01:02:40 `review.run`: passed — OK
+- 2026-08-12 01:03:01 `verify`: passed — OK
+- 2026-08-12 01:06:58 `verify`: passed — OK
 
 ## key decisions
 
@@ -208,9 +229,11 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `bun run typecheck`
 - `packages/consuelo-website/src/pages/os/observability/traces.astro`
 - `packages/os/SCRIPTS.md`
 - `packages/os/assets/vendor/observability-traces-v38/inspector.js`
+- `packages/os/assets/vendor/observability-traces-v38/table-overview.js`
 - `packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts`
 - `packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts`
 - `packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts`
@@ -224,8 +247,14 @@ bun run task:finish
 - `packages/os/scripts/lib/distribution/runtime-bundle.ts`
 - `packages/os/scripts/lib/install-edge-site-publisher.ts`
 - `packages/os/scripts/lib/observability-traces-site.ts`
+- `packages/os/scripts/lib/redaction.ts`
 - `packages/os/scripts/lib/security-gateway.ts`
+- `packages/os/scripts/lib/trace-persistence.ts`
+- `packages/os/scripts/lib/trace-site-inspector/model.ts`
+- `packages/os/scripts/lib/trace-site-inspector/pagination-browser.ts`
+- `packages/os/scripts/lib/trace-site-inspector/trace-list.ts`
 - `packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts`
+- `packages/os/scripts/lib/trace-sites-gateway-read-layer.ts`
 - `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
 - `packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts`
 - `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
@@ -237,12 +266,31 @@ bun run task:finish
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 - `packages/os/tests/install-edge-site-publisher.test.ts`
 - `packages/os/tests/observability-traces-site.test.ts`
+- `packages/os/tests/redaction.test.ts`
 - `packages/os/tests/sites-cli.test.ts`
+- `packages/os/tests/trace-gateway-workspace-host.test.ts`
+- `packages/os/tests/trace-history-redaction.test.ts`
 - `packages/os/tests/trace-persistence.test.ts`
+- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+- `packages/os/tests/trace-sites-gateway-read-layer.test.ts`
+- `packages/os/tests/trace-sites-runtime-boundary.test.ts`
+- `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
 - `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
+- `packages/workspace/package.json`
 - `packages/workspace/scripts/review.js`
+- `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/scripts/trace-site-inspector/pagination-browser.ts`
+- `packages/workspace/scripts/trace-site-inspector/table-formatters.ts`
+- `packages/workspace/scripts/trace-site-inspector/virtual-list-browser.ts`
 - `packages/workspace/scripts/verify.js`
 - `packages/workspace/senior-engineer.md`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
+- `packages/workspace/tests/trace-site-inspector.test.ts`
 
-- 2026-08-12 00:15:33 apply-patch: `.task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/workpad.md`
+### Trace inspector follow-up evidence — 2026-08-11
+
+- Migrated the maintained v38 browser source into OS ownership under `packages/os/scripts/lib/trace-site-inspector/`; the shipped runtime is rebuilt from the OS-owned `browser.ts` entrypoint and no production source depends on deprecated Workspace Trace inspector modules.
+- Successful `authentication.mcp` rows remain persisted for auditability but are excluded from the default table, facets, inspector map, and visible count; failed authentication/authorization stays visible.
+- Trace-specific redaction preserves safe diagnostic paths, hashes, trace/request IDs, task session, branch/worktree, route/scope, and principal correlation IDs while continuing to redact Bearer/known credential formats and sensitive prompt/message/environment/authorization/cookie/secret fields.
+- Real canonical DB diagnostic over the newest 1,000 rows with the task-branch backend/formatter: 455 successful auth audit rows hidden, 545 product rows visible, `request details` = 0, visible input labels containing `[REDACTED` = 0, visible output labels containing `[REDACTED` = 0. Historical values already persisted as redaction placeholders are not fabricated; the UI uses neutral fallbacks and new traces retain safe detail.
