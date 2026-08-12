@@ -34,6 +34,7 @@ started: 2026-08-12
 - `packages/dialer/package.json`
 - `packages/dialer/tsconfig.build.json`
 
+
 ## workspace-owned: files changed
 
 - none yet
@@ -54,6 +55,8 @@ started: 2026-08-12
 - Strict review: 0 task-owned findings, 0 blockers. It reports 27 pre-existing repo findings (17 ESLint, 10 typecheck) and pre-existing missing `twenty-eslint-rules` ESLint module noise outside the task delta.
 - Full verify against `origin/main`: passed, 3/3 selected suites green, DB scan clean, `publishValid: true`.
 - 2026-08-12 19:06:21 `verify`: passed — OK
+- 2026-08-12 19:06:42 `review.run`: passed — OK
+- 2026-08-12 19:09:57 `verify`: passed — OK
 
 ## key decisions
 
@@ -73,6 +76,7 @@ started: 2026-08-12
 
 - `stream.sync` could not merge current `main` into `stream/dialer` because of real conflicts in workspace test-selection implementation/config/tests. No stream merge was completed. This task was isolated from `main` instead of widening scope.
 - One parallel validation batch hit an MCP network error. It was retried as the smallest independent calls; the exact Twenty build and diff inspection then completed normally.
+- Promotion preflight confirmed this is not a safe normal stream handoff: `stream/dialer...task` is diverged by 62/27 commits and about 300 files, and PR #1896 is `DIRTY`. By contrast `main...task` is cleanly ahead by two task commits with only the task metadata plus the two intended Dialer build files. The scope-preserving hotfix path is therefore to retarget this already-main-based task PR to `main`, not resolve unrelated stale-stream conflicts.
 
 ## Test-first contract
 
@@ -106,5 +110,4 @@ bun run task:finish
 - `packages/dialer/package.json`
 - `packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts`
 - `packages/dialer/tsconfig.json`
-
-- 2026-08-12 19:06:05 apply-patch: `.task/dialer/fix-dialer-production-docker-build-type-boundary/workpad.md`
+- `packages/workspace/scripts/lib/git.js`

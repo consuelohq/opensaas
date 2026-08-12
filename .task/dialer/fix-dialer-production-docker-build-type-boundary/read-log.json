@@ -1,7 +1,8 @@
 {
   "files": [
     ".task/dialer/fix-dialer-production-docker-build-type-boundary/workpad.md",
-    "package.json"
+    "package.json",
+    "packages/workspace/scripts/lib/git.js"
   ],
-  "updatedAt": "2026-08-12T19:06:00.697Z"
+  "updatedAt": "2026-08-12T19:08:13.334Z"
 }
