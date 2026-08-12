@@ -62,4 +62,4 @@ case ":$PATH:" in
   *) export PATH="$bun_dir:$PATH" ;;
 esac
 
-exec "$bun_bin" "$root_dir/scripts/server/main.ts"
+exec "$bun_bin" "$root_dir/scripts/server/supervisor.ts"

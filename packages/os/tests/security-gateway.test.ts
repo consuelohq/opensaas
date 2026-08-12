@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { createWorkspaceEdgeNodeHeaders } from '../scripts/lib/workspace-edge-node-auth';
 import { removeSafeTempDir } from './safe-temp-cleanup';
 
 type JsonObject = Record<string, unknown>;
@@ -105,6 +106,8 @@ type GatewayModule = {
     workspaceId: string;
     workspaceSlug: string;
     workspaceHost: string;
+    upstreamPort?: number;
+    upstreamPorts?: number[];
   }) => GatewaySecurityConfig | Promise<GatewaySecurityConfig>;
   issueAgentAppToken: (input: {
     config: GatewaySecurityConfig;
@@ -154,9 +157,26 @@ type GatewayModule = {
     requiredScope: string;
     now: string;
   }) => VerificationResult;
+  reconcileGatewayWorkspaceEdgeProxyAuth: (input: {
+    authConfigPath: string;
+    workspaceId: string;
+    nodeId: string;
+    connectorId: string;
+    signingSecret: string;
+    now?: string;
+  }) => boolean;
+  verifyWorkspaceEdgeProxyRequest: (input: {
+    config: GatewaySecurityConfig;
+    method: string;
+    pathWithSearch: string;
+    body: string;
+    headers: Record<string, string>;
+    now: string;
+  }) => VerificationResult;
   renderCaddyGatewayConfig: (input: {
     workspaceHost: string;
     upstream: { host: string; port: number };
+    upstreams?: Array<{ host: string; port: number }>;
     mtls?: { enabled: boolean; caFile: string };
   }) => string;
   createPublicRouteRegistry: (input: {
@@ -241,6 +261,8 @@ async function loadGatewayModule(): Promise<GatewayModule> {
     'signMachineRequest',
     'verifyMachineRequest',
     'verifyBearerMcpRequest',
+    'reconcileGatewayWorkspaceEdgeProxyAuth',
+    'verifyWorkspaceEdgeProxyRequest',
     'renderCaddyGatewayConfig',
     'createPublicRouteRegistry',
     'createOutboundConnectorConfig',
@@ -403,6 +425,7 @@ describe('Consuelo OS public gateway security contract', () => {
       timestamp: '2026-06-09T20:00:00.000Z',
       nonce: 'nonce-status-read-1',
     });
+    const authBeforeVerification = readFileSync(config.generatedAuthPath, 'utf8');
 
     const first = await gateway.verifyMachineRequest({
       config,
@@ -415,6 +438,9 @@ describe('Consuelo OS public gateway security contract', () => {
       now: '2026-06-09T20:00:03.000Z',
     });
     expect(first).toMatchObject({ ok: true, caller: { workspaceId: 'workspace-acme', callerId: 'chatgpt-app-1' } });
+    expect(readFileSync(config.generatedAuthPath, 'utf8')).toBe(authBeforeVerification);
+    expect(gateway.getAgentAppCredentialStatus({ config, tokenId: token.tokenId })?.lastUsedAt)
+      .toBe('2026-06-09T20:00:03.000Z');
 
     const replay = await gateway.verifyMachineRequest({
       config,
@@ -539,6 +565,158 @@ describe('Consuelo OS public gateway security contract', () => {
     });
     expect(appMismatch).toMatchObject({ ok: false, status: 403, error: { code: 'APP_MISMATCH' } });
     expect(JSON.stringify([replay, expired, tampered, wrongWorkspace, callerMismatch, appMismatch])).not.toContain(token.secret);
+  });
+
+  it('stores flattened node auth replay and usage state in the canonical Consuelo database', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: join(tempHome, 'node'),
+      workspaceId: 'workspace-acme',
+      workspaceSlug: 'acme',
+      workspaceHost: 'acme.consuelohq.com',
+    });
+    const token = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'chatgpt-app-1',
+      appId: 'chatgpt',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 300,
+    });
+    const signed = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      timestamp: '2026-06-09T20:00:00.000Z',
+      nonce: 'flattened-node-auth-nonce',
+    });
+
+    expect(await gateway.verifyMachineRequest({
+      config,
+      method: 'GET',
+      path: '/api/status',
+      body: '',
+      headers: signed.headers,
+      workspaceId: 'workspace-acme',
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:00:01.000Z',
+    })).toMatchObject({ ok: true });
+
+    expect(gateway.getAgentAppCredentialStatus({ config, tokenId: token.tokenId })?.lastUsedAt)
+      .toBe('2026-06-09T20:00:01.000Z');
+    expect(existsSync(join(tempHome, 'node', 'db', 'consuelo.db'))).toBe(true);
+    expect(existsSync(join(tempHome, 'node', 'node', 'db', 'consuelo.db'))).toBe(false);
+  });
+
+  it('honors active legacy auth.json nonces during replay-state migration', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace-legacy-replay',
+      workspaceSlug: 'legacy-replay',
+      workspaceHost: 'legacy-replay.consuelohq.com',
+    });
+    const token = await gateway.issueAgentAppToken({
+      config,
+      callerId: 'legacy-replay-agent',
+      appId: 'chatgpt',
+      scopes: ['route:/api:read'],
+      expiresInSeconds: 3600,
+    });
+    const timestamp = '2026-06-09T20:00:00.000Z';
+    const nonce = 'legacy-auth-json-nonce';
+    const signed = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'GET',
+      path: '/api',
+      body: '',
+      timestamp,
+      nonce,
+    });
+    const stored = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as {
+      seenNonces: Record<string, unknown>;
+    };
+    stored.seenNonces[nonce] = { tokenId: token.tokenId, seenAt: timestamp };
+    writeFileSync(config.generatedAuthPath, JSON.stringify(stored, null, 2) + '\n');
+
+    expect(gateway.verifyMachineRequest({
+      config,
+      method: 'GET',
+      path: '/api',
+      body: '',
+      headers: signed.headers,
+      workspaceId: config.workspaceId,
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:00:01.000Z',
+    })).toMatchObject({ ok: false, status: 401, error: { code: 'REPLAYED_NONCE' } });
+  });
+
+  it('stores workspace-edge replay admission outside auth.json and rejects reuse', async () => {
+    const gateway = await loadGatewayModule();
+    const config = await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace-edge-replay',
+      workspaceSlug: 'edge-replay',
+      workspaceHost: 'edge-replay.consuelohq.com',
+    });
+    const signingSecret = 'edge-secret-for-replay-test';
+    expect(gateway.reconcileGatewayWorkspaceEdgeProxyAuth({
+      authConfigPath: config.generatedAuthPath,
+      workspaceId: config.workspaceId,
+      nodeId: 'node-edge-replay',
+      connectorId: 'connector-edge-replay',
+      signingSecret,
+      now: '2026-06-09T20:00:00.000Z',
+    })).toBe(true);
+    const authBeforeVerification = readFileSync(config.generatedAuthPath, 'utf8');
+    const nowMs = Date.parse('2026-06-09T20:00:01.000Z');
+    const body = JSON.stringify({ jsonrpc: '2.0', id: 'edge-replay', method: 'tools/list' });
+    const headers = createWorkspaceEdgeNodeHeaders({
+      signingSecret,
+      workspaceId: config.workspaceId,
+      nodeId: 'node-edge-replay',
+      connectorId: 'connector-edge-replay',
+      surface: 'mcp',
+      method: 'POST',
+      pathWithSearch: '/mcp',
+      body,
+      timestamp: String(nowMs),
+      nonce: 'edge-replay-nonce',
+    });
+
+    expect(gateway.verifyWorkspaceEdgeProxyRequest({
+      config,
+      method: 'POST',
+      pathWithSearch: '/mcp',
+      body,
+      headers,
+      now: 'invalid-time',
+    })).toMatchObject({
+      ok: false,
+      status: 401,
+      error: { code: 'EDGE_SIGNATURE_EXPIRED' },
+    });
+
+    expect(gateway.verifyWorkspaceEdgeProxyRequest({
+      config,
+      method: 'POST',
+      pathWithSearch: '/mcp',
+      body,
+      headers,
+      now: new Date(nowMs).toISOString(),
+    })).toMatchObject({ ok: true });
+    expect(readFileSync(config.generatedAuthPath, 'utf8')).toBe(authBeforeVerification);
+
+    expect(gateway.verifyWorkspaceEdgeProxyRequest({
+      config,
+      method: 'POST',
+      pathWithSearch: '/mcp',
+      body,
+      headers,
+      now: new Date(nowMs + 1).toISOString(),
+    })).toMatchObject({ ok: false, status: 401, error: { code: 'EDGE_NONCE_REPLAY' } });
   });
 
   it('stores only public verifier material and rejects verifier-only forgeries', async () => {
@@ -871,6 +1049,7 @@ describe('Consuelo OS public gateway security contract', () => {
       requiredScope,
       now: timestamp,
     })).toMatchObject({ ok: true });
+    const authAfterMachine = readFileSync(config.generatedAuthPath, 'utf8');
     expect(gateway.verifyBearerMcpRequest({
       config,
       bearerToken: token.bearerToken ?? '',
@@ -878,6 +1057,7 @@ describe('Consuelo OS public gateway security contract', () => {
       requiredScope,
       now: timestamp,
     })).toMatchObject({ ok: true });
+    expect(readFileSync(config.generatedAuthPath, 'utf8')).toBe(authAfterMachine);
   });
 
   it('renders deterministic Caddy config that proxies only to the private Bun server', async () => {
@@ -903,9 +1083,6 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).not.toContain('header_up X-Forwarded-Host');
     expect(caddyfile).not.toContain('header_up X-Forwarded-Proto');
     expect(caddyfile).toContain('dial_timeout 5s');
-    // The MCP application owns tool execution deadlines (up to 10 minutes today). Caddy must not
-    // terminate a healthy loopback request first; doing so makes a long-running tool look like an
-    // OS crash even though the daemon continues and finishes the operation behind the 504.
     expect(caddyfile).not.toContain('response_header_timeout');
     expect(caddyfile).not.toContain('read_timeout');
     expect(caddyfile).not.toContain('write_timeout');
@@ -913,6 +1090,53 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).not.toContain('reverse_proxy 0.0.0.0:8850');
     expect(caddyfile).not.toContain('reverse_proxy :8850');
     expect(caddyfile).not.toContain('MCP_BEARER_TOKEN');
+  });
+
+  it('renders a private worker pool with round-robin readiness checks and conservative retrying', async () => {
+    const gateway = await loadGatewayModule();
+    const caddyfile = gateway.renderCaddyGatewayConfig({
+      workspaceHost: 'acme.consuelohq.com',
+      upstream: { host: '127.0.0.1', port: 8850 },
+      upstreams: [
+        { host: '127.0.0.1', port: 8850 },
+        { host: '127.0.0.1', port: 8851 },
+      ],
+    });
+
+    expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850 127.0.0.1:8851 {');
+    expect(caddyfile).toContain('lb_policy round_robin');
+    expect(caddyfile).toContain('health_uri /ready');
+    expect(caddyfile).toContain('health_interval 2s');
+    expect(caddyfile).toContain('health_timeout 1s');
+    expect(caddyfile).toContain('lb_try_duration 10s');
+    expect(caddyfile).toContain('lb_try_interval 100ms');
+    expect(caddyfile).not.toContain('lb_retry_match');
+
+    expect(() => gateway.renderCaddyGatewayConfig({
+      workspaceHost: 'acme.consuelohq.com',
+      upstream: { host: '127.0.0.1', port: 8850 },
+      upstreams: [
+        { host: '127.0.0.1', port: 8850 },
+        { host: '0.0.0.0', port: 8851 },
+      ],
+    })).toThrow(/private localhost/i);
+  });
+
+  it('provisions every configured worker port into the generated Caddy pool', async () => {
+    const gateway = await loadGatewayModule();
+    await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace-pool',
+      workspaceSlug: 'pool',
+      workspaceHost: 'pool.consuelohq.com',
+      upstreamPort: 47000,
+      upstreamPorts: [47000, 47001, 47002],
+    });
+
+    const caddyfile = readFileSync(join(tempHome, 'caddy', 'Caddyfile'), 'utf8');
+    expect(caddyfile).toContain(
+      'reverse_proxy 127.0.0.1:47000 127.0.0.1:47001 127.0.0.1:47002 {',
+    );
   });
 
   it('should reject mTLS when Caddy ingress uses a plaintext loopback listener', async () => {
@@ -1199,11 +1423,10 @@ describe('Consuelo OS public gateway security contract', () => {
       workspaceSlug: 'acme',
       workspaceHost: 'acme.consuelohq.com',
     });
-    const after = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as { signingKeyId: string; tokens: Record<string, { status: string }>; seenNonces: Record<string, string> };
+    const after = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as { signingKeyId: string; tokens: Record<string, { status: string }> };
 
     expect(reprovisioned.signingKeyId).toBe(before.signingKeyId);
     expect(after.signingKeyId).toBe(before.signingKeyId);
-    expect(after.seenNonces['idempotent-active-nonce']).toMatchObject({ tokenId: activeToken.tokenId });
     expect(after.tokens[revokedToken.tokenId]?.status).toBe('revoked');
     expect(after.tokens[rotatedToken.tokenId]?.status).toBe('rotated');
     expect(gateway.verifyMachineRequest({
@@ -1238,15 +1461,17 @@ describe('Consuelo OS public gateway security contract', () => {
     })).toMatchObject({ ok: false, status: 401, error: { code: 'TOKEN_ROTATED' } });
   });
 
-  it('uses the resolved OS port in generated Caddy config', () => {
+  it('uses the resolved OS worker ports in generated Caddy config', () => {
     readJsonFromBun<JsonObject>(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
       const result = provisionLocalOs({ mode: 'local', port: 8999 });
       process.stdout.write(JSON.stringify(result));
-    `);
+    `, { CONSUELO_OS_WORKER_COUNT: '3' });
 
     const caddyfile = readFileSync(join(tempHome, 'node', 'caddy', 'Caddyfile'), 'utf8');
-    expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8999');
+    expect(caddyfile).toContain(
+      'reverse_proxy 127.0.0.1:8999 127.0.0.1:9000 127.0.0.1:9001 {',
+    );
     expect(caddyfile).not.toContain('reverse_proxy 127.0.0.1:8850');
   });
 
@@ -1392,14 +1617,41 @@ describe('Consuelo OS public gateway security contract', () => {
       now: '2026-06-09T20:06:00.000Z',
     })).toMatchObject({ ok: true });
 
+    const reusedOldSigned = await gateway.signMachineRequest({
+      config,
+      token,
+      method: 'GET',
+      path: '/api',
+      body: '',
+      timestamp: '2026-06-09T20:06:01.000Z',
+      nonce: 'old-pruned-nonce',
+    });
+    expect(await gateway.verifyMachineRequest({
+      config,
+      method: 'GET',
+      path: '/api',
+      body: '',
+      headers: reusedOldSigned.headers,
+      workspaceId: config.workspaceId,
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:06:01.000Z',
+    })).toMatchObject({ ok: true });
+
+    expect(await gateway.verifyMachineRequest({
+      config,
+      method: 'GET',
+      path: '/api',
+      body: '',
+      headers: freshSigned.headers,
+      workspaceId: config.workspaceId,
+      requiredScope: 'route:/api:read',
+      now: '2026-06-09T20:06:01.000Z',
+    })).toMatchObject({ ok: false, status: 401, error: { code: 'REPLAYED_NONCE' } });
+
     const stored = JSON.parse(readFileSync(config.generatedAuthPath, 'utf8')) as {
       seenNonces: Record<string, unknown>;
     };
-    expect(stored.seenNonces['old-pruned-nonce']).toBeUndefined();
-    expect(stored.seenNonces['fresh-kept-nonce']).toMatchObject({
-      tokenId: token.tokenId,
-      seenAt: '2026-06-09T20:06:00.000Z',
-    });
+    expect(stored.seenNonces).toEqual({});
   });
 
   it('rotates tokens from persisted claims and rejects unknown source tokens', async () => {

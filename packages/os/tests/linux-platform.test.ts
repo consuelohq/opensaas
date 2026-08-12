@@ -93,7 +93,7 @@ describe('Linux platform adapter', () => {
     }));
     expect(statSync(paths.unitPath).mode & 0o777).toBe(0o600);
     expect(statSync(paths.systemdUserDir).mode & 0o777).toBe(0o700);
-    expect(readFileSync(paths.unitPath, 'utf8')).toContain(`${home}/runtime/current/scripts/server/main.ts`);
+    expect(readFileSync(paths.unitPath, 'utf8')).toContain(`${home}/runtime/current/scripts/server/supervisor.ts`);
     expect(commands.map(({ executable, args }) => [executable, args])).toEqual([
       ['systemctl', ['--user', 'show-environment']],
       ['systemctl', ['--user', 'daemon-reload']],

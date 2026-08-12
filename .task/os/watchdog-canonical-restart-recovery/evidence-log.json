@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/watchdog-canonical-restart-recovery",
+  "events": [
+    {
+      "id": "ee6db8f3-2c16-481a-94dc-b1a1bb6413b2",
+      "occurred_at": "2026-08-11T22:04:30.772Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/watchdog-canonical-restart-recovery/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/watchdog-canonical-restart-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/watchdog-canonical-restart-recovery"
+      }
+    },
+    {
+      "id": "8b922c10-72d1-49e8-8cfe-9283ab886a68",
+      "occurred_at": "2026-08-11T22:04:37.168Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/system-daemon-reliability.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/watchdog-canonical-restart-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/watchdog-canonical-restart-recovery"
+      }
+    },
+    {
+      "id": "b6174e47-ca1c-4517-aafe-388847d9f1ee",
+      "occurred_at": "2026-08-11T22:05:04.009Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/watchdog-canonical-restart-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/watchdog-canonical-restart-recovery"
+      }
+    },
+    {
+      "id": "02e8a484-d7e8-4bb1-86ef-be5efaf45b16",
+      "occurred_at": "2026-08-11T22:05:04.509Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lifecycle.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/watchdog-canonical-restart-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/watchdog-canonical-restart-recovery"
+      }
+    },
+    {
+      "id": "d1fd027d-07b9-4f34-986c-bea3c07c042f",
+      "occurred_at": "2026-08-11T22:05:05.008Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/engine.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/watchdog-canonical-restart-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/watchdog-canonical-restart-recovery"
+      }
+    },
+    {
+      "id": "ff7cc1ee-c53f-41a6-a1b4-e1802e7d8c4e",
+      "occurred_at": "2026-08-11T22:05:52.793Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/system-daemon-reliability.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/watchdog-canonical-restart-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/watchdog-canonical-restart-recovery"
+      }
+    },
+    {
+      "id": "1d6d0db9-76f1-4e00-bf69-5721e1eab795",
+      "occurred_at": "2026-08-11T22:07:06.539Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/watchdog-canonical-restart-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/watchdog-canonical-restart-recovery"
+      }
+    },
+    {
+      "id": "79a7f9f0-3808-4299-b624-1587da45d201",
+      "occurred_at": "2026-08-11T22:07:52.129Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/consuelo-reload.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/watchdog-canonical-restart-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/watchdog-canonical-restart-recovery"
+      }
+    },
+    {
+      "id": "a043cea2-1752-46aa-b75a-14eb1a83c847",
+      "occurred_at": "2026-08-11T22:11:02.162Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/watchdog-canonical-restart-recovery/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/watchdog-canonical-restart-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/watchdog-canonical-restart-recovery"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-11T22:11:02.220Z"
+}

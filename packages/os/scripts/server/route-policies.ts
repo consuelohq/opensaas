@@ -1,5 +1,6 @@
 export const LOCAL_OS_ROUTE_POLICIES = [
   { method: 'ANY', path: '/health', trust: 'public' },
+  { method: 'GET', path: '/ready', trust: 'public' },
   { method: 'GET', path: '/artifacts', trust: 'public' },
   { method: 'GET', path: '/artifacts/*', trust: 'public' },
   { method: 'GET', path: '/gateway/artifacts', trust: 'signed' },

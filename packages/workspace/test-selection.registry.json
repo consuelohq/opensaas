@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2531,
-    "mappedTestCount": 2455,
-    "unmappedTestCount": 76,
+    "testFileCount": 2546,
+    "mappedTestCount": 2469,
+    "unmappedTestCount": 77,
     "ruleCount": 35,
     "explicitRuleCount": 14,
     "autoRuleCount": 21,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 196,
+      "packages/os/tests": 209,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
       "packages/workspace/tests": 50,
@@ -54,6 +54,7 @@
       "packages/twenty-server/test/integration/metadata/suites/view-group/utils": 12,
       "packages/twenty-server/test/integration/metadata/suites/view/utils": 12,
       "packages/twenty-server/test/integration/twenty-config/utils": 12,
+      "packages/consuelo-website/tests": 11,
       "packages/dialer-server/src": 11,
       "packages/twenty-front/src/modules/page-layout/hooks": 11,
       "packages/twenty-front/src/modules/workflow/workflow-diagram/utils": 11,
@@ -62,7 +63,6 @@
       "packages/twenty-server/test/integration/metadata/suites/page-layout-widget/utils": 11,
       "packages/twenty-server/test/integration/metadata/suites/role/utils": 11,
       "packages/api/src/routes": 10,
-      "packages/consuelo-website/tests": 10,
       "packages/dialer/src/services": 10,
       "packages/lead-connector/src/embed": 10,
       "packages/twenty-front/src/modules/object-metadata/utils": 10,
@@ -238,6 +238,7 @@
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
       "packages/os/tests/facade": 2,
+      "packages/os/tests/fixtures": 2,
       "packages/twenty-e2e-testing/tests/authentication": 2,
       "packages/twenty-front/src/modules/activities/emails/graphql/queries": 2,
       "packages/twenty-front/src/modules/activities/tasks/hooks": 2,
@@ -333,7 +334,6 @@
       "packages/dialer/src": 1,
       "packages/dialer/src/infrastructure/redis": 1,
       "packages/lead-connector/src/deployment": 1,
-      "packages/os/tests/fixtures": 1,
       "packages/os/tools/artifacts": 1,
       "packages/os/tools/codemode": 1,
       "packages/os/tools/composed": 1,
@@ -628,10 +628,10 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 439,
+      "test": 453,
       "spec": 152,
       "other": 7,
-      "tests-dir": 6,
+      "tests-dir": 7,
       "e2e": 1,
       "integration": 1
     }
@@ -1856,6 +1856,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/consuelo-website/tests/os-launcher-links.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/consuelo-website/tests/pricing-interactions.test.mjs",
       "group": "packages/consuelo-website/tests",
       "kind": "test"
@@ -2341,6 +2346,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/cli-skill-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/cli-update-routing.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2576,12 +2586,22 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/fixtures/os-replica-correctness-worker.ts",
+      "group": "packages/os/tests/fixtures",
+      "kind": "tests-dir"
+    },
+    {
       "path": "packages/os/tests/fixtures/trace-persistence-runtime.ts",
       "group": "packages/os/tests/fixtures",
       "kind": "tests-dir"
     },
     {
       "path": "packages/os/tests/foundation-finish-line-regressions.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/fs-read-output-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2687,6 +2707,11 @@
     },
     {
       "path": "packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-help.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2801,12 +2826,27 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/mcp-authenticated-principal.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-central-proxy-scope.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/mcp-gateway-action-scopes.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
       "path": "packages/os/tests/mcp-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-origin.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3016,6 +3056,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/node-resource-lock.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/node-sealed-credential-store.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3087,6 +3132,11 @@
     },
     {
       "path": "packages/os/tests/os-get-steering-trace.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-replica-correctness.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3226,6 +3276,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/skill-selection-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/skills-registry.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3316,7 +3371,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/tools-search-benchmark.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/tools-search-v2.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/tools-search-v3.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3422,6 +3487,16 @@
     },
     {
       "path": "packages/os/tests/windows-platform.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/worker-pool-lifecycle.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/worker-pool-process.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -13971,6 +14046,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/review-documentation-opportunity.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/review-run-state.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -14046,11 +14126,6 @@
       "kind": "test"
     },
     {
-      "path": "packages/workspace/tests/tools-search-v2.test.ts",
-      "group": "packages/workspace/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/workspace/tests/trace-home.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -14101,6 +14176,7 @@
     "packages/consuelo-website/tests/footer-art.test.mjs",
     "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
     "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+    "packages/consuelo-website/tests/os-launcher-links.test.mjs",
     "packages/consuelo-website/tests/pricing-interactions.test.mjs",
     "packages/consuelo-website/tests/site-header.test.mjs",
     "packages/consuelo-website/tests/social-card.test.mjs",
@@ -14145,6 +14221,7 @@
     "packages/workspace/tests/pr-ref.test.js",
     "packages/workspace/tests/pr-review.test.js",
     "packages/workspace/tests/research-ingest.test.js",
+    "packages/workspace/tests/review-documentation-opportunity.test.js",
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/stream-lifecycle.test.ts",
     "packages/workspace/tests/stream-workpads.test.js",
@@ -14159,7 +14236,6 @@
     "packages/workspace/tests/task-workpad.test.js",
     "packages/workspace/tests/task-workpad.test.ts",
     "packages/workspace/tests/tool-manifest.test.ts",
-    "packages/workspace/tests/tools-search-v2.test.ts",
     "packages/workspace/tests/trace-home.test.ts",
     "packages/workspace/tests/trace-site-inspector.test.ts",
     "packages/workspace/tests/twenty-server-email-build-contract.test.ts",

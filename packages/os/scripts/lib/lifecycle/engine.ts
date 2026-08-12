@@ -71,6 +71,7 @@ export type LifecycleEngineDependencies = {
     | (() => Record<string, string>);
   service: LifecycleServiceController;
   health: LifecycleHealthAcceptance;
+  connectivity?: LifecycleHealthAcceptance;
   migration?: LifecycleMigrationRunner;
   runtime?: LifecycleRuntimeMaterializer;
   hooks?: LifecycleHooks;
@@ -240,12 +241,28 @@ export function createLifecycleEngine(
         'health',
       );
     }
-    if (healthy) return;
-    if (dependencies.hooks?.onHealthFailure) {
-      await dependencies.hooks.onHealthFailure({ home, ...hooksInput });
+    if (!healthy) {
+      if (dependencies.hooks?.onHealthFailure) {
+        await dependencies.hooks.onHealthFailure({ home, ...hooksInput });
+      }
+      throw lifecycleError('HEALTH_REJECTED', 'runtime health was not accepted', {
+        phase: 'health',
+      });
     }
-    throw lifecycleError('HEALTH_REJECTED', 'runtime health was not accepted', {
-      phase: 'health',
+    if (!dependencies.connectivity) return;
+    let connected = false;
+    let diagnostic = 'not-verified';
+    try {
+      connected = await dependencies.connectivity.accept(expected);
+      diagnostic = connected ? 'verified' : 'not-verified';
+    } catch {
+      diagnostic = 'check-failed';
+    }
+    emit('connectivity', {
+      ...expected,
+      advisory: true,
+      connected,
+      diagnostic,
     });
   };
 

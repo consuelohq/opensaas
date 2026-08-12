@@ -1,26 +1,21 @@
 ---
 title: Workflows
-description: Use manifest-backed workflow bundles for repeated, ordered work.
+description: Use manifest-backed workflow bundles for repeated, ordered repository work.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-11
 evidence:
-  - source: packages/os/manifests/workflow-bundles.json
+  - source: packages/workspace/tooling/workflows.json
     tests:
       - packages/os/tests/workflow-intent.test.ts
-    runtime: Task, Office, and media workflow bundles and their subscriptions were inspected and exercised by focused tests on 2026-07-13.
+      - packages/os/tests/task-manifest-workflow-roles.test.ts
+    runtime: The current workflow registry and task workflow roles were inspected on 2026-08-11.
 ---
 
-A **workflow bundle** maps a repeated kind of work to ordered roles, typed tools, and lifecycle events. It makes the same process available to different agents without turning the process into one giant command.
+A **workflow bundle** maps a repeated kind of work to ordered roles, typed tools, and lifecycle events. It is different from a skill: a skill teaches judgment and procedure, while a workflow bundle registers a concrete lifecycle/tool sequence.
 
-Current bundles include:
+## Current workflow bundle
 
-- **task** for repository work, with aliases such as `repo` and `code`;
-- **office** for design and Sites work;
-- **media** for media pipelines.
-
-## Task workflow
-
-The task workflow follows a guarded lifecycle:
+The current registry exposes the **task** workflow, with aliases such as `repo` and `code`.
 
 ```text
 stream context
@@ -36,14 +31,10 @@ stream context
   → finish
 ```
 
-`task.start` is the public entrypoint. It returns a `taskSession` tied to an isolated branch and worktree. Pass that session to every task-scoped tool. The workflow's hooks add guidance at lifecycle events; they do not replace tool validation or Git review.
-
-## Office and media workflows
-
-The Office bundle groups generation, validation, publishing, and runtime tools. The media bundle groups inspect, compose, and quality operations. Aliases let intent resolve to the same canonical bundle.
+`task.start` returns a `taskSession` tied to an isolated branch and worktree. Pass that session to task-scoped tools. Workflow hooks add lifecycle guidance; they do not replace validation or review.
 
 ## Workflow versus skill
 
-A skill teaches the procedure and judgment. A workflow bundle exposes the ordered roles, tools, and subscriptions that implement a repeated process. They can be used together, but neither is a synonym for the other.
+Skills such as [Branch Planner](/build/skills/bundled/branch/), [Artifacts](/build/skills/bundled/artifacts/), and [Teach](/build/skills/bundled/teach/) can orchestrate many tools without each being a registered workflow bundle.
 
-Use the current manifest as the source of truth for available bundles. Do not invent a workflow by naming a sequence that is not registered.
+Use `packages/workspace/tooling/workflows.json` as the source of truth for registered bundles. Do not infer a workflow merely because a skill describes a sequence.

@@ -1,71 +1,576 @@
 ---
-const gatewayRoutes = {
-  recent: "/gateway/traces/recent",
-  summary: "/gateway/traces/summary",
-  events: "/gateway/traces/events",
-};
+import { buildObservabilityTracesClientScript } from '../../../../../os/scripts/lib/observability-traces-site';
+import MarketingLayout from '../../../layouts/MarketingLayout.astro';
+
+const description =
+  'Inspect live Consuelo OS traces, failures, token use, and gateway activity.';
+const traceClientScript = buildObservabilityTracesClientScript();
 ---
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Traces - Observability</title>
-    <meta name="description" content="Consuelo Observability traces cockpit." />
-  </head>
-  <body class="observability-page">
-    <main
-      class="dashboard"
-      data-observability-app
-      data-feed-url={gatewayRoutes.recent}
-      data-summary-url={gatewayRoutes.summary}
-      data-events-url={gatewayRoutes.events}
+
+<MarketingLayout
+  title="Observability traces"
+  description={description}
+  canonicalPath="/os/observability/traces/"
+>
+  <main
+    class="traces-page"
+    data-observability-app
+    data-feed-url="/gateway/traces/recent"
+    data-summary-url="/gateway/traces/summary"
+    data-events-url="/gateway/traces/events"
+  >
+    <section class="site-section">
+      <div class="site-container site-container--wide site-stack site-stack--lg">
+        <header class="traces-hero">
+          <div class="site-stack site-stack--sm">
+            <p class="site-eyebrow">Observability</p>
+            <h1 class="site-title">Traces</h1>
+            <p class="site-copy">
+              Inspect live trace rows, raw payloads, token burn, failures, and tool pressure in one
+              lightweight OS surface.
+            </p>
+            <nav class="traces-nav site-cluster" aria-label="Observability sections">
+              <a class="site-badge" aria-current="page" href="/os/observability/traces">Traces</a>
+              <span class="site-badge" aria-disabled="true">Runs</span>
+              <span class="site-badge" aria-disabled="true">Costs</span>
+              <span class="site-badge" aria-disabled="true">Failures</span>
+            </nav>
+          </div>
+          <button
+            class="site-button"
+            type="button"
+            data-testid="trace-launcher"
+            data-open-traces
+          >
+            <span aria-hidden="true">●</span>
+            Live traces
+          </button>
+        </header>
+
+        <section class="traces-kpis site-grid" aria-label="Observability trace summary">
+          <article class="site-card trace-kpi">
+            <span class="trace-label">Trace rows</span>
+            <strong data-kpi="trace-count">0</strong>
+            <span data-feed-health>waiting for gateway traces</span>
+          </article>
+          <article class="site-card trace-kpi">
+            <span class="trace-label">Failures</span>
+            <strong data-kpi="failure-count">0</strong>
+            <span>from current gateway window</span>
+          </article>
+          <article class="site-card trace-kpi">
+            <span class="trace-label">Token burn</span>
+            <strong data-kpi="tokens">0</strong>
+            <span>input and output tokens</span>
+          </article>
+          <article class="site-card trace-kpi">
+            <span class="trace-label">Estimated cost</span>
+            <strong data-kpi="cost">$0.00</strong>
+            <span>gateway trace estimate</span>
+          </article>
+        </section>
+
+        <section class="site-card site-card--raised trace-launch" aria-label="Current Observability module">
+          <div class="site-stack site-stack--sm">
+            <p class="site-eyebrow">Current module</p>
+            <h2>Live tracing cockpit</h2>
+            <p class="site-copy">
+              The broader Observability dashboard can grow here. Today, this opens the Traces module
+              while preserving Observability as the overall surface.
+            </p>
+          </div>
+          <button class="site-button site-button--secondary" type="button" data-open-traces>
+            Open traces
+          </button>
+        </section>
+      </div>
+    </section>
+
+    <section
+      class="trace-modal"
+      data-trace-modal
+      role="dialog"
+      aria-modal="true"
+      aria-label="Traces"
     >
-      <section class="hero">
-        <div>
-          <div class="eyebrow">Observability</div>
-          <h1>Traces</h1>
-          <p>
-            Live traces are the first Observability module. The broader dashboard can grow around this
-            source without renaming the launchable Traces cockpit.
-          </p>
-          <nav aria-label="Observability sections">
-            <a aria-current="page" href="/observability/traces">Traces</a>
-            <span aria-disabled="true">Runs</span>
-            <span aria-disabled="true">Costs</span>
-            <span aria-disabled="true">Failures</span>
-          </nav>
+      <div class="trace-shell" data-mode="list">
+        <header class="trace-chrome">
+          <div class="trace-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="trace-title">Traces</div>
+          <button class="trace-button" type="button" data-show-filters>Filters</button>
+        </header>
+        <div class="trace-toolbar">
+          <input class="site-field" data-search placeholder="Search traces..." aria-label="Search traces" />
+          <div class="trace-window" data-trace-window>gateway</div>
+          <button class="trace-button" type="button" data-close-traces>Close</button>
         </div>
-        <button type="button" data-testid="trace-launcher" data-open-traces>Live traces</button>
-      </section>
-
-      <section aria-label="Observability trace summary">
-        <article><span>Trace rows</span><strong data-kpi="trace-count">0</strong></article>
-        <article><span>Failures</span><strong data-kpi="failure-count">0</strong></article>
-        <article><span>Token burn</span><strong data-kpi="tokens">0</strong></article>
-        <article><span>Estimated cost</span><strong data-kpi="cost">$0.00</strong></article>
-      </section>
-
-      <section class="trace-modal" data-trace-modal aria-label="Traces">
-        <div class="trace-shell" data-mode="list">
-          <header><div class="trace-title">Traces</div><button type="button" data-show-filters>filters</button></header>
-          <input data-search placeholder="Search traces..." aria-label="Search traces" />
-          <div data-trace-rows></div>
-          <aside data-inspector></aside>
-          <footer><span><b data-trace-count>0</b> traces</span><span data-live-state>stale</span></footer>
+        <div class="trace-body">
+          <section class="trace-table-wrap" aria-label="Trace table">
+            <div class="trace-table">
+              <div class="trace-head">
+                <span></span><span>Time</span><span>Type</span><span>Tool name</span><span>Branch</span><span>Input</span><span>Output</span><span>Tokens</span><span>Cost</span><span>Latency</span>
+              </div>
+              <div data-trace-rows><div class="trace-empty">Loading gateway traces...</div></div>
+            </div>
+          </section>
+          <aside class="trace-rail" aria-label="Trace details">
+            <div class="trace-inspector" data-inspector></div>
+          </aside>
         </div>
-      </section>
-    </main>
-    <script is:inline>
-      window.__consueloObservabilityTraces = {
-        routes: {
-          recent: "/gateway/traces/recent",
-          summary: "/gateway/traces/summary",
-          events: "/gateway/traces/events",
-        },
-        motion: "web-animations",
-        module: "traces",
-      };
-    </script>
-  </body>
-</html>
+        <footer class="trace-footer">
+          <span><b data-trace-count>0</b> traces</span>
+          <span>Rows per page <b>100</b></span>
+          <span>Page <input data-page-input value="1" aria-label="Page" /> of <b data-page-count>1</b></span>
+          <button type="button" data-prev-page aria-label="Previous page">‹</button>
+          <button type="button" data-next-page aria-label="Next page">›</button>
+          <span data-live-state>stale</span>
+        </footer>
+      </div>
+    </section>
+  </main>
+  <script is:inline set:html={traceClientScript} />
+</MarketingLayout>
+
+<style>
+  .traces-page {
+    min-height: 100vh;
+    background:
+      radial-gradient(
+        circle at top,
+        color-mix(in srgb, var(--site-color-accent) 10%, transparent),
+        transparent 36%
+      ),
+      var(--site-color-paper);
+    color: var(--site-color-ink);
+  }
+
+  .traces-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--site-space-6);
+  }
+
+  .traces-nav [aria-disabled='true'] {
+    color: var(--site-color-muted);
+    opacity: 0.72;
+  }
+
+  .traces-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .trace-kpi {
+    min-height: calc(var(--site-space-8) * 2);
+  }
+
+  .trace-kpi > span,
+  .trace-label {
+    color: var(--site-color-muted);
+    font: 700 var(--site-text-xs) / var(--site-leading-body) var(--site-font-mono);
+  }
+
+  .trace-kpi strong {
+    display: block;
+    margin-block: var(--site-space-3) var(--site-space-1);
+    color: var(--site-color-ink);
+    font: 500 var(--site-text-2xl) / var(--site-leading-tight) var(--site-font-display);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .trace-launch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--site-space-6);
+  }
+
+  .trace-launch h2 {
+    margin: 0;
+    color: var(--site-color-ink);
+    font: 500 var(--site-text-xl) / var(--site-leading-tight) var(--site-font-display);
+  }
+
+  .trace-modal {
+    position: fixed;
+    inset: 0;
+    z-index: var(--site-z-modal);
+    display: none;
+    place-items: center;
+    padding: var(--site-space-6);
+    background: color-mix(in srgb, var(--site-color-ink) 72%, transparent);
+  }
+
+  .trace-modal.open {
+    display: grid;
+  }
+
+  .trace-shell {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    width: min(94vw, var(--site-container-wide));
+    height: min(88vh, 45rem);
+    overflow: hidden;
+    border: 1px solid var(--site-color-line-strong);
+    border-radius: var(--site-radius-card);
+    background: var(--site-color-surface-raised);
+    box-shadow: var(--site-shadow-raised);
+    color: var(--site-color-ink);
+  }
+
+  .trace-modal.open .trace-shell {
+    animation: trace-shell-enter var(--site-motion-medium) var(--site-ease-emphasized) both;
+  }
+
+  .trace-chrome {
+    display: grid;
+    grid-template-columns: minmax(6rem, auto) 1fr auto;
+    align-items: center;
+    gap: var(--site-space-3);
+    padding: var(--site-space-2) var(--site-space-3);
+    border-bottom: 1px solid var(--site-color-line);
+    background: var(--site-color-panel);
+  }
+
+  .trace-dots {
+    display: flex;
+    gap: var(--site-space-2);
+  }
+
+  .trace-dots span {
+    width: var(--site-space-2);
+    height: var(--site-space-2);
+    border-radius: var(--site-radius-pill);
+    background: var(--site-color-accent);
+  }
+
+  .trace-dots span:nth-child(2) {
+    background: var(--site-color-secondary);
+  }
+
+  .trace-dots span:nth-child(3) {
+    background: var(--site-color-success);
+  }
+
+  .trace-title {
+    color: var(--site-color-muted);
+    font: 700 var(--site-text-xs) / 1 var(--site-font-mono);
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .trace-button,
+  .trace-footer button {
+    min-height: var(--site-space-6);
+    border: 1px solid var(--site-color-line-strong);
+    border-radius: var(--site-radius-sm);
+    background: var(--site-color-control);
+    color: var(--site-color-ink);
+    padding-inline: var(--site-space-3);
+    font: 700 var(--site-text-xs) / 1 var(--site-font-mono);
+    cursor: pointer;
+  }
+
+  .trace-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--site-space-3);
+    padding: var(--site-space-3);
+    border-bottom: 1px solid var(--site-color-line);
+  }
+
+  .trace-toolbar .site-field {
+    padding-block: var(--site-space-2);
+    font-family: var(--site-font-mono);
+  }
+
+  .trace-window {
+    color: var(--site-color-secondary);
+    font: 700 var(--site-text-xs) / 1 var(--site-font-mono);
+  }
+
+  .trace-body {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 38%);
+  }
+
+  .trace-table-wrap {
+    min-width: 0;
+    overflow: auto;
+    border-right: 1px solid var(--site-color-line);
+  }
+
+  .trace-table {
+    min-width: 96rem;
+    font-family: var(--site-font-mono);
+  }
+
+  .trace-head,
+  :global(.trace-row) {
+    display: grid;
+    grid-template-columns: 2.75rem 5.75rem 3.5rem 8.25rem 13.625rem 15.625rem 18.25rem 5.5rem 5.25rem 5.5rem;
+    align-items: center;
+  }
+
+  .trace-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    border-bottom: 1px solid var(--site-color-line);
+    background: var(--site-color-panel);
+    color: var(--site-color-muted);
+    font-size: var(--site-text-xs);
+    font-weight: 700;
+  }
+
+  .trace-head span,
+  :global(.trace-row span) {
+    min-width: 0;
+    overflow: hidden;
+    padding: var(--site-space-3);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.trace-row) {
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid var(--site-color-line);
+    background: transparent;
+    color: var(--site-color-ink);
+    text-align: left;
+  }
+
+  :global(.trace-row:hover),
+  :global(.trace-row.selected) {
+    background: color-mix(in srgb, var(--site-color-accent) 10%, transparent);
+  }
+
+  :global(.check) {
+    width: var(--site-space-4);
+    height: var(--site-space-4);
+    margin-left: var(--site-space-3);
+    border: 1px solid var(--site-color-line-strong);
+    border-radius: var(--site-radius-sm);
+    padding: 0;
+  }
+
+  :global(.mono) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :global(.tool) {
+    color: var(--site-color-secondary);
+  }
+
+  :global(.status.success) {
+    color: var(--site-color-success);
+  }
+
+  :global(.status.error) {
+    color: var(--site-color-accent);
+  }
+
+  .trace-rail {
+    min-width: 0;
+    overflow: auto;
+    background: var(--site-color-panel);
+  }
+
+  .trace-inspector {
+    min-height: 100%;
+    padding: var(--site-space-5);
+  }
+
+  :global(.panel-title span),
+  :global(.tools-label) {
+    display: block;
+    color: var(--site-color-muted);
+    font: 700 var(--site-text-xs) / 1.4 var(--site-font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  :global(.panel-title h2) {
+    margin-block: var(--site-space-2);
+    font: 500 var(--site-text-xl) / var(--site-leading-tight) var(--site-font-display);
+  }
+
+  :global(.panel-title p) {
+    margin: 0 0 var(--site-space-4);
+    color: var(--site-color-muted);
+  }
+
+  :global(.filter-chip) {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--site-space-3);
+    margin-bottom: var(--site-space-2);
+    padding: var(--site-space-3);
+    border: 1px solid var(--site-color-line);
+    border-radius: var(--site-radius-md);
+    background: var(--site-color-surface);
+    color: var(--site-color-ink);
+    text-align: left;
+  }
+
+  :global(.filter-chip span) {
+    overflow-wrap: anywhere;
+  }
+
+  :global(.tools-label) {
+    margin-top: var(--site-space-5);
+  }
+
+  :global(.trace-detail-tabs) {
+    display: flex;
+    gap: var(--site-space-5);
+    margin-block: var(--site-space-4);
+    border-bottom: 1px solid var(--site-color-line);
+  }
+
+  :global(.trace-detail-tabs button) {
+    border: 0;
+    background: none;
+    color: var(--site-color-muted);
+    padding: 0 0 var(--site-space-3);
+  }
+
+  :global(.trace-detail-tabs .active) {
+    border-bottom: 2px solid var(--site-color-accent);
+    color: var(--site-color-ink);
+  }
+
+  :global(.payload) {
+    margin-bottom: var(--site-space-3);
+    overflow: hidden;
+    border: 1px solid var(--site-color-line);
+    border-radius: var(--site-radius-md);
+    background: var(--site-color-surface);
+  }
+
+  :global(.payload h3) {
+    margin: 0;
+    padding: var(--site-space-3);
+    background: var(--site-color-control-panel);
+    font-size: var(--site-text-sm);
+  }
+
+  :global(.payload pre) {
+    max-height: 16rem;
+    margin: 0;
+    overflow: auto;
+    padding: var(--site-space-3);
+    color: var(--site-color-ink);
+    font: 400 var(--site-text-xs) / var(--site-leading-body) var(--site-font-mono);
+    white-space: pre-wrap;
+  }
+
+  .trace-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--site-space-3);
+    overflow: auto;
+    padding: var(--site-space-2) var(--site-space-3);
+    border-top: 1px solid var(--site-color-line);
+    color: var(--site-color-muted);
+    font: 700 var(--site-text-xs) / 1 var(--site-font-mono);
+  }
+
+  .trace-footer input {
+    width: var(--site-space-7);
+    min-height: var(--site-space-5);
+    border: 1px solid var(--site-color-line);
+    border-radius: var(--site-radius-sm);
+    background: var(--site-color-control);
+    color: var(--site-color-ink);
+    text-align: center;
+  }
+
+  .trace-empty,
+  :global(.empty-state) {
+    padding: var(--site-space-6);
+    color: var(--site-color-muted);
+  }
+
+  @keyframes trace-shell-enter {
+    from {
+      opacity: 0;
+      transform: translateY(var(--site-space-4)) scale(0.98);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .traces-hero,
+    .trace-launch {
+      grid-template-columns: 1fr;
+    }
+
+    .traces-hero {
+      align-items: start;
+    }
+
+    .trace-launch {
+      display: grid;
+      align-items: start;
+    }
+
+    .traces-kpis {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .trace-modal.open {
+      place-items: stretch;
+      padding: 0;
+    }
+
+    .trace-shell {
+      width: 100vw;
+      height: 100dvh;
+      max-width: none;
+      max-height: none;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .trace-body {
+      grid-template-columns: 1fr;
+    }
+
+    .trace-rail {
+      display: none;
+    }
+
+    .trace-shell[data-mobile-detail='true'] .trace-table-wrap {
+      display: none;
+    }
+
+    .trace-shell[data-mobile-detail='true'] .trace-rail {
+      display: block;
+    }
+
+    .trace-toolbar {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .traces-kpis {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .trace-modal.open .trace-shell {
+      animation: none;
+    }
+  }
+</style>

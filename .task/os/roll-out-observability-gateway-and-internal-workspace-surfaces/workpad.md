@@ -288,9 +288,11 @@ bun run task:finish
 - `packages/workspace/tests/test-selection.test.js`
 - `packages/workspace/tests/trace-site-inspector.test.ts`
 
-### Trace inspector follow-up evidence — 2026-08-11
+### Stream reconciliation — 2026-08-11/12
 
-- Migrated the maintained v38 browser source into OS ownership under `packages/os/scripts/lib/trace-site-inspector/`; the shipped runtime is rebuilt from the OS-owned `browser.ts` entrypoint and no production source depends on deprecated Workspace Trace inspector modules.
-- Successful `authentication.mcp` rows remain persisted for auditability but are excluded from the default table, facets, inspector map, and visible count; failed authentication/authorization stays visible.
-- Trace-specific redaction preserves safe diagnostic paths, hashes, trace/request IDs, task session, branch/worktree, route/scope, and principal correlation IDs while continuing to redact Bearer/known credential formats and sensitive prompt/message/environment/authorization/cookie/secret fields.
-- Real canonical DB diagnostic over the newest 1,000 rows with the task-branch backend/formatter: 455 successful auth audit rows hidden, 545 product rows visible, `request details` = 0, visible input labels containing `[REDACTED` = 0, visible output labels containing `[REDACTED` = 0. Historical values already persisted as redaction placeholders are not fabricated; the UI uses neutral fallbacks and new traces retain safe detail.
+- `stream/os` advanced while this rollout was in progress, so PR #1794 became dirty/conflicting. The task branch was synchronized by merging current `origin/stream/os`; six non-metadata conflicts were resolved deliberately rather than by discarding either side.
+- Internal workspace traces keep the user-approved exact Trace Burn v38 `buildObservabilityTracesSite()` path. The newer stream public-marketing Astro client export (`buildObservabilityTracesClientScript`) is also retained so `/os/observability/traces` continues to build independently; the internal generated workspace surface is still v38.
+- `security-gateway.ts` and its test use the newer stream implementation because it includes worker-pool/replay-state changes and already preserves the no-proxy-execution-timeout invariant required by this rollout.
+- Publisher conflict resolution keeps the newer stream route-preservation assertions plus the explicit invariant that workspace route publication must not use `INSERT OR REPLACE INTO workspace_route_registry`. The success fixture was updated to model workspace-session 401 responses for every private snapshot route, not only `/`. Contract mode now passes 7/7.
+- The generated test-selection registry was regenerated from the reconciled rules rather than hand-merging generated JSON.
+- Post-reconciliation validation: focused Trace contracts 37/37 passed (publisher contract separately 7/7 with contract mode), OS typecheck passed, public Consuelo website Astro build passed with 0 errors, and `git diff --check` passed.

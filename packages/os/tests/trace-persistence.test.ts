@@ -36,6 +36,7 @@ type ScenarioResult = {
   rows?: TraceRow[];
   recent?: { events?: Array<Record<string, unknown>> };
   recorded?: boolean;
+  immediateDbExists?: boolean;
   events?: Array<Record<string, unknown>>;
   status?: number;
   body?: Record<string, unknown>;
@@ -216,6 +217,39 @@ describe('canonical OS trace persistence', () => {
       requiredScope: 'tool:mac.process:read',
       route: '/mcp',
     });
+  });
+
+  it('should batch authentication traces after the request path returns', () => {
+    const output = runScenario('auth-principal-queued');
+
+    expect(output.immediateDbExists).toBe(false);
+    expect(output.rows).toHaveLength(2);
+    expect(output.rows?.map((row) => row.tool)).toEqual([
+      'authentication.mcp',
+      'authentication.mcp',
+    ]);
+  });
+
+  it('should record a safe principal correlation key when authentication succeeds without raw identity material', () => {
+    const output = runScenario('auth-principal');
+    expect(output.recorded).toBe(true);
+    expect(output.rows).toHaveLength(1);
+    expect(output.rows?.[0]).toMatchObject({
+      source: 'gateway',
+      tool: 'authentication.mcp',
+      status: 'ok',
+      ok: 1,
+    });
+    const input = JSON.parse(output.rows?.[0]?.input_json ?? '{}') as Record<string, unknown>;
+    expect(input).toMatchObject({
+      workspaceId: 'workspace_trace_auth',
+      route: '/mcp',
+      requiredScope: 'mcp:read',
+      authMode: 'oauth',
+      principalKey: 'prn_0123456789abcdef0123456789abcdef',
+    });
+    expect(JSON.stringify(input)).not.toContain('google:');
+    expect(JSON.stringify(input)).not.toContain('chatgpt.com');
   });
 
   it('exports the canonical trace path for the installed daemon', () => {

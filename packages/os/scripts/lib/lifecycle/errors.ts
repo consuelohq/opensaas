@@ -2,6 +2,7 @@ import { Data } from 'effect';
 
 export type LifecycleErrorCode =
   | 'INSTALL_STATE_INVALID'
+  | 'DAEMON_MUTATION_NOT_ALLOWED'
   | 'LOCK_HELD'
   | 'LOCK_IO_FAILED'
   | 'MANIFEST_FETCH_FAILED'

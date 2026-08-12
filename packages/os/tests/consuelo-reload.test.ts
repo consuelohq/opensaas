@@ -6,6 +6,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -23,23 +24,26 @@ function executable(path: string, source: string): void {
   chmodSync(path, 0o755);
 }
 
-function createHarness(input: { bootstrapExit?: number } = {}) {
+function createHarness(input: { bootstrapExit?: number; launchdLoaded?: boolean } = {}) {
   const home = mkdtempSync(join(tmpdir(), 'consuelo-reload-test-'));
   temporaryHomes.push(home);
   const bin = join(home, 'bin');
   const launchAgents = join(home, 'Library', 'LaunchAgents');
   const marker = join(home, 'launchd-bootstrapped');
+  const launchLog = join(home, 'launchctl.log');
+  const signalLog = join(home, 'kill.log');
   mkdirSync(bin, { recursive: true });
   mkdirSync(launchAgents, { recursive: true });
   writeFileSync(join(launchAgents, 'com.consuelo.system.plist'), '<plist/>');
 
   executable(join(bin, 'launchctl'), `#!/bin/sh
+printf '%s\\n' "$*" >> "${launchLog}"
 case "$1" in
-  print) exit 113 ;;
+  print) ${input.launchdLoaded ? 'exit 0' : 'exit 113'} ;;
   bootstrap)
     ${input.bootstrapExit ? `exit ${input.bootstrapExit}` : `touch "${marker}"; exit 0`}
     ;;
-  kickstart) exit 0 ;;
+  kickstart) touch "${marker}"; exit 0 ;;
   bootout) exit 0 ;;
 esac
 exit 0
@@ -51,14 +55,16 @@ if [ -f "${marker}" ]; then
 fi
 exit 22
 `);
-  for (const command of ['pgrep', 'lsof']) {
-    executable(join(bin, command), '#!/bin/sh\nexit 1\n');
-  }
+  executable(join(bin, 'pgrep'), '#!/bin/sh\nif [ -n "$CONSUELO_RELOAD_TEST_POOL_PATH" ]; then printf "%s\\n" 900; exit 0; fi\nexit 1\n');
+  executable(join(bin, 'lsof'), '#!/bin/sh\nexit 1\n');
   executable(join(bin, 'sleep'), '#!/bin/sh\nexit 0\n');
+  executable(join(bin, 'kill'), `#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"${signalLog}\"\nif [ \"$1\" = \"-USR2\" ] && [ -n \"$CONSUELO_RELOAD_TEST_POOL_PATH\" ]; then\n  node -e 'const fs=require(\"fs\"); const p=process.env.CONSUELO_RELOAD_TEST_POOL_PATH; const s=JSON.parse(fs.readFileSync(p,\"utf8\")); s.generatedAt=new Date().toISOString(); s.workers=s.workers.map((w,i)=>({...w, workerInstanceId:\`replacement-\${i}\`, pid:Number(w.pid||100)+1000, state:\"ready\", restartCount:Number(w.restartCount||0)+1})); fs.writeFileSync(p,JSON.stringify(s));'\nfi\nexit 0\n`);
 
   return {
     home,
     marker,
+    launchLog,
+    signalLog,
     env: {
       ...process.env,
       HOME: home,
@@ -88,6 +94,34 @@ describe('Consuelo OS reload lifecycle', () => {
     expect(result.stdout).toContain('started: healthy');
   });
 
+  it('should report the supervised worker pool in status output', () => {
+    const harness = createHarness({ launchdLoaded: true });
+    writeFileSync(harness.marker, 'ready');
+    const runs = join(harness.home, '.consuelo', 'node', 'runs');
+    mkdirSync(runs, { recursive: true });
+    writeFileSync(join(runs, 'os-worker-pool.json'), JSON.stringify({
+      schemaVersion: 1,
+      desiredWorkers: 2,
+      basePort: 46321,
+      generatedAt: '2026-08-11T00:00:00.000Z',
+      workers: [
+        { workerId: 'worker-0', state: 'ready', port: 46321, pid: 101, restartCount: 0 },
+        { workerId: 'worker-1', state: 'ready', port: 46322, pid: 102, restartCount: 1 },
+      ],
+    }));
+
+    const result = spawnSync(process.execPath, [reloadScript, 'status'], {
+      cwd: osRoot,
+      env: { ...harness.env, CONSUELO_HOME: join(harness.home, '.consuelo') },
+      encoding: 'utf8',
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('workers: 2/2 ready');
+    expect(result.stdout).toContain('worker-0: ready port=46321 pid=101 restarts=0');
+    expect(result.stdout).toContain('worker-1: ready port=46322 pid=102 restarts=1');
+  });
+
   it('should exit nonzero when LaunchAgent bootstrap fails', () => {
     const harness = createHarness({ bootstrapExit: 70 });
     const result = spawnSync(process.execPath, [reloadScript, 'start'], {
@@ -98,5 +132,83 @@ describe('Consuelo OS reload lifecycle', () => {
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('launchctl bootstrap failed');
+  });
+
+  it('should kickstart a loaded LaunchAgent without booting out its own job', () => {
+    const harness = createHarness({ launchdLoaded: true });
+    const result = spawnSync(process.execPath, [reloadScript, 'restart-now'], {
+      cwd: osRoot,
+      env: { ...harness.env, CONSUELO_OS_RELOAD_LAUNCHD: '1' },
+      encoding: 'utf8',
+    });
+
+    expect(result.status).toBe(0);
+    const launchCommands = readFileSync(harness.launchLog, 'utf8');
+    expect(launchCommands).toContain('kickstart -k gui/');
+    expect(launchCommands).not.toContain('bootout');
+    expect(launchCommands).not.toContain('bootstrap');
+    expect(result.stdout).toContain('reloaded: healthy');
+  });
+
+  it('should roll a healthy supervised worker pool on reload without restarting launchd', () => {
+    const harness = createHarness({ launchdLoaded: true });
+    writeFileSync(harness.marker, 'ready');
+    const consueloHome = join(harness.home, '.consuelo');
+    const runs = join(consueloHome, 'node', 'runs');
+    mkdirSync(runs, { recursive: true });
+    const poolPath = join(runs, 'os-worker-pool.json');
+    writeFileSync(poolPath, JSON.stringify({
+      schemaVersion: 1,
+      desiredWorkers: 2,
+      basePort: 46321,
+      supervisorPid: 900,
+      generatedAt: '2026-08-11T00:00:00.000Z',
+      workers: [
+        { workerId: 'worker-0', workerInstanceId: 'old-0', state: 'ready', port: 46321, pid: 101, restartCount: 0 },
+        { workerId: 'worker-1', workerInstanceId: 'old-1', state: 'ready', port: 46322, pid: 102, restartCount: 0 },
+      ],
+    }));
+
+    const result = spawnSync(process.execPath, [reloadScript, 'reload-now'], {
+      cwd: osRoot,
+      env: {
+        ...harness.env,
+        CONSUELO_HOME: consueloHome,
+        CONSUELO_RELOAD_TEST_POOL_PATH: poolPath,
+      },
+      encoding: 'utf8',
+    });
+
+    expect(result.status).toBe(0);
+    expect(readFileSync(harness.signalLog, 'utf8')).toContain('-USR2 900');
+    const launchCommands = existsSync(harness.launchLog)
+      ? readFileSync(harness.launchLog, 'utf8')
+      : '';
+    expect(launchCommands).not.toContain('kickstart -k');
+    const rolled = JSON.parse(readFileSync(poolPath, 'utf8')) as {
+      workers: Array<{ workerInstanceId: string; state: string }>;
+    };
+    expect(rolled.workers.map((entry) => entry.workerInstanceId)).toEqual([
+      'replacement-0',
+      'replacement-1',
+    ]);
+    expect(rolled.workers.every((entry) => entry.state === 'ready')).toBe(true);
+    expect(result.stdout).toContain('reloaded: healthy');
+  });
+
+  it('should bootstrap an unloaded LaunchAgent before kickstarting a reload', () => {
+    const harness = createHarness();
+    const result = spawnSync(process.execPath, [reloadScript, 'restart-now'], {
+      cwd: osRoot,
+      env: { ...harness.env, CONSUELO_OS_RELOAD_LAUNCHD: '1' },
+      encoding: 'utf8',
+    });
+
+    expect(result.status).toBe(0);
+    const launchCommands = readFileSync(harness.launchLog, 'utf8');
+    expect(launchCommands).toContain('print gui/');
+    expect(launchCommands).toContain('bootstrap gui/');
+    expect(launchCommands).toContain('kickstart -k gui/');
+    expect(result.stdout).toContain('reloaded: healthy');
   });
 });

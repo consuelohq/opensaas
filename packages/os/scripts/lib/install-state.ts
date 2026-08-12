@@ -50,6 +50,7 @@ import { validateBundledSkills } from './skills';
 import { STANDARD_OS_MCP_SCOPES } from './tool-scope-authorization';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 import { PLACEHOLDER_NODE_ID } from './unenrolled-placeholder-identity';
+import { resolveWorkerPoolConfiguration } from './worker-pool';
 
 export type OsMode = 'local' | 'cloud';
 export type { AgentName, AgentConnectionStatus } from './local-agent-connectivity';
@@ -1165,6 +1166,45 @@ export function loadOsConfig(home?: string): OsConfig | null {
   return readJsonFile<OsConfig>(path.join(resolvedHome, 'config.json'));
 }
 
+export function updateSelectedSkillSelection(input: {
+  home?: string;
+  visibleUserRoot?: string;
+  selectedSkills: readonly string[];
+}): {
+  home: string;
+  configPath: string;
+  selectedSkills: string[];
+  actions: ReturnType<typeof provisionManagedComponentIndexes>;
+} {
+  const home = resolveOsHome(input.home);
+  const configPath = path.join(home, 'config.json');
+  const config = loadOsConfig(home);
+  if (!config) {
+    throw new Error(
+      `Consuelo OS is not installed at ${home}. Run consuelo install first.`,
+    );
+  }
+
+  const selectedSkills = normalizeSelectedSkillNames(input.selectedSkills);
+  const generatedAt = nowIso();
+  const visibleUserRoot = path.resolve(
+    input.visibleUserRoot ?? path.join(os.homedir(), 'Consuelo'),
+  );
+  const actions = provisionManagedComponentIndexes({
+    home,
+    selectedSkills,
+    dryRun: false,
+    generatedAt,
+    userRoot: visibleUserRoot,
+  });
+
+  config.selectedSkills = selectedSkills;
+  config.updatedAt = generatedAt;
+  writeJsonFile(configPath, config, false);
+
+  return { home, configPath, selectedSkills, actions };
+}
+
 export function detectAgents(
   home?: string,
   userHome: string = os.homedir(),
@@ -1819,12 +1859,17 @@ export function provisionLocalOs(
   }
 
   if (!dryRun) {
+    const workerPoolConfiguration = resolveWorkerPoolConfiguration({
+      ...process.env,
+      CONSUELO_OS_PORT: String(gatewayPort),
+    });
     const gatewayConfig = createGatewaySecurityConfig({
       home: layout.nodeDir,
       workspaceId: workspaceIdentity.workspaceId,
       workspaceSlug: workspaceIdentity.workspaceSlug,
       workspaceHost: workspaceIdentity.workspaceHost,
       upstreamPort: gatewayPort,
+      upstreamPorts: workerPoolConfiguration.workerPorts,
       ingressPort: DEFAULT_INGRESS_PORT,
       ...(workspaceBootstrap?.nodeId && workspaceBootstrap.edgeRequestSigningSecret
         ? {

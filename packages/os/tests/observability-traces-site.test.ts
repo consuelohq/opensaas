@@ -5,7 +5,10 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { buildObservabilityTracesSite } from '../scripts/lib/observability-traces-site';
+import {
+  buildObservabilityTracesClientScript,
+  buildObservabilityTracesSite,
+} from '../scripts/lib/observability-traces-site';
 
 const canonicalAssetDir = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -134,4 +137,29 @@ describe('Observability Traces canonical Trace Burn surface', () => {
       '8e0d8d1827ce101fee60b046400b32333d0c4f558875eeec88d629c9b9010e4c',
     );
   });
+
+  it('retains the stream public-Astro client export without changing the internal v38 site builder', () => {
+    const clientScript = buildObservabilityTracesClientScript();
+    const html = buildObservabilityTracesSite();
+
+    expect(clientScript).toContain('/gateway/traces/recent');
+    expect(clientScript).not.toContain('cdn.jsdelivr.net');
+    expect(clientScript).not.toContain('<script src="https://');
+    expect(clientScript).not.toContain('ReactDOM');
+    expect(html).toContain('<title>Trace Burn Intelligence</title>');
+    expect(html).not.toContain('Live tracing cockpit');
+  });
+
+  it('keeps the stream public Astro source buildable while the internal generated surface remains v38', () => {
+    const source = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), '../../consuelo-website/src/pages/os/observability/traces.astro'),
+      'utf8',
+    );
+
+    expect(source).toContain('buildObservabilityTracesClientScript');
+    expect(source).toContain('<MarketingLayout');
+    expect(source).toContain('set:html={traceClientScript}');
+    expect(source).not.toContain('packages/workspace');
+  });
+
 });

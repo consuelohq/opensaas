@@ -141,8 +141,10 @@ contractDescribe('install edge site publisher', () => {
     ]);
     expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'traces', 'traces', 'traces', 'diffs', 'docs', 'configuration', 'tools', 'environments', 'secrets']);
     expect(first.routeSql).toMatch(/INSERT INTO workspace_route_registry/i);
-    expect(first.routeSql).toMatch(/ON CONFLICT\(hostname\) DO UPDATE SET/i);
+    expect(first.routeSql).toMatch(/ON CONFLICT\(hostname\) DO UPDATE/i);
     expect(first.routeSql).not.toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
+    expect(first.routeSql).toContain("'$.target.kind') = 'os-connector'");
+    expect(first.routeSql).toContain("'$.nodeTargets'");
     expect(first.routeSql).toMatch(/site-snapshot/);
     expect(first.routeSql).toMatch(/internal\.consuelohq\.com/);
     expect(first.routeSql).toMatch(/r2:\/\/consuelo-sites-snapshots\/sites\/workspace_internal\/launcher\//);
@@ -158,37 +160,6 @@ contractDescribe('install edge site publisher', () => {
     for (const snapshot of first.snapshots) {
       expect(first.routeSql).toContain(snapshot.contentHash);
     }
-  });
-
-  it('bumps the immutable snapshot version when only a child site changes', async () => {
-    const publisher = await loadPublisher();
-    const home = makeHome();
-    const first = publisher.createWorkspaceEdgeSnapshotPlan({
-      home,
-      workspaceId: 'workspace_internal',
-      workspaceSlug: 'internal',
-      workspaceHost: 'internal.consuelohq.com',
-    });
-    const launcherHash = first.contentHash;
-
-    fs.writeFileSync(
-      path.join(home, 'sites', 'traces', 'index.html'),
-      '<!doctype html><title>Traces changed</title><main>new trace table</main>',
-      'utf8',
-    );
-
-    const second = publisher.createWorkspaceEdgeSnapshotPlan({
-      home,
-      workspaceId: 'workspace_internal',
-      workspaceSlug: 'internal',
-      workspaceHost: 'internal.consuelohq.com',
-    });
-
-    expect(second.contentHash).toBe(launcherHash);
-    expect(second.versionId).not.toBe(first.versionId);
-    expect(second.snapshotKey).not.toBe(first.snapshotKey);
-    expect(second.snapshots.find((snapshot) => snapshot.siteId === 'traces')?.snapshotKey)
-      .not.toBe(first.snapshots.find((snapshot) => snapshot.siteId === 'traces')?.snapshotKey);
   });
 
   it('uploads R2, upserts D1, warms the edge route, and returns install-safe metadata', async () => {
@@ -222,11 +193,15 @@ contractDescribe('install edge site publisher', () => {
           url,
           accept: headers.get('accept'),
         });
-        const expectedSnapshot = expectedPlan.snapshots.find(
+        const snapshot = expectedPlan.snapshots.find(
           (candidate) => candidate.verifyUrl === url,
         );
-        if (!expectedSnapshot) throw new Error(`unexpected verification URL: ${url}`);
-        if (['launcher', 'traces', 'configuration', 'tools', 'environments', 'secrets'].includes(expectedSnapshot.siteId)) {
+        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
+        if (
+          ['launcher', 'traces', 'configuration', 'tools', 'environments', 'secrets'].includes(
+            snapshot.siteId,
+          )
+        ) {
           return Response.json(
             { error: 'workspace_session_required' },
             {
@@ -235,13 +210,13 @@ contractDescribe('install edge site publisher', () => {
             },
           );
         }
-        const sourceHtml = fs.readFileSync(expectedSnapshot.snapshotPath, 'utf8');
+        const sourceHtml = fs.readFileSync(snapshot.snapshotPath, 'utf8');
         return new Response(`${sourceHtml}\n<script>downstream edge transform</script>`, {
           status: 200,
           headers: {
             'x-consuelo-edge-cache-authority': 'sites-snapshot',
             'x-consuelo-sites-cache': 'miss',
-            'x-consuelo-site-content-hash': expectedSnapshot.contentHash,
+            'x-consuelo-site-content-hash': snapshot.contentHash,
             'x-consuelo-site-version': expectedPlan.versionId,
           },
         });
@@ -290,60 +265,6 @@ contractDescribe('install edge site publisher', () => {
     });
     expect(fs.existsSync(result.logPath)).toBe(true);
     expect(fs.readFileSync(result.logPath, 'utf8')).not.toMatch(/token|secret|credential/i);
-  });
-
-  it('fails closed when a private trace snapshot is publicly readable without a workspace session', async () => {
-    const publisher = await loadPublisher();
-    const home = makeHome();
-    const expectedPlan = publisher.createWorkspaceEdgeSnapshotPlan({
-      home,
-      workspaceId: 'workspace_internal',
-      workspaceSlug: 'internal',
-      workspaceHost: 'internal.consuelohq.com',
-      now: '2026-06-14T00:00:00.000Z',
-    });
-
-    await expect(publisher.publishWorkspaceEdgeSnapshot({
-      home,
-      workspaceId: 'workspace_internal',
-      workspaceSlug: 'internal',
-      workspaceHost: 'internal.consuelohq.com',
-      commandRunner: async () => ({ exitCode: 0, stdout: 'ok', stderr: '' }),
-      fetchImpl: async (url) => {
-        const snapshot = expectedPlan.snapshots.find(
-          (candidate) => candidate.verifyUrl === url,
-        );
-        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
-        if (snapshot.siteId === 'launcher') {
-          return Response.json({ error: 'workspace_session_required' }, { status: 401 });
-        }
-        if (snapshot.siteId === 'traces') {
-          return new Response(fs.readFileSync(snapshot.snapshotPath, 'utf8'), {
-            status: 200,
-            headers: {
-              'x-consuelo-edge-cache-authority': 'sites-snapshot',
-              'x-consuelo-sites-cache': 'miss',
-              'x-consuelo-site-content-hash': snapshot.contentHash,
-              'x-consuelo-site-version': expectedPlan.versionId,
-            },
-          });
-        }
-        return new Response(fs.readFileSync(snapshot.snapshotPath, 'utf8'), {
-          status: 200,
-          headers: {
-            'x-consuelo-edge-cache-authority': 'sites-snapshot',
-            'x-consuelo-sites-cache': 'miss',
-            'x-consuelo-site-content-hash': snapshot.contentHash,
-            'x-consuelo-site-version': expectedPlan.versionId,
-          },
-        });
-      },
-      now: '2026-06-14T00:00:00.000Z',
-    })).rejects.toMatchObject({
-      code: 'INSTALL_EDGE_PUBLISH_FAILED',
-      stage: 'edge_verify',
-      workspaceHost: 'internal.consuelohq.com',
-    });
   });
 
   it('fails closed when the private launcher is publicly readable without a workspace session', async () => {

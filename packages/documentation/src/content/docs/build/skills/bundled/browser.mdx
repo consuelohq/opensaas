@@ -1,0 +1,52 @@
+---
+title: Browser
+description: "use for known-url browser work, rendered-page extraction, authenticated pages, live UI verification, Interact with docs and JS-heavy pages, screenshots, accessibility snapshots, and browser evidence. use when provided a URL to inspect, test or verify a webpage or UI, needs scraping/fetching from, wants screenshots or truth, or pages that require clicking, filling, login state, tabs, accordions, or auth. use built-in web search for discovery first, and use browser known-url, use togther."
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/browser/skill.json
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: Bundled metadata and registry inclusion for `browser` were verified on 2026-08-11.
+  - source: packages/os/skills/browser/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The current guidance entrypoint and declared load contract were inspected on 2026-08-11.
+---
+
+`browser` is a bundled Consuelo OS skill. Uses the OS browser surface for known URLs, authenticated pages, rendered extraction, accessibility snapshots, screenshots, and live UI verification.
+
+## When to use it
+
+use for known-url browser work, rendered-page extraction, authenticated pages, live UI verification, Interact with docs and JS-heavy pages, screenshots, accessibility snapshots, and browser evidence. use when provided a URL to inspect, test or verify a webpage or UI, needs scraping/fetching from, wants screenshots or truth, or pages that require clicking, filling, login state, tabs, accordions, or auth. use built-in web search for discovery first, and use browser known-url, use togther.
+
+Typical requests include:
+
+- “Open this known URL and verify the signed-in UI.”
+- “Take a screenshot and confirm the button is actually rendered.”
+
+## Enable it
+
+```bash
+consuelo add skill browser
+```
+
+Run `consuelo add skill` without a name to choose from the skills that are not currently selected. Remove it with:
+
+```bash
+consuelo remove skill browser
+```
+
+## What the agent loads
+
+The installed metadata points to `skills/browser/SKILL.md` in the immutable OS runtime. The compact steering catalog advertises the active skill by name and description; the full `SKILL.md` body is loaded only when the workflow applies.
+
+Metadata for this skill currently declares permission `guidance` and `requiresApproval: no`. Those fields describe the skill contract; individual tools called by the skill still enforce their own authorization and safety rules.
+
+## Boundary
+
+Use web search for discovery. Use Browser when the URL or UI is known and runtime/browser evidence matters.
+
+## Verify
+
+After enabling it, confirm `~/Consuelo/Skills/browser/SKILL.md` exists and that `browser` appears in `<CONSUELO_HOME>/components/installed-skills.json`. A newly bootstrapped agent should then see `browser` in the Installed skills portion of steering.
