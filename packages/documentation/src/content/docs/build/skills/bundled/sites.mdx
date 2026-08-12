@@ -1,0 +1,52 @@
+---
+title: Sites
+description: "Use this skill for Consuelo OS site delivery infrastructure: launcher pages, typed pages, traces, diffs, settings, and the static delivery layer used by Consuelo Artifacts."
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/sites/skill.json
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: Bundled metadata and registry inclusion for `sites` were verified on 2026-08-11.
+  - source: packages/os/skills/sites/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The current guidance entrypoint and declared load contract were inspected on 2026-08-11.
+---
+
+`sites` is a bundled Consuelo OS skill. Operates Consuelo site-delivery infrastructure: launcher pages, typed pages, traces, diffs, settings surfaces, and static/edge delivery materialization.
+
+## When to use it
+
+Invoke when the user asks about OS site delivery, local site materialization, launcher pages, typed page registries, traces, diffs, settings pages, or edge snapshot routing.
+
+Typical requests include:
+
+- “Inspect the local Sites delivery state.”
+- “Refresh and verify the static page delivery surface.”
+
+## Enable it
+
+```bash
+consuelo add skill sites
+```
+
+Run `consuelo add skill` without a name to choose from the skills that are not currently selected. Remove it with:
+
+```bash
+consuelo remove skill sites
+```
+
+## What the agent loads
+
+The installed metadata points to `skills/sites/SKILL.md` in the immutable OS runtime. The compact steering catalog advertises the active skill by name and description; the full `SKILL.md` body is loaded only when the workflow applies.
+
+Metadata for this skill currently declares permission `guidance` and `requiresApproval: no`. Those fields describe the skill contract; individual tools called by the skill still enforce their own authorization and safety rules.
+
+## Boundary
+
+Sites is delivery infrastructure. Artifacts owns durable generated outputs and their product-level catalog/history.
+
+## Verify
+
+After enabling it, confirm `~/Consuelo/Skills/sites/SKILL.md` exists and that `sites` appears in `<CONSUELO_HOME>/components/installed-skills.json`. A newly bootstrapped agent should then see `sites` in the Installed skills portion of steering.

@@ -10,6 +10,7 @@ import {
   validateManifestOverlayPatch,
   type ManifestOverlayPatch,
 } from './manifest-overlay';
+import { nodeResourceLockPath, withNodeResourceLock } from './node-resource-lock';
 import { materializeConfigurationSite } from './settings-materialization';
 import { buildSettingsSnapshot, type SettingsSnapshot } from './settings-snapshot';
 
@@ -35,7 +36,6 @@ export type SettingsOverlayPatchInput = {
   actor: ControlPlaneAuditActor;
 };
 
-const mutationQueues = new Map<string, Promise<void>>();
 
 function settingsError(
   code: SettingsControlPlaneErrorCode,
@@ -61,23 +61,6 @@ function issueError(issue: { code: string; message: string }): SettingsControlPl
   return settingsError('InvalidInput', issue.message, 400);
 }
 
-async function serializeMutation<A>(key: string, operation: () => Promise<A>): Promise<A> {
-  const previous = mutationQueues.get(key) ?? Promise.resolve();
-  let release: () => void = () => undefined;
-  const gate = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  const queued = previous.catch(() => undefined).then(() => gate);
-  mutationQueues.set(key, queued);
-  await previous.catch(() => undefined);
-  try {
-    return await operation();
-  } finally {
-    release();
-    if (mutationQueues.get(key) === queued) mutationQueues.delete(key);
-  }
-}
-
 export function readSettingsSnapshotEffect(input: {
   home: string;
 }): Effect.Effect<SettingsSnapshot, SettingsControlPlaneError> {
@@ -97,7 +80,10 @@ export function applySettingsOverlayPatchEffect(
   if (validationIssue) return Effect.fail(issueError(validationIssue));
 
   return Effect.tryPromise({
-    try: () => serializeMutation(manifestOverlayPath(input.home), async () => {
+    try: () => withNodeResourceLock({
+      lockPath: nodeResourceLockPath(manifestOverlayPath(input.home)),
+      operationId: `settings:${input.patch.kind}:${input.patch.name}`,
+    }, async () => {
       patchManifestOverlay(input.home, input.patch);
       const materialized = materializeConfigurationSite(input.home);
       try {

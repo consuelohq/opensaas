@@ -1,0 +1,52 @@
+---
+title: Teach
+description: "Use this skill when the user asks the OS agent to teach them a daily deep idea, create an AI-seeded learning guide, ingest a research source for teaching, or publish a durable Sites guide that explains one transferable concept. It coordinates research ingest, typed guide rendering, Sites publishing, and optional teach state updates."
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/teach/skill.json
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: Bundled metadata and registry inclusion for `teach` were verified on 2026-08-11.
+  - source: packages/os/skills/teach/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The current guidance entrypoint and declared load contract were inspected on 2026-08-11.
+---
+
+`teach` is a bundled Consuelo OS skill. Builds a focused learning lesson from a chosen or seeded topic, optionally ingests research, renders a guide, publishes it through Sites, and can update teaching state.
+
+## When to use it
+
+Invoke when the user asks to teach, learn one idea, run Daily Deep Idea, create an AI learning guide, explain a paper/source as a durable lesson, or set up/swap an auto-teaching topic queue.
+
+Typical requests include:
+
+- “Teach me one deep idea about retrieval today.”
+- “Turn this paper into a durable lesson and publish the guide.”
+
+## Enable it
+
+```bash
+consuelo add skill teach
+```
+
+Run `consuelo add skill` without a name to choose from the skills that are not currently selected. Remove it with:
+
+```bash
+consuelo remove skill teach
+```
+
+## What the agent loads
+
+The installed metadata points to `skills/teach/SKILL.md` in the immutable OS runtime. The compact steering catalog advertises the active skill by name and description; the full `SKILL.md` body is loaded only when the workflow applies.
+
+Metadata for this skill currently declares permission `guidance` and `requiresApproval: no`. Those fields describe the skill contract; individual tools called by the skill still enforce their own authorization and safety rules.
+
+## Boundary
+
+Teach owns lesson orchestration and content. Sites owns the reader/delivery UI, and Research Ingest owns durable source ingestion.
+
+## Verify
+
+After enabling it, confirm `~/Consuelo/Skills/teach/SKILL.md` exists and that `teach` appears in `<CONSUELO_HOME>/components/installed-skills.json`. A newly bootstrapped agent should then see `teach` in the Installed skills portion of steering.

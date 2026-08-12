@@ -210,7 +210,7 @@ describe('Windows Service Control Manager adapter', () => {
       bunExecutable,
       consueloHome: home,
       runtimeCurrent: `${home}\\runtime\\current`,
-      entrypoint: 'scripts/server/main.ts',
+      entrypoint: 'scripts/server/supervisor.ts',
     });
     expect(JSON.stringify(config)).not.toMatch(
       /token|secret|password|credential/i,

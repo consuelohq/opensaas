@@ -48,7 +48,7 @@ describe('Reference documentation contract', () => {
     for (const [sourcePath] of referencePages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toContain('verifiedAt: 2026-07-13');
+      expect(source).toMatch(/verifiedAt: 2026-\d{2}-\d{2}/);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
       expect(source).toContain('tests:');
@@ -70,9 +70,9 @@ describe('Reference documentation contract', () => {
 
   test('documents the exact current CLI and configuration contracts', () => {
     const cli = read('src/content/docs/reference/cli.mdx');
-    for (const term of ['get-steering', 'get-raw-steering', 'call', 'sites publish', 'settings status', '--json']) expect(cli).toContain(term);
-    expect(cli).toContain('bun ./scripts/os.ts');
-    expect(cli).not.toContain('consuelo os --');
+    for (const term of ['consuelo help', 'consuelo status', 'consuelo update', 'consuelo add skill', 'consuelo remove skill', '--json']) expect(cli).toContain(term);
+    expect(cli).toContain('picker');
+    expect(cli).not.toContain('There is not a separate public `consuelo` binary');
 
     const config = read('src/content/docs/reference/configuration.mdx');
     for (const term of ['~/.consuelo', 'consuelo.yaml', 'node.yaml', 'workspace.yaml', 'config.json', 'manifest.overlay.json']) expect(config).toContain(term);
@@ -93,7 +93,7 @@ describe('Reference documentation contract', () => {
     for (const term of ['facade-tool', 'methodPath', 'defaultTimeout', 'readOnly', 'mutating', 'safeToRetry', 'sessionRequired']) expect(tools).toContain(term);
 
     const skills = read('src/content/docs/reference/skills-and-manifests.mdx');
-    for (const term of ['skill.json', 'SKILL.md', 'permission', 'requiresApproval', 'consuelo-os-tool-manifest', 'consuelo-os-core-manifest']) expect(skills).toContain(term);
+    for (const term of ['skill.json', 'SKILL.md', 'permission', 'requiresApproval', 'selectedSkills', 'components/installed-skills.json', 'Consuelo/Skills/skills.json', 'consuelo-os-tool-manifest', 'consuelo-os-core-manifest']) expect(skills).toContain(term);
   });
 
   test('documents stable result envelopes and error semantics', () => {

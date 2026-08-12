@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Effect } from 'effect';
 
 import manifestJson from '../../../manifests/generated/tool.manifest.json';
@@ -18,7 +19,9 @@ import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToo
 import { logToolExecution } from './logger';
 import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
 import { getInputSchema } from './schemas';
+import { resolveBrowserConfig } from '../browser/config';
 import { executeCodeCall } from '../code-call/runtime';
+import { nodeResourceLockPath, withNodeResourceLock } from '../node-resource-lock';
 import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
 import type { CodeCallInput } from '../code-call/types';
 import { executeSubagent } from '../subagent/runtime';
@@ -65,6 +68,7 @@ type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
 
+const runtimePackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const MAX_LOG_COMMAND_CHARS = 4000;
 
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
@@ -324,7 +328,13 @@ export async function executeTool<TData = unknown>(
     const facadeCmdForLog = formatFacadeCommandForLog(toolName, commandInput);
 
     const timeoutMs = getTimeoutMs(entry, commandInput);
-    const runResult = await runWithRetry(entry, plan, timeoutMs, runner);
+    const runResult = (toolName === 'browser' || toolName.startsWith('browser.'))
+      ? await withNodeResourceLock({
+        lockPath: nodeResourceLockPath(resolveBrowserConfig(env).profilePath),
+        operationId: `browser:${toolName}`,
+        waitTimeoutMs: timeoutMs,
+      }, () => runWithRetry(entry, plan, timeoutMs, runner))
+      : await runWithRetry(entry, plan, timeoutMs, runner);
     const cleanStderr = stripCommandEcho(runResult.stderr);
     if (runResult.timedOut) {
       const result = createToolResult({
@@ -593,6 +603,7 @@ function compactReviewData(data: unknown): unknown {
   const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
   const testResults = asArray(data.testResults);
   const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  const documentationOpportunities = asArray(data.documentationOpportunities);
   return {
     schema: 'review.summary.v1',
     base: data.base,
@@ -600,13 +611,14 @@ function compactReviewData(data: unknown): unknown {
     files: data.files,
     affectedProjects: data.affectedProjects,
     checksRun: testResults.length > 0
-      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'tests']
-      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance'],
+      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'documentation_opportunities', 'tests']
+      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'documentation_opportunities'],
     summary: {
       yourIssues: yours.length,
       preExistingIssues: preExisting.length,
       failedTestSuites: failedSuites.length,
       blockingIssues: yours.length + failedSuites.length,
+      documentationOpportunities: documentationOpportunities.length,
     },
     mustFixTotal: yours.length,
     mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
@@ -619,6 +631,7 @@ function compactReviewData(data: unknown): unknown {
       preExisting: summarizeFacadeFindings(preExisting).byFile,
     },
     preExistingDigest: summarizeFacadeFindings(preExisting),
+    documentationOpportunities: documentationOpportunities.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
     testSummary: {
       totalSuites: testResults.length,
       passedSuites: testResults.length - failedSuites.length,
@@ -1100,7 +1113,7 @@ function buildCommandPlan(
   return {
     command: 'bun',
     args,
-    cwd: resolveWorkspaceCommandCwd(cwd, script, input),
+    cwd: entry.command.executionScope === 'runtime' ? runtimePackageRoot : resolveWorkspaceCommandCwd(cwd, script, input),
     env: {
       ...env,
       ...(branch ? { TASK_BRANCH: branch } : {}),

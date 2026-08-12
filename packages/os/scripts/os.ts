@@ -36,6 +36,7 @@ import type { SitePageKind } from './lib/sites';
 import { readArtifactCatalog } from './lib/artifacts';
 import { loadOsConfig } from './lib/install-state';
 import { runConfigurationOverlayCommand } from './lib/settings-overlay-command';
+import { readSteeringSkillCatalog } from './lib/steering-skills';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -503,6 +504,7 @@ function renderSitesCommandResult(result: SitesCommandResult): string {
 }
 export function getSteering(): string {
   const runtimePaths = ensureRuntimePaths();
+  const packageRoot = getPackageRoot();
   const sections = [
     '# Consuelo OS runtime context',
     '',
@@ -514,7 +516,7 @@ export function getSteering(): string {
   ];
 
   for (const file of readSteeringMarkdownFiles(
-    path.join(getPackageRoot(), 'steering'),
+    path.join(packageRoot, 'steering'),
   )) {
     sections.push('', `# bundled ${file.name}`, '', file.content);
   }
@@ -522,6 +524,20 @@ export function getSteering(): string {
   for (const file of readSteeringMarkdownFiles(visibleSteeringDir())) {
     sections.push('', `# ${file.name}`, '', file.content);
   }
+
+  sections.push(
+    '',
+    '## Installed skills',
+    '',
+    'These compact entries describe the active skill catalog. When a request matches a skill trigger, load its entrypoint before proceeding. Skill bodies are not inlined here.',
+    '',
+    '```json',
+    safeJson(readSteeringSkillCatalog({
+      home: runtimePaths.home,
+      packageRoot,
+    })),
+    '```',
+  );
 
   sections.push(
     '',
@@ -667,6 +683,7 @@ Do not call get_steering again unless you are intentionally refreshing bootstrap
 Read only the specific file you need:
 - the immutable runtime steering/system_prompt.md
 - ~/Consuelo/Steering/*.md
+- the active installed skill index in <CONSUELO_HOME>/components/installed-skills.json
 - packages/os/manifests/generated/core.manifest.json
 
 Useful alternatives:
