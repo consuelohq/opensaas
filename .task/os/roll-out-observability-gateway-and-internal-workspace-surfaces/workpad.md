@@ -187,6 +187,8 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-12 01:17:01 `verify`: passed — OK
 - 2026-08-12 01:34:50 `review.run`: passed — OK
 - 2026-08-12 01:35:08 `verify`: passed — OK
+- 2026-08-12 01:53:46 `review.run`: passed — OK
+- 2026-08-12 01:54:04 `verify`: passed — OK
 
 ## key decisions
 
@@ -313,3 +315,18 @@ bun run task:finish
 - Strict review against `origin/stream/os` after the CI-discovered clean-host fix: 28 task files reviewed, 0 issues, 0 blockers, 0 must-fix findings.
 - Typed full verify for the post-CI delta: `passed=true`, `publishValid=true`; review and DB guards are green.
 - The safe branch-selected suite is fully green after making tests caller-CWD/minification independent: selector 11/11; Trace gateway/Trace Burn + runtime asset closure 40/40; TraceStore 3/3; publisher 7/7; route preservation/integration 23/23; lifecycle scrub 10/10.
+
+### CI immutable-base verification follow-up — 2026-08-11/12
+
+- PR #1794's task-caused Linux/macOS clean-host distribution failures are fixed. The remaining Consuelo `workspace-contracts` and `verify` failures were CI-only: GitHub's virtual merge checkout selected unrelated `auto:twenty-sdk:test`, while the exact virtual merge commit with the correct base SHA selected only task-owned suites.
+- Root cause: `consuelo-changes` emitted mutable `origin/${github.base_ref}`. Downstream jobs start later in fresh checkouts, so a moving `stream/os` could change the comparison base after GitHub created the PR merge commit.
+- TDD: added a focused static contract in `local-os-server-review-findings.test.ts`; it failed against the mutable base, then passed after the workflow fix. Pull requests now use `github.event.pull_request.base.sha`; merge groups prefer `merge_group.base_sha`; ref-style fallbacks are canonicalized with `git rev-parse ...^{commit}` before the SHA is emitted downstream.
+- Added explicit critical `consuelo-ci-immutable-base` test-selection ownership so the workflow/test change does not re-enable the unsafe broad OS package suite. The focused suite uses the `packages/os` test script and passes 19/19.
+- Final safe branch selection is green: workspace selector 11/11; immutable-base/local-server contract 19/19; Trace gateway/Trace Burn/runtime asset closure 40/40; TraceStore 3/3; publisher 7/7; route preservation/integration 23/23; lifecycle scrub 10/10. No `auto:@consuelo/os:package-test` or `auto:twenty-sdk:test` suite is selected.
+- OS typecheck and `git diff --check` pass after the CI fix.
+
+### Immutable-base CI fix validation
+
+- Focused static workflow contract: 19/19 green after the pull-request/merge-group base was pinned to immutable commit SHA.
+- Full safe selected suite: 7 suites green (workspace selector 11, immutable-base/local-server 19, Trace contracts 40, TraceStore 3, publisher 7, route preservation/integration 23, lifecycle scrub 10). No broad OS or unrelated Twenty SDK suite selected.
+- Strict review against current `origin/stream/os`: 29 task files, 0 issues, 0 blockers. Typed full verify for the unpushed CI delta: `passed=true`, `publishValid=true`. OS typecheck and `git diff --check` pass.

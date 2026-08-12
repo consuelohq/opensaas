@@ -5,8 +5,8 @@
     "testFileCount": 2547,
     "mappedTestCount": 2470,
     "unmappedTestCount": 77,
-    "ruleCount": 36,
-    "explicitRuleCount": 15,
+    "ruleCount": 37,
+    "explicitRuleCount": 16,
     "autoRuleCount": 21,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -776,6 +776,28 @@
       ],
       "critical": false,
       "reason": "Workspace script/docs changes should keep audit behavior covered.",
+      "origin": "explicit"
+    },
+    {
+      "id": "consuelo-ci-immutable-base",
+      "source": [
+        ".github/workflows/consuelo-ci.yaml",
+        "packages/os/tests/local-os-server-review-findings.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite.",
       "origin": "explicit"
     },
     {

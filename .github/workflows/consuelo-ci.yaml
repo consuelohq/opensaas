@@ -44,12 +44,15 @@ jobs:
 
           case "${{ github.event_name }}" in
             pull_request)
-              base_ref="origin/${{ github.base_ref }}"
+              base_ref="${{ github.event.pull_request.base.sha }}"
               ;;
             merge_group)
-              merge_base_ref="$(jq -r '.merge_group.base_ref // "refs/heads/main"' "$GITHUB_EVENT_PATH")"
-              base_ref="${merge_base_ref#refs/heads/}"
-              base_ref="origin/${base_ref}"
+              base_ref="$(jq -r '.merge_group.base_sha // empty' "$GITHUB_EVENT_PATH")"
+              if [[ -z "$base_ref" ]]; then
+                merge_base_ref="$(jq -r '.merge_group.base_ref // "refs/heads/main"' "$GITHUB_EVENT_PATH")"
+                base_ref="${merge_base_ref#refs/heads/}"
+                base_ref="origin/${base_ref}"
+              fi
               ;;
             workflow_dispatch)
               base_ref="${{ github.event.inputs.base || 'origin/main' }}"
@@ -64,6 +67,7 @@ jobs:
             git fetch --no-tags --prune origin "+refs/heads/${base_branch}:refs/remotes/origin/${base_branch}"
           fi
 
+          base_ref="$(git rev-parse "${base_ref}^{commit}")"
           git diff --name-only --diff-filter=ACMR "${base_ref}...HEAD" > /tmp/consuelo-changed-files.txt
           cat /tmp/consuelo-changed-files.txt
 

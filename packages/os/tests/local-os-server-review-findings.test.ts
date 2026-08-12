@@ -52,6 +52,32 @@ describe('local OS server review findings', () => {
     );
   });
 
+  it('pins downstream CI verification to the immutable pull-request or merge-group base commit', () => {
+    const workflow = readFileSync(
+      resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),
+      'utf8',
+    );
+
+    expect(workflow).toContain(
+      'base_ref="${{ github.event.pull_request.base.sha }}"',
+    );
+    expect(workflow).toContain(
+      "jq -r '.merge_group.base_sha // empty' \"$GITHUB_EVENT_PATH\"",
+    );
+    expect(workflow).toContain(
+      'base_ref="$(git rev-parse \"${base_ref}^{commit}\")"',
+    );
+    expect(workflow).toContain(
+      'write_output base_ref "$base_ref"',
+    );
+    expect(workflow).toContain(
+      'bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --no-stamp --review-arg --no-tests',
+    );
+    expect(workflow).not.toContain(
+      'pull_request)\n              base_ref="origin/${{ github.base_ref }}"',
+    );
+  });
+
   it('preserves the default port when both port variables are unset', () => {
     delete process.env.CONSUELO_OS_PORT;
     delete process.env.PORT;
