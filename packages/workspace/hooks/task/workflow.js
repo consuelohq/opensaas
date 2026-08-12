@@ -235,6 +235,7 @@ function handlePostTaskPush(event, resolver) {
   if (!succeeded) return null;
   const state = event.state || {};
   const taskSession = event.taskSession || state.taskSession || result.taskSession || result.data?.taskSession || '<taskSession>';
+  const repo = result.repo || result.data?.repo || state.repo || null;
 
   return {
     workflow: TASK_WORKFLOW_ID,
@@ -242,7 +243,7 @@ function handlePostTaskPush(event, resolver) {
     event: event.event,
     requiredNextAction: resolver.action('task.pr', {
       taskSession,
-      input: { ready: true },
+      input: { ready: true, ...(repo ? { repo } : {}) },
     }),
     notes: [
       'The task branch is an implementation branch, not the normal review surface.',

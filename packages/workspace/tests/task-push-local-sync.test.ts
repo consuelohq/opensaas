@@ -303,6 +303,7 @@ describe('task.push local branch synchronization', () => {
 
     expect(postPublish).toMatch(/try\s*\{[\s\S]*synchronizeApiPushedTaskBranch[\s\S]*\}\s*catch/);
     expect(postPublish).toMatch(/try\s*\{[\s\S]*dispatchHookEvent[\s\S]*\}\s*catch/);
+    expect(postPublish.match(/repo: args\.repo/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
     expect(postPublish).toContain('remote push succeeded');
   });
 

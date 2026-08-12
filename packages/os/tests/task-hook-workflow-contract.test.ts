@@ -250,8 +250,8 @@ describe('OS manifest-driven task workflow hooks contract', () => {
       tool: 'task.push',
       workflow: 'task',
       taskSession: 'tsk_publish',
-      result: { ok: true, branch: 'task/os/example', sha: 'abc123' },
-      state: { taskSession: 'tsk_publish', area: 'os' },
+      result: { ok: true, branch: 'task/os/example', sha: 'abc123', repo: 'example/private-repo' },
+      state: { taskSession: 'tsk_publish', area: 'os', repo: 'example/private-repo' },
     });
 
     expect(guidance).toEqual(expect.objectContaining({
@@ -262,7 +262,7 @@ describe('OS manifest-driven task workflow hooks contract', () => {
         tool: 'task.promote',
         taskSession: 'tsk_publish',
         taskSessionPlacement: 'top-level',
-        input: { ready: true },
+        input: { ready: true, repo: 'example/private-repo' },
       }),
     }));
     expect(guidance.notes.join('\n')).toContain('stream review PR');

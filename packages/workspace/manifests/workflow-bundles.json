@@ -648,6 +648,11 @@
                   "kind": "value"
                 },
                 {
+                  "source": "repo",
+                  "flag": "--repo",
+                  "kind": "value"
+                },
+                {
                   "source": "taskOnly",
                   "flag": "--task-only",
                   "kind": "boolean"
@@ -718,6 +723,11 @@
                 {
                   "source": "branch",
                   "flag": "--branch",
+                  "kind": "value"
+                },
+                {
+                  "source": "repo",
+                  "flag": "--repo",
                   "kind": "value"
                 },
                 {

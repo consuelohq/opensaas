@@ -163,6 +163,11 @@ export const toolHandlers = [
           "kind": "value"
         },
         {
+          "source": "repo",
+          "flag": "--repo",
+          "kind": "value"
+        },
+        {
           "source": "taskOnly",
           "flag": "--task-only",
           "kind": "boolean"
@@ -237,6 +242,11 @@ export const toolHandlers = [
         {
           "source": "branch",
           "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "repo",
+          "flag": "--repo",
           "kind": "value"
         },
         {
