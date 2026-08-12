@@ -192,9 +192,15 @@ describe('Configuration Sites gateway endpoints', () => {
       }),
     }));
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toMatchObject({
-      error: { code: 'INVALID_SOURCE_CONTROL_CONFIGURATION' },
+    const errorBody = await response.json() as { error: { code: string; message: string } };
+    expect(errorBody).toMatchObject({
+      error: {
+        code: 'INVALID_SOURCE_CONTROL_CONFIGURATION',
+        message: 'Source-control configuration is invalid.',
+      },
     });
+    expect(JSON.stringify(errorBody)).not.toContain('../private');
+    expect(JSON.stringify(errorBody)).not.toContain(home);
   });
 
   it('keeps legacy settings gateway routes and scopes as compatibility aliases', async () => {

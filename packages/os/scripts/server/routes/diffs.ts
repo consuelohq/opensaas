@@ -68,7 +68,8 @@ async function authenticate(
   body = '',
 ): Promise<AuthenticatedMcpPrincipal | Response> {
   try {
-    const path = new URL(request.url).pathname;
+    const url = new URL(request.url);
+    const path = `${url.pathname}${url.search}`;
     const authentication = await authenticateSignedRequest({
       request,
       path,
@@ -279,15 +280,15 @@ export function createDiffsRoutes(): Hono {
 
   for (const route of [
     { path: '/diffs/:owner/:repo/tree/:ref', kind: 'code' as const },
-    { path: '/diffs/:owner/:repo/tree/:ref/*', kind: 'code' as const },
+    { path: '/diffs/:owner/:repo/tree/:ref/:path{.*}', kind: 'code' as const },
     { path: '/diffs/:owner/:repo/history/:ref', kind: 'history' as const },
-    { path: '/diffs/:owner/:repo/history/:ref/*', kind: 'history' as const },
+    { path: '/diffs/:owner/:repo/history/:ref/:path{.*}', kind: 'history' as const },
   ]) {
     app.get(route.path, async (context) => {
       const request = context.req.raw;
       const principal = await authenticate(request, READ_SCOPE);
       if (principal instanceof Response) return principal;
-      const path = context.req.param('*')?.replace(/^\/+|\/+$/g, '') ?? '';
+      const path = context.req.param('path')?.replace(/^\/+|\/+$/g, '') ?? '';
       try {
         const input = {
           principal,
