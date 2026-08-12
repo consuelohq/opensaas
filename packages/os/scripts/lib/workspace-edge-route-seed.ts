@@ -5,10 +5,10 @@ import type {
 } from './workspace-cloudflare-d1-route-registry';
 
 export type WorkspaceEdgeRouteSeedInput = {
-  workspaceId?: string;
-  workspaceSlug?: string;
-  hostname?: string;
-  baseDomain?: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  hostname: string;
+  baseDomain: string;
   siteSnapshotKey?: string;
   siteVersionId?: string;
   publishedSiteIds?: WorkspaceSiteSnapshotId[];
@@ -24,10 +24,6 @@ type WorkspaceEdgeSeedRecord = WorkspaceRouteD1RecordInput & {
   updatedAt: string;
 };
 
-const DEFAULT_WORKSPACE_ID = 'workspace_internal';
-const DEFAULT_WORKSPACE_SLUG = 'internal';
-const DEFAULT_HOSTNAME = 'internal.consuelohq.com';
-const DEFAULT_BASE_DOMAIN = 'consuelohq.com';
 const DEFAULT_APP_UPSTREAM_URL = 'https://app.consuelohq.com';
 const DEFAULT_LOCAL_SERVICE_URL = 'http://127.0.0.1:8787';
 export const WORKSPACE_SITE_SNAPSHOT_IDS = [
@@ -61,7 +57,6 @@ export const workspaceSiteSnapshotRequiresSession = (
 
 const DEFAULT_SITE_ID: WorkspaceSiteSnapshotId = 'launcher';
 const DEFAULT_SITE_VERSION_ID = 'seeded-workspace-site-shell';
-const DEFAULT_SITE_MANIFEST_KEY = `sites/${DEFAULT_WORKSPACE_ID}/${DEFAULT_SITE_ID}/${DEFAULT_SITE_VERSION_ID}/index.html`;
 const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
 const SITE_SNAPSHOT_ROUTES: ReadonlyArray<{
   pathPrefix: string;
@@ -100,6 +95,19 @@ const trimmedValue = (value: string | undefined): string | undefined => {
 
 const trimmedOrDefault = (value: string | undefined, defaultValue: string): string =>
   trimmedValue(value) ?? defaultValue;
+
+const requiredWorkspaceIdentityValue = (
+  value: string | undefined,
+  field: 'workspaceId' | 'workspaceSlug' | 'hostname' | 'baseDomain',
+): string => {
+  const normalized = trimmedValue(value);
+  if (!normalized) {
+    throw new Error(
+      `workspace edge seed requires explicit workspace identity: ${field}`,
+    );
+  }
+  return normalized;
+};
 
 const hasOsConnectorInput = (
   input: WorkspaceEdgeRouteSeedInput,
@@ -185,8 +193,8 @@ const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
       manifestKey: siteManifestKey({
         workspaceId: input.workspaceId,
         siteId: input.siteId,
-        siteSnapshotKey: input.siteSnapshotKey,
-        siteVersionId: input.siteVersionId,
+        siteSnapshotKey: input?.siteSnapshotKey,
+        siteVersionId: input?.siteVersionId,
       }),
       ...(normalizedContentHash(input.contentHash)
         ? { contentHash: normalizedContentHash(input.contentHash) }
@@ -483,19 +491,16 @@ const getConnectorTarget = (
 };
 
 export const createWorkspaceEdgeRouteSeedRecord = (
-  input: WorkspaceEdgeRouteSeedInput = {},
+  input: WorkspaceEdgeRouteSeedInput,
 ): WorkspaceEdgeSeedRecord => {
-  const workspaceId = trimmedOrDefault(input.workspaceId, DEFAULT_WORKSPACE_ID);
-  const workspaceSlug = trimmedOrDefault(
-    input.workspaceSlug,
-    DEFAULT_WORKSPACE_SLUG,
-  );
-  const hostname = trimmedOrDefault(input.hostname, DEFAULT_HOSTNAME);
-  const baseDomain = trimmedOrDefault(input.baseDomain, DEFAULT_BASE_DOMAIN);
-  const appUpstreamUrl = trimmedOrDefault(input.appUpstreamUrl, DEFAULT_APP_UPSTREAM_URL);
-  const connectorId = trimmedValue(input.connectorId);
-  const tunnelOriginUrl = trimmedValue(input.tunnelOriginUrl);
-  const publishedSiteIds = resolvePublishedSiteIds(input.publishedSiteIds);
+  const workspaceId = requiredWorkspaceIdentityValue(input?.workspaceId, 'workspaceId');
+  const workspaceSlug = requiredWorkspaceIdentityValue(input?.workspaceSlug, 'workspaceSlug');
+  const hostname = requiredWorkspaceIdentityValue(input?.hostname, 'hostname');
+  const baseDomain = requiredWorkspaceIdentityValue(input?.baseDomain, 'baseDomain');
+  const appUpstreamUrl = trimmedOrDefault(input?.appUpstreamUrl, DEFAULT_APP_UPSTREAM_URL);
+  const connectorId = trimmedValue(input?.connectorId);
+  const tunnelOriginUrl = trimmedValue(input?.tunnelOriginUrl);
+  const publishedSiteIds = resolvePublishedSiteIds(input?.publishedSiteIds);
   const osRoutes =
     hasOsConnectorInput(input) && connectorId !== undefined && tunnelOriginUrl !== undefined
       ? buildOsRoutes({ connectorId, tunnelOriginUrl })
@@ -505,9 +510,9 @@ export const createWorkspaceEdgeRouteSeedRecord = (
     ...SITE_SNAPSHOT_ROUTES.map((route) => buildSiteSnapshotRoute({
       ...route,
       workspaceId,
-      siteSnapshotKey: input.siteSnapshotKey,
-      siteVersionId: input.siteVersionId,
-      contentHash: input.siteContentHashes?.[route.siteId],
+      siteSnapshotKey: input?.siteSnapshotKey,
+      siteVersionId: input?.siteVersionId,
+      contentHash: input?.siteContentHashes?.[route.siteId],
       published: publishedSiteIds.has(route.siteId),
     })),
     ...buildLegacyConfigurationRedirectRoutes(),
@@ -520,7 +525,7 @@ export const createWorkspaceEdgeRouteSeedRecord = (
     ...buildLegacyArtifactRedirectRoutes(),
   ];
 
-  if (trimmedValue(input.appUpstreamUrl) !== undefined) {
+  if (trimmedValue(input?.appUpstreamUrl) !== undefined) {
     routes.push(buildAppRoute({ appUpstreamUrl }));
   }
 
@@ -738,7 +743,7 @@ const createPreservingRouteSql = (input: {
 };
 
 export const createWorkspaceEdgeRouteSeedSql = (
-  input: WorkspaceEdgeRouteSeedInput = {},
+  input: WorkspaceEdgeRouteSeedInput,
 ): string => {
   const record = createWorkspaceEdgeRouteSeedRecord(input);
   const primaryRoute = getPrimaryRoute(record);
