@@ -438,8 +438,16 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     });
     expect(traceRoute).toMatchObject({
       surface: 'sites',
-      auth: 'public',
+      auth: 'workspace-session',
       target: { kind: 'site-snapshot', siteId: 'traces' },
+    });
+    expect(record.routes.find((route) => route.pathPrefix === '/diffs')).toMatchObject({
+      surface: 'sites',
+      auth: 'workspace-session',
+      target: {
+        kind: 'consuelo-gateway-service',
+        serviceName: 'diffs-sites-read-endpoints',
+      },
     });
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot').map((route) => route.pathPrefix)).toEqual([
       '/',
@@ -449,7 +457,6 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       '/traces',
       '/tracing',
       '/trace-burn-intelligence',
-      '/diffs',
       '/docs',
       '/configuration',
       '/tools',
@@ -934,7 +941,6 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
       'https://internal.consuelohq.com/traces',
       'https://internal.consuelohq.com/tracing',
       'https://internal.consuelohq.com/trace-burn-intelligence',
-      'https://internal.consuelohq.com/diffs',
       'https://internal.consuelohq.com/docs',
       'https://internal.consuelohq.com/configuration',
       'https://internal.consuelohq.com/tools',
@@ -952,8 +958,7 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
         'https://internal.consuelohq.com/traces',
         'https://internal.consuelohq.com/tracing',
         'https://internal.consuelohq.com/trace-burn-intelligence',
-        'https://internal.consuelohq.com/diffs',
-        'https://internal.consuelohq.com/docs',
+          'https://internal.consuelohq.com/docs',
         'https://internal.consuelohq.com/configuration',
         'https://internal.consuelohq.com/tools',
         'https://internal.consuelohq.com/environments',
