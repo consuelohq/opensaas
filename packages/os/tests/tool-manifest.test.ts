@@ -5,7 +5,7 @@ import { join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildToolManifest, generateToolManifest } from '../scripts/generate-tool-manifest';
-import { getInputSchema, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
+import { getInputSchema, outputTypeSignatures, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 import { runToolSearch } from '../scripts/tools-search';
 
 type JsonObject = Record<string, unknown>;
@@ -413,6 +413,14 @@ describe('tool manifest generator', () => {
     expect(generatedWorkspace).toContain('patchText?: string');
     expect(generatedWorkspace).not.toContain('fs.patch');
     expect(generatedClient).toContain('createWorkspaceClient');
+  });
+
+  it('exposes subagent token usage in generated TypeScript surfaces', () => {
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+    const expectedUsage = 'usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }';
+
+    expect(outputTypeSignatures.SubagentOutput).toContain(expectedUsage);
+    expect(generatedWorkspace).toContain(expectedUsage);
   });
 
   it('publishes one non-core provider-neutral deployment surface and generated client types', () => {

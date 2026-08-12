@@ -34,6 +34,7 @@
     "packages/os/tests/distribution/release-publication-preparer.test.ts",
     "packages/os/tests/distribution/runtime-bundle.test.ts",
     "packages/os/tests/fixtures/trace-persistence-runtime.ts",
+    "packages/os/tests/fs-read-output-contract.test.ts",
     "packages/os/tests/local-os-server-review-findings.test.ts",
     "packages/os/tests/subagent-executable-discovery.test.ts",
     "packages/os/tests/subagent-lifecycle-regressions.test.ts",
@@ -50,9 +51,10 @@
     "packages/workspace/scripts/lib/facade/executor.ts",
     "packages/workspace/scripts/lib/facade/schemas.ts",
     "packages/workspace/scripts/subagent.ts",
+    "packages/workspace/scripts/task-pr.js",
     "packages/workspace/scripts/task-push.js",
     "packages/workspace/senior-engineer.md",
     "packages/workspace/tests/facade/facade.test.ts"
   ],
-  "updatedAt": "2026-08-11T22:17:51.941Z"
+  "updatedAt": "2026-08-12T04:39:01.258Z"
 }

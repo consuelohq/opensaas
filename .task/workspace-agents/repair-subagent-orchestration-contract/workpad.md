@@ -44,8 +44,10 @@ started: 2026-08-10
 
 ## files changed
 
-- `packages/os/scripts/lib/subagent/runtime.ts`
-- `packages/os/tests/subagent-orchestration-contract.test.ts`
+- `packages/os/scripts/lib/facade/schemas.ts`
+- `packages/os/tests/tool-manifest.test.ts`
+- `packages/os/src/generated/workspace.d.ts`
+- `packages/os/TOOLS.md`
 
 
 ## red evidence before production implementation
@@ -76,7 +78,6 @@ started: 2026-08-10
 
 ## workspace-owned: activity log
 
-- 2026-08-10 04:04:52 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 04:05:38 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 04:06:16 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-10 04:07:01 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
@@ -126,10 +127,10 @@ started: 2026-08-10
 - 2026-08-11 22:15:05 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 22:20:23 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 - 2026-08-11 22:21:53 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+- 2026-08-12 04:33:47 fs.write: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- 2026-08-11 21:08:55 `verify`: passed — OK
 - 2026-08-11 21:15:20 `review.run`: passed — OK
 - 2026-08-11 21:15:31 `verify`: passed — OK
 - 2026-08-11 21:15:52 `verify`: passed — OK
@@ -159,6 +160,7 @@ started: 2026-08-10
 - 2026-08-11 22:21:59 `verify`: passed — OK
 - 2026-08-12 03:10:56 `verify`: passed — OK
 - 2026-08-12 03:13:41 `verify`: passed — OK
+- 2026-08-12 04:36:27 `review.run`: passed — OK
 
 ## key decisions
 
@@ -225,6 +227,7 @@ bun run task:finish
 - `packages/os/tests/distribution/release-publication-preparer.test.ts`
 - `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
+- `packages/os/tests/fs-read-output-contract.test.ts`
 - `packages/os/tests/local-os-server-review-findings.test.ts`
 - `packages/os/tests/security-gateway.test.ts`
 - `packages/os/tests/subagent-executable-discovery.test.ts`
@@ -243,6 +246,7 @@ bun run task:finish
 - `packages/workspace/scripts/lib/facade/executor.ts`
 - `packages/workspace/scripts/lib/facade/schemas.ts`
 - `packages/workspace/scripts/subagent.ts`
+- `packages/workspace/scripts/task-pr.js`
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/senior-engineer.md`
 - `packages/workspace/tests/facade/facade.test.ts`
@@ -1307,3 +1311,18 @@ Test-first contract before production edits:
 - One earlier parallel-suite run had an unrelated ENOTEMPTY cleanup race in an existing fingerprint test; rerunning the orchestration file passed 16/16, and the final four-file run passed 40/40.
 
 - 2026-08-12 03:10:06 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`
+
+### Exact-head Codex P2 — generated token usage contract
+- Fresh Codex review on candidate `b29328eb` found one remaining P2: runtime `SubagentData.usage` is returned to callers, but `outputTypeSignatures.SubagentOutput` omits it, so generated TypeScript consumers cannot access token usage safely.
+- Test-first contract: assert the facade `SubagentOutput` signature advertises the runtime usage shape and the generated `workspace.d.ts` contains it. Follow the existing generated-surface assertions in `packages/os/tests/tool-manifest.test.ts`.
+- Focused red command: `bun x vitest run tests/tool-manifest.test.ts -t "exposes subagent token usage in generated TypeScript surfaces"` from `packages/os`.
+- Expected red: source signature/generated surface lacks `usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }`.
+- Fix scope: schema output signature + regenerated public surfaces only. No runtime semantic change.
+
+- 2026-08-12 04:33:47 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+- 2026-08-12 04:33:53 apply-patch: `packages/os/tests/tool-manifest.test.ts`
+
+- 2026-08-12 04:34:10 apply-patch: `packages/os/tests/tool-manifest.test.ts`
+
+- 2026-08-12 04:34:36 apply-patch: `packages/os/scripts/lib/facade/schemas.ts`
