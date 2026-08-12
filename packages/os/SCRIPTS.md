@@ -1164,9 +1164,9 @@ Cloud-admin authority remains separate from public install. Do not call this com
 
 ### lifecycle — unified Consuelo OS install and runtime lifecycle
 
-Runs the typed lifecycle engine for install-state inspection, first install, verified updates, restart, rollback, retention, channel preferences, update-notification preferences, installed-skill selection, repair, and uninstall. Runtime archives are downloaded under `$CONSUELO_HOME/runtime/staging`, verified against a signed release manifest and the runtime-bundle inventory, and atomically activated through `$CONSUELO_HOME/runtime/current`. The previous accepted release is retained at `runtime/previous`; interrupted activation journals restore that known-good release before another mutating operation proceeds.
+Runs the typed lifecycle engine for install-state inspection, first install, verified updates, restart, rollback, retention, channel preferences, update-notification preferences, installed-skill selection, repair, and uninstall. Runtime archives are downloaded under `$CONSUELO_HOME/runtime/staging`, verified against a signed release manifest and the runtime-bundle inventory, and atomically activated through `$CONSUELO_HOME/runtime/current`. Signed runtime identity includes source commit plus a file-derived recovery-capability set; publication, update, and repair fail closed when the selected runtime would drop stateless MCP, supervised workers, Caddy pooling, canonical watchdog recovery, or public connector-readiness support. The previous accepted release is retained at `runtime/previous`; interrupted activation journals restore that known-good release before another mutating operation proceeds.
 
-`install` preserves the existing interactive onboarding flow. `update`, `restart`, `rollback`, and `repair` never repeat onboarding or replace workspace identity, node identity, secrets, databases, selected skills, or user-owned content. Successful activation retains only current, previous, explicitly pinned releases, and unresolved merge content bases. Staging, test-home, and dev-slot directories are bounded by count and age. Inconsistent references and symlinked release roots fail closed.
+`install` preserves the existing interactive onboarding flow. `update`, `restart`, `rollback`, and `repair` never repeat onboarding or replace workspace identity, node identity, secrets, databases, selected skills, or user-owned content. Mutating lifecycle success is accepted only after local worker health and, on connector-managed nodes, public connector health plus a signed heartbeat that reconciles the authority/D1 `/mcp` route. A missing heartbeat config keeps local-only installs usable. Successful activation retains only current, previous, explicitly pinned releases, and unresolved merge content bases. Staging, test-home, and dev-slot directories are bounded by count and age. Inconsistent references and symlinked release roots fail closed.
 
 `add skill` and `remove skill` are opposite views over the same selected-skill control plane. With no names, they open the Clack multiselect UI: add shows only bundled skills that are not selected; remove shows only selected bundled skills; labels are the skill names. With explicit names they are non-interactive and scriptable. Selection is persisted in `$CONSUELO_HOME/config.json.selectedSkills`, then the existing managed-component reconciler refreshes `$CONSUELO_HOME/components/installed-skills.json` and `~/Consuelo/Skills/<name>`. Clean removed skills are deleted; locally modified managed skills are deselected but preserved for explicit review. `~/Consuelo/Skills/skills.json` remains the full bundled catalog, not the selected-skill list.
 
@@ -1222,7 +1222,9 @@ See `docs/managed-components.md` for the schema, action table, safety invariants
 
 ### consuelo-reload — manage the local Consuelo OS server
 
-Use this command to inspect, start, stop, or restart the local Bun server. When no user LaunchAgent is loaded, its direct fallback launches `scripts/start-consuelo-daemon.sh`, the single maintained OS daemon entrypoint.
+Use this command to inspect, start, stop, or restart the local Bun server. The supervised pool defaults to two workers; status reports desired/ready/draining/failed counts plus the Caddy loopback upstreams and marks HA ready only when at least two workers are ready and the Caddy upstream set exactly matches that pool. Rolling reload refuses stale/mismatched Caddy routing. When no user LaunchAgent is loaded, its direct fallback launches `scripts/start-consuelo-daemon.sh`, the single maintained OS daemon entrypoint.
+
+Restart also scrubs the retired generic `MCP_BEARER_TOKEN` key from an older installed LaunchAgent. When cleanup is required it performs a launchd bootout/bootstrap rather than a simple kickstart, so the retired environment cannot survive in the loaded job definition.
 
 The daemon sets `CONSUELO_TRACE_DB` to `$CONSUELO_HOME/node/db/traces.db` unless explicitly overridden. This trace sidecar stores high-volume `tool_traces`; `$CONSUELO_HOME/node/db/consuelo.db` remains the operational runtime database.
 
@@ -1660,5 +1662,7 @@ Supporting scripts:
 - `runtime-bundle:build` builds one deterministic platform archive with the already approved version.
 - `runtime-bundle:verify` verifies an archive and its embedded manifest.
 - `release:prepare` verifies the complete platform set, creates detached Ed25519 signatures, and emits the publication input.
+
+Runtime recovery capabilities are derived from the signed bundle file inventory instead of being manually claimed. Every promoted platform bundle must carry the same complete recovery-capability set, and lifecycle verification also requires the archive source commit and capabilities to match the signed channel entry.
 
 The protected environments are `consuelo-os-dev`, `consuelo-os-canary`, `consuelo-os-beta`, and `consuelo-os-stable`. See `docs/distribution/release-channels.md` for variables, secrets, first-release seeding, key rotation, concurrency, retry, and human device checkpoints.

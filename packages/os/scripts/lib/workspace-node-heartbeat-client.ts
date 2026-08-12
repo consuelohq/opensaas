@@ -31,6 +31,7 @@ export type WorkspaceNodeHeartbeatConfig = {
 export type WorkspaceNodeHeartbeatResult = {
   nodeId: string;
   presence: 'online' | 'stale' | 'offline';
+  routeReady: boolean;
   connectorId?: string;
   edgeRequestSigningSecret?: string;
 };
@@ -126,6 +127,7 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
   }
   const nodeId = (payload as { nodeId?: unknown }).nodeId;
   const presence = (payload as { presence?: unknown }).presence;
+  const routeReady = (payload as { routeReady?: unknown }).routeReady === true;
   const connectorId = (payload as { connectorId?: unknown }).connectorId;
   const edgeRequestSigningSecret = (
     payload as { edgeRequestSigningSecret?: unknown }
@@ -148,6 +150,7 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
   return {
     nodeId,
     presence: presence as WorkspaceNodeHeartbeatResult['presence'],
+    routeReady,
     ...(hasConnector && hasSecret
       ? {
           connectorId: connectorId.trim(),
