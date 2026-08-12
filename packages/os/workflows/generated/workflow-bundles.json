@@ -64,6 +64,11 @@
         {
           "event": "tool.postInvoke",
           "workflow": "task",
+          "tool": "task.push"
+        },
+        {
+          "event": "tool.postInvoke",
+          "workflow": "task",
           "tool": "task.pr"
         },
         {
@@ -684,6 +689,11 @@
                   "kind": "value"
                 },
                 {
+                  "source": "repo",
+                  "flag": "--repo",
+                  "kind": "value"
+                },
+                {
                   "source": "taskOnly",
                   "flag": "--task-only",
                   "kind": "boolean"
@@ -702,6 +712,11 @@
                   "source": "bodyTemplate",
                   "flag": "--body-template",
                   "kind": "value"
+                },
+                {
+                  "source": "ackWorkpadIncomplete",
+                  "flag": "--ack-workpad-incomplete",
+                  "kind": "boolean"
                 },
                 {
                   "source": "pr",
@@ -759,6 +774,11 @@
                 {
                   "source": "branch",
                   "flag": "--branch",
+                  "kind": "value"
+                },
+                {
+                  "source": "repo",
+                  "flag": "--repo",
                   "kind": "value"
                 },
                 {

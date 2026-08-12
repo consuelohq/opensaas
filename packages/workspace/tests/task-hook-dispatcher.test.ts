@@ -83,14 +83,20 @@ describe('Workspace hook dispatcher', () => {
 
   test('task-start script emits post-start guidance through the dispatcher', () => {
     const source = readFileSync(taskStartScript, 'utf8');
+    const mainSource = source.slice(source.indexOf('async function main()'));
+    const preflight = mainSource.indexOf('resolveStreamContextBeforeTaskMutation({');
 
     expect(source).toContain("require('../hooks/dispatcher.js')");
-    expect(source).toContain('dispatchHookEvent({');
-    expect(source).toContain("event: 'tool.postInvoke'");
-    expect(source).toContain("tool: 'task.start'");
-    expect(source).toContain("workflow: 'task'");
-    expect(source).toContain('task hook guidance failed');
-    expect(source).toContain('renderHookResult(guidance)');
+    expect(source).toContain("require('../hooks/intent.js')");
+    expect(source).toContain("path.join(__dirname, 'stream-context.js')");
+    expect(preflight).toBeGreaterThan(-1);
+    for (const mutation of ['ensureRemoteStreamBranch({', 'ensureRemoteTaskBranch({', 'createWorktree(', 'createBootstrapCommit({', 'createPullRequest({']) {
+      expect(preflight).toBeLessThan(mainSource.indexOf(mutation));
+    }
+    expect(source).toContain('createWorkflowIntentRuntime().start({');
+    expect(source).toContain('workflow: args.workflow');
+    expect(source).toMatch(/createWorkflowIntentRuntime\(\)\.start\(\{[\s\S]*?\btaskResult,\s*\}\);/);
+    expect(source).toContain('renderHookResult(workflowStart.hookResult)');
     expect(source).not.toContain("getTaskHookGuidance('after-task-start'");
   });
 

@@ -169,6 +169,43 @@ const sitesItems: SidebarItem[] = [
   { label: 'Troubleshooting', slug: 'sites/troubleshooting' },
 ];
 
+function buildGroupItems(label: string): SidebarItem[] {
+  const group = buildItems.find(
+    (item) => !('slug' in item) && item.label === label,
+  );
+  return group && 'items' in group ? group.items : [];
+}
+
+const buildToolItems = buildGroupItems('Tools');
+const toolsItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'tools' },
+  ...(buildToolItems.length > 0 ? [buildToolItems[0]] : []),
+  { label: 'Tool List', slug: 'tools/tool-list' },
+  ...buildToolItems.slice(1),
+  { label: 'Workflows', slug: 'build/workflows' },
+  { label: 'Sites', items: sitesItems },
+];
+
+const skillsItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'skills' },
+  ...buildGroupItems('Skills'),
+];
+
+const steeringItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'steering' },
+  ...buildGroupItems('Steering'),
+];
+
+const memoryItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'memory' },
+  { label: 'Workpads', slug: 'memory/workpads' },
+  { label: 'Handoffs', slug: 'memory/handoffs' },
+  { label: 'Streams', slug: 'memory/streams' },
+  { label: 'Memory tool and traces', slug: 'memory/saved-memory-and-traces' },
+  { label: 'Shared memory and context', slug: 'build/shared-memory-and-context' },
+  { label: 'Files and artifacts', slug: 'build/files-and-artifacts' },
+];
+
 const secureItems: SidebarItem[] = [
   { label: 'Overview', slug: 'secure' },
   { label: 'Security model', slug: 'secure/security-model' },
@@ -183,6 +220,7 @@ const secureItems: SidebarItem[] = [
     ],
   },
   { label: 'Approvals', slug: 'secure/approvals' },
+  { label: 'Build approvals', slug: 'build/approvals' },
   { label: 'Nodes and network access', slug: 'secure/nodes-and-network-access' },
   { label: 'Tailscale', slug: 'secure/tailscale' },
   { label: 'Hosted MCP ingress', slug: 'secure/hosted-mcp-ingress' },
@@ -216,8 +254,10 @@ const observeItems: SidebarItem[] = [
 export const docsSections = [
   { label: 'Start', slug: 'start', description: 'Install Consuelo OS, create a workspace, and connect your first agent.' },
   { label: 'Connect', slug: 'connect', description: 'Connect agents, nodes, apps, and services to the same workspace.' },
-  { label: 'Build with OS', slug: 'build', description: 'Use tools, skills, steering, workflows, memory, files, and approvals.' },
-  { label: 'Sites', slug: 'sites', description: 'Create, preview, and publish pages from your workspace.' },
+  { label: 'Tools', slug: 'tools', description: 'Find the operations agents can call, including workspace, browser, media, workflows, sites, and more.' },
+  { label: 'Skills', slug: 'skills', description: 'Install, use, and create reusable agent instructions and scripts.' },
+  { label: 'Steering', slug: 'steering', description: 'Control the workspace and project instructions every agent starts from.' },
+  { label: 'Memory', slug: 'memory', description: 'Carry durable work state across agents with workpads, handoffs, streams, files, and saved memory.' },
   { label: 'Observe', slug: 'observe', description: 'Inspect runs, traces, tool calls, artifacts, and logs.' },
   { label: 'Secure', slug: 'secure', description: 'Understand access, credentials, approvals, nodes, and network boundaries.' },
   { label: 'Reference', slug: 'reference', description: 'Look up exact CLI, configuration, MCP, manifest, and error contracts.' },
@@ -235,8 +275,10 @@ const startItems = [
 const sectionItemsBySlug: Record<string, SidebarItem[]> = {
   start: startItems,
   connect: connectItems,
-  build: buildItems,
-  sites: sitesItems,
+  tools: toolsItems,
+  skills: skillsItems,
+  steering: steeringItems,
+  memory: memoryItems,
   observe: observeItems,
   secure: secureItems,
   reference: referenceItems,
@@ -284,12 +326,19 @@ function findBreadcrumbTrail(
   return undefined;
 }
 
+function sectionForTargetSlug(targetSlug: string) {
+  const direct = docsSections.find((section) => section.slug === targetSlug);
+  if (direct) return direct;
+  return docsSections.find((section) =>
+    Boolean(findBreadcrumbTrail(sectionItemsBySlug[section.slug] ?? [], targetSlug)),
+  );
+}
+
 export function getBreadcrumbs(pathname: string): DocsBreadcrumb[] {
   const targetSlug = pathname.split('?')[0]?.split('#')[0]?.replace(/^\/+|\/+$/g, '') ?? '';
   if (!targetSlug) return [];
 
-  const sectionSlug = targetSlug.split('/')[0];
-  const section = docsSections.find((candidate) => candidate.slug === sectionSlug);
+  const section = sectionForTargetSlug(targetSlug);
   if (!section) return [];
 
   const sectionCrumb: DocsBreadcrumb = {
@@ -335,8 +384,6 @@ export const footerSections = docsSections.map((section) => ({
     .filter((link): link is { label: string; href: string } => Boolean(link)),
 }));
 
-const sectionBySlug = new Map(docsSections.map((section) => [section.slug, section]));
-
 function expandEntry(entry: DocsSidebarEntry): DocsSidebarEntry {
   if (entry.type === 'link') return { ...entry };
   return {
@@ -352,8 +399,8 @@ export function selectSectionSidebar(
 ):
   | { mode: 'global'; entries: DocsSidebarEntry[] }
   | { mode: 'section'; sectionLabel: string; entries: DocsSidebarEntry[] } {
-  const firstSegment = pathname.split('/').filter(Boolean)[0];
-  const section = firstSegment ? sectionBySlug.get(firstSegment) : undefined;
+  const targetSlug = pathname.split('?')[0]?.split('#')[0]?.replace(/^\/+|\/+$/g, '') ?? '';
+  const section = targetSlug ? sectionForTargetSlug(targetSlug) : undefined;
   if (!section) return { mode: 'global', entries };
 
   const group = entries.find(

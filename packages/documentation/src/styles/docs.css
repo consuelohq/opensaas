@@ -52,17 +52,17 @@
   #starlight__sidebar a[aria-current='page'] {
     background: color-mix(
       in srgb,
-      var(--sl-color-text-accent) 15%,
+      var(--sl-color-gray-5) 28%,
       transparent
     );
-    box-shadow: inset 3px 0 0 var(--sl-color-text-accent);
+    box-shadow: none;
     color: var(--sl-color-white);
   }
 
   #starlight__sidebar a[aria-current='page']:hover {
     background: color-mix(
       in srgb,
-      var(--sl-color-text-accent) 21%,
+      var(--sl-color-gray-5) 38%,
       transparent
     );
     color: var(--sl-color-white);
