@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/installer-compact-output",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1066,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1066",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1066",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1066/installer-compact-output",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1066",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1066/installer-compact-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-installer-compact-output",
+  "taskSession": "tsk_ec5aa3bba2d3",
+  "tmuxSession": "opensaas-workspace-agents-installer-compact-output-ec5aa3bb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-installer-compact-output/.task/workspace-agents/installer-compact-output/session.json",
+  "createdAt": "2026-06-15T06:42:19.530Z"
+}
