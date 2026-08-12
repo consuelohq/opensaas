@@ -21,6 +21,7 @@ bun install
 bun run dev
 bun run build
 bun run validate
+bun run generate:skill-templates
 bun run test:foundation
 bun run test:browser
 bun run test:boundary
@@ -80,6 +81,14 @@ bun run docs:deploy -- --skip-build
 `DOCS_TRANSLATION_PROVIDER` defaults to `google` through Worker vars in `wrangler.jsonc`. Use `passthrough` only for local validation.
 
 ## Adding or moving pages
+
+Skill Template pages under `src/content/docs/build/skills/bundled/` are generated from `packages/os/skills/skills.json` plus each bundled `SKILL.md`. Do not hand-edit those pages. After changing a bundled skill or its metadata, run:
+
+```bash
+bun run generate:skill-templates
+```
+
+The Build documentation contract compares the displayed preview with the real `SKILL.md` source exactly, so stale previews fail tests.
 
 1. Add or edit the MDX page under `src/content/docs`.
 2. Add the page to its section in `src/lib/docs-navigation.ts`.
