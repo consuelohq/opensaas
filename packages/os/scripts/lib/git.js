@@ -162,6 +162,38 @@ function fetchApiPushBranch(repoRoot, branch, target) {
   });
 }
 
+function captureStagedIndexState(repoRoot, baseSha) {
+  const pathOutput = execFileSync('git', ['diff', '--cached', '--name-only', '-z', baseSha], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  const paths = pathOutput.split('\0').filter(Boolean);
+  return paths.map((filePath) => ({
+    path: filePath,
+    entries: execFileSync('git', ['ls-files', '--stage', '-z', '--', filePath], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }),
+  }));
+}
+
+function restoreStagedIndexState(repoRoot, snapshot) {
+  for (const entry of snapshot) {
+    if (!entry.entries) {
+      runGit(['update-index', '--force-remove', '--', entry.path], { cwd: repoRoot });
+      continue;
+    }
+    execFileSync('git', ['update-index', '-z', '--index-info'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      input: entry.entries,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+  }
+}
+
 function assertApiPushBaseIsSynced(repoRoot, branch, expectedSha, targetOptions) {
   const currentBranch = getCurrentBranch(repoRoot);
   if (currentBranch !== branch) {
@@ -221,10 +253,12 @@ function synchronizeApiPushedTaskBranch(repoRoot, branch, previousSha, nextSha, 
     );
   }
 
-  // Mixed reset advances the checked-out branch and index while preserving
-  // working-tree bytes. Keep the selected repository tracking ref at fetched
-  // remote truth even if the local reset itself fails.
+  // Reconcile the index to the API-created commit while preserving any staged
+  // entries the caller had before task.push. A plain mixed reset would silently
+  // unstage those entries.
+  const stagedIndexState = captureStagedIndexState(repoRoot, previousSha);
   runGit(['reset', '--mixed', nextSha], { cwd: repoRoot });
+  restoreStagedIndexState(repoRoot, stagedIndexState);
 
   const synchronizedLocal = getRefSha(repoRoot, localRef);
   const synchronizedRemote = getRefSha(repoRoot, remoteRef);
