@@ -28,6 +28,7 @@ import {
 } from '../middleware/dangerous-material';
 import { internalError, jsonResponse } from '../middleware/errors';
 import { queueGatewayAuthenticationTraceSafely } from '../../lib/trace-persistence';
+import type { TraceRoutingContext } from '../../lib/trace-routing-context';
 import { logLocalOsServerError } from '../logger';
 import { validateMcpRequestOrigin } from '../security/mcp-origin';
 import { executeLocalOsFacadeTool } from '../services/call-service';
@@ -44,8 +45,30 @@ type McpRouteDependencies = {
   executeFacadeTool: (
     toolName: string,
     toolInput: Record<string, unknown>,
+    routing?: TraceRoutingContext,
   ) => Promise<unknown>;
 };
+
+function resolveTraceRoutingContext(input: {
+  requestedNodeId?: string;
+  resolvedNodeId?: string;
+  nodeRouting?: McpNodeRoutingContext;
+  routeSource?: string;
+}): TraceRoutingContext | undefined {
+  const resolvedNodeName = input.resolvedNodeId
+    ? input.nodeRouting?.nodes.find((node) => node.nodeId === input.resolvedNodeId)?.displayName
+    : undefined;
+  const routing: TraceRoutingContext = {
+    ...(input.requestedNodeId ? { requestedNodeId: input.requestedNodeId } : {}),
+    ...(input.resolvedNodeId ? { resolvedNodeId: input.resolvedNodeId } : {}),
+    ...(resolvedNodeName ? { resolvedNodeName } : {}),
+    ...(input.nodeRouting?.defaultNodeId
+      ? { defaultNodeId: input.nodeRouting.defaultNodeId }
+      : {}),
+    ...(input.routeSource ? { routeSource: input.routeSource } : {}),
+  };
+  return Object.keys(routing).length ? routing : undefined;
+}
 
 function trustedNodeRoutingContext(input: {
   request: Request;
@@ -66,9 +89,9 @@ function trustedNodeRoutingContext(input: {
 
 const defaultDependencies: McpRouteDependencies = {
   getSteering: readGuardedLocalOsSteering,
-  executeFacadeTool: async (toolName, toolInput) => {
+  executeFacadeTool: async (toolName, toolInput, routing) => {
     try {
-      return await executeLocalOsFacadeTool(toolName, toolInput);
+      return await executeLocalOsFacadeTool(toolName, toolInput, routing);
     } catch (error: unknown) {
       logLocalOsServerError(
         'local_os.mcp_tool_execution_failed',
@@ -191,17 +214,28 @@ export function createMcpRoutes(
       const routeSource = routeSourceHeader === 'default' || routeSourceHeader === 'explicit'
         ? routeSourceHeader
         : undefined;
+      const resolvedNodeId = request.headers.get('x-consuelo-node-id')?.trim() || undefined;
+      const requestedNodeId = routingInspection.ok ? routingInspection.nodeId : undefined;
+      const traceRouting = resolveTraceRoutingContext({
+        requestedNodeId,
+        resolvedNodeId,
+        nodeRouting,
+        routeSource,
+      });
       queueGatewayAuthenticationTraceSafely({
         workspaceId: authentication.principal.workspaceId ?? '',
         route: MCP_PATH,
         requiredScope: mcpScope.requiredScope,
         authMode: authentication.principal.authMode,
         principalKey: authentication.principal.principalKey,
-        ...(routingInspection.ok && routingInspection.nodeId
-          ? { requestedNodeId: routingInspection.nodeId }
+        ...(requestedNodeId
+          ? { requestedNodeId }
           : {}),
-        ...(request.headers.get('x-consuelo-node-id')?.trim()
-          ? { resolvedNodeId: request.headers.get('x-consuelo-node-id')!.trim() }
+        ...(resolvedNodeId
+          ? { resolvedNodeId }
+          : {}),
+        ...(traceRouting?.resolvedNodeName
+          ? { resolvedNodeName: traceRouting.resolvedNodeName }
           : {}),
         ...(nodeRouting?.defaultNodeId ? { defaultNodeId: nodeRouting.defaultNodeId } : {}),
         ...(routeSource ? { routeSource } : {}),
@@ -222,7 +256,8 @@ export function createMcpRoutes(
       });
       const result = await handleMcpGatewayJsonRpc(body, {
         getSteering: () => dependencies.getSteering(steeringCallerKey, nodeRouting),
-        executeFacadeTool: dependencies.executeFacadeTool,
+        executeFacadeTool: (toolName, toolInput) =>
+          dependencies.executeFacadeTool(toolName, toolInput, traceRouting),
       });
       const response = jsonResponse(result);
       if (session?.responseSessionId) {

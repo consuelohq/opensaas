@@ -1,4 +1,5 @@
 import { redactJson } from '../redaction';
+import { currentTraceRoutingContext } from '../trace-routing-context';
 import { recordToolTraceSafely, type TraceEnvironment } from '../trace-persistence';
 import type { ToolCapabilities } from './types';
 
@@ -89,5 +90,6 @@ export function logToolExecution(entry: {
     inputTokens: entry.inputTokens,
     outputTokens: entry.outputTokens,
     totalTokens: entry.totalTokens,
+    routing: currentTraceRoutingContext(),
   }, { env: entry.env });
 }

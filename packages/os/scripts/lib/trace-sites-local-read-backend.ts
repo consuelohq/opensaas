@@ -33,6 +33,11 @@ type TraceRow = {
   task_session?: string | null;
   branch?: string | null;
   worktree?: string | null;
+  requested_node_id?: string | null;
+  resolved_node_id?: string | null;
+  resolved_node_name?: string | null;
+  default_node_id?: string | null;
+  route_source?: string | null;
   status?: string | null;
   ok?: number | null;
   code?: string | null;
@@ -59,6 +64,11 @@ const TRACE_HISTORY_PAGE_SQL = [
   '  task_session,',
   '  branch,',
   '  worktree,',
+  '  requested_node_id,',
+  '  resolved_node_id,',
+  '  resolved_node_name,',
+  '  default_node_id,',
+  '  route_source,',
   '  status,',
   '  ok,',
   '  code,',
@@ -282,6 +292,11 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
   );
   const rawResultJson = sanitizeTracePayloadJson(cleanString(row.result_json));
   const rawStderr = sanitizeLocalTraceText(cleanString(row.stderr));
+  const requestedNodeId = cleanString(row.requested_node_id);
+  const resolvedNodeId = cleanString(row.resolved_node_id);
+  const resolvedNodeName = cleanString(row.resolved_node_name);
+  const defaultNodeId = cleanString(row.default_node_id);
+  const routeSource = cleanString(row.route_source);
   const resultMessage = resultMessageFromJson(rawResultJson);
   const batchResults =
     tool === 'batch' ? batchResultsFromJson(rawResultJson) : [];
@@ -296,6 +311,13 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
       cleanString(row.branch) || cleanString(row.task_session) || 'no-branch',
     taskSession: cleanString(row.task_session),
     worktree: sanitizeLocalTraceText(cleanString(row.worktree)),
+    ...(requestedNodeId ? { requestedNodeId } : {}),
+    ...(resolvedNodeId ? { resolvedNodeId, nodeId: resolvedNodeId } : {}),
+    ...(resolvedNodeName
+      ? { resolvedNodeName, nodeName: resolvedNodeName }
+      : {}),
+    ...(defaultNodeId ? { defaultNodeId } : {}),
+    ...(routeSource ? { routeSource } : {}),
     status: success ? 'success' : cleanString(row.status) || 'error',
     ok: success,
     code: cleanString(row.code) || (success ? 'OK' : 'ERROR'),
@@ -313,6 +335,11 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
       rowid: row.rowid,
       source: cleanString(row.source),
       mcpTraceId: cleanString(row.mcp_trace_id),
+      ...(requestedNodeId ? { requestedNodeId } : {}),
+      ...(resolvedNodeId ? { resolvedNodeId } : {}),
+      ...(resolvedNodeName ? { resolvedNodeName } : {}),
+      ...(defaultNodeId ? { defaultNodeId } : {}),
+      ...(routeSource ? { routeSource } : {}),
     },
     input: compactPayload(rawResolvedInputJson || rawInputJson),
     output: resultMessage || compactPayload(rawResultJson) || rawStderr,

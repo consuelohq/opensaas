@@ -15,6 +15,11 @@ type TraceRow = {
   task_session: string | null;
   branch: string | null;
   worktree: string | null;
+  requested_node_id: string | null;
+  resolved_node_id: string | null;
+  resolved_node_name: string | null;
+  default_node_id: string | null;
+  route_source: string | null;
   status: string;
   ok: number;
   code: string | null;
@@ -35,6 +40,7 @@ type ScenarioResult = {
   batch?: Record<string, unknown>;
   rows?: TraceRow[];
   recent?: { events?: Array<Record<string, unknown>> };
+  history?: { rows?: Array<Record<string, unknown>> };
   recorded?: boolean;
   immediateDbExists?: boolean;
   events?: Array<Record<string, unknown>>;
@@ -111,6 +117,11 @@ describe('canonical OS trace persistence', () => {
       ok: 1,
       code: 'OK',
       exit_code: 0,
+      requested_node_id: 'node_cloud',
+      resolved_node_id: 'node_cloud',
+      resolved_node_name: 'Cloud Node',
+      default_node_id: 'node_home',
+      route_source: 'explicit',
     });
     expect(rows[0].input_json).toContain('[REDACTED_SECRET]');
     expect(rows[0].input_json).not.toContain('sk_test_secret_value_1234567890');
@@ -128,6 +139,15 @@ describe('canonical OS trace persistence', () => {
         success: true,
       }),
     ]);
+    expect(output.history?.rows).toEqual([
+      expect.objectContaining({
+        traceId: result.traceId,
+        nodeId: 'node_cloud',
+        nodeName: 'Cloud Node',
+        defaultNodeId: 'node_home',
+        routeSource: 'explicit',
+      }),
+    ]);
   });
 
   it('migrates an existing tool_traces table and preserves correlation and token fields', () => {
@@ -142,6 +162,10 @@ describe('canonical OS trace persistence', () => {
         input_tokens: 12,
         output_tokens: 34,
         total_tokens: 46,
+        resolved_node_id: 'node_migrated',
+        resolved_node_name: 'Migrated Node',
+        default_node_id: 'node_migrated',
+        route_source: 'default',
       }),
     ]);
   });
@@ -249,8 +273,16 @@ describe('canonical OS trace persistence', () => {
       principalKey: 'prn_0123456789abcdef0123456789abcdef',
       requestedNodeId: 'node_cloud',
       resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
       defaultNodeId: 'node_home',
       routeSource: 'explicit',
+    });
+    expect(output.rows?.[0]).toMatchObject({
+      requested_node_id: 'node_cloud',
+      resolved_node_id: 'node_cloud',
+      resolved_node_name: 'Cloud Node',
+      default_node_id: 'node_home',
+      route_source: 'explicit',
     });
     expect(JSON.stringify(input)).not.toContain('google:');
     expect(JSON.stringify(input)).not.toContain('chatgpt.com');

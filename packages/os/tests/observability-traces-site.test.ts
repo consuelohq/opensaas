@@ -37,8 +37,10 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('data-show-filters');
     expect(html).toContain('data-trace-count');
     expect(html).toContain(
-      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
+      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Node</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     );
+    expect(html).toContain('consuelo-trace-node-observability');
+    expect(html).not.toContain('<div>Machine</div>');
 
     expect(html).not.toContain('Live tracing cockpit');
     expect(html).not.toContain('Search traces...');

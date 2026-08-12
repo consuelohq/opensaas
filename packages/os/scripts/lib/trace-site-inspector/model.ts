@@ -57,6 +57,48 @@ export function branchName(row: TraceRecord | null | undefined): string {
   return clean(row?.branch ?? row?.taskSession) || 'no-branch';
 }
 
+export function traceNodeId(row: TraceRecord | null | undefined): string {
+  if (!row) return '';
+  const metadata = asRecord(row.metadata);
+  return clean(
+    row.resolvedNodeId ??
+      row.nodeId ??
+      metadata?.resolvedNodeId ??
+      metadata?.nodeId,
+  );
+}
+
+export function traceNodeLabel(row: TraceRecord | null | undefined): string {
+  if (!row) return '';
+  const metadata = asRecord(row.metadata);
+  return clean(
+    row.resolvedNodeName ??
+      row.nodeName ??
+      metadata?.resolvedNodeName ??
+      metadata?.nodeName,
+  ) || traceNodeId(row);
+}
+
+export function traceRouteSource(row: TraceRecord | null | undefined): string {
+  if (!row) return '';
+  const metadata = asRecord(row.metadata);
+  return clean(row.routeSource ?? metadata?.routeSource);
+}
+
+export function traceRouteLabel(row: TraceRecord | null | undefined): string {
+  const source = traceRouteSource(row);
+  if (!source) return '';
+  if (source === 'default') return 'Default';
+  if (source === 'explicit') return 'Explicit';
+  if (source === 'task' || source === 'task_affinity' || source === 'task-affinity') {
+    return 'Task';
+  }
+  return source
+    .replaceAll('_', ' ')
+    .replaceAll('-', ' ')
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
 export function isFailure(row: TraceRecord | null | undefined): boolean {
   if (!row) return false;
   if (row.ok === false) return true;
@@ -261,6 +303,13 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
       branch: mergedRecord.branch ?? parent.branch,
       taskSession: mergedRecord.taskSession ?? parent.taskSession,
       worktree: mergedRecord.worktree ?? parent.worktree,
+      requestedNodeId: mergedRecord.requestedNodeId ?? parent.requestedNodeId,
+      resolvedNodeId: mergedRecord.resolvedNodeId ?? parent.resolvedNodeId,
+      nodeId: mergedRecord.nodeId ?? parent.nodeId,
+      resolvedNodeName: mergedRecord.resolvedNodeName ?? parent.resolvedNodeName,
+      nodeName: mergedRecord.nodeName ?? parent.nodeName,
+      defaultNodeId: mergedRecord.defaultNodeId ?? parent.defaultNodeId,
+      routeSource: mergedRecord.routeSource ?? parent.routeSource,
       startTime: mergedRecord.startTime ?? parent.startTime,
       displayTime: mergedRecord.displayTime ?? parent.displayTime,
       status,
