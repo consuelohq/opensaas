@@ -30,12 +30,10 @@ started: 2026-08-12
 - Focused and affected dependency builds are green; task is ready for strict review/verify.
 - CodeRabbit correctly identified that the Nx `build` target still bypassed the package build script. A follow-up audit also found both Twenty production Dockerfiles directly running bare Dialer `tsc --declaration`. All production entrypoints now delegate to `yarn build`, making the package script and `tsconfig.build.json` the single build boundary.
 - The full Docker Compose gate then proved the Dialer fix inside both server/worker images and exposed a separate latent compose defect: the server completed the Dialer build, started, and failed migration `CreateKnowledgeBase1773900000000` because the compose DB was plain `postgres:16` without the `vector` extension. The compose DB now uses the official PG16 pgvector image so the existing migration and local Docker topology agree.
+- Subsequent Docker reruns did not reach application startup because native dependency prebuild downloads intermittently failed during the root Yarn install (`sharp`, `canvas`, and on one run other native packages). The same dependency graph had already completed successfully in an earlier Docker run, and the independently rerun `danger-js`/`Consuelo / verify` jobs passed after equivalent network/prebuild failures. Both production Dockerfiles now retry the Yarn install up to three times before failing, so transient native-artifact download failures do not discard the whole image build immediately.
 
 ## files changed
 
-- `packages/dialer/project.json`
-- `packages/twenty-docker/twenty/Dockerfile`
-- `packages/twenty-docker/twenty/Dockerfile.worker`
 - `packages/twenty-docker/docker-compose.yml`
 
 
@@ -66,6 +64,14 @@ started: 2026-08-12
 - 2026-08-12 19:41:10 `review.run`: passed — OK
 - 2026-08-12 19:42:35 `verify`: passed — OK
 - 2026-08-12 19:44:48 `verify`: passed — OK
+- 2026-08-12 20:01:46 `review.run`: passed — OK
+- 2026-08-12 20:03:02 `verify`: failed — COMMAND_FAILED
+- 2026-08-12 20:04:26 `verify`: failed — COMMAND_FAILED
+- 2026-08-12 20:05:33 `review.run`: passed — OK
+- 2026-08-12 20:05:46 `verify`: failed — COMMAND_FAILED
+- 2026-08-12 20:07:12 `review.run`: passed — OK
+- 2026-08-12 20:10:18 `verify`: passed — OK
+- 2026-08-12 20:12:22 `verify`: passed — OK
 
 ## key decisions
 
@@ -74,6 +80,7 @@ started: 2026-08-12
 - Use a dedicated `tsconfig.build.json` rather than exclusions in the general config. This preserves normal test typechecking (`18` test/mock sources remain in the general TypeScript program) while keeping production emit Node-safe and test-free.
 - Route Nx and both Twenty Docker production builds through the package `yarn build` script instead of repeating TypeScript flags in three places. The package script is now the single source of truth for production Dialer compilation.
 - Keep PostgreSQL 16 in Docker Compose while supplying the extension the server already requires. `pgvector/pgvector:pg16` derives from the matching PostgreSQL image and avoids making the application migration conditional on an invalid local database topology.
+- Keep dependency versions unchanged in this hotfix. Current upstream Twenty has moved toward narrower focused Docker installs and newer native packages, but reproducing that larger dependency architecture in this fork would be a separate upgrade. For this repair, bounded install retries address the demonstrated transient failure mode without changing runtime package behavior.
 
 ## notes for ko
 
@@ -92,6 +99,11 @@ started: 2026-08-12
 - An Nx validation inspected an already-populated local `packages/dialer/dist` and saw stale test/mock artifacts left by earlier pre-fix bare `tsc` runs. The authoritative clean-output proof compiles into a fresh temporary directory: 172 production files emitted, 0 test/mock artifacts. Fresh Docker stages also start without those stale outputs.
 - Docker Compose CI on the first production-entrypoint revision built both images past Dialer successfully, then the server exited at `CREATE EXTENSION IF NOT EXISTS vector` with `/usr/share/postgresql/16/extension/vector.control` missing. This is a pre-existing compatibility gap: the knowledge-base migration dates to April 2026 while `packages/twenty-docker/docker-compose.yml` had remained on plain `postgres:16` since before that migration. Touching the Twenty Dockerfiles caused CI to exercise the dormant compose path.
 - Local Docker CLI validation is unavailable in the task runtime (`docker` is not in PATH). The actual GitHub Docker Compose workflow remains the authoritative runtime validation for the image change; local validation is limited to repo syntax/review/verify before pushing.
+- Native-install failure classification: `Consuelo / verify` first failed because sharp's prebuilt download hit `socket hang up`, then its source fallback lacked `vips/vips8`; the targeted rerun passed. `danger-js` showed the same class and passed on rerun. Docker Compose showed varying native failures across attempts before application build. This is why the Docker fix retries the install boundary rather than adding Alpine build libraries or changing native dependency versions.
+- Retry contract validation: both production Dockerfiles have the bounded three-attempt `until yarn` loop, only clean the Yarn cache after success, and still reset Nx. `npx nx run twenty-server:build --skip-nx-cache` remains green with `@consuelo/dialer:build -> yarn build`.
+- `scripts/validate-dockerfiles.sh` currently reports 20 pre-existing workspace COPY gaps across both Twenty Dockerfiles; none are introduced by this task. That validator is not being widened into this repair.
+- A one-off full Twenty server test run surfaced `simple-secret-encryption.util.spec.ts` once, then the exact rerun passed and a subsequent full selected review passed all 3/3 suites (447 passed server suites / 3524 passed tests in the targeted rerun path). The verify cache keyed the older failure until the Dockerfile change produced a fresh verification identity.
+- Final full `verify --base origin/main` on the current product change set passed with 0 task-owned findings, 3/3 selected suites green, DB guard clean, and `publishValid=true`.
 
 ## Test-first contract
 
@@ -129,16 +141,26 @@ bun run task:finish
 
 - `.github/workflows/ci-test-docker-compose.yaml`
 - `package.json`
+- `packages/agent/package.json`
+- `packages/api/package.json`
+- `packages/coaching/package.json`
+- `packages/contacts/package.json`
 - `packages/dialer/package.json`
 - `packages/dialer/project.json`
 - `packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts`
 - `packages/dialer/tsconfig.json`
+- `packages/logger/package.json`
 - `packages/twenty-docker/docker-compose.yml`
 - `packages/twenty-docker/twenty/Dockerfile`
 - `packages/twenty-docker/twenty/Dockerfile.worker`
+- `packages/twenty-front/package.json`
+- `packages/twenty-sdk/package.json`
+- `packages/twenty-server/package.json`
+- `packages/twenty-shared/package.json`
 - `packages/workspace/scripts/lib/git.js`
+- `packages/workspace/scripts/lib/review-run-state.js`
+- `packages/workspace/scripts/review.js`
+- `packages/workspace/scripts/verify.js`
+- `scripts/validate-dockerfiles.sh`
 
-- 2026-08-12 19:39:34 apply-patch: `packages/twenty-docker/docker-compose.yml`
-- 2026-08-12 19:39:34 apply-patch: `.task/dialer/fix-dialer-production-docker-build-type-boundary/workpad.md`
-
-- 2026-08-12 19:40:13 apply-patch: `.task/dialer/fix-dialer-production-docker-build-type-boundary/workpad.md`
+- 2026-08-12 20:10:38 apply-patch: `.task/dialer/fix-dialer-production-docker-build-type-boundary/workpad.md`

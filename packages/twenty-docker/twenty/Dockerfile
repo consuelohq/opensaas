@@ -27,8 +27,21 @@ COPY ./packages/logger/package.json /app/packages/logger/
 COPY ./packages/metering/package.json /app/packages/metering/
 COPY ./packages/sdk/package.json /app/packages/sdk/
 
-# Install all dependencies
-RUN yarn && yarn cache clean && npx nx reset
+# Install all dependencies. Native packages such as sharp/canvas download
+# prebuilt artifacts outside Yarn's normal fetch retry path, so retry the
+# install as a unit before falling back to a hard failure.
+RUN set -eux; \
+    attempt=1; \
+    until yarn; do \
+      if [ "$attempt" -ge 3 ]; then \
+        exit 1; \
+      fi; \
+      echo "yarn install failed (attempt $attempt/3); retrying"; \
+      attempt=$((attempt + 1)); \
+      sleep 5; \
+    done; \
+    yarn cache clean; \
+    npx nx reset
 
 
 # Build the back

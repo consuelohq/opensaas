@@ -28,7 +28,20 @@ COPY ./packages/logger/package.json /app/packages/logger/
 COPY ./packages/metering/package.json /app/packages/metering/
 COPY ./packages/sdk/package.json /app/packages/sdk/
 
-RUN yarn && yarn cache clean && npx nx reset
+# Retry the install boundary because native prebuild downloads are external to
+# Yarn's normal package-fetch retry behavior.
+RUN set -eux; \
+    attempt=1; \
+    until yarn; do \
+      if [ "$attempt" -ge 3 ]; then \
+        exit 1; \
+      fi; \
+      echo "yarn install failed (attempt $attempt/3); retrying"; \
+      attempt=$((attempt + 1)); \
+      sleep 5; \
+    done; \
+    yarn cache clean; \
+    npx nx reset
 
 
 FROM common-deps AS twenty-server-build
