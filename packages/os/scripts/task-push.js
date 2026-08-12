@@ -547,12 +547,14 @@ async function main() {
           area: taskMeta?.data?.area,
           taskSession: taskMeta?.data?.taskSession,
           branch,
+          repo: args.repo,
         },
         result: {
           ok: true,
           branch,
           sha: commit.sha,
           taskSession: taskMeta?.data?.taskSession,
+          repo: args.repo,
         },
       },
     });

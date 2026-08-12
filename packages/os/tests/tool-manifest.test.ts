@@ -365,19 +365,26 @@ describe('tool manifest generator', () => {
     const generatedTypes = readFileSync(join(import.meta.dirname, '../src/generated/workspace.d.ts'), 'utf8');
 
     // Act
-    const parsed = schema.safeParse({ ackWorkpadIncomplete: true });
+    const parsed = schema.safeParse({ ackWorkpadIncomplete: true, repo: 'example/private-repo' });
     const argumentsList = taskPr?.definition.command?.arguments;
 
     // Assert
     expect(parsed.success).toBe(true);
     if (!parsed.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
-    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true }));
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true, repo: 'example/private-repo' }));
     expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(schemaTypeSignatures.TaskPrInput).toContain('repo?: string');
     expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('repo?: string');
     expect(argumentsList).toContainEqual({
       source: 'ackWorkpadIncomplete',
       flag: '--ack-workpad-incomplete',
       kind: 'boolean',
+    });
+    expect(argumentsList).toContainEqual({
+      source: 'repo',
+      flag: '--repo',
+      kind: 'value',
     });
   });
 

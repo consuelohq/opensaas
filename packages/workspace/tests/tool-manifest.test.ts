@@ -262,20 +262,27 @@ describe('workspace tool manifest generator', () => {
     const generatedTypes = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
 
     // Act
-    const parsed = schema?.safeParse({ ackWorkpadIncomplete: true });
+    const parsed = schema?.safeParse({ ackWorkpadIncomplete: true, repo: 'example/private-repo' });
     const command = taskPr?.definition.command;
 
     // Assert
     expect(parsed?.success).toBe(true);
     if (!parsed?.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
-    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true }));
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true, repo: 'example/private-repo' }));
     expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(schemaTypeSignatures.TaskPrInput).toContain('repo?: string');
     expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('repo?: string');
     expect(command).toMatchObject({ script: 'task:pr' });
     expect(command?.arguments).toContainEqual({
       source: 'ackWorkpadIncomplete',
       flag: '--ack-workpad-incomplete',
       kind: 'boolean',
+    });
+    expect(command?.arguments).toContainEqual({
+      source: 'repo',
+      flag: '--repo',
+      kind: 'value',
     });
   });
 
