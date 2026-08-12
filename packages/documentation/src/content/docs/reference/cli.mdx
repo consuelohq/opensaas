@@ -1,91 +1,80 @@
 ---
 title: CLI
-description: Commands accepted by the installed Consuelo OS runtime.
+description: User-facing Consuelo OS lifecycle, update, channel, and skill-management commands.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-11
 evidence:
-  - source: packages/os/scripts/os.ts
+  - source: packages/os/scripts/lifecycle.ts
     tests:
-      - packages/os/tests/os-raw-steering.test.ts
-      - packages/os/tests/sites-cli.test.ts
-      - packages/os/tests/settings-gateway.test.ts
-    runtime: The no-argument usage output, steering commands, settings commands, and Sites JSON modes were exercised on 2026-07-13.
+      - packages/os/tests/lifecycle-help.test.ts
+      - packages/os/tests/lifecycle-engine.test.ts
+      - packages/os/tests/skill-selection-cli.test.ts
+    runtime: Root help plus lifecycle and skill-management command contracts were verified on 2026-08-11.
 ---
 
-The current command entrypoint is the Bun script inside the installed OS home. There is not a separate public `consuelo` binary in this preview.
+The installed user-facing command is `consuelo`.
 
 ```bash
-export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
-cd "$CONSUELO_HOME"
-bun ./scripts/os.ts
+consuelo help
 ```
 
-Running it without a recognized command prints the supported usage.
+Running `consuelo` without a command shows local OS status.
 
-## Steering
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `consuelo status` | Show installation and runtime status. |
+| `consuelo install` | Install and configure Consuelo OS. |
+| `consuelo restart` | Restart Consuelo OS services. |
+| `consuelo update` | Check for or install OS updates. |
+| `consuelo repair` | Repair the current installation. |
+| `consuelo rollback` | Roll back to the previous verified release. |
+| `consuelo add skill` | Install bundled skills; opens a picker when no names are supplied. |
+| `consuelo remove skill` | Remove selected bundled skills; opens a picker when no names are supplied. |
+| `consuelo channel` | Show or change the release channel. |
+| `consuelo updates` | Manage update notification preferences. |
+| `consuelo uninstall` | Remove Consuelo OS from the machine. |
+| `consuelo dev` | Development and recovery commands. |
+
+## Skill management
+
+Interactive:
 
 ```bash
-bun ./scripts/os.ts get-steering
-bun ./scripts/os.ts get-raw-steering
+consuelo add skill
+consuelo remove skill
 ```
 
-`get-steering` returns the workspace steering intended for normal agent startup. Repeated calls in a short window are guarded. `get-raw-steering` is the broader developer/operator view and includes the full manifest surface.
-
-## Call a skill
+Direct:
 
 ```bash
-bun ./scripts/os.ts call '{"name":"daily-revenue-brief","input":{}}'
+consuelo add skill branch browser
+consuelo remove skill teach
 ```
 
-The argument is one JSON object with:
+See [Install a skill](/build/skills/install-a-skill/) for selection, materialization, and local-modification preservation behavior.
 
-| Field | Required | Meaning |
-| --- | --- | --- |
-| `name` | yes | Installed OS skill name. |
-| `input` | no | Skill-specific structured input. |
-| `workspaceId` | no | Explicit workspace context. |
-| `userId` | no | Explicit user context. |
-| `traceId` | no | Caller-provided trace identifier. |
-
-The command writes a `CallOutput` JSON object. A skill failure sets a non-zero process exit code.
-
-## Sites
+## Update examples
 
 ```bash
-bun ./scripts/os.ts sites path [--json]
-bun ./scripts/os.ts sites status [--json]
-bun ./scripts/os.ts sites refresh [--json]
-bun ./scripts/os.ts sites open [--json]
+consuelo update --check
+consuelo update --yes
+consuelo update --channel beta --check
 ```
 
-Publishing and collaborative editing use:
+Available release channels are `stable`, `beta`, `canary`, `dev`, and `nightly`.
 
-```bash
-bun ./scripts/os.ts sites publish   --target ./report.html   --path /pages/q3-report   --title "Q3 report"   --kind guide   --json
+## Common options
 
-bun ./scripts/os.ts sites patch   --page q3-report   --section summary   --input ./section.json   --base-version ver_123   --agent agent_123   --json
-
-bun ./scripts/os.ts sites lease acquire   --page q3-report   --section summary   --agent agent_123   --ttl-minutes 45   --json
+```text
+--json       Machine-readable output where the command supports it
+--quiet      Suppress human-readable output
+-h, --help   Print help
 ```
 
-`sites lease` also accepts `status` and `release`. See [Sites](/sites/) for the workflow rather than the command-only contract.
+Command-specific options include update/channel flags, rollback/uninstall dry-run controls, and development reset confirmation. `consuelo help` is the authoritative compact command index for the installed version.
 
-## Settings overlays
+## Agent runtime interface
 
-```bash
-bun ./scripts/os.ts settings status [--json]
-bun ./scripts/os.ts settings disable-tool fs.trash [--json]
-bun ./scripts/os.ts settings enable-tool fs.trash [--json]
-bun ./scripts/os.ts settings disable-skill browser [--json]
-bun ./scripts/os.ts settings enable-skill browser [--json]
-bun ./scripts/os.ts settings disable-workflow task [--json]
-bun ./scripts/os.ts settings enable-workflow task [--json]
-```
-
-Names are validated against the generated tool manifest or workflow bundle. An unknown name fails instead of creating a silent override.
-
-## Output modes
-
-`--json` applies to Sites and settings commands that expose it. It returns a structured result suitable for automation. Steering remains text; `call` already returns JSON.
-
-Treat non-zero exit status as failure even when standard output contains useful structured context.
+The OS package also contains lower-level agent/operator runtime entrypoints such as `scripts/os.ts`. Agents normally reach those capabilities through MCP and the typed OS facade rather than asking a user to run the Bun script directly. Treat the public `consuelo` command above as the user-facing lifecycle CLI.

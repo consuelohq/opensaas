@@ -918,6 +918,15 @@ describe('typed facade executor', () => {
           affectedProjects: [],
           yours: [{ rule: 'TYPECHECK', file: 'src/a.ts', line: 2, msg: longMessage }],
           preExisting: [{ rule: 'ESLINT', file: 'src/b.ts', line: 3, msg: longMessage }],
+          documentationOpportunities: [{
+            rule: 'DOCS_OPPORTUNITY',
+            surface: 'cli',
+            sourceFiles: ['packages/os/scripts/lifecycle.ts'],
+            docs: ['packages/documentation/src/content/docs/reference/cli.mdx'],
+            blocking: false,
+            reason: 'Public CLI behavior changed.',
+            suggestedAction: 'Invoke documentation-writer.',
+          }],
           testResults: [],
           confidence: null,
         }),
@@ -937,9 +946,12 @@ describe('typed facade executor', () => {
       expect(plans[0].args).toContain('--json');
       expect(plans[0].args).not.toContain('--summary-json');
       expect((result.data as { schema?: string }).schema).toBe('review.summary.v1');
-      const data = result.data as { summary: { yourIssues: number; preExistingIssues: number }; mustFix: Array<{ message: string; messageTruncated: boolean }>; preExistingDigest: { sample: Array<{ message: string; messageTruncated: boolean }> } };
+      const data = result.data as { summary: { yourIssues: number; preExistingIssues: number; documentationOpportunities: number }; checksRun: string[]; documentationOpportunities: Array<{ surface: string; docs: string[]; blocking: boolean }>; mustFix: Array<{ message: string; messageTruncated: boolean }>; preExistingDigest: { sample: Array<{ message: string; messageTruncated: boolean }> } };
       expect(data.summary.yourIssues).toBe(1);
       expect(data.summary.preExistingIssues).toBe(1);
+      expect(data.summary.documentationOpportunities).toBe(1);
+      expect(data.checksRun).toContain('documentation_opportunities');
+      expect(data.documentationOpportunities).toEqual([expect.objectContaining({ surface: 'cli', blocking: false })]);
       expect(data.mustFix[0].message.length).toBeLessThan(600);
       expect(data.mustFix[0].messageTruncated).toBe(true);
       expect(data.preExistingDigest.sample[0].message.length).toBeLessThan(600);

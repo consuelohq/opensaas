@@ -603,6 +603,7 @@ function compactReviewData(data: unknown): unknown {
   const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
   const testResults = asArray(data.testResults);
   const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  const documentationOpportunities = asArray(data.documentationOpportunities);
   return {
     schema: 'review.summary.v1',
     base: data.base,
@@ -610,13 +611,14 @@ function compactReviewData(data: unknown): unknown {
     files: data.files,
     affectedProjects: data.affectedProjects,
     checksRun: testResults.length > 0
-      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'tests']
-      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance'],
+      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'documentation_opportunities', 'tests']
+      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'documentation_opportunities'],
     summary: {
       yourIssues: yours.length,
       preExistingIssues: preExisting.length,
       failedTestSuites: failedSuites.length,
       blockingIssues: yours.length + failedSuites.length,
+      documentationOpportunities: documentationOpportunities.length,
     },
     mustFixTotal: yours.length,
     mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
@@ -629,6 +631,7 @@ function compactReviewData(data: unknown): unknown {
       preExisting: summarizeFacadeFindings(preExisting).byFile,
     },
     preExistingDigest: summarizeFacadeFindings(preExisting),
+    documentationOpportunities: documentationOpportunities.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
     testSummary: {
       totalSuites: testResults.length,
       passedSuites: testResults.length - failedSuites.length,
