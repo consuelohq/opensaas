@@ -1,0 +1,52 @@
+---
+title: Branch Planner
+description: "Align on large engineering projects, investigate hidden risks, and decompose them into dependency-aware branch and PR stacks that can be executed across focused chats or agents."
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/branch/skill.json
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: Bundled metadata and registry inclusion for `branch` were verified on 2026-08-11.
+  - source: packages/os/skills/branch/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The current guidance entrypoint and declared load contract were inspected on 2026-08-11.
+---
+
+`branch` is a bundled Consuelo OS skill. Aligns a large engineering effort before implementation, audits hidden dependencies, builds a dependency graph, and freezes branch-sized PR contracts with explicit parallel lanes.
+
+## When to use it
+
+Invoke when Ko asks to decompose or branch a large project into multiple PRs, chats, or agents; plan an epic across sequential and parallel workstreams; decide what can run in parallel; freeze a technical branch stack; or execute an established 'Branch N approved, go' plan. Do not invoke for ordinary Git branch commands or a single already-scoped repo task.
+
+Typical requests include:
+
+- “Break this migration into PRs and tell me what can run in parallel.”
+- “Branch 3 approved, go.”
+
+## Enable it
+
+```bash
+consuelo add skill branch
+```
+
+Run `consuelo add skill` without a name to choose from the skills that are not currently selected. Remove it with:
+
+```bash
+consuelo remove skill branch
+```
+
+## What the agent loads
+
+The installed metadata points to `skills/branch/SKILL.md` in the immutable OS runtime. The compact steering catalog advertises the active skill by name and description; the full `SKILL.md` body is loaded only when the workflow applies.
+
+Metadata for this skill currently declares permission `guidance` and `requiresApproval: no`. Those fields describe the skill contract; individual tools called by the skill still enforce their own authorization and safety rules.
+
+## Boundary
+
+Use Branch Planner to decide the work units. Use Task Workflow to execute one approved work unit. Do not invoke it for an ordinary Git branch or an already-scoped single task.
+
+## Verify
+
+After enabling it, confirm `~/Consuelo/Skills/branch/SKILL.md` exists and that `branch` appears in `<CONSUELO_HOME>/components/installed-skills.json`. A newly bootstrapped agent should then see `branch` in the Installed skills portion of steering.

@@ -10,12 +10,24 @@ const buildPages = [
   ['build/tools/how-tools-work.mdx', 'How tools work'],
   ['build/tools/workspace.mdx', 'Workspace'],
   ['build/tools/browser.mdx', 'Browser'],
-  ['build/tools/office.mdx', 'Office'],
+  ['build/tools/artifacts.mdx', 'Artifacts'],
   ['build/tools/media.mdx', 'Media'],
   ['build/skills/how-skills-work.mdx', 'How skills work'],
   ['build/skills/install-a-skill.mdx', 'Install a skill'],
   ['build/skills/create-a-skill.mdx', 'Create a skill'],
   ['build/skills/skill-structure.mdx', 'Skill structure'],
+  ['build/skills/bundled/index.mdx', 'Bundled skills'],
+  ['build/skills/bundled/artifacts.mdx', 'Artifacts'],
+  ['build/skills/bundled/branch.mdx', 'Branch Planner'],
+  ['build/skills/bundled/browser.mdx', 'Browser'],
+  ['build/skills/bundled/debugger.mdx', 'Debugger'],
+  ['build/skills/bundled/handoff.mdx', 'Handoff'],
+  ['build/skills/bundled/research-ingest.mdx', 'Research Ingest'],
+  ['build/skills/bundled/senior-engineer.mdx', 'Senior Engineer'],
+  ['build/skills/bundled/sites.mdx', 'Sites'],
+  ['build/skills/bundled/skill-creator.mdx', 'Skill Creator'],
+  ['build/skills/bundled/task.mdx', 'Task Workflow'],
+  ['build/skills/bundled/teach.mdx', 'Teach'],
   ['build/steering/how-steering-works.mdx', 'How steering works'],
   ['build/steering/workspace-steering.mdx', 'Workspace steering'],
   ['build/steering/project-steering.mdx', 'Project steering'],
@@ -34,13 +46,26 @@ describe('Build with OS documentation contract', () => {
       "label: 'How tools work'",
       "label: 'Workspace'",
       "label: 'Browser'",
-      "label: 'Office'",
+      "label: 'Artifacts'",
       "label: 'Media'",
       "label: 'Skills'",
       "label: 'How skills work'",
       "label: 'Install a skill'",
       "label: 'Create a skill'",
       "label: 'Skill structure'",
+      "label: 'Bundled skills'",
+      "slug: 'build/skills/bundled'",
+      "slug: 'build/skills/bundled/artifacts'",
+      "slug: 'build/skills/bundled/branch'",
+      "slug: 'build/skills/bundled/browser'",
+      "slug: 'build/skills/bundled/debugger'",
+      "slug: 'build/skills/bundled/handoff'",
+      "slug: 'build/skills/bundled/research-ingest'",
+      "slug: 'build/skills/bundled/senior-engineer'",
+      "slug: 'build/skills/bundled/sites'",
+      "slug: 'build/skills/bundled/skill-creator'",
+      "slug: 'build/skills/bundled/task'",
+      "slug: 'build/skills/bundled/teach'",
       "label: 'Steering'",
       "label: 'How steering works'",
       "label: 'Workspace steering'",
@@ -66,7 +91,7 @@ describe('Build with OS documentation contract', () => {
     for (const [sourcePath] of buildPages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toContain('verifiedAt: 2026-07-13');
+      expect(source).toMatch(/verifiedAt: 2026-\d{2}-\d{2}/);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
       expect(source).toContain('tests:');
@@ -87,6 +112,23 @@ describe('Build with OS documentation contract', () => {
         expect(existsSync(repoFile(evidencePath))).toBe(true);
       }
     }
+  });
+
+  test('documents every bundled OS skill in the final Skills subgroup', () => {
+    const registry = JSON.parse(readFileSync(repoFile('packages/os/skills/skills.json'), 'utf8')) as { skills: Array<{ name: string }> };
+    const expected = registry.skills.map((skill) => skill.name).sort();
+    const documented = buildPages
+      .map(([sourcePath]) => sourcePath.match(/^build\/skills\/bundled\/([^/]+)\.mdx$/)?.[1])
+      .filter((name): name is string => Boolean(name) && name !== 'index')
+      .sort();
+    expect(documented).toEqual(expected);
+
+    const navigation = read('src/lib/docs-navigation.ts');
+    const skillStructureIndex = navigation.indexOf("label: 'Skill structure'");
+    const bundledIndex = navigation.indexOf("label: 'Bundled skills'", skillStructureIndex);
+    const steeringIndex = navigation.indexOf("label: 'Steering'", bundledIndex);
+    expect(bundledIndex).toBeGreaterThan(skillStructureIndex);
+    expect(steeringIndex).toBeGreaterThan(bundledIndex);
   });
 
   test('teaches the verified tool, skill, script, and workflow boundaries', () => {
@@ -127,7 +169,7 @@ describe('Build with OS documentation contract', () => {
     const artifacts = read('src/content/docs/build/files-and-artifacts.mdx');
     expect(artifacts).toContain('local');
     expect(artifacts).toContain('trace');
-    expect(artifacts).toContain('app-visible');
+    expect(artifacts).toContain('Sites');
   });
 
   test('keeps a checked-in Build with OS claim ledger', () => {
@@ -160,7 +202,7 @@ describe('Build with OS documentation contract', () => {
       ['os/tools/overview.mdx', "'/os/tools/overview': '/build/tools/workspace/'"],
       ['os/tools/browser-tools.mdx', "'/os/tools/browser-tools': '/build/tools/browser/'"],
       ['tools/overview.mdx', "'/tools/overview': '/build/tools/how-tools-work/'"],
-      ['tools/office.mdx', "'/tools/office': '/build/tools/office/'"],
+      ['tools/office.mdx', "'/tools/office': '/build/tools/artifacts/'"],
       ['tools/media/getting-started.mdx', "'/tools/media/getting-started': '/build/tools/media/'"],
       ['developers/agent/tool-system.mdx', "'/developers/agent/tool-system': '/build/tools/how-tools-work/'"],
     ] as const;
