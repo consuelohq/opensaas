@@ -1,5 +1,5 @@
 ---
-title: Sites
+title: "Sites"
 description: "Use this skill for Consuelo OS site delivery infrastructure: launcher pages, typed pages, traces, diffs, settings, and the static delivery layer used by Consuelo Artifacts."
 status: preview
 verifiedAt: 2026-08-11
@@ -11,19 +11,8 @@ evidence:
   - source: packages/os/skills/sites/SKILL.md
     tests:
       - packages/os/tests/skills-registry.test.ts
-    runtime: The current guidance entrypoint and declared load contract were inspected on 2026-08-11.
+    runtime: The exact current skill instructions are displayed below from the bundled source.
 ---
-
-`sites` is a bundled Consuelo OS skill. Operates Consuelo site-delivery infrastructure: launcher pages, typed pages, traces, diffs, settings surfaces, and static/edge delivery materialization.
-
-## When to use it
-
-Invoke when the user asks about OS site delivery, local site materialization, launcher pages, typed page registries, traces, diffs, settings pages, or edge snapshot routing.
-
-Typical requests include:
-
-- “Inspect the local Sites delivery state.”
-- “Refresh and verify the static page delivery surface.”
 
 ## Enable it
 
@@ -31,22 +20,74 @@ Typical requests include:
 consuelo add skill sites
 ```
 
-Run `consuelo add skill` without a name to choose from the skills that are not currently selected. Remove it with:
+Remove it with:
 
 ```bash
 consuelo remove skill sites
 ```
 
-## What the agent loads
+## Description
 
-The installed metadata points to `skills/sites/SKILL.md` in the immutable OS runtime. The compact steering catalog advertises the active skill by name and description; the full `SKILL.md` body is loaded only when the workflow applies.
+Use this skill for Consuelo OS site delivery infrastructure: launcher pages, typed pages, traces, diffs, settings, and the static delivery layer used by Consuelo Artifacts.
 
-Metadata for this skill currently declares permission `guidance` and `requiresApproval: no`. Those fields describe the skill contract; individual tools called by the skill still enforce their own authorization and safety rules.
+## SKILL.md
 
-## Boundary
+{/* skill-source:start */}
+````markdown
+# Sites
 
-Sites is delivery infrastructure. Artifacts owns durable generated outputs and their product-level catalog/history.
+Sites is Consuelo OS delivery infrastructure. It materializes local HTML surfaces and provides the files that local Hono routes and Cloudflare workspace-edge snapshots serve.
 
-## Verify
+Artifacts is the product domain for durable generated outputs. Sites must not create a second artifact catalog or rename artifacts as a site category.
 
-After enabling it, confirm `~/Consuelo/Skills/sites/SKILL.md` exists and that `sites` appears in `<CONSUELO_HOME>/components/installed-skills.json`. A newly bootstrapped agent should then see `sites` in the Installed skills portion of steering.
+## Local layout
+
+```text
+<OS_HOME>/sites/
+<OS_HOME>/sites/index.html
+<OS_HOME>/sites/artifacts/index.html
+<OS_HOME>/sites/artifacts/data/catalog.json
+<OS_HOME>/sites/pages/
+<OS_HOME>/sites/.data/pages/registry.json
+<OS_HOME>/sites/.data/pages/leases.json
+<OS_HOME>/sites/traces/index.html
+<OS_HOME>/sites/diffs/index.html
+<OS_HOME>/sites/docs/index.html
+<OS_HOME>/sites/configuration/index.html
+```
+
+The canonical artifact bytes and catalog live under:
+
+```text
+<OS_HOME>/artifacts/catalog.json
+<OS_HOME>/artifacts/current/<artifact-route>/
+<OS_HOME>/artifacts/versions/<artifact-route>/<version-id>/
+```
+
+## Commands
+
+Use `bun run artifacts` for artifact generation, publishing, history, rollback, and index refresh.
+
+Use the Sites command only for delivery infrastructure and typed collaborative pages:
+
+```bash
+bun ./scripts/os.ts sites path
+bun ./scripts/os.ts sites status
+bun ./scripts/os.ts sites refresh
+bun ./scripts/os.ts sites open
+bun ./scripts/os.ts sites render --template <spec|plan|guide> --input <content.json> --out <index.html>
+bun ./scripts/os.ts sites publish --target <file-or-dir> --path /pages/<slug> --title <title> --kind <kind> [--base-version <id>]
+bun ./scripts/os.ts sites patch --page <slug> --section <id> --input <section.json> --base-version <id> [--agent <id>]
+bun ./scripts/os.ts sites lease acquire|status|release --page <slug> --section <id> [--agent <id>]
+```
+
+## Boundaries
+
+- `/artifacts` is the canonical durable-output route.
+- Sites may serve or snapshot artifact output but must not own a separate artifact model.
+- Do not create retired artifact-site aliases, parallel archives, or fallback reads.
+- Typed collaborative pages remain separate because they have section leases and patch/rebase behavior.
+- Trace and Configuration pages may hydrate from their signed Hono gateways.
+- Public edge compatibility for historical URLs belongs in explicit redirects, not internal aliases.
+````
+{/* skill-source:end */}

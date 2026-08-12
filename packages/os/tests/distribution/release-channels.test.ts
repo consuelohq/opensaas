@@ -23,6 +23,7 @@ import {
   type ReleaseEvidence,
   type ReleaseState,
 } from '../../scripts/lib/distribution/release-channels';
+import { REQUIRED_RUNTIME_RECOVERY_CAPABILITIES } from '../../scripts/lib/distribution/runtime-bundle';
 
 const SOURCE_COMMIT = '0123456789abcdef0123456789abcdef01234567';
 const FINGERPRINT = `sha256:${'1'.repeat(64)}`;
@@ -67,6 +68,7 @@ function bundle(
     architecture,
     archiveDigest,
     bundleId,
+    capabilities: [...REQUIRED_RUNTIME_RECOVERY_CAPABILITIES],
     platform,
     releaseFingerprint,
     sourceCommit,
@@ -87,6 +89,7 @@ function bundle(
     manifest: {
       architecture,
       bundleId,
+      capabilities: [...REQUIRED_RUNTIME_RECOVERY_CAPABILITIES],
       platform,
       releaseFingerprint,
       schemaVersion: 1,
@@ -297,6 +300,20 @@ describe('Consuelo OS release channels', () => {
       version: '1.2.3',
     });
     expect(() => verifyReleaseStateConsensus(result.state, result.input.bundleId)).not.toThrow();
+  });
+
+  it('rejects publication when a platform bundle lacks required recovery capabilities', () => {
+    const bundles = completeBundles();
+    bundles[0] = {
+      ...bundles[0],
+      manifest: {
+        ...bundles[0].manifest,
+        capabilities: REQUIRED_RUNTIME_RECOVERY_CAPABILITIES.slice(1),
+      },
+    };
+    expect(() => publish(createEmptyReleaseState(), { bundles })).toThrow(
+      'runtime bundle is missing required recovery capability',
+    );
   });
 
   it('keeps channel schemaVersion independent from runtime SemVer', () => {

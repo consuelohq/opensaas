@@ -12,7 +12,7 @@ import type {
   TraceSitesDashboardEvent,
   TraceSitesDashboardSummary,
 } from './trace-sites-gateway-contract';
-import { redactText, redactTraceJson } from './redaction';
+import { redactTraceJson, redactTraceText } from './redaction';
 
 export type LocalTraceSitesReadBackendOptions = {
   dbPath: string;
@@ -338,7 +338,7 @@ export function sanitizeTraceHistoryRowForTest(
   return historyRowFromTraceRow(row);
 }
 
-const TRACE_PRIVATE_FIELD_PATTERN = /(?:prompt|instruction|messages?|environment|env|authorization|password|passphrase|secret|token|api[_-]?key|cookie|credential|private[_-]?key|client[_-]?secret|session|jwt)/i;
+const TRACE_PRIVATE_PAYLOAD_FIELD_PATTERN = /^(?:(?:system|user|developer)?prompt|instructions?|messages|environment|env)$/i;
 
 function sanitizeTracePayloadJson(value: string): string {
   if (!value) return '';
@@ -357,7 +357,7 @@ function scrubPrivateTraceFields(
   key: string | undefined,
   seen: WeakSet<object>,
 ): unknown {
-  if (key && TRACE_PRIVATE_FIELD_PATTERN.test(key)) return '[REDACTED_SECRET]';
+  if (key && TRACE_PRIVATE_PAYLOAD_FIELD_PATTERN.test(key)) return '[REDACTED_SECRET]';
   if (typeof value === 'string') return sanitizeLocalTraceText(value);
   if (value === null || value === undefined || typeof value !== 'object') {
     return value;
@@ -376,7 +376,7 @@ function scrubPrivateTraceFields(
 }
 
 function sanitizeLocalTraceText(value: string): string {
-  return redactText(value)
+  return redactTraceText(value)
     .replace(/\/Users\/[^/\s"']+/g, '/Users/[user]')
     .replace(/\/home\/[^/\s"']+/g, '/home/[user]');
 }

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { redactJson, redactText, redactTraceJson } from '../scripts/lib/redaction';
+import {
+  redactJson,
+  redactText,
+  redactTraceJson,
+  redactTraceText,
+} from '../scripts/lib/redaction';
 
 const forbiddenStrings = [
   'correct-horse-battery',
@@ -63,6 +68,27 @@ describe('OS log redaction', () => {
     expect(redacted).not.toContain('+1 (415) 555-1212');
     expect(redacted).toContain('Bearer [REDACTED_SECRET]');
     expect(redacted).toContain('[REDACTED_PHONE:1212]');
+  });
+
+  it('keeps strict generic opaque-token redaction outside the trace presentation boundary', () => {
+    const opaque = '0123456789abcdef0123456789abcdef0123456789abcdef';
+    expect(redactText(`value ${opaque}`)).toContain('[REDACTED_SECRET]');
+  });
+
+  it('preserves long diagnostic paths and hashes in trace text while redacting high-confidence credentials', () => {
+    const longPath = '/packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts';
+    const contentHash = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+    const redacted = redactTraceText(
+      `${longPath} ${contentHash} Bearer bearer-token-1234567890abcdef sk_test_1234567890abcdef1234567890 token=opaque-secret-value-1234567890abcdef1234567890`,
+    );
+
+    expect(redacted).toContain(longPath);
+    expect(redacted).toContain(contentHash);
+    expect(redacted).toContain('Bearer [REDACTED_SECRET]');
+    expect(redacted).toContain('[REDACTED_SECRET]');
+    expect(redacted).not.toContain('bearer-token-1234567890abcdef');
+    expect(redacted).not.toContain('sk_test_1234567890abcdef1234567890');
+    expect(redacted).not.toContain('opaque-secret-value-1234567890abcdef1234567890');
   });
 
   it('preserves trace identity and numeric usage while still redacting credentials', () => {

@@ -46,6 +46,7 @@ min_restart_gap_seconds="${WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS:-60}"
 local_tcp_failure_threshold="${WORKSPACE_WATCHDOG_LOCAL_TCP_FAILURE_THRESHOLD:-3}"
 local_http_failure_threshold="${WORKSPACE_WATCHDOG_LOCAL_HTTP_FAILURE_THRESHOLD:-3}"
 external_failure_threshold="${WORKSPACE_WATCHDOG_EXTERNAL_FAILURE_THRESHOLD:-3}"
+public_route_failure_threshold="${WORKSPACE_WATCHDOG_PUBLIC_ROUTE_FAILURE_THRESHOLD:-3}"
 http_connect_timeout_seconds="${WORKSPACE_WATCHDOG_HTTP_CONNECT_TIMEOUT_SECONDS:-2}"
 http_timeout_seconds="${WORKSPACE_WATCHDOG_HTTP_TIMEOUT_SECONDS:-5}"
 max_restarts_per_window="${WORKSPACE_WATCHDOG_MAX_RESTARTS_PER_WINDOW:-3}"
@@ -54,6 +55,9 @@ local_port="${WORKSPACE_WATCHDOG_LOCAL_PORT:-${WORKSPACE_DAEMON_PORT:-${PORT:-46
 local_health_url="${WORKSPACE_WATCHDOG_LOCAL_URL:-http://127.0.0.1:${local_port}/health}"
 consuelo_home="${CONSUELO_HOME:-${WORKSPACE_DAEMON_CONSUELO_HOME:-${HOME:-/Users/$(id -un)}/.consuelo}}"
 consuelo_cli="${WORKSPACE_WATCHDOG_CONSUELO_CLI:-$consuelo_home/bin/consuelo}"
+heartbeat_config="$consuelo_home/node/security/generated/workspace-node-heartbeat.json"
+heartbeat_script="$root_dir/scripts/workspace-node-heartbeat.ts"
+bun_bin="${WORKSPACE_WATCHDOG_BUN_BIN:-${BUN_BIN:-bun}}"
 default_state_dir="$consuelo_home/node/runtime/watchdog"
 state_dir="${WORKSPACE_WATCHDOG_STATE_DIR:-$default_state_dir}"
 launch_domain="gui/$(id -u)"
@@ -87,6 +91,7 @@ require_nonnegative_integer WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS "$min_res
 require_positive_integer WORKSPACE_WATCHDOG_LOCAL_TCP_FAILURE_THRESHOLD "$local_tcp_failure_threshold"
 require_positive_integer WORKSPACE_WATCHDOG_LOCAL_HTTP_FAILURE_THRESHOLD "$local_http_failure_threshold"
 require_positive_integer WORKSPACE_WATCHDOG_EXTERNAL_FAILURE_THRESHOLD "$external_failure_threshold"
+require_positive_integer WORKSPACE_WATCHDOG_PUBLIC_ROUTE_FAILURE_THRESHOLD "$public_route_failure_threshold"
 require_positive_integer WORKSPACE_WATCHDOG_HTTP_CONNECT_TIMEOUT_SECONDS "$http_connect_timeout_seconds"
 require_positive_integer WORKSPACE_WATCHDOG_HTTP_TIMEOUT_SECONDS "$http_timeout_seconds"
 require_positive_integer WORKSPACE_WATCHDOG_MAX_RESTARTS_PER_WINDOW "$max_restarts_per_window"
@@ -137,6 +142,7 @@ acquire_lock
 local_tcp_failure_file="$state_dir/local-tcp-failure-count"
 local_http_failure_file="$state_dir/local-http-failure-count"
 external_failure_file="$state_dir/external-failure-count"
+public_route_failure_file="$state_dir/public-route-failure-count"
 
 read_counter() {
   local counter_file="$1"
@@ -227,6 +233,27 @@ restart_workspace() {
   fi
 }
 
+reconcile_public_route() {
+  if [ ! -f "$heartbeat_config" ]; then
+    return 0
+  fi
+  if [ ! -f "$heartbeat_script" ]; then
+    return 1
+  fi
+
+  local output
+  if ! output="$(
+    CONSUELO_HOME="$consuelo_home" \
+      "$bun_bin" "$heartbeat_script" --config "$heartbeat_config" 2>/dev/null
+  )"; then
+    return 1
+  fi
+  case "$output" in
+    *'"routeReady":true'*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 restart_launchd_label() {
   local label="$1"
   if ! launchctl print "$launch_domain/$label" >/dev/null 2>&1; then
@@ -309,6 +336,19 @@ if ! healthy_http "$local_health_url"; then
 fi
 reset_counter "$local_http_failure_file"
 rm -f "$state_dir/${workspace_label}.degraded"
+
+# Local process health cannot prove that Cloudflare/device-authority still has a routable
+# connector target. Reconcile signed desired state before escalating to a local restart.
+if ! reconcile_public_route; then
+  public_route_failures="$(increment_counter "$public_route_failure_file")"
+  log "public connector route reconciliation failed (consecutive=$public_route_failures)"
+  if [ "$public_route_failures" -ge "$public_route_failure_threshold" ]; then
+    maybe_restart "$workspace_label" "public connector route reconciliation failed ${public_route_failures} times"
+    reset_counter "$public_route_failure_file"
+  fi
+  exit 0
+fi
+reset_counter "$public_route_failure_file"
 
 if [ -n "$external_health_url" ] && ! healthy_http "$external_health_url"; then
   external_failures="$(increment_counter "$external_failure_file")"

@@ -679,3 +679,20 @@ describe('Windows native service and workflow source contracts', () => {
     expect(serverMain).toContain('workspace-node-heartbeat.json');
   });
 });
+
+
+describe('Windows native acceptance harness', () => {
+  it('materializes the same supervisor entrypoint that the Windows service config launches', () => {
+    const acceptance = readFileSync(
+      resolve(osRoot, 'scripts/testing/windows-platform-acceptance.ps1'),
+      'utf8',
+    );
+
+    expect(acceptance).toContain(
+      "Join-Path $release 'scripts\\server\\supervisor.ts'",
+    );
+    expect(acceptance).not.toContain(
+      "Join-Path $release 'scripts\\server\\main.ts'",
+    );
+  });
+});

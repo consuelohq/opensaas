@@ -14,6 +14,15 @@ import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
 export const RUNTIME_BUNDLE_SCHEMA_VERSION = 1 as const;
 export const RUNTIME_BUNDLE_POLICY_VERSION = 1 as const;
 export const RUNTIME_BUNDLE_MANIFEST_PATH = 'runtime-bundle.manifest.json';
+export const REQUIRED_RUNTIME_RECOVERY_CAPABILITIES = [
+  'caddy-worker-pool',
+  'canonical-watchdog',
+  'public-connector-readiness',
+  'stateless-mcp-2026',
+  'supervised-worker-pool',
+] as const;
+export type RuntimeRecoveryCapability =
+  (typeof REQUIRED_RUNTIME_RECOVERY_CAPABILITIES)[number];
 export const RUNTIME_BUNDLE_BUILDER_ENTRYPOINT =
   'scripts/build-runtime-bundle.ts';
 export const RUNTIME_BUNDLE_INTEGRATION_SCRIPT_KEYS = {
@@ -57,6 +66,7 @@ export type RuntimeBundleMigration = {
 export type RuntimeBundleManifest = {
   architecture: string;
   bundleId: string;
+  capabilities?: RuntimeRecoveryCapability[];
   files: RuntimeBundleFile[];
   kind: 'consuelo-runtime-bundle';
   migrations: RuntimeBundleMigration[];
@@ -79,6 +89,53 @@ export type RuntimeBundleManifest = {
   sourceCommit: string;
   version: string;
 };
+
+const RUNTIME_RECOVERY_CAPABILITY_FILES: Readonly<
+  Record<RuntimeRecoveryCapability, readonly string[]>
+> = {
+  'stateless-mcp-2026': [
+    'scripts/lib/mcp-protocol.ts',
+    'scripts/lib/mcp-gateway.ts',
+    'scripts/server/routes/mcp.ts',
+  ],
+  'supervised-worker-pool': [
+    'scripts/server/supervisor.ts',
+    'scripts/lib/worker-pool.ts',
+  ],
+  'caddy-worker-pool': [
+    'scripts/lib/security-gateway.ts',
+    'scripts/consuelo-reload.js',
+  ],
+  'canonical-watchdog': [
+    'scripts/workspace-watchdog.sh',
+    'scripts/consuelo-reload.js',
+  ],
+  'public-connector-readiness': [
+    'scripts/lib/lifecycle/connector-readiness.ts',
+    'scripts/workspace-node-heartbeat.ts',
+    'scripts/lib/workspace-node-heartbeat-client.ts',
+  ],
+};
+
+export function runtimeRecoveryCapabilitiesForFiles(
+  files: Pick<RuntimeBundleFile, 'path'>[],
+): RuntimeRecoveryCapability[] {
+  const paths = new Set(files.map((file) => file.path));
+  return REQUIRED_RUNTIME_RECOVERY_CAPABILITIES.filter((capability) =>
+    RUNTIME_RECOVERY_CAPABILITY_FILES[capability].every((filePath) =>
+      paths.has(filePath),
+    ),
+  );
+}
+
+export function missingRequiredRuntimeRecoveryCapabilities(
+  capabilities: readonly string[] | undefined,
+): RuntimeRecoveryCapability[] {
+  const available = new Set(capabilities ?? []);
+  return REQUIRED_RUNTIME_RECOVERY_CAPABILITIES.filter(
+    (capability) => !available.has(capability),
+  );
+}
 
 export type RuntimeBundleBuildOptions = {
   architecture: string;
@@ -137,6 +194,7 @@ const DEFAULT_DISCOVERY_PATHS = [
   'package.json',
   'bun.lock',
   'assets/consuelo-mark.png',
+  'assets/vendor/observability-traces-v38',
   'scripts',
   'src',
   'tools',
@@ -334,6 +392,9 @@ export function classifyRuntimeBundlePath(
   }
   if (filePath === 'package.json' || filePath === 'bun.lock') return 'runtime';
   if (filePath === 'assets/consuelo-mark.png') return 'runtime';
+  if (filePath.startsWith('assets/vendor/observability-traces-v38/')) {
+    return 'managed-site-template';
+  }
   if (filePath.startsWith('skills/')) return 'managed-skill';
   if (/^tools\/[^/]+\/[^/]+\.ts$/.test(filePath)) return 'managed-tool';
   if (
@@ -886,6 +947,20 @@ function assertManifestShape(manifest: RuntimeBundleManifest): void {
     throw new Error('runtime bundle manifest files must be an array');
   if (!Array.isArray(manifest.migrations))
     throw new Error('runtime bundle manifest migrations must be an array');
+  if (manifest.capabilities !== undefined) {
+    if (!Array.isArray(manifest.capabilities)) {
+      throw new Error('runtime bundle manifest capabilities must be an array');
+    }
+    const allowed = new Set<string>(REQUIRED_RUNTIME_RECOVERY_CAPABILITIES);
+    const sorted = [...manifest.capabilities].sort();
+    if (
+      manifest.capabilities.some((capability) => !allowed.has(capability)) ||
+      new Set(manifest.capabilities).size !== manifest.capabilities.length ||
+      sorted.some((capability, index) => capability !== manifest.capabilities![index])
+    ) {
+      throw new Error('runtime bundle manifest capabilities are invalid');
+    }
+  }
   assertSemver(manifest.version, 'runtime-bundle version');
   assertSemver(manifest.minimumUpdaterVersion, 'minimum updater version');
 }
@@ -979,8 +1054,10 @@ export async function buildRuntimeBundle(
   });
   const files = collected.files.map(({ bytes: _bytes, ...file }) => file);
   const releaseFingerprint = releaseFingerprintForFiles(files);
+  const capabilities = runtimeRecoveryCapabilitiesForFiles(files);
   const manifestWithoutBundleId: Omit<RuntimeBundleManifest, 'bundleId'> = {
     architecture: options.architecture,
+    capabilities,
     files,
     kind: 'consuelo-runtime-bundle',
     migrations: normalizeMigrations(options.migrations),
@@ -1004,6 +1081,7 @@ export async function buildRuntimeBundle(
         'kind',
         'platform',
         'architecture',
+        'capabilities',
         'sourceCommit',
         'version',
         'releaseFingerprint',
