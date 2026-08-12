@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
+import { getBreadcrumbs } from '../src/lib/docs-navigation';
 
 const packageFile = (path: string) => new URL(`../${path}`, import.meta.url);
 const repoFile = (path: string) => new URL(`../../../${path}`, import.meta.url);
@@ -64,6 +65,11 @@ describe('promoted Tools, Skills, Steering, and Memory documentation contract', 
     expect(navigation).toContain("label: 'Sites'");
     expect(navigation).toContain("label: 'Files and artifacts', slug: 'build/files-and-artifacts'");
     expect(navigation).toContain("label: 'Approvals', slug: 'secure/approvals'");
+  });
+
+  test('keeps preserved Build detail routes inside their promoted sections', () => {
+    expect(getBreadcrumbs('/build/shared-memory-and-context/')[0]?.label).toBe('Memory');
+    expect(getBreadcrumbs('/build/approvals/')[0]?.label).toBe('Secure');
   });
 
   test('generates Tool List headings from every canonical facade tool in alphabetical order', () => {

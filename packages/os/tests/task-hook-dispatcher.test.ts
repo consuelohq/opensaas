@@ -92,6 +92,10 @@ describe('OS hook dispatcher', () => {
 
     expect(source).toContain("require('../hooks/dispatcher.js')");
     expect(source).toContain("require('../hooks/intent.js')");
+    expect(source).toContain("getTaskWorkpadPathFromMeta");
+    expect(source).toContain('const workpadPath = getTaskWorkpadPathFromMeta(worktreePath, taskMeta);');
+    expect(source).toContain('fs.mkdirSync(path.dirname(workpadPath), { recursive: true });');
+    expect(source).not.toContain("path.join(worktreePath, '.task', 'workpad.md')");
     expect(source).toContain("path.join(__dirname, 'stream-context.js')");
     expect(preflight).toBeGreaterThan(-1);
     for (const mutation of ['ensureRemoteStreamBranch({', 'ensureRemoteTaskBranch({', 'createWorktree(', 'createBootstrapCommit({', 'createPullRequest({']) {
