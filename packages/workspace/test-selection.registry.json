@@ -2,19 +2,19 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2548,
-    "mappedTestCount": 2471,
-    "unmappedTestCount": 77,
+    "testFileCount": 2555,
+    "mappedTestCount": 2474,
+    "unmappedTestCount": 81,
     "ruleCount": 37,
     "explicitRuleCount": 16,
     "autoRuleCount": 21,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 211,
+      "packages/os/tests": 214,
       "packages/twenty-server/test/integration/graphql/utils": 65,
+      "packages/workspace/tests": 53,
       "packages/twenty-sdk/src/cli": 51,
-      "packages/workspace/tests": 50,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/utils": 31,
@@ -64,6 +64,7 @@
       "packages/twenty-server/test/integration/metadata/suites/role/utils": 11,
       "packages/api/src/routes": 10,
       "packages/dialer/src/services": 10,
+      "packages/documentation/tests": 10,
       "packages/lead-connector/src/embed": 10,
       "packages/twenty-front/src/modules/object-metadata/utils": 10,
       "packages/twenty-front/src/modules/object-record/record-field/ui/utils": 10,
@@ -75,7 +76,6 @@
       "packages/twenty-server/test/integration/metadata/suites/view-filter-group": 10,
       "packages/twenty-server/test/integration/metadata/suites/view-filter/utils": 10,
       "packages/twenty-server/test/integration/utils": 10,
-      "packages/documentation/tests": 9,
       "packages/twenty-front/src/modules/object-record/utils": 9,
       "packages/twenty-front/src/modules/workflow/workflow-trigger/utils": 9,
       "packages/twenty-front/src/utils/array": 9,
@@ -628,7 +628,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 455,
+      "test": 462,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -904,7 +904,9 @@
       "id": "os-lifecycle-legacy-mcp-scrub",
       "source": [
         "packages/os/scripts/consuelo-reload.js",
-        "packages/os/tests/finish-line-lifecycle-contract.test.ts"
+        "packages/os/tests/finish-line-lifecycle-contract.test.ts",
+        "packages/os/scripts/start-consuelo-daemon.sh",
+        "packages/os/tests/daemon-bun-path.test.ts"
       ],
       "tests": [
         {
@@ -915,12 +917,13 @@
             "packages/os",
             "../../node_modules/vitest/vitest.mjs",
             "run",
-            "tests/finish-line-lifecycle-contract.test.ts"
+            "tests/finish-line-lifecycle-contract.test.ts",
+            "tests/daemon-bun-path.test.ts"
           ]
         }
       ],
       "critical": true,
-      "reason": "Lifecycle reload changes that retire inherited legacy MCP credentials must prove the focused service/reload contract without selecting the broad OS package suite.",
+      "reason": "Lifecycle daemon/reload changes must prove inherited-secret scrub, activated-runtime managed Sites refresh, Bun path resolution, and fail-open startup without selecting the broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -2137,6 +2140,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/documentation/tests/navigation-memory.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/documentation/tests/observe.test.ts",
       "group": "packages/documentation/tests",
       "kind": "test"
@@ -2852,6 +2860,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/managed-cloud-pricing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/managed-cloud-review-regressions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3393,6 +3406,16 @@
     },
     {
       "path": "packages/os/tests/task-meta.test.js",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-pr-repository-recovery.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-push-local-sync.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -14122,6 +14145,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/stream-sync-node-modules.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/stream-workpads.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -14148,6 +14176,16 @@
     },
     {
       "path": "packages/workspace/tests/task-node-modules.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-pr-repository-recovery.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-push-local-sync.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -14247,6 +14285,7 @@
     "packages/documentation/tests/build.test.ts",
     "packages/documentation/tests/connect.test.ts",
     "packages/documentation/tests/foundation.test.ts",
+    "packages/documentation/tests/navigation-memory.test.ts",
     "packages/documentation/tests/observe.test.ts",
     "packages/documentation/tests/reference.test.ts",
     "packages/documentation/tests/review-cleanup.test.ts",
@@ -14285,12 +14324,15 @@
     "packages/workspace/tests/review-documentation-opportunity.test.js",
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/stream-lifecycle.test.ts",
+    "packages/workspace/tests/stream-sync-node-modules.test.js",
     "packages/workspace/tests/stream-workpads.test.js",
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
     "packages/workspace/tests/task-hook-workflow-contract.test.ts",
     "packages/workspace/tests/task-hooks.test.ts",
     "packages/workspace/tests/task-meta.test.ts",
     "packages/workspace/tests/task-node-modules.test.js",
+    "packages/workspace/tests/task-pr-repository-recovery.test.ts",
+    "packages/workspace/tests/task-push-local-sync.test.ts",
     "packages/workspace/tests/task-push-session.test.ts",
     "packages/workspace/tests/task-selector-pr-ref.test.js",
     "packages/workspace/tests/task-session.test.js",

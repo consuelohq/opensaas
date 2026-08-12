@@ -287,7 +287,7 @@ function docsOnly(files) {
 }
 
 function sourceCodeFiles(files) {
-  return files.filter((file) => /\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml)$/i.test(file) && !file.startsWith('.task/'));
+  return files.filter((file) => /\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|sh|bash|zsh)$/i.test(file) && !file.startsWith('.task/'));
 }
 
 function select(registry, files) {
