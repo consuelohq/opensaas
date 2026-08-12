@@ -76,15 +76,13 @@ resumed task session: `tsk_4e5fd8c23e86`
 
 ## files changed
 
-- `packages/os/assets/vendor/observability-traces-v38/inspector.js`
-- `packages/os/scripts/lib/trace-site-inspector/browser.ts`
-- `packages/os/scripts/lib/trace-site-inspector/inspector-state.ts`
-- `packages/os/scripts/lib/trace-site-inspector/interactions.ts`
-- `packages/os/scripts/lib/trace-site-inspector/model.ts`
-- `packages/os/scripts/lib/trace-site-inspector/table-formatters.ts`
-- `packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts`
-- `packages/os/tests/trace-history-redaction.test.ts`
-- `packages/os/tests/trace-site-inspector-interactions.test.ts`
+- `.github/workflows/consuelo-ci.yaml`
+- `packages/os/tests/local-os-server-review-findings.test.ts`
+- `packages/workspace/scripts/test-selection.js`
+- `packages/workspace/scripts/verify.js`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/tests/test-selection.test.js`
 
 
 ## workspace-owned: files changed
@@ -171,6 +169,7 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-12 02:15:27 `review.run`: passed — OK
 - 2026-08-12 02:15:47 `verify`: passed — OK
 - 2026-08-12 03:04:25 `review.run`: passed — OK
+- 2026-08-12 03:16:39 `review.run`: passed — OK
 
 ## key decisions
 
@@ -303,3 +302,5 @@ bun run task:finish
 - Stream reconciliation: `stream/os` was synced with main at `70b2592804c82aa56ff1c6e9860ef2c2d358aab8`. The local task worktree was one fast-forward commit behind its own remote task branch (`108a0b9` -> `12fdb83`); the typed `task.call` sync path returned MCP network errors, so the smallest scoped fallback was a non-destructive `git merge --ff-only` through task-scoped `code.call`. No reset/force operation was used.
 - CI follow-up: exact synthetic merge `8971eee8` correctly pinned first parent `70b25928`, but `verify` test selection also included post-install working/untracked files. This made clean CI select unrelated `auto:twenty-sdk:test` and broad OS package coverage. Added committed-only test selection for immutable CI, while local pre-push verify still includes working changes; native Windows failure remains the same pre-existing acceptance-step failure as merged #1838.
 - Immutable selector verification: against pinned base `70b25928`, committed-only selection chose exactly 7 focused suites (workspace test selection; CI immutable-base contract; Trace gateway/Trace Burn; canonical TraceStore boundary; edge publisher; edge route preservation; lifecycle MCP scrub) and all 7 passed locally.
+- CI diagnostics: exact current synthetic diff selected 8 focused suites locally (adds workspace verification stamp tests) and all 8 passed. CI still reported registry failure without naming the suite, so `verify` now emits only failed suite name + exit code (no test payload) in human output; regression test added red-first/green.
+

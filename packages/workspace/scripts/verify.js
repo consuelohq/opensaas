@@ -410,6 +410,16 @@ function createBecause(result) {
     const matched = Array.isArray(selection.matchedRules) ? selection.matchedRules.map((rule) => rule.id).join(', ') : '';
     if (suiteCount > 0) {
       lines.push(`registry selected ${suiteCount} suite${suiteCount === 1 ? '' : 's'}${matched ? ` from ${matched}` : ''} and ${result.testSelection.passed ? 'passed' : 'failed'}`);
+      const registryFailures = Array.isArray(selection.failedSuites)
+        ? selection.failedSuites
+        : [];
+      for (const failure of registryFailures) {
+        const name = failure && failure.name ? String(failure.name) : 'unnamed suite';
+        const exitCode = Number.isInteger(failure && failure.exitCode)
+          ? failure.exitCode
+          : 'unknown';
+        lines.push(`registry failure: ${name} (exit ${exitCode})`);
+      }
     } else if (selection.zeroSuiteReason) {
       lines.push(`registry selected 0 suites because ${selection.zeroSuiteReason}`);
     } else {
