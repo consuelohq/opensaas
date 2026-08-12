@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-merged-docs-stale-office-link",
+  "base": "origin/main",
+  "headSha": "ba4d8ab6c3626e5460af39295b45d91b8b9a5918",
+  "changeHash": "df4039f2365f8bcdc7185f6f3d3c9cd2f0036d54100553e0a72117b547985291",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/tools/index.mdx"
+  ],
+  "verifiedAt": "2026-08-12T01:25:33.038Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/fix-merged-docs-stale-office-link.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/current.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/evidence-log.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/read-log.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/session.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/workpad.md",
+        "packages/documentation/src/content/docs/tools/index.mdx"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
