@@ -65,7 +65,13 @@ describe('Consuelo finish-line lifecycle contract', () => {
     expect(state).toContain('const localServiceUrl = `http://127.0.0.1:${input.port}`');
     expect(gateway).toContain('bind 127.0.0.1');
     expect(gateway).toContain('auto_https off');
-    expect(gateway).toContain('reverse_proxy ${input.upstream.host}:${input.upstream.port}');
+    expect(gateway).toContain("reverse_proxy ${upstreams.map((candidate) => `${candidate.host}:${candidate.port}`).join(' ')}");
+    expect(gateway).toContain('lb_policy round_robin');
+    expect(gateway).toContain('health_uri /ready');
+    expect(gateway).toContain('dial_timeout 5s');
+    expect(gateway).not.toContain('response_header_timeout');
+    expect(gateway).not.toContain('read_timeout');
+    expect(gateway).not.toContain('write_timeout');
   });
 
   it('pins, verifies, installs, supervises, and uninstalls Caddy', () => {

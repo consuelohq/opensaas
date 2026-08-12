@@ -180,6 +180,8 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-12 01:02:40 `review.run`: passed — OK
 - 2026-08-12 01:03:01 `verify`: passed — OK
 - 2026-08-12 01:06:58 `verify`: passed — OK
+- 2026-08-12 01:16:27 `review.run`: passed — OK
+- 2026-08-12 01:17:01 `verify`: passed — OK
 
 ## key decisions
 
@@ -287,12 +289,16 @@ bun run task:finish
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/test-selection.test.js`
 - `packages/workspace/tests/trace-site-inspector.test.ts`
+- `security-gateway.ts`
+- `stream/os`
 
-### Stream reconciliation — 2026-08-11/12
+### Reconciled selected-suite verification
 
-- `stream/os` advanced while this rollout was in progress, so PR #1794 became dirty/conflicting. The task branch was synchronized by merging current `origin/stream/os`; six non-metadata conflicts were resolved deliberately rather than by discarding either side.
-- Internal workspace traces keep the user-approved exact Trace Burn v38 `buildObservabilityTracesSite()` path. The newer stream public-marketing Astro client export (`buildObservabilityTracesClientScript`) is also retained so `/os/observability/traces` continues to build independently; the internal generated workspace surface is still v38.
-- `security-gateway.ts` and its test use the newer stream implementation because it includes worker-pool/replay-state changes and already preserves the no-proxy-execution-timeout invariant required by this rollout.
-- Publisher conflict resolution keeps the newer stream route-preservation assertions plus the explicit invariant that workspace route publication must not use `INSERT OR REPLACE INTO workspace_route_registry`. The success fixture was updated to model workspace-session 401 responses for every private snapshot route, not only `/`. Contract mode now passes 7/7.
-- The generated test-selection registry was regenerated from the reconciled rules rather than hand-merging generated JSON.
-- Post-reconciliation validation: focused Trace contracts 37/37 passed (publisher contract separately 7/7 with contract mode), OS typecheck passed, public Consuelo website Astro build passed with 0 errors, and `git diff --check` passed.
+- After the stream merge, the broad auto `@consuelo/os package test` initially reappeared because v38 vendor JS and the focused reload/credential-scrub files were not all owned by explicit critical rules. Extended the Trace rule to own the complete v38 vendor bundle/runtime fixture and added a focused lifecycle scrub rule; the broad unsafe package suite is no longer selected.
+- The stream worker-pool Caddy implementation made one old finish-line assertion stale. Updated that focused contract to assert the current round-robin/readiness proxy shape and, critically, the absence of response/read/write execution timeouts. TDD reproduced the stale assertion before the test reconciliation.
+- Final branch-selected safe suites all pass against `origin/stream/os`: selector 11/11; Trace gateway/Trace Burn 37/37; TraceStore runtime boundary 3/3; snapshot publisher 7/7; route preservation/integration 23/23; lifecycle legacy-MCP scrub 10/10.
+
+### Post-reconciliation review and verify
+
+- Strict review against current `origin/stream/os`: 26 task files reviewed, static rules + ESLint + typecheck + spec compliance, 0 task issues, 0 blockers, 0 must-fix findings.
+- Typed full verify after reconciliation: `passed=true`, `publishValid=true`; review passed and DB guard passed with only the expected route-seed database-script warning and no DB findings. The verify facade compared against the still-unpushed remote task head, so the authoritative task-delta review is the separate strict review against `origin/stream/os`; both are green.

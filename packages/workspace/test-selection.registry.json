@@ -5,8 +5,8 @@
     "testFileCount": 2546,
     "mappedTestCount": 2469,
     "unmappedTestCount": 77,
-    "ruleCount": 35,
-    "explicitRuleCount": 14,
+    "ruleCount": 36,
+    "explicitRuleCount": 15,
     "autoRuleCount": 21,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -796,7 +796,9 @@
         "packages/os/tests/trace-site-inspector-os-owned.test.ts",
         "packages/os/tests/trace-sites-gateway-read-layer.test.ts",
         "packages/os/tests/trace-sites-history-endpoint-contract.test.ts",
-        "packages/os/tests/trace-sites-runtime-boundary.test.ts"
+        "packages/os/tests/trace-sites-runtime-boundary.test.ts",
+        "packages/os/assets/vendor/observability-traces-v38/**",
+        "packages/os/tests/fixtures/trace-persistence-runtime.ts"
       ],
       "tests": [
         {
@@ -870,6 +872,29 @@
       ],
       "critical": true,
       "reason": "Workspace edge rollout changes must preserve immutable snapshots and live node/connector route state without relying on a broad package test.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-lifecycle-legacy-mcp-scrub",
+      "source": [
+        "packages/os/scripts/consuelo-reload.js",
+        "packages/os/tests/finish-line-lifecycle-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS lifecycle legacy MCP environment scrub contract",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/finish-line-lifecycle-contract.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Lifecycle reload changes that retire inherited legacy MCP credentials must prove the focused service/reload contract without selecting the broad OS package suite.",
       "origin": "explicit"
     },
     {
