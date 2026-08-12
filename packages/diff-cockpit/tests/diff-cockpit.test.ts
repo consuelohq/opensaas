@@ -614,6 +614,8 @@ describe('renderIndexPage', () => {
     expect(html).not.toContain('id="diff-cockpit-search"');
     expect(html).not.toContain('data-search-toggle');
     expect(html).toContain('data-command-page');
+    expect(html).toContain('Open the main code browser.');
+    expect(html).not.toContain('Open the main packages browser.');
     expect(html).toContain('class="mobile-command-fab"');
     expect(html).toContain('command-bottom-drawer');
     expect(html).toContain('const sectionPageSize = 10');

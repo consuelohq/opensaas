@@ -56,13 +56,13 @@ function workspaceSourceControlPath(home: string, workspaceId: string): string {
 }
 
 
-function sourceControlConfigurationError(error: unknown): Response {
-  const message = error instanceof Error
-    ? error.message.slice(0, 240)
-    : 'Source-control configuration is invalid.';
+function sourceControlConfigurationError(_error: unknown): Response {
   return jsonResponse({
     ok: false,
-    error: { code: 'INVALID_SOURCE_CONTROL_CONFIGURATION', message },
+    error: {
+      code: 'INVALID_SOURCE_CONTROL_CONFIGURATION',
+      message: 'Source-control configuration is invalid.',
+    },
   }, 400);
 }
 
@@ -106,8 +106,8 @@ export function createSettingsRoutes(): Hono {
 
   app.post('/gateway/configuration/source-control', async (context) => {
     const request = context.req.raw;
-    const body = await request.clone().text();
     try {
+      const body = await request.clone().text();
       const authentication = await authenticateSignedRequest({
         request,
         path: '/gateway/configuration/source-control',

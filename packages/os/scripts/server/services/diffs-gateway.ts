@@ -40,6 +40,8 @@ import type { AuthenticatedMcpPrincipal } from '../security/authenticated-princi
 const DIFFS_PROVIDER_SCRIPT_ID = 'diffs-github-provider';
 const READ_CACHE_TTL_MS = 30_000;
 const CODE_CACHE_TTL_MS = 5 * 60_000;
+const PRODUCT_READ_CACHE_MAX_ENTRIES = 256;
+const GITHUB_MUTATION_TIMEOUT_MS = 15_000;
 
 export class DiffsGatewayError extends Error {
   readonly code: string;
@@ -164,13 +166,26 @@ function cacheKey(namespace: string, operation: string): string {
   return `${namespace}:${operation}`;
 }
 
+function pruneProductReadCache(now: number): void {
+  for (const [cacheKeyValue, entry] of productReadCache.entries()) {
+    if (entry.expiresAt <= now) productReadCache.delete(cacheKeyValue);
+  }
+  while (productReadCache.size >= PRODUCT_READ_CACHE_MAX_ENTRIES) {
+    const oldestKey = productReadCache.keys().next().value as string | undefined;
+    if (!oldestKey) break;
+    productReadCache.delete(oldestKey);
+  }
+}
+
 function cached<T>(key: string, ttlMs: number, loader: () => Promise<T>): Promise<T> {
   const existing = productReadCache.get(key);
   if (existing && existing.expiresAt > Date.now()) return Promise.resolve(existing.value as T);
   if (existing) productReadCache.delete(key);
   return loader()
     .then((value) => {
-      productReadCache.set(key, { value, expiresAt: Date.now() + ttlMs });
+      const now = Date.now();
+      pruneProductReadCache(now);
+      productReadCache.set(key, { value, expiresAt: now + ttlMs });
       return value;
     })
     .catch((error: unknown) => {
@@ -219,11 +234,11 @@ function requireRepository(
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    if (/not configured/i.test(message)) {
-      throw new DiffsGatewayError('SOURCE_CONTROL_REPOSITORY_NOT_CONFIGURED', 404, message);
-    }
     if (/connection/i.test(message)) {
       throw new DiffsGatewayError('SOURCE_CONTROL_CONNECTION_REQUIRED', 409, message);
+    }
+    if (/repository is not configured/i.test(message) || /default source-control project is not configured/i.test(message)) {
+      throw new DiffsGatewayError('SOURCE_CONTROL_REPOSITORY_NOT_CONFIGURED', 404, message);
     }
     if (/provider/i.test(message)) {
       throw new DiffsGatewayError('SOURCE_CONTROL_PROVIDER_UNSUPPORTED', 409, message);
@@ -390,6 +405,7 @@ async function performGithubPullRequestMerge(input: {
         method: 'PUT',
         headers: { ...githubHeaders(input.token), 'content-type': 'application/json' },
         body: JSON.stringify({ merge_method: 'merge' }),
+        signal: AbortSignal.timeout(GITHUB_MUTATION_TIMEOUT_MS),
       },
     );
     const payload = await githubPayload(response);
@@ -424,6 +440,7 @@ async function performGithubReviewThreadMutation(input: {
       method: 'POST',
       headers: { ...githubHeaders(input.token), 'content-type': 'application/json' },
       body: JSON.stringify({ query, variables: { threadId: input.threadId } }),
+      signal: AbortSignal.timeout(GITHUB_MUTATION_TIMEOUT_MS),
     });
     const payload = await githubPayload(response);
     if (!response.ok || Array.isArray(payload.errors)) {

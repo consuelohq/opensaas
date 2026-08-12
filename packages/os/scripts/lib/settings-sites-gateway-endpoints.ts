@@ -115,18 +115,22 @@ export function createSettingsSitesGatewayEndpoints(
             workspace: { workspaceId: scope.workspaceId, workspaceHost: scope.workspaceHost },
             snapshot,
           });
-        } catch (error: unknown) {
+        } catch (_error: unknown) {
+          const isWrite = request.method === 'POST';
           return jsonResponse({
             ok: false,
             publicBoundary: 'consuelo-gateway',
             route: url.pathname,
-            error: {
-              code: 'INVALID_SOURCE_CONTROL_CONFIGURATION',
-              message: error instanceof Error
-                ? error.message.slice(0, 240)
-                : 'Source-control configuration is invalid.',
-            },
-          }, 400);
+            error: isWrite
+              ? {
+                  code: 'INVALID_SOURCE_CONTROL_CONFIGURATION',
+                  message: 'Source-control configuration is invalid.',
+                }
+              : {
+                  code: 'SOURCE_CONTROL_CONFIGURATION_UNAVAILABLE',
+                  message: 'Source-control configuration is unavailable.',
+                },
+          }, isWrite ? 400 : 500);
         }
       }
 

@@ -310,6 +310,24 @@ function gatewayEnvironmentWriteTarget(): ConsueloGatewayServiceTarget {
   };
 }
 
+function gatewayDiffsReadTarget(): ConsueloGatewayServiceTarget {
+  return {
+    kind: 'consuelo-gateway-service',
+    serviceName: 'diffs-sites-read-endpoints',
+    gatewayRouteFamily: '/gateway/diffs/*',
+    publicSiteRouteFamily: '/diffs/*',
+  };
+}
+
+function gatewayDiffsWriteTarget(): ConsueloGatewayServiceTarget {
+  return {
+    kind: 'consuelo-gateway-service',
+    serviceName: 'diffs-sites-write-endpoints',
+    gatewayRouteFamily: '/gateway/diffs/*',
+    publicSiteRouteFamily: '/diffs/*',
+  };
+}
+
 function integratedRouteRecord(): WorkspaceRouteRecord {
   return {
     workspaceId: 'workspace_internal',
@@ -345,7 +363,7 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
       { surface: 'sites', pathPrefix: '/artifacts', auth: 'public', status: 'active', target: siteSnapshotTarget('artifacts') },
       { surface: 'sites', pathPrefix: '/traces', auth: 'public', status: 'active', target: siteSnapshotTarget('traces') },
       { surface: 'sites', pathPrefix: '/tracing', auth: 'public', status: 'active', target: siteSnapshotTarget('traces') },
-      { surface: 'sites', pathPrefix: '/diffs', auth: 'public', status: 'active', target: siteSnapshotTarget('diffs') },
+      { surface: 'sites', pathPrefix: '/diffs', auth: 'workspace-session', status: 'active', target: gatewayDiffsReadTarget() },
       { surface: 'sites', pathPrefix: '/docs', auth: 'public', status: 'active', target: siteSnapshotTarget('docs') },
       { surface: 'sites', pathPrefix: '/configuration', auth: 'public', status: 'active', target: siteSnapshotTarget('configuration') },
       { surface: 'sites', pathPrefix: '/tools', auth: 'public', status: 'active', target: siteSnapshotTarget('tools') },
@@ -354,6 +372,8 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
       { surface: 'sites', pathPrefix: '/settings', auth: 'public', status: 'active', target: { kind: 'redirect', location: '/configuration', statusCode: 308 } },
       { surface: 'sites', pathPrefix: '/gateway/traces/events', auth: 'workspace-session', status: 'active', target: gatewayLiveTarget() },
       { surface: 'sites', pathPrefix: '/gateway/traces', auth: 'workspace-session', status: 'active', target: gatewayReadTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/diffs/write', auth: 'workspace-session', status: 'active', target: gatewayDiffsWriteTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/diffs', auth: 'workspace-session', status: 'active', target: gatewayDiffsReadTarget() },
       { surface: 'sites', pathPrefix: '/gateway/configuration/overlay', auth: 'workspace-session', status: 'active', target: gatewayConfigurationWriteTarget() },
       { surface: 'sites', pathPrefix: '/gateway/configuration', auth: 'workspace-session', status: 'active', target: gatewayConfigurationReadTarget() },
       { surface: 'sites', pathPrefix: '/gateway/settings/overlay', auth: 'workspace-session', status: 'active', target: gatewayLegacySettingsWriteTarget() },
@@ -396,6 +416,14 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       target: {
         kind: 'os-connector',
         connectorId: 'connector_internal',
+      },
+    });
+    expect(record.routes.find((route) => route.pathPrefix === '/diffs')).toMatchObject({
+      surface: 'sites',
+      auth: 'workspace-session',
+      target: {
+        kind: 'consuelo-gateway-service',
+        serviceName: 'diffs-sites-read-endpoints',
       },
     });
     expect(

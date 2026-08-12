@@ -211,6 +211,52 @@ describe('Hono Diffs routes', () => {
     });
   });
 
+  it('binds signed Diffs requests to the full path including query parameters', async () => {
+    const signed = signedRequest({
+      method: 'GET',
+      path: '/gateway/diffs/configuration?view=one',
+      nonce: 'diffs-query-signature-nonce',
+    });
+    const valid = await handleRequest(signed);
+    expect(valid.status).toBe(200);
+
+    const tampered = new Request('http://127.0.0.1:46321/gateway/diffs/configuration?view=two', {
+      headers: signed.headers,
+    });
+    const denied = await handleRequest(tampered);
+    expect(denied.status).toBe(401);
+  });
+
+  it('reports a missing repository connection separately from a missing repository', async () => {
+    writeWorkspace(configuredWorkspace([{
+      id: 'app',
+      name: 'App',
+      repo: 'acme/app',
+      defaultBranch: 'main',
+      provider: 'github',
+    }]));
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/gateway/diffs/repositories/acme/app',
+      nonce: 'diffs-missing-connection-nonce',
+    }));
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: { code: 'SOURCE_CONTROL_CONNECTION_REQUIRED' },
+    });
+  });
+
+  it('preserves nested repository-relative paths in Diffs tree routes', async () => {
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/diffs/acme/app/tree/main/src/nested/file.ts',
+      nonce: 'diffs-nested-tree-path-nonce',
+    }));
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('src/nested/file.ts');
+  });
+
   it('requires signed Diffs access', async () => {
     const response = await handleRequest(new Request('http://127.0.0.1:46321/gateway/diffs/configuration'));
     expect(response.status).toBe(401);
