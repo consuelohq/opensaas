@@ -13,7 +13,11 @@ import {
   type McpNodeRouteSource,
 } from '../../../../scripts/lib/mcp-node-routing';
 import { json } from '../http';
-import type { Store, WorkspaceRouteRegistryBinding } from '../types';
+import type {
+  DeviceAuthorityLogger,
+  Store,
+  WorkspaceRouteRegistryBinding,
+} from '../types';
 import { hasGrantedScope, hash } from '../utils';
 import { mcpResourceUrl } from './mcp-oauth';
 import { workspaceDefaultNodeId, workspaceNodePresence } from './nodes';
@@ -268,6 +272,7 @@ async function centralMcpNodeRoutingContext(input: {
   currentNodeId: string;
   routeSource: McpNodeRouteSource;
   nowMs: number;
+  operationalLogger?: DeviceAuthorityLogger;
 }): Promise<McpNodeRoutingContext | undefined> {
   try {
     const workspace = await input.store.byAccountWorkspace(input.accountId);
@@ -309,7 +314,22 @@ async function centralMcpNodeRoutingContext(input: {
       routeSource: input.routeSource,
       nodes,
     };
-  } catch {
+  } catch (error: unknown) {
+    try {
+      input.operationalLogger?.warn(
+        '[OsDeviceAuthority] MCP node directory unavailable',
+        {
+          component: 'os-device-authority',
+          operation: 'mcp-node-directory',
+          accountId: input.accountId,
+          workspaceId: input.workspaceId,
+          workspaceHost: input.workspaceHost,
+          failure: error instanceof Error ? error.name : 'UnknownError',
+        },
+      );
+    } catch {
+      // Logging must never turn the steering directory's fail-open path into a request failure.
+    }
     return undefined;
   }
 }
@@ -321,6 +341,7 @@ export async function proxyCentralMcpRequest(input: {
   nowMs: number;
   routeRegistry?: WorkspaceRouteRegistryBinding;
   internalSigningSecret?: string;
+  operationalLogger?: DeviceAuthorityLogger;
   fetchImpl: typeof fetch;
 }): Promise<Response> {
   try {
@@ -449,6 +470,7 @@ export async function proxyCentralMcpRequest(input: {
           currentNodeId: resolution.nodeId,
           routeSource,
           nowMs: input.nowMs,
+          operationalLogger: input.operationalLogger,
         })
       : undefined;
 

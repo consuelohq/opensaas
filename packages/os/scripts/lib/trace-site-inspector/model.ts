@@ -269,6 +269,7 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
     const stepRecord = depth === 1 ? asRecord(steps[siblingIndex]) : null;
     const mergedRecord = stepRecord ? { ...stepRecord, ...record } : record;
     const data = asRecord(mergedRecord.data);
+    const parentMetadata = asRecord(parent.metadata);
     const label =
       clean(
         mergedRecord.tool ??
@@ -303,13 +304,27 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
       branch: mergedRecord.branch ?? parent.branch,
       taskSession: mergedRecord.taskSession ?? parent.taskSession,
       worktree: mergedRecord.worktree ?? parent.worktree,
-      requestedNodeId: mergedRecord.requestedNodeId ?? parent.requestedNodeId,
-      resolvedNodeId: mergedRecord.resolvedNodeId ?? parent.resolvedNodeId,
-      nodeId: mergedRecord.nodeId ?? parent.nodeId,
-      resolvedNodeName: mergedRecord.resolvedNodeName ?? parent.resolvedNodeName,
-      nodeName: mergedRecord.nodeName ?? parent.nodeName,
-      defaultNodeId: mergedRecord.defaultNodeId ?? parent.defaultNodeId,
-      routeSource: mergedRecord.routeSource ?? parent.routeSource,
+      requestedNodeId:
+        mergedRecord.requestedNodeId ??
+        parent.requestedNodeId ??
+        parentMetadata?.requestedNodeId,
+      resolvedNodeId:
+        mergedRecord.resolvedNodeId ??
+        parent.resolvedNodeId ??
+        parentMetadata?.resolvedNodeId,
+      nodeId: mergedRecord.nodeId ?? parent.nodeId ?? parentMetadata?.nodeId,
+      resolvedNodeName:
+        mergedRecord.resolvedNodeName ??
+        parent.resolvedNodeName ??
+        parentMetadata?.resolvedNodeName,
+      nodeName:
+        mergedRecord.nodeName ?? parent.nodeName ?? parentMetadata?.nodeName,
+      defaultNodeId:
+        mergedRecord.defaultNodeId ??
+        parent.defaultNodeId ??
+        parentMetadata?.defaultNodeId,
+      routeSource:
+        mergedRecord.routeSource ?? parent.routeSource ?? parentMetadata?.routeSource,
       startTime: mergedRecord.startTime ?? parent.startTime,
       displayTime: mergedRecord.displayTime ?? parent.displayTime,
       status,

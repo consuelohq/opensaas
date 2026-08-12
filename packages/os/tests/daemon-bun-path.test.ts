@@ -55,11 +55,15 @@ function runDaemonWrapper(workspacePath: string): string {
   return result.stdout.trim();
 }
 
-function runManagedSitesRefreshScenario(refreshExitCode: number): {
+function runManagedSitesRefreshScenario(
+  refreshExitCode: number,
+  options: { hangRefresh?: boolean; timeoutSeconds?: number } = {},
+): {
   status: number | null;
   stderr: string;
   calls: string[];
   home: string;
+  durationMs: number;
 } {
   const root = mkdtempSync(path.join(tmpdir(), 'consuelo-daemon-sites-refresh-'));
   temporaryDirectories.push(root);
@@ -79,7 +83,9 @@ function runManagedSitesRefreshScenario(refreshExitCode: number): {
       '#!/bin/sh',
       'printf "%s|%s\n" "$CONSUELO_HOME" "$*" >> "$CALL_LOG"',
       'case "${1:-} ${2:-} ${3:-}" in',
-      '  *"/scripts/os.ts sites refresh"*) exit "$REFRESH_EXIT_CODE" ;;',
+      '  *"/scripts/os.ts sites refresh"*)',
+      '    if [ "${HANG_REFRESH:-0}" = "1" ]; then sleep 3; fi',
+      '    exit "$REFRESH_EXIT_CODE" ;;',
       'esac',
       'exit 0',
       '',
@@ -89,6 +95,7 @@ function runManagedSitesRefreshScenario(refreshExitCode: number): {
   chmodSync(daemonScript, 0o755);
   chmodSync(bunBinary, 0o755);
 
+  const startedAt = Date.now();
   const result = spawnSync('/bin/bash', [daemonScript], {
     env: {
       ...process.env,
@@ -101,6 +108,8 @@ function runManagedSitesRefreshScenario(refreshExitCode: number): {
       WORKSPACE_DAEMON_PATH: `${bunDirectory}:/usr/bin:/bin`,
       CALL_LOG: callLog,
       REFRESH_EXIT_CODE: String(refreshExitCode),
+      HANG_REFRESH: options.hangRefresh ? '1' : '0',
+      WORKSPACE_DAEMON_SITES_REFRESH_TIMEOUT_SECONDS: String(options.timeoutSeconds ?? 15),
     },
     encoding: 'utf8',
   });
@@ -110,6 +119,7 @@ function runManagedSitesRefreshScenario(refreshExitCode: number): {
     stderr: result.stderr,
     calls: readFileSync(callLog, 'utf8').trim().split('\n').filter(Boolean),
     home: consueloHome,
+    durationMs: Date.now() - startedAt,
   };
 }
 
@@ -148,4 +158,18 @@ describe('Consuelo OS daemon Bun PATH', () => {
     expect(result.calls[1]).toContain('/scripts/server/supervisor.ts');
     expect(result.stderr).toContain('managed Sites refresh failed');
   });
+
+  it('should continue to supervisor when managed Sites refresh exceeds the startup timeout', () => {
+    const result = runManagedSitesRefreshScenario(0, {
+      hangRefresh: true,
+      timeoutSeconds: 1,
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.durationMs).toBeLessThan(2_500);
+    expect(result.calls[0]).toContain('/scripts/os.ts sites refresh --json');
+    expect(result.calls.at(-1)).toContain('/scripts/server/supervisor.ts');
+    expect(result.stderr).toContain('managed Sites refresh failed');
+  });
+
 });

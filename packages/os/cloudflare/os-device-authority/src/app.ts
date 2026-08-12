@@ -12,6 +12,7 @@ import { registerWorkspaceNodeRoutes } from './routes/workspace-nodes';
 import { registerWebAuthRoutes } from './routes/web-auth';
 import type {
   DefaultSiteSnapshot,
+  DeviceAuthorityLogger,
   DeviceAuthorityRuntime,
   Store,
   WorkspaceConnectorProvisioner,
@@ -32,6 +33,7 @@ export type CreateDeviceAuthorityHandlerInput = {
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
+  operationalLogger?: DeviceAuthorityLogger;
 };
 
 export function createOsDeviceAuthorityApp(
