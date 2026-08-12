@@ -85,7 +85,20 @@ export function semanticToolLabel(
   row: TraceRecord,
   input = resolvedInput(row),
 ): string {
-  const tool = clean(row.name ?? row.traceName ?? row.tool) || 'trace';
+  const metadata =
+    typeof row.metadata === 'object' && row.metadata !== null && !Array.isArray(row.metadata)
+      ? (row.metadata as TraceRecord)
+      : null;
+  const tool =
+    clean(
+      row.name ??
+        row.traceName ??
+        row.tool ??
+        row.toolName ??
+        row.facadeTool ??
+        metadata?.tool ??
+        metadata?.toolName,
+    ) || 'trace';
   if (isWorkpadActivity(row, input)) {
     if (tool === 'fs.apply_patch' || tool === 'fs.patch')
       return 'workpad.patch';

@@ -100,7 +100,12 @@ export function reduceInspectorState(
       return refreshed ? { ...state, selectedRow: refreshed } : state;
     }
     case 'close':
-      return { ...state, layout: 'collapsed' };
+      return {
+        ...state,
+        selectedKey: '',
+        selectedRow: null,
+        layout: 'collapsed',
+      };
     case 'toggle-collapse':
       return {
         ...state,

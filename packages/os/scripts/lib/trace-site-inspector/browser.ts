@@ -30,6 +30,7 @@ import {
 } from './pagination-browser';
 import { installTraceVirtualList } from './virtual-list-browser';
 import { formatTraceTableRow } from './table-formatters';
+import { nextTraceInteractionIndex, traceIdentityCopyText } from './interactions';
 
 type TraceWindow = Window & {
   __traceRowsByTraceId?: Map<string, TraceRecord>;
@@ -39,6 +40,13 @@ type TraceWindow = Window & {
   };
   __traceVirtualList?: {
     select: (key: string) => void;
+    moveFocus: (direction: -1 | 1) => string;
+    openFocused: () => string;
+    clearSelection: () => void;
+    scrollToTop: () => void;
+    openFilters: () => void;
+    closeFilters: () => void;
+    filtersOpen: () => boolean;
     prependRows: (rows: TraceRecord[]) => void;
     replaceRows: (rows: TraceRecord[], nextCursor?: string | null) => void;
   };
@@ -56,7 +64,16 @@ let callSearchFrame = 0;
 let liveCursor = '';
 let livePollInFlight = false;
 let livePollTimer = 0;
+type TraceInteractionScope = 'main' | 'child';
+type TraceInteractionSource = 'hover' | 'keyboard';
+type TraceInteraction = {
+  key: string;
+  scope: TraceInteractionScope;
+  source: TraceInteractionSource;
+};
+let lastTraceInteraction: TraceInteraction | null = null;
 const INSPECTOR_WIDTH_KEY = 'consuelo.trace-inspector.width';
+const RETURN_HOME_PREFERENCE_KEY = 'consuelo.trace-return-home.preference';
 const TRACE_CLOCK_FORMATTER = new Intl.DateTimeFormat('en-US', {
   timeZone: 'America/New_York',
   hour: '2-digit',
@@ -737,12 +754,254 @@ function installLivePolling(): void {
   });
 }
 
+function isTextEditingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+}
+
+function traceRowForInteraction(key: string): TraceRecord | null {
+  const rows = (window as TraceWindow).__traceRowsByTraceId;
+  if (!(rows instanceof Map)) return null;
+  return (
+    rows.get(key) ??
+    [...rows.values()].find((row) => stableTraceKey(row) === key) ??
+    null
+  );
+}
+
+function rememberTraceInteraction(
+  key: string,
+  scope: TraceInteractionScope,
+  source: TraceInteractionSource,
+): void {
+  if (!key) return;
+  lastTraceInteraction = { key, scope, source };
+}
+
+function inspectorIsOpen(): boolean {
+  const state = inspectorStore.getSnapshot();
+  return Boolean(state.selectedRow && state.layout !== 'collapsed');
+}
+
+function clearPeerKeyboardTarget(): void {
+  for (const peer of document.querySelectorAll<HTMLElement>('.tiPeer[data-keyboard-target]')) {
+    delete peer.dataset.keyboardTarget;
+  }
+}
+
+function moveInspectorPeer(direction: -1 | 1): string {
+  const peers = [
+    ...document.querySelectorAll<HTMLButtonElement>('.tiPeer[data-trace-key]'),
+  ].filter((peer) => !peer.hidden && peer.offsetParent !== null);
+  if (!peers.length) return '';
+  const preferredKey =
+    lastTraceInteraction?.scope === 'child' && lastTraceInteraction.source === 'keyboard'
+      ? lastTraceInteraction.key
+      : inspectorStore.getSnapshot().selectedKey;
+  const currentIndex = peers.findIndex((peer) => peer.dataset.traceKey === preferredKey);
+  const nextIndex = nextTraceInteractionIndex(peers.length, currentIndex, direction);
+  const peer = nextIndex >= 0 ? peers[nextIndex] : undefined;
+  const key = peer?.dataset.traceKey ?? '';
+  if (!peer || !key) return '';
+  clearPeerKeyboardTarget();
+  peer.dataset.keyboardTarget = 'true';
+  peer.focus({ preventScroll: true });
+  peer.scrollIntoView({ block: 'nearest' });
+  rememberTraceInteraction(key, 'child', 'keyboard');
+  return key;
+}
+
+async function copyLastTraceInteraction(): Promise<boolean> {
+  const interaction = lastTraceInteraction;
+  if (!interaction) return false;
+  const row = traceRowForInteraction(interaction.key);
+  if (!row) return false;
+  const text = traceIdentityCopyText(row);
+  if (!text) return false;
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function storedReturnHomePreference(): 'home' | 'stay' | null {
+  try {
+    const value = localStorage.getItem(RETURN_HOME_PREFERENCE_KEY);
+    return value === 'home' || value === 'stay' ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistReturnHomePreference(value: 'home' | 'stay'): void {
+  try {
+    localStorage.setItem(RETURN_HOME_PREFERENCE_KEY, value);
+  } catch {
+    // Storage is optional in sandboxed previews.
+  }
+}
+
+function ensureReturnHomeStyle(): void {
+  if (document.querySelector('[data-trace-home-style]')) return;
+  const style = document.createElement('style');
+  style.dataset.traceHomeStyle = '';
+  style.textContent = `
+    @keyframes traceHomeAstroIn {
+      from { opacity: 0; transform: translateY(8px) scale(.985); filter: blur(2px); }
+      to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    [data-trace-home-confirm] { position: fixed; inset: 0; z-index: 2147483646; display: grid; place-items: center; background: rgba(0,0,0,.56); backdrop-filter: blur(4px); }
+    [data-trace-home-card] { width: min(360px, calc(100vw - 32px)); border: 1px solid #3a382f; border-radius: 12px; background: #11110f; color: #d8d3c5; padding: 20px; box-shadow: 0 24px 80px rgba(0,0,0,.55); animation: traceHomeAstroIn 180ms cubic-bezier(.2,.8,.2,1) both; }
+    [data-trace-home-card] h2 { margin: 0 0 16px; font: 600 18px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    [data-trace-home-card] label { display: flex; gap: 9px; align-items: center; margin: 0 0 18px; font: 13px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; color: #aaa493; }
+    [data-trace-home-actions] { display: flex; justify-content: flex-end; gap: 8px; }
+    [data-trace-home-actions] button { border: 1px solid #3a382f; border-radius: 8px; background: #191915; color: #d8d3c5; padding: 8px 14px; font: 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; cursor: pointer; }
+    [data-trace-home-actions] button[data-home-yes] { color: #d8b260; }
+    .tiPeer[data-keyboard-target="true"] { outline: 1px solid currentColor; outline-offset: -2px; }
+  `;
+  document.head.append(style);
+}
+
+function closeReturnHomeConfirm(): void {
+  document.querySelector('[data-trace-home-confirm]')?.remove();
+}
+
+function showReturnHomeConfirm(): void {
+  const preference = storedReturnHomePreference();
+  if (preference === 'home') {
+    location.assign('/');
+    return;
+  }
+  if (preference === 'stay') return;
+  if (document.querySelector('[data-trace-home-confirm]')) return;
+  ensureReturnHomeStyle();
+  const overlay = document.createElement('div');
+  overlay.dataset.traceHomeConfirm = '';
+  overlay.setAttribute('role', 'presentation');
+  overlay.innerHTML = `<section data-trace-home-card role="dialog" aria-modal="true" aria-labelledby="trace-return-home-title">
+    <h2 id="trace-return-home-title">Return home?</h2>
+    <label><input type="checkbox" data-home-remember> <span>Do not ask again</span></label>
+    <div data-trace-home-actions><button type="button" data-home-no>No</button><button type="button" data-home-yes>Yes</button></div>
+  </section>`;
+  overlay.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    const remember = overlay.querySelector<HTMLInputElement>('[data-home-remember]')?.checked === true;
+    if (target.closest('[data-home-no]')) {
+      if (remember) persistReturnHomePreference('stay');
+      closeReturnHomeConfirm();
+      return;
+    }
+    if (target.closest('[data-home-yes]')) {
+      if (remember) persistReturnHomePreference('home');
+      location.assign('/');
+    }
+  });
+  document.body.append(overlay);
+  overlay.querySelector<HTMLButtonElement>('[data-home-no]')?.focus();
+}
+
+document.addEventListener('pointerover', (event) => {
+  const target = event.target as HTMLElement;
+  const peer = target.closest<HTMLElement>('.tiPeer[data-trace-key]');
+  if (peer?.dataset.traceKey) {
+    rememberTraceInteraction(peer.dataset.traceKey, 'child', 'hover');
+    return;
+  }
+  const row = target.closest<HTMLElement>('.trxRow[data-trace-key]');
+  if (row?.dataset.traceKey) rememberTraceInteraction(row.dataset.traceKey, 'main', 'hover');
+});
+
+document.addEventListener('keydown', (event) => {
+  const virtualList = (window as TraceWindow).__traceVirtualList;
+  const editing = isTextEditingTarget(event.target);
+
+  if (event.key === 'Escape') {
+    if (document.querySelector('[data-trace-home-confirm]')) {
+      event.preventDefault();
+      closeReturnHomeConfirm();
+      return;
+    }
+    if (virtualList?.filtersOpen()) {
+      event.preventDefault();
+      virtualList.closeFilters();
+      return;
+    }
+    if (inspectorIsOpen()) {
+      event.preventDefault();
+      clearPeerKeyboardTarget();
+      lastTraceInteraction = null;
+      virtualList?.clearSelection();
+      return;
+    }
+    event.preventDefault();
+    showReturnHomeConfirm();
+    return;
+  }
+
+  if (editing) return;
+
+  if (event.metaKey && event.key === 'ArrowUp') {
+    event.preventDefault();
+    virtualList?.scrollToTop();
+    return;
+  }
+
+  if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key.toLowerCase() === 'f') {
+    event.preventDefault();
+    virtualList?.openFilters();
+    return;
+  }
+
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'c') {
+    const selection = window.getSelection()?.toString() ?? '';
+    if (selection) return;
+    if (lastTraceInteraction) {
+      event.preventDefault();
+      void copyLastTraceInteraction();
+    }
+    return;
+  }
+
+  if (!event.metaKey && !event.ctrlKey && !event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+    event.preventDefault();
+    const direction: -1 | 1 = event.key === 'ArrowUp' ? -1 : 1;
+    if (inspectorIsOpen()) {
+      moveInspectorPeer(direction);
+      return;
+    }
+    const key = virtualList?.moveFocus(direction) ?? '';
+    if (key) rememberTraceInteraction(key, 'main', 'keyboard');
+    return;
+  }
+
+  if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key === 'Enter') {
+    if (inspectorIsOpen()) {
+      if (lastTraceInteraction?.scope === 'child' && lastTraceInteraction.source === 'keyboard') {
+        event.preventDefault();
+        clearPeerKeyboardTarget();
+        virtualList?.select(lastTraceInteraction.key);
+      }
+      return;
+    }
+    const key = virtualList?.openFocused() ?? '';
+    if (key) {
+      event.preventDefault();
+      rememberTraceInteraction(key, 'main', 'keyboard');
+    }
+  }
+});
+
 document.addEventListener('click', async (event) => {
   const target = event.target as HTMLElement;
   const peer = target.closest<HTMLElement>('.tiPeer[data-trace-key]');
   if (peer?.dataset.traceKey) {
     event.preventDefault();
     event.stopPropagation();
+    rememberTraceInteraction(peer.dataset.traceKey, 'child', 'hover');
+    clearPeerKeyboardTarget();
     (window as TraceWindow).__traceVirtualList?.select(peer.dataset.traceKey);
     return;
   }
@@ -775,7 +1034,9 @@ document.addEventListener('click', async (event) => {
   if (target.closest('[data-ti-close], [data-ti-back]')) {
     event.preventDefault();
     event.stopPropagation();
-    inspectorStore.dispatch({ type: 'close' });
+    clearPeerKeyboardTarget();
+    lastTraceInteraction = null;
+    (window as TraceWindow).__traceVirtualList?.clearSelection();
     return;
   }
   const copy = target.closest<HTMLElement>('[data-ti-copy]');

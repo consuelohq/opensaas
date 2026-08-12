@@ -328,9 +328,37 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
 }
 
 export function totalTokens(row: TraceRecord): number {
-  const explicit = optionalNumber(row.tokens ?? row.totalTokens);
-  if (explicit !== null) return explicit;
-  return number(row.inputTokens) + number(row.outputTokens);
+  const explicit = optionalNumber(
+    row.tokens ?? row.totalTokens ?? row.total_tokens,
+  );
+  if (explicit !== null && explicit > 0) return explicit;
+  const input = optionalNumber(row.inputTokens ?? row.input_tokens);
+  const output = optionalNumber(row.outputTokens ?? row.output_tokens);
+  const recorded = (input ?? 0) + (output ?? 0);
+  if (recorded > 0) return recorded;
+
+  // Older facade traces did not persist token estimates consistently. Rebuild the
+  // same chars/4 payload estimate used by batch/codemode so historical rows are
+  // useful without mutating the trace database.
+  return (
+    estimatePayloadTokens(
+      row.rawResolvedInputJson ?? row.rawInputJson ?? row.resolvedInputObj ?? row.inputObj ?? row.input,
+    ) +
+    estimatePayloadTokens(
+      row.rawResultJson ?? row.outputObj ?? row.output ?? row.summary ?? row.rawStderr,
+    )
+  );
+}
+
+function estimatePayloadTokens(value: unknown): number {
+  if (value === undefined || value === null || value === '') return 0;
+  let text: string;
+  try {
+    text = typeof value === 'string' ? value : JSON.stringify(value);
+  } catch {
+    text = String(value ?? '');
+  }
+  return text ? Math.max(1, Math.ceil(text.length / 4)) : 0;
 }
 
 export function number(value: unknown): number {

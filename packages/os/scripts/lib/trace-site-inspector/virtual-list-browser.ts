@@ -20,6 +20,7 @@ import {
   type TraceRecord,
 } from './model';
 import { inspectorStore } from './inspector-state';
+import { nextTraceInteractionIndex } from './interactions';
 import {
   deriveTraceHistoryCursor,
   type TracePrefetchRequestDetail,
@@ -86,12 +87,19 @@ export type TraceVirtualListApi = {
   scrollToKey: (key: string) => void;
   scrollToTop: () => void;
   select: (key: string) => void;
+  moveFocus: (direction: -1 | 1) => string;
+  openFocused: () => string;
+  clearSelection: () => void;
+  openFilters: () => void;
+  closeFilters: () => void;
+  filtersOpen: () => boolean;
   diagnostics: () => TraceListDiagnostics | null;
 };
 
 type TraceWindow = Window & {
   __traceRowsByTraceId?: Map<string, TraceRecord>;
   __traceSelectedKey?: string;
+  __traceKeyboardKey?: string;
   __traceVirtualList?: TraceVirtualListApi;
 };
 
@@ -236,6 +244,30 @@ class TraceVirtualListController {
     this.target.scroller.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  moveFocus(direction: -1 | 1): string {
+    if (!this.items.length) return '';
+    const target = traceWindow();
+    const current = target.__traceKeyboardKey || currentSelectedKey();
+    const currentIndex = this.items.findIndex((item) => item.traceKey === current);
+    const nextIndex = nextTraceInteractionIndex(
+      this.items.length,
+      currentIndex,
+      direction,
+    );
+    const key = nextIndex >= 0 ? this.items[nextIndex]?.traceKey ?? '' : '';
+    if (!key) return '';
+    target.__traceKeyboardKey = key;
+    this.applyHighlightedKey(key);
+    this.virtualizer.scrollToIndex(nextIndex, { align: 'auto' });
+    return key;
+  }
+
+  openFocused(): string {
+    const key = traceWindow().__traceKeyboardKey || currentSelectedKey();
+    if (key) this.select(key);
+    return key;
+  }
+
   diagnostics(): TraceListDiagnostics {
     return {
       retained: this.rows.length,
@@ -258,6 +290,7 @@ class TraceVirtualListController {
     if (!row) return;
     inspectorStore.dispatch({ type: 'select', key, row });
     target.__traceSelectedKey = key;
+    target.__traceKeyboardKey = key;
     const shell = document.querySelector<HTMLElement>('.trxShell');
     shell?.classList.remove('closed');
     shell?.classList.add('detail-open');
@@ -287,16 +320,21 @@ class TraceVirtualListController {
 
   clearSelection(): void {
     inspectorStore.dispatch({ type: 'clear-selection' });
-    traceWindow().__traceSelectedKey = '';
-    for (const row of this.target.content.querySelectorAll<HTMLElement>(
-      '.trxRow',
-    )) {
-      row.classList.remove('selected');
-      row.setAttribute('aria-selected', 'false');
-    }
+    const target = traceWindow();
+    target.__traceSelectedKey = '';
+    target.__traceKeyboardKey = '';
+    this.applyHighlightedKey('');
     document.dispatchEvent(
       new CustomEvent('trace:selection-change', { detail: { key: '' } }),
     );
+  }
+
+  private applyHighlightedKey(key: string): void {
+    for (const row of this.target.content.querySelectorAll<HTMLElement>('.trxRow')) {
+      const active = Boolean(key) && row.dataset.traceKey === key;
+      row.classList.toggle('selected', active);
+      row.setAttribute('aria-selected', String(active));
+    }
   }
 
   private setRows(rows: TraceRecord[], direction: TracePageDirection): void {
@@ -413,7 +451,7 @@ class TraceVirtualListController {
   private render(instance: TraceVirtualizer): void {
     const virtualItems = instance.getVirtualItems();
     const fragment = document.createDocumentFragment();
-    const selectedKey = currentSelectedKey();
+    const selectedKey = currentHighlightedKey();
     const scrollMargin = instance.options.scrollMargin ?? 0;
 
     for (const virtualItem of virtualItems) {
@@ -929,6 +967,10 @@ function currentSelectedKey(): string {
   return inspectorStore.getSnapshot().selectedKey;
 }
 
+function currentHighlightedKey(): string {
+  return traceWindow().__traceKeyboardKey || currentSelectedKey();
+}
+
 function prepareTraceFooter(footer: HTMLElement): void {
   if (footer.dataset.traceFooterPrepared === 'true') return;
   footer.replaceChildren();
@@ -1320,7 +1362,7 @@ export function installTraceVirtualList(): () => void {
       if (target.closest('[data-ti-back]')) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        inspectorStore.dispatch({ type: 'close' });
+        controller?.clearSelection();
         return;
       }
     },
@@ -1338,6 +1380,19 @@ export function installTraceVirtualList(): () => void {
     scrollToKey: (key) => controller?.scrollToKey(key),
     scrollToTop: () => controller?.scrollToTop(),
     select: (key) => controller?.select(key),
+    moveFocus: (direction) => controller?.moveFocus(direction) ?? '',
+    openFocused: () => controller?.openFocused() ?? '',
+    clearSelection: () => controller?.clearSelection(),
+    openFilters: () => {
+      filterPanelOpen = true;
+      ensureTraceTableControls();
+      renderTraceFilterPanel();
+    },
+    closeFilters: () => {
+      filterPanelOpen = false;
+      ensureTraceTableControls();
+    },
+    filtersOpen: () => filterPanelOpen,
     diagnostics: () => controller?.diagnostics() ?? null,
   };
 

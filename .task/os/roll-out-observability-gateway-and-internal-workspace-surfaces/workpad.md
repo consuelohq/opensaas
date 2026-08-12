@@ -76,8 +76,15 @@ resumed task session: `tsk_4e5fd8c23e86`
 
 ## files changed
 
-- `.github/workflows/consuelo-ci.yaml`
-- `packages/os/tests/local-os-server-review-findings.test.ts`
+- `packages/os/assets/vendor/observability-traces-v38/inspector.js`
+- `packages/os/scripts/lib/trace-site-inspector/browser.ts`
+- `packages/os/scripts/lib/trace-site-inspector/inspector-state.ts`
+- `packages/os/scripts/lib/trace-site-inspector/interactions.ts`
+- `packages/os/scripts/lib/trace-site-inspector/model.ts`
+- `packages/os/scripts/lib/trace-site-inspector/table-formatters.ts`
+- `packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts`
+- `packages/os/tests/trace-history-redaction.test.ts`
+- `packages/os/tests/trace-site-inspector-interactions.test.ts`
 
 
 ## workspace-owned: files changed
@@ -283,3 +290,14 @@ bun run task:finish
 - A second GitHub Actions race remained after fixing the comparison base: `consuelo-changes` checked out one synthetic merge, but each downstream job performed a fresh default `actions/checkout`, which can resolve the moving `refs/pull/<n>/merge` to a newer synthetic merge while still consuming the earlier base output. That reproduced unrelated `auto:twenty-sdk:test` selection even with a correct `HEAD^1` base.
 - TDD now requires `consuelo-changes` to emit both the synthetic merge `head_sha` and its first-parent `base_ref`, and all six downstream Consuelo jobs to checkout exactly `${{ needs.consuelo-changes.outputs.head_sha }}`. This pins changed-file classification and every verification job to the same immutable merge object.
 - Focused static CI contract is green after the fix.
+
+## 2026-08-12 trace interaction follow-up
+- User acceptance: preserve exact v38 shell; fix generic trace labels, token visibility, child batches, keyboard navigation/copy/filter/home confirmation, clear stale selection; merge to main; update local runtime through supported updater if release is available.
+- Test-first contract: add focused browser/runtime contracts for row summaries/tokens/children and keyboard state before implementation. Initial interaction suite failed because the interaction module did not exist; implementation then made it pass 6/6.
+- Data corrections: `toolName`/`facadeTool` now participate in semantic tool labels instead of falling back to `trace`; explicit persisted token counters win and older zero/missing rows estimate safe payload burn with the existing chars/4 convention without mutating trace history; sanitized batch history preserves child tool/trace/token metadata.
+- Interaction corrections: Cmd+Up scrolls to top; Up/Down + Enter navigate/open main rows or inspector peers depending on context; Cmd+C copies tool + trace ID using last hover/keyboard interaction; F opens filters; Escape closes filters/inspector first, otherwise opens animated Return home confirmation with remembered Do not ask again preference; closing inspector clears stale row highlight.
+- Generated OS-owned v38 browser runtime rebuilt after source changes.
+- Verification: runtime bundle + Trace Burn interaction/redaction suites pass 28/28; focused batch-history + interactions pass 8/8; `git diff --check` passes; OS typecheck/syntax check passes; strict review against current `origin/stream/os` reports 31 files, 0 issues, 0 blockers.
+- SQLite-dependent gateway endpoint tests cannot collect under the current Node-backed Vitest invocation because `bun:sqlite` is unavailable; this is the existing runner mismatch already documented in this workpad, not a product assertion failure.
+- Stream reconciliation: `stream/os` was synced with main at `70b2592804c82aa56ff1c6e9860ef2c2d358aab8`. The local task worktree was one fast-forward commit behind its own remote task branch (`108a0b9` -> `12fdb83`); the typed `task.call` sync path returned MCP network errors, so the smallest scoped fallback was a non-destructive `git merge --ff-only` through task-scoped `code.call`. No reset/force operation was used.
+

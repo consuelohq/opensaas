@@ -67,4 +67,43 @@ describe('trace history redaction boundary', () => {
     expect(serialized).not.toContain('stderr-secret-1234567890abcdef');
     expect(serialized).not.toContain('/Users/kokayi');
   });
+  it('keeps safe batch children and token accounting in rich history rows', () => {
+    const row = sanitizeTraceHistoryRowForTest({
+      rowid: 2,
+      id: 'row_batch',
+      ts: '2026-08-12T02:00:00.000Z',
+      trace_id: 'trc_batch',
+      source: 'facade',
+      tool: 'batch',
+      status: 'ok',
+      ok: 1,
+      code: 'OK',
+      exit_code: 0,
+      duration_ms: 25,
+      input_json: JSON.stringify({ steps: [{ tool: 'fs.read', input: { path: 'packages/os/README.md' } }] }),
+      resolved_input_json: JSON.stringify({ steps: [{ tool: 'fs.read', input: { path: 'packages/os/README.md' } }] }),
+      result_json: JSON.stringify({
+        ok: true,
+        data: {
+          results: [
+            { tool: 'fs.read', traceId: 'trc_child', inputTokens: 7, outputTokens: 11, totalTokens: 18, ok: true, code: 'OK' },
+          ],
+        },
+      }),
+      input_tokens: 7,
+      output_tokens: 11,
+      total_tokens: 18,
+    });
+
+    expect(row.tokens).toBe(18);
+    expect(row.batchResultsCount).toBe(1);
+    expect(row.batchResultsJson).toEqual([
+      expect.objectContaining({
+        tool: 'fs.read',
+        traceId: 'trc_child',
+        totalTokens: 18,
+      }),
+    ]);
+  });
+
 });
