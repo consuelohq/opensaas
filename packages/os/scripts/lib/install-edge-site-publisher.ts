@@ -114,7 +114,6 @@ export function createWorkspaceEdgeSnapshotPlan(input: PublishInput): WorkspaceE
     siteContentHashes: Object.fromEntries(
       snapshots.map((snapshot) => [snapshot.siteId, snapshot.contentHash]),
     ),
-    preserveExistingConnectorState: true,
   });
   return {
     status: undefined as never,

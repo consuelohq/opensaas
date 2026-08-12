@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bc98a4224cff",
+  "tmuxSession": "opensaas-os-fix-workspace-mcp-waf-tenant-defaults-bc98a422",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-workspace-mcp-waf-tenant-defaults",
+  "branch": "task/os/fix-workspace-mcp-waf-tenant-defaults",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-workspace-mcp-waf-tenant-defaults",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-workspace-mcp-waf-tenant-defaults",
+  "prNumber": 1872,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1872",
+  "createdAt": "2026-08-12T03:24:48.922Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-workspace-mcp-waf-tenant-defaults/.task/os/fix-workspace-mcp-waf-tenant-defaults/session.json"
+}

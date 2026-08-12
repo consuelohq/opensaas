@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".github/workflows/consuelo-production-release.yaml",
+    "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/scripts/migrate-managed-os-mcp-origin-class.ts",
+    "packages/os/tests/workspace-edge-route-seed-contract.test.ts"
+  ],
+  "updatedAt": "2026-08-12T03:33:11.538Z"
+}

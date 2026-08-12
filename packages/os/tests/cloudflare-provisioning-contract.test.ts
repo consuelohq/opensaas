@@ -529,6 +529,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       expect(expression).toContain('or http.host in {\n    "os.consuelohq.com"\n  }');
       expect(expression).toContain('"workspace.consuelohq.com"');
       expect(expression).toContain('"workspace-edge.consuelohq.com"');
+      expect(expression).not.toContain('"internal.consuelohq.com"');
       expect(expression).not.toContain('kokayi.consuelohq.com');
       expect(expression).not.toContain('openai.consuelohq.com');
     }
@@ -555,6 +556,27 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       mcpAllowedIpsListName: 'mcp_allowed_ips',
       managedMcpHostnames: ['os.example.com'],
     })).toThrow(/os\.example\.com.*consuelohq\.com/);
+  });
+
+  it('should protect internal as a workspace hostname without capturing non-workspace MCP surfaces', async () => {
+    const { buildManagedOsMcpIngressPolicyRules } =
+      await loadWorkspaceCloudflareProvisioningContract();
+
+    const { allowRule, blockRule } = buildManagedOsMcpIngressPolicyRules({
+      zoneId: 'zone_123',
+      baseDomain: 'consuelohq.com',
+      mcpAllowedIpsListName: 'mcp_allowed_ips',
+    });
+
+    for (const expression of [allowRule.expression, blockRule.expression]) {
+      expect(expression).toContain('ends_with(http.host, ".consuelohq.com")');
+      expect(expression).toContain('starts_with(http.request.uri.path, "/mcp")');
+      expect(expression).toContain('not (starts_with(http.host, "c-")');
+      expect(expression).toContain('not (http.host in {');
+      expect(expression).toContain('"app.consuelohq.com"');
+      expect(expression).toContain('"workspace.consuelohq.com"');
+      expect(expression).not.toContain('"internal.consuelohq.com"');
+    }
   });
 
   it('should read managed OS MCP ingress policy config from Cloudflare env', async () => {

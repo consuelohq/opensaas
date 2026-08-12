@@ -757,6 +757,10 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
     const seed = await importModule<EdgeRouteSeedContract>('scripts/lib/workspace-edge-route-seed.ts');
 
     const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
       connectorId: 'connector_internal',
       tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
     });
@@ -795,6 +799,10 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
     const seed = await importModule<EdgeRouteSeedContract>('scripts/lib/workspace-edge-route-seed.ts');
 
     const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
       connectorId: 'connector_internal',
       tunnelOriginUrl: 'https://connector-internal.os-origin.consuelohq.com',
     });
@@ -832,6 +840,10 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
     const adapter = await importModule<EnvironmentAdapterContract>('scripts/lib/consuelo-sites-environment-adapter.ts');
     const seed = await importModule<EdgeRouteSeedContract>('scripts/lib/workspace-edge-route-seed.ts');
     const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
       connectorId: 'connector_internal',
       tunnelOriginUrl: 'https://connector-internal.os-origin.consuelohq.com',
     });
