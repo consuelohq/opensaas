@@ -99,7 +99,7 @@ async function fixture(input: { pricing?: boolean } = {}) {
     store, origin: 'https://os.consuelohq.com', now: () => nowMs,
     workspaceRouteRegistry: routeDb, workspaceEdgeInternalSigningSecret: internalSecret,
     ...(input.pricing ? { managedCloudPricing: { policy: pricingPolicy, rateCards: { 'us-east1': rateCard } } } : {}),
-  } as never);
+  });
   const namespace = { idFromName: (name: string) => name, get: () => ({ fetch: authority }) };
   const edge = createWorkspaceEdgeHandler({
     WORKSPACE_ROUTE_REGISTRY: routeDb, CONSUELO_EDGE_SIGNING_SECRET: internalSecret,

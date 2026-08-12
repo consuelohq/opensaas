@@ -104,6 +104,7 @@ export type WorkspaceTaskAffinity = {
   ownerNodeId: string;
   createdAt: number;
   updatedAt: number;
+  expiresAt?: number;
 };
 
 export type WorkspaceTaskAffinityClaim = {
@@ -351,6 +352,7 @@ export type Store = {
     accountId: string;
     workspaceHost: string;
     taskSession: string;
+    nowMs?: number;
   }): Promise<WorkspaceTaskAffinity | undefined>;
   claimWorkspaceTaskAffinity(
     affinity: WorkspaceTaskAffinity,
@@ -377,6 +379,7 @@ export type StorageTransactionLike = {
   get<T>(key: string): Promise<T | undefined>;
   put<T>(key: string, value: T): Promise<void>;
   delete(key: string): Promise<boolean>;
+  list?<T>(options?: { prefix?: string }): Promise<Map<string, T>>;
 };
 export type StorageLike = StorageTransactionLike & {
   list?<T>(options?: { prefix?: string }): Promise<Map<string, T>>;
@@ -414,11 +417,14 @@ export type Env = {
 
 export type DeviceAuthorityOperationalLogContext = {
   component: 'os-device-authority';
-  operation: 'mcp-node-directory';
+  operation: 'mcp-node-directory' | 'task-affinity-bookkeeping';
   accountId: string;
   workspaceId: string;
   workspaceHost: string;
   failure: string;
+  taskSession?: string;
+  nodeId?: string;
+  outcome?: 'conflict' | 'error';
 };
 
 export type DeviceAuthorityLogger = {

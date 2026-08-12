@@ -368,7 +368,7 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
       { surface: 'sites', pathPrefix: '/docs', auth: 'public', status: 'active', target: siteSnapshotTarget('docs') },
       { surface: 'sites', pathPrefix: '/configuration', auth: 'public', status: 'active', target: siteSnapshotTarget('configuration') },
       { surface: 'sites', pathPrefix: '/tools', auth: 'public', status: 'active', target: siteSnapshotTarget('tools') },
-      { surface: 'sites', pathPrefix: '/nodes', auth: 'public', status: 'active', target: siteSnapshotTarget('nodes') },
+      { surface: 'sites', pathPrefix: '/nodes', auth: 'workspace-session', status: 'active', target: siteSnapshotTarget('nodes') },
       { surface: 'sites', pathPrefix: '/environments', auth: 'public', status: 'active', target: siteSnapshotTarget('environments') },
       { surface: 'sites', pathPrefix: '/secrets', auth: 'public', status: 'active', target: siteSnapshotTarget('secrets') },
       { surface: 'sites', pathPrefix: '/settings', auth: 'public', status: 'active', target: { kind: 'redirect', location: '/configuration', statusCode: 308 } },
@@ -778,10 +778,17 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
         upstreamRequests.push(request);
         return new Response('unexpected connector route', { status: 599 });
       },
+      authorizeWorkspaceSession: async ({ request }) =>
+        request.headers.get('cookie') === 'consuelo_workspace_session=session-internal',
     });
 
+    const unauthenticatedNodes = await router.fetch(new Request('https://internal.consuelohq.com/nodes'));
+    expect(unauthenticatedNodes.status).toBe(401);
+
     for (const route of ['configuration', 'tools', 'nodes', 'environments', 'secrets'] as const) {
-      const response = await router.fetch(new Request(`https://internal.consuelohq.com/${route}`));
+      const response = await router.fetch(new Request(`https://internal.consuelohq.com/${route}`, {
+        headers: { cookie: 'consuelo_workspace_session=session-internal' },
+      }));
       const body = await response.text();
       expect(response.status).toBe(200);
       expect(body).toContain('Hosted Configuration Site shell');

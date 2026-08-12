@@ -109,6 +109,9 @@ describe('configuration site', () => {
     expect(nodesHtml).not.toContain('window.__CONSUELO_SETTINGS__');
     const nodesScript = nodesHtml.match(/<script>([\s\S]*)<\/script>/)?.[1];
     expect(nodesScript).toBeTruthy();
+    expect(nodesScript).toContain('pricingRequestGeneration');
+    expect(nodesScript).toContain('const requestGeneration = ++pricingRequestGeneration');
+    expect(nodesScript).toContain('requestGeneration !== pricingRequestGeneration');
     expect(() => new Function(nodesScript!)).not.toThrow();
 
     expect(secretsHtml).toContain('<title>Secrets - Consuelo OS</title>');
