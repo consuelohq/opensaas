@@ -231,6 +231,32 @@ describe('foundation source contract', () => {
     expect(css).toContain('position: sticky');
   });
 
+  test('uses quiet Consuelo OS shell branding and pointer interactions', () => {
+    const config = read('astro.config.mjs');
+    const packageJson = read('package.json');
+    const head = read('src/components/Head.astro');
+    const siteTitle = read('src/components/SiteTitle.astro');
+    const sidebar = read('src/components/Sidebar.astro');
+    const css = read('src/styles/docs.css');
+
+    expect(config).toContain("title: 'Consuelo OS'");
+    expect(config).toContain("favicon: '/favicon.svg'");
+    expect(config).toContain("Head: './src/components/Head.astro'");
+    expect(config).toContain("SiteTitle: './src/components/SiteTitle.astro'");
+    expect(siteTitle).toContain('src="/favicon.svg"');
+    expect(siteTitle).toContain('Consuelo OS');
+    expect(siteTitle).toContain('color: var(--sl-color-white)');
+    expect(sidebar).toContain('color: var(--sl-color-gray-2)');
+    expect(sidebar).not.toContain('var(--sl-color-text-accent) 12%');
+    expect(head).toContain("dataset.docsInputModality = 'pointer'");
+    expect(head).toContain("event.key === 'Tab'");
+    expect(css).toContain("html[data-docs-input-modality='pointer']");
+    expect(css).toContain('animation: docs-page-in 150ms');
+    expect(css).toContain('@keyframes docs-page-in');
+    expect(css).toContain('prefers-reduced-motion: reduce');
+    expect(packageJson).not.toContain('"gsap"');
+  });
+
   test('uses a calm reading measure without changing the font family', () => {
     const css = read('src/styles/docs.css');
     expect(css).toContain('--sl-content-width: 44rem');
