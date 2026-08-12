@@ -194,6 +194,7 @@ const DEFAULT_DISCOVERY_PATHS = [
   'package.json',
   'bun.lock',
   'assets/consuelo-mark.png',
+  'assets/vendor/observability-traces-v38',
   'scripts',
   'src',
   'tools',
@@ -391,6 +392,9 @@ export function classifyRuntimeBundlePath(
   }
   if (filePath === 'package.json' || filePath === 'bun.lock') return 'runtime';
   if (filePath === 'assets/consuelo-mark.png') return 'runtime';
+  if (filePath.startsWith('assets/vendor/observability-traces-v38/')) {
+    return 'managed-site-template';
+  }
   if (filePath.startsWith('skills/')) return 'managed-skill';
   if (/^tools\/[^/]+\/[^/]+\.ts$/.test(filePath)) return 'managed-tool';
   if (

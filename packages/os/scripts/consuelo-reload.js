@@ -270,6 +270,10 @@ function bootoutLaunchAgent() {
   bootoutLaunchLabel(LABEL);
 }
 
+function scrubInheritedLegacyEnvironment() {
+  runBestEffort('launchctl', ['unsetenv', 'WORKSPACE_MCP_TOKEN']);
+}
+
 function bootstrapLaunchAgent() {
   runRequired('launchctl', ['bootstrap', LAUNCH_DOMAIN, PLIST], 'launchctl bootstrap');
   runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
@@ -352,6 +356,7 @@ function tryRollingReload() {
 }
 
 function runReload({ useLaunchd }) {
+  scrubInheritedLegacyEnvironment();
   if (useLaunchd && existsSync(PLIST)) {
     const scrubbedRetiredCredential = scrubRetiredLaunchdCredentials();
     stopConflictingLaunchAgents();
@@ -431,6 +436,7 @@ switch (command) {
     break;
 
   case 'start':
+    scrubInheritedLegacyEnvironment();
     if (findRunningPids().length) {
       writeStdout('server already running');
       break;

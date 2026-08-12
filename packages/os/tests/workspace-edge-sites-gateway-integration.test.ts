@@ -438,9 +438,16 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     });
     expect(traceRoute).toMatchObject({
       surface: 'sites',
-      auth: 'public',
+      auth: 'workspace-session',
       target: { kind: 'site-snapshot', siteId: 'traces' },
     });
+    for (const pathPrefix of ['/configuration', '/tools', '/environments', '/secrets']) {
+      expect(record.routes.find((route) => route.pathPrefix === pathPrefix)).toMatchObject({
+        surface: 'sites',
+        auth: 'workspace-session',
+        target: { kind: 'site-snapshot' },
+      });
+    }
     expect(record.routes.filter((route) => route.target.kind === 'site-snapshot').map((route) => route.pathPrefix)).toEqual([
       '/',
       '/artifacts',
@@ -889,16 +896,16 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
       commandRunner: async () => ({ exitCode: 0, stdout: 'ok', stderr: '' }),
       fetchImpl: async (url) => {
         verificationUrls.push(url);
-        if (url === expectedPlan.verifyUrl) {
+        const snapshot = expectedPlan.snapshots.find(
+          (candidate) => candidate.verifyUrl === url,
+        );
+        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
+        if (['launcher', 'traces', 'configuration', 'tools', 'environments', 'secrets'].includes(snapshot.siteId)) {
           return Response.json(
             { error: 'workspace_session_required' },
             { status: 401 },
           );
         }
-        const snapshot = expectedPlan.snapshots.find(
-          (candidate) => candidate.verifyUrl === url,
-        );
-        if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
         return new Response('<!doctype html><title>Trace shell</title><main>Hosted Trace Site shell</main>', {
           status: 200,
           headers: {

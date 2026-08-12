@@ -5,7 +5,7 @@ import path from 'node:path';
 
 import type { AuthenticatedMcpAuthMode } from '../server/security/authenticated-principal';
 import { expandHome, resolveConsueloHomeLayout } from './consuelo-home';
-import { redactJson, redactText, redactTraceJson } from './redaction';
+import { redactJson, redactTraceJson, redactTraceText } from './redaction';
 
 const require = createRequire(import.meta.url);
 let persistenceWarningEmitted = false;
@@ -396,7 +396,7 @@ function insertToolTrace(db: TraceDatabase, input: ToolTraceInput): void {
     safeJson(input.input),
     safeJson(input.resolvedInput),
     safeJson(input.result),
-    input.stderr ? redactText(input.stderr) : null,
+    input.stderr ? redactTraceText(input.stderr) : null,
     input.inputTokens ?? null,
     input.outputTokens ?? null,
     input.totalTokens ?? null,
