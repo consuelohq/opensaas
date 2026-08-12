@@ -25,6 +25,11 @@ import {
 import { createWorkspaceCloudflareEdgeRouter } from '../scripts/lib/workspace-cloudflare-edge-router';
 import { deriveWorkspaceEdgeNodeSecret } from '../scripts/lib/workspace-edge-node-auth';
 import {
+  decodeMcpNodeRoutingContext,
+  MCP_NODE_CONTEXT_HEADER,
+  MCP_ROUTE_SOURCE_HEADER,
+} from '../scripts/lib/mcp-node-routing';
+import {
   createDevicePublicKeyProof,
   devicePublicKeyThumbprint,
   generateWorkspaceDeviceKeyPair,
@@ -1601,6 +1606,147 @@ describe('multi-node connector routing', () => {
     );
     expect(foreign.status).toBe(404);
     expect(upstreams).toHaveLength(2);
+  });
+
+  it('uses os.call nodeId as the central selector and rejects conflicting selectors', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-body-node-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'tool:*:read'],
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const upstreams: string[] = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        upstreams.push(typeof request === 'string' ? request : request.url);
+        return Response.json({ ok: true });
+      },
+    });
+    const callBody = (id: number, nodeId?: string) => JSON.stringify({
+      jsonrpc: '2.0',
+      id,
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'status',
+          input: {},
+          ...(nodeId ? { nodeId } : {}),
+        },
+      },
+    });
+    const auth = {
+      authorization: 'Bearer central-body-node-token',
+      'content-type': 'application/json',
+    };
+
+    const explicit = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: auth,
+      body: callBody(10, 'node-member'),
+    }));
+    expect(explicit.status).toBe(200);
+    expect(upstreams.at(-1)).toBe('https://member.connector.test/mcp');
+
+    const implicit = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: auth,
+      body: callBody(11),
+    }));
+    expect(implicit.status).toBe(200);
+    expect(upstreams.at(-1)).toBe('https://home.connector.test/mcp');
+
+    const conflicting = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: { ...auth, 'x-consuelo-node-id': 'node-home' },
+      body: callBody(12, 'node-member'),
+    }));
+    expect(conflicting.status).toBe(400);
+    await expect(conflicting.json()).resolves.toMatchObject({
+      error: { code: 'NODE_ROUTE_MISMATCH' },
+    });
+    expect(upstreams).toHaveLength(2);
+
+    const foreign = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: auth,
+      body: callBody(13, 'node-from-other-workspace'),
+    }));
+    expect(foreign.status).toBe(404);
+    expect(upstreams).toHaveLength(2);
+  });
+
+  it('adds a safe workspace node directory to central get_steering requests', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-steering-node-token', {
+      scopes: ['route:/mcp:read'],
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    let upstreamRequest: Request | undefined;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        upstreamRequest = request instanceof Request ? request : new Request(request);
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-steering-node-token',
+        'content-type': 'application/json',
+        [MCP_NODE_CONTEXT_HEADER]: 'spoofed-client-value',
+        [MCP_ROUTE_SOURCE_HEADER]: 'explicit',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 20,
+        method: 'tools/call',
+        params: { name: 'get_steering', arguments: {} },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(upstreamRequest).toBeDefined();
+    expect(upstreamRequest!.headers.get('x-consuelo-node-id')).toBe('node-home');
+    expect(upstreamRequest!.headers.get(MCP_ROUTE_SOURCE_HEADER)).toBe('default');
+    const context = decodeMcpNodeRoutingContext(
+      upstreamRequest!.headers.get(MCP_NODE_CONTEXT_HEADER),
+    );
+    expect(context).toMatchObject({
+      version: 1,
+      workspaceId,
+      currentNodeId: 'node-home',
+      defaultNodeId: 'node-home',
+      routeSource: 'default',
+      nodes: expect.arrayContaining([
+        expect.objectContaining({
+          nodeId: 'node-home',
+          displayName: 'Mac Mini',
+          presence: 'online',
+        }),
+        expect.objectContaining({
+          nodeId: 'node-member',
+          displayName: 'MacBook Air',
+          presence: 'online',
+        }),
+      ]),
+    });
+    const serialized = JSON.stringify(context);
+    expect(serialized).not.toContain('connector_node_');
+    expect(serialized).not.toContain('publicKey');
+    expect(serialized).not.toContain('spoofed-client-value');
   });
 
   it('honors explicit node targeting on the workspace edge and forwards only the resolved node', async () => {

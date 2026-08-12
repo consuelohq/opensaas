@@ -237,6 +237,10 @@ async function run(): Promise<unknown> {
         requiredScope: 'mcp:read',
         authMode: 'oauth',
         principalKey: 'prn_0123456789abcdef0123456789abcdef',
+        requestedNodeId: 'node_cloud',
+        resolvedNodeId: 'node_cloud',
+        defaultNodeId: 'node_home',
+        routeSource: 'explicit',
       });
       return { recorded, rows: traceRows() };
     }
