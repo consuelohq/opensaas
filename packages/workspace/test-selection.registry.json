@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2547,
-    "mappedTestCount": 2470,
+    "testFileCount": 2548,
+    "mappedTestCount": 2471,
     "unmappedTestCount": 77,
     "ruleCount": 37,
     "explicitRuleCount": 16,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 210,
+      "packages/os/tests": 211,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
       "packages/workspace/tests": 50,
@@ -628,7 +628,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 454,
+      "test": 455,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -822,7 +822,8 @@
         "packages/os/assets/vendor/observability-traces-v38/**",
         "packages/os/tests/fixtures/trace-persistence-runtime.ts",
         "packages/os/scripts/lib/distribution/runtime-bundle.ts",
-        "packages/os/tests/runtime-bundle-managed-site-assets.test.ts"
+        "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
+        "packages/os/tests/trace-site-inspector-interactions.test.ts"
       ],
       "tests": [
         {
@@ -3452,6 +3453,11 @@
     },
     {
       "path": "packages/os/tests/trace-persistence.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-inspector-interactions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

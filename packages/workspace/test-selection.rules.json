@@ -180,7 +180,8 @@
         "packages/os/assets/vendor/observability-traces-v38/**",
         "packages/os/tests/fixtures/trace-persistence-runtime.ts",
         "packages/os/scripts/lib/distribution/runtime-bundle.ts",
-        "packages/os/tests/runtime-bundle-managed-site-assets.test.ts"
+        "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
+        "packages/os/tests/trace-site-inspector-interactions.test.ts"
       ],
       "tests": [
         {

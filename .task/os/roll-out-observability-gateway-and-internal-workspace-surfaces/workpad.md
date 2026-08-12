@@ -170,6 +170,7 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-12 02:04:20 `verify`: passed — OK
 - 2026-08-12 02:15:27 `review.run`: passed — OK
 - 2026-08-12 02:15:47 `verify`: passed — OK
+- 2026-08-12 03:04:25 `review.run`: passed — OK
 
 ## key decisions
 
@@ -300,4 +301,5 @@ bun run task:finish
 - Verification: runtime bundle + Trace Burn interaction/redaction suites pass 28/28; focused batch-history + interactions pass 8/8; `git diff --check` passes; OS typecheck/syntax check passes; strict review against current `origin/stream/os` reports 31 files, 0 issues, 0 blockers.
 - SQLite-dependent gateway endpoint tests cannot collect under the current Node-backed Vitest invocation because `bun:sqlite` is unavailable; this is the existing runner mismatch already documented in this workpad, not a product assertion failure.
 - Stream reconciliation: `stream/os` was synced with main at `70b2592804c82aa56ff1c6e9860ef2c2d358aab8`. The local task worktree was one fast-forward commit behind its own remote task branch (`108a0b9` -> `12fdb83`); the typed `task.call` sync path returned MCP network errors, so the smallest scoped fallback was a non-destructive `git merge --ff-only` through task-scoped `code.call`. No reset/force operation was used.
-
+- CI follow-up: exact synthetic merge `8971eee8` correctly pinned first parent `70b25928`, but `verify` test selection also included post-install working/untracked files. This made clean CI select unrelated `auto:twenty-sdk:test` and broad OS package coverage. Added committed-only test selection for immutable CI, while local pre-push verify still includes working changes; native Windows failure remains the same pre-existing acceptance-step failure as merged #1838.
+- Immutable selector verification: against pinned base `70b25928`, committed-only selection chose exactly 7 focused suites (workspace test selection; CI immutable-base contract; Trace gateway/Trace Burn; canonical TraceStore boundary; edge publisher; edge route preservation; lifecycle MCP scrub) and all 7 passed locally.

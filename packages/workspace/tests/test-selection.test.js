@@ -321,4 +321,43 @@ describe('test selection registry', () => {
     expect(data.failedSuites[0].status).toBe('failed');
     expect(data.failedSuites[0].error?.code).toBe('ETIMEDOUT');
   });
+  it('can restrict selection to the committed diff so CI ignores install-time workspace noise', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'test-selection-committed-only-'));
+    fs.copyFileSync(script, path.join(repo, 'test-selection.js'));
+    fs.writeFileSync(
+      path.join(repo, 'registry.json'),
+      JSON.stringify({
+        version: 1,
+        rules: [
+          {
+            id: 'noise-suite',
+            source: ['packages/twenty-sdk/**'],
+            tests: [{ name: 'noise suite', command: [process.execPath, '-e', ''] }],
+            critical: false,
+            reason: 'fixture',
+            origin: 'auto',
+          },
+        ],
+      }),
+    );
+    spawnSync('git', ['init'], { cwd: repo });
+    spawnSync('git', ['config', 'user.email', 'ci@example.invalid'], { cwd: repo });
+    spawnSync('git', ['config', 'user.name', 'CI'], { cwd: repo });
+    fs.writeFileSync(path.join(repo, 'README.md'), 'base\n');
+    spawnSync('git', ['add', '.'], { cwd: repo });
+    spawnSync('git', ['commit', '-m', 'base'], { cwd: repo });
+    fs.mkdirSync(path.join(repo, 'packages/twenty-sdk'), { recursive: true });
+    fs.writeFileSync(path.join(repo, 'packages/twenty-sdk/install-noise.ts'), 'export {};\n');
+
+    const result = spawnSync(
+      'node',
+      [path.join(repo, 'test-selection.js'), 'check', '--registry', 'registry.json', '--base', 'HEAD', '--committed-only', '--json'],
+      { cwd: repo, encoding: 'utf8' },
+    );
+    expect(result.status).toBe(0);
+    const data = JSON.parse(result.stdout);
+    expect(data.changedFiles).toEqual([]);
+    expect(data.selectedSuites).toEqual([]);
+  });
+
 });

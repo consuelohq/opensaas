@@ -83,7 +83,7 @@ describe('local OS server review findings', () => {
       workflow.match(/ref: \$\{\{ needs\.consuelo-changes\.outputs\.head_sha \}\}/g)?.length ?? 0,
     ).toBeGreaterThanOrEqual(6);
     expect(workflow).toContain(
-      'bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --no-stamp --review-arg --no-tests',
+      'bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --committed-only-tests --no-stamp --review-arg --no-tests',
     );
     expect(workflow).not.toContain(
       'pull_request)\n              base_ref="origin/${{ github.base_ref }}"',

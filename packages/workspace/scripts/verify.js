@@ -31,6 +31,7 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --base <ref>           compare against ref (default: task branch stamp base, then stream, then origin/main)');
+  writeStdout('  --committed-only-tests select tests only from base...HEAD; ignore install/workspace noise');
   writeStdout('  --debug-skip-review   debug only: skip review; never writes publish-valid stamp');
   writeStdout('  --debug-skip-db       debug only: skip db guardrails; never writes publish-valid stamp');
   writeStdout('  --db-warn-only        debug only: report db guard errors as warnings; never publish-valid');
@@ -50,6 +51,7 @@ function parseArgs(argv) {
     review: true,
     reviewArgs: [],
     stamp: true,
+    committedOnlyTests: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -62,6 +64,7 @@ function parseArgs(argv) {
     const [flag, inlineValue] = rawArgument.split('=', 2);
     const knownFlags = [
       '--base',
+      '--committed-only-tests',
       '--db-warn-only',
       '--debug-skip-db',
       '--debug-skip-review',
@@ -76,6 +79,7 @@ function parseArgs(argv) {
     }
     const isBooleanFlag = [
       '--db-warn-only',
+      '--committed-only-tests',
       '--help',
       '--json',
       '--debug-skip-db',
@@ -109,6 +113,9 @@ function parseArgs(argv) {
         break;
       case '--db-warn-only':
         args.dbWarnOnly = true;
+        break;
+      case '--committed-only-tests':
+        args.committedOnlyTests = true;
         break;
       case '--no-stamp':
         args.stamp = false;
@@ -313,8 +320,11 @@ function runReview(repoRoot, base, args) {
 }
 
 
-function runTestSelection(repoRoot, base) {
-  const result = spawnSync('bun', ['packages/workspace/scripts/test-selection.js', 'check', '--base', base, '--run', '--json'], {
+function runTestSelection(repoRoot, base, args) {
+  const selectionArgs = ['packages/workspace/scripts/test-selection.js', 'check', '--base', base];
+  if (args.committedOnlyTests) selectionArgs.push('--committed-only');
+  selectionArgs.push('--run', '--json');
+  const result = spawnSync('bun', selectionArgs, {
     cwd: repoRoot,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -512,7 +522,7 @@ async function main() {
   const files = readChangedFiles(repoRoot, base);
   const headSha = getRefSha(repoRoot, 'HEAD');
   const review = runReview(repoRoot, base, args);
-  const testSelection = runTestSelection(repoRoot, base);
+  const testSelection = runTestSelection(repoRoot, base, args);
   const db = createDbResult(files, args);
   const passed = review.passed && testSelection.passed && db.passed;
   const mode = review.skipped || db.skipped || args.dbWarnOnly ? 'partial' : 'full';

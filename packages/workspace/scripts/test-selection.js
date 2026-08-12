@@ -257,11 +257,16 @@ function changedFiles(root, args) {
   if (explicit.length) return explicit;
   const base = valueFor(args, 'base') || 'origin/main';
   const committed = spawnSync('git', ['diff', '--name-only', `${base}...HEAD`], { cwd: root, encoding: 'utf8' });
-  const working = spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' });
-  const staged = spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' });
-  const untracked = spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' });
   const files = new Set();
-  for (const result of [committed, working, staged, untracked]) {
+  const results = [committed];
+  if (!args['committed-only']) {
+    results.push(
+      spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' }),
+      spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' }),
+      spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }),
+    );
+  }
+  for (const result of results) {
     if (result.status !== 0) continue;
     for (const line of result.stdout.split(/\r?\n/)) if (line.trim()) files.add(line.trim());
   }
@@ -381,7 +386,7 @@ function parseArgs(argv) {
     const raw = rest[i];
     if (!raw.startsWith('--')) { args._.push(raw); continue; }
     const [key, inline] = raw.slice(2).split('=', 2);
-    if (['json', 'run', 'no-run'].includes(key)) args[key] = true;
+    if (['json', 'run', 'no-run', 'committed-only'].includes(key)) args[key] = true;
     else {
       const value = inline !== undefined ? inline : rest[++i];
       if (args[key] === undefined) args[key] = value;

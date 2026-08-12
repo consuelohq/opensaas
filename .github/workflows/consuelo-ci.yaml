@@ -163,7 +163,7 @@ jobs:
 
       - name: Run workspace verify
         if: needs.consuelo-changes.outputs.verify == 'true'
-        run: bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --no-stamp --review-arg --no-tests
+        run: bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --committed-only-tests --no-stamp --review-arg --no-tests
 
   workspace-contracts:
     name: Consuelo / workspace contracts
@@ -190,7 +190,7 @@ jobs:
 
       - name: Run workspace contract gate
         if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
-        run: bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --no-stamp --review-arg --no-tests
+        run: bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --committed-only-tests --no-stamp --review-arg --no-tests
 
   os-contracts:
     name: Consuelo / OS contracts
