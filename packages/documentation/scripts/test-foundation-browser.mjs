@@ -41,10 +41,12 @@ try {
   if (mainFrameAnimation !== 'docs-page-in') throw new Error(`Main frame entrance animation is ${mainFrameAnimation}`);
   const globalLinks = page.locator('#starlight__sidebar a.global-section-link');
   const globalCount = await globalLinks.count();
-  if (globalCount !== 9) throw new Error(`Expected 9 direct global section links, found ${globalCount}`);
+  if (globalCount !== 10) throw new Error(`Expected 10 direct global section links, found ${globalCount}`);
   if ((await page.locator('#starlight__sidebar details').count()) !== 0) throw new Error('Global sidebar must not render dropdown groups');
   const startGlobalLink = page.locator('#starlight__sidebar').getByRole('link', { name: 'Start', exact: true });
   if ((await startGlobalLink.getAttribute('href')) !== '/start/') throw new Error('Start must link directly to its overview');
+  const nodesGlobalLink = page.locator('#starlight__sidebar').getByRole('link', { name: 'Nodes', exact: true });
+  if ((await nodesGlobalLink.getAttribute('href')) !== '/nodes/') throw new Error('Nodes must link directly to its overview');
   const globalLinkRest = await startGlobalLink.evaluate((element) => ({
     backgroundColor: getComputedStyle(element).backgroundColor,
     color: getComputedStyle(element).color,
@@ -105,7 +107,6 @@ try {
     ['Install Consuelo OS', '/start/install-consuelo-os/'],
     ['Create a workspace', '/start/create-a-workspace/'],
     ['Connect your first agent', '/start/connect-your-first-agent/'],
-    ['Local and Consuelo Cloud', '/start/local-and-consuelo-cloud/'],
     ['Core concepts', '/start/core-concepts/'],
   ];
   const sectionNavigation = page.locator('#starlight__sidebar');
@@ -117,6 +118,20 @@ try {
     const markdownHref = href === '/start/' ? '/start.md' : `${href.slice(0, -1)}.md`;
     const markdown = await fetch(`${origin}${markdownHref}`);
     if (!markdown.ok) throw new Error(`${label} Markdown returned ${markdown.status}`);
+  }
+
+  const nodeRoutes = [
+    ['Overview', '/nodes/'],
+    ['Local nodes', '/nodes/local/'],
+    ['Cloud nodes', '/nodes/cloud/'],
+    ['Routing work', '/nodes/routing/'],
+  ];
+  for (const [label, href] of nodeRoutes) {
+    const response = await fetch(`${origin}${href}`);
+    if (!response.ok) throw new Error(`Nodes: ${label} returned ${response.status}`);
+    const markdownHref = href === '/nodes/' ? '/nodes.md' : `${href.slice(0, -1)}.md`;
+    const markdown = await fetch(`${origin}${markdownHref}`);
+    if (!markdown.ok) throw new Error(`Nodes: ${label} Markdown returned ${markdown.status}`);
   }
 
   await page.goto(`${origin}/start/connect-your-first-agent/`, { waitUntil: 'networkidle' });
@@ -231,7 +246,7 @@ try {
   if (shellStyles.nestedGuideWidth !== '0px') throw new Error(`Nested sidebar guide remains ${shellStyles.nestedGuideWidth}`);
 
   const registry = page.locator('.docs-registry-grid');
-  if ((await registry.locator('.docs-registry-column').count()) !== 9) throw new Error('Footer registry must contain nine sections');
+  if ((await registry.locator('.docs-registry-column').count()) !== 10) throw new Error('Footer registry must contain ten sections');
   const desktopColumns = await registry.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
   if (desktopColumns !== 7) throw new Error(`Footer registry must use seven desktop columns, found ${desktopColumns}`);
   const lastHeadingY = await page.locator('#tools-skills-and-scripts').evaluate(
@@ -285,6 +300,16 @@ try {
       const menuButton = page.locator('button[aria-controls="starlight__sidebar"]');
       await menuButton.click();
       if (!(await page.getByRole('link', { name: 'All documentation' }).isVisible())) throw new Error('Section navigation is unavailable on mobile');
+      await page.keyboard.press('Escape');
+
+      await page.goto(origin, { waitUntil: 'networkidle' });
+      const globalMenuButton = page.locator('button[aria-controls="starlight__sidebar"]');
+      await globalMenuButton.click();
+      const mobileGlobalLabels = (await page.locator('#starlight__sidebar a.global-section-link').allTextContents()).map((label) => label.trim());
+      const expectedGlobalLabels = ['Start', 'Connect', 'Nodes', 'Tools', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference'];
+      if (JSON.stringify(mobileGlobalLabels) !== JSON.stringify(expectedGlobalLabels)) {
+        throw new Error(`Mobile global navigation order is wrong: ${JSON.stringify(mobileGlobalLabels)}`);
+      }
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });

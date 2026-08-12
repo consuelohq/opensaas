@@ -2,13 +2,13 @@
 title: How steering works
 description: Understand the durable instructions agents load before using workspace tools.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
   - source: packages/os/scripts/os.ts
     tests:
       - packages/os/tests/os-get-steering-trace.test.ts
       - packages/os/tests/steering-canonical-source.test.ts
-    runtime: Full steering assembly, trace recording, and repeated-call guards were exercised by focused tests on 2026-07-13.
+    runtime: Full steering assembly, node-routing context, trace recording, and repeated-call guards were exercised by focused tests on 2026-08-12.
 ---
 
 **Steering** is the durable instruction layer an agent loads before it starts work. It establishes the workspace identity, rules, decision process, and core tool-discovery path.
@@ -18,11 +18,20 @@ evidence:
 At the beginning of a conversation, call `get_steering`. The response combines:
 
 - current runtime identity;
+- current, default, and available node context when the request includes workspace routing information;
 - workspace steering Markdown;
 - tool-discovery guidance;
 - the compact core tool manifest.
 
 The call is recorded as an execution. Repeated calls within a short window return loop guards or rate limits instead of duplicating the full context.
+
+## Steering tells the agent where it is
+
+When a workspace can run on more than one node, steering can include the node handling the current request, the workspace default, the available nodes and their presence, and the route source that selected this node.
+
+That context lets an agent reason about requests such as “read the file on my office Mac” without assuming every node has the same filesystem. It also means a default-node change can be visible to new work while an active task remains attached to the node that already owns it.
+
+Use [Nodes](/nodes/) for the product model and [Routing work](/nodes/routing/) for the routing order.
 
 ## Load order
 
@@ -41,3 +50,5 @@ Read one exact file when only one rule is needed. Use `refresh_steering` only wh
 ## Steering is not a capability grant
 
 Steering can tell an agent what it should do, but it cannot create a missing tool, widen credentials, or bypass an approval gate. Runtime manifests and security policy remain authoritative for execution.
+
+The same boundary applies to nodes: seeing another node in steering does not make it reachable, online, or authorized for the current call.

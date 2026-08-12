@@ -2,7 +2,7 @@
 title: MCP
 description: Current MCP protocol, methods, discovery surface, scopes, and errors.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
   - source: packages/os/scripts/lib/mcp-gateway.ts
     tests:
@@ -15,6 +15,8 @@ evidence:
 ---
 
 Consuelo OS exposes Model Context Protocol through local stdio for supported coding agents and HTTPS for approved hosted agents.
+
+When the hosted workspace route can reach more than one node, Consuelo resolves the destination before the selected node executes the MCP request. That routing decision is a Consuelo workspace concern, not a new MCP protocol primitive. Default, explicit, and task-owned routing are documented in [Routing work](/nodes/routing/).
 
 ## Initialize
 
@@ -114,3 +116,5 @@ JSON-RPC errors use standard codes for the current cases:
 - `-32602` — invalid `tools/call` parameters.
 
 Authorization, missing scopes, expired credentials, and signed-transport errors are defined in [Security reference](/secure/security-reference/).
+
+Node selection can also fail before JSON-RPC execution. `WORKSPACE_NODE_OFFLINE`, `NODE_ROUTE_MISMATCH`, and `TASK_NODE_MISMATCH` are workspace routing errors; they are not MCP method errors. See [Result and error formats](/reference/result-and-error-formats/#node-routing-errors).

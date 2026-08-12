@@ -2,13 +2,13 @@
 title: Tool List
 description: Alphabetical list of every tool in the current Consuelo OS generated manifest.
 status: preview
-verifiedAt: 2026-08-11
+verifiedAt: 2026-08-12
 evidence:
   - source: packages/os/manifests/generated/tool.manifest.json
     tests:
       - packages/os/tests/tool-manifest.test.ts
       - packages/os/tests/tools-search-v2.test.ts
-    runtime: Generated from all 154 named tools in the checked-in manifest on 2026-08-11.
+    runtime: Generated from all 154 named tools in the checked-in manifest and reconciled with the current subagent schema on 2026-08-12.
 ---
 
 This page lists all **154 tools** in the current generated Consuelo OS manifest, alphabetically. Use **On this page** on the right as the fast index: every tool below is a real heading, so you can jump directly to it.
@@ -839,7 +839,7 @@ Category: `stream` · Access: `mutating` · Core tool
 
 ## `subagent`
 
-run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.
+run or start a subagent from an instruction handoff. Write the handoff to OS tmp first under the canonical opensaas-handoffs root; model and reasoning selection are provider-specific and surfaced explicitly. Edit self-bootstrap may call task.start first, or an existing taskSession may be supplied. task.push publishes only the task branch. task.pr merges to the stream and must not be called when the handoff says stop after push. status/wait/logs attach to an existing run and never spawn; cancel targets runId. requestId makes retries idempotent. Provider capability limitations are returned explicitly and never silently weakened. Return one compact trace-style summary with traceId, files read, files edited, tools called, and token usage.
 
 Category: `subagent` · Access: `mutating`
 

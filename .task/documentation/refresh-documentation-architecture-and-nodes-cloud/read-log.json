@@ -1,0 +1,32 @@
+{
+  "files": [
+    ".task/documentation/refresh-documentation-architecture-and-nodes-cloud/workpad.md",
+    "packages/documentation/package.json",
+    "packages/documentation/scripts/check-package-boundary.mjs",
+    "packages/documentation/scripts/test-boundary.mjs",
+    "packages/documentation/scripts/test-build-browser.mjs",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/scripts/validate-documentation.mjs",
+    "packages/documentation/src/content/docs/developers/agent/overview.mdx",
+    "packages/documentation/src/content/docs/developers/api/auth.mdx",
+    "packages/documentation/src/content/docs/developers/api/graphql.mdx",
+    "packages/documentation/src/content/docs/developers/api/voice.mdx",
+    "packages/documentation/src/content/docs/memory/index.mdx",
+    "packages/documentation/src/content/docs/os/concepts/data-model-and-graphql.mdx",
+    "packages/documentation/src/content/docs/os/tools/subagents.mdx",
+    "packages/documentation/src/content/docs/secure/approvals.mdx",
+    "packages/documentation/src/content/docs/secure/index.mdx",
+    "packages/documentation/src/content/docs/tools/index.mdx",
+    "packages/documentation/src/content/docs/tools/tool-list.mdx",
+    "packages/documentation/src/content/docs/user-guide/getting-started/capabilities/glossary.mdx",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/src/lib/legacy-redirects.mjs",
+    "packages/documentation/tests/build.test.ts",
+    "packages/documentation/tests/foundation.test.ts",
+    "packages/documentation/tests/nodes.test.ts",
+    "packages/documentation/tests/reference.test.ts",
+    "packages/os/tools/subagent/manifest.ts",
+    "packages/os/tools/subagent/schema.ts"
+  ],
+  "updatedAt": "2026-08-12T19:35:49.670Z"
+}

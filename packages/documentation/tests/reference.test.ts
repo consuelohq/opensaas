@@ -114,6 +114,10 @@ describe('Reference documentation contract', () => {
 
     const glossary = read('src/content/docs/reference/glossary.mdx');
     for (const term of ['home node', 'facade tool', 'skill', 'steering', 'task session', 'trace', 'artifact', 'static snapshot', 'live OS']) expect(glossary.toLowerCase()).toContain(term.toLowerCase());
+    expect(glossary).toContain('Cloud node');
+    expect(glossary).not.toContain('authoritative home node');
+
+    expect(urls).not.toContain('prove the home node is online');
   });
 
   test('keeps a claim ledger and retires superseded legacy pages', () => {

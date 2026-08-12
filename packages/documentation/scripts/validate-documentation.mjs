@@ -6,7 +6,6 @@ const selectedSlugs = [
   'start/install-consuelo-os',
   'start/create-a-workspace',
   'start/connect-your-first-agent',
-  'start/local-and-consuelo-cloud',
   'start/core-concepts',
   'connect/index',
   'connect/agents/chatgpt',
@@ -16,10 +15,6 @@ const selectedSlugs = [
   'connect/agents/opencode',
   'connect/agents/gemini',
   'connect/agents/other-agents',
-  'connect/nodes/how-nodes-work',
-  'connect/nodes/home-node',
-  'connect/nodes/local-nodes',
-  'connect/nodes/cloud-nodes',
   'connect/apps-and-services/index',
   'connect/apps-and-services/google-workspace',
   'connect/apps-and-services/gmail',
@@ -42,6 +37,10 @@ const selectedSlugs = [
   'connect/apps-and-services/stripe',
   'connect/apps-and-services/twilio',
   'connect/apps-and-services/additional-services',
+  'nodes/index',
+  'nodes/local',
+  'nodes/cloud',
+  'nodes/routing',
   'build/index',
   'build/tools/how-tools-work',
   'build/tools/workspace',
@@ -107,6 +106,21 @@ const selectedSlugs = [
   'reference/environment-variables',
   'reference/urls-and-ports',
   'reference/glossary',
+  'tools/subagents',
+];
+
+const removedSlugs = [
+  'os/overview',
+  'os/how-it-works',
+  'os/getting-started/install',
+  'os/getting-started/connect-agents',
+  'os/getting-started/workspace-launcher',
+  'os/concepts/local-and-cloud',
+  'start/local-and-consuelo-cloud',
+  'connect/nodes/how-nodes-work',
+  'connect/nodes/home-node',
+  'connect/nodes/local-nodes',
+  'connect/nodes/cloud-nodes',
   'user-guide/user-stories-use-cases',
   'user-guide/getting-started/capabilities/implementation-services',
   'user-guide/getting-started/capabilities/glossary',
@@ -123,15 +137,6 @@ const selectedSlugs = [
   'developers/api/graphql',
   'developers/api/contacts',
   'developers/api/voice',
-];
-
-const removedSlugs = [
-  'os/overview',
-  'os/how-it-works',
-  'os/getting-started/install',
-  'os/getting-started/connect-agents',
-  'os/getting-started/workspace-launcher',
-  'os/concepts/local-and-cloud',
   'user-guide/introduction',
   'user-guide/getting-started/capabilities/what-is-consuelo',
   'user-guide/getting-started/how-tos/create-workspace',
@@ -215,7 +220,7 @@ assert(
   Boolean(packageJson.scripts?.['test:translation']),
   'package must expose test:translation script',
 );
-for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:build', 'test:build-browser', 'test:sites', 'test:sites-browser', 'test:observe', 'test:observe-browser', 'test:secure', 'test:secure-browser', 'test:reference', 'test:reference-browser', 'test:review-cleanup', 'test:browser', 'test:boundary']) {
+for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:nodes', 'test:build', 'test:build-browser', 'test:sites', 'test:sites-browser', 'test:observe', 'test:observe-browser', 'test:secure', 'test:secure-browser', 'test:reference', 'test:reference-browser', 'test:review-cleanup', 'test:browser', 'test:boundary']) {
   assert(Boolean(packageJson.scripts?.[script]), `package must expose ${script} script`);
 }
 assert(existsSync('bun.lock'), 'bun.lock must exist');
@@ -292,6 +297,7 @@ const navigation = read('src/lib/docs-navigation.ts');
 for (const required of [
   'Start',
   'Connect',
+  'Nodes',
   'Tools',
   'Skills',
   'Steering',
