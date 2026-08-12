@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "validate": "bun scripts/validate-documentation.mjs",
+    "generate:skill-templates": "bun scripts/generate-skill-template-docs.mjs",
     "test:translation": "bun scripts/test-translation.mjs",
     "test:foundation": "bun test tests/foundation.test.ts",
     "test:start": "bun test tests/start.test.ts",

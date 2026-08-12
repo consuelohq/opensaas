@@ -22,7 +22,7 @@ const routes = [
   ['Install a skill', '/build/skills/install-a-skill/'],
   ['Create a skill', '/build/skills/create-a-skill/'],
   ['Skill structure', '/build/skills/skill-structure/'],
-  ['Bundled skills', '/build/skills/bundled/'],
+  ['Skill Templates', '/build/skills/bundled/'],
   ['How steering works', '/build/steering/how-steering-works/'],
   ['Workspace steering', '/build/steering/workspace-steering/'],
   ['Project steering', '/build/steering/project-steering/'],
@@ -55,7 +55,8 @@ try {
 
   const sidebar = page.locator('#starlight__sidebar');
   const groups = sidebar.locator('details');
-  if ((await groups.count()) !== 4) throw new Error(`Expected Build plus three nested groups, found ${await groups.count()}`);
+  if ((await groups.count()) !== 5) throw new Error(`Expected Build plus Tools, Skills, Skill Templates, and Steering groups, found ${await groups.count()}`);
+  if (!(await sidebar.getByText('Skill Templates', { exact: true }).isVisible())) throw new Error('Skill Templates group is missing from Build navigation');
   for (let index = 0; index < await groups.count(); index += 1) {
     if (!(await groups.nth(index).evaluate((element) => element.open))) throw new Error('A Build navigation group started collapsed');
   }
@@ -70,7 +71,7 @@ try {
     if (!markdownText.includes(label === 'Overview' ? '# Build with OS' : `# ${label}`)) {
       throw new Error(`${markdownHref} is missing its page heading`);
     }
-    if (label !== 'Overview') {
+    if (label !== 'Overview' && label !== 'Skill Templates') {
       const matches = sidebar.getByRole('link', { name: label, exact: true });
       if ((await matches.count()) < 1) throw new Error(`${label} is missing from Build navigation`);
     }
@@ -78,7 +79,7 @@ try {
 
   const contentChecks = [
     ['/build/tools/how-tools-work/', 'tools.search'],
-    ['/build/skills/install-a-skill/', 'There is not yet a standalone public'],
+    ['/build/skills/install-a-skill/', 'picker shows only skill templates'],
     ['/build/steering/project-steering/', 'does not automatically merge'],
     ['/build/approvals/', 'APPROVAL_REQUIRED'],
   ];
@@ -108,7 +109,7 @@ try {
     viewportChecks.push({ name: viewport.name, overflow });
   }
 
-  process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: 4, viewportChecks }, null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: 5, viewportChecks }, null, 2)}\n`);
 } finally {
   await browser?.close();
   await stopDocumentationServer(server);

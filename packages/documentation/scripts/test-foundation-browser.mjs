@@ -87,10 +87,21 @@ try {
   if (legacyMarkdown.status !== 308) throw new Error(`Legacy Markdown returned ${legacyMarkdown.status}`);
   if (legacyMarkdown.headers.get('location') !== '/reference/configuration.md') throw new Error('Legacy Markdown redirect points to the wrong route');
   if (await page.locator('.page-actions-menu').isVisible()) throw new Error('Page actions menu is visible before opening details');
-  await page.getByRole('button', { name: 'Copy page', exact: true }).first().click();
+  const copyActions = page.locator('.page-actions');
+  const copyButton = page.getByRole('button', { name: 'Copy page', exact: true }).first();
+  const normalCopyBackground = await copyButton.evaluate((element) => getComputedStyle(element).backgroundColor);
+  await copyButton.click();
   await page.waitForTimeout(100);
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   if (copied !== expectedMarkdown) throw new Error('Copy page did not use canonical Markdown output');
+  if ((await copyActions.getAttribute('data-copy-state')) !== 'success') throw new Error('Copy page did not enter success state');
+  if (!(await copyActions.locator('.page-action-success-icon').isVisible())) throw new Error('Copy success check icon is not visible');
+  if (await copyActions.locator('.page-action-chevron').isVisible()) throw new Error('Copy success did not replace the down arrow');
+  const successCopyBackground = await copyButton.evaluate((element) => getComputedStyle(element).backgroundColor);
+  if (successCopyBackground === normalCopyBackground) throw new Error('Copy success did not change the button color');
+  await page.waitForTimeout(1800);
+  if (await copyActions.getAttribute('data-copy-state')) throw new Error('Copy success state did not reset');
+  if (!(await copyActions.locator('.page-action-chevron').isVisible())) throw new Error('Copy down arrow did not return after success');
 
   await page.getByLabel('More page actions').click();
   const actionMenu = page.locator('.page-actions-menu');
