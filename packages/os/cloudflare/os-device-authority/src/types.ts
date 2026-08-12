@@ -1,5 +1,6 @@
 import type { WorkspaceRouteD1Database } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import type { WorkspaceSiteSnapshotId } from '../../../scripts/lib/workspace-edge-route-seed';
+import type { ManagedCloudPricingRuntime } from './services/managed-cloud-pricing';
 
 export type GrantStatus = 'pending' | 'approved' | 'denied' | 'failed';
 export type GrantFailureCode = 'workspace_route_setup_failed';
@@ -406,6 +407,8 @@ export type Env = {
   OS_DEVICE_AUTH_WORKSPACE_EDGE_HOSTNAME?: string;
   OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL?: string;
   OS_DEVICE_AUTH_CLOUDFLARE_API_BASE_URL?: string;
+  OS_MANAGED_CLOUD_PRICING_POLICY_JSON?: string;
+  OS_MANAGED_CLOUD_RATE_CARDS_JSON?: string;
 };
 
 export type DeviceAuthorityRuntime = {
@@ -420,4 +423,5 @@ export type DeviceAuthorityRuntime = {
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
+  managedCloudPricing?: ManagedCloudPricingRuntime;
 };

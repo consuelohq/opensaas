@@ -120,6 +120,10 @@ contractDescribe('workspace edge route seed contract', () => {
       status: 'disabled',
       target: { kind: 'site-snapshot', siteId: 'tools' },
     });
+    expect(record.routes.find((route) => route.pathPrefix === '/nodes')).toMatchObject({
+      status: 'disabled',
+      target: { kind: 'site-snapshot', siteId: 'nodes' },
+    });
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/gateway/traces/events',
@@ -279,6 +283,7 @@ contractDescribe('workspace edge route seed contract', () => {
         'docs',
         'configuration',
         'tools',
+        'nodes',
         'environments',
         'secrets',
       ],
@@ -304,6 +309,7 @@ contractDescribe('workspace edge route seed contract', () => {
       '/docs',
       '/configuration',
       '/tools',
+      '/nodes',
       '/environments',
       '/secrets',
     ]);
@@ -324,7 +330,7 @@ contractDescribe('workspace edge route seed contract', () => {
     ).toEqual(Array(5).fill('workspace-session'));
     expect(
       snapshotRoutes
-        .filter((route) => ['launcher', 'traces', 'configuration', 'tools', 'environments', 'secrets'].includes(route.target.siteId ?? ''))
+        .filter((route) => ['launcher', 'traces', 'configuration', 'tools', 'nodes', 'environments', 'secrets'].includes(route.target.siteId ?? ''))
         .every((route) => route.auth === 'workspace-session'),
     ).toBe(true);
     expect(
@@ -339,6 +345,13 @@ contractDescribe('workspace edge route seed contract', () => {
           siteId: 'tools',
           manifestKey: 'sites/workspace_internal/tools/sha256-release/index.html',
           contentHash: 'b'.repeat(64),
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/nodes',
+        target: expect.objectContaining({
+          siteId: 'nodes',
+          manifestKey: 'sites/workspace_internal/nodes/sha256-release/index.html',
         }),
       }),
       expect.objectContaining({
@@ -417,6 +430,7 @@ contractDescribe('workspace edge route seed contract', () => {
         'docs',
         'configuration',
         'tools',
+        'nodes',
         'environments',
         'secrets',
       ],

@@ -9,6 +9,7 @@ import {
 import type {
   AuthoritySession,
   DeviceAuthorityRuntime,
+  WorkspaceBrowserSession,
   WorkspaceMembership,
 } from '../types';
 import { hash, htmlEscape, params, rand } from '../utils';
@@ -29,6 +30,57 @@ function cookieValue(request: Request, name: string): string {
     if (key === name) return decodeURIComponent(rest.join('='));
   }
   return '';
+}
+
+export async function authenticateInternalWorkspaceSession(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+  options: { requireCsrf?: boolean; requireWorkspaceId?: boolean } = {},
+): Promise<
+  | { ok: true; session: WorkspaceBrowserSession }
+  | { ok: false; response: Response }
+> {
+  try {
+    if (
+      !runtime.workspaceEdgeInternalSigningSecret ||
+      request.headers.get(INTERNAL_AUTH_HEADER) !== runtime.workspaceEdgeInternalSigningSecret
+    ) {
+      return { ok: false, response: json({ error: 'not_found' }, { status: 404 }) };
+    }
+    const token = cookieValue(request, WORKSPACE_SESSION_COOKIE);
+    if (!token) {
+      return { ok: false, response: json({ error: 'workspace_session_required' }, { status: 401 }) };
+    }
+    const session = await runtime.store.byWorkspaceBrowserSession(await hash(token));
+    const workspaceHost = request.headers.get('x-consuelo-workspace-host')?.trim().toLowerCase() ?? '';
+    const workspaceId = request.headers.get('x-consuelo-workspace-id')?.trim() ?? '';
+    const requireWorkspaceId = options.requireWorkspaceId !== false;
+    if (
+      !session ||
+      runtime.now() >= session.expiresAt ||
+      !workspaceHost ||
+      session.workspaceHost !== workspaceHost ||
+      (requireWorkspaceId && !workspaceId) ||
+      (workspaceId && session.workspaceId !== workspaceId)
+    ) {
+      return { ok: false, response: json({ error: 'workspace_session_required' }, { status: 401 }) };
+    }
+    if (options.requireCsrf) {
+      const csrfCookieValue = cookieValue(request, WORKSPACE_CSRF_COOKIE);
+      const csrfHeader = request.headers.get('x-consuelo-csrf-token') ?? '';
+      if (
+        request.headers.get('origin') !== 'https://' + workspaceHost ||
+        !csrfCookieValue ||
+        csrfCookieValue !== session.csrfToken ||
+        csrfHeader !== session.csrfToken
+      ) {
+        return { ok: false, response: json({ error: 'csrf_failed' }, { status: 403 }) };
+      }
+    }
+    return { ok: true, session };
+  } catch {
+    return { ok: false, response: json({ error: 'workspace_session_unavailable' }, { status: 503 }) };
+  }
 }
 
 function authorityCookie(value: string, maxAgeSeconds: number): string {
@@ -330,31 +382,8 @@ async function handleWebAuthRequest(
 
   if (url.pathname === '/internal/auth/session/validate') {
     if (request.method !== 'POST') return methodNotAllowed('POST');
-    if (
-      !runtime.workspaceEdgeInternalSigningSecret ||
-      request.headers.get(INTERNAL_AUTH_HEADER) !==
-        runtime.workspaceEdgeInternalSigningSecret
-    ) {
-      return json({ error: 'not_found' }, { status: 404 });
-    }
-    const token = cookieValue(request, WORKSPACE_SESSION_COOKIE);
-    if (!token) {
-      return json({ error: 'workspace_session_required' }, { status: 401 });
-    }
-    const session = await runtime.store.byWorkspaceBrowserSession(
-      await hash(token),
-    );
-    const workspaceId = request.headers.get('x-consuelo-workspace-id') ?? '';
-    const workspaceHost =
-      request.headers.get('x-consuelo-workspace-host')?.trim().toLowerCase() ?? '';
-    if (
-      !session ||
-      runtime.now() >= session.expiresAt ||
-      session.workspaceId !== workspaceId ||
-      session.workspaceHost !== workspaceHost
-    ) {
-      return json({ error: 'workspace_session_required' }, { status: 401 });
-    }
+    const auth = await authenticateInternalWorkspaceSession(request, runtime);
+    if (!auth.ok) return auth.response;
     return new Response(null, {
       status: 204,
       headers: { 'cache-control': 'no-store' },
