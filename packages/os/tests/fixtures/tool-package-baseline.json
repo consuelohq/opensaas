@@ -2172,6 +2172,37 @@
       "defaultTimeout": 180000,
       "inputSchema": "CodeCallInput",
       "outputSchema": "CodeCallOutput",
+      "search": {
+        "keywords": [
+          "structured",
+          "multi",
+          "summarize",
+          "summary",
+          "packet",
+          "bounded",
+          "transform",
+          "transformation",
+          "rewrite",
+          "codemod",
+          "codegen",
+          "generate",
+          "python",
+          "bun",
+          "bash",
+          "test",
+          "tests",
+          "typecheck",
+          "syntax",
+          "cli",
+          "reproduction",
+          "diagnostic",
+          "json",
+          "script",
+          "scripts",
+          "package",
+          "packages"
+        ]
+      },
       "command": {
         "script": "code-call",
         "branchMode": "none",
@@ -2450,6 +2481,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentContextInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2500,6 +2538,19 @@
       "defaultTimeout": 900000,
       "inputSchema": "DeploymentDeployInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "deploy",
+          "redeploy",
+          "promote",
+          "deployment"
+        ],
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2598,6 +2649,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentDetectInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2636,6 +2694,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentEnvironmentInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2732,6 +2797,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentListInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2808,6 +2880,13 @@
       "defaultTimeout": 180000,
       "inputSchema": "DeploymentLogsInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2903,6 +2982,30 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentRawInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare",
+          "r2",
+          "d1",
+          "wrangler",
+          "worker",
+          "workers"
+        ],
+        "entities": [
+          "r2",
+          "object",
+          "objects",
+          "bucket",
+          "buckets",
+          "d1",
+          "database",
+          "query",
+          "worker",
+          "workers"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2967,6 +3070,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentStatusInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -3213,6 +3323,15 @@
       "defaultTimeout": 30000,
       "inputSchema": "FsApplyPatchInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "anchored",
+          "patch",
+          "hunk",
+          "apply",
+          "edit"
+        ]
+      },
       "command": {
         "script": "task:fs",
         "subcommand": "apply-patch",
@@ -3257,6 +3376,15 @@
       "defaultTimeout": 30000,
       "inputSchema": "FsListInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "entities": [
+          "directory",
+          "directories",
+          "folder",
+          "folders",
+          "tree"
+        ]
+      },
       "command": {
         "script": "task:fs",
         "subcommand": "list",
@@ -3319,6 +3447,15 @@
       "defaultTimeout": 30000,
       "inputSchema": "FsReadInput",
       "outputSchema": "FsReadOutput",
+      "search": {
+        "entities": [
+          "file",
+          "files",
+          "line",
+          "lines",
+          "contents"
+        ]
+      },
       "command": {
         "script": "task:fs",
         "subcommand": "read",
@@ -3414,6 +3551,16 @@
       "defaultTimeout": 30000,
       "inputSchema": "FsSearchInput",
       "outputSchema": "FsSearchOutput",
+      "search": {
+        "keywords": [
+          "grep",
+          "ripgrep",
+          "rg",
+          "pattern",
+          "contents",
+          "codebase"
+        ]
+      },
       "command": {
         "script": "task:fs",
         "subcommand": "search",
@@ -3810,6 +3957,24 @@
       "defaultTimeout": 120000,
       "inputSchema": "GithubInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "gh"
+        ],
+        "keywords": [
+          "coderabbit",
+          "codex",
+          "openai",
+          "chatgpt",
+          "qodo",
+          "pull request",
+          "pr review",
+          "reviews",
+          "comments",
+          "feedback",
+          "checks"
+        ]
+      },
       "command": {
         "script": "github",
         "branchMode": "none",
@@ -4186,6 +4351,14 @@
       "defaultTimeout": 60000,
       "inputSchema": "LinearSearchInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "ticket",
+          "tickets",
+          "issue search",
+          "find issues"
+        ]
+      },
       "command": {
         "script": "linear",
         "subcommand": "search",
@@ -5981,6 +6154,9 @@
       "defaultTimeout": 120000,
       "inputSchema": "PrReviewInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "hidden": true
+      },
       "command": {
         "script": "pr-review",
         "branchMode": "none",
@@ -7160,6 +7336,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "BranchInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "links",
+          "pr links",
+          "pull request links"
+        ]
+      },
       "command": {
         "script": "task:prs",
         "branchMode": "required",
@@ -7424,9 +7607,9 @@
         "tools",
         "search"
       ],
-      "description": "search workspace tools by intent and return ranked usage guidance",
+      "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
       "category": "tooling",
-      "underlying": "workspace tools.search",
+      "underlying": "Consuelo OS tools.search",
       "capabilities": {
         "readOnly": true,
         "mutating": false,
@@ -7438,6 +7621,7 @@
       "outputSchema": "ToolsSearchOutput",
       "command": {
         "script": "tools:search",
+        "executionScope": "runtime",
         "branchMode": "none",
         "jsonFlag": "--json",
         "arguments": [
@@ -7467,9 +7651,9 @@
             "kind": "boolean"
           },
           {
-            "source": "noDocs",
-            "flag": "--no-docs",
-            "kind": "boolean"
+            "source": "detail",
+            "flag": "--detail",
+            "kind": "value"
           }
         ]
       },
@@ -7538,6 +7722,16 @@
       "defaultTimeout": 300000,
       "inputSchema": "WaitInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "timed",
+          "polling",
+          "sleep",
+          "delay",
+          "seconds",
+          "backoff"
+        ]
+      },
       "command": {
         "script": "wait",
         "branchMode": "none",

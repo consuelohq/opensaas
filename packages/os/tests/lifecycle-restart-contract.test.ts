@@ -12,7 +12,9 @@ describe('lifecycle restart parity', () => {
   it('preserves reply-safe detached reload and canonical launchd/direct execution', () => {
     const reload = source('scripts/consuelo-reload.js');
 
-    expect(reload).toContain("spawn(process.execPath, [__filename, 'reload-now']");
+    expect(reload).toContain("spawn(process.execPath, [__filename, command]");
+    expect(reload).toContain("scheduleReload({ useLaunchd: hasLaunchdPlist, command: 'reload-now' });");
+    expect(reload).toContain("scheduleReload({ useLaunchd: hasLaunchdPlist, command: 'restart-now' });");
     expect(reload).toContain('detached: true');
     expect(reload).toContain("CONSUELO_OS_RELOAD_CHILD: '1'");
     expect(reload).toContain('if (useLaunchd && existsSync(PLIST))');
@@ -40,7 +42,9 @@ describe('lifecycle restart parity', () => {
     expect(watchdog).toContain('WORKSPACE_WATCHDOG_EXTERNAL_FAILURE_THRESHOLD');
     expect(watchdog).toContain('WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS');
     expect(watchdog).toContain('still inside restart gap');
-    expect(watchdog).toContain('launchctl kickstart -k');
+    expect(watchdog).toContain('consuelo_cli=');
+    expect(watchdog).toContain('"$consuelo_cli" restart --quiet');
+    expect(watchdog).toContain('restart_launchd_label');
   });
 
   it('routes the legacy server command through the lifecycle adapter instead of duplicating process control', () => {

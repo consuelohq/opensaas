@@ -11,7 +11,9 @@ import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-r
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
 import { getInputSchema } from './schemas';
+import { resolveBrowserConfig } from '../browser/config';
 import { executeCodeCall } from '../code-call/runtime';
+import { nodeResourceLockPath, withNodeResourceLock } from '../node-resource-lock';
 import type { CodeCallInput } from '../code-call/types';
 import { executeSubagent } from '../subagent/runtime';
 
@@ -274,7 +276,13 @@ export async function executeTool<TData = unknown>(
     }
 
     const timeoutMs = getTimeoutMs(entry, commandInput);
-    const runResult = await runWithRetry(entry, plan, timeoutMs, runner);
+    const runResult = (toolName === 'browser' || toolName.startsWith('browser.'))
+      ? await withNodeResourceLock({
+        lockPath: nodeResourceLockPath(resolveBrowserConfig(env).profilePath),
+        operationId: `browser:${toolName}`,
+        waitTimeoutMs: timeoutMs,
+      }, () => runWithRetry(entry, plan, timeoutMs, runner))
+      : await runWithRetry(entry, plan, timeoutMs, runner);
     const cleanStderr = stripCommandEcho(runResult.stderr);
     if (runResult.timedOut) {
       const result = createToolResult({
@@ -499,20 +507,24 @@ function compactReviewData(data: unknown): unknown {
   const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
   const testResults = asArray(data.testResults);
   const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  const documentationCheckRan = Object.prototype.hasOwnProperty.call(data, 'documentationOpportunities');
+  const documentationOpportunities = asArray(data.documentationOpportunities);
+  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (documentationCheckRan) checksRun.push('documentation_opportunities');
+  if (testResults.length > 0) checksRun.push('tests');
   return {
     schema: 'review.summary.v1',
     base: data.base,
     branch: data.branch,
     files: data.files,
     affectedProjects: data.affectedProjects,
-    checksRun: testResults.length > 0
-      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'tests']
-      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance'],
+    checksRun,
     summary: {
       yourIssues: yours.length,
       preExistingIssues: preExisting.length,
       failedTestSuites: failedSuites.length,
       blockingIssues: yours.length + failedSuites.length,
+      documentationOpportunities: documentationOpportunities.length,
     },
     mustFixTotal: yours.length,
     mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
@@ -525,6 +537,7 @@ function compactReviewData(data: unknown): unknown {
       preExisting: summarizeFacadeFindings(preExisting).byFile,
     },
     preExistingDigest: summarizeFacadeFindings(preExisting),
+    documentationOpportunities: documentationOpportunities.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
     testSummary: {
       totalSuites: testResults.length,
       passedSuites: testResults.length - failedSuites.length,

@@ -1,94 +1,94 @@
 ---
 title: Skills and manifests
-description: Skill metadata, guidance entrypoints, executable skills, and generated registries.
+description: Skill metadata, selection state, installed indexes, steering discovery, and generated tool manifests.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-11
 evidence:
-  - source: packages/os/scripts/lib/skills.ts
+  - source: packages/os/scripts/lib/steering-skills.ts
     tests:
       - packages/os/tests/skills-registry.test.ts
-      - packages/os/tests/tool-manifest.test.ts
-    runtime: Guidance and executable skill validation was run against the bundled registry on 2026-07-13.
-  - source: packages/os/manifests/manifest.config.json
+      - packages/os/tests/os-get-steering-trace.test.ts
+    runtime: Active installed-skill discovery and disabled-skill filtering were verified on 2026-08-11.
+  - source: packages/os/scripts/lib/managed-component-install.ts
     tests:
-      - packages/os/tests/manifest-overlay.test.ts
-    runtime: Full, core, and workflow manifest generation inputs and outputs were parsed on 2026-07-13.
+      - packages/os/tests/skill-selection-cli.test.ts
+    runtime: Managed skill index and visible materialization behavior were verified on 2026-08-11.
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: The generated full and core manifest files were inspected on 2026-08-11.
 ---
 
-A skill packages agent guidance or executable workspace behavior behind one discoverable name.
+A skill packages reusable agent guidance or executable workspace behavior behind one discoverable name.
 
-## Skill directory
+## Source skill directory
+
+Bundled skills are authored in:
 
 ```text
 packages/os/skills/<name>/
   skill.json
   SKILL.md
+  agents/
   references/
   scripts/
   subskills/
 ```
 
-Only `skill.json` is universal. Guidance skills normally load `SKILL.md`; executable skills can point to a script through the source tool manifest.
+`SKILL.md` is the normal guidance entrypoint. `skill.json` contains compact metadata used for registry validation, installation, policy, and discovery.
 
-## `skill.json`
+Common metadata includes `name`, `title`, `description`, `trigger`, `load`, `permission`, `requiresApproval`, `status`, capabilities, tools, optional scripts, and subskills.
 
-Common fields are:
+## Selection and active installed index
 
-| Field | Required | Meaning |
-| --- | --- | --- |
-| `name` | yes | Stable skill name. |
-| `title` | yes | Human-readable title. |
-| `description` | yes | What the skill provides. |
-| `trigger` | no | When an agent should load it. |
-| `entrypoint` | no | Guidance or metadata entrypoint. |
-| `load` | no | Resource path for guidance loading. |
-| `script` | executable skills | Backing script path. |
-| `permission` | yes | `guidance`, `read`, `draft`, `write`, `execute`, `external`, or `admin`. |
-| `requiresApproval` | yes | Whether execution requires explicit approval. |
-| `status` | no | For example `active` or `deprecated`. |
-| `artifactTypes` | no | Artifact types the skill may produce. |
-| `capabilities` | no | Required or supplied capability labels. |
-| `tools` | guidance skills | Tools the guidance expects. |
-| `subskills` | no | Focused child skill declarations. |
+The durable bundled-skill choice is `selectedSkills` in:
 
-A guidance skill must declare the canonical `os.get_steering` and `os.call` tools and its load path must exist. Executable metadata must agree with the source manifest's script, permission, and `requiresApproval` values.
-
-## Source OS-skill manifest
-
-`packages/os/tooling/tool-manifest.json` is the source list of callable OS skills. An entry includes:
-
-```json
-{
-  "name": "daily-revenue-brief",
-  "title": "Daily Revenue Brief",
-  "description": "...",
-  "permission": "read",
-  "requiresApproval": false,
-  "writesRecords": false,
-  "externalSideEffects": false,
-  "requiredEnv": [],
-  "requiredIntegrations": [],
-  "implementation": { "script": "scripts/revenue/daily-revenue-brief.ts" },
-  "inputSchema": { "type": "object" },
-  "outputSchema": { "type": "object" }
-}
+```text
+<CONSUELO_HOME>/config.json
 ```
 
-## Generated manifests
+Provisioning derives the active managed index:
+
+```text
+<CONSUELO_HOME>/components/installed-skills.json
+```
+
+Its `selected` entries are the managed bundled skills that should be active. Preserved custom skills from the legacy hidden tree can appear separately as `legacyCustom`.
+
+Selected bundled skills are materialized for the user under:
+
+```text
+~/Consuelo/Skills/<name>/
+```
+
+The complete bundled catalog is:
+
+```text
+~/Consuelo/Skills/skills.json
+```
+
+The immutable shipped guidance lives in the active runtime under `skills/<name>/SKILL.md` relative to `<CONSUELO_HOME>/runtime/current/`.
+
+## Steering discovery
+
+`get_steering` prefers `components/installed-skills.json` for the compact Installed skills section. It combines selected managed skills with preserved custom metadata and removes skills disabled by `manifest.overlay.json`.
+
+The full Markdown guidance is not appended to steering. The agent loads the skill entrypoint when that workflow applies.
+
+## Generated registries and manifests
 
 | File | Kind | Purpose |
 | --- | --- | --- |
-| `manifests/tool.manifest.json` | `consuelo-os-tool-manifest` | Full generated registry containing `os-skill` and `facade-tool` entries. |
-| `manifests/core.manifest.json` | `consuelo-os-core-manifest` | Small bootstrap tool surface returned with normal steering. |
-| `manifests/workflow-bundles.json` | workflow bundle registry | Generated workflow definitions. |
-| `skills/skills.json` | skill registry | Compact installed/bundled skill discovery metadata. |
+| `packages/os/skills/skills.json` | bundled skill registry | Compact metadata for skills shipped by the OS package. |
+| `packages/os/manifests/generated/tool.manifest.json` | `consuelo-os-tool-manifest` | Full generated callable tool registry. |
+| `packages/os/manifests/generated/core.manifest.json` | `consuelo-os-core-manifest` | Small bootstrap surface used by normal steering. |
 
-The generator combines the regular OS-skill source with developer and media facade-tool sources defined in `manifests/manifest.config.json`.
+The skill registry and tool manifests are generated artifacts. Change their source metadata/generators, then regenerate and validate them rather than hand-editing generated output.
 
-## Effective manifest
+## Installed versus disabled
 
-`manifest.overlay.json` filters disabled skills and tools from the generated full manifest. It does not rewrite the package manifest. MCP discovery and the settings surface read the effective result.
+Removing a bundled skill with `consuelo remove skill` changes `selectedSkills` and reconciles the managed install. Disabling a skill through settings changes `manifest.overlay.json`. These are distinct operations: an installed skill can remain on disk while being filtered from the effective runtime surface.
 
-## Compatibility and deprecation
+## Compatibility
 
-Deprecated skills can remain in the registry with `status: "deprecated"`, `deprecated: true`, and `supersededBy`. New documentation and calls should use the replacement name.
+`<CONSUELO_HOME>/skills/skills.json` is a legacy compatibility surface, not the preferred active managed index. Existing user-owned folders in the legacy hidden tree are preserved for explicit migration rather than silently deleted.

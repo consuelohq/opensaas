@@ -1164,9 +1164,11 @@ Cloud-admin authority remains separate from public install. Do not call this com
 
 ### lifecycle — unified Consuelo OS install and runtime lifecycle
 
-Runs the typed lifecycle engine for install-state inspection, first install, verified updates, restart, rollback, retention, channel preferences, update-notification preferences, repair, and uninstall. Runtime archives are downloaded under `$CONSUELO_HOME/runtime/staging`, verified against a signed release manifest and the runtime-bundle inventory, and atomically activated through `$CONSUELO_HOME/runtime/current`. The previous accepted release is retained at `runtime/previous`; interrupted activation journals restore that known-good release before another mutating operation proceeds.
+Runs the typed lifecycle engine for install-state inspection, first install, verified updates, restart, rollback, retention, channel preferences, update-notification preferences, installed-skill selection, repair, and uninstall. Runtime archives are downloaded under `$CONSUELO_HOME/runtime/staging`, verified against a signed release manifest and the runtime-bundle inventory, and atomically activated through `$CONSUELO_HOME/runtime/current`. The previous accepted release is retained at `runtime/previous`; interrupted activation journals restore that known-good release before another mutating operation proceeds.
 
 `install` preserves the existing interactive onboarding flow. `update`, `restart`, `rollback`, and `repair` never repeat onboarding or replace workspace identity, node identity, secrets, databases, selected skills, or user-owned content. Successful activation retains only current, previous, explicitly pinned releases, and unresolved merge content bases. Staging, test-home, and dev-slot directories are bounded by count and age. Inconsistent references and symlinked release roots fail closed.
+
+`add skill` and `remove skill` are opposite views over the same selected-skill control plane. With no names, they open the Clack multiselect UI: add shows only bundled skills that are not selected; remove shows only selected bundled skills; labels are the skill names. With explicit names they are non-interactive and scriptable. Selection is persisted in `$CONSUELO_HOME/config.json.selectedSkills`, then the existing managed-component reconciler refreshes `$CONSUELO_HOME/components/installed-skills.json` and `~/Consuelo/Skills/<name>`. Clean removed skills are deleted; locally modified managed skills are deselected but preserved for explicit review. `~/Consuelo/Skills/skills.json` remains the full bundled catalog, not the selected-skill list.
 
 Default `uninstall` removes only Consuelo-owned services, runtime files, generated security/service/tunnel state, and bounded caches. It preserves `consuelo.yaml`, node identity, workspace membership, visible workspace content, security overrides, and provider CLI credentials. `--remove-node` and `--remove-user-content` are explicit destructive opt-ins. Full reset is restricted to the `dev` or `nightly` channel and requires `dev reset --yes`. Use `--dry-run` before rollback, uninstall, or development reset. JSON output remains a stable envelope and progress events are emitted separately.
 
@@ -1180,6 +1182,10 @@ bun run lifecycle -- restart
 bun run lifecycle -- rollback --dry-run --json
 bun run lifecycle -- rollback
 bun run lifecycle -- repair
+bun run lifecycle -- add skill
+bun run lifecycle -- add skill branch
+bun run lifecycle -- remove skill
+bun run lifecycle -- remove skill branch
 bun run lifecycle -- uninstall --dry-run --json
 bun run lifecycle -- uninstall
 bun run lifecycle -- uninstall --remove-node --remove-user-content
@@ -1557,7 +1563,7 @@ bun run doctor -- --json
 bun run install:system-daemons
 ```
 
-Install the local Mac launchd services for the OS Bun server and periodic watchdog. The watchdog is a bounded one-shot check scheduled every 30 seconds; launchd remains responsible for process supervision. A workspace installation with registered node signing material also installs `com.consuelo.os.node-heartbeat.<node-id>`. That one-shot service re-inspects canonical local agent configuration on every 30-second run and includes only currently verified agent identifiers in the existing signed node heartbeat; paths, configuration contents, credentials, and signing material are never sent. Set `CONSUELO_AVAILABILITY_ENABLED=1` to opt into the AC-only availability assertion. If portless is configured or discoverable, the installer also adds the optional `com.consuelo.portless.system` LaunchAgent. The normal path installs user LaunchAgents in `~/Library/LaunchAgents`, stores watchdog state under `$CONSUELO_HOME/node/runtime/watchdog`, and does not require `sudo`.
+Install the local Mac launchd services for the OS Bun server and periodic watchdog. The watchdog is a bounded one-shot check scheduled every 30 seconds; launchd remains responsible for process supervision. When repeated local OS probes cross the configured threshold, watchdog recovery delegates to the installed `$CONSUELO_HOME/bin/consuelo restart --quiet` lifecycle command so CLI, lifecycle, and watchdog share one restart implementation. External/portless health recovery remains scoped to its own launchd label. A workspace installation with registered node signing material also installs `com.consuelo.os.node-heartbeat.<node-id>`. That one-shot service re-inspects canonical local agent configuration on every 30-second run and includes only currently verified agent identifiers in the existing signed node heartbeat; paths, configuration contents, credentials, and signing material are never sent. Set `CONSUELO_AVAILABILITY_ENABLED=1` to opt into the AC-only availability assertion. If portless is configured or discoverable, the installer also adds the optional `com.consuelo.portless.system` LaunchAgent. The normal path installs user LaunchAgents in `~/Library/LaunchAgents`, stores watchdog state under `$CONSUELO_HOME/node/runtime/watchdog`, and does not require `sudo`.
 
 ### install:system-daemons:dry-run
 

@@ -13,6 +13,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired",
@@ -37,6 +38,9 @@ export const toolSchemas = [
       "defaultTimeout": 180000,
       "inputSchema": "CodeCallInput",
       "outputSchema": "CodeCallOutput",
+      "search": {
+        "keywords": ["structured", "multi", "summarize", "summary", "packet", "bounded", "transform", "transformation", "rewrite", "codemod", "codegen", "generate", "python", "bun", "bash", "test", "tests", "typecheck", "syntax", "cli", "reproduction", "diagnostic", "json", "script", "scripts", "package", "packages"]
+      },
       "exampleInput": {
         "language": "bun",
         "mode": "read",

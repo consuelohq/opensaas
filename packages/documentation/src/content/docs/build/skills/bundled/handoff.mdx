@@ -1,0 +1,52 @@
+---
+title: Handoff
+description: "Use this skill when the user asks to create, read, update, search, summarize, or continue from handoff/context records so another agent or future session can pick up the work safely."
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/handoff/skill.json
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: Bundled metadata and registry inclusion for `handoff` were verified on 2026-08-11.
+  - source: packages/os/skills/handoff/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The current guidance entrypoint and declared load contract were inspected on 2026-08-11.
+---
+
+`handoff` is a bundled Consuelo OS skill. Creates and consumes durable handoff/context records so another agent or later session can continue with the decisions, constraints, evidence, and next actions that matter.
+
+## When to use it
+
+Use this skill when the user asks to create, read, update, search, summarize, or continue from handoff/context records so another agent or future session can pick up the work safely.
+
+Typical requests include:
+
+- “Create a handoff for the next coding agent.”
+- “Continue from the latest handoff for this task.”
+
+## Enable it
+
+```bash
+consuelo add skill handoff
+```
+
+Run `consuelo add skill` without a name to choose from the skills that are not currently selected. Remove it with:
+
+```bash
+consuelo remove skill handoff
+```
+
+## What the agent loads
+
+The installed metadata points to `skills/handoff/SKILL.md` in the immutable OS runtime. The compact steering catalog advertises the active skill by name and description; the full `SKILL.md` body is loaded only when the workflow applies.
+
+Metadata for this skill currently declares permission `guidance` and `requiresApproval: no`. Those fields describe the skill contract; individual tools called by the skill still enforce their own authorization and safety rules.
+
+## Boundary
+
+A handoff is executable context, not a transcript dump. Keep it compact, factual, and scoped to what the next actor needs.
+
+## Verify
+
+After enabling it, confirm `~/Consuelo/Skills/handoff/SKILL.md` exists and that `handoff` appears in `<CONSUELO_HOME>/components/installed-skills.json`. A newly bootstrapped agent should then see `handoff` in the Installed skills portion of steering.

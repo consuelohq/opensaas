@@ -35,6 +35,7 @@ const requiredFixtureFiles: Record<string, string> = {
   'bun.lock': 'fixture-lock\n',
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
+  'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
   'scripts/native-lifecycle-operation.ts':
     'export const nativeLifecycleOperationFixture = true;\n',
   'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
@@ -841,6 +842,14 @@ describe('runtime bundle contract', () => {
         expect.objectContaining({
           path: 'scripts/lib/managed-component-install.ts',
           role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'skills/branch/SKILL.md',
+          role: 'managed-skill',
+        }),
+        expect.objectContaining({
+          path: 'skills/branch/skill.json',
+          role: 'managed-skill',
         }),
         expect.objectContaining({
           path: 'scripts/lib/distribution/runtime-bundle.ts',

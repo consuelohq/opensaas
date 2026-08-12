@@ -10,13 +10,15 @@ import { resolveConsueloHomeLayout } from '../../lib/consuelo-home';
 import type { RuntimeBundleManifest } from '../../lib/distribution/runtime-bundle';
 import type { LocalOsServerConfig } from '../env';
 import { jsonResponse } from '../middleware/errors';
+import type { WorkerRuntimeState } from '../worker-runtime-state';
 
 type HealthRouteDependencies = {
-  assertReady: () => void | Promise<void>;
+  assertReady?: () => void | Promise<void>;
   runtimeIdentity?: () => { bundleId?: string; version?: string };
+  workerState?: WorkerRuntimeState;
 };
 
-const defaultDependencies: HealthRouteDependencies = {
+const defaultDependencies: Required<Pick<HealthRouteDependencies, 'assertReady' | 'runtimeIdentity'>> = {
   assertReady: () => {
     readFullToolManifest();
     readCoreToolManifest();
@@ -34,10 +36,15 @@ const defaultDependencies: HealthRouteDependencies = {
 
 export function createHealthRoutes(
   config: LocalOsServerConfig,
-  dependencies: HealthRouteDependencies = defaultDependencies,
+  dependencies: HealthRouteDependencies = {},
 ): Hono {
   const app = new Hono();
-  const resolvedDependencies = { ...defaultDependencies, ...dependencies };
+  const resolvedDependencies = {
+    ...defaultDependencies,
+    ...dependencies,
+    assertReady: dependencies.assertReady ?? defaultDependencies.assertReady,
+    runtimeIdentity: dependencies.runtimeIdentity ?? defaultDependencies.runtimeIdentity,
+  };
 
   app.all('/health', async () => {
     try {
@@ -58,6 +65,47 @@ export function createHealthRoutes(
       return jsonResponse({
         status: 'unavailable',
         name: config.name,
+        error: {
+          code: 'OS_RUNTIME_NOT_READY',
+          message: 'Consuelo OS runtime is not ready.',
+        },
+      }, 503);
+    }
+  });
+
+  app.get('/ready', async () => {
+    const worker = resolvedDependencies.workerState?.snapshot();
+    const workerIdentity = worker ? {
+      workerId: worker.workerId,
+      workerInstanceId: worker.workerInstanceId,
+      draining: worker.draining,
+    } : {};
+    if (worker?.draining) {
+      return jsonResponse({
+        status: 'unavailable',
+        name: config.name,
+        ...workerIdentity,
+        error: {
+          code: 'OS_WORKER_DRAINING',
+          message: 'Consuelo OS worker is draining.',
+        },
+      }, 503);
+    }
+    try {
+      await resolvedDependencies.assertReady();
+      const runtimeIdentity = resolvedDependencies.runtimeIdentity?.() ?? {};
+      return jsonResponse({
+        status: 'ready',
+        name: config.name,
+        port: config.port,
+        ...runtimeIdentity,
+        ...workerIdentity,
+      });
+    } catch {
+      return jsonResponse({
+        status: 'unavailable',
+        name: config.name,
+        ...workerIdentity,
         error: {
           code: 'OS_RUNTIME_NOT_READY',
           message: 'Consuelo OS runtime is not ready.',

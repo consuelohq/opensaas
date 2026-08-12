@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { createHealthRoutes } from '../scripts/server/routes/health';
+import { runDrainAndExit } from '../scripts/server/main';
+import { createWorkerRuntimeState } from '../scripts/server/worker-runtime-state';
 
 describe('local OS health readiness', () => {
   it('should return unavailable when runtime manifests cannot be read', async () => {
@@ -47,4 +49,69 @@ describe('local OS health readiness', () => {
     });
   });
 
+  it('should expose worker readiness and fail closed once draining starts', async () => {
+    const workerState = createWorkerRuntimeState({
+      workerId: 'worker-1',
+      workerInstanceId: 'instance-9',
+    });
+    const app = createHealthRoutes(
+      { name: 'consuelo-os', port: 46322 },
+      {
+        assertReady: () => {},
+        workerState,
+      },
+    );
+
+    const ready = await app.request('http://127.0.0.1:46322/ready');
+    expect(ready.status).toBe(200);
+    await expect(ready.json()).resolves.toMatchObject({
+      status: 'ready',
+      name: 'consuelo-os',
+      workerId: 'worker-1',
+      workerInstanceId: 'instance-9',
+      draining: false,
+    });
+
+    workerState.startDraining();
+    const draining = await app.request('http://127.0.0.1:46322/ready');
+    expect(draining.status).toBe(503);
+    await expect(draining.json()).resolves.toMatchObject({
+      status: 'unavailable',
+      name: 'consuelo-os',
+      workerId: 'worker-1',
+      workerInstanceId: 'instance-9',
+      error: { code: 'OS_WORKER_DRAINING' },
+    });
+  });
+
+  it('should allow partial dependency overrides and retain default readiness checks', async () => {
+    const workerState = createWorkerRuntimeState({
+      workerId: 'worker-2',
+      workerInstanceId: 'instance-partial',
+    });
+    const app = createHealthRoutes(
+      { name: 'consuelo-os', port: 46323 },
+      { workerState },
+    );
+
+    const response = await app.request('http://127.0.0.1:46323/ready');
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      status: 'ready',
+      workerId: 'worker-2',
+      workerInstanceId: 'instance-partial',
+    });
+  });
+
+  it('should report drain failures and exit nonzero', async () => {
+    const exit = vi.fn();
+    const report = vi.fn();
+
+    await runDrainAndExit(async () => {
+      throw new Error('Invalid OS worker drain timeout');
+    }, { exit, report });
+
+    expect(report).toHaveBeenCalledWith(expect.stringContaining('Invalid OS worker drain timeout'));
+    expect(exit).toHaveBeenCalledWith(1);
+  });
 });
