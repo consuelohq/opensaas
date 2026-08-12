@@ -157,7 +157,9 @@
         "packages/os/tests/trace-sites-history-endpoint-contract.test.ts",
         "packages/os/tests/trace-sites-runtime-boundary.test.ts",
         "packages/os/assets/vendor/observability-traces-v38/**",
-        "packages/os/tests/fixtures/trace-persistence-runtime.ts"
+        "packages/os/tests/fixtures/trace-persistence-runtime.ts",
+        "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+        "packages/os/tests/runtime-bundle-managed-site-assets.test.ts"
       ],
       "tests": [
         {
@@ -173,7 +175,8 @@
             "tests/trace-history-redaction.test.ts",
             "tests/trace-site-inspector-os-owned.test.ts",
             "tests/observability-traces-site.test.ts",
-            "tests/redaction.test.ts"
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts"
           ]
         },
         {

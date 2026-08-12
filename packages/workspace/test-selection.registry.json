@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2546,
-    "mappedTestCount": 2469,
+    "testFileCount": 2547,
+    "mappedTestCount": 2470,
     "unmappedTestCount": 77,
     "ruleCount": 36,
     "explicitRuleCount": 15,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 209,
+      "packages/os/tests": 210,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
       "packages/workspace/tests": 50,
@@ -628,7 +628,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 453,
+      "test": 454,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -798,7 +798,9 @@
         "packages/os/tests/trace-sites-history-endpoint-contract.test.ts",
         "packages/os/tests/trace-sites-runtime-boundary.test.ts",
         "packages/os/assets/vendor/observability-traces-v38/**",
-        "packages/os/tests/fixtures/trace-persistence-runtime.ts"
+        "packages/os/tests/fixtures/trace-persistence-runtime.ts",
+        "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+        "packages/os/tests/runtime-bundle-managed-site-assets.test.ts"
       ],
       "tests": [
         {
@@ -814,7 +816,8 @@
             "tests/trace-history-redaction.test.ts",
             "tests/trace-site-inspector-os-owned.test.ts",
             "tests/observability-traces-site.test.ts",
-            "tests/redaction.test.ts"
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts"
           ]
         },
         {
@@ -3212,6 +3215,11 @@
     },
     {
       "path": "packages/os/tests/repo-default-config.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

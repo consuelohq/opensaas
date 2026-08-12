@@ -103,6 +103,7 @@ resumed task session: `tsk_4e5fd8c23e86`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 - `packages/os/tests/install-edge-site-publisher.test.ts`
 - `packages/os/tests/observability-traces-site.test.ts`
+- `packages/os/tests/runtime-bundle-managed-site-assets.test.ts`
 - `packages/os/tests/security-gateway.test.ts`
 - `packages/os/tests/trace-site-inspector-os-owned.test.ts`
 - `packages/os/tests/trace-sites-history-endpoint-contract.test.ts`
@@ -138,6 +139,7 @@ resumed task session: `tsk_4e5fd8c23e86`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 - `packages/os/tests/install-edge-site-publisher.test.ts`
 - `packages/os/tests/observability-traces-site.test.ts`
+- `packages/os/tests/runtime-bundle-managed-site-assets.test.ts`
 - `packages/os/tests/security-gateway.test.ts`
 - `packages/os/tests/trace-site-inspector-os-owned.test.ts`
 - `packages/os/tests/trace-sites-history-endpoint-contract.test.ts`
@@ -168,6 +170,7 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-12 00:13:02 fs.trash: `.task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/staged-home`
 - 2026-08-12 00:40:55 fs.write: `packages/os/tests/trace-site-inspector-os-owned.test.ts`
 - 2026-08-12 00:57:46 fs.write: `packages/os/tests/trace-sites-history-endpoint-contract.test.ts`
+- 2026-08-12 01:29:01 fs.write: `packages/os/tests/runtime-bundle-managed-site-assets.test.ts`
 - maintained by tooling
 
 ## workspace-owned: validation evidence
@@ -182,6 +185,8 @@ resumed task session: `tsk_4e5fd8c23e86`
 - 2026-08-12 01:06:58 `verify`: passed — OK
 - 2026-08-12 01:16:27 `review.run`: passed — OK
 - 2026-08-12 01:17:01 `verify`: passed — OK
+- 2026-08-12 01:34:50 `review.run`: passed — OK
+- 2026-08-12 01:35:08 `verify`: passed — OK
 
 ## key decisions
 
@@ -264,11 +269,13 @@ bun run task:finish
 - `packages/os/scripts/lib/workspace-node-heartbeat-client.ts`
 - `packages/os/scripts/workspace-node-heartbeat.ts`
 - `packages/os/tests/artifacts-legacy-contract.test.ts`
+- `packages/os/tests/distribution/runtime-bundle.test.ts`
 - `packages/os/tests/finish-line-lifecycle-contract.test.ts`
 - `packages/os/tests/fixtures/trace-persistence-runtime.ts`
 - `packages/os/tests/install-edge-site-publisher.test.ts`
 - `packages/os/tests/observability-traces-site.test.ts`
 - `packages/os/tests/redaction.test.ts`
+- `packages/os/tests/runtime-bundle-managed-site-assets.test.ts`
 - `packages/os/tests/sites-cli.test.ts`
 - `packages/os/tests/trace-gateway-workspace-host.test.ts`
 - `packages/os/tests/trace-history-redaction.test.ts`
@@ -279,6 +286,7 @@ bun run task:finish
 - `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
 - `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
 - `packages/workspace/package.json`
+- `packages/workspace/scripts/github.js`
 - `packages/workspace/scripts/review.js`
 - `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/scripts/trace-site-inspector/pagination-browser.ts`
@@ -292,13 +300,16 @@ bun run task:finish
 - `security-gateway.ts`
 - `stream/os`
 
-### Reconciled selected-suite verification
+### Runtime-bundle v38 asset closure evidence
 
-- After the stream merge, the broad auto `@consuelo/os package test` initially reappeared because v38 vendor JS and the focused reload/credential-scrub files were not all owned by explicit critical rules. Extended the Trace rule to own the complete v38 vendor bundle/runtime fixture and added a focused lifecycle scrub rule; the broad unsafe package suite is no longer selected.
-- The stream worker-pool Caddy implementation made one old finish-line assertion stale. Updated that focused contract to assert the current round-robin/readiness proxy shape and, critically, the absence of response/read/write execution timeouts. TDD reproduced the stale assertion before the test reconciliation.
-- Final branch-selected safe suites all pass against `origin/stream/os`: selector 11/11; Trace gateway/Trace Burn 37/37; TraceStore runtime boundary 3/3; snapshot publisher 7/7; route preservation/integration 23/23; lifecycle legacy-MCP scrub 10/10.
+- Fixed the clean-host/new-user distribution defect from PR CI: all eight assets actually consumed by `buildObservabilityTracesSite()` are now discovered and classified as `managed-site-template` in the customer runtime bundle.
+- Rebuilt the OS-owned Trace inspector runtime with Bun `--minify`. This removes Bun's absolute dependency-source comments while preserving browser behavior; the resulting `inspector.js` is 49,547 bytes, has no machine-specific absolute path, and contains no deprecated Workspace Trace inspector dependency.
+- Safe TDD `runtime-bundle-managed-site-assets.test.ts` is green 3/3: classification, portable browser artifact, and real release-fingerprint inclusion.
+- Updated the explicit critical Trace verification rule so changes to runtime-bundle distribution and this asset-closure test stay covered without selecting the unsafe broad OS package suite. Final selected safe verification is green: selector 11/11; Trace gateway/Trace Burn including asset closure 40/40; TraceStore boundary 3/3; publisher 7/7; route preservation/integration 23/23; lifecycle scrub 10/10.
+- OS typecheck, public Astro build, and `git diff --check` all pass after the distribution fix. This closes the Linux/macOS CI failure where a clean install could not open `assets/vendor/observability-traces-v38/template.html`.
 
-### Post-reconciliation review and verify
+### Runtime-bundle follow-up final validation
 
-- Strict review against current `origin/stream/os`: 26 task files reviewed, static rules + ESLint + typecheck + spec compliance, 0 task issues, 0 blockers, 0 must-fix findings.
-- Typed full verify after reconciliation: `passed=true`, `publishValid=true`; review passed and DB guard passed with only the expected route-seed database-script warning and no DB findings. The verify facade compared against the still-unpushed remote task head, so the authoritative task-delta review is the separate strict review against `origin/stream/os`; both are green.
+- Strict review against `origin/stream/os` after the CI-discovered clean-host fix: 28 task files reviewed, 0 issues, 0 blockers, 0 must-fix findings.
+- Typed full verify for the post-CI delta: `passed=true`, `publishValid=true`; review and DB guards are green.
+- The safe branch-selected suite is fully green after making tests caller-CWD/minification independent: selector 11/11; Trace gateway/Trace Burn + runtime asset closure 40/40; TraceStore 3/3; publisher 7/7; route preservation/integration 23/23; lifecycle scrub 10/10.

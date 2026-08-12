@@ -58,9 +58,16 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('/gateway/traces/recent');
     expect(html).toContain("credentials:'same-origin'");
     expect(html).toContain('includeRawPayload');
-    expect(html).toContain('installTracePaginationTransport');
-    expect(html).toContain('installLivePolling');
-    expect(html).toContain('traceLiveUrl');
+    const browserSource = [
+      'browser.ts',
+      'pagination-browser.ts',
+      'virtual-list-browser.ts',
+    ]
+      .map((name) => readFileSync(resolve(osTraceInspectorDir, name), 'utf8'))
+      .join('\n');
+    expect(browserSource).toContain('installTracePaginationTransport');
+    expect(browserSource).toContain('installLivePolling');
+    expect(browserSource).toContain('traceLiveUrl');
 
     expect(html).not.toContain('/trace-burn-intelligence/_astro/');
     expect(html).not.toContain('<script src="https://');
