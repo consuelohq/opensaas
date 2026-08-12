@@ -183,13 +183,22 @@ describe('OS steering execution recording', () => {
       updatedAt: '2026-08-11T00:00:00.000Z',
     }, null, 2)}\n`);
 
-    const { steering } = runOsSnippet<{ steering: string }>(home, `
+    const { first, second } = runOsSnippet<{ first: string; second: string }>(home, `
+      const fs = (await import('node:fs')).default;
       const { getSteering } = await import('./scripts/os.ts');
-      process.stdout.write(JSON.stringify({ steering: getSteering() }));
+      const overlayPath = ${JSON.stringify(path.join(overridesDir, 'manifest.overlay.json'))};
+      const first = getSteering();
+      const overlay = JSON.parse(fs.readFileSync(overlayPath, 'utf8'));
+      overlay.disabledSkills = [];
+      overlay.updatedAt = '2026-08-11T00:01:00.000Z';
+      fs.writeFileSync(overlayPath, JSON.stringify(overlay, null, 2) + '\\n');
+      const second = getSteering();
+      process.stdout.write(JSON.stringify({ first, second }));
     `);
 
-    expect(steering).toContain('"name": "enabled-branch-planner"');
-    expect(steering).not.toContain('disabled-branch-planner');
+    expect(first).toContain('"name": "enabled-branch-planner"');
+    expect(first).not.toContain('disabled-branch-planner');
+    expect(second).toContain('"name": "disabled-branch-planner"');
   });
 
   it('includes preserved custom skills from the current installed index', () => {
@@ -270,6 +279,271 @@ describe('OS steering execution recording', () => {
     expect(first.indexOf('# system_prompt.md')).toBeLessThan(first.indexOf('# operator-notes.md'));
     expect(second).toContain('updated system body');
     expect(second).not.toContain('local system body');
+  });
+
+  it('reuses an unchanged steering snapshot without rereading authoritative sources', () => {
+    const home = makeHome();
+    const userSteeringDir = path.join(
+      String(process.env.CONSUELO_USER_HOME),
+      'Consuelo',
+      'Steering',
+    );
+    const skillsDir = path.join(home, 'skills');
+    const overridesDir = path.join(home, 'security', 'overrides');
+    fs.mkdirSync(userSteeringDir, { recursive: true });
+    fs.mkdirSync(skillsDir, { recursive: true });
+    fs.mkdirSync(overridesDir, { recursive: true });
+    fs.writeFileSync(path.join(userSteeringDir, 'system_prompt.md'), '# Cached local steering\n\ncache-source-marker\n');
+    fs.writeFileSync(path.join(skillsDir, 'skills.json'), `${JSON.stringify({
+      version: 1,
+      skills: [{
+        name: 'cached-skill',
+        title: 'Cached Skill',
+        description: 'Skill catalog cache marker.',
+        trigger: 'Invoke for cache tests.',
+        entrypoint: 'SKILL.md',
+        load: { type: 'resource', path: 'skills/cached-skill/SKILL.md' },
+        status: 'active',
+      }],
+    }, null, 2)}\n`);
+    fs.writeFileSync(path.join(overridesDir, 'manifest.overlay.json'), `${JSON.stringify({
+      version: 1,
+      disabledSkills: [],
+      disabledTools: [],
+      disabledWorkflows: [],
+      updatedAt: '2026-08-11T00:00:00.000Z',
+    }, null, 2)}\n`);
+
+    const result = runOsSnippet<{ same: boolean; reads: string[] }>(home, `
+      const fs = (await import('node:fs')).default;
+      const path = await import('node:path');
+      const { getSteering } = await import('./scripts/os.ts');
+      const { getPackageRoot } = await import('./scripts/lib/manifest.ts');
+      const first = getSteering();
+      const packageRoot = getPackageRoot();
+      const targets = new Set([
+        path.resolve(packageRoot, 'steering', 'system_prompt.md'),
+        path.resolve(process.env.CONSUELO_USER_HOME, 'Consuelo', 'Steering', 'system_prompt.md'),
+        path.resolve(process.env.CONSUELO_HOME, 'skills', 'skills.json'),
+        path.resolve(process.env.CONSUELO_HOME, 'security', 'overrides', 'manifest.overlay.json'),
+        path.resolve(packageRoot, 'manifests', 'generated', 'core.manifest.json'),
+      ]);
+      const originalReadFileSync = fs.readFileSync;
+      const reads = [];
+      fs.readFileSync = function(filePath, ...args) {
+        const resolved = path.resolve(String(filePath));
+        if (targets.has(resolved)) reads.push(resolved);
+        return originalReadFileSync.call(fs, filePath, ...args);
+      };
+      const second = getSteering();
+      fs.readFileSync = originalReadFileSync;
+      process.stdout.write(JSON.stringify({ same: first === second, reads }));
+    `);
+
+    expect(result.same).toBe(true);
+    expect(result.reads).toEqual([]);
+  });
+
+  it('invalidates the snapshot when the selected skill index changes', () => {
+    const home = makeHome();
+    const componentsDir = path.join(home, 'components');
+    fs.mkdirSync(componentsDir, { recursive: true });
+    const installedPath = path.join(componentsDir, 'installed-skills.json');
+    const writeIndex = (name: string, description: string) => {
+      fs.writeFileSync(installedPath, `${JSON.stringify({
+        schemaVersion: 1,
+        kind: 'consuelo-installed-skill-index',
+        sourceBundle: { bundleId: 'sha256:fixture', version: '0.0.0-test' },
+        selected: [{
+          id: name,
+          kind: 'skill',
+          ownership: 'bundled-managed',
+          sourcePath: `skills/${name}`,
+          contentHash: `fixture-${name}`,
+          name,
+          title: name,
+          description,
+          trigger: `Invoke ${name}.`,
+          entrypoint: 'SKILL.md',
+          load: { type: 'resource', path: `skills/${name}/SKILL.md` },
+          status: 'active',
+        }],
+        legacyCustom: [],
+      }, null, 2)}\n`);
+    };
+    writeIndex('selected-skill-v1', 'selected skill first revision');
+
+    const result = runOsSnippet<{ first: string; second: string }>(home, `
+      const fs = (await import('node:fs')).default;
+      const { getSteering } = await import('./scripts/os.ts');
+      const first = getSteering();
+      const installedPath = ${JSON.stringify(installedPath)};
+      const next = JSON.parse(fs.readFileSync(installedPath, 'utf8'));
+      next.selected = [{
+        ...next.selected[0],
+        id: 'selected-skill-v2',
+        name: 'selected-skill-v2',
+        title: 'selected-skill-v2',
+        sourcePath: 'skills/selected-skill-v2',
+        contentHash: 'fixture-selected-skill-v2',
+        description: 'selected skill second revision',
+        trigger: 'Invoke selected-skill-v2.',
+        load: { type: 'resource', path: 'skills/selected-skill-v2/SKILL.md' },
+      }];
+      fs.writeFileSync(installedPath, JSON.stringify(next, null, 2) + '\\n');
+      const second = getSteering();
+      process.stdout.write(JSON.stringify({ first, second }));
+    `);
+
+    expect(result.first).toContain('selected-skill-v1');
+    expect(result.second).toContain('selected-skill-v2');
+    expect(result.second).not.toContain('selected-skill-v1');
+  });
+
+  it('invalidates the snapshot when custom skill metadata changes', () => {
+    const home = makeHome();
+    const componentsDir = path.join(home, 'components');
+    const customDir = path.join(home, 'skills', 'custom-cache-skill');
+    fs.mkdirSync(componentsDir, { recursive: true });
+    fs.mkdirSync(customDir, { recursive: true });
+    const customMetadataPath = path.join(customDir, 'skill.json');
+    fs.writeFileSync(customMetadataPath, `${JSON.stringify({
+      name: 'custom-cache-skill',
+      title: 'Custom Cache Skill',
+      description: 'custom metadata revision one',
+      trigger: 'Invoke custom cache skill.',
+      entrypoint: 'SKILL.md',
+      load: { type: 'resource', path: 'skills/custom-cache-skill/SKILL.md' },
+      status: 'active',
+    }, null, 2)}\n`);
+    fs.writeFileSync(path.join(componentsDir, 'installed-skills.json'), `${JSON.stringify({
+      schemaVersion: 1,
+      kind: 'consuelo-installed-skill-index',
+      sourceBundle: { bundleId: 'sha256:fixture', version: '0.0.0-test' },
+      selected: [],
+      legacyCustom: [{
+        id: 'custom-cache-skill',
+        kind: 'skill',
+        ownership: 'custom',
+        legacyPath: 'skills/custom-cache-skill',
+        migrationRequired: true,
+      }],
+    }, null, 2)}\n`);
+
+    const result = runOsSnippet<{ first: string; second: string }>(home, `
+      const fs = (await import('node:fs')).default;
+      const { getSteering } = await import('./scripts/os.ts');
+      const first = getSteering();
+      const customMetadataPath = ${JSON.stringify(customMetadataPath)};
+      const next = JSON.parse(fs.readFileSync(customMetadataPath, 'utf8'));
+      next.description = 'custom metadata revision two';
+      fs.writeFileSync(customMetadataPath, JSON.stringify(next, null, 2) + '\\n');
+      const second = getSteering();
+      process.stdout.write(JSON.stringify({ first, second }));
+    `);
+
+    expect(result.first).toContain('custom metadata revision one');
+    expect(result.second).toContain('custom metadata revision two');
+    expect(result.second).not.toContain('custom metadata revision one');
+  });
+
+  it('forces an authoritative snapshot rebuild for refresh-steering', () => {
+    const home = makeHome();
+    const steeringDir = path.join(String(process.env.CONSUELO_USER_HOME), 'Consuelo', 'Steering');
+    fs.mkdirSync(steeringDir, { recursive: true });
+    fs.writeFileSync(path.join(steeringDir, 'system_prompt.md'), '# Refresh cache test\n\nrefresh-cache-marker\n');
+
+    const result = runOsSnippet<{ same: boolean; reads: string[] }>(home, `
+      const fs = (await import('node:fs')).default;
+      const path = await import('node:path');
+      const { executeRefreshSteering, getSteering } = await import('./scripts/os.ts');
+      const first = getSteering();
+      const target = path.resolve(process.env.CONSUELO_USER_HOME, 'Consuelo', 'Steering', 'system_prompt.md');
+      const originalReadFileSync = fs.readFileSync;
+      const reads = [];
+      fs.readFileSync = function(filePath, ...args) {
+        if (path.resolve(String(filePath)) === target) reads.push(target);
+        return originalReadFileSync.call(fs, filePath, ...args);
+      };
+      const refreshed = executeRefreshSteering(
+        'authoritative cache refresh required',
+        undefined,
+        { callerKey: 'cache-refresh-test', now: () => 4_000_000 },
+      );
+      fs.readFileSync = originalReadFileSync;
+      process.stdout.write(JSON.stringify({ same: first === refreshed, reads }));
+    `);
+
+    expect(result.same).toBe(true);
+    expect(result.reads.length).toBeGreaterThan(0);
+  });
+
+  it('keeps the bundled skills registry as the final steering fallback', () => {
+    const home = makeHome();
+    const { steering } = runOsSnippet<{ steering: string }>(home, `
+      const { getSteering } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({ steering: getSteering() }));
+    `);
+
+    expect(steering).toContain('"source": "bundled"');
+    expect(steering).toContain('"name": "branch"');
+  });
+
+  it('does not poison the cache when a snapshot build fails', () => {
+    const home = makeHome();
+    const steeringDir = path.join(String(process.env.CONSUELO_USER_HOME), 'Consuelo', 'Steering');
+    const systemPromptPath = path.join(steeringDir, 'system_prompt.md');
+    fs.mkdirSync(systemPromptPath, { recursive: true });
+
+    const result = runOsSnippet<{ failed: boolean; second: string }>(home, `
+      const fs = (await import('node:fs')).default;
+      const { getSteering } = await import('./scripts/os.ts');
+      const systemPromptPath = ${JSON.stringify(systemPromptPath)};
+      let failed = false;
+      try {
+        getSteering();
+      } catch {
+        failed = true;
+      }
+      fs.rmdirSync(systemPromptPath);
+      fs.writeFileSync(systemPromptPath, '# Recovered steering\\n\\nrecovered-steering-marker\\n');
+      const second = getSteering();
+      process.stdout.write(JSON.stringify({ failed, second }));
+    `);
+
+    expect(result.failed).toBe(true);
+    expect(result.second).toContain('recovered-steering-marker');
+  });
+
+  it('isolates cached snapshots by runtime home and visible steering root', () => {
+    const homeA = makeHome();
+    const userHomeA = String(process.env.CONSUELO_USER_HOME);
+    const homeB = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-steering-'));
+    const userHomeB = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-steering-user-'));
+    homes.push(homeB);
+    userHomes.push(userHomeB);
+    const steeringA = path.join(userHomeA, 'Consuelo', 'Steering');
+    const steeringB = path.join(userHomeB, 'Consuelo', 'Steering');
+    fs.mkdirSync(steeringA, { recursive: true });
+    fs.mkdirSync(steeringB, { recursive: true });
+    fs.writeFileSync(path.join(steeringA, 'system_prompt.md'), '# A\n\nworkspace-a-marker\n');
+    fs.writeFileSync(path.join(steeringB, 'system_prompt.md'), '# B\n\nworkspace-b-marker\n');
+
+    const result = runOsSnippet<{ first: string; second: string }>(homeA, `
+      const { getSteering } = await import('./scripts/os.ts');
+      process.env.CONSUELO_HOME = ${JSON.stringify(homeA)};
+      process.env.CONSUELO_USER_HOME = ${JSON.stringify(userHomeA)};
+      const first = getSteering();
+      process.env.CONSUELO_HOME = ${JSON.stringify(homeB)};
+      process.env.CONSUELO_USER_HOME = ${JSON.stringify(userHomeB)};
+      const second = getSteering();
+      process.stdout.write(JSON.stringify({ first, second }));
+    `);
+
+    expect(result.first).toContain('workspace-a-marker');
+    expect(result.first).not.toContain('workspace-b-marker');
+    expect(result.second).toContain('workspace-b-marker');
+    expect(result.second).not.toContain('workspace-a-marker');
   });
 
   it('records get-steering with metadata and full steering body', () => {
