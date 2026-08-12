@@ -44,8 +44,8 @@ started: 2026-08-10
 
 ## files changed
 
-- `packages/os/scripts/lib/subagent/lifecycle.ts`
-- `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+- `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/tests/subagent-orchestration-contract.test.ts`
 
 
 ## red evidence before production implementation
@@ -129,8 +129,6 @@ started: 2026-08-10
 
 ## workspace-owned: validation evidence
 
-- 2026-08-11 21:08:22 `review.run`: passed — OK
-- 2026-08-11 21:08:36 `verify`: passed — OK
 - 2026-08-11 21:08:55 `verify`: passed — OK
 - 2026-08-11 21:15:20 `review.run`: passed — OK
 - 2026-08-11 21:15:31 `verify`: passed — OK
@@ -159,6 +157,8 @@ started: 2026-08-10
 - 2026-08-11 22:21:29 `review.run`: passed — OK
 - 2026-08-11 22:21:43 `verify`: passed — OK
 - 2026-08-11 22:21:59 `verify`: passed — OK
+- 2026-08-12 03:10:56 `verify`: passed — OK
+- 2026-08-12 03:13:41 `verify`: passed — OK
 
 ## key decisions
 
@@ -1295,3 +1295,15 @@ Test-first contract before production edits:
 - Next: normal verify stamp, confirm remote head remains 14ccd507, explicit-file task.push of lifecycle.ts + lifecycle regression test only. Do not task.pr until exact new SHA has terminal-green CI and fresh Codex review with no actionable findings.
 
 - 2026-08-11 22:21:53 append: `.task/workspace-agents/repair-subagent-orchestration-contract/workpad.md`
+
+
+## grok durable runner repair
+- Confirmed PR #1820's original durable lifecycle routed only Codex; Grok remained on direct runSubagentProcess and was vulnerable to OS node lifecycle interruption.
+- Added a focused red regression test for a Grok run that requires a durable runId, completion state, detached capability, and persisted state.json.
+- Reworked Grok execution to stage instructions and start/wait through the existing durable runner with requestId idempotency, bounded timeout, durable logs, and attachment-compatible state.
+- Updated Grok capability metadata to advertise detachedExecution; retained edit=false and read-only CLI denies.
+- Red: new Grok test failed before implementation because no durable runId was returned.
+- Green: focused subagent suite passed 4 files / 40 tests; OS typecheck passed; git diff --check passed.
+- One earlier parallel-suite run had an unrelated ENOTEMPTY cleanup race in an existing fingerprint test; rerunning the orchestration file passed 16/16, and the final four-file run passed 40/40.
+
+- 2026-08-12 03:10:06 apply-patch: `packages/os/tests/subagent-orchestration-contract.test.ts`

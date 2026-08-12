@@ -73,11 +73,60 @@ function writeFakeCodex(root: string): { executable: string; argsPath: string; s
   return { executable, argsPath, spawnPath, promptPath };
 }
 
+function writeFakeGrok(root: string): { executable: string } {
+  const binDir = join(root, 'bin');
+  mkdirSync(binDir, { recursive: true });
+  const executable = join(binDir, 'grok');
+  writeFileSync(executable, [
+    '#!/bin/sh',
+    'if [ "$1" = "--help" ]; then',
+    '  printf "%s\n" "Usage: grok [OPTIONS]" "--permission-mode <mode>" "--max-turns <n>" "--deny <tool>"',
+    '  exit 0',
+    'fi',
+    'if [ -n "$GROK_SLEEP" ]; then sleep "$GROK_SLEEP"; fi',
+    'printf "%s\n" \'{"stopReason":"end_turn","finalMessage":"durable grok complete"}\'',
+  ].join('\n'));
+  chmodSync(executable, 0o700);
+  return { executable };
+}
+
 function input(overrides: ToolInput): ToolInput {
   return { provider: 'codex', policy: 'read', ...overrides };
 }
 
 describe('subagent orchestration contract', () => {
+  it('runs Grok through the durable detached runner', async () => {
+    const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
+    const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+    try {
+      const fake = writeFakeGrok(durableHome);
+      const instructionPath = writeInstruction(worktree);
+      const env = {
+        ...process.env,
+        CONSUELO_HOME: durableHome,
+        WORKSPACE_SUBAGENT_GROK_BIN: fake.executable,
+        PATH: process.env.PATH || '',
+      };
+      const result = await executeTool('subagent', input({
+        provider: 'grok',
+        requestId: 'req_grok_durable',
+        instructionPath,
+      }), options(worktree, env));
+
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('OK');
+      expect(result.data.status).toBe('completed');
+      expect(result.data.capabilities.detachedExecution).toBe(true);
+      expect(result.data.runId).toMatch(/^run_[a-f0-9]{24}$/);
+      expect(result.data.command).toEqual(expect.arrayContaining(['--permission-mode', 'auto', '--max-turns', '32']));
+      if (typeof result.data.runId !== 'string') throw new Error('missing Grok runId');
+      expect(existsSync(join(resolveSubagentRunDirectory(result.data.runId, env), 'state.json'))).toBe(true);
+    } finally {
+      rmSync(durableHome, { recursive: true, force: true });
+      rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
   it('passes the requested Codex model and reasoning effort as exact argv', async () => {
     const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
     const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
@@ -538,7 +587,7 @@ describe('subagent orchestration contract', () => {
     const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
     try {
       const instructionPath = writeInstruction(worktree);
-      for (const provider of ['pi', 'opencode', 'grok'] as const) {
+      for (const provider of ['pi', 'opencode'] as const) {
         const result = await executeTool('subagent', input({
           provider,
           action: 'start',
