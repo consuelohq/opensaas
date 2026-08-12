@@ -85,7 +85,6 @@ function makeHome(html = '<!doctype html><title>Internal workspace</title><main>
     ['index.html'],
     ['artifacts', 'index.html'],
     ['traces', 'index.html'],
-    ['diffs', 'index.html'],
     ['docs', 'index.html'],
     ['configuration', 'index.html'],
     ['tools', 'index.html'],
@@ -132,14 +131,13 @@ contractDescribe('install edge site publisher', () => {
       'https://internal.consuelohq.com/traces',
       'https://internal.consuelohq.com/tracing',
       'https://internal.consuelohq.com/trace-burn-intelligence',
-      'https://internal.consuelohq.com/diffs',
       'https://internal.consuelohq.com/docs',
       'https://internal.consuelohq.com/configuration',
       'https://internal.consuelohq.com/tools',
       'https://internal.consuelohq.com/environments',
       'https://internal.consuelohq.com/secrets',
     ]);
-    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'traces', 'traces', 'traces', 'diffs', 'docs', 'configuration', 'tools', 'environments', 'secrets']);
+    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'traces', 'traces', 'traces', 'docs', 'configuration', 'tools', 'environments', 'secrets']);
     expect(first.routeSql).toMatch(/INSERT INTO workspace_route_registry/i);
     expect(first.routeSql).toMatch(/ON CONFLICT\(hostname\) DO UPDATE/i);
     expect(first.routeSql).not.toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
@@ -150,6 +148,7 @@ contractDescribe('install edge site publisher', () => {
     expect(first.routeSql).toMatch(/r2:\/\/consuelo-sites-snapshots\/sites\/workspace_internal\/launcher\//);
     expect(first.routeSql).toContain('\"pathPrefix\":\"/office\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/diffs\"');
+    expect(first.snapshots.some((snapshot) => snapshot.siteId === 'diffs')).toBe(false);
     expect(first.routeSql).toContain('\"pathPrefix\":\"/docs\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/configuration\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/tools\"');
@@ -255,8 +254,7 @@ contractDescribe('install edge site publisher', () => {
         'https://internal.consuelohq.com/traces',
         'https://internal.consuelohq.com/tracing',
         'https://internal.consuelohq.com/trace-burn-intelligence',
-        'https://internal.consuelohq.com/diffs',
-        'https://internal.consuelohq.com/docs',
+          'https://internal.consuelohq.com/docs',
         'https://internal.consuelohq.com/configuration',
         'https://internal.consuelohq.com/tools',
         'https://internal.consuelohq.com/environments',

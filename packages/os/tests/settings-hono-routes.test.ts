@@ -4,6 +4,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import {
+  createDefaultWorkspaceYamlConfig,
+  resolveConsueloHomeLayout,
+  writeYamlConfig,
+} from '../scripts/lib/consuelo-home';
 import { readFullToolManifest } from '../scripts/lib/manifest';
 import {
   createGatewaySecurityConfig,
@@ -17,6 +22,7 @@ import { handleRequest } from '../scripts/server/app';
 let home = '';
 let config: GatewaySecurityConfig;
 let token: AgentAppToken;
+const workspaceId = 'workspace_configuration_hono';
 
 function writeMinimalOsConfig(): void {
   writeFileSync(join(home, 'config.json'), JSON.stringify({
@@ -59,10 +65,20 @@ beforeEach(() => {
   writeMinimalOsConfig();
   config = createGatewaySecurityConfig({
     home,
-    workspaceId: 'workspace_configuration_hono',
+    workspaceId,
     workspaceSlug: 'configuration-hono',
     workspaceHost: 'configuration-hono.consuelohq.com',
   });
+  writeYamlConfig(
+    resolveConsueloHomeLayout(home).workspaceConfigPath(workspaceId),
+    createDefaultWorkspaceYamlConfig({
+      workspaceId,
+      workspaceName: 'Configuration Hono',
+      workspaceSlug: 'configuration-hono',
+      workspaceHost: 'configuration-hono.consuelohq.com',
+    }),
+    false,
+  );
   token = issueAgentAppToken({
     config,
     callerId: 'caller_configuration_hono',
@@ -126,6 +142,83 @@ describe('Hono Configuration routes', () => {
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
       snapshot: { overlay: { disabledTools: expect.arrayContaining([tool!.name]) } },
+    });
+  });
+
+
+  it('reads and writes source-control repositories through Configuration without secret values', async () => {
+    const initial = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/gateway/configuration/source-control',
+      nonce: 'configuration-source-control-read-nonce',
+    }));
+    expect(initial.status).toBe(200);
+    await expect(initial.json()).resolves.toMatchObject({
+      ok: true,
+      snapshot: { configured: false, repositories: [] },
+    });
+
+    const body = JSON.stringify({
+      defaultRepositoryId: 'app',
+      repositories: [{
+        id: 'app',
+        name: 'App',
+        provider: 'github',
+        nameWithOwner: 'acme/app',
+        defaultBranch: 'main',
+        connectionRef: 'github-app:primary',
+        codeRoots: ['src'],
+      }],
+    });
+    const updated = await handleRequest(signedRequest({
+      method: 'POST',
+      path: '/gateway/configuration/source-control',
+      body,
+      nonce: 'configuration-source-control-write-nonce',
+    }));
+    expect(updated.status).toBe(200);
+    const serialized = await updated.text();
+    expect(serialized).not.toContain('credentialValue');
+    expect(serialized).not.toContain('token');
+    expect(JSON.parse(serialized)).toMatchObject({
+      ok: true,
+      snapshot: {
+        configured: true,
+        defaultRepositoryId: 'app',
+        repositories: [{
+          id: 'app',
+          provider: 'github',
+          nameWithOwner: 'acme/app',
+          connectionRef: 'github-app:primary',
+          codeRoots: ['src'],
+          ready: true,
+        }],
+      },
+    });
+  });
+
+  it('rejects unsafe source-control code roots before writing workspace configuration', async () => {
+    const body = JSON.stringify({
+      defaultRepositoryId: 'app',
+      repositories: [{
+        id: 'app',
+        provider: 'github',
+        nameWithOwner: 'acme/app',
+        defaultBranch: 'main',
+        connectionRef: 'github-app:primary',
+        codeRoots: ['../private'],
+      }],
+    });
+    const response = await handleRequest(signedRequest({
+      method: 'POST',
+      path: '/gateway/configuration/source-control',
+      body,
+      nonce: 'configuration-source-control-unsafe-root-nonce',
+    }));
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_SOURCE_CONTROL_CONFIGURATION' },
     });
   });
 

@@ -105,6 +105,9 @@ contractDescribe('workspace edge route seed contract', () => {
       '/gateway/environments',
       '/gateway/secrets',
       '/gateway/artifacts',
+      '/gateway/diffs/write',
+      '/gateway/diffs',
+      '/diffs',
       '/office',
       '/design-wiki',
     ]);
@@ -224,6 +227,26 @@ contractDescribe('workspace edge route seed contract', () => {
         }),
       }),
       expect.objectContaining({
+        pathPrefix: '/gateway/diffs/write',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'diffs-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/diffs/*',
+          publicSiteRouteFamily: '/diffs/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/diffs',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'diffs-sites-read-endpoints',
+          gatewayRouteFamily: '/gateway/diffs/*',
+          publicSiteRouteFamily: '/diffs/*',
+        }),
+      }),
+      expect.objectContaining({
         pathPrefix: '/office',
         auth: 'public',
         target: { kind: 'redirect', location: '/artifacts', statusCode: 308 },
@@ -263,7 +286,7 @@ contractDescribe('workspace edge route seed contract', () => {
       routes: Array<{
         pathPrefix: string;
         auth: string;
-        target: { kind: string; siteId?: string; manifestKey?: string; versionId?: string };
+        target: { kind: string; siteId?: string; manifestKey?: string; versionId?: string; cachePolicy?: string; serviceName?: string };
       }>;
     };
 
@@ -278,13 +301,22 @@ contractDescribe('workspace edge route seed contract', () => {
       '/traces',
       '/tracing',
       '/trace-burn-intelligence',
-      '/diffs',
       '/docs',
       '/configuration',
       '/tools',
       '/environments',
       '/secrets',
     ]);
+    expect(record.routes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        pathPrefix: '/diffs',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'diffs-sites-read-endpoints',
+        }),
+      }),
+    ]));
     expect(
       snapshotRoutes
         .filter((route) => route.target.siteId === 'traces')
@@ -297,7 +329,7 @@ contractDescribe('workspace edge route seed contract', () => {
     ).toBe(true);
     expect(
       snapshotRoutes
-        .filter((route) => ['artifacts', 'diffs', 'docs'].includes(route.target.siteId ?? ''))
+        .filter((route) => ['artifacts', 'docs'].includes(route.target.siteId ?? ''))
         .every((route) => route.auth === 'public'),
     ).toBe(true);
     expect(snapshotRoutes).toEqual(expect.arrayContaining([
