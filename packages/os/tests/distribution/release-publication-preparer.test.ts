@@ -140,6 +140,9 @@ describe('release publication preparer', () => {
         architecture: bundle.architecture,
         archiveDigest: bundle.archiveDigest,
         bundleId: bundle.bundleId,
+        ...(bundle.manifest.capabilities
+          ? { capabilities: [...bundle.manifest.capabilities] }
+          : {}),
         platform: bundle.platform,
         releaseFingerprint: bundle.manifest.releaseFingerprint,
         sourceCommit: bundle.manifest.sourceCommit,

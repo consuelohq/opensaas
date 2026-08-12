@@ -68,6 +68,99 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
+    const rulesPath = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../test-selection.rules.json',
+    );
+    const rules = JSON.parse(fs.readFileSync(rulesPath, 'utf8'));
+    const rule = rules.rules.find((candidate) => candidate.id === 'trace-site-pagination');
+    const serialized = JSON.stringify(rule);
+
+    expect(rule).toBeDefined();
+    expect(rule.source).toContain('packages/os/scripts/lib/trace-site-inspector/**');
+    expect(serialized).not.toContain('packages/workspace/scripts/trace-site-inspector');
+    expect(serialized).not.toContain('packages/workspace/tests/trace-site-inspector');
+    expect(serialized).not.toContain('trace-gateway-service.test.ts');
+
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/trace-site-inspector/table-formatters.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const suites = data.selectedSuites.filter(
+      (suite) => suite.ruleId === 'trace-site-pagination',
+    );
+
+    expect(data.matchedRules.map((matched) => matched.id)).toContain(
+      'trace-site-pagination',
+    );
+    expect(suites.length).toBeGreaterThan(0);
+    for (const suite of suites) {
+      expect(JSON.stringify(suite.command)).toContain('packages/os');
+      expect(JSON.stringify(suite.command)).not.toContain('packages/workspace');
+    }
+  });
+
+  it('suppresses a broad auto package suite when explicit critical coverage fully owns the changed code', () => {
+    const registryPath = path.join(
+      os.tmpdir(),
+      `test-selection-explicit-coverage-${Date.now()}.json`,
+    );
+    fs.writeFileSync(
+      registryPath,
+      JSON.stringify({
+        version: 1,
+        rules: [
+          {
+            id: 'explicit-critical',
+            source: ['packages/example/src/safe.ts'],
+            critical: true,
+            origin: 'explicit',
+            tests: [{ name: 'focused suite', command: [process.execPath, '-e', ''] }],
+          },
+          {
+            id: 'auto:example:package-test',
+            source: ['packages/example/**'],
+            critical: false,
+            origin: 'auto',
+            tests: [{ name: 'broad package suite', command: [process.execPath, '-e', 'void 0'] }],
+          },
+        ],
+      }),
+    );
+
+    const covered = json(
+      run([
+        'check',
+        '--registry',
+        registryPath,
+        '--changed-file',
+        'packages/example/src/safe.ts',
+        '--json',
+      ]),
+    );
+    expect(covered.selectedSuites.map((suite) => suite.name)).toEqual([
+      'focused suite',
+    ]);
+
+    const uncovered = json(
+      run([
+        'check',
+        '--registry',
+        registryPath,
+        '--changed-file',
+        'packages/example/src/other.ts',
+        '--json',
+      ]),
+    );
+    expect(uncovered.selectedSuites.map((suite) => suite.name)).toContain(
+      'broad package suite',
+    );
+  });
+
   it('uses the API package Jest configuration for API changes', () => {
     const result = run([
       'check',
@@ -228,4 +321,59 @@ describe('test selection registry', () => {
     expect(data.failedSuites[0].status).toBe('failed');
     expect(data.failedSuites[0].error?.code).toBe('ETIMEDOUT');
   });
+  it('can restrict selection to the committed diff so CI ignores install-time workspace noise', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'test-selection-committed-only-'));
+    fs.copyFileSync(script, path.join(repo, 'test-selection.js'));
+    fs.writeFileSync(
+      path.join(repo, 'registry.json'),
+      JSON.stringify({
+        version: 1,
+        rules: [
+          {
+            id: 'noise-suite',
+            source: ['packages/twenty-sdk/**'],
+            tests: [{ name: 'noise suite', command: [process.execPath, '-e', ''] }],
+            critical: false,
+            reason: 'fixture',
+            origin: 'auto',
+          },
+        ],
+      }),
+    );
+    spawnSync('git', ['init'], { cwd: repo });
+    spawnSync('git', ['config', 'user.email', 'ci@example.invalid'], { cwd: repo });
+    spawnSync('git', ['config', 'user.name', 'CI'], { cwd: repo });
+    fs.writeFileSync(path.join(repo, 'README.md'), 'base\n');
+    spawnSync('git', ['add', '.'], { cwd: repo });
+    spawnSync('git', ['commit', '-m', 'base'], { cwd: repo });
+    fs.mkdirSync(path.join(repo, 'packages/twenty-sdk'), { recursive: true });
+    fs.writeFileSync(path.join(repo, 'packages/twenty-sdk/install-noise.ts'), 'export {};\n');
+
+    const result = spawnSync(
+      'node',
+      [path.join(repo, 'test-selection.js'), 'check', '--registry', 'registry.json', '--base', 'HEAD', '--committed-only', '--json'],
+      { cwd: repo, encoding: 'utf8' },
+    );
+    expect(result.status).toBe(0);
+    const data = JSON.parse(result.stdout);
+    expect(data.changedFiles).toEqual([]);
+    expect(data.selectedSuites).toEqual([]);
+  });
+
+
+  it('runs focused Consuelo OS contracts with Bun, OS cwd, and root Vitest', () => {
+    const registry = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'packages/workspace/test-selection.registry.json'), 'utf8'));
+    const rules = new Map(registry.rules.map((rule) => [rule.id, rule]));
+    for (const id of ['os-workspace-edge-rollout', 'os-lifecycle-legacy-mcp-scrub']) {
+      const rule = rules.get(id);
+      expect(rule).toBeTruthy();
+      for (const suite of rule.tests) {
+        const offset = suite.command[0] === 'env' ? 2 : 0;
+        expect(suite.command.slice(offset, offset + 5)).toEqual([
+          'bun', '--cwd', 'packages/os', '../../node_modules/vitest/vitest.mjs', 'run',
+        ]);
+      }
+    }
+  });
+
 });

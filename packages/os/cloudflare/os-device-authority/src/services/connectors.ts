@@ -2,7 +2,11 @@ import {
   createWorkspaceEdgeRouteSeedRecord,
   createWorkspaceEdgeRouteSeedSql,
 } from '../../../../scripts/lib/workspace-edge-route-seed';
-import { upsertWorkspaceNodeTargetInD1 } from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
+import {
+  resolveWorkspaceRouteFromD1,
+  upsertWorkspaceNodeTargetInD1,
+} from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
+import { createConnectorOriginHostname } from '../../../../scripts/lib/connector-origin-hostname';
 import {
   applyWorkspaceCloudflareProvisioning,
   createCloudflareWorkspaceProvisioningClient,
@@ -18,13 +22,16 @@ import type {
   DefaultSiteSnapshot,
   Env,
   Grant,
+  AccountWorkspace,
   WorkspaceConnectorProvisioner,
+  WorkspaceNode,
   WorkspaceRouteRegistryBinding,
 } from '../types';
 import {
   baseDomainFromHost,
   connectorIdFromNodeId,
   host,
+  workspaceIdFromSlug,
 } from '../utils';
 import { grantWorkspace } from './grants';
 
@@ -166,4 +173,75 @@ export async function registerApprovedWorkspaceRoute(input: {
       `workspace route setup failed: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
+}
+
+export async function reconcileWorkspaceRouteState(input: {
+  routeRegistry: WorkspaceRouteRegistryBinding;
+  workspace: AccountWorkspace;
+  nodes: WorkspaceNode[];
+  currentNodeId: string;
+  nowMs: number;
+  defaultSiteSnapshot?: DefaultSiteSnapshot;
+}): Promise<boolean> {
+  const workspaceId =
+    input.workspace.workspaceId ?? workspaceIdFromSlug(input.workspace.workspaceSlug);
+  const baseDomain = baseDomainFromHost(input.workspace.workspaceHost);
+  const snapshot = defaultSiteSnapshot(input.defaultSiteSnapshot);
+  const defaultNodeId = input.workspace.defaultNodeId ?? input.workspace.homeNodeId;
+  const candidates = input.nodes
+    .filter(
+      (node) =>
+        node.workspaceHost === input.workspace.workspaceHost &&
+        (node.state ?? 'active') === 'active' &&
+        typeof node.connectorId === 'string' &&
+        node.connectorId.trim() !== '',
+    )
+    .sort((left, right) => {
+      if (left.nodeId === defaultNodeId) return -1;
+      if (right.nodeId === defaultNodeId) return 1;
+      return left.createdAt - right.createdAt;
+    });
+  if (!candidates.some((node) => node.nodeId === input.currentNodeId)) return false;
+
+  for (const node of candidates) {
+    const connectorId = node.connectorId!.trim();
+    const tunnelOriginUrl = `https://${createConnectorOriginHostname({
+      connectorId,
+      baseDomain,
+    })}`;
+    await upsertWorkspaceNodeTargetInD1(input.routeRegistry, {
+      record: createWorkspaceEdgeRouteSeedRecord({
+        workspaceId,
+        workspaceSlug: input.workspace.workspaceSlug,
+        hostname: input.workspace.workspaceHost,
+        baseDomain,
+        siteSnapshotKey: snapshot.key,
+        siteVersionId: snapshot.versionId,
+        publishedSiteIds: [snapshot.siteId],
+        connectorId,
+        tunnelOriginUrl,
+        localServiceUrl: DEFAULT_CONNECTOR_LOCAL_SERVICE_URL,
+      }),
+      target: {
+        nodeId: node.nodeId,
+        connectorId,
+        connectorStatus: node.connectorStatus ?? 'disconnected',
+        tunnelOriginUrl,
+        state: node.state ?? 'active',
+        lastSeenAt: node.lastSeenAt ?? 0,
+        heartbeatTtlMs: 60_000,
+      },
+      makeDefault: node.nodeId === defaultNodeId,
+      localServiceUrl: DEFAULT_CONNECTOR_LOCAL_SERVICE_URL,
+    });
+  }
+
+  const resolved = await resolveWorkspaceRouteFromD1(input.routeRegistry, {
+    host: input.workspace.workspaceHost,
+    path: '/mcp',
+    nodeId: input.currentNodeId,
+    nowMs: input.nowMs,
+    requireOnlineNode: true,
+  });
+  return resolved.allowed === true && resolved.nodeId === input.currentNodeId;
 }

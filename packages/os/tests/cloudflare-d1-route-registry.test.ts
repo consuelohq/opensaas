@@ -792,4 +792,5 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
       target: { connectorId: 'connector_home' },
     });
   });
+
 });

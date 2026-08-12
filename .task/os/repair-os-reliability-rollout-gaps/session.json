@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5bdd22aa7879",
+  "tmuxSession": "opensaas-os-repair-os-reliability-rollout-gaps-5bdd22aa",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-os-reliability-rollout-gaps",
+  "branch": "task/os/repair-os-reliability-rollout-gaps",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-os-reliability-rollout-gaps",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-os-reliability-rollout-gaps",
+  "prNumber": 1871,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1871",
+  "createdAt": "2026-08-12T03:50:10.944Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-os-reliability-rollout-gaps/.task/os/repair-os-reliability-rollout-gaps/session.json"
+}

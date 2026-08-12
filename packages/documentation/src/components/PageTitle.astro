@@ -28,7 +28,7 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
 
 <div class="page-title-row">
   <h1 id="_top">{title}</h1>
-  <div class="page-actions" data-markdown-href={markdownHref}>
+  <div class="page-actions" data-markdown-href={markdownHref} data-copy-state="">
     <button type="button" class="copy-page" data-page-action="copy">
       <svg class="page-action-icon" aria-hidden="true" viewBox="0 0 24 24">
         <rect x="9" y="9" width="11" height="11" rx="2" />
@@ -38,8 +38,11 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
     </button>
     <details>
       <summary aria-label="More page actions" title="More page actions">
-        <svg aria-hidden="true" viewBox="0 0 24 24">
+        <svg class="page-action-chevron" aria-hidden="true" viewBox="0 0 24 24">
           <path d="m8 10 4 4 4-4" />
+        </svg>
+        <svg class="page-action-success-icon" aria-hidden="true" viewBox="0 0 24 24">
+          <path d="m5 12 4 4L19 6" />
         </svg>
       </summary>
       <div class="page-actions-menu" aria-label="Page actions">
@@ -123,11 +126,20 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
     const details = actions.querySelector('details');
     const status = actions.querySelector('.action-status');
 
+    let copySuccessTimer;
     const setStatus = (message) => {
       if (status) status.textContent = message;
       window.setTimeout(() => {
         if (status?.textContent === message) status.textContent = '';
       }, 3000);
+    };
+
+    const setCopySuccess = () => {
+      actions.dataset.copyState = 'success';
+      if (copySuccessTimer) window.clearTimeout(copySuccessTimer);
+      copySuccessTimer = window.setTimeout(() => {
+        if (actions.dataset.copyState === 'success') actions.dataset.copyState = '';
+      }, 1600);
     };
 
     const copyPage = async () => {
@@ -147,12 +159,15 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
       try {
         await copyPage();
         if (action === 'copy') {
+          setCopySuccess();
           setStatus('Page copied');
         } else if (action === 'chatgpt' || action === 'claude') {
           setStatus(`Page copied — paste it into ${action === 'chatgpt' ? 'ChatGPT' : 'Claude'}`);
         }
         if (details instanceof HTMLDetailsElement) details.open = false;
       } catch {
+        if (copySuccessTimer) window.clearTimeout(copySuccessTimer);
+        actions.dataset.copyState = '';
         setStatus('Could not copy this page');
       }
     });
@@ -287,6 +302,25 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
       stroke-linejoin: round;
       stroke-width: 1.75;
       width: 1rem;
+    }
+
+    .page-action-success-icon {
+      display: none;
+    }
+
+    .page-actions[data-copy-state='success'] .copy-page,
+    .page-actions[data-copy-state='success'] summary {
+      background: #16a34a;
+      border-color: #16a34a;
+      color: #fff;
+    }
+
+    .page-actions[data-copy-state='success'] .page-action-chevron {
+      display: none;
+    }
+
+    .page-actions[data-copy-state='success'] .page-action-success-icon {
+      display: block;
     }
 
     .copy-page:hover,

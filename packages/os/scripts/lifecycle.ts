@@ -7,6 +7,7 @@ import chalk from 'chalk';
 
 import {
   createHttpHealthAcceptance,
+  createConnectorReadinessAcceptance,
   createGcpMetadataReleaseAuthorization,
   createHttpReleaseSource,
   createBunRuntimeMaterializer,
@@ -619,6 +620,10 @@ export const createDefaultLifecycleEngine = (input: {
     health: createHttpHealthAcceptance({
       url: `http://127.0.0.1:${port}/health`,
       expectedName: 'consuelo-os',
+    }),
+    connectorReadiness: createConnectorReadinessAcceptance({
+      home: resolveLifecyclePaths(input.home).home,
+      osRoot,
     }),
     connectivity: {
       async accept() {
