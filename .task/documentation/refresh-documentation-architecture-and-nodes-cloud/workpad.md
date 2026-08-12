@@ -19,7 +19,7 @@ started: 2026-08-12
 - [x] Audit served but unnavigated legacy pages (`developers/**`, `user-guide/**`, legacy `os/**`) and remove or redirect pages that are obsolete rather than keeping zombie documentation.
 - [x] Update `AUTHORING.md` to the current 10-section architecture and the workspace “How to Speak” model: orient first, simple mental model before mechanism, evidence where useful, clear next move.
 - [x] Keep generated Skill Template pages exact; do not editorialize `build/skills/bundled/**`.
-- [ ] Pass focused navigation/content tests, documentation validation, relevant browser regressions, production build, strict review, and full verify.
+- [x] Pass focused navigation/content tests, documentation validation, relevant browser regressions, production build, strict review, and full verify.
 
 ## plan
 
@@ -60,7 +60,7 @@ started: 2026-08-12
 - Hidden stale CRM/Twenty-era developer, user-guide, and legacy OS pages were removed or migrated, with inbound redirects retargeted to current canonical docs.
 - Subagents now have a current Tools page sourced from the merged facade/tool schema instead of the obsolete legacy OS page.
 - Static tests, documentation validation, translation, all browser regression suites, release build, evidence-path audit, package-boundary check against `origin/main`, and strict review are green.
-- Next: publish the task branch, rerun strict review against the committed diff, then hand the PR back for review.
+- Task branch published to PR #1897. Strict review was rerun after publish and remains clean for task-owned findings; the PR is ready for human review.
 
 ## files changed
 
@@ -118,6 +118,7 @@ started: 2026-08-12
 - `bun run docs:check`: passed, including the production Astro build.
 - `bun run docs:deploy -- --build-only`: passed (`build complete. skipping deploy.`).
 - Strict review against `origin/main`: 0 issues in task changes, 0 blocking issues; one pre-existing project note reports no Nx `typecheck` target.
+- Post-publish strict review: 0 task-owned issues, 0 blocking issues, 0 failed suites; same pre-existing missing Nx `typecheck` target note only.
 
 ## key decisions
 
@@ -234,3 +235,5 @@ bun run task:finish
 - `packages/os/tools/subagent/schema.ts`
 
 - 2026-08-12 19:36:10 apply-patch: `.task/documentation/refresh-documentation-architecture-and-nodes-cloud/workpad.md`
+
+- 2026-08-12 19:37:21 apply-patch: `.task/documentation/refresh-documentation-architecture-and-nodes-cloud/workpad.md`
