@@ -5,11 +5,12 @@ import { join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildWorkspaceToolManifest, generateWorkspaceToolManifest } from '../scripts/generate-tool-manifest';
+import { getInputSchema, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 
 type JsonObject = Record<string, unknown>;
 
 const packageRoot = join(import.meta.dirname, '..');
-const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'core.manifest.json');
+const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'generated', 'core.manifest.json');
 const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
 
 const expectedDescriptions = {
@@ -56,6 +57,8 @@ const oldContextToolNames = [
   'context.search',
   'context.trace',
 ] as const;
+
+const workspaceOnlyCoreToolNames = ['context'] as const;
 
 const retainedCoreToolNames = [
   'batch',
@@ -171,10 +174,12 @@ describe('workspace tool manifest generator', () => {
     const osCore = JSON.parse(readFileSync(osCoreManifestPath, 'utf8')) as { tools: Array<{ name: string }> };
     const workspaceSource = readJsonArray('tooling/tool-manifest.json');
     const workspaceNames = new Set(workspaceSource.map((entry) => String(entry.name)));
-    const expectedCoreNames = osCore.tools
-      .map((tool) => tool.name)
-      .filter((name) => workspaceNames.has(name))
-      .sort();
+    const expectedCoreNames = [
+      ...osCore.tools
+        .map((tool) => tool.name)
+        .filter((name) => workspaceNames.has(name)),
+      ...workspaceOnlyCoreToolNames,
+    ].sort();
 
     const registry = buildWorkspaceToolManifest({ write: false });
     const coreNames = names(registry.core.tools);
@@ -247,6 +252,38 @@ describe('workspace tool manifest generator', () => {
       expect(entry.definition.sessionRequired).toBe(true);
       expect(entry.definition.command.branchMode).toBe('required');
     }
+  });
+
+  it('should keep task.pr command metadata aligned when the CLI exposes the workpad escape hatch', () => {
+    // Arrange
+    const schema = getInputSchema('TaskPrInput');
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    const generatedTypes = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+
+    // Act
+    const parsed = schema?.safeParse({ ackWorkpadIncomplete: true, repo: 'example/private-repo' });
+    const command = taskPr?.definition.command;
+
+    // Assert
+    expect(parsed?.success).toBe(true);
+    if (!parsed?.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true, repo: 'example/private-repo' }));
+    expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(schemaTypeSignatures.TaskPrInput).toContain('repo?: string');
+    expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('repo?: string');
+    expect(command).toMatchObject({ script: 'task:pr' });
+    expect(command?.arguments).toContainEqual({
+      source: 'ackWorkpadIncomplete',
+      flag: '--ack-workpad-incomplete',
+      kind: 'boolean',
+    });
+    expect(command?.arguments).toContainEqual({
+      source: 'repo',
+      flag: '--repo',
+      kind: 'value',
+    });
   });
 
   it('writes full and core manifests to override output paths', () => {

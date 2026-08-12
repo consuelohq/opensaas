@@ -6,15 +6,29 @@ import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { z } from 'zod';
 
 const DEFAULT_CONSUELO_HOME = '~/.consuelo';
-const DEFAULT_PROJECT_ID = 'opensaas';
-const DEFAULT_PROJECT_REPO = 'consuelohq/opensaas';
 const DEFAULT_BRANCH = 'main';
+
+const sourceControlCodeRootSchema = z.string().min(1).transform((value) => value.trim()).refine((value) => {
+  const normalized = value;
+  if (
+    normalized === '.'
+    || normalized.startsWith('/')
+    || normalized.endsWith('/')
+    || normalized.includes('\\')
+  ) {
+    return false;
+  }
+  return normalized.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..');
+}, 'code root must be a repository-relative path without dot segments');
 
 const projectSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).optional(),
   repo: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/),
   defaultBranch: z.string().min(1).default(DEFAULT_BRANCH),
+  provider: z.string().min(1).default('github'),
+  connectionRef: z.string().min(1).optional(),
+  codeRoots: z.array(sourceControlCodeRootSchema).optional(),
   localPaths: z.record(z.string(), z.string()).optional(),
   worktreeRoot: z.union([z.string(), z.record(z.string(), z.string())]).optional(),
 }).strict();
@@ -197,10 +211,17 @@ function formatValidationError(filePath: string, error: z.ZodError): Error {
   return new Error(`${path.basename(filePath)} failed validation: ${issues}`);
 }
 
-export function loadWorkspaceYamlConfig(filePath: string): ConsueloWorkspaceYamlConfig {
-  const result = workspaceYamlConfigSchema.safeParse(parseYamlFile(filePath));
-  if (!result.success) throw formatValidationError(filePath, result.error);
+export function validateWorkspaceYamlConfig(
+  value: unknown,
+  sourceName = 'workspace.yaml',
+): ConsueloWorkspaceYamlConfig {
+  const result = workspaceYamlConfigSchema.safeParse(value);
+  if (!result.success) throw formatValidationError(sourceName, result.error);
   return result.data;
+}
+
+export function loadWorkspaceYamlConfig(filePath: string): ConsueloWorkspaceYamlConfig {
+  return validateWorkspaceYamlConfig(parseYamlFile(filePath), filePath);
 }
 
 export function loadGlobalYamlConfig(filePath: string): ConsueloGlobalYamlConfig {
@@ -298,15 +319,9 @@ export function createDefaultWorkspaceYamlConfig(input: {
       host: input.workspaceHost,
     },
     defaults: {
-      project: DEFAULT_PROJECT_ID,
       node: 'local',
     },
-    projects: [{
-      id: DEFAULT_PROJECT_ID,
-      name: 'OpenSaaS',
-      repo: DEFAULT_PROJECT_REPO,
-      defaultBranch: DEFAULT_BRANCH,
-    }],
+    projects: [],
     routing: {},
     policy: { allowedAgents: [] },
     sites: {},

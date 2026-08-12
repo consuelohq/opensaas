@@ -53,6 +53,7 @@ restart_window_seconds="${WORKSPACE_WATCHDOG_RESTART_WINDOW_SECONDS:-600}"
 local_port="${WORKSPACE_WATCHDOG_LOCAL_PORT:-${WORKSPACE_DAEMON_PORT:-${PORT:-46321}}}"
 local_health_url="${WORKSPACE_WATCHDOG_LOCAL_URL:-http://127.0.0.1:${local_port}/health}"
 consuelo_home="${CONSUELO_HOME:-${WORKSPACE_DAEMON_CONSUELO_HOME:-${HOME:-/Users/$(id -un)}/.consuelo}}"
+consuelo_cli="${WORKSPACE_WATCHDOG_CONSUELO_CLI:-$consuelo_home/bin/consuelo}"
 default_state_dir="$consuelo_home/node/runtime/watchdog"
 state_dir="${WORKSPACE_WATCHDOG_STATE_DIR:-$default_state_dir}"
 launch_domain="gui/$(id -u)"
@@ -215,6 +216,36 @@ prune_restart_history() {
   mv "$temporary_file" "$history_file"
 }
 
+restart_workspace() {
+  if [ ! -x "$consuelo_cli" ]; then
+    log "restart command failed for $workspace_label; canonical Consuelo CLI is missing or not executable at $consuelo_cli"
+    return 1
+  fi
+  if ! CONSUELO_HOME="$consuelo_home" "$consuelo_cli" restart --quiet; then
+    log "restart command failed for $workspace_label; canonical Consuelo restart returned non-zero"
+    return 1
+  fi
+}
+
+restart_launchd_label() {
+  local label="$1"
+  if ! launchctl print "$launch_domain/$label" >/dev/null 2>&1; then
+    local plist="${HOME:-/Users/$(id -un)}/Library/LaunchAgents/${label}.plist"
+    if [ ! -f "$plist" ]; then
+      log "restart command failed for $label; launchd label is missing and $plist is not installed"
+      return 1
+    fi
+    if ! launchctl bootstrap "$launch_domain" "$plist"; then
+      log "restart command failed for $label; launchd could not bootstrap $plist"
+      return 1
+    fi
+  fi
+  if ! launchctl kickstart -k "$launch_domain/$label"; then
+    log "restart command failed for $label; launchd will remain the primary process supervisor"
+    return 1
+  fi
+}
+
 maybe_restart() {
   local label="$1"
   local reason="$2"
@@ -247,9 +278,11 @@ maybe_restart() {
   printf '%s\n' "$now" > "$stamp_file"
   rm -f "$degraded_file"
   log "restarting $label because $reason"
-  if ! launchctl kickstart -k "$launch_domain/$label"; then
-    log "restart command failed for $label; launchd will remain the primary process supervisor"
+  if [ "$label" = "$workspace_label" ]; then
+    restart_workspace || true
+    return 0
   fi
+  restart_launchd_label "$label" || true
 }
 
 external_health_url="$(derive_external_health_url || true)"

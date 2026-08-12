@@ -17,8 +17,14 @@ import {
 } from './manifest';
 import { resolveOverlayHome } from './manifest-overlay';
 import {
+  claimGatewayReplayNonce,
+  readGatewayCredentialLastUsedAt,
+  recordGatewayCredentialUsage,
+} from './runtime-state';
+import {
   grantsRequiredScope,
   normalizeGrantedScopes,
+  resolveToolActionCategory,
 } from './tool-scope-authorization';
 import { PLACEHOLDER_WORKSPACE_ID } from './unenrolled-placeholder-identity';
 import { verifyWorkspaceEdgeNodeRequest } from './workspace-edge-node-auth';
@@ -290,6 +296,7 @@ function publicTokenFromStored(
 
 function credentialStatusFromStored(
   token: StoredToken,
+  lastUsedAt: string | undefined = token.lastUsedAt,
 ): AgentAppCredentialStatus {
   return {
     tokenId: token.tokenId,
@@ -307,7 +314,7 @@ function credentialStatusFromStored(
     updatedAt: token.updatedAt,
     ...(token.rotatedAt ? { rotatedAt: token.rotatedAt } : {}),
     ...(token.revokedAt ? { revokedAt: token.revokedAt } : {}),
-    ...(token.lastUsedAt ? { lastUsedAt: token.lastUsedAt } : {}),
+    ...(lastUsedAt ? { lastUsedAt } : {}),
     ...(token.rotationOfTokenId
       ? { rotationOfTokenId: token.rotationOfTokenId }
       : {}),
@@ -500,15 +507,6 @@ function normalizeStoredTokens(
   return normalized;
 }
 
-function pruneSeenNonces(stored: StoredAuthConfig, nowTime: number): void {
-  const cutoffTime = nowTime - MAX_TIMESTAMP_SKEW_MS;
-  for (const [nonce, record] of Object.entries(stored.seenNonces)) {
-    const seenTime = Date.parse(record.seenAt);
-    if (!Number.isFinite(seenTime) || seenTime < cutoffTime)
-      delete stored.seenNonces[nonce];
-  }
-}
-
 function writeStoredAuth(
   config: GatewaySecurityConfig,
   stored: StoredAuthConfig,
@@ -518,6 +516,45 @@ function writeStoredAuth(
 
 function homeFromGeneratedAuthPath(generatedAuthPath: string): string {
   return path.dirname(path.dirname(path.dirname(generatedAuthPath)));
+}
+
+function consueloHomeFromGeneratedAuthPath(generatedAuthPath: string): string {
+  const securityHome = homeFromGeneratedAuthPath(generatedAuthPath);
+  return path.basename(securityHome) === 'node'
+    ? path.dirname(securityHome)
+    : securityHome;
+}
+
+function isLegacyNonceActive(seenAt: string | undefined, nowTime: number): boolean {
+  if (!seenAt || !Number.isFinite(nowTime)) return false;
+  const seenTime = Date.parse(seenAt);
+  return Number.isFinite(seenTime) &&
+    seenTime >= nowTime - MAX_TIMESTAMP_SKEW_MS &&
+    seenTime <= nowTime;
+}
+
+function latestTimestamp(left?: string, right?: string | null): string | undefined {
+  if (!left) return right ?? undefined;
+  if (!right) return left;
+  const leftTime = Date.parse(left);
+  const rightTime = Date.parse(right);
+  if (!Number.isFinite(leftTime)) return right;
+  if (!Number.isFinite(rightTime)) return left;
+  return rightTime >= leftTime ? right : left;
+}
+
+function credentialStatusForConfig(
+  config: GatewaySecurityConfig,
+  token: StoredToken,
+): AgentAppCredentialStatus {
+  const runtimeLastUsedAt = readGatewayCredentialLastUsedAt({
+    home: consueloHomeFromGeneratedAuthPath(config.generatedAuthPath),
+    tokenId: token.tokenId,
+  });
+  return credentialStatusFromStored(
+    token,
+    latestTimestamp(token.lastUsedAt, runtimeLastUsedAt),
+  );
 }
 
 function recordCredentialAuditEvent(
@@ -625,17 +662,6 @@ const DANGEROUS_TOOL_NAMES = new Set([
 ]);
 
 const ELEVATED_OS_PERMISSIONS = new Set(['execute', 'external', 'admin']);
-
-function resolveToolActionCategory(
-  toolName: string,
-  toolInput: unknown,
-): 'read' | 'write' | 'dangerous' | null {
-  if (toolName !== 'mac.process') return null;
-
-  return isJsonObject(toolInput) && toolInput.action === 'list'
-    ? 'read'
-    : 'dangerous';
-}
 
 function activeToolManifestForScope(): ReturnType<typeof readFullToolManifest> {
   const home = resolveOverlayHome();
@@ -768,7 +794,7 @@ function requirePrivateUpstream(upstream: {
   if (!privateHosts.has(upstream.host)) {
     throw new Error('Gateway upstream must be a private localhost server.');
   }
-  if (!Number.isInteger(upstream.port) || upstream.port <= 0) {
+  if (!Number.isInteger(upstream.port) || upstream.port <= 0 || upstream.port > 65_535) {
     throw new Error('Gateway upstream port must be valid.');
   }
 }
@@ -785,6 +811,7 @@ export function createGatewaySecurityConfig(input: {
   workspaceSlug: string;
   workspaceHost: string;
   upstreamPort?: number;
+  upstreamPorts?: number[];
   ingressPort?: number;
   mtls?: { enabled: boolean; caFile: string };
   edgeProxy?: { nodeId: string; connectorId: string; signingSecret: string };
@@ -792,6 +819,12 @@ export function createGatewaySecurityConfig(input: {
   ensureSecurityDirs(input.home);
   const generatedAuthPath = authPathForHome(input.home);
   const upstream = { host: '127.0.0.1', port: input.upstreamPort ?? 46321 };
+  const upstreams = [...new Map(
+    [
+      upstream,
+      ...(input.upstreamPorts ?? []).map((port) => ({ host: '127.0.0.1', port })),
+    ].map((candidate) => [`${candidate.host}:${candidate.port}`, candidate]),
+  ).values()];
   const publicGateway = createPublicGatewayMetadata({
     workspaceHost: input.workspaceHost,
     upstream,
@@ -886,6 +919,7 @@ export function createGatewaySecurityConfig(input: {
       workspaceHost: input.workspaceHost,
       ingressPort: input.ingressPort,
       upstream,
+      upstreams,
       ...(input.mtls ? { mtls: input.mtls } : {}),
     }),
     { mode: 0o600 },
@@ -961,11 +995,16 @@ export function verifyWorkspaceEdgeProxyRequest(input: {
   if (!edgeProxy || edgeProxy.version !== 1 || !edgeProxy.signingSecret) {
     return safeError(401, 'EDGE_AUTH_NOT_CONFIGURED', 'Workspace edge authentication is not configured for this node.');
   }
-  const cutoff = Date.parse(input.now) - MAX_TIMESTAMP_SKEW_MS;
-  for (const [nonce, seenAt] of Object.entries(edgeProxy.seenNonces ?? {})) {
-    const seenMs = Date.parse(seenAt);
-    if (!Number.isFinite(seenMs) || seenMs < cutoff) delete edgeProxy.seenNonces[nonce];
+  const nowTime = Date.parse(input.now);
+  if (!Number.isFinite(nowTime)) {
+    return safeError(
+      401,
+      'EDGE_SIGNATURE_EXPIRED',
+      'Workspace edge signature timestamp is invalid.',
+    );
   }
+  const replayHome = consueloHomeFromGeneratedAuthPath(input.config.generatedAuthPath);
+  const replayScope = `edge:${stored.workspaceId}:${edgeProxy.nodeId}:${edgeProxy.connectorId}`;
   const result = verifyWorkspaceEdgeNodeRequest({
     signingSecret: edgeProxy.signingSecret,
     workspaceId: stored.workspaceId,
@@ -976,14 +1015,21 @@ export function verifyWorkspaceEdgeProxyRequest(input: {
     pathWithSearch: input.pathWithSearch,
     body: input.body,
     headers: input.headers,
-    nowMs: Date.parse(input.now),
-    nonceSeen: (nonce) => Boolean(edgeProxy.seenNonces[nonce]),
+    nowMs: nowTime,
+    nonceSeen: (nonce) =>
+      isLegacyNonceActive(edgeProxy.seenNonces?.[nonce], nowTime),
   });
   if (!result.ok) return safeError(result.status, result.code, result.message);
-  edgeProxy.seenNonces[result.nonce] = input.now;
-  edgeProxy.updatedAt = input.now;
-  stored.edgeProxy = edgeProxy;
-  writeStoredAuth(input.config, stored);
+  const claimed = claimGatewayReplayNonce({
+    home: replayHome,
+    scope: replayScope,
+    nonce: result.nonce,
+    nowMs: nowTime,
+    windowMs: MAX_TIMESTAMP_SKEW_MS,
+  });
+  if (!claimed) {
+    return safeError(401, 'EDGE_NONCE_REPLAY', 'Workspace edge nonce has already been used.');
+  }
   return {
     ok: true,
     caller: {
@@ -1128,7 +1174,7 @@ export function listAgentAppCredentialStatuses(input: {
 }): AgentAppCredentialStatus[] {
   const stored = readStoredAuth(input.config);
   return Object.values(stored.tokens)
-    .map(credentialStatusFromStored)
+    .map((token) => credentialStatusForConfig(input.config, token))
     .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
 }
 
@@ -1138,7 +1184,7 @@ export function getAgentAppCredentialStatus(input: {
 }): AgentAppCredentialStatus | null {
   const stored = readStoredAuth(input.config);
   const token = stored.tokens[input.tokenId];
-  return token ? credentialStatusFromStored(token) : null;
+  return token ? credentialStatusForConfig(input.config, token) : null;
 }
 
 export function updateAgentAppTokenScopes(input: {
@@ -1160,7 +1206,7 @@ export function updateAgentAppTokenScopes(input: {
     token.scopes.length === scopes.length &&
     token.scopes.every((scope, index) => scope === scopes[index])
   ) {
-    return credentialStatusFromStored(token);
+    return credentialStatusForConfig(input.config, token);
   }
 
   const updated: StoredToken = {
@@ -1176,7 +1222,7 @@ export function updateAgentAppTokenScopes(input: {
   );
   stored.tokens[input.tokenId] = updated;
   writeStoredAuth(input.config, stored);
-  return credentialStatusFromStored(updated);
+  return credentialStatusForConfig(input.config, updated);
 }
 
 export function signMachineRequest(input: {
@@ -1418,8 +1464,10 @@ export function verifyMachineRequest(input: {
     });
   }
 
-  pruneSeenNonces(stored, nowTime);
-  if (stored.seenNonces[nonce]) {
+  const replayHome = consueloHomeFromGeneratedAuthPath(input.config.generatedAuthPath);
+  const replayScope = `machine:${token.workspaceId}:${token.tokenId}`;
+  const legacyNonce = stored.seenNonces[nonce];
+  if (isLegacyNonceActive(legacyNonce?.seenAt, nowTime)) {
     return denyCredentialUse({
       config: input.config,
       token,
@@ -1482,10 +1530,24 @@ export function verifyMachineRequest(input: {
     });
   }
 
-  const verifiedAt = new Date(nowTime).toISOString();
-  stored.seenNonces[nonce] = { tokenId, seenAt: verifiedAt };
-  token.lastUsedAt = verifiedAt;
-  token.updatedAt = verifiedAt;
+  const claimed = claimGatewayReplayNonce({
+    home: replayHome,
+    scope: replayScope,
+    nonce,
+    nowMs: nowTime,
+    windowMs: MAX_TIMESTAMP_SKEW_MS,
+  });
+  if (!claimed) {
+    return denyCredentialUse({
+      config: input.config,
+      token,
+      status: 401,
+      code: 'REPLAYED_NONCE',
+      message: 'Gateway nonce has already been used.',
+      decision: 'replayed_nonce',
+      route: input.path,
+    });
+  }
   recordCredentialAuditEvent(
     input.config,
     token,
@@ -1494,7 +1556,11 @@ export function verifyMachineRequest(input: {
     'allowed',
     input.path,
   );
-  writeStoredAuth(input.config, stored);
+  recordGatewayCredentialUsage({
+    home: replayHome,
+    tokenId: token.tokenId,
+    nowMs: nowTime,
+  });
   return {
     ok: true,
     caller: {
@@ -1578,9 +1644,6 @@ export function verifyBearerMcpRequest(input: {
       route: input.path,
     });
   }
-  const verifiedAt = new Date(nowTime).toISOString();
-  token.lastUsedAt = verifiedAt;
-  token.updatedAt = verifiedAt;
   recordCredentialAuditEvent(
     input.config,
     token,
@@ -1589,7 +1652,11 @@ export function verifyBearerMcpRequest(input: {
     'allowed',
     input.path,
   );
-  writeStoredAuth(input.config, stored);
+  recordGatewayCredentialUsage({
+    home: consueloHomeFromGeneratedAuthPath(input.config.generatedAuthPath),
+    tokenId: token.tokenId,
+    nowMs: nowTime,
+  });
   return {
     ok: true,
     caller: {
@@ -1609,27 +1676,28 @@ export function renderCaddyGatewayConfig(input: {
   workspaceHost: string;
   ingressPort?: number;
   upstream: { host: string; port: number };
+  upstreams?: Array<{ host: string; port: number }>;
   mtls?: { enabled: boolean; caFile: string };
 }): string {
-  requirePrivateUpstream(input.upstream);
+  const upstreams = [...new Map(
+    [input.upstream, ...(input.upstreams ?? [])].map((candidate) => [`${candidate.host}:${candidate.port}`, candidate]),
+  ).values()];
   const ingressPort = input.ingressPort ?? 46320;
   requirePrivateUpstream({ host: '127.0.0.1', port: ingressPort });
-  if (
-    input.upstream.port === ingressPort &&
-    ['127.0.0.1', 'localhost', '::1'].includes(
-      input.upstream.host.toLowerCase(),
-    )
-  ) {
-    throw new Error(
-      'Caddy ingress and local upstream ports must differ to prevent a proxy loop',
-    );
+  for (const upstream of upstreams) {
+    requirePrivateUpstream(upstream);
+    if (upstream.port === ingressPort) {
+      throw new Error(
+        'Caddy ingress and local upstream ports must differ to prevent a proxy loop',
+      );
+    }
   }
   if (input.mtls?.enabled) {
     throw new Error(
       'Caddy mTLS cannot be enabled on the plaintext loopback ingress',
     );
   }
-  return `{\n  admin off\n  auto_https off\n}\n\nhttp://:${ingressPort} {\n  bind 127.0.0.1\n  @workspace_host host ${input.workspaceHost}\n  handle @workspace_host {\n    encode zstd gzip\n    request_body {\n      max_size 4MB\n    }\n    header {\n      -Server\n      X-Content-Type-Options \"nosniff\"\n      Referrer-Policy \"no-referrer\"\n      Permissions-Policy \"camera=(), microphone=(), geolocation=()\"\n    }\n    reverse_proxy ${input.upstream.host}:${input.upstream.port} {\n      header_up -X-Consuelo-Edge-Signature\n      header_up -X-Consuelo-Edge-Cache-Authority\n      header_up -X-Consuelo-Route\n      header_up -X-Consuelo-Surface\n      header_up -X-Consuelo-Connector-Id\n      transport http {\n        dial_timeout 5s\n        response_header_timeout 15s\n        read_timeout 60s\n        write_timeout 60s\n      }\n    }\n  }\n  respond \"Misdirected Request\" 421\n}\n`;
+  return `{\n  admin off\n  auto_https off\n}\n\nhttp://:${ingressPort} {\n  bind 127.0.0.1\n  @workspace_host host ${input.workspaceHost}\n  handle @workspace_host {\n    encode zstd gzip\n    request_body {\n      max_size 4MB\n    }\n    header {\n      -Server\n      X-Content-Type-Options \"nosniff\"\n      Referrer-Policy \"no-referrer\"\n      Permissions-Policy \"camera=(), microphone=(), geolocation=()\"\n    }\n    reverse_proxy ${upstreams.map((candidate) => `${candidate.host}:${candidate.port}`).join(' ')} {\n      lb_policy round_robin\n      health_uri /ready\n      health_interval 2s\n      health_timeout 1s\n      lb_try_duration 10s\n      lb_try_interval 100ms\n      header_up -X-Consuelo-Edge-Signature\n      header_up -X-Consuelo-Edge-Cache-Authority\n      header_up -X-Consuelo-Route\n      header_up -X-Consuelo-Surface\n      header_up -X-Consuelo-Connector-Id\n      transport http {\n        dial_timeout 5s\n        response_header_timeout 30s\n        read_timeout 1h\n        write_timeout 1h\n      }\n    }\n  }\n  respond \"Misdirected Request\" 421\n}\n`;
 }
 
 export function createPublicRouteRegistry(input: {

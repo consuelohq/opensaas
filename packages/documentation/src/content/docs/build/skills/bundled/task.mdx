@@ -1,0 +1,52 @@
+---
+title: Task Workflow
+description: "Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context → task.start → workpad → validate → task.push → task.pr → task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/<area> → main review PR instead of the intermediate task PR."
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/task/skill.json
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: Bundled metadata and registry inclusion for `task` were verified on 2026-08-11.
+  - source: packages/os/skills/task/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The current guidance entrypoint and declared load contract were inspected on 2026-08-11.
+---
+
+`task` is a bundled Consuelo OS skill. Runs one scoped repository task from stream orientation through taskSession/worktree work, test-first implementation, verification, publishing, stream PR promotion, and cleanup.
+
+## When to use it
+
+Invoke when the user asks to start, run, validate, publish, promote, inspect, recover, or finish repo/task-scoped work in a stream.
+
+Typical requests include:
+
+- “Start this scoped repo task on the approved stream.”
+- “Validate, publish, and finish the current task.”
+
+## Enable it
+
+```bash
+consuelo add skill task
+```
+
+Run `consuelo add skill` without a name to choose from the skills that are not currently selected. Remove it with:
+
+```bash
+consuelo remove skill task
+```
+
+## What the agent loads
+
+The installed metadata points to `skills/task/SKILL.md` in the immutable OS runtime. The compact steering catalog advertises the active skill by name and description; the full `SKILL.md` body is loaded only when the workflow applies.
+
+Metadata for this skill currently declares permission `guidance` and `requiresApproval: no`. Those fields describe the skill contract; individual tools called by the skill still enforce their own authorization and safety rules.
+
+## Boundary
+
+Task Workflow executes one concrete work unit. It should not decide a large epic decomposition that belongs in Branch Planner.
+
+## Verify
+
+After enabling it, confirm `~/Consuelo/Skills/task/SKILL.md` exists and that `task` appears in `<CONSUELO_HOME>/components/installed-skills.json`. A newly bootstrapped agent should then see `task` in the Installed skills portion of steering.

@@ -1,4 +1,10 @@
 import { resolveToolScope } from './security-gateway';
+import {
+  LEGACY_MCP_PROTOCOL_VERSION,
+  MODERN_MCP_PROTOCOL_VERSION,
+  modernMcpRoutingFromBody,
+  stampModernMcpResult,
+} from './mcp-protocol';
 
 type JsonObject = Record<string, unknown>;
 type JsonRpcId = string | number | null;
@@ -35,6 +41,7 @@ type McpGatewayHandlerInput = {
 };
 
 const MCP_READ_METHODS = new Set([
+  'server/discover',
   'initialize',
   'notifications/initialized',
   'ping',
@@ -312,28 +319,48 @@ export async function handleMcpGatewayJsonRpc(
   const request = parseJsonRpcRequest(body);
   if (!request) return jsonRpcError(null, -32600, 'Invalid JSON-RPC request.');
 
+  if (request.method === 'server/discover') {
+    return jsonRpcResult(request.id, stampModernMcpResult({
+      supportedVersions: [
+        MODERN_MCP_PROTOCOL_VERSION,
+        LEGACY_MCP_PROTOCOL_VERSION,
+      ],
+      capabilities: {
+        tools: { listChanged: false },
+        prompts: {},
+        resources: {},
+      },
+    }));
+  }
+
   if (request.method === 'initialize') {
     return jsonRpcResult(request.id, {
-      protocolVersion: '2024-11-05',
+      protocolVersion: LEGACY_MCP_PROTOCOL_VERSION,
       serverInfo: { name: 'consuelo-os-gateway', version: '1.0.0' },
       capabilities: { tools: { listChanged: false }, prompts: {}, resources: {} },
     });
   }
 
+  const result = (value: JsonObject): JsonObject =>
+    jsonRpcResult(
+      request.id,
+      modernMcpRoutingFromBody(body) ? stampModernMcpResult(value) : value,
+    );
+
   if (request.method === 'notifications/initialized' || request.method === 'ping') {
-    return jsonRpcResult(request.id, {});
+    return result({});
   }
 
   if (request.method === 'tools/list') {
-    return jsonRpcResult(request.id, { tools: MCP_TOOL_DESCRIPTORS });
+    return result({ tools: MCP_TOOL_DESCRIPTORS });
   }
 
   if (request.method === 'prompts/list') {
-    return jsonRpcResult(request.id, { prompts: [] });
+    return result({ prompts: [] });
   }
 
   if (request.method === 'resources/list') {
-    return jsonRpcResult(request.id, { resources: [] });
+    return result({ resources: [] });
   }
 
   if (request.method !== 'tools/call') {
@@ -343,7 +370,7 @@ export async function handleMcpGatewayJsonRpc(
   const publicToolName = publicToolNameFromParams(request.params);
   if (publicToolName === 'get_steering' && isEmptyToolArguments(request.params)) {
     const steering = await input.getSteering();
-    return jsonRpcResult(request.id, {
+    return result({
       content: [{ type: 'text', text: steering }],
       isError: false,
     });
@@ -354,7 +381,7 @@ export async function handleMcpGatewayJsonRpc(
     if (!call) return jsonRpcError(request.id, -32602, 'Invalid call arguments.');
 
     const output = await input.executeFacadeTool(call.tool, facadeToolInput(call));
-    return jsonRpcResult(request.id, {
+    return result({
       content: [{ type: 'text', text: outputText(output) }],
       isError: outputIsError(output),
     });

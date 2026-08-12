@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
@@ -355,6 +356,46 @@ describe('tool manifest generator', () => {
 
     expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain(`task.${'call'}`);
     expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain(`task.${'exec'}`);
+  });
+
+  it('should keep task.pr facade input and command mapping aligned when the CLI exposes the workpad escape hatch', () => {
+    // Arrange
+    const schema = getInputSchema('TaskPrInput');
+    const registry = buildToolManifest({ write: false });
+    const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    const generatedTypes = readFileSync(join(import.meta.dirname, '../src/generated/workspace.d.ts'), 'utf8');
+    const taskPrSource = readFileSync(join(packageRoot, 'scripts/task-pr.js'), 'utf8');
+
+    // Act
+    const parsed = schema.safeParse({ ackWorkpadIncomplete: true, repo: 'example/private-repo' });
+    const argumentsList = taskPr?.definition.command?.arguments;
+    const cli = spawnSync(process.execPath, [join(packageRoot, 'scripts/task-pr.js'), '--ack-workpad-incomplete', '--help'], {
+      cwd: packageRoot,
+      encoding: 'utf8',
+    });
+
+    // Assert
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true, repo: 'example/private-repo' }));
+    expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(schemaTypeSignatures.TaskPrInput).toContain('repo?: string');
+    expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('repo?: string');
+    expect(argumentsList).toContainEqual({
+      source: 'ackWorkpadIncomplete',
+      flag: '--ack-workpad-incomplete',
+      kind: 'boolean',
+    });
+    expect(argumentsList).toContainEqual({
+      source: 'repo',
+      flag: '--repo',
+      kind: 'value',
+    });
+    expect(cli.status).toBe(0);
+    expect(cli.stdout).toContain('--ack-workpad-incomplete');
+    expect(taskPrSource).toContain("const { assertWorkpadReady } = require('./lib/task-workpad');");
+    expect(taskPrSource).toContain('ackIncomplete: args.ackWorkpadIncomplete');
   });
 
   it('keeps OS task start wired to the OS runtime surface', () => {

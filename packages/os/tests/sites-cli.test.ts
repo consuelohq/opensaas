@@ -212,7 +212,6 @@ describe('Sites CLI', () => {
       'aria-label="Copy MCP URL"',
       'support@consuelohq.com',
       'Systems Engineer',
-      'Go to market',
       'Artifacts',
       'Observability',
       'Code review',
@@ -229,6 +228,7 @@ describe('Sites CLI', () => {
     expect(html.match(/target="_blank"/g)?.length).toBe(1);
     expect(html).toContain('rel="noopener noreferrer"');
     expect(html).not.toContain('Consuelo OS Sites');
+    expect(html).not.toContain('Go to market');
     expect(html).not.toContain('[GTM]');
     expect(html).not.toContain('[Office]');
     expect(html).not.toContain('[Tracing]');
@@ -247,9 +247,10 @@ describe('Sites CLI', () => {
     const refreshResult = runSitesCommand(['refresh', '--json']);
     const html = readFileSync(refreshResult.indexPath, 'utf8');
 
-    for (const route of ['/gtm', '/artifacts', '/observability', '/diffs']) {
+    for (const route of ['/artifacts', '/observability', '/diffs']) {
       expect(html).toContain(`href="https://acme.consuelohq.com${route}"`);
     }
+    expect(html).not.toContain('href="https://acme.consuelohq.com/gtm"');
     expect(html).not.toContain('https://sites.consuelohq.com/');
     expect(html).not.toContain('https://app.consuelohq.com/');
     expect(html).not.toContain('https://internal.consuelohq.com/');

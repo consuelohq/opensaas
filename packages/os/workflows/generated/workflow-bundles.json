@@ -64,6 +64,11 @@
         {
           "event": "tool.postInvoke",
           "workflow": "task",
+          "tool": "task.push"
+        },
+        {
+          "event": "tool.postInvoke",
+          "workflow": "task",
           "tool": "task.pr"
         },
         {
@@ -99,6 +104,37 @@
             "defaultTimeout": 180000,
             "inputSchema": "CodeCallInput",
             "outputSchema": "CodeCallOutput",
+            "search": {
+              "keywords": [
+                "structured",
+                "multi",
+                "summarize",
+                "summary",
+                "packet",
+                "bounded",
+                "transform",
+                "transformation",
+                "rewrite",
+                "codemod",
+                "codegen",
+                "generate",
+                "python",
+                "bun",
+                "bash",
+                "test",
+                "tests",
+                "typecheck",
+                "syntax",
+                "cli",
+                "reproduction",
+                "diagnostic",
+                "json",
+                "script",
+                "scripts",
+                "package",
+                "packages"
+              ]
+            },
             "command": {
               "script": "code-call",
               "branchMode": "none",
@@ -653,6 +689,11 @@
                   "kind": "value"
                 },
                 {
+                  "source": "repo",
+                  "flag": "--repo",
+                  "kind": "value"
+                },
+                {
                   "source": "taskOnly",
                   "flag": "--task-only",
                   "kind": "boolean"
@@ -671,6 +712,11 @@
                   "source": "bodyTemplate",
                   "flag": "--body-template",
                   "kind": "value"
+                },
+                {
+                  "source": "ackWorkpadIncomplete",
+                  "flag": "--ack-workpad-incomplete",
+                  "kind": "boolean"
                 },
                 {
                   "source": "pr",
@@ -728,6 +774,11 @@
                 {
                   "source": "branch",
                   "flag": "--branch",
+                  "kind": "value"
+                },
+                {
+                  "source": "repo",
+                  "flag": "--repo",
                   "kind": "value"
                 },
                 {
@@ -868,7 +919,7 @@
           "source": "tool-discovery",
           "sourcePath": "packages/os/tools/tool-discovery/manifest.ts",
           "category": "tooling",
-          "description": "search workspace tools by intent and return ranked usage guidance",
+          "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
           "core": true,
           "definition": {
             "name": "tools.search",
@@ -876,9 +927,9 @@
               "tools",
               "search"
             ],
-            "description": "search workspace tools by intent and return ranked usage guidance",
+            "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
             "category": "tooling",
-            "underlying": "workspace tools.search",
+            "underlying": "Consuelo OS tools.search",
             "capabilities": {
               "readOnly": true,
               "mutating": false,
@@ -890,6 +941,7 @@
             "outputSchema": "ToolsSearchOutput",
             "command": {
               "script": "tools:search",
+              "executionScope": "runtime",
               "branchMode": "none",
               "jsonFlag": "--json",
               "arguments": [
@@ -919,9 +971,9 @@
                   "kind": "boolean"
                 },
                 {
-                  "source": "noDocs",
-                  "flag": "--no-docs",
-                  "kind": "boolean"
+                  "source": "detail",
+                  "flag": "--detail",
+                  "kind": "value"
                 }
               ]
             },

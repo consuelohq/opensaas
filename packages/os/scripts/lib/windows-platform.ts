@@ -499,7 +499,7 @@ export function createWindowsServiceController(input: {
               bunExecutable: input.bunExecutable,
               consueloHome: paths.home,
               runtimeCurrent: paths.runtimeCurrent,
-              entrypoint: 'scripts/server/main.ts',
+              entrypoint: 'scripts/server/supervisor.ts',
               logs: paths.logs,
             },
             null,

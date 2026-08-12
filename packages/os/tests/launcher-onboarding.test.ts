@@ -37,10 +37,9 @@ describe('launcher onboarding', () => {
     expect(html).not.toContain('href="/configuration"');
     expect(html).not.toContain('<h2 class="section-title">Settings</h2>');
     expect(html).toContain('Sites');
-    expect(html).toContain('Go to market');
+    expect(html).not.toContain('Go to market');
     expect(html).toContain('Artifacts');
     expect(html).toContain('Observability');
-    expect(html).toContain('href="https://internal.consuelohq.com/gtm"');
     expect(html).toContain('href="https://internal.consuelohq.com/artifacts"');
     expect(html).toContain('href="https://internal.consuelohq.com/observability"');
     expect(html).toContain('href="https://internal.consuelohq.com/diffs"');
@@ -108,9 +107,10 @@ describe('launcher onboarding', () => {
       workspaceHostname: 'acme.consuelohq.com',
     });
 
-    for (const path of ['/gtm', '/artifacts', '/observability', '/diffs']) {
+    for (const path of ['/artifacts', '/observability', '/diffs']) {
       expect(html).toContain(`href="https://acme.consuelohq.com${path}"`);
     }
+    expect(html).not.toContain('href="https://acme.consuelohq.com/gtm"');
     expect(html).not.toContain('internal.consuelohq.com');
     expect(html).not.toContain('sites.consuelohq.com');
     expect(html).not.toContain('app.consuelohq.com');

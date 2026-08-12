@@ -1,0 +1,52 @@
+---
+title: Senior Engineer
+description: "Use this skill for any coding, debugging, refactoring, architecture, validation, or task in the repository. This skill is the default engineering mode. Invoke it whenever the assistant is expected to read code, change code, diagnose a bug, design an implementation plan, review a diff, run tests, validate behavior, or prepare a PR."
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/senior-engineer/skill.json
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: Bundled metadata and registry inclusion for `senior-engineer` were verified on 2026-08-11.
+  - source: packages/os/skills/senior-engineer/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The current guidance entrypoint and declared load contract were inspected on 2026-08-11.
+---
+
+`senior-engineer` is a bundled Consuelo OS skill. Provides the default engineering discipline for repository work: evidence-first investigation, architecture judgment, test-first implementation, focused validation, review, and safe publishing.
+
+## When to use it
+
+Use this skill for any coding, debugging, refactoring, architecture, validation, or task in the repository. This skill is the default engineering mode. Invoke it whenever the assistant is expected to read code, change code, diagnose a bug, design an implementation plan, review a diff, run tests, validate behavior, or prepare a PR.
+
+Typical requests include:
+
+- “Debug this regression and ship a focused fix.”
+- “Review this implementation and validate the behavior.”
+
+## Enable it
+
+```bash
+consuelo add skill senior-engineer
+```
+
+Run `consuelo add skill` without a name to choose from the skills that are not currently selected. Remove it with:
+
+```bash
+consuelo remove skill senior-engineer
+```
+
+## What the agent loads
+
+The installed metadata points to `skills/senior-engineer/SKILL.md` in the immutable OS runtime. The compact steering catalog advertises the active skill by name and description; the full `SKILL.md` body is loaded only when the workflow applies.
+
+Metadata for this skill currently declares permission `guidance` and `requiresApproval: no`. Those fields describe the skill contract; individual tools called by the skill still enforce their own authorization and safety rules.
+
+## Boundary
+
+Senior Engineer owns engineering judgment. Task Workflow owns task lifecycle and Branch Planner owns multi-PR decomposition.
+
+## Verify
+
+After enabling it, confirm `~/Consuelo/Skills/senior-engineer/SKILL.md` exists and that `senior-engineer` appears in `<CONSUELO_HOME>/components/installed-skills.json`. A newly bootstrapped agent should then see `senior-engineer` in the Installed skills portion of steering.

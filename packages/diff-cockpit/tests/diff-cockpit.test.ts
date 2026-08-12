@@ -907,13 +907,30 @@ describe('createWorker', () => {
     expect(cacheStore.has(cacheKey)).toBe(false);
   });
 
-  test('routes the homepage to the live PR index shell', async () => {
+  test('does not silently default the standalone homepage to OpenSaaS', async () => {
     const worker = createWorker({ fetcher: async () => Response.json([]) });
     const response = await worker.fetch(new Request('https://diffs.consuelohq.com/'));
     const html = await response.text();
 
     expect(response.status).toBe(200);
     expect(html).toContain('Consuelo Diffs');
+    expect(html).toContain('Configure a default repository');
+    expect(html).toContain('DIFF_COCKPIT_DEFAULT_REPO');
+    expect(html).not.toContain('consuelohq/opensaas');
+  });
+
+  test('routes the standalone homepage to the configured repository shell', async () => {
+    const worker = createWorker({ fetcher: async () => Response.json([]) });
+    const response = await worker.fetch(
+      new Request('https://diffs.consuelohq.com/'),
+      { DIFF_COCKPIT_DEFAULT_REPO: 'acme/app' },
+    );
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain('Consuelo Diffs');
+    expect(html).toContain('acme/app');
+    expect(html).not.toContain('consuelohq/opensaas');
   });
 
 

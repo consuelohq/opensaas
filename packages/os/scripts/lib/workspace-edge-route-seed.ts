@@ -17,6 +17,7 @@ export type WorkspaceEdgeRouteSeedInput = {
   connectorId?: string;
   tunnelOriginUrl?: string;
   localServiceUrl?: string;
+  preserveExistingConnectorState?: boolean;
 };
 
 type WorkspaceEdgeSeedRecord = WorkspaceRouteD1RecordInput & {
@@ -43,6 +44,19 @@ export const WORKSPACE_SITE_SNAPSHOT_IDS = [
 export type WorkspaceSiteSnapshotId =
   (typeof WORKSPACE_SITE_SNAPSHOT_IDS)[number];
 
+const WORKSPACE_PRIVATE_SITE_SNAPSHOT_IDS = new Set<WorkspaceSiteSnapshotId>([
+  'launcher',
+  'traces',
+  'configuration',
+  'tools',
+  'environments',
+  'secrets',
+]);
+
+export const workspaceSiteSnapshotRequiresSession = (
+  siteId: WorkspaceSiteSnapshotId,
+): boolean => WORKSPACE_PRIVATE_SITE_SNAPSHOT_IDS.has(siteId);
+
 const DEFAULT_SITE_ID: WorkspaceSiteSnapshotId = 'launcher';
 const DEFAULT_SITE_VERSION_ID = 'seeded-workspace-site-shell';
 const DEFAULT_SITE_MANIFEST_KEY = `sites/${DEFAULT_WORKSPACE_ID}/${DEFAULT_SITE_ID}/${DEFAULT_SITE_VERSION_ID}/index.html`;
@@ -58,7 +72,6 @@ const SITE_SNAPSHOT_ROUTES: ReadonlyArray<{
   { pathPrefix: '/traces', siteId: 'traces' },
   { pathPrefix: '/tracing', siteId: 'traces' },
   { pathPrefix: '/trace-burn-intelligence', siteId: 'traces' },
-  { pathPrefix: '/diffs', siteId: 'diffs' },
   { pathPrefix: '/docs', siteId: 'docs' },
   { pathPrefix: '/configuration', siteId: 'configuration' },
   { pathPrefix: '/tools', siteId: 'tools' },
@@ -154,10 +167,13 @@ const buildSiteSnapshotRoute = (input: SiteSnapshotRoute & {
   published: boolean;
 }): WorkspaceRouteD1Route => {
   const isLauncher = input.pathPrefix === '/' && input.siteId === 'launcher';
+  const requiresWorkspaceSession = workspaceSiteSnapshotRequiresSession(
+    input.siteId,
+  );
   return {
     surface: 'sites',
     pathPrefix: input.pathPrefix,
-    auth: isLauncher ? 'workspace-session' : 'public',
+    auth: requiresWorkspaceSession ? 'workspace-session' : 'public',
     status: input.published ? 'active' : 'disabled',
     target: {
       kind: 'site-snapshot',
@@ -367,6 +383,45 @@ const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   },
 ];
 
+const buildDiffsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/diffs/write',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'diffs-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/diffs/*',
+      publicSiteRouteFamily: '/diffs/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/gateway/diffs',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'diffs-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/diffs/*',
+      publicSiteRouteFamily: '/diffs/*',
+    },
+  },
+  {
+    surface: 'sites',
+    pathPrefix: '/diffs',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'diffs-sites-read-endpoints',
+      gatewayRouteFamily: '/gateway/diffs/*',
+      publicSiteRouteFamily: '/diffs/*',
+    },
+  },
+];
+
 const buildLegacyConfigurationRedirectRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
@@ -458,6 +513,7 @@ export const createWorkspaceEdgeRouteSeedRecord = (
     ...buildEnvironmentGatewayRoutes(),
     ...buildSecretGatewayRoutes(),
     ...buildArtifactsGatewayRoutes(),
+    ...buildDiffsGatewayRoutes(),
     ...buildLegacyArtifactRedirectRoutes(),
   ];
 
@@ -510,44 +566,173 @@ const createRouteSql = (input: {
   record: WorkspaceEdgeSeedRecord;
   primaryRoute: WorkspaceRouteD1Route;
   connectorTarget: Extract<WorkspaceRouteD1RouteTarget, { kind: 'os-connector' }> | null;
-}): string =>
-  `INSERT OR REPLACE INTO workspace_route_registry (` +
-  [
-    'hostname',
-    'workspace_id',
-    'workspace_slug',
-    'workspace_host',
-    'base_domain',
-    'route_path_prefix',
-    'route_surface',
-    'route_status',
-    'route_target_kind',
-    'target_origin_url',
-    'connector_id',
-    'connector_status',
-    'record_json',
-    'created_at',
-    'updated_at',
-  ].join(', ') +
-  `) VALUES (` +
-  [
-    sqlText(input.record.hostname),
-    sqlText(input.record.workspaceId),
-    sqlText(input.record.workspaceSlug),
-    sqlText(input.record.hostname),
-    sqlText(input.record.baseDomain),
-    sqlText(input.primaryRoute.pathPrefix),
-    sqlText(input.primaryRoute.surface),
-    sqlText(input.primaryRoute.status),
-    sqlText(input.primaryRoute.target.kind),
-    sqlText(getTargetOriginUrl(input.primaryRoute.target)),
-    sqlNullableText(input.connectorTarget?.connectorId ?? null),
-    sqlNullableText(input.connectorTarget?.connectorStatus ?? null),
-    sqlText(JSON.stringify(input.record)),
-    "datetime('now')",
-    "datetime('now')",
-  ].join(', ') +
-  `);`;
+}): string => {
+  const currentRecord = 'workspace_route_registry.record_json';
+  const incomingRecord = 'excluded.record_json';
+  const mergedRoutes = [
+    '(SELECT json_group_array(json(value)) FROM (',
+    `SELECT old_route.value AS value FROM json_each(${currentRecord}, '$.routes') AS old_route`,
+    "WHERE json_extract(old_route.value, '$.target.kind') IN ('os-connector', 'service-upstream')",
+    'AND NOT EXISTS (',
+    `SELECT 1 FROM json_each(${incomingRecord}, '$.routes') AS new_route`,
+    "WHERE json_extract(new_route.value, '$.surface') = json_extract(old_route.value, '$.surface')",
+    "AND json_extract(new_route.value, '$.pathPrefix') = json_extract(old_route.value, '$.pathPrefix')",
+    ')',
+    'UNION ALL',
+    `SELECT new_route.value AS value FROM json_each(${incomingRecord}, '$.routes') AS new_route`,
+    '))',
+  ].join(' ');
+  const mergedRecord = [
+    `json_set(${incomingRecord},`,
+    "'$.defaultNodeId',",
+    `COALESCE(json_extract(${incomingRecord}, '$.defaultNodeId'), json_extract(${currentRecord}, '$.defaultNodeId')),`,
+    "'$.nodeTargets',",
+    `json(COALESCE(json_extract(${incomingRecord}, '$.nodeTargets'), json_extract(${currentRecord}, '$.nodeTargets'), '[]')),`,
+    "'$.routes',",
+    `json(${mergedRoutes}))`,
+  ].join(' ');
+
+  return (
+    `INSERT INTO workspace_route_registry (` +
+    [
+      'hostname',
+      'workspace_id',
+      'workspace_slug',
+      'workspace_host',
+      'base_domain',
+      'route_path_prefix',
+      'route_surface',
+      'route_status',
+      'route_target_kind',
+      'target_origin_url',
+      'connector_id',
+      'connector_status',
+      'record_json',
+      'created_at',
+      'updated_at',
+    ].join(', ') +
+    `) VALUES (` +
+    [
+      sqlText(input.record.hostname),
+      sqlText(input.record.workspaceId),
+      sqlText(input.record.workspaceSlug),
+      sqlText(input.record.hostname),
+      sqlText(input.record.baseDomain),
+      sqlText(input.primaryRoute.pathPrefix),
+      sqlText(input.primaryRoute.surface),
+      sqlText(input.primaryRoute.status),
+      sqlText(input.primaryRoute.target.kind),
+      sqlText(getTargetOriginUrl(input.primaryRoute.target)),
+      sqlNullableText(input.connectorTarget?.connectorId ?? null),
+      sqlNullableText(input.connectorTarget?.connectorStatus ?? null),
+      sqlText(JSON.stringify(input.record)),
+      "datetime('now')",
+      "datetime('now')",
+    ].join(', ') +
+    `) ON CONFLICT(hostname) DO UPDATE SET ` +
+    [
+      'workspace_id = excluded.workspace_id',
+      'workspace_slug = excluded.workspace_slug',
+      'workspace_host = excluded.workspace_host',
+      'base_domain = excluded.base_domain',
+      'route_path_prefix = excluded.route_path_prefix',
+      'route_surface = excluded.route_surface',
+      'route_status = excluded.route_status',
+      'route_target_kind = excluded.route_target_kind',
+      'target_origin_url = excluded.target_origin_url',
+      'connector_id = COALESCE(excluded.connector_id, workspace_route_registry.connector_id)',
+      'connector_status = COALESCE(excluded.connector_status, workspace_route_registry.connector_status)',
+      `record_json = ${mergedRecord}`,
+      "updated_at = datetime('now')",
+    ].join(', ') +
+    ` WHERE COALESCE(json_extract(${currentRecord}, '$.status'), 'active') <> 'revoked';`
+  );
+};
+
+const createPreservingRouteSql = (input: {
+  record: WorkspaceEdgeSeedRecord;
+  primaryRoute: WorkspaceRouteD1Route;
+  connectorTarget: Extract<WorkspaceRouteD1RouteTarget, { kind: 'os-connector' }> | null;
+}): string => {
+  const recordJson = sqlText(JSON.stringify(input.record));
+  const hostname = sqlText(input.record.hostname);
+  const mergedRoutes =
+    `(SELECT json_group_array(json(route_json)) FROM (` +
+    `SELECT incoming_route.value AS route_json ` +
+    `FROM json_each(excluded.record_json, '$.routes') AS incoming_route ` +
+    `UNION ALL ` +
+    `SELECT existing_route.value AS route_json ` +
+    `FROM json_each(workspace_route_registry.record_json, '$.routes') AS existing_route ` +
+    `WHERE json_extract(existing_route.value, '$.target.kind') = 'os-connector' ` +
+    `AND NOT EXISTS (` +
+    `SELECT 1 FROM json_each(excluded.record_json, '$.routes') AS incoming_route ` +
+    `WHERE json_extract(incoming_route.value, '$.surface') = json_extract(existing_route.value, '$.surface') ` +
+    `AND json_extract(incoming_route.value, '$.pathPrefix') = json_extract(existing_route.value, '$.pathPrefix')` +
+    `))` +
+    `)`;
+  const mergedRecord =
+    `json_patch(` +
+    `json_set(excluded.record_json, '$.routes', json(${mergedRoutes})), ` +
+    `json_object(` +
+    `'defaultNodeId', json_extract(workspace_route_registry.record_json, '$.defaultNodeId'), ` +
+    `'nodeTargets', json(json_extract(workspace_route_registry.record_json, '$.nodeTargets'))` +
+    `)` +
+    `)`;
+
+  return (
+    `INSERT INTO workspace_route_registry (` +
+    [
+      'hostname',
+      'workspace_id',
+      'workspace_slug',
+      'workspace_host',
+      'base_domain',
+      'route_path_prefix',
+      'route_surface',
+      'route_status',
+      'route_target_kind',
+      'target_origin_url',
+      'connector_id',
+      'connector_status',
+      'record_json',
+      'created_at',
+      'updated_at',
+    ].join(', ') +
+    `) VALUES (` +
+    [
+      hostname,
+      sqlText(input.record.workspaceId),
+      sqlText(input.record.workspaceSlug),
+      hostname,
+      sqlText(input.record.baseDomain),
+      sqlText(input.primaryRoute.pathPrefix),
+      sqlText(input.primaryRoute.surface),
+      sqlText(input.primaryRoute.status),
+      sqlText(input.primaryRoute.target.kind),
+      sqlText(getTargetOriginUrl(input.primaryRoute.target)),
+      sqlNullableText(input.connectorTarget?.connectorId ?? null),
+      sqlNullableText(input.connectorTarget?.connectorStatus ?? null),
+      recordJson,
+      "datetime('now')",
+      "datetime('now')",
+    ].join(', ') +
+    `) ON CONFLICT(hostname) DO UPDATE SET ` +
+    `workspace_id = excluded.workspace_id, ` +
+    `workspace_slug = excluded.workspace_slug, ` +
+    `workspace_host = excluded.workspace_host, ` +
+    `base_domain = excluded.base_domain, ` +
+    `route_path_prefix = excluded.route_path_prefix, ` +
+    `route_surface = excluded.route_surface, ` +
+    `route_status = excluded.route_status, ` +
+    `route_target_kind = excluded.route_target_kind, ` +
+    `target_origin_url = excluded.target_origin_url, ` +
+    `connector_id = COALESCE(excluded.connector_id, workspace_route_registry.connector_id), ` +
+    `connector_status = COALESCE(excluded.connector_status, workspace_route_registry.connector_status), ` +
+    `record_json = CASE WHEN json_valid(workspace_route_registry.record_json) THEN ${mergedRecord} ELSE excluded.record_json END, ` +
+    `revoked_at = NULL, ` +
+    `updated_at = datetime('now');`
+  );
+};
 
 export const createWorkspaceEdgeRouteSeedSql = (
   input: WorkspaceEdgeRouteSeedInput = {},
@@ -567,7 +752,11 @@ export const createWorkspaceEdgeRouteSeedSql = (
     );
   }
 
-  statements.push(createRouteSql({ record, primaryRoute, connectorTarget }));
+  statements.push(
+    input.preserveExistingConnectorState
+      ? createPreservingRouteSql({ record, primaryRoute, connectorTarget })
+      : createRouteSql({ record, primaryRoute, connectorTarget }),
+  );
 
   return statements.join('\n\n');
 };

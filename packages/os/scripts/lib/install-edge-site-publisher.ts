@@ -66,7 +66,6 @@ const snapshotSites = [
   { siteId: 'traces', pathPrefix: '/traces', relativePath: ['traces', 'index.html'] },
   { siteId: 'traces', pathPrefix: '/tracing', relativePath: ['traces', 'index.html'] },
   { siteId: 'traces', pathPrefix: '/trace-burn-intelligence', relativePath: ['traces', 'index.html'] },
-  { siteId: 'diffs', pathPrefix: '/diffs', relativePath: ['diffs', 'index.html'] },
   { siteId: 'docs', pathPrefix: '/docs', relativePath: ['docs', 'index.html'] },
   { siteId: 'configuration', pathPrefix: '/configuration', relativePath: ['configuration', 'index.html'] },
   { siteId: 'tools', pathPrefix: '/tools', relativePath: ['tools', 'index.html'] },
@@ -114,6 +113,7 @@ export function createWorkspaceEdgeSnapshotPlan(input: PublishInput): WorkspaceE
     siteContentHashes: Object.fromEntries(
       snapshots.map((snapshot) => [snapshot.siteId, snapshot.contentHash]),
     ),
+    preserveExistingConnectorState: true,
   });
   return {
     status: undefined as never,

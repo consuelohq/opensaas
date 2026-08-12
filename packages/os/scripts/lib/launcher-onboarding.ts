@@ -57,7 +57,6 @@ function workspaceHref(hostname: string | null, pathname: string): string {
 
 function workspaceLauncherLinks(hostname: string | null) {
   return [
-    { label: 'Go to market', href: workspaceHref(hostname, '/gtm') },
     { label: 'Artifacts', href: workspaceHref(hostname, '/artifacts') },
     { label: 'Observability', href: workspaceHref(hostname, '/observability') },
     { label: 'Code review', href: workspaceHref(hostname, '/diffs') },

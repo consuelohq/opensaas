@@ -737,6 +737,10 @@
       "status": "os-only-intentional",
       "reason": "scripts/lib/native-lifecycle-client.ts is an intentional OS-owned native lifecycle adapter with no workspace counterpart."
     },
+    "scripts/lib/node-resource-lock.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; same-node browser serialization depends on both facades using the same lock contract."
+    },
     "scripts/lib/nx-projects.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
@@ -978,6 +982,10 @@
     "scripts/lib/verify-run-state.js": {
       "status": "os-only-intentional",
       "reason": "scripts/lib/verify-run-state.js is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
+    },
+    "scripts/lib/worker-pool.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned same-node worker supervisor state machine manages deterministic worker slots, readiness, crash replacement, and bounded draining with no workspace counterpart."
     },
     "scripts/lib/workspace-cloudflare-d1-route-registry.ts": {
       "status": "os-only-intentional",
@@ -1236,6 +1244,14 @@
     "scripts/server/services/trace-gateway.ts": {
       "status": "os-only-intentional",
       "reason": "scripts/server/services/trace-gateway.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
+    },
+    "scripts/server/supervisor.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned node supervisor launches the request worker pool and owns singleton lifecycle sidecars; workspace does not host this runtime topology."
+    },
+    "scripts/server/worker-runtime-state.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned per-worker request accounting and drain state supports readiness and graceful worker retirement with no workspace counterpart."
     },
     "scripts/smoke-workspace-edge.ts": {
       "status": "os-only-intentional",

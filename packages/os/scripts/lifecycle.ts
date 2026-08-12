@@ -2,6 +2,8 @@
 
 import { lstatSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { isCancel, multiselect } from '@clack/prompts';
+import chalk from 'chalk';
 
 import {
   createHttpHealthAcceptance,
@@ -10,6 +12,7 @@ import {
   createBunRuntimeMaterializer,
   createLifecycleEngine,
   createReloadServiceController,
+  lifecycleError,
   lifecycleFailureEnvelope,
   lifecycleReleaseChannels,
   lifecycleSuccessEnvelope,
@@ -25,6 +28,12 @@ import {
 } from './lib/lifecycle';
 import { resolveVisibleUserRoot } from './lib/managed-user-content-release';
 import { createLinuxPlatformAdapter } from './lib/platforms/linux';
+import {
+  applySkillSelectionChange,
+  readSkillSelectionSnapshot,
+  type SkillSelectionAction,
+  type SkillSelectionResult,
+} from './lib/skill-selection';
 import { createWindowsServiceController } from './lib/windows-platform';
 
 export type LifecycleCliIo = {
@@ -35,6 +44,11 @@ export type LifecycleCliIo = {
 export type LifecycleCliDependencies = Partial<LifecycleCliIo> & {
   engine?: LifecycleEngine;
   environment?: NodeJS.ProcessEnv;
+  visibleUserRoot?: string;
+  selectSkills?: (input: {
+    action: SkillSelectionAction;
+    candidates: string[];
+  }) => Promise<string[] | null>;
 };
 
 type ManagedCloudNodeOnboardingDescriptor = {
@@ -63,22 +77,34 @@ type ParsedLifecycleArgs = {
   snoozedUntil?: string;
 };
 
-const HELP = `Consuelo OS lifecycle
+const HELP = `Consuelo OS
 
-Usage:
-  consuelo status [--json] [--quiet]
-  consuelo install [--channel <channel>] [--json] [--quiet]
-  consuelo restart [--json] [--quiet]
-  consuelo update [--channel <channel>] [--check] [--yes] [--json] [--quiet]
-  consuelo channel show [--json]
-  consuelo channel set <channel> [--json]
-  consuelo updates notifications on|off|snooze [--until <iso>] [--json]
-  consuelo repair [--json] [--quiet]
-  consuelo rollback [--dry-run] [--json] [--quiet]
-  consuelo uninstall [--dry-run] [--remove-node] [--remove-user-content] [--json]
-  consuelo dev reset --yes [--dry-run] [--json]
+If no command is specified, Consuelo shows the local OS status.
 
-Channels: stable, beta, canary, dev, nightly
+Usage: consuelo [OPTIONS] [COMMAND] [ARGS]
+
+Commands:
+  status          Show installation and runtime status
+  install         Install and configure Consuelo OS
+  restart         Restart Consuelo OS services
+  update          Check for or install OS updates
+  repair          Repair the current installation
+  rollback        Roll back to the previous verified release
+  add skill       Install bundled skills (picker by default)
+  remove skill    Remove installed bundled skills (picker by default)
+  channel         Show or change the release channel
+  updates         Manage update notification preferences
+  uninstall       Remove Consuelo OS from this machine
+  dev             Development and recovery commands
+  help            Print this message
+
+Options:
+      --json       Machine-readable output
+      --quiet      Suppress human-readable output
+  -h, --help       Print help
+
+Channels:
+  stable, beta, canary, dev, nightly
 `;
 const DEFAULT_RELEASE_BASE_URL = 'https://install.consuelohq.com/os/releases';
 
@@ -272,6 +298,12 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
     case 'uninstall':
       rejectPositionals();
       break;
+    case 'add':
+    case 'remove':
+      if (parsed.positional[0] !== 'skill') {
+        throw new Error(`${parsed.command} requires \`skill [name...]\``);
+      }
+      break;
     case 'dev':
       if (parsed.positional.length !== 1 || parsed.positional[0] !== 'reset') {
         throw new Error('dev requires `reset`');
@@ -322,6 +354,100 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
   if (parsed.snoozedUntil && parsed.command !== 'updates') {
     throw new Error('--until is only valid for update notification snooze');
   }
+}
+
+async function promptForSkills(input: {
+  action: SkillSelectionAction;
+  candidates: string[];
+}): Promise<string[] | null> {
+  try {
+    const selected = await multiselect({
+      message:
+        input.action === 'add' ? 'Select skills to add' : 'Select skills to remove',
+      options: input.candidates.map((name) => ({ value: name, label: name })),
+      required: false,
+    });
+    if (isCancel(selected)) return null;
+    return selected as string[];
+  } catch (error: unknown) {
+    throw new Error('Skill selection prompt failed.', { cause: error });
+  }
+}
+
+function renderSkillSelectionResult(result: SkillSelectionResult): string {
+  if (!result.changed) {
+    return `${chalk.dim('No skill changes needed.')}\n`;
+  }
+  const verb = result.action === 'add' ? 'Added' : 'Removed';
+  const lines = [
+    chalk.green(`✓ ${verb} ${result.changedSkills.length} skill${result.changedSkills.length === 1 ? '' : 's'}`),
+    ...result.changedSkills.map((name) => `  ${chalk.cyan(name)}`),
+  ];
+  if (result.reviewRequired.length > 0) {
+    lines.push(
+      chalk.yellow(
+        `  Preserved local changes for review: ${result.reviewRequired.join(', ')}`,
+      ),
+    );
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+async function runSkillSelectionCli(input: {
+  parsed: ParsedLifecycleArgs;
+  dependencies: LifecycleCliDependencies;
+  stdout: (value: string) => void;
+}): Promise<number> {
+  const action = input.parsed.command as SkillSelectionAction;
+  const snapshot = readSkillSelectionSnapshot(input.parsed.home);
+  let skills = input.parsed.positional.slice(1);
+
+  if (skills.length === 0) {
+    if (input.parsed.json) {
+      throw new Error(
+        `${action} skill requires at least one skill name when --json is used`,
+      );
+    }
+    const candidates = action === 'add' ? snapshot.addable : snapshot.removable;
+    if (candidates.length === 0) {
+      if (!input.parsed.quiet) {
+        input.stdout(
+          action === 'add'
+            ? `${chalk.dim('All bundled skills are already installed.')}\n`
+            : `${chalk.dim('No bundled skills are installed.')}\n`,
+        );
+      }
+      return 0;
+    }
+    const selectSkills = input.dependencies.selectSkills ?? promptForSkills;
+    let selected: string[] | null;
+    try {
+      selected = await selectSkills({ action, candidates });
+    } catch (error: unknown) {
+      throw new Error(`Could not ${action} skill selection.`, { cause: error });
+    }
+    if (selected === null) {
+      if (!input.parsed.quiet) input.stdout(`${chalk.dim('Cancelled.')}\n`);
+      return 0;
+    }
+    skills = selected;
+  }
+
+  const result = applySkillSelectionChange({
+    action,
+    skills,
+    home: input.parsed.home,
+    visibleUserRoot:
+      input.dependencies.visibleUserRoot ?? resolveVisibleUserRoot(),
+  });
+  if (input.parsed.json) {
+    input.stdout(
+      `${JSON.stringify({ ok: true, command: `${action} skill`, result })}\n`,
+    );
+  } else if (!input.parsed.quiet) {
+    input.stdout(renderSkillSelectionResult(result));
+  }
+  return 0;
 }
 
 function parseTrustedReleaseKeyMap(
@@ -439,6 +565,28 @@ export function createDefaultLifecycleServiceController(input: {
   return createReloadServiceController({ osRoot: input.osRoot, platform });
 }
 
+const DEFAULT_ADVISORY_PROCESS_TIMEOUT_MS = 30_000;
+
+export async function waitForAdvisoryProcessExit(
+  child: { exited: Promise<number>; kill(): void },
+  timeoutMs: number,
+): Promise<number | null> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      child.exited,
+      new Promise<null>((resolveTimeout) => {
+        timeout = setTimeout(() => {
+          child.kill();
+          resolveTimeout(null);
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
 export const createDefaultLifecycleEngine = (input: {
   home?: string;
   quiet: boolean;
@@ -472,6 +620,27 @@ export const createDefaultLifecycleEngine = (input: {
       url: `http://127.0.0.1:${port}/health`,
       expectedName: 'consuelo-os',
     }),
+    connectivity: {
+      async accept() {
+        const child = Bun.spawn([
+          process.execPath,
+          resolve(osRoot, 'scripts', 'verify-local-agents.ts'),
+        ], {
+          cwd: osRoot,
+          env: {
+            ...process.env,
+            CONSUELO_HOME: resolveLifecyclePaths(input.home).home,
+          },
+          stdin: 'ignore',
+          stdout: 'ignore',
+          stderr: 'ignore',
+        });
+        return await waitForAdvisoryProcessExit(
+          child,
+          DEFAULT_ADVISORY_PROCESS_TIMEOUT_MS,
+        ) === 0;
+      },
+    },
     progress: input.quiet || input.json ? undefined : input.progress,
     onboarding: async () => {
       try {
@@ -596,13 +765,19 @@ export async function runLifecycleCli(
 
   try {
     const environment = dependencies.environment ?? process.env;
-    if (
-      parsed.command === 'update' &&
-      !parsed.check &&
-      environment.XPC_SERVICE_NAME === 'com.consuelo.system'
-    ) {
-      throw new Error(
-        'Consuelo OS cannot run a synchronous update inside its active daemon process. Run the update from Terminal or through the separate lifecycle process.',
+    if (parsed.command === 'add' || parsed.command === 'remove') {
+      return await runSkillSelectionCli({ parsed, dependencies, stdout });
+    }
+    const runsInsideActiveDaemon =
+      environment.CONSUELO_OS_DAEMON_PROCESS === '1' ||
+      environment.XPC_SERVICE_NAME === 'com.consuelo.system';
+    const mutatesDaemonSynchronously =
+      (parsed.command === 'update' && !parsed.check) ||
+      parsed.command === 'repair';
+    if (runsInsideActiveDaemon && mutatesDaemonSynchronously) {
+      throw lifecycleError(
+        'DAEMON_MUTATION_NOT_ALLOWED',
+        `Consuelo OS cannot run a synchronous ${parsed.command} inside its active daemon process. Run the ${parsed.command} from Terminal or through the separate lifecycle process.`,
       );
     }
     const engine =

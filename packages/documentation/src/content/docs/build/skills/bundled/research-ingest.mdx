@@ -1,0 +1,52 @@
+---
+title: Research Ingest
+description: "Use this skill when the user provides an article, paper, PDF, podcast, video, media link, or local source and wants durable extracted research for discussion, comparison, notes, memory, or follow-up analysis."
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/research-ingest/skill.json
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: Bundled metadata and registry inclusion for `research-ingest` were verified on 2026-08-11.
+  - source: packages/os/skills/research-ingest/SKILL.md
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The current guidance entrypoint and declared load contract were inspected on 2026-08-11.
+---
+
+`research-ingest` is a bundled Consuelo OS skill. Turns a supplied article, paper, PDF, podcast, video, media link, or local source into durable extracted research that can be discussed, compared, and reused later.
+
+## When to use it
+
+Use this skill when the user provides an article, paper, PDF, podcast, video, media link, or local source and wants durable extracted research for discussion, comparison, notes, memory, or follow-up analysis.
+
+Typical requests include:
+
+- “Ingest this paper and turn it into durable notes.”
+- “Learn from this podcast and compare it with our existing research.”
+
+## Enable it
+
+```bash
+consuelo add skill research-ingest
+```
+
+Run `consuelo add skill` without a name to choose from the skills that are not currently selected. Remove it with:
+
+```bash
+consuelo remove skill research-ingest
+```
+
+## What the agent loads
+
+The installed metadata points to `skills/research-ingest/SKILL.md` in the immutable OS runtime. The compact steering catalog advertises the active skill by name and description; the full `SKILL.md` body is loaded only when the workflow applies.
+
+Metadata for this skill currently declares permission `guidance` and `requiresApproval: no`. Those fields describe the skill contract; individual tools called by the skill still enforce their own authorization and safety rules.
+
+## Boundary
+
+Use it when the source itself should become durable research context. Ordinary web discovery does not require a research-ingest packet.
+
+## Verify
+
+After enabling it, confirm `~/Consuelo/Skills/research-ingest/SKILL.md` exists and that `research-ingest` appears in `<CONSUELO_HOME>/components/installed-skills.json`. A newly bootstrapped agent should then see `research-ingest` in the Installed skills portion of steering.

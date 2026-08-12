@@ -28,6 +28,16 @@ function writeExecutable(path: string, contents: string): void {
   chmodSync(path, 0o755);
 }
 
+function installFakeConsuelo(consueloHome: string): void {
+  const binDirectory = join(consueloHome, 'bin');
+  const command = join(binDirectory, 'consuelo');
+  mkdirSync(binDirectory, { recursive: true });
+  writeExecutable(
+    command,
+    '#!/bin/bash\nprintf "%s\\n" "$*" >> "$WATCHDOG_CONSUELO_LOG"\n',
+  );
+}
+
 function run(command: string, args: string[], env: NodeJS.ProcessEnv) {
   return spawnSync(command, args, {
     env,
@@ -170,8 +180,10 @@ describe('macOS runtime service reliability', () => {
     const home = join(fixtureRoot, 'home');
     const consueloHome = join(home, '.consuelo');
     const launchLog = join(fixtureRoot, 'launchctl.log');
+    const consueloLog = join(fixtureRoot, 'consuelo.log');
     mkdirSync(fakeBin, { recursive: true });
     mkdirSync(home, { recursive: true });
+    installFakeConsuelo(consueloHome);
     writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 1\n');
     writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
     writeExecutable(
@@ -189,6 +201,7 @@ describe('macOS runtime service reliability', () => {
       WORKSPACE_WATCHDOG_LOCAL_TCP_FAILURE_THRESHOLD: '2',
       WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
       WATCHDOG_LAUNCH_LOG: launchLog,
+      WATCHDOG_CONSUELO_LOG: consueloLog,
     };
     const watchdog = resolve(osRoot, 'scripts/workspace-watchdog.sh');
 
@@ -198,14 +211,47 @@ describe('macOS runtime service reliability', () => {
     expect(readFileSync(join(stateDirectory, 'local-tcp-failure-count'), 'utf8').trim()).toBe('1');
     expect(existsSync(join(home, 'Library', 'Caches', 'Consuelo'))).toBe(false);
     expect(existsSync(launchLog)).toBe(false);
+    expect(existsSync(consueloLog)).toBe(false);
 
     const second = run('bash', [watchdog], environment);
     expect(second.status, `${second.stdout}\n${second.stderr}`).toBe(0);
     expect(readFileSync(join(stateDirectory, 'local-tcp-failure-count'), 'utf8').trim()).toBe('0');
-    expect(readFileSync(launchLog, 'utf8')).toContain(
-      'kickstart -k gui/',
+    expect(readFileSync(consueloLog, 'utf8').trim()).toBe('restart --quiet');
+    expect(existsSync(launchLog)).toBe(false);
+  });
+
+  it('should delegate missing-label recovery to the canonical Consuelo restart command', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-watchdog-bootstrap-');
+    const fakeBin = join(fixtureRoot, 'bin');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const launchLog = join(fixtureRoot, 'launchctl.log');
+    const consueloLog = join(fixtureRoot, 'consuelo.log');
+    mkdirSync(fakeBin, { recursive: true });
+    mkdirSync(home, { recursive: true });
+    installFakeConsuelo(consueloHome);
+    writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 1\n');
+    writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(
+      join(fakeBin, 'launchctl'),
+      '#!/bin/bash\nprintf "%s\\n" "$*" >> "$WATCHDOG_LAUNCH_LOG"\nif [ "$1" = "print" ]; then exit 113; fi\n',
     );
-    expect(readFileSync(launchLog, 'utf8')).toContain('com.consuelo.system');
+
+    const result = run('bash', [resolve(osRoot, 'scripts/workspace-watchdog.sh')], {
+      ...process.env,
+      HOME: home,
+      CONSUELO_HOME: consueloHome,
+      WORKSPACE_WATCHDOG_PATH: `${fakeBin}:/usr/bin:/bin:/usr/sbin:/sbin`,
+      WORKSPACE_WATCHDOG_DISABLE_EXTERNAL: '1',
+      WORKSPACE_WATCHDOG_LOCAL_TCP_FAILURE_THRESHOLD: '1',
+      WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
+      WATCHDOG_LAUNCH_LOG: launchLog,
+      WATCHDOG_CONSUELO_LOG: consueloLog,
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    expect(readFileSync(consueloLog, 'utf8').trim()).toBe('restart --quiet');
+    expect(existsSync(launchLog)).toBe(false);
   });
 
   it('should open a recovery circuit when restart attempts exceed the bounded window', () => {
@@ -214,8 +260,10 @@ describe('macOS runtime service reliability', () => {
     const home = join(fixtureRoot, 'home');
     const consueloHome = join(home, '.consuelo');
     const launchLog = join(fixtureRoot, 'launchctl.log');
+    const consueloLog = join(fixtureRoot, 'consuelo.log');
     mkdirSync(fakeBin, { recursive: true });
     mkdirSync(home, { recursive: true });
+    installFakeConsuelo(consueloHome);
     writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 1\n');
     writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
     writeExecutable(
@@ -235,6 +283,7 @@ describe('macOS runtime service reliability', () => {
       WORKSPACE_WATCHDOG_MAX_RESTARTS_PER_WINDOW: '2',
       WORKSPACE_WATCHDOG_RESTART_WINDOW_SECONDS: '600',
       WATCHDOG_LAUNCH_LOG: launchLog,
+      WATCHDOG_CONSUELO_LOG: consueloLog,
     };
     const watchdog = resolve(osRoot, 'scripts/workspace-watchdog.sh');
 
@@ -243,11 +292,12 @@ describe('macOS runtime service reliability', () => {
       expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
     }
 
-    const launches = readFileSync(launchLog, 'utf8')
+    const launches = readFileSync(consueloLog, 'utf8')
       .trim()
       .split('\n')
-      .filter(Boolean);
+      .filter((line) => line === 'restart --quiet');
     expect(launches).toHaveLength(2);
+    expect(existsSync(launchLog)).toBe(false);
     expect(
       existsSync(
         join(
@@ -259,5 +309,44 @@ describe('macOS runtime service reliability', () => {
         ),
       ),
     ).toBe(true);
+  });
+
+  it('should keep external health recovery scoped to the external launchd label', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-watchdog-external-');
+    const fakeBin = join(fixtureRoot, 'bin');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const launchLog = join(fixtureRoot, 'launchctl.log');
+    const consueloLog = join(fixtureRoot, 'consuelo.log');
+    mkdirSync(fakeBin, { recursive: true });
+    mkdirSync(home, { recursive: true });
+    installFakeConsuelo(consueloHome);
+    writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(
+      join(fakeBin, 'curl'),
+      '#!/bin/bash\ncase "$*" in *external.example*) exit 22 ;; *) exit 0 ;; esac\n',
+    );
+    writeExecutable(
+      join(fakeBin, 'launchctl'),
+      '#!/bin/bash\nprintf "%s\\n" "$*" >> "$WATCHDOG_LAUNCH_LOG"\n',
+    );
+
+    const result = run('bash', [resolve(osRoot, 'scripts/workspace-watchdog.sh')], {
+      ...process.env,
+      HOME: home,
+      CONSUELO_HOME: consueloHome,
+      WORKSPACE_WATCHDOG_PATH: `${fakeBin}:/usr/bin:/bin:/usr/sbin:/sbin`,
+      WORKSPACE_WATCHDOG_EXTERNAL_URL: 'https://external.example/health',
+      WORKSPACE_WATCHDOG_EXTERNAL_FAILURE_THRESHOLD: '1',
+      WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
+      WATCHDOG_LAUNCH_LOG: launchLog,
+      WATCHDOG_CONSUELO_LOG: consueloLog,
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    const launchCommands = readFileSync(launchLog, 'utf8');
+    expect(launchCommands).toContain('com.consuelo.portless.system');
+    expect(launchCommands).toContain('kickstart -k gui/');
+    expect(existsSync(consueloLog)).toBe(false);
   });
 });

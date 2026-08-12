@@ -64,9 +64,11 @@ export type CommandArgument = {
 
 export type BranchMode = 'none' | 'optional' | 'required';
 export type BranchArgumentStyle = 'flag' | 'prefix';
+export type CommandExecutionScope = 'runtime' | 'workspace';
 
 export type ToolCommand = {
   script: string;
+  executionScope?: CommandExecutionScope;
   subcommand?: string;
   branchMode?: BranchMode;
   branchArgumentStyle?: BranchArgumentStyle;

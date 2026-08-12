@@ -81,7 +81,7 @@ function titleFromSlug(slug: string): string {
     .at(-1)
     ?.split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ') ?? 'Consuelo Docs';
+    .join(' ') ?? 'Consuelo OS';
 }
 
 async function sha256Hex(input: string): Promise<string> {

@@ -46,6 +46,7 @@ function createRuntimeSource(root: string): string {
     'scripts/native-lifecycle-operation.ts':
       'export const nativeLifecycleOperationFixture = true;\n',
     'scripts/server/main.ts': 'export const serverFixture = true;\n',
+    'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
     'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
     'scripts/managed-components.ts': 'export const managedComponentsCliFixture = true;\n',
     'scripts/lib/managed-components.ts': 'export const managedComponentsFixture = true;\n',

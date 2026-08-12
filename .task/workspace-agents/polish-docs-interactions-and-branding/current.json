@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/polish-docs-interactions-and-branding",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1873,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1873",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1873",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1873/polish-docs-interactions-and-branding",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1873",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1873/polish-docs-interactions-and-branding",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-polish-docs-interactions-and-branding",
+  "taskSession": "tsk_37476167a55c",
+  "tmuxSession": "opensaas-workspace-agents-polish-docs-interactions-and-branding-37476167",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-polish-docs-interactions-and-branding/.task/workspace-agents/polish-docs-interactions-and-branding/session.json",
+  "createdAt": "2026-08-12T03:33:40.412Z"
+}

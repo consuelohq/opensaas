@@ -1245,6 +1245,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired"
@@ -1266,6 +1267,7 @@ export const toolSchemas = [
       "defaultTimeout": 300000,
       "inputSchema": "WaitInput",
       "outputSchema": "RawOutput",
+      "search": { "keywords": ["timed", "polling", "sleep", "delay", "seconds", "backoff"] },
       "exampleInput": {
         "duration": "24h",
         "detached": true,

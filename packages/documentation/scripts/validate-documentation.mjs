@@ -46,12 +46,24 @@ const selectedSlugs = [
   'build/tools/how-tools-work',
   'build/tools/workspace',
   'build/tools/browser',
-  'build/tools/office',
+  'build/tools/artifacts',
   'build/tools/media',
   'build/skills/how-skills-work',
   'build/skills/install-a-skill',
   'build/skills/create-a-skill',
   'build/skills/skill-structure',
+  'build/skills/bundled/index',
+  'build/skills/bundled/artifacts',
+  'build/skills/bundled/branch',
+  'build/skills/bundled/browser',
+  'build/skills/bundled/debugger',
+  'build/skills/bundled/handoff',
+  'build/skills/bundled/research-ingest',
+  'build/skills/bundled/senior-engineer',
+  'build/skills/bundled/sites',
+  'build/skills/bundled/skill-creator',
+  'build/skills/bundled/task',
+  'build/skills/bundled/teach',
   'build/steering/how-steering-works',
   'build/steering/workspace-steering',
   'build/steering/project-steering',
@@ -269,8 +281,8 @@ for (const file of translationInvariantFiles) {
 
 const config = read('astro.config.mjs');
 assert(
-  config.includes("title: 'Consuelo Docs'"),
-  'Starlight title must be Consuelo Docs',
+  config.includes("title: 'Consuelo OS'"),
+  'Starlight title must be Consuelo OS',
 );
 assert(
   config.includes('RuntimeLanguageSelect.astro'),
@@ -280,14 +292,20 @@ const navigation = read('src/lib/docs-navigation.ts');
 for (const required of [
   'Start',
   'Connect',
-  'Build with OS',
-  'Sites',
+  'Tools',
+  'Skills',
+  'Steering',
+  'Memory',
   'Observe',
   'Secure',
   'Reference',
 ]) {
   assert(navigation.includes(`label: '${required}'`), `navigation missing ${required}`);
 }
+assert(
+  !navigation.includes("label: 'Build with OS'"),
+  'Build with OS must not remain a top-level navigation section',
+);
 for (const required of [
   'docsSidebar',
   'customCss',

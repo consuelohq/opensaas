@@ -6,6 +6,23 @@
     --sl-content-pad-x: clamp(1.25rem, 3vw, 2.5rem);
     --sl-line-height: 1.7;
     --sl-text-h1: clamp(2.1rem, 4vw, 2.3rem);
+    --docs-focus-ring: color-mix(in srgb, var(--sl-color-white) 55%, transparent);
+  }
+
+  .main-frame {
+    animation: docs-page-in 150ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes docs-page-in {
+    from {
+      opacity: 0.94;
+      transform: translateY(2px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .content-panel {
@@ -45,24 +62,48 @@
 
   #starlight__sidebar a:focus-visible,
   #starlight__sidebar summary:focus-visible {
-    outline: 2px solid var(--sl-color-text-accent);
+    outline: 2px solid var(--docs-focus-ring);
+    outline-offset: 2px;
+  }
+
+  html[data-docs-input-modality='pointer']
+    :where(a, button, input, select, summary, [tabindex]):focus,
+  html[data-docs-input-modality='pointer']
+    :where(a, button, input, select, summary, [tabindex]):focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  html[data-docs-input-modality='pointer'] #starlight__search input:focus {
+    --pagefind-ui-border: var(--sl-color-gray-4);
+  }
+
+  html[data-docs-input-modality='pointer']
+    #starlight__search
+    :where(.pagefind-ui__result-title, .pagefind-ui__result-nested):focus-within {
+    outline: none !important;
+  }
+
+  html[data-docs-input-modality='keyboard']
+    :where(a, button, input, select, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--docs-focus-ring) !important;
     outline-offset: 2px;
   }
 
   #starlight__sidebar a[aria-current='page'] {
     background: color-mix(
       in srgb,
-      var(--sl-color-text-accent) 15%,
+      var(--sl-color-gray-5) 28%,
       transparent
     );
-    box-shadow: inset 3px 0 0 var(--sl-color-text-accent);
+    box-shadow: none;
     color: var(--sl-color-white);
   }
 
   #starlight__sidebar a[aria-current='page']:hover {
     background: color-mix(
       in srgb,
-      var(--sl-color-text-accent) 21%,
+      var(--sl-color-gray-5) 38%,
       transparent
     );
     color: var(--sl-color-white);
@@ -127,6 +168,12 @@
   @media (max-width: 50rem) {
     :root {
       --sl-content-pad-x: 1.25rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .main-frame {
+      animation: none !important;
     }
   }
 }
