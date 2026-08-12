@@ -1,0 +1,28 @@
+---
+import DefaultHead from '@astrojs/starlight/components/Head.astro';
+---
+
+<DefaultHead />
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    root.dataset.docsInputModality = 'pointer';
+
+    window.addEventListener(
+      'pointerdown',
+      () => {
+        root.dataset.docsInputModality = 'pointer';
+      },
+      { capture: true },
+    );
+
+    window.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'Tab') root.dataset.docsInputModality = 'keyboard';
+      },
+      { capture: true },
+    );
+  })();
+</script>
