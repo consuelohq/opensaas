@@ -848,10 +848,51 @@ export function buildFileTree(files: GitHubPullRequestFile[]): FileTreeNode {
   return root;
 }
 
-export function renderIndexPage(repo: RepoLocator, initialData: PullRequestIndexData | null = null, initialEtag = ''): string {
-  const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
+export type DiffCockpitRenderOptions = {
+  mountPath?: string;
+  apiBasePath?: string;
+  writeApiBasePath?: string;
+  codeRoot?: string;
+  defaultBranch?: string;
+};
+
+function normalizedMountPath(value: string | undefined): string {
+  const trimmed = value?.trim() ?? '';
+  if (!trimmed || trimmed === '/') return '';
+  return `/${trimmed.replace(/^\/+|\/+$/g, '')}`;
+}
+
+function mountedPath(path: string, options: DiffCockpitRenderOptions): string {
+  return `${normalizedMountPath(options.mountPath)}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+function repoApiBasePath(repo: RepoLocator, options: DiffCockpitRenderOptions): string {
+  const configuredBase = options.apiBasePath?.trim();
+  const base = configuredBase
+    ? `/${configuredBase.replace(/^\/+|\/+$/g, '')}`
+    : '/api';
+  return `${base}/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
+}
+
+function repoWriteApiBasePath(repo: RepoLocator, options: DiffCockpitRenderOptions): string {
+  const configuredBase = options.writeApiBasePath?.trim();
+  if (!configuredBase) return repoApiBasePath(repo, options);
+  const base = `/${configuredBase.replace(/^\/+|\/+$/g, '')}`;
+  return `${base}/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
+}
+
+export function renderIndexPage(
+  repo: RepoLocator,
+  initialData: PullRequestIndexData | null = null,
+  initialEtag = '',
+  options: DiffCockpitRenderOptions = {},
+): string {
+  const apiPath = `${repoApiBasePath(repo, options)}/pulls`;
   const repoLabel = `${repo.owner}/${repo.repo}`;
-  const mainCodePath = `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/tree/main/packages`;
+  const defaultBranch = options.defaultBranch?.trim() || 'main';
+  const codeRoot = options.codeRoot === undefined ? 'packages' : normalizeCodePath(options.codeRoot);
+  const mainCodePath = mountedPath(buildCodeBrowserPath(repo, defaultBranch, codeRoot), options);
+  const homePath = normalizedMountPath(options.mountPath) || '/';
   const initialDataScript = initialData
     ? `  <script id="diff-cockpit-index-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
     : '';
@@ -869,7 +910,7 @@ export function renderIndexPage(repo: RepoLocator, initialData: PullRequestIndex
 <body class="index-page" data-api-path="${escapeAttribute(apiPath)}" data-active-stream="" data-command-palette-state="closed">
   <div class="shell index-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="${escapeAttribute(homePath)}">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <button class="command-button command-button-plain" type="button" data-command-trigger aria-controls="diff-command-palette" aria-expanded="false"><span>Search</span><span class="command-shortcut">⌘K</span></button>
       </nav>
@@ -923,10 +964,15 @@ ${initialDataScript}${initialEtagScript}  <script type="module">${renderIndexCli
 </html>`;
 }
 
-export function renderReviewPage(locator: PullRequestLocator, initialData: PullRequestReviewData | null = null, initialEtag = ''): string {
-  const apiPath = `/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
-    locator.repo,
-  )}/pull/${locator.number}`;
+export function renderReviewPage(
+  locator: PullRequestLocator,
+  initialData: PullRequestReviewData | null = null,
+  initialEtag = '',
+  options: DiffCockpitRenderOptions = {},
+): string {
+  const apiPath = `${repoApiBasePath(locator, options)}/pull/${locator.number}`;
+  const writeApiPath = `${repoWriteApiBasePath(locator, options)}/pull/${locator.number}`;
+  const homePath = normalizedMountPath(options.mountPath) || '/';
   const initialDataScript = initialData
     ? `  <script id="diff-cockpit-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
     : '';
@@ -947,7 +993,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
 <body class="review-page" data-review-drawer="closed" data-ai-sidebar="closed" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
-      <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
+      <p class="eyebrow"><a href="${escapeAttribute(homePath)}">Consuelo Diffs</a></p>
       <h1 id="pr-title">${escapeHtml(locator.owner)}/${escapeHtml(locator.repo)} #${
         locator.number
       }</h1>
@@ -1009,18 +1055,27 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
-${initialDataScript}${initialEtagScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
+${initialDataScript}${initialEtagScript}  <script type="module">${renderReviewClientScript(apiPath, writeApiPath)}</script>
 </body>
 </html>`;
 }
 
 
 
-export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+export function renderCodeBrowserPage(
+  repo: RepoLocator,
+  ref = 'main',
+  path = 'packages',
+  options: DiffCockpitRenderOptions = {},
+): string {
   const normalizedPath = normalizeCodePath(path);
-  const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
-  const historyPath = buildCodeHistoryPath(repo, ref, normalizedPath);
+  const apiPath = `${repoApiBasePath(repo, options)}/code?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
+  const historyPath = mountedPath(buildCodeHistoryPath(repo, ref, normalizedPath), options);
   const repoLabel = `${repo.owner}/${repo.repo}`;
+  const homePath = normalizedMountPath(options.mountPath) || '/';
+  const pullRequestsPath = mountedPath(`/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`, options);
+  const codeRoot = options.codeRoot === undefined ? 'packages' : normalizeCodePath(options.codeRoot);
+  const rootCodePath = mountedPath(buildCodeBrowserPath(repo, ref, codeRoot), options);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -1032,10 +1087,10 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="${escapeAttribute(homePath)}">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
-        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
-        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
+        <a href="${escapeAttribute(pullRequestsPath)}">Pull Requests</a>
+        <a class="active-nav" href="${escapeAttribute(rootCodePath)}">${escapeHtml(ref)}</a>
       </nav>
     </div>
     <header class="code-hero" data-pagefind-ignore>
@@ -1065,11 +1120,20 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
 </html>`;
 }
 
-export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+export function renderHistoryPage(
+  repo: RepoLocator,
+  ref = 'main',
+  path = 'packages',
+  options: DiffCockpitRenderOptions = {},
+): string {
   const normalizedPath = normalizeCodePath(path);
-  const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
-  const codePath = buildCodeBrowserPath(repo, ref, normalizedPath);
+  const apiPath = `${repoApiBasePath(repo, options)}/history?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
+  const codePath = mountedPath(buildCodeBrowserPath(repo, ref, normalizedPath), options);
   const repoLabel = `${repo.owner}/${repo.repo}`;
+  const homePath = normalizedMountPath(options.mountPath) || '/';
+  const pullRequestsPath = mountedPath(`/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`, options);
+  const codeRoot = options.codeRoot === undefined ? 'packages' : normalizeCodePath(options.codeRoot);
+  const rootCodePath = mountedPath(buildCodeBrowserPath(repo, ref, codeRoot), options);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -1081,10 +1145,10 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="${escapeAttribute(homePath)}">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
-        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
-        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
+        <a href="${escapeAttribute(pullRequestsPath)}">Pull Requests</a>
+        <a class="active-nav" href="${escapeAttribute(rootCodePath)}">${escapeHtml(ref)}</a>
       </nav>
     </div>
     <header class="code-hero" data-pagefind-ignore>
@@ -1104,13 +1168,37 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 </html>`;
 }
 
+function renderStandaloneSetupPage(): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consuelo Diffs · Configure repository</title>
+  <style>
+    :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 32px; }
+    main { width: min(680px, 100%); }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>Consuelo Diffs</p>
+    <h1>Configure a default repository</h1>
+    <p>This standalone Diffs worker has no default repository. Set <code>DIFF_COCKPIT_DEFAULT_REPO</code> to an explicit <code>owner/repository</code> value, or use the workspace-scoped Consuelo Diffs route.</p>
+  </main>
+</body>
+</html>`;
+}
+
 export function createWorker(options: GithubLoaderOptions = {}) {
   memoryJsonCache.clear();
   return {
     async fetch(request: Request, env?: DiffCockpitEnv, ctx?: WorkerExecutionContext) {
       const url = new URL(request.url);
       const token = options.token ?? env?.GITHUB_TOKEN ?? env?.GH_TOKEN;
-      const defaultRepo = env?.DIFF_COCKPIT_DEFAULT_REPO ?? `${DEFAULT_OWNER}/${DEFAULT_REPO}`;
+      const defaultRepo = env?.DIFF_COCKPIT_DEFAULT_REPO?.trim() ?? '';
       const reviewLoader = createGithubPullRequestLoader({ fetcher: options.fetcher, token });
       const indexLoader = createGithubPullRequestIndexLoader({ fetcher: options.fetcher, token });
       const codeLoader = createGithubCodeBrowserLoader({ fetcher: options.fetcher, token });
@@ -1222,6 +1310,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       }
 
       if (url.pathname === '/') {
+        if (!defaultRepo) return html(renderStandaloneSetupPage());
         try {
           const repo = parseRepoLocator('', defaultRepo);
           const indexApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`);
@@ -1266,6 +1355,12 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       }
 
       let locator: PullRequestLocator;
+      if (!defaultRepo && /^\/\d+\/?$/.test(url.pathname)) {
+        return new Response(renderStandaloneSetupPage(), {
+          status: 404,
+          headers: { 'content-type': 'text/html; charset=utf-8' },
+        });
+      }
       try {
         locator = parsePullRequestLocator(url.pathname, defaultRepo);
       } catch (error: unknown) {
@@ -2265,7 +2360,11 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
     return internalJson({ error: `invalid JSON body: ${getErrorMessage(error)}` }, 400);
   }
 
-  const repo = parseRepoLocator('', stringValue(input.repo, deps.defaultRepo));
+  const repoInput = stringValue(input.repo, deps.defaultRepo).trim();
+  if (!repoInput) {
+    return internalJson({ error: 'repository is required; set repo or DIFF_COCKPIT_DEFAULT_REPO' }, 400);
+  }
+  const repo = parseRepoLocator('', repoInput);
   const pullNumbers = normalizeRefreshPulls(input.pulls);
   const codePaths = normalizeRefreshCodePaths(input.codePaths);
   const requestOrigin = new URL(deps.request.url).origin;
@@ -3519,9 +3618,11 @@ window.setInterval(() => refreshIndexIfStale(30000), 30000);
 loadIndex();
 `;
 }
-function renderReviewClientScript(apiPath: string): string {
+function renderReviewClientScript(apiPath: string, writeApiPath = apiPath): string {
+  const mutationApiPathVariable = writeApiPath === apiPath ? 'apiPath' : 'writeApiPath';
   return `
 const apiPath = ${JSON.stringify(apiPath)};
+const writeApiPath = ${JSON.stringify(writeApiPath)};
 const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set(), expandedReviewItems: new Set(), drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
 const els = {
   title: document.getElementById('pr-title'),
@@ -3762,7 +3863,7 @@ async function mergePullRequest() {
   if (!window.confirm('Merge PR #' + pull.number + ' into ' + pull.baseRef + '?')) return;
   renderMergeResult('Merging PR #' + pull.number + '…');
   try {
-    const response = await fetch(apiPath + '/merge', { method: 'POST', headers: { accept: 'application/json' } });
+    const response = await fetch(${mutationApiPathVariable} + '/merge', { method: 'POST', headers: { accept: 'application/json' } });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || result.ok === false) {
       renderMergeResult('Merge failed: ' + (result.error || response.status));
@@ -3937,7 +4038,7 @@ async function resolveReviewItem(itemId) {
   if (!item || !item.canResolve || !item.threadId) return;
   const action = item.isResolved ? 'unresolve' : 'resolve';
   try {
-    const response = await fetch(apiPath + '/review-threads/' + encodeURIComponent(item.threadId) + '/' + action, { method: 'POST', headers: { accept: 'application/json' } });
+    const response = await fetch(${mutationApiPathVariable} + '/review-threads/' + encodeURIComponent(item.threadId) + '/' + action, { method: 'POST', headers: { accept: 'application/json' } });
     if (!response.ok) return;
     item.isResolved = !item.isResolved;
     renderAiCommentsSidebar();
