@@ -260,7 +260,9 @@
       "critical": true,
       "source": [
         "packages/os/scripts/consuelo-reload.js",
-        "packages/os/tests/finish-line-lifecycle-contract.test.ts"
+        "packages/os/tests/finish-line-lifecycle-contract.test.ts",
+        "packages/os/scripts/start-consuelo-daemon.sh",
+        "packages/os/tests/daemon-bun-path.test.ts"
       ],
       "tests": [
         {
@@ -271,11 +273,12 @@
             "packages/os",
             "../../node_modules/vitest/vitest.mjs",
             "run",
-            "tests/finish-line-lifecycle-contract.test.ts"
+            "tests/finish-line-lifecycle-contract.test.ts",
+            "tests/daemon-bun-path.test.ts"
           ]
         }
       ],
-      "reason": "Lifecycle reload changes that retire inherited legacy MCP credentials must prove the focused service/reload contract without selecting the broad OS package suite."
+      "reason": "Lifecycle daemon/reload changes must prove inherited-secret scrub, activated-runtime managed Sites refresh, Bun path resolution, and fail-open startup without selecting the broad OS package suite."
     },
     {
       "id": "dialer-package",

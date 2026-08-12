@@ -361,6 +361,29 @@ describe('test selection registry', () => {
   });
 
 
+  it('routes daemon startup managed Sites refresh through focused lifecycle coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/start-consuelo-daemon.sh',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-lifecycle-legacy-mcp-scrub',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).not.toContain(
+      '@consuelo/os package test',
+    );
+    const lifecycleSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-lifecycle-legacy-mcp-scrub',
+    );
+    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
+      'tests/finish-line-lifecycle-contract.test.ts',
+      'tests/daemon-bun-path.test.ts',
+    ]));
+  });
+
   it('runs focused Consuelo OS contracts with Bun, OS cwd, and root Vitest', () => {
     const registry = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'packages/workspace/test-selection.registry.json'), 'utf8'));
     const rules = new Map(registry.rules.map((rule) => [rule.id, rule]));

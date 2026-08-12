@@ -4,6 +4,7 @@ import {
   copyFileSync,
   mkdtempSync,
   mkdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -54,6 +55,64 @@ function runDaemonWrapper(workspacePath: string): string {
   return result.stdout.trim();
 }
 
+function runManagedSitesRefreshScenario(refreshExitCode: number): {
+  status: number | null;
+  stderr: string;
+  calls: string[];
+  home: string;
+} {
+  const root = mkdtempSync(path.join(tmpdir(), 'consuelo-daemon-sites-refresh-'));
+  temporaryDirectories.push(root);
+  const scriptsDirectory = path.join(root, 'scripts');
+  const bunDirectory = path.join(root, '.bun', 'bin');
+  const consueloHome = path.join(root, '.consuelo');
+  const callLog = path.join(root, 'bun-calls.log');
+  mkdirSync(scriptsDirectory, { recursive: true });
+  mkdirSync(bunDirectory, { recursive: true });
+
+  const daemonScript = path.join(scriptsDirectory, 'start-consuelo-daemon.sh');
+  const bunBinary = path.join(bunDirectory, 'bun');
+  copyFileSync(sourceScript, daemonScript);
+  writeFileSync(
+    bunBinary,
+    [
+      '#!/bin/sh',
+      'printf "%s|%s\n" "$CONSUELO_HOME" "$*" >> "$CALL_LOG"',
+      'case "${1:-} ${2:-} ${3:-}" in',
+      '  *"/scripts/os.ts sites refresh"*) exit "$REFRESH_EXIT_CODE" ;;',
+      'esac',
+      'exit 0',
+      '',
+    ].join('\n'),
+    'utf8',
+  );
+  chmodSync(daemonScript, 0o755);
+  chmodSync(bunBinary, 0o755);
+
+  const result = spawnSync('/bin/bash', [daemonScript], {
+    env: {
+      ...process.env,
+      HOME: root,
+      USER: 'consuelo-test',
+      BUN_BIN: bunBinary,
+      WORKSPACE_DAEMON_HOME: root,
+      WORKSPACE_DAEMON_USER: 'consuelo-test',
+      WORKSPACE_DAEMON_CONSUELO_HOME: consueloHome,
+      WORKSPACE_DAEMON_PATH: `${bunDirectory}:/usr/bin:/bin`,
+      CALL_LOG: callLog,
+      REFRESH_EXIT_CODE: String(refreshExitCode),
+    },
+    encoding: 'utf8',
+  });
+
+  return {
+    status: result.status,
+    stderr: result.stderr,
+    calls: readFileSync(callLog, 'utf8').trim().split('\n').filter(Boolean),
+    home: consueloHome,
+  };
+}
+
 afterEach(() => {
   for (const directory of temporaryDirectories.splice(0)) {
     rmSync(directory, { recursive: true, force: true });
@@ -77,5 +136,16 @@ describe('Consuelo OS daemon Bun PATH', () => {
 
     expect(bunSegments).toHaveLength(1);
     expect(outputPath.split(':').slice(-2)).toEqual(['/usr/bin', '/bin']);
+  });
+
+  it('should refresh managed Sites from the activated runtime before supervisor startup and continue on refresh failure', () => {
+    const result = runManagedSitesRefreshScenario(17);
+
+    expect(result.status).toBe(0);
+    expect(result.calls).toHaveLength(2);
+    expect(result.calls[0]).toContain(`${result.home}|`);
+    expect(result.calls[0]).toContain('/scripts/os.ts sites refresh --json');
+    expect(result.calls[1]).toContain('/scripts/server/supervisor.ts');
+    expect(result.stderr).toContain('managed Sites refresh failed');
   });
 });

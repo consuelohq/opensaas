@@ -62,4 +62,8 @@ case ":$PATH:" in
   *) export PATH="$bun_dir:$PATH" ;;
 esac
 
+if ! "$bun_bin" "$root_dir/scripts/os.ts" sites refresh --json >/dev/null; then
+  echo "managed Sites refresh failed; continuing daemon startup" >&2
+fi
+
 exec "$bun_bin" "$root_dir/scripts/server/supervisor.ts"
