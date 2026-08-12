@@ -92,7 +92,7 @@ describe('promoted Tools, Skills, Steering, and Memory documentation contract', 
     for (const sourcePath of promotedPages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toContain('verifiedAt: 2026-08-11');
+      expect(source).toMatch(/verifiedAt: 2026-08-(11|12)/);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
     }

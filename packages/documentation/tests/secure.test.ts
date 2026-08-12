@@ -53,7 +53,7 @@ describe('Secure documentation contract', () => {
     for (const [sourcePath] of securePages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toMatch(/verifiedAt: 2026-07-(13|14)/);
+      expect(source).toMatch(/verifiedAt: 2026-0[78]-\d{2}/);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
       expect(source).toContain('tests:');
@@ -139,7 +139,14 @@ describe('Secure documentation contract', () => {
     expect(nodes).toContain('127.0.0.1');
     expect(nodes).toContain('46321');
     expect(nodes).toContain('outbound connector');
-    expect(nodes).toContain('home node');
+    expect(nodes).toContain('enrollment role');
+    expect(nodes).toContain('default node');
+
+    const model = read('src/content/docs/secure/security-model.mdx');
+    expect(model).toContain('selected node');
+    expect(model).toContain('/nodes/routing/');
+    expect(model).not.toContain('reaches the home node');
+    expect(model).not.toContain('making the home node available');
 
     const ingress = read('src/content/docs/secure/hosted-mcp-ingress.mdx');
     expect(ingress).toContain('PKCE');

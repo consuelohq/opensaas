@@ -34,15 +34,6 @@ const connectItems: SidebarItem[] = [
     ],
   },
   {
-    label: 'Nodes',
-    items: [
-      { label: 'How nodes work', slug: 'connect/nodes/how-nodes-work' },
-      { label: 'Home node', slug: 'connect/nodes/home-node' },
-      { label: 'Local nodes', slug: 'connect/nodes/local-nodes' },
-      { label: 'Cloud nodes', slug: 'connect/nodes/cloud-nodes' },
-    ],
-  },
-  {
     label: 'Apps and services',
     items: [
       { label: 'Overview', slug: 'connect/apps-and-services' },
@@ -105,6 +96,13 @@ const connectItems: SidebarItem[] = [
       { label: 'Additional services', slug: 'connect/apps-and-services/additional-services' },
     ],
   },
+];
+
+const nodesItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'nodes' },
+  { label: 'Local nodes', slug: 'nodes/local' },
+  { label: 'Cloud nodes', slug: 'nodes/cloud' },
+  { label: 'Routing work', slug: 'nodes/routing' },
 ];
 
 const buildItems: SidebarItem[] = [
@@ -181,6 +179,7 @@ const toolsItems: SidebarItem[] = [
   { label: 'Overview', slug: 'tools' },
   ...(buildToolItems.length > 0 ? [buildToolItems[0]] : []),
   { label: 'Tool List', slug: 'tools/tool-list' },
+  { label: 'Subagents', slug: 'tools/subagents' },
   ...buildToolItems.slice(1),
   { label: 'Workflows', slug: 'build/workflows' },
   { label: 'Sites', items: sitesItems },
@@ -253,7 +252,8 @@ const observeItems: SidebarItem[] = [
 
 export const docsSections = [
   { label: 'Start', slug: 'start', description: 'Install Consuelo OS, create a workspace, and connect your first agent.' },
-  { label: 'Connect', slug: 'connect', description: 'Connect agents, nodes, apps, and services to the same workspace.' },
+  { label: 'Connect', slug: 'connect', description: 'Connect agents, apps, and services to the same workspace.' },
+  { label: 'Nodes', slug: 'nodes', description: 'Choose where Consuelo runs and how work routes across local and cloud nodes.' },
   { label: 'Tools', slug: 'tools', description: 'Find the operations agents can call, including workspace, browser, media, workflows, sites, and more.' },
   { label: 'Skills', slug: 'skills', description: 'Install, use, and create reusable agent instructions and scripts.' },
   { label: 'Steering', slug: 'steering', description: 'Control the workspace and project instructions every agent starts from.' },
@@ -268,13 +268,13 @@ const startItems = [
   { label: 'Install Consuelo OS', slug: 'start/install-consuelo-os' },
   { label: 'Create a workspace', slug: 'start/create-a-workspace' },
   { label: 'Connect your first agent', slug: 'start/connect-your-first-agent' },
-  { label: 'Local and Consuelo Cloud', slug: 'start/local-and-consuelo-cloud' },
   { label: 'Core concepts', slug: 'start/core-concepts' },
 ];
 
 const sectionItemsBySlug: Record<string, SidebarItem[]> = {
   start: startItems,
   connect: connectItems,
+  nodes: nodesItems,
   tools: toolsItems,
   skills: skillsItems,
   steering: steeringItems,

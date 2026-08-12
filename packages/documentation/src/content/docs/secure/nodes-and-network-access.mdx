@@ -1,8 +1,8 @@
 ---
 title: Nodes and network access
-description: Understand home-node authority, loopback services, outbound connectors, and workspace route ownership.
+description: Understand node identity, private local services, outbound connectors, and workspace route ownership.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
   - source: packages/os/scripts/lib/workspace-connector-transport.ts
     tests:
@@ -16,13 +16,17 @@ evidence:
     runtime: Host/path ownership, longest-prefix routing, route auth modes, revocation, and offline failures were exercised on 2026-07-13.
 ---
 
-A node is a machine running Consuelo OS for a workspace. Network access should expose a specific workspace route—not the machine as a general-purpose server.
+A node is a machine or managed runtime running Consuelo OS for a workspace. Network access should expose a specific workspace route—not the machine as a general-purpose server.
 
 ## Home and member nodes
 
-The **home node** is the authoritative runtime for the workspace. The first approved node normally becomes home. Later approved nodes can join as members, and a previously registered node can reconnect.
+The first approved node normally receives the `home` enrollment role. Later approved nodes can join as `member` nodes, and a previously registered node can reconnect.
 
 Node registration binds a node ID, role, name, workspace identity, and public key to the approved account workspace. A member node does not become home merely because it reconnects first.
+
+Do not confuse that enrollment role with routing authority. The workspace also has a mutable **default node** used for new untargeted calls. Changing the default does not turn a member into home or rewrite node identity. See [Nodes](/nodes/) for the product model.
+
+Explicit and task-owned routes are checked against the same workspace node registry. A request that requires an offline, revoked, or conflicting node fails closed rather than silently crossing to another runtime.
 
 ## The local service stays private
 

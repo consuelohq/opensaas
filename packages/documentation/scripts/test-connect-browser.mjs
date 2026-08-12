@@ -20,10 +20,6 @@ const routes = [
   ['OpenCode', '/connect/agents/opencode/'],
   ['Gemini', '/connect/agents/gemini/'],
   ['Other agents', '/connect/agents/other-agents/'],
-  ['How nodes work', '/connect/nodes/how-nodes-work/'],
-  ['Home node', '/connect/nodes/home-node/'],
-  ['Local nodes', '/connect/nodes/local-nodes/'],
-  ['Cloud nodes', '/connect/nodes/cloud-nodes/'],
   ['Apps and services', '/connect/apps-and-services/'],
   ['Google Workspace', '/connect/apps-and-services/google-workspace/'],
   ['Gmail', '/connect/apps-and-services/gmail/'],
@@ -71,7 +67,7 @@ try {
 
   const sidebar = page.locator('#starlight__sidebar');
   const groups = sidebar.locator('details');
-  const expectedGroups = 11;
+  const expectedGroups = 10;
   if ((await groups.count()) !== expectedGroups) throw new Error(`Expected ${expectedGroups} expanded Connect groups, found ${await groups.count()}`);
   for (let index = 0; index < await groups.count(); index += 1) {
     if (!(await groups.nth(index).evaluate((element) => element.open))) throw new Error('A Connect navigation group started collapsed');
@@ -96,9 +92,6 @@ try {
 
   await page.goto(`${origin}/connect/apps-and-services/railway/`, { waitUntil: 'networkidle' });
   if (!(await page.getByText('deployment.logs', { exact: false }).first().isVisible())) throw new Error('Railway canonical deployment guidance is missing');
-
-  await page.goto(`${origin}/connect/nodes/local-nodes/`, { waitUntil: 'networkidle' });
-  if (!(await page.getByText('cloudflare-tunnel', { exact: false }).first().isVisible())) throw new Error('Local node transport guidance is missing');
 
   const viewportChecks = [];
   for (const viewport of [
