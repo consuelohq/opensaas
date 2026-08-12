@@ -284,12 +284,12 @@ function configurationClientScript(): string {
         }
         renderSourceControl(payload.snapshot);
         setText('source-control-form-status', successMessage || 'Source-control configuration updated.');
-      } catch (error) {
+      } catch (/** @type {unknown} */ error) {
         setText('source-control-form-status', error instanceof Error ? error.message : 'Source-control update failed.');
       }
     }
 
-    async function submitSourceControl(event) {
+    function submitSourceControl(event) {
       event.preventDefault();
       const form = event.currentTarget;
       if (!(form instanceof HTMLFormElement)) return;
@@ -318,7 +318,7 @@ function configurationClientScript(): string {
       const defaultRepositoryId = makeDefault || !currentSourceControl.defaultRepositoryId
         ? id
         : currentSourceControl.defaultRepositoryId;
-      await persistSourceControl({ ...currentSourceControl, repositories, defaultRepositoryId }, 'Repository saved.');
+      void persistSourceControl({ ...currentSourceControl, repositories, defaultRepositoryId }, 'Repository saved.');
     }
 
     async function loadSourceControl() {

@@ -30,10 +30,13 @@ started: 2026-08-12
 
 - 2026-08-12 04:41:23 fs.write: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
 - 2026-08-12 04:44:15 fs.write: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
+- 2026-08-12 04:47:19 fs.write: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
 
 ## workspace-owned: validation evidence
 
-- none yet
+- 2026-08-12 04:44:46 `review.run`: passed — OK
+- 2026-08-12 04:48:32 `review.run`: passed — OK
+- 2026-08-12 04:48:44 `verify`: passed — OK
 
 ## key decisions
 
@@ -82,3 +85,21 @@ bun run task:finish
 - This task is an ancestry-preserving main-to-stream sync; the only manual conflict resolutions are test contracts.
 
 - 2026-08-12 04:44:15 append: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
+
+## workspace-owned: files read
+
+- `packages/os/scripts/lib/settings-site.ts`
+- `packages/os/scripts/server/routes/diffs.ts`
+- `packages/os/scripts/server/services/diffs-gateway.ts`
+- `packages/os/tests/diffs-hono-routes.test.ts`
+- `packages/os/tests/settings-site.test.ts`
+
+## Test-first contract — Diffs error boundaries
+
+- Behavior under test: Diffs keeps the same authenticated read/write behavior and safe client error states while every new async boundary either handles provider/auth failures locally or returns an explicit promise chain with a typed rejection boundary.
+- Existing local pattern: Hono routes convert typed `DiffsGatewayError` instances to safe responses; configuration shell tests compile the emitted client script; Diffs Hono tests cover auth, repository scoping, setup state, and write-scope separation.
+- RED evidence: strict `review.run --base origin/main` reports 15 must-fix findings: 14 `ERROR_HANDLING` and 1 `CATCH_TYPING`, confined to `settings-site.ts`, `routes/diffs.ts`, and `services/diffs-gateway.ts`.
+- No new behavior test is required for the structural promise/error-boundary refactor; existing focused runtime tests are the regression contract. The emitted browser script syntax test must remain green.
+- GREEN target: strict review has 0 blocking findings and focused settings/Diffs/edge tests remain green.
+
+- 2026-08-12 04:47:19 append: `.task/workspace-agents/deconflict-diffs-route-tests-from-main/workpad.md`
