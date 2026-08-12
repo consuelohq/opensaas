@@ -799,12 +799,13 @@ function summarizeReviewTests(testResults) {
 
 const RELATED_PRE_EXISTING_PROMPT = 'Related pre-existing findings are in the same package or area as this task. Fix mechanical issues in this task, or escalate to Ko when the fix needs product, ownership, or architectural judgment.';
 
-function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult, documentationOpportunities }) {
+function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult, documentationCheckRan, documentationOpportunities }) {
   const yourFindings = yours.map((finding, index) => compactFinding(finding, index, 'your_change'));
   const relatedPreExistingFindings = relatedPreExisting.map((finding, index) => compactFinding(finding, index, 'related_pre_existing'));
   const preExistingFindings = preExisting.map((finding, index) => compactFinding(finding, index, 'pre_existing'));
   const testSummary = summarizeReviewTests(testResults);
-  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'documentation_opportunities'];
+  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (documentationCheckRan) checksRun.push('documentation_opportunities');
   if (testResults.length > 0) checksRun.push('tests');
 
   return {
@@ -820,7 +821,7 @@ function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours
       preExistingIssues: preExistingFindings.length,
       failedTestSuites: testSummary.failedSuites,
       blockingIssues: yourFindings.length + relatedPreExistingFindings.length + testSummary.failedSuites,
-      documentationOpportunities: documentationOpportunities.length,
+      ...(documentationCheckRan ? { documentationOpportunities: documentationOpportunities.length } : {}),
     },
     mustFix: yourFindings,
     relatedPreExisting: relatedPreExistingFindings,
@@ -837,7 +838,7 @@ function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours
     },
     relatedPreExistingDigest: summarizeCompactFindings(relatedPreExistingFindings),
     preExistingDigest: summarizeCompactFindings(preExistingFindings),
-    documentationOpportunities,
+    ...(documentationCheckRan ? { documentationOpportunities } : {}),
     testSummary,
     fullEvidence: {
       command: `bun run review -- --base ${base} --json`,
@@ -961,7 +962,10 @@ async function main() {
   // get files
   const allChangedFiles = args.all ? getAllTsFiles(root) : getChangedRepoFiles(base);
   const files = args.all ? allChangedFiles : allChangedFiles.filter(isReviewableFile);
-  const documentationOpportunities = args.all ? [] : findDocumentationOpportunities(allChangedFiles);
+  const documentationCheckRan = !args.all;
+  const documentationOpportunities = documentationCheckRan
+    ? findDocumentationOpportunities(allChangedFiles)
+    : [];
 
   const affectedProjects = getProjectsForFiles(root, files).map((project) => ({
     name: project.name,
@@ -1033,7 +1037,7 @@ async function main() {
     writeStdout(`  ${'TYPECHECK' + ' '.repeat(10)} ${typecheckFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${typecheckFindings.length})`}`);
   }
 
-  if (!args.quiet && !structuredOutput) {
+  if (!args.quiet && !structuredOutput && documentationCheckRan) {
     const docsStatus = documentationOpportunities.length === 0
       ? '✓ PASS'
       : `◇ REVIEW (${documentationOpportunities.length})`;
@@ -1041,6 +1045,8 @@ async function main() {
     for (const opportunity of documentationOpportunities) {
       writeStdout(`    ${opportunity.surface}: ${opportunity.docs.join(', ')}`);
     }
+  } else if (!args.quiet && !structuredOutput && !documentationCheckRan) {
+    writeStdout(`  ${'DOCS_OPPORTUNITY' + ' '.repeat(2)} ⊘ SKIPPED (--all)`);
   }
 
   // spec compliance (not per-file)
@@ -1119,9 +1125,20 @@ async function main() {
   const testsFailed = testResults.some((r) => !r.passed);
 
   if (args.json || args.summaryJson) {
-    const fullPayload = { base, branch, files: files.length, affectedProjects, yours, relatedPreExisting, preExisting, documentationOpportunities, testResults, confidence: confidenceResult };
+    const fullPayload = {
+      base,
+      branch,
+      files: files.length,
+      affectedProjects,
+      yours,
+      relatedPreExisting,
+      preExisting,
+      ...(documentationCheckRan ? { documentationOpportunities } : {}),
+      testResults,
+      confidence: confidenceResult,
+    };
     const payload = args.summaryJson
-      ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult, documentationOpportunities })
+      ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult, documentationCheckRan, documentationOpportunities })
       : fullPayload;
     writeStdout(JSON.stringify(payload, null, 2));
     if (reviewRun) {

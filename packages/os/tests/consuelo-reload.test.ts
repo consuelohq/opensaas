@@ -81,6 +81,14 @@ afterEach(() => {
 });
 
 describe('Consuelo OS reload lifecycle', () => {
+  it('budgets rolling reload polling for every worker and the supervisor drain timeout', () => {
+    const source = readFileSync(reloadScript, 'utf8');
+    expect(source).toContain('before.desiredWorkers');
+    expect(source).toContain('CONSUELO_OS_DRAIN_TIMEOUT_MS');
+    expect(source).toContain('Math.max(60_000, drainTimeoutMs + 20_000)');
+    expect(source).toContain('/ RELOAD_POLL_MS');
+  });
+
   it('should bootstrap an installed LaunchAgent when it is currently unloaded', () => {
     const harness = createHarness();
     const result = spawnSync(process.execPath, [reloadScript, 'start'], {

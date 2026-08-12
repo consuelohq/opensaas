@@ -120,6 +120,10 @@ export function resolveWorkerPoolConfiguration(
 const defaultSleep = (milliseconds: number): Promise<void> =>
   new Promise((resolveSleep) => setTimeout(resolveSleep, milliseconds));
 
+const MAX_WORKER_RELAUNCH_ATTEMPTS = 5;
+const MIN_WORKER_RELAUNCH_BACKOFF_MS = 25;
+const MAX_WORKER_RELAUNCH_BACKOFF_MS = 30_000;
+
 export function createWorkerPoolSupervisor(input: {
   configuration: WorkerPoolConfiguration;
   spawnWorker: (spec: WorkerSpec) => WorkerProcessHandle;
@@ -171,6 +175,7 @@ export function createWorkerPoolSupervisor(input: {
 
   const relaunchSlot = async (slotIndex: number, initialRestartCount: number): Promise<void> => {
     let restartCount = initialRestartCount;
+    let failedAttempts = 0;
     while (!stopping) {
       try {
         await launchSlot(slotIndex, restartCount);
@@ -183,8 +188,18 @@ export function createWorkerPoolSupervisor(input: {
           current.state = 'failed';
           publish();
         }
+        failedAttempts += 1;
+        if (failedAttempts >= MAX_WORKER_RELAUNCH_ATTEMPTS) return;
+        const baseBackoffMs = Math.max(
+          MIN_WORKER_RELAUNCH_BACKOFF_MS,
+          input.configuration.restartDelayMs,
+        );
+        const backoffMs = Math.min(
+          MAX_WORKER_RELAUNCH_BACKOFF_MS,
+          baseBackoffMs * (2 ** (failedAttempts - 1)),
+        );
         restartCount += 1;
-        await sleep(input.configuration.restartDelayMs);
+        await sleep(backoffMs);
       }
     }
   };

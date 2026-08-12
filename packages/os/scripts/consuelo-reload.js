@@ -14,6 +14,7 @@ const START_SCRIPT = path.join(OS_DIR, 'scripts', 'start-consuelo-daemon.sh');
 const LOG_FILE = process.env.CONSUELO_DAEMON_LOG_FILE || path.join(HOME, 'Library', 'Logs', 'Consuelo', 'system.log');
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
+const RELOAD_POLL_MS = 500;
 const EXPECTED_SERVER_NAME = 'consuelo-os';
 const CONFLICTING_LABELS = ['com.consuelo.workspace'];
 const CONSUELO_HOME = process.env.CONSUELO_HOME || path.join(HOME, '.consuelo');
@@ -202,7 +203,23 @@ function isHealthyRollingPool(pool) {
   );
 }
 
-function waitForRollingReload(before, attempts = RELOAD_WAIT_ATTEMPTS) {
+function rollingReloadWaitAttempts(before) {
+  const configuredDrainTimeout = Number(process.env.CONSUELO_OS_DRAIN_TIMEOUT_MS || 30_000);
+  const drainTimeoutMs = Number.isInteger(configuredDrainTimeout)
+    && configuredDrainTimeout >= 0
+    && configuredDrainTimeout <= 300_000
+    ? configuredDrainTimeout
+    : 30_000;
+  const desiredWorkers = Number.isInteger(before?.desiredWorkers) && before.desiredWorkers > 0
+    ? before.desiredWorkers
+    : 1;
+  const derivedAttempts = Math.ceil(
+    (desiredWorkers * Math.max(60_000, drainTimeoutMs + 20_000)) / RELOAD_POLL_MS,
+  );
+  return Math.max(RELOAD_WAIT_ATTEMPTS, derivedAttempts);
+}
+
+function waitForRollingReload(before, attempts = rollingReloadWaitAttempts(before)) {
   const previousInstances = new Map(
     before.workers.map((worker) => [worker.workerId, worker.workerInstanceId]),
   );
@@ -215,7 +232,7 @@ function waitForRollingReload(before, attempts = RELOAD_WAIT_ATTEMPTS) {
         previousInstances.get(worker.workerId) !== worker.workerInstanceId
       )
     ) return true;
-    sleep(0.5);
+    sleep(RELOAD_POLL_MS / 1000);
   }
   return false;
 }

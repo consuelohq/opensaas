@@ -31,6 +31,7 @@ const STATIC_SURFACES = [
   {
     surface: 'tools',
     matches: (file) =>
+      file.startsWith('packages/os/tools/') ||
       file.startsWith('packages/os/tooling/') ||
       file === 'packages/os/manifests/manifest.config.ts' ||
       file.startsWith('packages/os/manifests/schemas/') ||

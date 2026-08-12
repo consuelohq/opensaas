@@ -21,6 +21,25 @@ function resolveDrainTimeoutMs(env: NodeJS.ProcessEnv = process.env): number {
   return timeout;
 }
 
+export async function runDrainAndExit(
+  drain: () => Promise<void>,
+  dependencies: {
+    exit?: (code: number) => unknown;
+    report?: (message: string) => void;
+  } = {},
+): Promise<void> {
+  const exit = dependencies.exit ?? ((code: number) => process.exit(code));
+  const report = dependencies.report ?? ((message: string) => process.stderr.write(`[Consuelo OS] ${message}\n`));
+  try {
+    await drain();
+    exit(0);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    report(`worker drain failed: ${message}`);
+    exit(1);
+  }
+}
+
 if (import.meta.main) {
   process.env.CONSUELO_OS_DAEMON_PROCESS = '1';
   const supervisedWorker = process.env.CONSUELO_OS_WORKER_PROCESS === '1';
@@ -71,7 +90,7 @@ if (import.meta.main) {
 
   for (const signal of ['SIGTERM', 'SIGINT'] as const) {
     process.once(signal, () => {
-      void drainServer(signal).then(() => process.exit(0));
+      void runDrainAndExit(() => drainServer(signal));
     });
   }
 
@@ -80,7 +99,7 @@ if (import.meta.main) {
     if (Number.isInteger(supervisorPid) && supervisorPid > 1) {
       parentMonitor = setInterval(() => {
         if (process.ppid !== supervisorPid) {
-          void drainServer('supervisor-exited').then(() => process.exit(0));
+          void runDrainAndExit(() => drainServer('supervisor-exited'));
         }
       }, 500);
       parentMonitor.unref?.();

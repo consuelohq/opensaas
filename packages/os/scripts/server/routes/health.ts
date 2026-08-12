@@ -13,12 +13,12 @@ import { jsonResponse } from '../middleware/errors';
 import type { WorkerRuntimeState } from '../worker-runtime-state';
 
 type HealthRouteDependencies = {
-  assertReady: () => void | Promise<void>;
+  assertReady?: () => void | Promise<void>;
   runtimeIdentity?: () => { bundleId?: string; version?: string };
   workerState?: WorkerRuntimeState;
 };
 
-const defaultDependencies: HealthRouteDependencies = {
+const defaultDependencies: Required<Pick<HealthRouteDependencies, 'assertReady' | 'runtimeIdentity'>> = {
   assertReady: () => {
     readFullToolManifest();
     readCoreToolManifest();
@@ -36,10 +36,15 @@ const defaultDependencies: HealthRouteDependencies = {
 
 export function createHealthRoutes(
   config: LocalOsServerConfig,
-  dependencies: HealthRouteDependencies = defaultDependencies,
+  dependencies: HealthRouteDependencies = {},
 ): Hono {
   const app = new Hono();
-  const resolvedDependencies = { ...defaultDependencies, ...dependencies };
+  const resolvedDependencies = {
+    ...defaultDependencies,
+    ...dependencies,
+    assertReady: dependencies.assertReady ?? defaultDependencies.assertReady,
+    runtimeIdentity: dependencies.runtimeIdentity ?? defaultDependencies.runtimeIdentity,
+  };
 
   app.all('/health', async () => {
     try {

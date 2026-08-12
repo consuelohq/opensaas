@@ -1026,6 +1026,41 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('should not claim documentation opportunity checks ran when legacy review output omits them', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'os-review-docs-absent-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_review_docs_absent', TEST_BRANCH);
+      const result = await executeTool('review.run', {
+        taskSession: 'tsk_review_docs_absent',
+        noTests: true,
+      }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify({
+            base: 'origin/main',
+            branch: TEST_BRANCH,
+            files: 1,
+            affectedProjects: [],
+            yours: [],
+            preExisting: [],
+            testResults: [],
+            confidence: null,
+          }),
+          stderr: '',
+          exitCode: 0,
+        })),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      const data = result.data as { checksRun: string[] };
+      expect(data.checksRun).not.toContain('documentation_opportunities');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('should compact full verify packets when raw tails are large', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-compact-'));
     try {
