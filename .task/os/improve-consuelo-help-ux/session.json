@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_33829d155ee7",
+  "tmuxSession": "opensaas-os-improve-consuelo-help-ux-33829d15",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/improve-consuelo-help-ux",
+  "branch": "task/os/improve-consuelo-help-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-improve-consuelo-help-ux",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-improve-consuelo-help-ux",
+  "prNumber": 1853,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1853",
+  "createdAt": "2026-08-11T23:57:30.154Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-improve-consuelo-help-ux/.task/os/improve-consuelo-help-ux/session.json"
+}

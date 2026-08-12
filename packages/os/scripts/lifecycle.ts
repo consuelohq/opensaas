@@ -77,24 +77,34 @@ type ParsedLifecycleArgs = {
   snoozedUntil?: string;
 };
 
-const HELP = `Consuelo OS lifecycle
+const HELP = `Consuelo OS
 
-Usage:
-  consuelo status [--json] [--quiet]
-  consuelo install [--channel <channel>] [--json] [--quiet]
-  consuelo restart [--json] [--quiet]
-  consuelo update [--channel <channel>] [--check] [--yes] [--json] [--quiet]
-  consuelo channel show [--json]
-  consuelo channel set <channel> [--json]
-  consuelo updates notifications on|off|snooze [--until <iso>] [--json]
-  consuelo repair [--json] [--quiet]
-  consuelo rollback [--dry-run] [--json] [--quiet]
-  consuelo add skill [name...]
-  consuelo remove skill [name...]
-  consuelo uninstall [--dry-run] [--remove-node] [--remove-user-content] [--json]
-  consuelo dev reset --yes [--dry-run] [--json]
+If no command is specified, Consuelo shows the local OS status.
 
-Channels: stable, beta, canary, dev, nightly
+Usage: consuelo [OPTIONS] [COMMAND] [ARGS]
+
+Commands:
+  status          Show installation and runtime status
+  install         Install and configure Consuelo OS
+  restart         Restart Consuelo OS services
+  update          Check for or install OS updates
+  repair          Repair the current installation
+  rollback        Roll back to the previous verified release
+  add skill       Install bundled skills (picker by default)
+  remove skill    Remove installed bundled skills (picker by default)
+  channel         Show or change the release channel
+  updates         Manage update notification preferences
+  uninstall       Remove Consuelo OS from this machine
+  dev             Development and recovery commands
+  help            Print this message
+
+Options:
+      --json       Machine-readable output
+      --quiet      Suppress human-readable output
+  -h, --help       Print help
+
+Channels:
+  stable, beta, canary, dev, nightly
 `;
 const DEFAULT_RELEASE_BASE_URL = 'https://install.consuelohq.com/os/releases';
 
