@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3429362c0d95",
+  "tmuxSession": "opensaas-os-fix-native-windows-service-startup-for-release-g-3429362c",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-native-windows-service-startup-for-release-gate",
+  "branch": "task/os/fix-native-windows-service-startup-for-release-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-native-windows-service-startup-for-release-gate",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-native-windows-service-startup-for-release-gate",
+  "prNumber": 1880,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1880",
+  "createdAt": "2026-08-12T04:05:19.096Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-native-windows-service-startup-for-release-gate/.task/os/fix-native-windows-service-startup-for-release-gate/session.json"
+}
