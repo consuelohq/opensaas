@@ -1,4 +1,5 @@
 export const MAX_OS_WORKERS = 16;
+export const MIN_HA_OS_WORKERS = 2;
 
 export type WorkerPoolConfiguration = {
   desiredWorkers: number;
@@ -76,7 +77,7 @@ export function resolveWorkerPoolConfiguration(
 ): WorkerPoolConfiguration {
   const desiredWorkers = integerFromEnv({
     raw: env.CONSUELO_OS_WORKER_COUNT,
-    fallback: 1,
+    fallback: MIN_HA_OS_WORKERS,
     label: 'OS worker count',
     min: 1,
     max: MAX_OS_WORKERS,

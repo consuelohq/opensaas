@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-native-windows-service-startup-for-release-gate",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1880,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1880",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1880",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1880/fix-native-windows-service-startup-for-release-gate",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1880",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1880/fix-native-windows-service-startup-for-release-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-native-windows-service-startup-for-release-gate",
+  "taskSession": "tsk_3429362c0d95",
+  "tmuxSession": "opensaas-os-fix-native-windows-service-startup-for-release-g-3429362c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-native-windows-service-startup-for-release-gate/.task/os/fix-native-windows-service-startup-for-release-gate/session.json",
+  "createdAt": "2026-08-12T04:05:19.097Z"
+}

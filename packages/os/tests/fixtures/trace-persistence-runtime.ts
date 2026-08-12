@@ -149,11 +149,7 @@ async function run(): Promise<unknown> {
 
     if (scenario === 'fail-open') {
       process.env.CONSUELO_TRACE_DB = home;
-      const result = await executeTool('context', {
-      operation: 'search',
-      keyword: 'fail open',
-      limit: 1,
-    }, stableFacadeOptions());
+      const result = await executeTool('task.current', {}, stableFacadeOptions());
       return { result };
     }
 

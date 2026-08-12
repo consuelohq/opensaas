@@ -1354,6 +1354,72 @@ describe('workspace node management and presence', () => {
     expect(revokedHeartbeat.status).toBe(403);
   });
 
+  it('recreates missing workspace route state from durable node identity on a signed heartbeat', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const { memberKey } = await seedWorkspace(store);
+    const routes = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routes);
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routes,
+    });
+    const body = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: baseNow,
+      nonce: 'heartbeat-recreate-route-state',
+      connectorStatus: 'connected',
+      capabilities: ['mcp', 'tools'],
+    });
+    const signature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: body,
+    });
+
+    const heartbeat = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': signature,
+        },
+        body,
+      }),
+    );
+
+    expect(heartbeat.status).toBe(200);
+    await expect(heartbeat.json()).resolves.toMatchObject({
+      nodeId: 'node-member',
+      routeReady: true,
+    });
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nodeId: 'node-member',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-member',
+      target: { connectorId: 'connector_node_member' },
+    });
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nodeId: 'node-home',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-home',
+      target: { connectorId: 'connector_node_home' },
+    });
+  });
+
   it('rejects cross-workspace node listing', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);

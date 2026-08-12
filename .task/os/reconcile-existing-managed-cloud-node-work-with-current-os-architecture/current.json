@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-existing-managed-cloud-node-work-with-current-os-architecture",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1876,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1876",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1876",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1876/reconcile-existing-managed-cloud-node-work-with-current-os-architecture",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1876",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1876/reconcile-existing-managed-cloud-node-work-with-current-os-architecture",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-existing-managed-cloud-node-work-with-current-os-architecture",
+  "taskSession": "tsk_d6f6f8ddc6d5",
+  "tmuxSession": "opensaas-os-reconcile-existing-managed-cloud-node-work-with--d6f6f8dd",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-existing-managed-cloud-node-work-with-current-os-architecture/.task/os/reconcile-existing-managed-cloud-node-work-with-current-os-architecture/session.json",
+  "createdAt": "2026-08-12T03:50:42.711Z"
+}

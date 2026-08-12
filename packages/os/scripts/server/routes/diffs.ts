@@ -67,14 +67,18 @@ async function authenticate(
   requiredScope: string,
   body = '',
 ): Promise<AuthenticatedMcpPrincipal | Response> {
-  const path = new URL(request.url).pathname;
-  const authentication = await authenticateSignedRequest({
-    request,
-    path,
-    body,
-    requiredScope,
-  });
-  return authentication.ok ? authentication.principal : authentication.response;
+  try {
+    const path = new URL(request.url).pathname;
+    const authentication = await authenticateSignedRequest({
+      request,
+      path,
+      body,
+      requiredScope,
+    });
+    return authentication.ok ? authentication.principal : authentication.response;
+  } catch (error: unknown) {
+    return internalError(error);
+  }
 }
 
 function codeQuery(request: Request): { ref: string; path: string } {

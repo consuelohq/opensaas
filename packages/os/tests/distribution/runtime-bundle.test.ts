@@ -18,6 +18,7 @@ import {
   RUNTIME_BUNDLE_BUILDER_ENTRYPOINT,
   RUNTIME_BUNDLE_INTEGRATION_SCRIPT_KEYS,
   RUNTIME_BUNDLE_MANIFEST_PATH,
+  REQUIRED_RUNTIME_RECOVERY_CAPABILITIES,
   buildRuntimeBundle,
   classifyRuntimeBundlePath,
   computeReleaseFingerprint,
@@ -820,6 +821,7 @@ describe('runtime bundle contract', () => {
 
     expect(first.archiveDigest).toBe(second.archiveDigest);
     expect(first.manifest.files.length).toBeGreaterThan(300);
+    expect(first.manifest.capabilities).toEqual(REQUIRED_RUNTIME_RECOVERY_CAPABILITIES);
     expect(
       first.manifest.files.some(
         (file) => file.path === 'scripts/railway-logs.js',

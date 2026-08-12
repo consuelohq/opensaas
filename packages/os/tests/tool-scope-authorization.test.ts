@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import manifestJson from '../manifests/generated/tool.manifest.json';
 import { MCP_OAUTH_SCOPES } from '../cloudflare/os-device-authority/src/constants';
@@ -19,6 +23,18 @@ type ToolManifest = {
 };
 
 const manifest = manifestJson as ToolManifest;
+const previousConsueloHome = process.env.CONSUELO_HOME;
+const isolatedConsueloHome = mkdtempSync(join(tmpdir(), 'consuelo-tool-scope-'));
+
+beforeAll(() => {
+  process.env.CONSUELO_HOME = isolatedConsueloHome;
+});
+
+afterAll(() => {
+  if (previousConsueloHome === undefined) delete process.env.CONSUELO_HOME;
+  else process.env.CONSUELO_HOME = previousConsueloHome;
+  rmSync(isolatedConsueloHome, { recursive: true, force: true });
+});
 
 describe('central OS tool-scope authorization', () => {
   it('authorizes every known OS tool through the standard connected-client grants', () => {

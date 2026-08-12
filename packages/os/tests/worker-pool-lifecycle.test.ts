@@ -35,11 +35,11 @@ async function waitFor(condition: () => boolean, timeoutMs = 500): Promise<void>
 }
 
 describe('OS worker pool lifecycle', () => {
-  it('defaults to one worker and assigns deterministic bounded ports', () => {
+  it('defaults to an HA pair and assigns deterministic bounded ports', () => {
     expect(resolveWorkerPoolConfiguration({})).toMatchObject({
-      desiredWorkers: 1,
+      desiredWorkers: 2,
       basePort: 46321,
-      workerPorts: [46321],
+      workerPorts: [46321, 46322],
     });
 
     expect(

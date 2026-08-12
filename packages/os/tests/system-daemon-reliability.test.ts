@@ -130,6 +130,40 @@ describe('macOS runtime service reliability', () => {
     expect(caddyPlist).toContain(`<string>${caddyBin}</string>`);
   });
 
+  it('should never copy the retired generic MCP bearer credential into generated daemon plists', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-retired-mcp-');
+    const scriptsDirectory = join(fixtureRoot, 'scripts');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    mkdirSync(scriptsDirectory, { recursive: true });
+    mkdirSync(home, { recursive: true });
+    copyFileSync(
+      resolve(osRoot, 'scripts/generate-system-daemons.sh'),
+      join(scriptsDirectory, 'generate-system-daemons.sh'),
+    );
+
+    const result = run('bash', [join(scriptsDirectory, 'generate-system-daemons.sh')], {
+      ...process.env,
+      HOME: home,
+      USER: process.env.USER ?? 'nobody',
+      CONSUELO_HOME: consueloHome,
+      MCP_BEARER_TOKEN: 'retired-fixture-value',
+      PORTLESS_ENABLED: '0',
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    const generatedDirectory = join(consueloHome, 'node', 'security', 'generated');
+    for (const name of [
+      'com.consuelo.system.plist',
+      'com.consuelo.caddy.plist',
+      'com.consuelo.watchdog.plist',
+    ]) {
+      expect(readFileSync(join(generatedDirectory, name), 'utf8')).not.toContain(
+        'MCP_BEARER_TOKEN',
+      );
+    }
+  });
+
   it('should generate an AC-only availability assertion and scheduled watchdog when availability is explicitly enabled', () => {
     const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-');
     const scriptsDirectory = join(fixtureRoot, 'scripts');
@@ -348,5 +382,55 @@ describe('macOS runtime service reliability', () => {
     expect(launchCommands).toContain('com.consuelo.portless.system');
     expect(launchCommands).toContain('kickstart -k gui/');
     expect(existsSync(consueloLog)).toBe(false);
+  });
+
+  it('should reconcile signed public route state before escalating a locally healthy node to restart', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-watchdog-public-route-');
+    const fakeBin = join(fixtureRoot, 'bin');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const eventLog = join(fixtureRoot, 'events.log');
+    const heartbeatConfig = join(
+      consueloHome,
+      'node',
+      'security',
+      'generated',
+      'workspace-node-heartbeat.json',
+    );
+    mkdirSync(fakeBin, { recursive: true });
+    mkdirSync(join(consueloHome, 'bin'), { recursive: true });
+    mkdirSync(join(consueloHome, 'node', 'security', 'generated'), {
+      recursive: true,
+    });
+    writeFileSync(heartbeatConfig, '{}');
+    writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(
+      join(fakeBin, 'bun'),
+      '#!/bin/bash\nprintf "heartbeat\\n" >> "$WATCHDOG_EVENT_LOG"\nprintf \'{"nodeId":"node_home","routeReady":false}\\n\'\n',
+    );
+    writeExecutable(
+      join(consueloHome, 'bin', 'consuelo'),
+      '#!/bin/bash\nprintf "restart %s\\n" "$*" >> "$WATCHDOG_EVENT_LOG"\n',
+    );
+
+    const result = run('bash', [resolve(osRoot, 'scripts/workspace-watchdog.sh')], {
+      ...process.env,
+      HOME: home,
+      CONSUELO_HOME: consueloHome,
+      WORKSPACE_WATCHDOG_PATH: `${fakeBin}:/usr/bin:/bin:/usr/sbin:/sbin`,
+      WORKSPACE_WATCHDOG_BUN_BIN: join(fakeBin, 'bun'),
+      WORKSPACE_WATCHDOG_DISABLE_EXTERNAL: '1',
+      WORKSPACE_WATCHDOG_PUBLIC_ROUTE_FAILURE_THRESHOLD: '1',
+      WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
+      WATCHDOG_EVENT_LOG: eventLog,
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    expect(readFileSync(eventLog, 'utf8').trim().split('\n')).toEqual([
+      'heartbeat',
+      'restart restart --quiet',
+    ]);
+    expect(result.stdout).toContain('public connector route reconciliation failed');
   });
 });

@@ -16,3 +16,9 @@ Allowed status values are `shipped`, `preview`, `planned`, `unresolved`, and `de
 ## Page contract
 
 A task page should state what the reader will accomplish, prerequisites, the shortest correct path, exact commands or settings, the expected result, verification, common failures, and the relevant reference page.
+
+## Skill Templates
+
+`src/content/docs/build/skills/bundled/` is a generated review/install surface for bundled OS skills. The per-skill page contract is intentionally minimal: enable/remove commands, the exact registry description, then the exact `SKILL.md` body.
+
+Do not paraphrase or add editorial usage/boundary/verification sections to those pages. Update the source skill, regenerate with `bun run generate:skill-templates`, and let `tests/build.test.ts` prove the preview remains exact.

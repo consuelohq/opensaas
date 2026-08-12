@@ -164,13 +164,19 @@ function cacheKey(namespace: string, operation: string): string {
   return `${namespace}:${operation}`;
 }
 
-async function cached<T>(key: string, ttlMs: number, loader: () => Promise<T>): Promise<T> {
+function cached<T>(key: string, ttlMs: number, loader: () => Promise<T>): Promise<T> {
   const existing = productReadCache.get(key);
-  if (existing && existing.expiresAt > Date.now()) return existing.value as T;
+  if (existing && existing.expiresAt > Date.now()) return Promise.resolve(existing.value as T);
   if (existing) productReadCache.delete(key);
-  const value = await loader();
-  productReadCache.set(key, { value, expiresAt: Date.now() + ttlMs });
-  return value;
+  return loader()
+    .then((value) => {
+      productReadCache.set(key, { value, expiresAt: Date.now() + ttlMs });
+      return value;
+    })
+    .catch((error: unknown) => {
+      productReadCache.delete(key);
+      throw error;
+    });
 }
 
 function invalidateNamespace(namespace: string): void {
@@ -246,7 +252,7 @@ export function readDiffsRepository(input: {
   return requireRepository(loadWorkspace(home, workspaceId), input.owner, input.repo);
 }
 
-export async function loadDiffsPullRequestIndex(input: {
+export function loadDiffsPullRequestIndex(input: {
   home?: string;
   principal: AuthenticatedMcpPrincipal;
   owner: string;
@@ -260,15 +266,15 @@ export async function loadDiffsPullRequestIndex(input: {
     workspaceId,
     repository,
     principal: input.principal,
-    operation: async (token, namespace) => rebaseProductUrls(
-      await cached(cacheKey(namespace, 'pulls'), READ_CACHE_TTL_MS, () =>
-        createGithubPullRequestIndexLoader({ token })(repositoryLocator(repository))),
-      repositoryLocator(repository),
-    ),
+    operation: (token, namespace) => cached(
+      cacheKey(namespace, 'pulls'),
+      READ_CACHE_TTL_MS,
+      () => createGithubPullRequestIndexLoader({ token })(repositoryLocator(repository)),
+    ).then((value) => rebaseProductUrls(value, repositoryLocator(repository))),
   });
 }
 
-export async function loadDiffsPullRequest(input: {
+export function loadDiffsPullRequest(input: {
   home?: string;
   principal: AuthenticatedMcpPrincipal;
   owner: string;
@@ -283,18 +289,18 @@ export async function loadDiffsPullRequest(input: {
     workspaceId,
     repository,
     principal: input.principal,
-    operation: async (token, namespace) => rebaseProductUrls(
-      await cached(cacheKey(namespace, `pull:${input.number}`), READ_CACHE_TTL_MS, () =>
-        createGithubPullRequestLoader({ token })({
-          ...repositoryLocator(repository),
-          number: input.number,
-        })),
-      repositoryLocator(repository),
-    ),
+    operation: (token, namespace) => cached(
+      cacheKey(namespace, `pull:${input.number}`),
+      READ_CACHE_TTL_MS,
+      () => createGithubPullRequestLoader({ token })({
+        ...repositoryLocator(repository),
+        number: input.number,
+      }),
+    ).then((value) => rebaseProductUrls(value, repositoryLocator(repository))),
   });
 }
 
-export async function loadDiffsCode(input: {
+export function loadDiffsCode(input: {
   home?: string;
   principal: AuthenticatedMcpPrincipal;
   owner: string;
@@ -311,19 +317,19 @@ export async function loadDiffsCode(input: {
     workspaceId,
     repository,
     principal: input.principal,
-    operation: async (token, namespace) => rebaseProductUrls(
-      await cached(cacheKey(namespace, `code:${input.ref}:${codePath}`), CODE_CACHE_TTL_MS, () =>
-        createGithubCodeBrowserLoader({ token })({
-          ...repositoryLocator(repository),
-          ref: input.ref,
-          path: codePath,
-        })),
-      repositoryLocator(repository),
-    ),
+    operation: (token, namespace) => cached(
+      cacheKey(namespace, `code:${input.ref}:${codePath}`),
+      CODE_CACHE_TTL_MS,
+      () => createGithubCodeBrowserLoader({ token })({
+        ...repositoryLocator(repository),
+        ref: input.ref,
+        path: codePath,
+      }),
+    ).then((value) => rebaseProductUrls(value, repositoryLocator(repository))),
   });
 }
 
-export async function loadDiffsHistory(input: {
+export function loadDiffsHistory(input: {
   home?: string;
   principal: AuthenticatedMcpPrincipal;
   owner: string;
@@ -340,15 +346,15 @@ export async function loadDiffsHistory(input: {
     workspaceId,
     repository,
     principal: input.principal,
-    operation: async (token, namespace) => rebaseProductUrls(
-      await cached(cacheKey(namespace, `history:${input.ref}:${codePath}`), CODE_CACHE_TTL_MS, () =>
-        createGithubCodeHistoryLoader({ token })({
-          ...repositoryLocator(repository),
-          ref: input.ref,
-          path: codePath,
-        })),
-      repositoryLocator(repository),
-    ),
+    operation: (token, namespace) => cached(
+      cacheKey(namespace, `history:${input.ref}:${codePath}`),
+      CODE_CACHE_TTL_MS,
+      () => createGithubCodeHistoryLoader({ token })({
+        ...repositoryLocator(repository),
+        ref: input.ref,
+        path: codePath,
+      }),
+    ).then((value) => rebaseProductUrls(value, repositoryLocator(repository))),
   });
 }
 
@@ -372,7 +378,69 @@ async function githubPayload(response: Response): Promise<Record<string, unknown
   }
 }
 
-export async function mergeDiffsPullRequest(input: {
+async function performGithubPullRequestMerge(input: {
+  token: string;
+  repository: RequiredWorkspaceSourceControlRepository;
+  number: number;
+}): Promise<Record<string, unknown>> {
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${encodeURIComponent(input.repository.owner)}/${encodeURIComponent(input.repository.repository)}/pulls/${input.number}/merge`,
+      {
+        method: 'PUT',
+        headers: { ...githubHeaders(input.token), 'content-type': 'application/json' },
+        body: JSON.stringify({ merge_method: 'merge' }),
+      },
+    );
+    const payload = await githubPayload(response);
+    if (!response.ok) {
+      throw new DiffsGatewayError(
+        'SOURCE_CONTROL_WRITE_FAILED',
+        response.status,
+        typeof payload.message === 'string' ? payload.message : `GitHub merge failed: ${response.status}`,
+      );
+    }
+    return {
+      ok: true,
+      merged: payload.merged === true,
+      sha: typeof payload.sha === 'string' ? payload.sha : '',
+      message: typeof payload.message === 'string' ? payload.message : 'Merged',
+    };
+  } catch (error: unknown) {
+    if (error instanceof DiffsGatewayError) throw error;
+    throw new DiffsGatewayError('SOURCE_CONTROL_WRITE_FAILED', 502, 'GitHub merge request failed.');
+  }
+}
+
+async function performGithubReviewThreadMutation(input: {
+  token: string;
+  threadId: string;
+  action: 'resolve' | 'unresolve';
+}): Promise<Record<string, unknown>> {
+  try {
+    const mutationName = input.action === 'resolve' ? 'resolveReviewThread' : 'unresolveReviewThread';
+    const query = `mutation ConsueloDiffsReviewThread($threadId: ID!) { ${mutationName}(input: { threadId: $threadId }) { thread { id isResolved } } }`;
+    const response = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { ...githubHeaders(input.token), 'content-type': 'application/json' },
+      body: JSON.stringify({ query, variables: { threadId: input.threadId } }),
+    });
+    const payload = await githubPayload(response);
+    if (!response.ok || Array.isArray(payload.errors)) {
+      throw new DiffsGatewayError(
+        'SOURCE_CONTROL_WRITE_FAILED',
+        response.ok ? 502 : response.status,
+        'GitHub review thread update failed.',
+      );
+    }
+    return { ok: true, action: input.action, payload };
+  } catch (error: unknown) {
+    if (error instanceof DiffsGatewayError) throw error;
+    throw new DiffsGatewayError('SOURCE_CONTROL_WRITE_FAILED', 502, 'GitHub review thread request failed.');
+  }
+}
+
+export function mergeDiffsPullRequest(input: {
   home?: string;
   principal: AuthenticatedMcpPrincipal;
   owner: string;
@@ -387,35 +455,18 @@ export async function mergeDiffsPullRequest(input: {
     workspaceId,
     repository,
     principal: input.principal,
-    operation: async (token, namespace) => {
-      const response = await fetch(
-        `https://api.github.com/repos/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.repository)}/pulls/${input.number}/merge`,
-        {
-          method: 'PUT',
-          headers: { ...githubHeaders(token), 'content-type': 'application/json' },
-          body: JSON.stringify({ merge_method: 'merge' }),
-        },
-      );
-      const payload = await githubPayload(response);
-      if (!response.ok) {
-        throw new DiffsGatewayError(
-          'SOURCE_CONTROL_WRITE_FAILED',
-          response.status,
-          typeof payload.message === 'string' ? payload.message : `GitHub merge failed: ${response.status}`,
-        );
-      }
+    operation: (token, namespace) => performGithubPullRequestMerge({
+      token,
+      repository,
+      number: input.number,
+    }).then((result) => {
       invalidateNamespace(namespace);
-      return {
-        ok: true,
-        merged: payload.merged === true,
-        sha: typeof payload.sha === 'string' ? payload.sha : '',
-        message: typeof payload.message === 'string' ? payload.message : 'Merged',
-      };
-    },
+      return result;
+    }),
   });
 }
 
-export async function mutateDiffsReviewThread(input: {
+export function mutateDiffsReviewThread(input: {
   home?: string;
   principal: AuthenticatedMcpPrincipal;
   owner: string;
@@ -435,25 +486,14 @@ export async function mutateDiffsReviewThread(input: {
     workspaceId,
     repository,
     principal: input.principal,
-    operation: async (token, namespace) => {
-      const mutationName = input.action === 'resolve' ? 'resolveReviewThread' : 'unresolveReviewThread';
-      const query = `mutation ConsueloDiffsReviewThread($threadId: ID!) { ${mutationName}(input: { threadId: $threadId }) { thread { id isResolved } } }`;
-      const response = await fetch('https://api.github.com/graphql', {
-        method: 'POST',
-        headers: { ...githubHeaders(token), 'content-type': 'application/json' },
-        body: JSON.stringify({ query, variables: { threadId: input.threadId } }),
-      });
-      const payload = await githubPayload(response);
-      if (!response.ok || Array.isArray(payload.errors)) {
-        throw new DiffsGatewayError(
-          'SOURCE_CONTROL_WRITE_FAILED',
-          response.ok ? 502 : response.status,
-          'GitHub review thread update failed.',
-        );
-      }
+    operation: (token, namespace) => performGithubReviewThreadMutation({
+      token,
+      threadId: input.threadId,
+      action: input.action,
+    }).then((result) => {
       invalidateNamespace(namespace);
-      return { ok: true, action: input.action, payload };
-    },
+      return result;
+    }),
   });
 }
 

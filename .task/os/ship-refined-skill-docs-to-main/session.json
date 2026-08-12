@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_273c7e2f0b5b",
+  "tmuxSession": "opensaas-os-ship-refined-skill-docs-to-main-273c7e2f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/ship-refined-skill-docs-to-main",
+  "branch": "task/os/ship-refined-skill-docs-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-refined-skill-docs-to-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-refined-skill-docs-to-main",
+  "prNumber": 1878,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1878",
+  "createdAt": "2026-08-12T03:55:59.637Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-refined-skill-docs-to-main/.task/os/ship-refined-skill-docs-to-main/session.json"
+}
