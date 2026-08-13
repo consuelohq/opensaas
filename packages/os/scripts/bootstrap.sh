@@ -76,6 +76,7 @@ DEV_REPORT_ROOT="${CONSUELO_OS_DEV_REPORTS_DIR:-$HOME/.consuelo-dev-reports}"
 DEV_REPORT_DIR="${CONSUELO_OS_DEV_REPORT_DIR:-}"
 CHILD_INSTALL_RAW_TRANSCRIPT=""
 CHILD_INSTALL_TRANSCRIPT=""
+CONSUELO_INSTALL_ID="${CONSUELO_INSTALL_ID:-}"
 
 BUN_BIN=""
 PORTLESS_BIN="${PORTLESS_BIN:-}"
@@ -99,6 +100,21 @@ ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
 CONTACT_URL="https://consuelohq.com/contact/"
 OS_MODE=""
+
+ensure_install_id() {
+  if printf '%s' "$CONSUELO_INSTALL_ID" | grep -Eq '^ins_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'; then
+    export CONSUELO_INSTALL_ID
+    return 0
+  fi
+  [ -n "$BUN_BIN" ] || fail "Consuelo OS could not create install telemetry correlation before Bun was ready"
+  local install_uuid
+  install_uuid="$("$BUN_BIN" --print 'crypto.randomUUID().toLowerCase()')" || fail "Consuelo OS could not create install telemetry correlation"
+  if ! printf '%s' "$install_uuid" | grep -Eq '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'; then
+    fail "Consuelo OS generated an invalid install telemetry correlation id"
+  fi
+  CONSUELO_INSTALL_ID="ins_$install_uuid"
+  export CONSUELO_INSTALL_ID
+}
 
 cleanup_runtime_stage() {
   if [ -n "$RUNTIME_STAGE_DIR" ] && [ -d "$RUNTIME_STAGE_DIR" ]; then
@@ -1808,6 +1824,7 @@ main() {
   render_dependency_progress
   prompt_dependency_setup
   ensure_bun
+  ensure_install_id
   ensure_portless
   ensure_caddy
   ensure_cloudflared
