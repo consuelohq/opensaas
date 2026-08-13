@@ -1,0 +1,30 @@
+{
+  "rules": [
+    {
+      "id": "delete-failed-install-diagnostics-after-30-days",
+      "enabled": true,
+      "conditions": {
+        "prefix": "install-diagnostics/failed/"
+      },
+      "deleteObjectsTransition": {
+        "condition": {
+          "type": "Age",
+          "maxAge": 2592000
+        }
+      }
+    },
+    {
+      "id": "delete-successful-install-diagnostics-after-7-days",
+      "enabled": true,
+      "conditions": {
+        "prefix": "install-diagnostics/successful/"
+      },
+      "deleteObjectsTransition": {
+        "condition": {
+          "type": "Age",
+          "maxAge": 604800
+        }
+      }
+    }
+  ]
+}

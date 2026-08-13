@@ -5,6 +5,7 @@ import { json } from './http';
 import { registerDeviceRoutes } from './routes/device';
 import { registerGoogleOAuthRoutes } from './routes/google-oauth';
 import { registerHealthRoutes } from './routes/health';
+import { registerInstallControlPlaneRoutes } from './routes/install-control-plane';
 import { registerMcpOAuthRoutes } from './routes/mcp-oauth';
 import { registerMcpProxyRoutes } from './routes/mcp-proxy';
 import { registerWorkspaceAgentRoutes } from './routes/workspace-agents';
@@ -34,6 +35,8 @@ export type CreateDeviceAuthorityHandlerInput = {
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
   operationalLogger?: DeviceAuthorityLogger;
+  installControlPlaneRepository?: DeviceAuthorityRuntime['installControlPlaneRepository'];
+  installDiagnosticBundleStore?: DeviceAuthorityRuntime['installDiagnosticBundleStore'];
 };
 
 export function createOsDeviceAuthorityApp(
@@ -48,6 +51,7 @@ export function createOsDeviceAuthorityApp(
   const app = new Hono();
 
   registerHealthRoutes(app, runtime);
+  registerInstallControlPlaneRoutes(app, runtime);
   registerMcpProxyRoutes(app, runtime);
   registerMcpOAuthRoutes(app, runtime);
   registerGoogleOAuthRoutes(app, runtime);
