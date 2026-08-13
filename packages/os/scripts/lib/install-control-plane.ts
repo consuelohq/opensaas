@@ -62,6 +62,10 @@ export type InstallControlPlaneRepository = {
   ): Promise<{ created: boolean; install: InstallDashboardInstallSummary }>;
   upsertUser(record: InstallControlPlaneUserRecord): Promise<void>;
   recordDiagnosticBundle(record: InstallControlPlaneDiagnosticRecord): Promise<void>;
+  getDiagnosticBundleRecord(
+    installId: InstallId,
+    options: { nowMs: number },
+  ): Promise<InstallControlPlaneDiagnosticRecord | undefined>;
   recordEvidence(record: InstallControlPlaneEvidenceRecord): Promise<void>;
   getInstallDetail(
     installId: InstallId,
@@ -480,6 +484,16 @@ export function createMemoryInstallControlPlaneRepository(): InstallControlPlane
       state.diagnostics.set(record.bundleId, { ...record });
       const session = state.sessions.get(record.installId)!;
       session.diagnosticAvailable = true;
+    },
+
+    async getDiagnosticBundleRecord(installId, options) {
+      return [...state.diagnostics.values()]
+        .filter(
+          (record) =>
+            record.installId === installId &&
+            isoMs(record.expiresAt, 'diagnostic expiresAt') > options.nowMs,
+        )
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
     },
 
     async recordEvidence(record) {
