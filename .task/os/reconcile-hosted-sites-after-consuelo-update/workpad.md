@@ -98,6 +98,8 @@ started: 2026-08-13
 - 2026-08-13 20:01:49 `verify`: failed — COMMAND_FAILED
 - 2026-08-13 21:30:07 `review.run`: passed — OK
 - 2026-08-13 21:30:28 `verify`: passed — OK
+- 2026-08-13 21:34:29 `review.run`: passed — OK
+- 2026-08-13 21:34:52 `verify`: passed — OK
 
 ## key decisions
 
@@ -152,6 +154,10 @@ started: 2026-08-13
 - Final promotion retry: after the guarded task push, `stream/os` advanced another 22 commits and GitHub correctly reported #1911 as `DIRTY`. The isolated task worktree was fast-forwarded to pushed task SHA `4ca4583d3381a9416604431ed9183ef19e7c04a6`, then latest stream head `bd2e00fc8481f2a9f2d4012d482165c38cfad44c` was merged locally.
 - That latest-stream merge produced exactly one conflict: generated `packages/workspace/test-selection.registry.json`. The canonical source rule/test files merged automatically with no conflict markers. The registry was regenerated from those merged sources rather than choosing ours/theirs, yielding 45 rules / 26 explicit rules and preserving both stream additions and the hosted-site rule.
 - Post-resolution selector regression passed 24/24 against the latest merged stream (trace `trc_4e50ad7d6409`).
+- Latest-stream merge committed locally at `a1045760beb11ae3e619b6e324637ceeef9715fb` after canonical registry regeneration.
+- Final strict review against latest `origin/stream/os`: 0 blocking findings / 0 pre-existing findings (trace `trc_5f93c310d463`).
+- Final full verify against latest `origin/stream/os`: `publishValid: true`, review passed, selected tests passed, DB guard 0 risks/findings (trace `trc_db35a7468a18`).
+- The remaining publish step is mechanical: fast-forward the existing #1911 remote branch to the verified merge commit, use normal guarded `task.push` for the refreshed verification/workpad metadata, then `task.pr` into `stream/os`.
 
 - 2026-08-13 19:13:49 write: `.task/os/reconcile-hosted-sites-after-consuelo-update/workpad.md`
 
@@ -196,3 +202,5 @@ started: 2026-08-13
 - 2026-08-13 21:30:54 apply-patch: `.task/os/reconcile-hosted-sites-after-consuelo-update/workpad.md`
 
 - 2026-08-13 21:33:46 apply-patch: `.task/os/reconcile-hosted-sites-after-consuelo-update/workpad.md`
+
+- 2026-08-13 21:35:05 apply-patch: `.task/os/reconcile-hosted-sites-after-consuelo-update/workpad.md`
