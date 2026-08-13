@@ -26,7 +26,7 @@ started: 2026-08-13
 
 ## current status
 
-- Implementation is complete and validated. The first promotion attempt encountered a real three-file test-selection conflict because `stream/os` advanced with one-click cloud provisioning and verifier-focused selectors after this task started. The resolution preserves those newer stream selectors and layers the lifecycle handoff selector on top. The OS facade then temporarily returned 502s before publish; the same task session is recovered and promotion is resuming without touching unrelated work.
+- Implementation is complete and validated. The task now has an explicit merge parent from current `stream/os` (`984b62d5...`) so GitHub can promote it without replaying the resolved selector conflict. The merged tree preserves the stream's newer Caddy/lifecycle restart change as well as the managed-cloud/Vitest selectors, and layers the lifecycle handoff on top. It is ready for the final task-branch push and `task.pr` promotion.
 
 ## files changed
 
@@ -47,6 +47,7 @@ started: 2026-08-13
 
 - 2026-08-13 19:56:23 `verify`: passed — OK
 - 2026-08-13 19:58:45 `verify`: passed — OK
+- 2026-08-13 20:02:55 `verify`: passed — OK
 
 ## key decisions
 
@@ -73,6 +74,10 @@ started: 2026-08-13
 - Post-resolution selector validation passed 22/22. Structural registry checks proved unique rule IDs, expected rule ordering, preservation of all stream rules/tests, exactly +1 explicit lifecycle rule and +2 lifecycle test files, stable unmapped-test count, and consistent registry summary counts.
 - Post-resolution `verify` passed with `publishValid: true`, zero blocking review findings, and zero DB risks/findings.
 - The OS facade then returned HTTP 502 before the resolved tree could be pushed. After recovery, the original task session `tsk_670b789e26df` and worktree were recovered directly; no new task or branch was created.
+- `task.push` then correctly rejected a stale local ref (`1e159762` vs remote `1805a0be`). Recovery followed the repository's own API-push synchronization model: fetch the remote task branch and use a mixed reset so the working tree is preserved while the local ref catches up.
+- While recovering, `stream/os` advanced again to `984b62d5` via a main sync. Read-only merge analysis showed the new lifecycle change was auto-mergeable; the only actual unresolved files were the selector registry/rules. The task branch now contains merge commit `24b29d2760` with parents `1805a0be...` and `984b62d5...`.
+- Post-merge focused proof: workspace selector suite 22/22 passed; lifecycle/platform/facade/tool/restart suite 141/141 passed across 10 files; full `verify --base origin/stream/os` is publish-valid with zero blocking review findings and zero DB risks/findings.
+- Because `task.pr` cannot create a merge commit when non-metadata conflicts require semantic resolution, the verified merge commit was pushed with a normal fast-forward `git push` to the existing task branch (no force); task metadata updates continue through `task.push` before retrying `task.pr`.
 
 ---
 
@@ -88,3 +93,7 @@ bun run task:finish
 
 - `packages/workspace/scripts/lib/git.js`
 - `packages/workspace/scripts/task-push.js`
+
+- 2026-08-13 20:03:18 apply-patch: `.task/os/universal-lifecycle-update-handoff/workpad.md`
+
+- 2026-08-13 20:03:46 apply-patch: `.task/os/universal-lifecycle-update-handoff/workpad.md`
