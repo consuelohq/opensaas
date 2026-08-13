@@ -29,6 +29,11 @@ jobs:
         packages/twenty-shared/**
         packages/twenty-sdk/**
         !packages/twenty-sdk/package.json
+        .github/workflows/ci-front.yaml
+        packages/workspace/scripts/ci/lint-changed-frontend-files.mjs
+        packages/workspace/scripts/ci/run-changed-frontend-task.mjs
+        packages/workspace/tests/lint-changed-frontend-files.test.mjs
+        packages/workspace/tests/run-changed-frontend-task.test.mjs
   changed-files-check-e2e:
     uses: ./.github/workflows/changed-files.yaml
     with:
@@ -42,7 +47,7 @@ jobs:
     needs: changed-files-check
     if: needs.changed-files-check.outputs.any_changed == 'true'
     timeout-minutes: 30
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     env:
       REACT_APP_SERVER_BASE_URL: http://localhost:3000
     steps:
@@ -68,7 +73,7 @@ jobs:
           key: ${{ env.STORYBOOK_BUILD_CACHE_KEY_FOR_SAVE_ACTION }}
   front-sb-test:
     timeout-minutes: 30
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     needs: front-sb-build
     strategy:
       fail-fast: false
@@ -158,6 +163,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore ${{ matrix.task }} cache
@@ -170,11 +177,14 @@ jobs:
         with:
           tag: scope:frontend
           tasks: reset:env
-      - name: Run ${{ matrix.task }} task
-        uses: ./.github/actions/nx-affected
-        with:
-          tag: scope:frontend
-          tasks: ${{ matrix.task }}
+      - name: Resolve frontend task comparison SHAs
+        uses: nrwl/nx-set-shas@v4
+      - name: Lint changed frontend files
+        if: matrix.task == 'lint'
+        run: node packages/workspace/scripts/ci/lint-changed-frontend-files.mjs
+      - name: Run changed frontend ${{ matrix.task }} task
+        if: matrix.task != 'lint'
+        run: node packages/workspace/scripts/ci/run-changed-frontend-task.mjs --task ${{ matrix.task }}
       - name: Save ${{ matrix.task }} cache
         uses: ./.github/actions/save-cache
         with:
@@ -183,7 +193,7 @@ jobs:
     needs: changed-files-check
     if: needs.changed-files-check.outputs.any_changed == 'true'
     timeout-minutes: 30
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: "--max-old-space-size=10240"
     steps:

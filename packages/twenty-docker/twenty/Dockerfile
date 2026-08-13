@@ -24,7 +24,6 @@ COPY ./packages/coaching/package.json /app/packages/coaching/
 COPY ./packages/contacts/package.json /app/packages/contacts/
 COPY ./packages/dialer/package.json /app/packages/dialer/
 COPY ./packages/logger/package.json /app/packages/logger/
-COPY ./packages/metering/package.json /app/packages/metering/
 COPY ./packages/sdk/package.json /app/packages/sdk/
 
 # Install all dependencies. Native packages such as sharp/canvas download
@@ -88,7 +87,6 @@ COPY ./packages/coaching /app/packages/coaching
 COPY ./packages/contacts /app/packages/contacts
 COPY ./packages/dialer /app/packages/dialer
 COPY ./packages/logger /app/packages/logger
-COPY ./packages/metering /app/packages/metering
 COPY ./packages/sdk /app/packages/sdk
 RUN npx nx build twenty-shared && cd packages/twenty-front && npx @lingui/cli extract --clean && npx @lingui/cli compile
 RUN NODE_OPTIONS="--max-old-space-size=4096" npx nx build twenty-front

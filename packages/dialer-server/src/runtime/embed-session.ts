@@ -40,6 +40,9 @@ const parsePayload = (value: string): EmbedSessionPayload | null => {
       !payload.installationId ||
       typeof payload.locationId !== 'string' ||
       !payload.locationId ||
+      typeof payload.role !== 'string' ||
+      !payload.role ||
+      (payload.contextType !== 'agency' && payload.contextType !== 'location') ||
       typeof payload.issuedAt !== 'number' ||
       typeof payload.expiresAt !== 'number'
     ) {
@@ -76,6 +79,8 @@ export const createEmbedSessionService = (options: {
           userId: identity.userId,
           installationId: identity.installationId,
           locationId: identity.locationId,
+          role: identity.role,
+          contextType: identity.contextType,
           issuedAt,
           expiresAt,
         } satisfies EmbedSessionPayload),
@@ -113,6 +118,8 @@ export const createEmbedSessionService = (options: {
         userId: payload.userId,
         installationId: payload.installationId,
         locationId: payload.locationId,
+        role: payload.role,
+        contextType: payload.contextType,
       };
       if (options.validateIdentity) {
         try {

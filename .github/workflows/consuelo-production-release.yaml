@@ -18,6 +18,7 @@ on:
           - docs
           - website
           - os
+          - dialer
       migrate_mcp_origin_waf:
         description: Migrate the managed OS MCP rules to the canonical connector-origin hostname class.
         required: false
@@ -34,6 +35,43 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  dialer-changes:
+    name: Consuelo / dialer release changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      release: ${{ steps.classify.outputs.release }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Classify dialer release changes
+        id: classify
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            case "${{ inputs.target }}" in
+              all|dialer) echo "release=true" >> "$GITHUB_OUTPUT" ;;
+              *) echo "release=false" >> "$GITHUB_OUTPUT" ;;
+            esac
+            exit 0
+          fi
+
+          before="${{ github.event.before }}"
+          if [[ -z "$before" || "$before" =~ ^0+$ ]]; then
+            before="$(git rev-parse HEAD^)"
+          fi
+          git diff --name-only "$before" "$GITHUB_SHA" > "$RUNNER_TEMP/dialer-release-changes.txt"
+          cat "$RUNNER_TEMP/dialer-release-changes.txt"
+          if grep -Eq '^(packages/(dialer|dialer-server|lead-connector|logger)/|\.github/workflows/(consuelo-ci|consuelo-production-release|consuelo-dialer-rollback)\.yaml$|package\.json$|yarn\.lock$|\.yarnrc\.yml$|\.yarn/|nx\.json$|tsconfig[^/]*\.json$)' "$RUNNER_TEMP/dialer-release-changes.txt"; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy-docs:
     name: Consuelo / docs deploy
     if: github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'docs'
@@ -198,3 +236,187 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WAF_API_TOKEN }}
           CLOUDFLARE_ZONE_ID: 3787f63d39977227bc1cb346e0d67dc9
           CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: mcp_allowed_ips
+  release-dialer:
+    name: Consuelo / dialer production release
+    needs: dialer-changes
+    if: needs.dialer-changes.outputs.release == 'true'
+    environment: consuelo dialer / production
+    timeout-minutes: 40
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact release source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Validate dialer release source
+        run: |
+          bun test packages/dialer/src
+          bun test packages/dialer-server/src
+          bun test packages/lead-connector/src
+          bun run --cwd packages/logger build
+          bun run --cwd packages/dialer typecheck
+          bun run --cwd packages/dialer-server typecheck
+          bun run --cwd packages/lead-connector typecheck
+          bun run --cwd packages/dialer build
+          bun run --cwd packages/lead-connector build
+          bun run --cwd packages/dialer-server build
+
+      - name: Validate dialer deployment configuration
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+          RAILWAY_DIALER_PROJECT_ID: ${{ vars.RAILWAY_DIALER_PROJECT_ID }}
+          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
+          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
+          RAILWAY_DIALER_PUBLIC_ORIGIN: ${{ vars.RAILWAY_DIALER_PUBLIC_ORIGIN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+          LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN: ${{ secrets.LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN }}
+          LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID }}
+          LEADCONNECTOR_PRODUCTION_LOCATION_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_LOCATION_ID }}
+          LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
+        run: |
+          set -euo pipefail
+          for name in \
+            RAILWAY_TOKEN \
+            RAILWAY_DIALER_PROJECT_ID \
+            RAILWAY_DIALER_ENVIRONMENT_ID \
+            RAILWAY_DIALER_SERVICE_ID \
+            RAILWAY_DIALER_PUBLIC_ORIGIN \
+            CLOUDFLARE_ACCOUNT_ID \
+            CLOUDFLARE_API_TOKEN \
+            LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN \
+            LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID \
+            LEADCONNECTOR_PRODUCTION_LOCATION_ID \
+            LEADCONNECTOR_PRODUCTION_EMBED_URL; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing dialer production deployment setting: ${name}"
+              exit 1
+            fi
+          done
+
+      - name: Link Railway release target
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+          RAILWAY_DIALER_PROJECT_ID: ${{ vars.RAILWAY_DIALER_PROJECT_ID }}
+          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
+          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
+        run: >-
+          bunx @railway/cli@5.27.2 link
+          --project "$RAILWAY_DIALER_PROJECT_ID"
+          --environment "$RAILWAY_DIALER_ENVIRONMENT_ID"
+          --service "$RAILWAY_DIALER_SERVICE_ID"
+          --json
+
+      - name: Snapshot Railway deployment
+        id: railway-before
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
+          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
+        run: |
+          bun packages/dialer-server/scripts/railway-deployment.ts latest > "$RUNNER_TEMP/railway-before.json"
+          deployment_id="$(jq -r '.id // "none"' "$RUNNER_TEMP/railway-before.json")"
+          echo "deployment_id=${deployment_id}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy dialer server to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+          RAILWAY_DIALER_PROJECT_ID: ${{ vars.RAILWAY_DIALER_PROJECT_ID }}
+          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
+          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
+        run: >-
+          bunx @railway/cli@5.27.2 up
+          --project "$RAILWAY_DIALER_PROJECT_ID"
+          --environment "$RAILWAY_DIALER_ENVIRONMENT_ID"
+          --service "$RAILWAY_DIALER_SERVICE_ID"
+          --json
+
+      - name: Wait for Railway deployment success
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
+          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
+        run: >-
+          bun packages/dialer-server/scripts/railway-deployment.ts wait
+          "${{ steps.railway-before.outputs.deployment_id }}"
+          > "$RUNNER_TEMP/railway-deployment.json"
+
+      - name: Capture Railway failure logs
+        if: failure()
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
+          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
+        run: >-
+          bunx @railway/cli@5.27.2 logs
+          --service "$RAILWAY_DIALER_SERVICE_ID"
+          --environment "$RAILWAY_DIALER_ENVIRONMENT_ID"
+          --latest --lines 200 --json
+
+      - name: Run safe dialer production smoke
+        env:
+          DIALER_PRODUCTION_ORIGIN: ${{ vars.RAILWAY_DIALER_PUBLIC_ORIGIN }}
+        run: >-
+          bun packages/dialer-server/scripts/production-smoke.ts
+          > "$RUNNER_TEMP/dialer-smoke.json"
+
+      - name: Deploy LeadConnector worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-dialer.ndjson
+        run: bun run --cwd packages/lead-connector release:deploy-worker
+
+      - name: Capture LeadConnector worker version
+        run: >-
+          bun packages/lead-connector/scripts/read-wrangler-deployment.ts
+          "$RUNNER_TEMP/wrangler-dialer.ndjson"
+          > "$RUNNER_TEMP/cloudflare-deployment.json"
+
+      - name: Verify LeadConnector worker
+        env:
+          LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
+        run: >-
+          bun packages/lead-connector/scripts/verify-production-edge.ts
+          > "$RUNNER_TEMP/leadconnector-edge.json"
+
+      - name: Reconcile GoHighLevel Custom Menu
+        env:
+          LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN: ${{ secrets.LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN }}
+          LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID }}
+          LEADCONNECTOR_PRODUCTION_LOCATION_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_LOCATION_ID }}
+          LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
+        run: >-
+          bun packages/lead-connector/scripts/configure-production-menu.ts
+          > "$RUNNER_TEMP/leadconnector-menu.json"
+
+      - name: Write dialer release manifest
+        run: >-
+          bun packages/dialer-server/scripts/write-release-manifest.ts
+          --railway "$RUNNER_TEMP/railway-deployment.json"
+          --cloudflare "$RUNNER_TEMP/cloudflare-deployment.json"
+          --edge "$RUNNER_TEMP/leadconnector-edge.json"
+          --custom-menu "$RUNNER_TEMP/leadconnector-menu.json"
+          --smoke "$RUNNER_TEMP/dialer-smoke.json"
+          --build-marker packages/lead-connector/dist/embed-app/build-marker.json
+          --output "$RUNNER_TEMP/dialer-release-manifest.json"
+
+      - name: Upload dialer release manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: dialer-release-${{ github.sha }}
+          path: ${{ runner.temp }}/dialer-release-manifest.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish dialer release summary
+        run: |
+          echo "### Consuelo Dialer production release" >> "$GITHUB_STEP_SUMMARY"
+          jq -r '"- Git SHA: `\(.gitSha)`\n- Railway deployment: `\(.railway.deploymentId)` (`\(.railway.status)`)\n- Cloudflare version: `\(.cloudflare.versionId)`\n- GHL Custom Menu: `\(.customMenu.customMenuId)` read-back=`\(.customMenu.readBackVerified)`\n- Safe smoke: `\(.smoke.ok)`"' "$RUNNER_TEMP/dialer-release-manifest.json" >> "$GITHUB_STEP_SUMMARY"

@@ -85,6 +85,15 @@
     launcher.hidden = busy || (panel && !panel.hidden);
   }
 
+  function clearDisconnectedReferences() {
+    if (frame && !frame.isConnected) {
+      frame = null;
+      ready = false;
+    }
+    if (panel && !panel.isConnected) panel = null;
+    if (launcher && !launcher.isConnected) launcher = null;
+  }
+
   function removeOverlayHost() {
     var host = document.getElementById(hostId);
     var mountedLauncher = document.getElementById(launcherId);
@@ -129,6 +138,7 @@
   }
 
   function createOverlayHost() {
+    clearDisconnectedReferences();
     if (!routeAllowed() && !busy) return null;
     var existing = document.getElementById(hostId);
     launcher = createLauncher();
@@ -184,6 +194,7 @@
     frame = panel.querySelector('iframe[name="consuelo-dialer"]');
     frame.addEventListener('load', function () {
       ready = false;
+      sessionContextPromise = null;
     });
     return frame;
   }
@@ -346,7 +357,12 @@
   );
 
   function syncRoute() {
+    var routeChanged = window.location.href !== lastRoute;
     lastRoute = window.location.href;
+    if (routeChanged) {
+      sessionContextPromise = null;
+      clearDisconnectedReferences();
+    }
     if (!routeAllowed()) {
       if (busy && document.getElementById(hostId)) {
         if (panel) panel.hidden = false;
@@ -358,6 +374,9 @@
     }
     createOverlayHost();
     placeLauncher();
+    if (routeChanged && !busy && frame && frame.isConnected) {
+      sendSessionContext();
+    }
   }
 
   window.addEventListener('message', function (event) {

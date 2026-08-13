@@ -17,6 +17,7 @@ export type StartDialerCallInput = {
   contactIds?: string[] | null;
   queueId?: string | null;
   callerIdNumber?: string | null;
+  preferLocalPresence?: boolean | null;
   callMode?: DialerScenarioCallMode | null;
 };
 
@@ -110,7 +111,8 @@ export type DialerCallRuntimeService = {
       callerIdNumber?: string | null;
       callMode: DialerScenarioCallMode;
       enforceScenarioAllowlist: boolean;
-      targetCount: number;
+      preferLocalPresence: boolean;
+      targets: CallableTarget[];
     },
   ) => Effect.Effect<string[], DialerApplicationError>;
   initiateProviderCalls: (

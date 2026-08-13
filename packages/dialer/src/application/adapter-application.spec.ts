@@ -136,6 +136,8 @@ const parallelRuntime = (
   }),
   handleStatusCallback: () => Effect.void,
   getGroupIdForCall: () => Effect.succeed(null),
+  startCallRecording: () =>
+    Effect.succeed({ recordingSid: 'RE_test', status: 'in-progress' }),
   getGroup: () => Effect.succeed(null),
   getReleasableNumbers: () => [],
   getGroupForWorkspace: () => Effect.succeed(null),
@@ -198,6 +200,51 @@ describe('dialer compatibility application contracts', () => {
       'create-queue:workspace-1',
       'mock:workspace-1',
     ]);
+  });
+
+
+  it('allows a one-line queue mode and passes local-presence intent with every candidate to the runtime', async () => {
+    const calls: string[] = [];
+    let observed: { preferLocalPresence: boolean; phones: string[] } | null = null;
+    const layer = Layer.mergeAll(
+      Layer.succeed(DialerTargetRepository, targetRepository(calls)),
+      Layer.succeed(DialerCallRepository, callRepository(calls)),
+      Layer.succeed(DialerCallRuntime, {
+        ...runtime(calls),
+        resolveCallerIds: (input) =>
+          Effect.sync(() => {
+            observed = {
+              preferLocalPresence: input.preferLocalPresence,
+              phones: input.targets.map((target) => target.phone),
+            };
+            return ['+15553333333'];
+          }),
+      }),
+      Layer.succeed(DialerIdGenerator, {
+        generateParallelGroupId: Effect.succeed('pg-unused'),
+        generateDialerSessionId: Effect.succeed('session-1'),
+      }),
+    );
+
+    const result = await Effect.runPromise(
+      startDialerCall({
+        ...context,
+        input: {
+          source: 'queue',
+          selectionStrategy: 'single',
+          requestedFanout: 1,
+          queueId: 'queue-1',
+          preferLocalPresence: true,
+          callMode: 'mock',
+        },
+      }).pipe(Effect.provide(layer)),
+    );
+
+    expect(result.actualFanout).toBe(1);
+    expect(observed).toEqual({
+      preferLocalPresence: true,
+      phones: ['+15551111111', '+15552222222'],
+    });
   });
 
   it('retries winner cleanup after the browser agent media leg becomes ready', async () => {

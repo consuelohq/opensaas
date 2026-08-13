@@ -9,6 +9,8 @@ const principal = {
   userId: 'provider-user-1',
   installationId: 'installation-1',
   locationId: 'location-1',
+  role: 'admin',
+  contextType: 'location' as const,
 };
 
 const createDependencies = (): DialerServerDependencies => ({
@@ -31,9 +33,11 @@ const createDependencies = (): DialerServerDependencies => ({
     beginOAuth: () => Effect.die('not used'),
     completeOAuth: () => Effect.die('not used'),
     processWebhook: () => Effect.die('not used'),
+    disableInstallation: () => Effect.die('not used'),
     listContacts: () => Effect.die('not used'),
     searchOpportunities: () => Effect.die('not used'),
     listPipelines: () => Effect.die('not used'),
+    resolveQueueCandidates: () => Effect.die('not used'),
     recordDisposition: () => Effect.die('not used'),
     exchangeEmbedBootstrap: mock(() => Effect.succeed(principal)),
     validateEmbedIdentity: mock(() => Effect.succeed(true)),

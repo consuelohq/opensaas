@@ -89,7 +89,7 @@ const createDatabase = (): LeadConnectorDatabase => {
   };
 };
 
-const createPredictiveDatabase = (): LeadConnectorDatabase => ({
+const createUnlearnedPredictiveDatabase = (): LeadConnectorDatabase => ({
   query: async <T>(text: string) => {
     if (text.includes('FROM contact_attempt_ledger')) {
       return {
@@ -103,24 +103,6 @@ const createPredictiveDatabase = (): LeadConnectorDatabase => ({
             contact_id: 'contact-winner',
             attempts_total: 1,
             last_attempt_at: null,
-          },
-        ] as T[],
-      };
-    }
-    if (text.includes('FROM core.contact_attempt_hazard_hourly_mv')) {
-      return {
-        rows: [
-          { attempt_number: 1, answer_rate: 0.1, sample_size: 100 },
-          { attempt_number: 2, answer_rate: 0.8, sample_size: 100 },
-        ] as T[],
-      };
-    }
-    if (text.includes('FROM core.workspace_settings')) {
-      return {
-        rows: [
-          {
-            value_per_connection: 100,
-            cost_per_attempt: 0.03,
           },
         ] as T[],
       };
@@ -147,9 +129,6 @@ const createLeadConnectorLearnedDatabase = (): LeadConnectorDatabase => ({
         ] as T[],
       };
     }
-    if (text.includes('FROM core.contact_attempt_hazard_hourly_mv')) {
-      return { rows: [] as T[] };
-    }
     if (text.includes('FROM consuelo_lead_connector_call_outcomes')) {
       return {
         rows: [
@@ -157,9 +136,6 @@ const createLeadConnectorLearnedDatabase = (): LeadConnectorDatabase => ({
           { attempt_number: 2, answer_rate: 0.8, sample_size: 20 },
         ] as T[],
       };
-    }
-    if (text.includes('FROM core.workspace_settings')) {
-      return { rows: [] as T[] };
     }
     return { rows: [] as T[] };
   },
@@ -357,11 +333,11 @@ describe('Railway dialer-server runtime composition', () => {
     });
   });
 
-  it('ranks predictive LeadConnector targets with shared model data before fanout', async () => {
+  it('preserves input order when standalone learned data is not available', async () => {
     const redis = new MemoryRedis();
     const layers = await createRailwayDialerApplicationLayers(environment, {
       redis,
-      database: createPredictiveDatabase(),
+      database: createUnlearnedPredictiveDatabase(),
     });
     const application = createEffectDialerApplication(layers);
     const result = await Effect.runPromise(
@@ -381,7 +357,7 @@ describe('Railway dialer-server runtime composition', () => {
 
     expect(result.calls).toHaveLength(1);
     expect(result.calls[0]).toMatchObject({
-      contactId: 'contact-winner',
+      contactId: 'contact-first',
       status: 'mocked',
     });
   });

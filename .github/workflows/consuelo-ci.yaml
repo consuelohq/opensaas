@@ -98,15 +98,20 @@ jobs:
           verify=false
 
           if has_change '^\.github/'; then workflow_security=true; verify=true; fi
-          if has_change '^(package\.json|yarn\.lock|nx\.json|tsconfig[^/]*\.json)$'; then verify=true; fi
+          if has_change '^(package\.json|yarn\.lock|\.yarnrc\.yml|nx\.json|tsconfig[^/]*\.json)$'; then dialer=true; verify=true; fi
+          if has_change '^\.yarn/'; then dialer=true; verify=true; fi
           if has_change '^packages/workspace/'; then workspace_contracts=true; verify=true; fi
           if has_change '^packages/os/'; then os_contracts=true; verify=true; fi
           if has_change '^packages/dialer/'; then dialer=true; verify=true; fi
+          if has_change '^packages/dialer-server/'; then dialer=true; verify=true; fi
+          if has_change '^packages/lead-connector/'; then dialer=true; verify=true; fi
+          if has_change '^packages/logger/'; then dialer=true; verify=true; fi
           if has_change '^packages/api/'; then verify=true; fi
           if has_change '^packages/consuelo-core/'; then verify=true; fi
           if has_change '^packages/consuelo-docs/'; then verify=true; fi
           if has_change '^packages/consuelo-website/'; then verify=true; fi
           if has_change '^packages/twenty-server/src/engine/core-modules/consuelo-api/'; then dialer=true; verify=true; fi
+          if has_change '^\.github/workflows/(consuelo-ci|consuelo-production-release|consuelo-dialer-rollback)\.yaml$'; then dialer=true; fi
           if has_change '(^packages/os/cloudflare/|gateway|sites-gateway|workspace-edge|wrangler\.toml$)'; then sites_gateway_cloudflare=true; os_contracts=true; verify=true; fi
 
           write_output base_ref "$base_ref"
@@ -233,7 +238,7 @@ jobs:
     name: Consuelo / dialer
     needs: consuelo-changes
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: No dialer changes
         if: needs.consuelo-changes.outputs.dialer != 'true'
@@ -252,9 +257,38 @@ jobs:
         if: needs.consuelo-changes.outputs.dialer == 'true'
         uses: ./.github/actions/yarn-install
 
-      - name: Run dialer tests
+      - name: Run dialer release package tests
         if: needs.consuelo-changes.outputs.dialer == 'true'
-        run: bun test packages/dialer/src
+        run: |
+          bun test packages/dialer/src
+          bun test packages/dialer-server/src
+          bun test packages/lead-connector/src
+
+      - name: Build dialer typecheck prerequisites
+        if: needs.consuelo-changes.outputs.dialer == 'true'
+        run: bun run --cwd packages/logger build
+
+      - name: Typecheck dialer release packages
+        if: needs.consuelo-changes.outputs.dialer == 'true'
+        run: |
+          bun run --cwd packages/dialer typecheck
+          bun run --cwd packages/dialer-server typecheck
+          bun run --cwd packages/lead-connector typecheck
+
+      - name: Build dialer release artifacts
+        if: needs.consuelo-changes.outputs.dialer == 'true'
+        run: |
+          bun run --cwd packages/dialer build
+          bun run --cwd packages/lead-connector build
+          bun run --cwd packages/dialer-server build
+
+      - name: Build Railway dialer container
+        if: needs.consuelo-changes.outputs.dialer == 'true'
+        run: >-
+          docker build
+          --file packages/dialer-server/Dockerfile
+          --tag consuelo-dialer-ci:${{ github.sha }}
+          .
 
   sites-gateway-cloudflare:
     name: Consuelo / Sites Gateway + Cloudflare

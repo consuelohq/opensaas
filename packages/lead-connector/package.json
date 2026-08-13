@@ -21,7 +21,12 @@
     "build": "tsc && bun run build:embed",
     "build:embed": "bun ./scripts/build-embed.ts",
     "deploy:embed": "bun run build:embed && wrangler deploy --config wrangler.jsonc",
-    "configure:sandbox-menu": "bun ./scripts/configure-sandbox-menu.ts"
+    "configure:sandbox-menu": "bun ./scripts/configure-sandbox-menu.ts",
+    "release:configure-menu": "bun ./scripts/configure-production-menu.ts",
+    "release:verify-edge": "bun ./scripts/verify-production-edge.ts",
+    "release:wrangler-evidence": "bun ./scripts/read-wrangler-deployment.ts",
+    "release:deploy-worker": "wrangler deploy --config wrangler.jsonc",
+    "release:rollback-worker": "wrangler rollback"
   },
   "dependencies": {
     "@twilio/voice-sdk": "^2.12.1",
