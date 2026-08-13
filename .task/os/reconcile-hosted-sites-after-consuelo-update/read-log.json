@@ -1,8 +1,14 @@
 {
   "files": [
+    ".task/os/reconcile-hosted-sites-after-consuelo-update/verify.json",
     ".task/os/reconcile-hosted-sites-after-consuelo-update/workpad.md",
+    "packages/os/skills/senior-engineer/SKILL.md",
+    "packages/os/skills/task/SKILL.md",
     "packages/os/tests/cloudflare-d1-route-registry.test.ts",
-    "packages/os/tests/install-edge-site-publisher.test.ts"
+    "packages/os/tests/install-edge-site-publisher.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
   ],
-  "updatedAt": "2026-08-13T19:56:31.514Z"
+  "updatedAt": "2026-08-13T21:27:15.156Z"
 }
