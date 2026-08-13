@@ -3,6 +3,7 @@
   "name": "consuelo-lead-connector-embed",
   "compatibility_date": "2026-07-24",
   "main": "./src/embed/cloudflare-worker.ts",
+  "keep_vars": true,
   "assets": {
     "directory": "./dist/embed-app",
     "binding": "ASSETS",

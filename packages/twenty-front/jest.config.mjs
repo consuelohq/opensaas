@@ -1,10 +1,13 @@
 import { readFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { pathsToModuleNameMapper } from 'ts-jest';
+import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const require = createRequire(import.meta.url);
+const transliterationNodeEntry = require.resolve('transliteration');
 
 const tsConfigPath = resolve(__dirname, './tsconfig.json');
 const tsConfig = JSON.parse(readFileSync(tsConfigPath, 'utf8'));
@@ -55,6 +58,7 @@ const jestConfig = {
       '<rootDir>/__mocks__/imageMockFront.js',
     '\\.css$': '<rootDir>/__mocks__/styleMock.js',
     '^@consuelo/contacts$': '<rootDir>/../../packages/contacts/src/utils.ts',
+    '^transliteration$': transliterationNodeEntry,
     ...pathsToModuleNameMapper(tsConfig.compilerOptions.paths, {
       prefix: '<rootDir>/',
     }),

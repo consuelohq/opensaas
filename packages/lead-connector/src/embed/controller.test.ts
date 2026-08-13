@@ -47,6 +47,23 @@ const createApi = () =>
       ],
       total: 144,
     })),
+    resolveQueueCandidates: mock(async () => ({
+      pipelineId: 'pipeline-1',
+      pipelineName: 'Sales',
+      stageId: 'stage-1',
+      stageName: 'Qualified',
+      opportunityTotal: 5,
+      callableTotal: 5,
+      truncated: false,
+      candidates: Array.from({ length: 5 }, (_, index) => ({
+        opportunityId: `opportunity-${index + 1}`,
+        contactId: `contact-${index + 1}`,
+        contactName: `Contact ${index + 1}`,
+        phone: `+1555010012${index + 3}`,
+        status: 'open',
+        monetaryValue: null,
+      })),
+    })),
     listPipelines: mock(async () => [
       {
         id: 'pipeline-1',
@@ -54,6 +71,116 @@ const createApi = () =>
         stages: [{ id: 'stage-1', name: 'Qualified', position: 0 }],
       },
     ]),
+    getCommercialCallerContext: mock(async () => ({
+      planCode: 'single' as const,
+      trial: true,
+      callerIds: ['+15550100999'],
+      connectedMinutes: 0,
+      remainingMinutes: 60,
+      lineOptions: [1],
+      predictive: false,
+      recordings: false,
+      transcripts: false,
+      canStartCall: true,
+      denialCode: null,
+      billing: { state: 'trial', graceEndsAt: null },
+    })),
+    getCommercialDashboard: mock(async () => ({
+      workspaceId: 'workspace-1',
+      catalog: {
+        plans: {
+          single: {
+            code: 'single',
+            priceCents: 3000,
+            maxNumbersPerSeat: 1,
+            includedMinutes: 1388,
+            predictive: false,
+            recordings: false,
+            transcripts: false,
+          },
+          standard: {
+            code: 'standard',
+            priceCents: 5000,
+            maxNumbersPerSeat: 2,
+            includedMinutes: null,
+            predictive: true,
+            recordings: true,
+            transcripts: false,
+          },
+          power: {
+            code: 'power',
+            priceCents: 7500,
+            maxNumbersPerSeat: 3,
+            includedMinutes: null,
+            predictive: true,
+            recordings: true,
+            transcripts: true,
+          },
+        },
+        trial: {
+          includedMinutes: 60,
+          maxSeats: 1,
+          maxNumbers: 1,
+          planCode: 'single',
+        },
+        additionalNumberPriceCents: 500,
+        includedNumbersPerSeat: 1,
+        paymentGraceDays: 7,
+      },
+      subscription: null,
+      subscriptionItems: [],
+      billingSummary: null,
+      billingSummaryError: null,
+      seats: [],
+      numbers: [],
+      usage: {},
+    })),
+    updateCommercialTeam: mock(async () => ({ updated: true as const })),
+    searchCommercialNumbers: mock(async () => ({ numbers: [] })),
+    provisionCommercialNumber: mock(async () => ({ provisioned: true as const })),
+    assignCommercialNumber: mock(async () => ({ assigned: true as const })),
+    releaseCommercialNumber: mock(async () => ({ released: true as const })),
+    createCommercialCheckout: mock(async () => ({
+      id: 'cs_checkout_one',
+      url: 'https://checkout.stripe.test/session-one',
+    })),
+    createCommercialBillingPortal: mock(async () => ({
+      id: 'bps_portal_one',
+      url: 'https://billing.stripe.test/session-one',
+    })),
+    previewCommercialBillingChange: mock(async () => ({
+      amountDue: 4200,
+      currency: 'usd',
+      prorationDate: 1_786_000_000,
+    })),
+    applyCommercialBillingChange: mock(async () => ({
+      updated: true as const,
+      pendingWebhook: true as const,
+    })),
+    initiateCallTransfer: mock(async () => ({
+      success: true as const,
+      transferId: 'transfer-one',
+      transferCallSid: 'CA_transfer_one',
+      conferenceSid: 'CF_one',
+      status: 'initiating' as const,
+    })),
+    getCallTransferStatus: mock(async () => ({
+      success: true as const,
+      transferId: 'transfer-one',
+      transferCallSid: 'CA_transfer_one',
+      conferenceSid: 'CF_one',
+      status: 'consulting' as const,
+    })),
+    completeCallTransfer: mock(async () => ({
+      success: true as const,
+      transferId: 'transfer-one',
+      status: 'completed' as const,
+    })),
+    cancelCallTransfer: mock(async () => ({
+      success: true as const,
+      transferId: 'transfer-one',
+      status: 'cancelled' as const,
+    })),
     startCallSession: mock(async () => ({
       sessionId: 'session-1',
       providerGroupId: 'group-1',
@@ -160,6 +287,7 @@ describe('LeadConnector embed controller', () => {
       source: 'direct',
       selectionStrategy: 'single',
       requestedFanout: 1,
+      preferLocalPresence: true,
       targetPhone: '+15550100123',
       contactId: 'contact-1',
       contactName: 'Test Contact',
@@ -196,7 +324,7 @@ describe('LeadConnector embed controller', () => {
       note: 'Follow up',
       tags: ['called'],
     });
-    expect(controller.getState().phase).toBe('completed');
+    expect(controller.getState().phase).toBe('ready');
   });
 
   it('disconnects the browser agent exactly once when a refreshed session becomes terminal', async () => {
@@ -367,9 +495,320 @@ describe('LeadConnector embed controller', () => {
       source: 'queue',
       selectionStrategy: 'predictive',
       requestedFanout: 2,
+      preferLocalPresence: true,
       targetPhones: ['+15550100123', '+15550100124'],
       contactIds: ['contact-1', 'contact-2'],
     });
+  });
+
+  it('starts a selected GHL stage as one predictive queue with fanout independent from candidate count', async () => {
+    const api = createApi();
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    await controller.selectQueue({
+      pipelineId: 'pipeline-1',
+      stageId: 'stage-1',
+    });
+    controller.updateSetup({
+      callingMode: 'predictive',
+      requestedFanout: 3,
+      preferLocalPresence: true,
+    });
+
+    await controller.startConfiguredCall();
+
+    expect(api.resolveQueueCandidates).toHaveBeenCalledWith({
+      pipelineId: 'pipeline-1',
+      stageId: 'stage-1',
+    });
+    expect(controller.getState()).toMatchObject({
+      selectedQueue: {
+        pipelineName: 'Sales',
+        stageName: 'Qualified',
+        opportunityTotal: 5,
+        callableTotal: 5,
+      },
+      setup: { requestedFanout: 3, preferLocalPresence: true },
+    });
+    expect(api.startCallSession).toHaveBeenCalledWith({
+      source: 'queue',
+      queueId: 'pipeline-1:stage-1',
+      selectionStrategy: 'predictive',
+      requestedFanout: 3,
+      preferLocalPresence: true,
+      targetPhones: [
+        '+15550100123',
+        '+15550100124',
+        '+15550100125',
+        '+15550100126',
+        '+15550100127',
+      ],
+      contactIds: [
+        'contact-1',
+        'contact-2',
+        'contact-3',
+        'contact-4',
+        'contact-5',
+      ],
+      pipelineId: 'pipeline-1',
+      stageId: 'stage-1',
+    });
+  });
+
+  it('loads Marketing Pipeline stages and previews the selected New Lead queue', async () => {
+    const api = createApi();
+    api.listPipelines = mock(async () => [
+      {
+        id: 'marketing-pipeline',
+        name: 'Marketing Pipeline',
+        stages: [{ id: 'new-lead', name: 'New Lead', position: 0 }],
+      },
+    ]);
+    api.resolveQueueCandidates = mock(async () => ({
+      pipelineId: 'marketing-pipeline',
+      pipelineName: 'Marketing Pipeline',
+      stageId: 'new-lead',
+      stageName: 'New Lead',
+      opportunityTotal: 1,
+      callableTotal: 1,
+      truncated: false,
+      candidates: [
+        {
+          opportunityId: 'opportunity-new-lead',
+          contactId: 'contact-new-lead',
+          contactName: 'New Lead Contact',
+          phone: '+15550100126',
+          status: 'open',
+          monetaryValue: null,
+        },
+      ],
+    }));
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
+
+    await controller.authenticate('opaque-parent-ciphertext');
+    expect(controller.getState().pipelines).toEqual([
+      {
+        id: 'marketing-pipeline',
+        name: 'Marketing Pipeline',
+        stages: [{ id: 'new-lead', name: 'New Lead', position: 0 }],
+      },
+    ]);
+
+    await controller.selectQueue({
+      pipelineId: 'marketing-pipeline',
+      stageId: 'new-lead',
+    });
+
+    expect(api.resolveQueueCandidates).toHaveBeenCalledWith({
+      pipelineId: 'marketing-pipeline',
+      stageId: 'new-lead',
+    });
+    expect(controller.getState()).toMatchObject({
+      selectedQueue: {
+        pipelineId: 'marketing-pipeline',
+        pipelineName: 'Marketing Pipeline',
+        stageId: 'new-lead',
+        stageName: 'New Lead',
+        opportunityTotal: 1,
+        callableTotal: 1,
+      },
+      selectedTargets: [
+        {
+          contactId: 'contact-new-lead',
+          opportunityId: 'opportunity-new-lead',
+          phone: '+15550100126',
+        },
+      ],
+    });
+  });
+
+  it('coalesces idle background resource refreshes and skips refresh while a call is active', async () => {
+    const api = createApi();
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    api.listContacts.mockClear();
+    api.searchOpportunities.mockClear();
+    api.listPipelines.mockClear();
+
+    let release: (() => void) | undefined;
+    api.listContacts = mock(
+      () =>
+        new Promise((resolve) => {
+          release = () =>
+            resolve({ contacts: [], total: 0, nextCursor: null });
+        }),
+    );
+    const first = controller.refreshResources();
+    const second = controller.refreshResources();
+    expect(api.listContacts).toHaveBeenCalledTimes(1);
+    release?.();
+    await Promise.all([first, second]);
+
+    const connectedController = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice: createVoice(),
+      initialState: {
+        ...controller.getState(),
+        phase: 'connected',
+        activeSessionId: 'group-1',
+      },
+    });
+    const connectedApi = createApi();
+    const activeController = createLeadConnectorEmbedController({
+      api: connectedApi,
+      voice: createVoice(),
+      initialState: connectedController.getState(),
+    });
+    await activeController.refreshResources();
+    expect(connectedApi.listContacts).not.toHaveBeenCalled();
+    expect(connectedApi.searchOpportunities).not.toHaveBeenCalled();
+    expect(connectedApi.listPipelines).not.toHaveBeenCalled();
+  });
+
+  it('returns to the configured home after disposition without reauthentication', async () => {
+    const api = createApi();
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    const target = normalizeClickToCallTarget({
+      phone: '+15550100123',
+      contactId: 'contact-1',
+      name: 'Test Contact',
+    });
+    controller.selectTarget(target!);
+    await controller.startCall('single');
+    await controller.hangUp();
+    await controller.submitDisposition({ disposition: 'connected' });
+
+    expect(controller.getState()).toMatchObject({
+      phase: 'ready',
+      sessionToken: 'embed-token',
+      contactTotal: 73,
+      opportunityTotal: 144,
+      setup: { mode: 'single', requestedFanout: 1 },
+      activeSessionId: null,
+      callSession: null,
+      selectedTargets: [],
+    });
+    expect(api.createEmbedSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens server-owned billing sessions and drives a real warm transfer lifecycle', async () => {
+    const api = createApi();
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice: createVoice(),
+      surface: 'admin',
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+
+    expect(api.createEmbedSession).toHaveBeenCalledWith(
+      'opaque-parent-ciphertext',
+    );
+    expect(api.getCommercialDashboard).toHaveBeenCalledTimes(1);
+    expect(controller.getState().commercialDashboard?.workspaceId).toBe(
+      'workspace-1',
+    );
+
+    expect(
+      await controller.createCheckout({
+        single: 2,
+        standard: 1,
+        power: 0,
+        additionalNumber: 1,
+      }),
+    ).toBe('https://checkout.stripe.test/session-one');
+    expect(api.createCommercialCheckout).toHaveBeenCalledWith({
+      quantities: {
+        single: 2,
+        standard: 1,
+        power: 0,
+        additionalNumber: 1,
+      },
+    });
+    expect(await controller.openBillingPortal()).toBe(
+      'https://billing.stripe.test/session-one',
+    );
+
+    const quantities = {
+      single: 2,
+      standard: 1,
+      power: 0,
+      additionalNumber: 1,
+    };
+    await controller.previewBillingChange(quantities);
+    expect(controller.getState().commercialBillingPreview).toEqual({
+      quantities,
+      amountDue: 4200,
+      currency: 'usd',
+      prorationDate: 1_786_000_000,
+    });
+    await controller.applyBillingChange({
+      quantities,
+      prorationDate: 1_786_000_000,
+    });
+    expect(api.applyCommercialBillingChange).toHaveBeenCalledWith({
+      quantities,
+      prorationDate: 1_786_000_000,
+    });
+    expect(controller.getState().commercialBillingPreview).toBeNull();
+
+    const target = normalizeClickToCallTarget({
+      phone: '+15550100123',
+      contactId: 'contact-1',
+      name: 'Test Contact',
+    });
+    controller.selectTarget(target!);
+    await controller.startCall('single');
+    await controller.initiateTransfer({ type: 'warm', to: '+15550100111' });
+
+    expect(api.initiateCallTransfer).toHaveBeenCalledWith('group-1', {
+      type: 'warm',
+      to: '+15550100111',
+    });
+    expect(controller.getState().transfer).toEqual({
+      status: 'initiating',
+      type: 'warm',
+      target: '+15550100111',
+      transferId: 'transfer-one',
+      transferCallSid: 'CA_transfer_one',
+      conferenceSid: 'CF_one',
+    });
+    expect(api.getCallTransferStatus).not.toHaveBeenCalled();
+
+    await controller.refreshSession();
+    expect(api.getCallTransferStatus).toHaveBeenCalledWith(
+      'group-1',
+      'transfer-one',
+    );
+    expect(controller.getState().transfer.status).toBe('consulting');
+
+    await controller.completeTransfer();
+    expect(api.completeCallTransfer).toHaveBeenCalledWith(
+      'group-1',
+      'transfer-one',
+    );
+    expect(controller.getState().transfer.status).toBe('completed');
+
+    await controller.initiateTransfer({ type: 'warm', to: '+15550100112' });
+    await controller.refreshSession();
+    await controller.cancelTransfer();
+    expect(api.cancelCallTransfer).toHaveBeenCalledWith(
+      'group-1',
+      'transfer-one',
+    );
+    expect(controller.getState().transfer.status).toBe('cancelled');
   });
 
   it('expires and reauthenticates without retaining the expired browser token', async () => {

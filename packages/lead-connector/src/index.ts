@@ -20,6 +20,8 @@ export type {
   LeadConnectorOpportunity,
   LeadConnectorPipeline,
   LeadConnectorPipelineStage,
+  LeadConnectorQueueCandidate,
+  LeadConnectorQueuePreview,
   LeadConnectorWebhookEvent,
   LeadConnectorWebhookEventType,
   LeadConnectorWebhookProcessResult,
@@ -76,12 +78,15 @@ export type { LeadConnectorTokenResponse } from './application/tokens.js';
 export {
   createLeadConnectorNote,
   createLeadConnectorTask,
+  getLeadConnectorContact,
   listLeadConnectorContacts,
   listLeadConnectorPipelines,
   recordLeadConnectorDisposition,
+  resolveLeadConnectorQueueCandidates,
   searchLeadConnectorOpportunities,
 } from './application/resources.js';
 export { processLeadConnectorWebhook } from './application/webhooks.js';
+export { disableLeadConnectorInstallation } from './application/installations.js';
 export {
   exchangeLeadConnectorEmbedContext,
   validateLeadConnectorEmbedIdentity,

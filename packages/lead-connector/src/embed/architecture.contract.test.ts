@@ -4,6 +4,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const temporaryDirectories: string[] = [];
+const embedRoot = import.meta.dir;
+const packageRoot = join(embedRoot, '..', '..');
+const publicRoot = join(embedRoot, 'public');
 afterEach(() => {
   for (const directory of temporaryDirectories.splice(0))
     rmSync(directory, { recursive: true, force: true });
@@ -36,7 +39,7 @@ const stripAllowedProviderWireOrigins = (text: string): string => {
 
 describe('LeadConnector browser architecture and branding', () => {
   it('contains no forbidden branding or server/runtime dependencies in browser source and public assets', () => {
-    const files = readdirSync('packages/lead-connector/src/embed', {
+    const files = readdirSync(embedRoot, {
       recursive: true,
       withFileTypes: false,
     })
@@ -48,7 +51,7 @@ describe('LeadConnector browser architecture and branding', () => {
     expect(files.length).toBeGreaterThan(0);
     for (const relativePath of files) {
       const text = readFileSync(
-        join('packages/lead-connector/src/embed', relativePath),
+        join(embedRoot, relativePath),
         'utf8',
       );
       const scanned = stripAllowedProviderWireOrigins(text);
@@ -62,7 +65,7 @@ describe('LeadConnector browser architecture and branding', () => {
       }
     }
     const asset = readFileSync(
-      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      join(publicRoot, 'consuelo-lead-connector-click-to-call.js'),
       'utf8',
     );
     expect(asset).not.toMatch(forbiddenBranding);
@@ -72,7 +75,7 @@ describe('LeadConnector browser architecture and branding', () => {
     const directory = mkdtempSync(join(tmpdir(), 'lead-connector-embed-'));
     temporaryDirectories.push(directory);
     const result = await Bun.build({
-      entrypoints: ['packages/lead-connector/src/embed/main.ts'],
+      entrypoints: [join(embedRoot, 'main.ts')],
       outdir: directory,
       target: 'browser',
       minify: true,
@@ -98,13 +101,13 @@ describe('LeadConnector browser architecture and branding', () => {
       }
     }
     expect(
-      readFileSync('packages/lead-connector/src/embed/index.html', 'utf8'),
+      readFileSync(join(embedRoot, 'index.html'), 'utf8'),
     ).toContain('href="./main.css"');
   });
 
   it('targets the actual approved live or sandbox custom-page origin for click-to-call messages', () => {
     const asset = readFileSync(
-      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      join(publicRoot, 'consuelo-lead-connector-click-to-call.js'),
       'utf8',
     );
     expect(asset).toContain('https://calls.consuelohq.com');
@@ -120,7 +123,7 @@ describe('LeadConnector browser architecture and branding', () => {
 
   it('owns one route-aware launcher and one compact overlay iframe lifecycle', () => {
     const asset = readFileSync(
-      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      join(publicRoot, 'consuelo-lead-connector-click-to-call.js'),
       'utf8',
     );
     expect(asset).toContain("var overlayPath = '/overlay'");
@@ -139,7 +142,7 @@ describe('LeadConnector browser architecture and branding', () => {
 
   it('authenticates the overlay through the supported Custom JS session context API', () => {
     const asset = readFileSync(
-      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      join(publicRoot, 'consuelo-lead-connector-click-to-call.js'),
       'utf8',
     );
 
@@ -153,11 +156,11 @@ describe('LeadConnector browser architecture and branding', () => {
 
   it('anchors the launcher beside native Contacts and Opportunities controls', () => {
     const asset = readFileSync(
-      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      join(publicRoot, 'consuelo-lead-connector-click-to-call.js'),
       'utf8',
     );
     const stylesheet = readFileSync(
-      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css',
+      join(publicRoot, 'consuelo-lead-connector-click-to-call.css'),
       'utf8',
     );
 
@@ -172,11 +175,11 @@ describe('LeadConnector browser architecture and branding', () => {
 
   it('publishes a separate wrapped Marketplace artifact while keeping the public script executable', () => {
     const asset = readFileSync(
-      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      join(publicRoot, 'consuelo-lead-connector-click-to-call.js'),
       'utf8',
     );
     const buildSource = readFileSync(
-      'packages/lead-connector/scripts/build-embed.ts',
+      join(packageRoot, 'scripts', 'build-embed.ts'),
       'utf8',
     );
 
@@ -191,7 +194,7 @@ describe('LeadConnector browser architecture and branding', () => {
 
   it('creates the iframe on demand and preserves a busy session across route changes', () => {
     const asset = readFileSync(
-      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      join(publicRoot, 'consuelo-lead-connector-click-to-call.js'),
       'utf8',
     );
     const createHostStart = asset.indexOf('function createOverlayHost');
@@ -229,7 +232,7 @@ describe('LeadConnector browser architecture and branding', () => {
 
   it('keeps comma-separated selector literals safe for Marketplace editor persistence', () => {
     const asset = readFileSync(
-      'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+      join(publicRoot, 'consuelo-lead-connector-click-to-call.js'),
       'utf8',
     );
     const selectorLiterals = [
@@ -240,9 +243,24 @@ describe('LeadConnector browser architecture and branding', () => {
     );
   });
 
+  it('wires progressive commercial billing forms and confirmation actions to the controller', () => {
+    const source = readFileSync(join(embedRoot, 'main.ts'), 'utf8');
+    expect(source).toContain(
+      "form.dataset.form === 'commercial-billing-checkout'",
+    );
+    expect(source).toContain(
+      "form.dataset.form === 'commercial-billing-change'",
+    );
+    expect(source).toContain('controller.previewBillingChange(quantities)');
+    expect(source).toContain("action === 'apply-billing-change'");
+    expect(source).toContain('controller.applyBillingChange({');
+    expect(source).toContain("action === 'cancel-billing-preview'");
+    expect(source).toContain('controller.clearBillingPreview()');
+  });
+
   it('restarts the trusted parent bootstrap exchange when authentication is retried', () => {
     const source = readFileSync(
-      'packages/lead-connector/src/embed/main.ts',
+      join(embedRoot, 'main.ts'),
       'utf8',
     );
     expect(source).toContain("if (action === 'retry') {");
