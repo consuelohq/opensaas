@@ -1106,6 +1106,7 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850 127.0.0.1:8851 {');
     expect(caddyfile).toContain('lb_policy round_robin');
     expect(caddyfile).toContain('health_uri /ready');
+    expect(caddyfile).toContain('handle /health {');
     expect(caddyfile).toContain('health_interval 2s');
     expect(caddyfile).toContain('health_timeout 1s');
     expect(caddyfile).toContain('lb_try_duration 10s');
