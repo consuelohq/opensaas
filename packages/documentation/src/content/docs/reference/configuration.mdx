@@ -2,7 +2,7 @@
 title: Configuration
 description: Canonical Consuelo home, workspace, node, runtime, and settings files.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-13
 evidence:
   - source: packages/os/scripts/lib/consuelo-home.ts
     tests:
@@ -13,6 +13,12 @@ evidence:
     tests:
       - packages/os/tests/manifest-overlay.test.ts
     runtime: Settings overlay creation, validation, atomic replacement, and 0600 permissions were exercised on 2026-07-13.
+  - source: packages/os/scripts/lib/launcher-onboarding.ts
+    tests:
+      - packages/os/tests/launcher-onboarding.test.ts
+      - packages/os/tests/launcher-local-customization.test.ts
+      - packages/os/tests/lifecycle-engine.test.ts
+    runtime: A temporary Consuelo home materialized a launcher from a validated local overlay, and lifecycle update preservation was exercised on 2026-08-13.
 ---
 
 The default Consuelo home is:
@@ -62,6 +68,13 @@ activeWorkspace: workspace_123
 activeNode: node_123
 runtime:
   current: runtime/current
+launcher:
+  extraSections:
+    - id: internal
+      label: Internal
+      links:
+        - label: Users & installs
+          href: https://internal.consuelohq.com/users
 ```
 
 | Field | Type | Meaning |
@@ -69,8 +82,17 @@ runtime:
 | `activeWorkspace` | string, optional | Workspace selected by default. |
 | `activeNode` | string, optional | Node selected by default. |
 | `runtime.current` | string, optional | Path to the active runtime release. |
+| `launcher.extraSections` | array, optional | Local sections appended to the generated launcher after the built-in Sites links. |
 
 Unknown fields fail schema validation.
+
+### Launcher sections
+
+The launcher page at `~/.consuelo/sites/index.html` is generated output. To add local links without forking or hand-editing that page, configure `launcher.extraSections` in `consuelo.yaml`. Users who omit the field keep the stock launcher.
+
+Each section requires a lowercase slug `id`, a visible `label`, and at least one link. Link destinations must be either an HTTPS absolute URL or a safe root-relative path such as `/tools`. Insecure HTTP URLs, protocol-relative URLs, script URLs, embedded credentials, and unknown configuration fields fail validation. Labels and destinations are escaped again when the launcher is rendered.
+
+The overlay remains in user-owned `consuelo.yaml` while runtime releases are replaced, so a normal Consuelo update does not remove launcher customization. A later Sites materialization regenerates `sites/index.html` from the current runtime plus the local overlay.
 
 ## `node/node.yaml`
 

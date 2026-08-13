@@ -2,6 +2,12 @@ import type { Hono } from 'hono';
 
 import { CONSUELO_DEVICE_VERIFICATION_URL } from '../../../../scripts/lib/workspace-device-authorization';
 import {
+  INSTALL_ID_HEADER,
+  INSTALL_TELEMETRY_SCHEMA_VERSION,
+  createInstallEventId,
+  isInstallId,
+} from '../../../../scripts/lib/install-telemetry-contract';
+import {
   ALLOWED_AUTH_METHODS,
   DEVICE_PROOF_KEY,
   DEVICE_PROOF_PAYLOAD_KEY,
@@ -35,6 +41,55 @@ import {
   userCode,
   verifyUrl,
 } from '../utils';
+
+function correlatedInstallId(request: Request) {
+  const value = request.headers.get(INSTALL_ID_HEADER)?.trim() ?? '';
+  return value && isInstallId(value) ? value : undefined;
+}
+
+async function recordCanonicalInstallIdentity(
+  runtime: DeviceAuthorityRuntime,
+  grant: Grant,
+): Promise<void> {
+  if (
+    !runtime.installControlPlaneRepository ||
+    !grant.installId ||
+    !grant.installIdentityEventId ||
+    !grant.canonicalUserId ||
+    !grant.canonicalWorkspaceId
+  ) {
+    return;
+  }
+  const occurredAt = new Date(runtime.now()).toISOString();
+  try {
+    await runtime.installControlPlaneRepository.ingestEvent(
+      {
+        schemaVersion: INSTALL_TELEMETRY_SCHEMA_VERSION,
+        eventId: grant.installIdentityEventId,
+        installId: grant.installId,
+        producer: 'device_authority',
+        name: 'install.identity.bound',
+        stage: 'node_registration',
+        outcome: 'succeeded',
+        occurredAt,
+        sequence: 1,
+        identity: {
+          state: 'canonical',
+          userId: grant.canonicalUserId,
+          workspaceId: grant.canonicalWorkspaceId,
+          ...(grant.nodeId ? { nodeId: grant.nodeId } : {}),
+        },
+        context: {
+          ...(grant.nodeRole ? { nodeRole: grant.nodeRole } : {}),
+          ...(grant.nodeStatus ? { nodeStatus: grant.nodeStatus } : {}),
+        },
+      },
+      { trust: 'trusted', ingestedAt: occurredAt },
+    );
+  } catch {
+    // Correlation/telemetry must never change device authorization control flow.
+  }
+}
 
 async function handleDeviceRequest(
   request: Request,
@@ -80,9 +135,16 @@ async function handleDeviceRequest(
         .slice(0, 32);
       const deviceCode = rand('dev', 24);
       const code = userCode();
+      const installId = correlatedInstallId(request);
       const g: Grant = {
         hash: await hash(deviceCode),
         userCode: code,
+        ...(installId
+          ? {
+              installId,
+              installIdentityEventId: createInstallEventId(),
+            }
+          : {}),
         ...(workspaceSlug && workspaceHost
           ? { workspaceSlug, workspaceHost }
           : {}),
@@ -189,6 +251,7 @@ async function handleDeviceRequest(
         accountId: g.accountId,
         nowMs: now(),
       });
+      await recordCanonicalInstallIdentity(runtime, g);
       await input.store.del(g.hash);
       return json(approvedJson(g, runtime.workspaceEdgeInternalSigningSecret));
     }
@@ -221,10 +284,18 @@ async function handleDeviceRequest(
       const existingWorkspace = await input.store.byAccountWorkspace(
         auth.accountId,
       );
+      if (
+        auth.workspaceId &&
+        !auth.accountId.startsWith('google:')
+      ) {
+        g.canonicalUserId = auth.accountId;
+        g.canonicalWorkspaceId = auth.workspaceId;
+        g.workspaceId = auth.workspaceId;
+      }
       if (existingWorkspace) {
         assignGrantWorkspace({
           grant: g,
-          workspaceId: existingWorkspace.workspaceId,
+          workspaceId: g.canonicalWorkspaceId ?? existingWorkspace.workspaceId,
           workspaceSlug: existingWorkspace.workspaceSlug,
           workspaceHost: existingWorkspace.workspaceHost,
         });
@@ -275,6 +346,7 @@ async function handleDeviceRequest(
         accountId: auth.accountId,
         nowMs: now(),
       });
+      await recordCanonicalInstallIdentity(runtime, g);
       return json({
         status: 'approved',
         account_id: auth.accountId,
