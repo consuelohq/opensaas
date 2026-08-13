@@ -182,26 +182,52 @@ export async function reconcileWorkspaceRouteState(input: {
   currentNodeId: string;
   nowMs: number;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
-}): Promise<boolean> {
+}): Promise<{
+  routeReady: boolean;
+  defaultNodeId: string;
+  defaultNodeChanged: boolean;
+}> {
   const workspaceId =
     input.workspace.workspaceId ?? workspaceIdFromSlug(input.workspace.workspaceSlug);
   const baseDomain = baseDomainFromHost(input.workspace.workspaceHost);
   const snapshot = defaultSiteSnapshot(input.defaultSiteSnapshot);
-  const defaultNodeId = input.workspace.defaultNodeId ?? input.workspace.homeNodeId;
-  const candidates = input.nodes
-    .filter(
-      (node) =>
-        node.workspaceHost === input.workspace.workspaceHost &&
-        (node.state ?? 'active') === 'active' &&
-        typeof node.connectorId === 'string' &&
-        node.connectorId.trim() !== '',
-    )
-    .sort((left, right) => {
-      if (left.nodeId === defaultNodeId) return -1;
-      if (right.nodeId === defaultNodeId) return 1;
-      return left.createdAt - right.createdAt;
-    });
-  if (!candidates.some((node) => node.nodeId === input.currentNodeId)) return false;
+  const configuredDefaultNodeId = input.workspace.defaultNodeId?.trim() || undefined;
+  const configuredHomeNodeId = input.workspace.homeNodeId?.trim() || undefined;
+  const candidates = input.nodes.filter(
+    (node) =>
+      node.workspaceHost === input.workspace.workspaceHost &&
+      (node.state ?? 'active') === 'active' &&
+      typeof node.connectorId === 'string' &&
+      node.connectorId.trim() !== '',
+  );
+  if (!candidates.some((node) => node.nodeId === input.currentNodeId)) {
+    return {
+      routeReady: false,
+      defaultNodeId: configuredDefaultNodeId ?? configuredHomeNodeId ?? input.currentNodeId,
+      defaultNodeChanged: false,
+    };
+  }
+  const candidateNodeIds = new Set(candidates.map((node) => node.nodeId));
+  const connectedCandidates = candidates
+    .filter((node) => node.connectorStatus === 'connected')
+    .sort((left, right) => left.createdAt - right.createdAt);
+  const fallbackDefaultNodeId =
+    connectedCandidates.find((node) => node.nodeId === input.currentNodeId)?.nodeId ??
+    connectedCandidates[0]?.nodeId ??
+    input.currentNodeId;
+  const defaultNodeId =
+    configuredDefaultNodeId && candidateNodeIds.has(configuredDefaultNodeId)
+      ? configuredDefaultNodeId
+      : !configuredDefaultNodeId &&
+          configuredHomeNodeId &&
+          candidateNodeIds.has(configuredHomeNodeId)
+        ? configuredHomeNodeId
+        : fallbackDefaultNodeId;
+  candidates.sort((left, right) => {
+    if (left.nodeId === defaultNodeId) return -1;
+    if (right.nodeId === defaultNodeId) return 1;
+    return left.createdAt - right.createdAt;
+  });
 
   for (const node of candidates) {
     const connectorId = node.connectorId!.trim();
@@ -243,5 +269,9 @@ export async function reconcileWorkspaceRouteState(input: {
     nowMs: input.nowMs,
     requireOnlineNode: true,
   });
-  return resolved.allowed === true && resolved.nodeId === input.currentNodeId;
+  return {
+    routeReady: resolved.allowed === true && resolved.nodeId === input.currentNodeId,
+    defaultNodeId,
+    defaultNodeChanged: configuredDefaultNodeId !== defaultNodeId,
+  };
 }

@@ -73,6 +73,7 @@ const requiredRuntimePaths = [
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
   'scripts/lib/managed-component-install.ts',
+  'scripts/lib/subagent/runner.ts',
   'manifests/generated/tool.manifest.json',
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
@@ -495,6 +496,32 @@ describe('unified lifecycle engine', () => {
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
     expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(true);
     expect(check.serviceOperations).toEqual([]);
+  });
+
+  it('reconciles connector-backed hosted state when update is already current', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const current = createEngine({ bundle: bundle100, publicReadiness: true });
+
+    await expect(current.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.0.0',
+    });
+
+    expect(current.serviceOperations).toEqual(['connector-readiness']);
+  });
+
+  it('keeps current-version check-only updates free of hosted reconciliation side effects', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const current = createEngine({ bundle: bundle100, publicReadiness: true });
+
+    await expect(current.update({ channel: 'dev', check: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.0.0',
+    });
+
+    expect(current.serviceOperations).toEqual([]);
   });
 
   it('finalizes an interrupted candidate that is already current and healthy', async () => {

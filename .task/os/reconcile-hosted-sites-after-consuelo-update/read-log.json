@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/reconcile-hosted-sites-after-consuelo-update/workpad.md",
+    "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+    "packages/os/tests/install-edge-site-publisher.test.ts"
+  ],
+  "updatedAt": "2026-08-13T19:56:31.514Z"
+}

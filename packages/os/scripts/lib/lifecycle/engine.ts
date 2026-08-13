@@ -556,6 +556,12 @@ export function createLifecycleEngine(
             phase: 'health-check',
           });
         }
+        yield* tryPromise({
+          try: () => acceptConnectorReadiness(input.emit),
+          code: 'CONNECTOR_READINESS_FAILED',
+          message: 'public connector readiness reconciliation failed',
+          phase: 'connector-readiness',
+        });
         input.emit('complete', {
           changed: false,
           updateAvailable: false,
