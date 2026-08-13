@@ -149,6 +149,8 @@ const NODE_CONTROL_PATHS = new Map<string, { authorityPath: string; method: 'GET
   ['/gateway/nodes/snapshot', { authorityPath: '/internal/workspace/nodes', method: 'GET' }],
   ['/gateway/nodes/default', { authorityPath: '/internal/workspace/nodes/default', method: 'POST' }],
   ['/gateway/nodes/pricing', { authorityPath: '/internal/workspace/nodes/pricing', method: 'GET' }],
+  ['/gateway/nodes/provision', { authorityPath: '/internal/workspace/nodes/provision', method: 'POST' }],
+  ['/gateway/nodes/provisioning', { authorityPath: '/internal/workspace/nodes/provisioning', method: 'GET' }],
 ]);
 
 async function proxyNodeControlRequest(input: {
