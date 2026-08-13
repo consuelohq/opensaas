@@ -1,5 +1,6 @@
 import type * as SentryNode from '@sentry/node';
 
+import { redactDiagnosticValue } from './install-diagnostics';
 import type { InstallTelemetryEvent } from './install-telemetry-contract';
 import type { InstallerTelemetryErrorReporter } from './install-telemetry';
 
@@ -40,6 +41,7 @@ export function createInstallerSentryErrorReporter(
           release: input.release,
           sendDefaultPii: false,
           tracesSampleRate: 0,
+          beforeSend: (event) => redactDiagnosticValue(event) as typeof event,
         });
         return sentry;
       });
@@ -57,10 +59,16 @@ export function createInstallerSentryErrorReporter(
       });
     }),
     captureException: (error, event) => getSentry().then((sentry) => {
+      let eventId: string | undefined;
       sentry.withScope((scope) => {
         scope.setTag('install_id', event.installId);
         scope.setTag('install_stage', event.stage);
         scope.setTag('install_outcome', event.outcome);
+        if (event.identity.state === 'canonical') {
+          scope.setUser({ id: event.identity.userId });
+          scope.setTag('workspace_id', event.identity.workspaceId);
+          if (event.identity.nodeId) scope.setTag('node_id', event.identity.nodeId);
+        }
         if (event.error) {
           scope.setTag('install_error_code', event.error.code);
           scope.setTag('install_error_impact', event.error.impact);
@@ -71,8 +79,9 @@ export function createInstallerSentryErrorReporter(
           }
         }
         scope.setContext('consuelo_install', eventData(event));
-        sentry.captureException(error);
+        eventId = sentry.captureException(error);
       });
+      return eventId;
     }),
   };
 }

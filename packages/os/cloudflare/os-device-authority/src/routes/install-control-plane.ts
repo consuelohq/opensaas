@@ -3,8 +3,12 @@ import type { Hono } from 'hono';
 import { projectAuthorityWorkspaceNodeToDashboardDevice } from '../../../../scripts/lib/install-control-plane';
 import {
   INSTALL_CONTROL_PLANE_DIAGNOSTIC_INGEST_PATH,
+  INSTALL_CONTROL_PLANE_EVIDENCE_INGEST_PATH,
   INSTALL_CONTROL_PLANE_EVENT_INGEST_PATH,
+  INSTALL_CONTROL_PLANE_OBSERVABILITY_CONFIG_PATH,
   createInstallDiagnosticUploadHandler,
+  createInstallEvidenceIngestHandler,
+  createInstallObservabilityConfigHandler,
   createInstallTelemetryIngestHandler,
 } from '../../../../scripts/lib/install-control-plane-http';
 import { isInstallId } from '../../../../scripts/lib/install-telemetry-contract';
@@ -115,19 +119,47 @@ export function registerInstallControlPlaneRoutes(
   app: Hono,
   runtime: DeviceAuthorityRuntime,
 ): void {
-  app.post(INSTALL_CONTROL_PLANE_EVENT_INGEST_PATH, async (c) => {
+  app.get(INSTALL_CONTROL_PLANE_OBSERVABILITY_CONFIG_PATH, (c) =>
+    createInstallObservabilityConfigHandler({
+      sentryDsn: runtime.installSentryDsn,
+    })(c.req.raw),
+  );
+
+  app.post(INSTALL_CONTROL_PLANE_EVENT_INGEST_PATH, (c) => {
     const repository = runtime.installControlPlaneRepository;
+    const installTelemetryObserver = runtime.installTelemetryObserver;
     if (!repository) {
       return json({ error: 'install_control_plane_unavailable' }, { status: 503 });
     }
     const handler = createInstallTelemetryIngestHandler({
       repository,
       now: runtime.now,
+      onAccepted: installTelemetryObserver
+        ? (event, metadata) => {
+            const cloudflareRayId = metadata.request.headers.get('cf-ray')?.trim();
+            return installTelemetryObserver.observe(event, {
+              ...(cloudflareRayId
+                ? { cloudflareRayId }
+                : {}),
+            });
+          }
+        : undefined,
     });
     return handler(c.req.raw);
   });
 
-  app.post(INSTALL_CONTROL_PLANE_DIAGNOSTIC_INGEST_PATH, async (c) => {
+  app.post(INSTALL_CONTROL_PLANE_EVIDENCE_INGEST_PATH, (c) => {
+    const repository = runtime.installControlPlaneRepository;
+    if (!repository) {
+      return json({ error: 'install_control_plane_unavailable' }, { status: 503 });
+    }
+    return createInstallEvidenceIngestHandler({
+      repository,
+      now: runtime.now,
+    })(c.req.raw);
+  });
+
+  app.post(INSTALL_CONTROL_PLANE_DIAGNOSTIC_INGEST_PATH, (c) => {
     const store = runtime.installDiagnosticBundleStore;
     if (!store) {
       return json({ error: 'install_diagnostic_store_unavailable' }, { status: 503 });

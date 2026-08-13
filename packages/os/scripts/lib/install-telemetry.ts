@@ -27,8 +27,18 @@ export type InstallerTelemetryErrorReporter = {
   captureException: (
     error: unknown,
     event: InstallTelemetryEvent,
-  ) => MaybePromise<void>;
+  ) => MaybePromise<string | void>;
 };
+
+export type InstallerTelemetryEvidenceRequest = {
+  installId: InstallId;
+  kind: 'sentry';
+  referenceId: string;
+};
+
+export type InstallerTelemetryEvidenceSink = (
+  request: InstallerTelemetryEvidenceRequest,
+) => MaybePromise<void>;
 
 export type InstallerDiagnosticUploadRequest = {
   installId: InstallId;
@@ -79,6 +89,7 @@ export type CreateInstallerTelemetryOptions = {
   baseContext?: Readonly<Record<string, unknown>>;
   eventSink?: InstallerTelemetryEventSink;
   errorReporter?: InstallerTelemetryErrorReporter;
+  evidenceSink?: InstallerTelemetryEvidenceSink;
   diagnosticUploader?: InstallerDiagnosticUploader;
   now?: () => string;
   randomUuid?: () => string;
@@ -191,9 +202,21 @@ export function createInstallerTelemetry(
     });
     try {
       if (options.errorReporter) {
-        await ignoreInfrastructureFailure(() =>
-          options.errorReporter!.captureException(input.error, event),
-        );
+        let referenceId: string | void;
+        try {
+          referenceId = await options.errorReporter.captureException(input.error, event);
+        } catch {
+          referenceId = undefined;
+        }
+        if (referenceId && options.evidenceSink) {
+          await ignoreInfrastructureFailure(() =>
+            options.evidenceSink!({
+              installId,
+              kind: 'sentry',
+              referenceId,
+            }),
+          );
+        }
       }
     } catch {
       // Error reporting is intentionally best effort and never controls installer success.

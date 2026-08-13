@@ -40,6 +40,8 @@ export type CreateDeviceAuthorityHandlerInput = {
   operationalLogger?: DeviceAuthorityLogger;
   installControlPlaneRepository?: DeviceAuthorityRuntime['installControlPlaneRepository'];
   installDiagnosticBundleStore?: DeviceAuthorityRuntime['installDiagnosticBundleStore'];
+  installTelemetryObserver?: DeviceAuthorityRuntime['installTelemetryObserver'];
+  installSentryDsn?: string;
 };
 
 export function createOsDeviceAuthorityApp(
