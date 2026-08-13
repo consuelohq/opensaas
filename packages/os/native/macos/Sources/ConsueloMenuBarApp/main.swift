@@ -8,8 +8,17 @@ struct ConsueloMenuBarApplication: App {
     @StateObject private var model = MenuBarModel()
 
     var body: some Scene {
-        MenuBarExtra("Consuelo", systemImage: model.systemImage) {
+        MenuBarExtra {
             ConsueloMenu(model: model)
+        } label: {
+            HStack(spacing: 3) {
+                Image(systemName: model.systemImage)
+                if model.showsUpdateBadge {
+                    Circle()
+                        .frame(width: 5, height: 5)
+                        .accessibilityLabel("Update available")
+                }
+            }
         }
         .menuBarExtraStyle(.menu)
     }
@@ -28,7 +37,6 @@ private struct ConsueloMenu: View {
                 if let summary = snapshot.release.summary, !summary.isEmpty {
                     Text(summary)
                 }
-                Text("Available updates: \(snapshot.updates.available)")
                 if let operation = snapshot.operation {
                     Text("Operation: \(operation.kind.rawValue) · \(operation.phase.rawValue)")
                     if let message = operation.message, !message.isEmpty {
@@ -51,8 +59,8 @@ private struct ConsueloMenu: View {
                 )
 
                 Divider()
-                if snapshot.updates.available > 0 {
-                    Button("Update to \(snapshot.updates.latestVersion ?? "latest")") {
+                if let updateActionTitle = model.updateActionTitle {
+                    Button(updateActionTitle) {
                         model.perform(.update)
                     }
                 }
@@ -65,15 +73,20 @@ private struct ConsueloMenu: View {
                 if let workspace = snapshot.workspace {
                     Divider()
                     Text("Workspace: \(workspace.workspaceHost)")
-                    if let currentNodeId = workspace.currentNodeId {
-                        Text("Current node: \(currentNodeId)")
+                    if let currentNode = workspace.nodes.first(where: { $0.nodeId == workspace.currentNodeId }) {
+                        Text("Current node: \(currentNode.displayName)")
                     }
-                    Menu("Workspace nodes") {
+                    Menu("Nodes") {
                         ForEach(workspace.nodes) { node in
-                            Button(nodeTitle(node, workspace: workspace)) {
-                                model.perform(.setDefaultNode(node.nodeId))
+                            let nodePresentation = WorkspaceNodePresentation(node: node, workspace: workspace)
+                            if nodePresentation.isSelectable {
+                                Button("Make default — \(nodePresentation.title) · \(nodePresentation.subtitle)") {
+                                    model.perform(.setDefaultNode(node.nodeId))
+                                }
+                            } else {
+                                Button(nodeMenuTitle(nodePresentation)) {}
+                                    .disabled(true)
                             }
-                            .disabled(node.state != .active)
                         }
                     }
                 }
@@ -135,13 +148,9 @@ private struct ConsueloMenu: View {
         }
     }
 
-    private func nodeTitle(_ node: WorkspaceNodeSnapshot, workspace: WorkspaceSnapshot) -> String {
-        let role = node.role == .home ? "Home" : "Member"
-        let marker = node.isDefault(in: workspace) ? " ✓" : ""
-        let capabilities = node.capabilities.joined(separator: ", ")
-        let agents = (node.agents ?? []).map { $0 == "opencode" ? "OpenCode" : $0.capitalized }
-        let agentSuffix = agents.isEmpty ? "" : " · \(agents.joined(separator: ", "))"
-        return "\(node.displayName) · \(role) · \(node.presence.rawValue) · \(node.state.rawValue) · \(capabilities)\(agentSuffix)\(marker)"
+    private func nodeMenuTitle(_ presentation: WorkspaceNodePresentation) -> String {
+        let badges = presentation.badges.isEmpty ? "" : " · \(presentation.badges.joined(separator: ", "))"
+        return "\(presentation.title)\(badges) · \(presentation.subtitle)"
     }
 }
 
@@ -149,6 +158,7 @@ private struct ConsueloMenu: View {
 private final class MenuBarModel: ObservableObject {
     @Published private(set) var snapshot: LifecycleSnapshot?
     @Published private(set) var errorMessage: String?
+    @Published private(set) var pendingUpdate: PendingUpdateContext?
     @Published var isConfirmationPresented = false
 
     private let client: LifecycleClient
@@ -169,7 +179,7 @@ private final class MenuBarModel: ObservableObject {
     }
 
     var presentation: MenuBarPresentation? {
-        snapshot.map(MenuBarPresentation.init)
+        snapshot.map { MenuBarPresentation(snapshot: $0, pendingUpdate: pendingUpdate) }
     }
 
     var statusTitle: String {
@@ -182,6 +192,14 @@ private final class MenuBarModel: ObservableObject {
 
     var systemImage: String {
         presentation?.systemImage ?? "circle.dashed"
+    }
+
+    var showsUpdateBadge: Bool {
+        presentation?.showsUpdateBadge ?? false
+    }
+
+    var updateActionTitle: String? {
+        presentation?.updateActionTitle
     }
 
     var confirmationTitle: String {
@@ -279,7 +297,13 @@ private final class MenuBarModel: ObservableObject {
 
     private func execute(_ request: LifecycleRequest) async {
         do {
-            _ = try await client.send(request)
+            let accepted = try await client.send(request)
+            if case let .updateApply(targetVersion) = request {
+                pendingUpdate = PendingUpdateContext(
+                    operationId: accepted.operationId,
+                    targetVersion: targetVersion
+                )
+            }
             _ = try await client.refresh()
             if let current = client.current() {
                 apply(current)
@@ -300,6 +324,9 @@ private final class MenuBarModel: ObservableObject {
     }
 
     private func apply(_ incoming: LifecycleSnapshot) {
+        if let pendingUpdate, pendingUpdate.isResolved(by: incoming) {
+            self.pendingUpdate = nil
+        }
         snapshot = incoming
     }
 
