@@ -347,6 +347,34 @@ describe('test selection registry', () => {
     );
   });
 
+  it('uses the frozen OS Bun lock contract instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/bun.lock',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const lockSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS Bun frozen lockfile contract',
+    );
+
+    expect(matchedRuleIds).toContain('os-bun-lockfile-consistency');
+    expect(suiteNames).toContain('OS Bun frozen lockfile contract');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(lockSuite?.command).toEqual([
+      'bun',
+      'install',
+      '--cwd',
+      'packages/os',
+      '--frozen-lockfile',
+      '--lockfile-only',
+      '--dry-run',
+    ]);
+  });
+
   it('uses focused Vitest runtime regression contracts for verifier-only OS test fixes', () => {
     const result = run([
       'check',

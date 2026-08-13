@@ -5,8 +5,8 @@
     "testFileCount": 2613,
     "mappedTestCount": 2532,
     "unmappedTestCount": 81,
-    "ruleCount": 45,
-    "explicitRuleCount": 26,
+    "ruleCount": 46,
+    "explicitRuleCount": 27,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -942,6 +942,30 @@
       "critical": true,
       "exclusive": true,
       "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-bun-lockfile-consistency",
+      "source": [
+        "packages/os/bun.lock"
+      ],
+      "tests": [
+        {
+          "name": "OS Bun frozen lockfile contract",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/os",
+            "--frozen-lockfile",
+            "--lockfile-only",
+            "--dry-run"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "OS dependency lock changes must prove the exact frozen Bun install contract used by distribution and release workflows without selecting unrelated package-wide tests.",
       "origin": "explicit"
     },
     {
