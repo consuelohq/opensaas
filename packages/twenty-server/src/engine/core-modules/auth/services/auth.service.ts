@@ -850,11 +850,13 @@ export class AuthService {
 
   private createOsDeviceApprovalAssertion(input: {
     accountId: string;
+    workspaceId: string;
     sharedKey: string;
   }): string {
     const payload = Buffer.from(
       JSON.stringify({
         account_id: input.accountId,
+        workspace_id: input.workspaceId,
         auth_method: 'google',
         expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
       }),
@@ -936,6 +938,7 @@ export class AuthService {
       );
       const assertion = this.createOsDeviceApprovalAssertion({
         accountId: approvedUser.id,
+        workspaceId: approvedWorkspace.id,
         sharedKey: approvalAssertionSecret,
       });
 

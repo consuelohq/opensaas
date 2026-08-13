@@ -1,6 +1,15 @@
 import type { WorkspaceRouteD1Database } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import type { WorkspaceSiteSnapshotId } from '../../../scripts/lib/workspace-edge-route-seed';
 import type { ManagedCloudPricingRuntime } from './services/managed-cloud-pricing';
+import type { InstallControlPlaneRepository } from '../../../scripts/lib/install-control-plane';
+import type {
+  InstallEventId,
+  InstallId,
+} from '../../../scripts/lib/install-telemetry-contract';
+import type {
+  InstallDiagnosticBundleStore,
+  InstallDiagnosticR2Bucket,
+} from '../../../scripts/lib/install-control-plane-r2';
 
 export type GrantStatus = 'pending' | 'approved' | 'denied' | 'failed';
 export type GrantFailureCode = 'workspace_route_setup_failed';
@@ -16,6 +25,10 @@ export type StrongerAuthMethod =
 export type Grant = {
   hash: string;
   userCode: string;
+  installId?: InstallId;
+  installIdentityEventId?: InstallEventId;
+  canonicalUserId?: string;
+  canonicalWorkspaceId?: string;
   workspaceId?: string;
   workspaceSlug?: string;
   workspaceHost?: string;
@@ -342,6 +355,7 @@ export type Store = {
   byWorkspaceNodeId(nodeId: string): Promise<WorkspaceNode | undefined>;
   listWorkspaceNodes(accountId: string): Promise<WorkspaceNode[]>;
   listWorkspaceNodesByHost(workspaceHost: string): Promise<WorkspaceNode[]>;
+  listAllWorkspaceNodes(): Promise<WorkspaceNode[]>;
   claimWorkspaceNodeNonce(
     nodeId: string,
     nonce: string,
@@ -413,6 +427,8 @@ export type Env = {
   OS_MANAGED_CLOUD_PRICING_POLICY_JSON?: string;
   OS_MANAGED_CLOUD_RATE_CARDS_JSON?: string;
   OS_DEVICE_AUTH_LOGGER?: DeviceAuthorityLogger;
+  INSTALL_DIAGNOSTICS?: InstallDiagnosticR2Bucket;
+  OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS?: string;
 };
 
 export type DeviceAuthorityOperationalLogContext = {
@@ -445,4 +461,6 @@ export type DeviceAuthorityRuntime = {
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
   operationalLogger?: DeviceAuthorityLogger;
+  installControlPlaneRepository?: InstallControlPlaneRepository;
+  installDiagnosticBundleStore?: InstallDiagnosticBundleStore;
 };

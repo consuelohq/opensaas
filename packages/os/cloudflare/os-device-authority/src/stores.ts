@@ -640,6 +640,13 @@ export class DurableStore implements Store {
       throw new Error('workspace node host list failed');
     }
   }
+  async listAllWorkspaceNodes() {
+    try {
+      return await this.legacyWorkspaceNodes();
+    } catch {
+      throw new Error('workspace node global list failed');
+    }
+  }
   async byWorkspaceTaskAffinity(input: {
     accountId: string;
     workspaceHost: string;
@@ -1080,6 +1087,11 @@ export function createMemoryDeviceGrantStore(): Store {
         [...workspaceNodes.values()]
           .filter((node) => node.workspaceHost === workspaceHost)
           .map(cloneWorkspaceNode),
+      );
+    },
+    listAllWorkspaceNodes() {
+      return Promise.resolve(
+        [...workspaceNodes.values()].map(cloneWorkspaceNode),
       );
     },
     byWorkspaceTaskAffinity(input) {
