@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2611,
-    "mappedTestCount": 2530,
+    "testFileCount": 2613,
+    "mappedTestCount": 2532,
     "unmappedTestCount": 81,
-    "ruleCount": 44,
-    "explicitRuleCount": 25,
+    "ruleCount": 45,
+    "explicitRuleCount": 26,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 242,
+      "packages/os/tests": 244,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 58,
       "packages/twenty-sdk/src/cli": 51,
@@ -631,7 +631,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 518,
+      "test": 520,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -901,6 +901,47 @@
       ],
       "critical": true,
       "reason": "Workspace edge rollout changes must preserve immutable snapshots and live node/connector route state without relying on a broad package test.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-hosted-site-update-reconciliation",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+        "packages/os/scripts/lib/lifecycle/engine.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ]
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite.",
       "origin": "explicit"
     },
     {
@@ -3248,6 +3289,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/install-observability-integrations.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/install-state.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3289,6 +3335,11 @@
     },
     {
       "path": "packages/os/tests/installer-telemetry-runtime.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/internal-dashboard-integration.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

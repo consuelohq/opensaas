@@ -429,7 +429,7 @@ async function handleHeartbeat(
       candidate.nodeId === nodeId ? updated : candidate,
     );
     try {
-      routeReady = await reconcileWorkspaceRouteState({
+      const reconciliation = await reconcileWorkspaceRouteState({
         routeRegistry: runtime.workspaceRouteRegistry,
         workspace,
         nodes: desiredNodes,
@@ -437,6 +437,14 @@ async function handleHeartbeat(
         nowMs,
         defaultSiteSnapshot: runtime.defaultSiteSnapshot,
       });
+      routeReady = reconciliation.routeReady;
+      if (reconciliation.defaultNodeChanged) {
+        await runtime.store.putAccountWorkspace({
+          ...workspace,
+          defaultNodeId: reconciliation.defaultNodeId,
+          updatedAt: nowMs,
+        });
+      }
     } catch {
       return errorResponse(
         503,

@@ -310,6 +310,43 @@ describe('test selection registry', () => {
     );
   });
 
+  it('uses focused hosted-site reconciliation contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/connectors.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/lifecycle/engine.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts',
+      '--changed-file',
+      'packages/os/tests/cloudflare-d1-route-registry.test.ts',
+      '--changed-file',
+      'packages/os/tests/install-edge-site-publisher.test.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-engine.test.ts',
+      '--changed-file',
+      'packages/os/tests/workspace-node-registry-routing.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-hosted-site-update-reconciliation');
+    expect(matchedRuleIds).toContain('os-managed-cloud-one-click-provisioning');
+    expect(matchedRuleIds).toContain('os-workspace-edge-rollout');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'OS hosted-site D1 reconciliation contract',
+        'OS hosted-site lifecycle and node routing contracts',
+      ]),
+    );
+  });
+
   it('uses focused Vitest runtime regression contracts for verifier-only OS test fixes', () => {
     const result = run([
       'check',
