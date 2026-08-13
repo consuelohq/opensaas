@@ -1,6 +1,6 @@
 # Consuelo OS Install Control Plane
 
-Status: implementation contract through Branch 6
+Status: implementation contract through Branch 7
 Last reviewed: 2026-08-13
 
 This document describes the hosted persistence, diagnostics, device projection, and private read API that implement `docs/install-telemetry-contract.md`.
@@ -60,6 +60,52 @@ R2 keys are separated by outcome so bucket lifecycle rules can enforce the physi
 install-diagnostics/failed/<installId>/<bundleId>.json
 install-diagnostics/successful/<installId>/<bundleId>.json
 ```
+
+## Observability projections
+
+Branch 7 connects the canonical install read model to the support/analytics systems without making any vendor authoritative.
+
+### Sentry
+
+The installer discovers only the Sentry DSN from Device Authority:
+
+```text
+GET https://os.consuelohq.com/api/os/v1/install-observability
+```
+
+The response is `Cache-Control: no-store` and contains no worker secrets or PostHog configuration. A local `CONSUELO_OS_SENTRY_DSN`/`SENTRY_DSN` override still takes precedence. If no DSN is configured or discovery fails, Sentry is disabled and the install continues normally.
+
+Installer exceptions are captured locally so useful stack context is available. Before transport, the event is passed through the installer diagnostic redactor and Sentry default PII collection is disabled. Safe tags include `install_id`, stage/outcome, stable error code/impact, release/channel/platform context, and canonical `userId`/`workspaceId`/`nodeId` only after trusted device approval has bound them locally.
+
+When Sentry returns an event ID, the installer best-effort records it as support evidence:
+
+```text
+POST https://os.consuelohq.com/api/os/v1/install-evidence
+x-consuelo-install-id: ins_<uuid-v4>
+```
+
+The public evidence endpoint accepts only a bounded 32-hex Sentry event ID for the matching install. It cannot create Cloudflare evidence or change canonical install/user/device state.
+
+### Cloudflare logs and traces
+
+Device Authority emits a structured `consuelo.os.install` log projection for accepted install events. The projection is restricted to the typed telemetry contract: `install_id`, `event_id`, lifecycle stage/outcome, stable error metadata, approved safe context, and canonical IDs only on trusted canonical events. Human profile PII, provider subjects, workspace host/name values, credentials, arbitrary request bodies, and diagnostic blobs are not projected.
+
+When Cloudflare supplies a valid bounded `cf-ray` request reference, Device Authority stores it as `cloudflare` support evidence for the install. The reference is advisory only; missing/invalid evidence never changes ingest or authorization success.
+
+Worker logs and traces are explicitly enabled in `cloudflare/os-device-authority/wrangler.toml`. They are execution evidence, not dashboard count sources.
+
+### PostHog
+
+Device Authority projects the install funnel server-side when `POSTHOG_API_KEY` is configured. The v1 milestones are:
+
+```text
+install.started         -> consuelo_os_install_started
+install.identity.bound  -> consuelo_os_device_authorized
+install.completed       -> consuelo_os_install_completed
+install.failed          -> consuelo_os_install_failed
+```
+
+Each event uses `install_id` as `distinct_id` and `event_id` as `$insert_id`, so retries do not create a second logical funnel event. Canonical IDs are attached only to trusted canonical identity events; profile email/display name is never copied from the private user directory into PostHog install metadata. PostHog delivery is best effort and cannot change install/device-auth success.
 
 The reviewed lifecycle configuration is `cloudflare/os-device-authority/install-diagnostics-r2-lifecycle.json`.
 
@@ -194,6 +240,18 @@ The application and Device Authority must continue to share `OS_DEVICE_AUTH_ASSE
 
 ### 5. Validate before enabling the UI
 
+Before Canary validation, configure the Device Authority observability values:
+
+```text
+secret: SENTRY_DSN
+secret: POSTHOG_API_KEY
+var:    POSTHOG_HOST=https://us.i.posthog.com
+```
+
+The code fails soft when either vendor value is absent, but live Sentry/PostHog correlation cannot be validated until the corresponding value exists. Do not commit either project value into source; provide them through Worker deployment configuration.
+
+Then validate the workers and UI:
+
 At minimum:
 
 ```bash
@@ -207,4 +265,4 @@ Then verify in Canary that anonymous install events are ingested, trusted identi
 
 Branches 2, 3, and 5 are integrated by Branch 6: installer telemetry feeds the D1/R2 control plane and the private dashboard renders that real read model. Branch 4 only links the private site; it does not duplicate the authorization boundary. Installer events still never carry email/display name; Branch 6 hydrates those fields from canonical application auth through `InstallControlPlaneRepository.upsertUser()`.
 
-The later observability-integration branch should populate Sentry and Cloudflare evidence references and PostHog projections while preserving D1 as the canonical count/read model.
+Branch 7 populates Sentry and Cloudflare evidence references and PostHog projections while preserving D1 as the canonical count/read model. Branch 8 should perform live Canary acceptance with both observability project values configured.

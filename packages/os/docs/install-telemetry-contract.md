@@ -286,6 +286,8 @@ Canonical events carry stable error codes and impact, not arbitrary exception me
 
 Sentry may receive the original exception/stack where useful, but the Sentry integration must apply its own scrubber before transport and tag the event with safe correlation identifiers. Sentry evidence is not copied wholesale into the canonical event store.
 
+The hosted installer may discover the Sentry DSN from the Device Authority observability-config endpoint so normal installations do not require a local environment variable. That endpoint exposes only the DSN, is `no-store`, and does not publish PostHog keys or other worker configuration. Discovery failure disables that projection rather than changing install behavior.
+
 ## Storage ownership
 
 One system owns each class of data:

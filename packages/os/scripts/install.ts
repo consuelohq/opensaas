@@ -54,6 +54,12 @@ import {
   resolveInstallerInstallId,
   type InstallerTelemetry,
 } from './lib/install-telemetry';
+import {
+  createInstallerDiagnosticHttpUploader,
+  createInstallerSentryEvidenceHttpSink,
+  createInstallerTelemetryHttpEventSink,
+  fetchInstallerObservabilityConfig,
+} from './lib/install-telemetry-http';
 import { createInstallerSentryErrorReporter } from './lib/install-telemetry-sentry';
 import type {
   InstallErrorCode,
@@ -1382,7 +1388,20 @@ async function promptOptions(
 
 async function main(): Promise<void> {
   let diagnostics: InstallDiagnostics | null = null;
+  const parsedOptions = parseArgs(process.argv.slice(2));
   const installId = resolveInstallerInstallId();
+  const authorityOrigin =
+    process.env.CONSUELO_OS_AUTHORITY_ORIGIN?.trim() ||
+    'https://os.consuelohq.com';
+  const projectExternalTelemetry = !parsedOptions.dryRun;
+  let observabilityConfig: Awaited<ReturnType<typeof fetchInstallerObservabilityConfig>> = {};
+  if (projectExternalTelemetry) {
+    try {
+      observabilityConfig = await fetchInstallerObservabilityConfig({ authorityOrigin });
+    } catch {
+      observabilityConfig = {};
+    }
+  }
   const telemetry = createInstallerTelemetry({
     installId,
     baseContext: {
@@ -1391,19 +1410,30 @@ async function main(): Promise<void> {
       channel: process.env.CONSUELO_RELEASE_CHANNEL,
       release: process.env.CONSUELO_OS_RELEASE,
       installerVersion: process.env.CONSUELO_OS_INSTALLER_VERSION,
+      dryRun: parsedOptions.dryRun,
+      osMode: parsedOptions.mode,
     },
-    errorReporter: createInstallerSentryErrorReporter({
-      dsn: process.env.CONSUELO_OS_SENTRY_DSN ?? process.env.SENTRY_DSN,
-      environment:
-        process.env.CONSUELO_OS_ENVIRONMENT ??
-        process.env.CONSUELO_RELEASE_CHANNEL ??
-        process.env.NODE_ENV,
-      release: process.env.CONSUELO_OS_RELEASE,
-    }),
+    ...(projectExternalTelemetry
+      ? {
+          eventSink: createInstallerTelemetryHttpEventSink({ authorityOrigin }),
+          evidenceSink: createInstallerSentryEvidenceHttpSink({ authorityOrigin }),
+          diagnosticUploader: createInstallerDiagnosticHttpUploader({ authorityOrigin }),
+          errorReporter: createInstallerSentryErrorReporter({
+            dsn:
+              process.env.CONSUELO_OS_SENTRY_DSN ??
+              process.env.SENTRY_DSN ??
+              observabilityConfig.sentryDsn,
+            environment:
+              process.env.CONSUELO_OS_ENVIRONMENT ??
+              process.env.CONSUELO_RELEASE_CHANNEL ??
+              process.env.NODE_ENV,
+            release: process.env.CONSUELO_OS_RELEASE,
+          }),
+        }
+      : {}),
   });
   let activeStage: InstallStage = 'bootstrap';
   try {
-    const parsedOptions = parseArgs(process.argv.slice(2));
     await telemetry.record({
       name: 'install.started',
       stage: 'bootstrap',
@@ -1416,6 +1446,7 @@ async function main(): Promise<void> {
     diagnostics = createInstallDiagnostics({
       home: resolveOsHome(parsedOptions.home),
       argv: process.argv.slice(2),
+      captureSupport: true,
     });
     registerInstallerDiagnosticsLifecycleHooks(diagnostics);
     recordInstallerStep(diagnostics, 'dependencies', 'complete');
