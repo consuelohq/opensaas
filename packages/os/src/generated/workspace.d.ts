@@ -114,6 +114,10 @@ declare const workspace: {
     diff: (input: { branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     status: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
+  lifecycle: {
+    status: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    update: (input: { channel?: "stable" | "beta" | "canary" | "dev" | "nightly"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
   linear: {
     createIssue: (input: { title: string; description?: string; team?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     issue: (input: { identifier: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
@@ -228,7 +232,7 @@ declare const workspace: {
     smoke: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   tools: {
-    search: (input: { query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: "high" | "medium" | "low"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record<string, number>; description?: string; capabilities: Record<string, unknown>; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; docs?: { heading: string; snippet: string; source: string }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string | Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }>>;
+    search: (input: { query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; detail?: "compact" | "full"; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; confidence: "high" | "medium" | "low"; ambiguous: boolean; retrievalMode: "exact" | "deterministic" | "semantic-fallback" | "abstain"; recommended?: string; matches: Array<{ name: string; category?: string; description?: string; capabilities: { readOnly: boolean; mutating: boolean }; inputSignature?: string; sessionRequired?: boolean }>; diagnostics?: Record<string, unknown> }>>;
   };
   website: {
     deploy: (input: { preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;

@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2594,
-    "mappedTestCount": 2513,
+    "testFileCount": 2608,
+    "mappedTestCount": 2527,
     "unmappedTestCount": 81,
-    "ruleCount": 40,
-    "explicitRuleCount": 21,
+    "ruleCount": 41,
+    "explicitRuleCount": 22,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 226,
+      "packages/os/tests": 239,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 58,
       "packages/twenty-sdk/src/cli": 51,
@@ -45,9 +45,9 @@
       "packages/twenty-server/test/integration/metadata/suites/object-metadata/utils": 14,
       "packages/twenty-server/test/integration/metadata/suites/skill/utils": 14,
       "packages/lead-connector/src/embed": 13,
+      "packages/os/tests/distribution": 13,
       "packages/twenty-front/src/modules/navigation-menu-item/utils": 13,
       "packages/twenty-shared/src/utils/filter/utils": 13,
-      "packages/os/tests/distribution": 12,
       "packages/twenty-server/src/engine/twenty-orm/utils": 12,
       "packages/twenty-server/test/integration/graphql/suites/object-records-permissions": 12,
       "packages/twenty-server/test/integration/metadata/suites/page-layout/utils": 12,
@@ -631,7 +631,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 501,
+      "test": 515,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -927,6 +927,74 @@
       ],
       "critical": true,
       "reason": "Lifecycle daemon/reload changes must prove inherited-secret scrub, activated-runtime managed Sites refresh, Bun path resolution, and fail-open startup without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-lifecycle-update-handoff",
+      "source": [
+        "packages/os/SCRIPTS.md",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/native/windows-service/**",
+        "packages/os/scripts/lifecycle.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/native-lifecycle-operation.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/cli-update-routing.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/lifecycle-facade.test.ts",
+        "packages/os/tests/lifecycle-tool-surface.test.ts",
+        "packages/os/tests/native-lifecycle-operation.test.ts",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/tool-package-layout.test.ts",
+        "packages/os/scripts/lib/windows-platform.ts",
+        "packages/os/tools/lifecycle/**",
+        "packages/os/tools/registry.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts"
+          ]
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -2864,6 +2932,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/distribution/runtime-bundle-workspace-closure.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/distribution/runtime-bundle.test.ts",
       "group": "packages/os/tests/distribution",
       "kind": "test"
@@ -2989,6 +3062,31 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/install-control-plane-cloudflare.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-control-plane-d1.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-control-plane-http.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-control-plane-r2.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-control-plane.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/install-diagnostics.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3000,6 +3098,11 @@
     },
     {
       "path": "packages/os/tests/install-state.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-telemetry-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3024,7 +3127,32 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/installer-telemetry-device-correlation.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/installer-telemetry-onboarding-wiring.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/installer-telemetry-runtime.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/internal-user-dashboard.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/launcher-astro-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/launcher-local-customization.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3049,6 +3177,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/lifecycle-facade.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3065,6 +3198,11 @@
     },
     {
       "path": "packages/os/tests/lifecycle-retention-uninstall.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-tool-surface.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

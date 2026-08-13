@@ -127,6 +127,12 @@
       "kind": "facade-tool",
       "path": "packages/os/tools/deployment-provider/manifest.ts",
       "entryCount": 8
+    },
+    {
+      "label": "lifecycle",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/lifecycle/manifest.ts",
+      "entryCount": 2
     }
   ],
   "tools": [
@@ -4970,6 +4976,123 @@
         "exampleInput": {
           "method": "get",
           "url": "https://example.com"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "lifecycle.status",
+      "kind": "facade-tool",
+      "source": "lifecycle",
+      "sourcePath": "packages/os/tools/lifecycle/manifest.ts",
+      "category": "lifecycle",
+      "description": "check Consuelo OS lifecycle and runtime status, including the latest durable update operation",
+      "core": false,
+      "definition": {
+        "name": "lifecycle.status",
+        "methodPath": [
+          "lifecycle",
+          "status"
+        ],
+        "description": "check Consuelo OS lifecycle and runtime status, including the latest durable update operation",
+        "category": "lifecycle",
+        "underlying": "workspace lifecycle.status",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 60000,
+        "inputSchema": "EmptyInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "consuelo",
+            "os",
+            "runtime",
+            "release",
+            "lifecycle",
+            "status",
+            "update status",
+            "upgrade status"
+          ],
+          "entities": [
+            "consuelo os",
+            "runtime release",
+            "lifecycle operation"
+          ]
+        },
+        "command": {
+          "script": "lifecycle",
+          "subcommand": "status",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {},
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "lifecycle.update",
+      "kind": "facade-tool",
+      "source": "lifecycle",
+      "sourcePath": "packages/os/tools/lifecycle/manifest.ts",
+      "category": "lifecycle",
+      "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater",
+      "core": false,
+      "definition": {
+        "name": "lifecycle.update",
+        "methodPath": [
+          "lifecycle",
+          "update"
+        ],
+        "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater",
+        "category": "lifecycle",
+        "underlying": "workspace lifecycle.update",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "LifecycleUpdateInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "consuelo",
+            "os",
+            "runtime",
+            "release",
+            "lifecycle",
+            "update",
+            "upgrade",
+            "updater",
+            "install latest"
+          ],
+          "entities": [
+            "consuelo os",
+            "runtime release",
+            "lifecycle updater"
+          ]
+        },
+        "command": {
+          "script": "lifecycle",
+          "subcommand": "update",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "channel",
+              "flag": "--channel",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "channel": "stable"
         },
         "sessionRequired": false
       }
