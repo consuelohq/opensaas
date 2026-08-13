@@ -33,7 +33,11 @@ function writeCaddyPool(consueloHome: string, ports: number[]): void {
   );
 }
 
-function createHarness(input: { bootstrapExit?: number; launchdLoaded?: boolean } = {}) {
+function createHarness(input: {
+  bootstrapExit?: number;
+  kickstartMissingOnce?: boolean;
+  launchdLoaded?: boolean;
+} = {}) {
   const home = mkdtempSync(join(tmpdir(), 'consuelo-reload-test-'));
   temporaryHomes.push(home);
   const bin = join(home, 'bin');
@@ -41,6 +45,7 @@ function createHarness(input: { bootstrapExit?: number; launchdLoaded?: boolean 
   const marker = join(home, 'launchd-bootstrapped');
   const launchLog = join(home, 'launchctl.log');
   const signalLog = join(home, 'kill.log');
+  const missingKickstart = join(home, 'launchd-kickstart-missing');
   const launchAgent = join(launchAgents, 'com.consuelo.system.plist');
   mkdirSync(bin, { recursive: true });
   mkdirSync(launchAgents, { recursive: true });
@@ -53,7 +58,9 @@ case "$1" in
   bootstrap)
     ${input.bootstrapExit ? `exit ${input.bootstrapExit}` : `touch "${marker}"; exit 0`}
     ;;
-  kickstart) touch "${marker}"; exit 0 ;;
+  kickstart)
+    ${input.kickstartMissingOnce ? `if [ ! -f "${missingKickstart}" ]; then touch "${missingKickstart}"; printf '%s\n' 'Could not find service "com.consuelo.system" in domain for user gui: 501' >&2; exit 113; fi` : ''}
+    touch "${marker}"; exit 0 ;;
   bootout) exit 0 ;;
 esac
 exit 0
@@ -281,6 +288,21 @@ describe('Consuelo OS reload lifecycle', () => {
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain('Caddy worker upstreams do not match the ready worker pool');
+  });
+
+  it('should recover when a loaded LaunchAgent disappears before kickstart', () => {
+    const harness = createHarness({ launchdLoaded: true, kickstartMissingOnce: true });
+    const result = spawnSync(process.execPath, [reloadScript, 'restart-now'], {
+      cwd: osRoot,
+      env: { ...harness.env, CONSUELO_OS_RELOAD_LAUNCHD: '1' },
+      encoding: 'utf8',
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    const launchCommands = readFileSync(harness.launchLog, 'utf8');
+    expect(launchCommands.match(/kickstart -k/g)).toHaveLength(2);
+    expect(launchCommands).toContain('bootstrap gui/');
+    expect(result.stdout).toContain('reloaded: healthy');
   });
 
   it('should bootstrap an unloaded LaunchAgent before kickstarting a reload', () => {
