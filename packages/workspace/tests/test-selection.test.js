@@ -401,6 +401,32 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses the focused OS runtime-bundle distribution contract instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/distribution/runtime-bundle.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const runtimeBundleSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS runtime-bundle distribution contract',
+    );
+
+    expect(matchedRuleIds).toContain('os-runtime-bundle-distribution-contract');
+    expect(suiteNames).toContain('OS runtime-bundle distribution contract');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(runtimeBundleSuite?.command).toEqual([
+      'bun',
+      '--cwd',
+      'packages/os',
+      'test',
+      'tests/distribution/runtime-bundle.test.ts',
+    ]);
+  });
+
   it('uses focused Vitest runtime regression contracts for verifier-only OS test fixes', () => {
     const result = run([
       'check',
