@@ -169,4 +169,84 @@ describe('OS worker pool process integration', () => {
       await supervisorExited;
     }
   }, 60_000);
+
+  it('reclaims orphaned workers when launchd restarts a killed supervisor', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-worker-pool-orphans-'));
+    temporaryHomes.push(home);
+    const basePort = await contiguousPorts();
+    const statePath = join(home, 'node', 'runs', 'os-worker-pool.json');
+    const environment = {
+      ...process.env,
+      CONSUELO_HOME: home,
+      CONSUELO_OS_PORT: String(basePort),
+      CONSUELO_OS_WORKER_COUNT: '2',
+      CONSUELO_OS_WORKER_RESTART_DELAY_MS: '25',
+      CONSUELO_OS_DRAIN_TIMEOUT_MS: '2000',
+      CONSUELO_OS_ORPHAN_RECLAIM_TIMEOUT_MS: '5000',
+    };
+    const firstSupervisor = spawn(
+      resolveBunExecutable(),
+      [resolve(osRoot, 'scripts/server/supervisor.ts')],
+      { cwd: osRoot, env: environment, stdio: ['ignore', 'pipe', 'pipe'] },
+    );
+
+    const first = await waitFor<PoolSnapshot>(() => {
+      try {
+        const snapshot = JSON.parse(readFileSync(statePath, 'utf8')) as PoolSnapshot;
+        return snapshot.supervisorPid === firstSupervisor.pid
+          && snapshot.workers.length === 2
+          && snapshot.workers.every((worker) => worker.state === 'ready')
+          ? snapshot
+          : undefined;
+      } catch {
+        return undefined;
+      }
+    });
+    const orphanPids = first.workers.map((worker) => worker.pid!);
+
+    firstSupervisor.kill('SIGKILL');
+    await new Promise<void>((resolveExit) => firstSupervisor.once('exit', () => resolveExit()));
+
+    const secondSupervisor = spawn(
+      resolveBunExecutable(),
+      [resolve(osRoot, 'scripts/server/supervisor.ts')],
+      { cwd: osRoot, env: environment, stdio: ['ignore', 'pipe', 'pipe'] },
+    );
+    let secondSupervisorStderr = '';
+    secondSupervisor.stderr?.on('data', (chunk) => {
+      secondSupervisorStderr += String(chunk);
+    });
+    const secondSupervisorExited = new Promise<number>((resolveExit, rejectExit) => {
+      secondSupervisor.once('error', rejectExit);
+      secondSupervisor.once('exit', (code) => resolveExit(code ?? 1));
+    });
+
+    try {
+      const recovered = await waitFor<PoolSnapshot>(() => {
+        try {
+          const snapshot = JSON.parse(readFileSync(statePath, 'utf8')) as PoolSnapshot;
+          return snapshot.supervisorPid === secondSupervisor.pid
+            && snapshot.workers.length === 2
+            && snapshot.workers.every((worker) =>
+              worker.state === 'ready' && !orphanPids.includes(worker.pid!),
+            )
+            ? snapshot
+            : undefined;
+        } catch {
+          return undefined;
+        }
+      }, 15_000);
+
+      expect(recovered.workers.map((worker) => worker.port)).toEqual([basePort, basePort + 1]);
+      expect(secondSupervisorStderr).not.toContain('EADDRINUSE');
+      await expect(fetch(`http://127.0.0.1:${basePort}/ready`)).resolves.toMatchObject({ ok: true });
+      await expect(fetch(`http://127.0.0.1:${basePort + 1}/ready`)).resolves.toMatchObject({ ok: true });
+    } finally {
+      secondSupervisor.kill('SIGTERM');
+      await secondSupervisorExited;
+      for (const orphanPid of orphanPids) {
+        try { process.kill(orphanPid, 'SIGKILL'); } catch {}
+      }
+    }
+  }, 60_000);
 });

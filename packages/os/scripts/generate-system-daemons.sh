@@ -83,6 +83,7 @@ caddy_path="${CADDY_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:
 portless_path="${PORTLESS_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 watchdog_path="${WORKSPACE_WATCHDOG_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 watchdog_interval_seconds="${WORKSPACE_WATCHDOG_INTERVAL_SECONDS:-30}"
+watchdog_local_port="${WORKSPACE_WATCHDOG_LOCAL_PORT:-${CONSUELO_CADDY_INGRESS_PORT:-46320}}"
 availability_enabled="${CONSUELO_AVAILABILITY_ENABLED:-0}"
 case "$watchdog_interval_seconds" in
   ''|*[!0-9]*)
@@ -92,6 +93,16 @@ case "$watchdog_interval_seconds" in
 esac
 if [ "$watchdog_interval_seconds" -lt 1 ]; then
   echo "WORKSPACE_WATCHDOG_INTERVAL_SECONDS must be greater than zero" >&2
+  exit 1
+fi
+case "$watchdog_local_port" in
+  ''|*[!0-9]*)
+    echo "invalid WORKSPACE_WATCHDOG_LOCAL_PORT: $watchdog_local_port" >&2
+    exit 1
+    ;;
+esac
+if [ "$watchdog_local_port" -lt 1 ] || [ "$watchdog_local_port" -gt 65535 ]; then
+  echo "WORKSPACE_WATCHDOG_LOCAL_PORT must be between 1 and 65535" >&2
   exit 1
 fi
 bun_bin="$(xml_escape "${BUN_BIN:-}")"
@@ -339,8 +350,14 @@ cat > "$generated_dir/${watchdog_label}.plist" <<PLIST
     <string>${watchdog_path}</string>
     <key>WORKSPACE_DAEMON_LABEL</key>
     <string>${workspace_label}</string>
+    <key>WORKSPACE_WATCHDOG_CADDY_LABEL</key>
+    <string>${caddy_label}</string>
     <key>PORTLESS_DAEMON_LABEL</key>
     <string>${portless_label}</string>
+    <key>WORKSPACE_WATCHDOG_LOCAL_PORT</key>
+    <string>${watchdog_local_port}</string>
+    <key>WORKSPACE_WATCHDOG_LOCAL_URL</key>
+    <string>http://127.0.0.1:${watchdog_local_port}/health</string>
   </dict>
 </dict>
 </plist>

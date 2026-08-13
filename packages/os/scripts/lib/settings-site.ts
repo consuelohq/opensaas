@@ -1,4 +1,5 @@
 import { listManagedCloudPlans, listManagedCloudRegions } from './managed-cloud-pricing';
+import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
 
 export type ConfigurationPageId =
   | 'configuration'
@@ -949,7 +950,7 @@ export function renderConfigurationSite(page: ConfigurationPageId = 'configurati
       ${content}
     </main>
   </div>
-  ${clientScript ? `<script>${clientScript}</script>` : ''}
+  ${clientScript ? `<script>${PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT}\n${clientScript}</script>` : ''}
 </body>
 </html>`;
 }

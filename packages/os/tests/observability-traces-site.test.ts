@@ -76,6 +76,20 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).not.toContain('cdn.jsdelivr.net');
   });
 
+  it('recovers an expired private workspace browser session before showing an empty trace table', () => {
+    const html = buildObservabilityTracesSite();
+
+    expect(html).toContain('consuelo-private-workspace-session-recovery');
+    expect(html).toContain("response.status !== 401");
+    expect(html).toContain("payload.error !== 'workspace_session_required'");
+    expect(html).toContain("'/login/google/start'");
+    expect(html).toContain("searchParams.set('purpose', 'web')");
+    expect(html).toContain(
+      "window.location.pathname + window.location.search + window.location.hash",
+    );
+    expect(html).toContain('window.location.assign(loginUrl.toString())');
+  });
+
   it('returns to the workspace launcher when the v38 red window control is clicked', () => {
     const html = buildObservabilityTracesSite();
 

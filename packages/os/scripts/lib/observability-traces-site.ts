@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
+
 const canonicalAssetDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../../assets/vendor/observability-traces-v38',
@@ -35,6 +37,10 @@ const nodeObservabilityStyle = `<style id="consuelo-trace-node-observability">
   #tbmLiveTraceModal .trxSkeletonRow{grid-template-columns:34px 140px 156px 82px 76px minmax(280px,1fr) 140px minmax(270px,.9fr) minmax(270px,.9fr) 150px 70px 86px!important}
 }
 </style>`;
+
+const privateWorkspaceSessionRecovery = `<script id="consuelo-private-workspace-session-recovery">
+${PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT.replaceAll('</script', '<\\/script')}
+</script>`;
 
 function replaceExactlyOnce(
   html: string,
@@ -371,7 +377,7 @@ export function buildObservabilityTracesSite(): string {
   html = replaceExactlyOnce(
     html,
     /<\/head>/i,
-    `${nodeObservabilityStyle}</head>`,
+    `${nodeObservabilityStyle}${privateWorkspaceSessionRecovery}</head>`,
     'document head close',
   );
 

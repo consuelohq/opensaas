@@ -101,6 +101,9 @@ describe('lifecycle restart parity', () => {
     expect(workflow).toContain(
       '--migration "2026-08-13-reconcile-caddy-worker-pool:scripts/migrations/reconcile-caddy-worker-pool.ts"',
     );
+    expect(workflow).toContain(
+      '--migration "2026-08-13-reconcile-caddy-ha-watchdog:scripts/migrations/reconcile-caddy-ha-watchdog.ts"',
+    );
   });
 
   it('fails service restart when the canonical adapter exits non-zero', async () => {

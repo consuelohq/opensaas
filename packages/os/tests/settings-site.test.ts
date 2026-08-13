@@ -124,6 +124,21 @@ describe('configuration site', () => {
     expect(secretsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
   });
 
+  it('recovers expired workspace sessions on every private configuration page', () => {
+    for (const page of ['configuration', 'tools', 'nodes', 'environments', 'secrets'] as const) {
+      const html = renderConfigurationSite(page as never);
+
+      expect(html).toContain('response.status !== 401');
+      expect(html).toContain("payload.error !== 'workspace_session_required'");
+      expect(html).toContain("'/login/google/start'");
+      expect(html).toContain("searchParams.set('purpose', 'web')");
+      expect(html).toContain(
+        'window.location.pathname + window.location.search + window.location.hash',
+      );
+      expect(html).toContain('window.location.assign(loginUrl.toString())');
+    }
+  });
+
   it('does not embed persisted environment records in the public environments shell', () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-environments-public-shell-'));
     fs.mkdirSync(path.join(home, 'config'), { recursive: true });
