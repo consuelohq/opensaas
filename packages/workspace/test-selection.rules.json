@@ -340,6 +340,27 @@
       "reason": "Install-state tool inventory regressions must run the focused manifest/install contract without selecting unrelated package-wide OS tests."
     },
     {
+      "id": "os-runtime-bundle-distribution-contract",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tests/distribution/runtime-bundle.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS runtime-bundle distribution contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/distribution/runtime-bundle.test.ts"
+          ]
+        }
+      ],
+      "reason": "Runtime-bundle distribution harness changes must run the exact runtime-bundle contract without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "os-lifecycle-legacy-mcp-scrub",
       "critical": true,
       "source": [

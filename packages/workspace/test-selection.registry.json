@@ -5,8 +5,8 @@
     "testFileCount": 2613,
     "mappedTestCount": 2532,
     "unmappedTestCount": 81,
-    "ruleCount": 47,
-    "explicitRuleCount": 28,
+    "ruleCount": 48,
+    "explicitRuleCount": 29,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -988,6 +988,28 @@
       "critical": true,
       "exclusive": true,
       "reason": "Install-state tool inventory regressions must run the focused manifest/install contract without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-runtime-bundle-distribution-contract",
+      "source": [
+        "packages/os/tests/distribution/runtime-bundle.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS runtime-bundle distribution contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/distribution/runtime-bundle.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Runtime-bundle distribution harness changes must run the exact runtime-bundle contract without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {

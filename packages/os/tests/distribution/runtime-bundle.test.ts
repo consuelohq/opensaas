@@ -139,7 +139,7 @@ afterEach(() => {
   for (const root of fixtureRoots.splice(0)) {
     rmSync(root, { force: true, recursive: true });
   }
-});
+}, 120_000);
 
 describe('runtime bundle contract', () => {
   it('defines the integration entrypoint and package-script keys without wiring shared scripts', () => {
