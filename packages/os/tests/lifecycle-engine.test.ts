@@ -70,6 +70,7 @@ const requiredRuntimePaths = [
   'scripts/workspace-node-heartbeat.ts',
   'scripts/lib/workspace-node-heartbeat-client.ts',
   'scripts/lib/install-state.ts',
+  'scripts/lib/subagent/runner.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
   'scripts/lib/managed-component-install.ts',
@@ -978,6 +979,29 @@ describe('unified lifecycle engine', () => {
     });
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
     expect(update.serviceOperations).toContain('connectivity');
+  });
+
+  it('preserves local launcher customization across a runtime update', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const configPath = join(tempHome, 'consuelo.yaml');
+    const configWithLauncher = `${readFileSync(configPath, 'utf8').trimEnd()}\nlauncher:\n  extraSections:\n    - id: internal\n      label: Internal\n      links:\n        - label: Users & installs\n          href: https://internal.consuelohq.com/users\n`;
+    writeFileSync(configPath, configWithLauncher, { mode: 0o600 });
+
+    const update = createEngine({ bundle: bundle110 });
+    await expect(update.update({ channel: 'dev' })).resolves.toMatchObject({
+      operation: 'update',
+      changed: true,
+      version: bundle110.manifest.version,
+    });
+
+    expect(readFileSync(configPath, 'utf8')).toBe(configWithLauncher);
+
+    await update.setChannel('canary');
+    const afterChannelChange = readFileSync(configPath, 'utf8');
+    expect(afterChannelChange).toContain('channel: canary');
+    expect(afterChannelChange).toContain('launcher:');
+    expect(afterChannelChange).toContain('href: https://internal.consuelohq.com/users');
   });
 
   it('persists channel and notification preferences and expires snooze at read time', async () => {

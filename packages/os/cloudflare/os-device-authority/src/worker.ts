@@ -1,3 +1,8 @@
+import {
+  createCloudflareD1InstallControlPlaneRepository,
+  type InstallControlPlaneD1Database,
+} from '../../../scripts/lib/install-control-plane-d1';
+import { createInstallDiagnosticBundleStore } from '../../../scripts/lib/install-control-plane-r2';
 import { createOsDeviceAuthorityHandler } from './app';
 import {
   DEFAULT_SITE_SNAPSHOT_KEY,
@@ -13,8 +18,29 @@ export class OsDeviceGrantDurableObject {
   private handler: (request: Request) => Promise<Response>;
 
   constructor(state: StateLike, env: Env) {
+    const installControlPlaneRepository =
+      env.WORKSPACE_ROUTE_REGISTRY &&
+      typeof env.WORKSPACE_ROUTE_REGISTRY.prepare === 'function'
+        ? createCloudflareD1InstallControlPlaneRepository(
+            env.WORKSPACE_ROUTE_REGISTRY as unknown as InstallControlPlaneD1Database,
+          )
+        : undefined;
+    const successfulDiagnosticRetentionDays =
+      env.OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS?.trim()
+        ? Number.parseInt(env.OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS, 10)
+        : 0;
+    const installDiagnosticBundleStore =
+      installControlPlaneRepository && env.INSTALL_DIAGNOSTICS
+        ? createInstallDiagnosticBundleStore({
+            bucket: env.INSTALL_DIAGNOSTICS,
+            repository: installControlPlaneRepository,
+            successfulRetentionDays: successfulDiagnosticRetentionDays,
+          })
+        : undefined;
     this.handler = createOsDeviceAuthorityHandler({
       store: new DurableStore(state.storage),
+      installControlPlaneRepository,
+      installDiagnosticBundleStore,
       origin: env.OS_DEVICE_AUTH_ORIGIN ?? ORIGIN,
       approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET,
       googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,
@@ -27,6 +53,8 @@ export class OsDeviceGrantDurableObject {
       workspaceEdgeInternalSigningSecret:
         env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
       operationalLogger: env.OS_DEVICE_AUTH_LOGGER,
+      managedCloudProvisionerSecret: env.OS_MANAGED_CLOUD_PROVISIONER_SECRET,
+      managedCloudEnrollmentSecret: env.OS_MANAGED_CLOUD_ENROLLMENT_SECRET,
       managedCloudPricing: managedCloudPricingFromJson({
         policyJson: env.OS_MANAGED_CLOUD_PRICING_POLICY_JSON,
         rateCardsJson: env.OS_MANAGED_CLOUD_RATE_CARDS_JSON,

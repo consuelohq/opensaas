@@ -4,10 +4,17 @@ export type LauncherLocalAgent = {
   status: 'not_detected' | 'detected' | 'configured' | 'approval_required' | 'verified' | 'failed' | 'unsupported';
 };
 
+export type LauncherExtraSection = {
+  id: string;
+  label: string;
+  links: ReadonlyArray<{ label: string; href: string }>;
+};
+
 export type LauncherOnboardingOptions = {
   mcpUrl: string;
   workspaceHostname?: string | null;
   localAgents?: LauncherLocalAgent[];
+  extraSections?: ReadonlyArray<LauncherExtraSection>;
 };
 
 const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/apps#settings/Connectors';
@@ -89,8 +96,17 @@ function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string
     .join('')}</ul>`;
 }
 
+function extraLauncherSections(sections: ReadonlyArray<LauncherExtraSection>): string {
+  return sections.map((section) => `        <section class="section" data-launcher-section="${escapeHtml(section.id)}">
+          <h2 class="section-title">${escapeHtml(section.label)}</h2>
+          ${navLinks(section.links)}
+        </section>
+`).join('');
+}
+
 export function renderLauncherOnboarding(options: LauncherOnboardingOptions): string {
   const localAgents = options.localAgents ?? [];
+  const extraSections = options.extraSections ?? [];
   const workspaceHostname = normalizeWorkspaceHostname(options.workspaceHostname);
   const escapedMcpUrl = escapeHtml(options.mcpUrl);
 
@@ -201,7 +217,7 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
           <h2 class="section-title">Sites</h2>
           ${navLinks(workspaceLauncherLinks(workspaceHostname))}
         </section>
-        <section class="section">
+${extraLauncherSections(extraSections)}        <section class="section">
           <h2 class="section-title">Guides and Tips</h2>
           ${navLinks(launcherLinks.guides)}
         </section>

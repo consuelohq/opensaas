@@ -124,12 +124,16 @@ describe('OS device authority release contract', () => {
     expect(REQUIRED_DEVICE_AUTHORITY_WORKER_SECRETS).toEqual([
       'CLOUDFLARE_API_TOKEN',
       'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET',
+      'OS_MANAGED_CLOUD_PROVISIONER_SECRET',
+      'OS_MANAGED_CLOUD_ENROLLMENT_SECRET',
     ]);
     expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
       { name: 'GOOGLE_OAUTH_CLIENT_ID', type: 'secret_text' },
       { name: 'GOOGLE_OAUTH_CLIENT_SECRET', type: 'secret_text' },
       { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
       { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
     ])).not.toThrow();
   });
 
@@ -215,6 +219,8 @@ describe('OS device authority release contract', () => {
             stdout: JSON.stringify([
               { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
               { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
             ]),
             stderr: '',
           };

@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/install-telemetry-contract/workpad.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/install-diagnostics.test.ts",
+    "packages/twenty-server/src/engine/core-modules/auth/services/auth.service.ts",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-08-13T16:37:07.608Z"
+}
