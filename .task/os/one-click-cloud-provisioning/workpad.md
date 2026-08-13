@@ -86,11 +86,8 @@ RED before production implementation:
 
 ## files changed
 
-- `packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts`
-- `packages/os/scripts/lib/managed-cloud-provisioning-runner.ts`
-- `packages/os/scripts/lib/managed-cloud-provisioning.ts`
-- `packages/os/scripts/managed-cloud-provisioning-runner.ts`
-- `packages/os/tests/managed-cloud-one-click-runner.test.ts`
+- `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
+
 
 ## workspace-owned: files changed
 
