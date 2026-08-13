@@ -10,6 +10,7 @@ import {
   type ArtifactCatalog,
 } from './artifacts';
 import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
+import { loadGlobalYamlConfig } from './consuelo-home';
 import { buildObservabilityTracesSite } from './observability-traces-site';
 import {
   renderLauncherOnboarding,
@@ -628,11 +629,18 @@ function launcherWorkspaceHostname(
   return config?.workspace?.host?.trim() || null;
 }
 
+function launcherExtraSections(home: string) {
+  const configPath = path.join(home, 'consuelo.yaml');
+  if (!fs.existsSync(configPath)) return [];
+  return loadGlobalYamlConfig(configPath).launcher?.extraSections ?? [];
+}
+
 function buildSitesIndex(home: string, workspaceHost?: string | null): string {
   return renderLauncherOnboarding({
     mcpUrl: launcherMcpUrl(home),
     workspaceHostname: launcherWorkspaceHostname(home, workspaceHost),
     localAgents: launcherLocalAgents(home),
+    extraSections: launcherExtraSections(home),
   });
 }
 
