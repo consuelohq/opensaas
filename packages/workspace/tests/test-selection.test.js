@@ -41,6 +41,7 @@ describe('test selection registry', () => {
     const explicitRuleIds = registry.rules
       .filter((rule) => rule.origin === 'explicit')
       .map((rule) => rule.id);
+    expect(new Set(explicitRuleIds).size).toBe(explicitRuleIds.length);
     expect(explicitRuleIds).toEqual(
       expect.arrayContaining([
         'workspace-facade',
@@ -620,6 +621,31 @@ describe('test selection registry', () => {
         'OS lifecycle syntax contracts',
       ]),
     );
+  });
+
+  it('routes native macOS menu changes through focused Mac contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift',
+      '--changed-file',
+      'packages/os/scripts/testing/macos-alpha-package.sh',
+      '--changed-file',
+      'packages/os/tests/macos-platform.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-macos-menu-app',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'macOS menu Swift contracts',
+      'macOS menu platform contracts',
+      'macOS alpha package syntax',
+    ]);
   });
 
   it('runs focused Consuelo OS contracts with Bun, OS cwd, and root Vitest', () => {

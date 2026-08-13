@@ -65,6 +65,7 @@ private struct ContractSuite {
 
     func run() async throws {
         try derivesEveryStableMenuBarState()
+        try pendingUpdatePresentationSurvivesDaemonRestart()
         try lifecycleRequestJSONMatchesTheSharedTaggedUnion()
         try failedUpdatePreservesWorkingVersionAndSurfacesRecovery()
         try offlineRetainsReadableStateAndFailsMutationsClosed()
@@ -105,6 +106,32 @@ private struct ContractSuite {
         try expect(MenuBarLifecycleState.derive(from: snapshot(operation: .init(kind: .update, phase: .running))), .updating, "updating state")
         try expect(MenuBarLifecycleState.derive(from: snapshot(updates: .init(available: 0, rollbackVersion: "1.3.0"))), .rollbackAvailable, "rollback available state")
         try expect(MenuBarLifecycleState.derive(from: snapshot(services: [.init(id: "consuelo-os", state: .failed, managedBy: .launchd)])), .repairRequired, "repair required state")
+    }
+
+    private func pendingUpdatePresentationSurvivesDaemonRestart() throws {
+        let available = MenuBarPresentation(
+            snapshot: snapshot(updates: .init(available: 1, latestVersion: "1.5.0"))
+        )
+        try expect(available.showsUpdateBadge, true, "available update badge")
+        try expect(available.updateActionTitle, "Update to 1.5.0", "available update action")
+
+        let pending = PendingUpdateContext(operationId: "op-update", targetVersion: "1.5.0")
+        let restarting = snapshot(
+            runtimeState: .offline,
+            connection: .init(state: .offline, reason: "socket unavailable")
+        )
+        let updating = MenuBarPresentation(snapshot: restarting, pendingUpdate: pending)
+        try expect(updating.lifecycleState, .updating, "accepted update stays updating while daemon restarts")
+        try expect(updating.title, "Updating to 1.5.0", "accepted update target remains visible")
+        try expect(updating.connectionLabel, "Reconnecting to Consuelo OS…", "accepted update restart label")
+        try expect(updating.showsUpdateBadge, false, "update badge is not duplicated during update")
+        try expect(pending.isResolved(by: restarting), false, "offline restart does not resolve accepted update")
+
+        let succeeded = snapshot().with(sequence: 8, version: "1.5.0")
+        try expect(pending.isResolved(by: succeeded), true, "target runtime resolves accepted update")
+
+        let failed = snapshot(operation: .init(kind: .update, phase: .failed, message: "health gate failed"))
+        try expect(pending.isResolved(by: failed), true, "terminal update failure resolves pending presentation")
     }
 
     private func lifecycleRequestJSONMatchesTheSharedTaggedUnion() throws {
@@ -314,24 +341,59 @@ private struct ContractSuite {
             state: .revoked,
             publicKeyThumbprint: "thumbprint-member"
         )
+        let onlineMember = WorkspaceNodeSnapshot(
+            workspaceId: "workspace_one",
+            nodeId: "node-online-member",
+            displayName: "Mac Studio",
+            role: .member,
+            platform: "darwin",
+            architecture: "arm64",
+            channel: "stable",
+            connectorId: "connector_online_member",
+            capabilities: ["local-runtime", "mcp"],
+            agents: ["codex"],
+            createdAt: "2026-07-20T12:00:00.000Z",
+            lastSeenAt: "2026-07-26T19:59:45.000Z",
+            presence: .online,
+            state: .active,
+            publicKeyThumbprint: "thumbprint-online-member"
+        )
         let workspace = WorkspaceSnapshot(
             workspaceId: "workspace_one",
             workspaceHost: "one.consuelohq.com",
             currentNodeId: "node-home",
             defaultNodeId: "node-home",
-            nodes: [home, member]
+            nodes: [home, member, onlineMember]
         )
         let homePresentation = WorkspaceNodePresentation(node: home, workspace: workspace)
         let memberPresentation = WorkspaceNodePresentation(node: member, workspace: workspace)
+        let onlineMemberPresentation = WorkspaceNodePresentation(node: onlineMember, workspace: workspace)
 
         try expect(homePresentation.isDefault, true, "home default marker")
-        try expect(homePresentation.isSelectable, true, "active home selection")
-        try expectTrue(homePresentation.subtitle.contains("online"), "online presence label")
-        try expectTrue(homePresentation.subtitle.contains("local-runtime, darwin"), "capability summary")
-        try expectTrue(homePresentation.subtitle.contains("Codex, OpenCode"), "agent summary")
+        try expect(homePresentation.isCurrent, true, "home current marker")
+        try expect(homePresentation.isSelectable, false, "default node is informational")
+        try expect(homePresentation.badges, ["Default", "Current", "Home"], "friendly node badges")
+        try expect(homePresentation.subtitle, "macOS · Dev · Online", "friendly current node summary")
+        try expectTrue(!homePresentation.subtitle.contains("local-runtime"), "capabilities stay out of menu presentation")
+        try expectTrue(!homePresentation.subtitle.contains("Codex"), "agent plumbing stays out of menu presentation")
         try expect(memberPresentation.isDefault, false, "member default marker")
         try expect(memberPresentation.isSelectable, false, "revoked node cannot be selected")
-        try expectTrue(memberPresentation.subtitle.contains("stale"), "stale presence label")
+        try expect(memberPresentation.subtitle, "macOS · Stable · Revoked", "revoked node summary")
+        try expect(onlineMemberPresentation.isSelectable, true, "online active non-default node can become default")
+        try expect(onlineMemberPresentation.subtitle, "macOS · Stable · Online", "online member summary")
+
+        let status = snapshot(workspace: workspace)
+        try expectThrows("current default node cannot be selected again") {
+            _ = try LifecycleCommandMapper.plan(for: .setDefaultNode(home.nodeId), snapshot: status)
+        }
+        try expectThrows("revoked or non-online node cannot become default") {
+            _ = try LifecycleCommandMapper.plan(for: .setDefaultNode(member.nodeId), snapshot: status)
+        }
+        try expect(
+            try LifecycleCommandMapper.plan(for: .setDefaultNode(onlineMember.nodeId), snapshot: status).request,
+            .workspaceDefaultNodeSet(nodeId: onlineMember.nodeId),
+            "online active non-default node request"
+        )
     }
 
     private func diagnosticsRedactionRemovesRepresentativeCredentialsAndLocalPaths() throws {

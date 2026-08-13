@@ -33,20 +33,55 @@ public enum MenuBarLifecycleState: String, Equatable, Sendable {
     }
 }
 
+public struct PendingUpdateContext: Equatable, Sendable {
+    public var operationId: String
+    public var targetVersion: String
+
+    public init(operationId: String, targetVersion: String) {
+        self.operationId = operationId
+        self.targetVersion = targetVersion
+    }
+
+    public func isResolved(by snapshot: LifecycleSnapshot) -> Bool {
+        if snapshot.operation?.kind == .update {
+            switch snapshot.operation?.phase {
+            case .succeeded, .failed:
+                return true
+            case .queued, .running, .none:
+                break
+            }
+        }
+        return snapshot.connection.state == .online && snapshot.runtime.version == targetVersion
+    }
+}
+
 public struct MenuBarPresentation: Equatable, Sendable {
     public var lifecycleState: MenuBarLifecycleState
     public var connectionLabel: String
     public var title: String
     public var systemImage: String
+    public var showsUpdateBadge: Bool
+    public var updateActionTitle: String?
 
-    public init(snapshot: LifecycleSnapshot) {
-        lifecycleState = .derive(from: snapshot)
+    public init(snapshot: LifecycleSnapshot, pendingUpdate: PendingUpdateContext? = nil) {
+        let updateIsPending = pendingUpdate.map { !$0.isResolved(by: snapshot) } ?? false
+        lifecycleState = updateIsPending ? .updating : .derive(from: snapshot)
         if snapshot.connection.state == .offline {
-            connectionLabel = snapshot.connection.reason.map {
-                "Offline — \(DiagnosticsRedactor.redactText($0))"
-            } ?? "Offline"
+            if updateIsPending {
+                connectionLabel = "Reconnecting to Consuelo OS…"
+            } else {
+                connectionLabel = snapshot.connection.reason.map {
+                    "Offline — \(DiagnosticsRedactor.redactText($0))"
+                } ?? "Offline"
+            }
         } else {
             connectionLabel = "Online"
+        }
+        showsUpdateBadge = lifecycleState == .updateAvailable
+        if lifecycleState == .updateAvailable {
+            updateActionTitle = snapshot.updates.latestVersion.map { "Update to \($0)" }
+        } else {
+            updateActionTitle = nil
         }
         switch lifecycleState {
         case .notInstalled:
@@ -60,7 +95,8 @@ public struct MenuBarPresentation: Equatable, Sendable {
         case .updateAvailable:
             title = "Update available"; systemImage = "arrow.down.circle.fill"
         case .updating:
-            title = "Updating"; systemImage = "arrow.triangle.2.circlepath"
+            title = pendingUpdate.map { "Updating to \($0.targetVersion)" } ?? "Updating"
+            systemImage = "arrow.triangle.2.circlepath"
         case .rollbackAvailable:
             title = "Rollback available"; systemImage = "arrow.uturn.backward.circle"
         case .repairRequired:
@@ -73,17 +109,37 @@ public struct WorkspaceNodePresentation: Equatable, Sendable {
     public var title: String
     public var subtitle: String
     public var isDefault: Bool
+    public var isCurrent: Bool
+    public var badges: [String]
     public var isSelectable: Bool
 
     public init(node: WorkspaceNodeSnapshot, workspace: WorkspaceSnapshot) {
         title = node.displayName
-        let agentLabels = (node.agents ?? []).map { agent in
-            agent == "opencode" ? "OpenCode" : agent.capitalized
-        }
-        let agentSuffix = agentLabels.isEmpty ? "" : " · \(agentLabels.joined(separator: ", "))"
-        subtitle = "\(node.role.rawValue.capitalized) · \(node.presence.rawValue) · \(node.capabilities.joined(separator: ", "))\(agentSuffix)"
         isDefault = node.isDefault(in: workspace)
-        isSelectable = node.state == .active
+        isCurrent = workspace.currentNodeId == node.nodeId
+
+        var nextBadges: [String] = []
+        if isDefault { nextBadges.append("Default") }
+        if isCurrent { nextBadges.append("Current") }
+        if node.role == .home { nextBadges.append("Home") }
+        badges = nextBadges
+
+        let platform: String
+        switch node.platform.lowercased() {
+        case "darwin", "macos", "mac": platform = "macOS"
+        case "linux": platform = "Linux"
+        case "windows", "win32": platform = "Windows"
+        default: platform = node.platform.isEmpty ? "Unknown platform" : node.platform.capitalized
+        }
+        let channel = node.channel.isEmpty ? "Unknown channel" : node.channel.capitalized
+        let status: String
+        if node.state == .revoked {
+            status = "Revoked"
+        } else {
+            status = node.presence.rawValue.capitalized
+        }
+        subtitle = "\(platform) · \(channel) · \(status)"
+        isSelectable = node.state == .active && node.presence == .online && !isDefault
     }
 }
 
@@ -170,7 +226,11 @@ public enum LifecycleCommandMapper {
             }
             return .init(request: .preferencesChannelSet(channel))
         case let .setDefaultNode(nodeId):
-            guard snapshot.workspace?.nodes.contains(where: { $0.nodeId == nodeId && $0.state == .active }) == true else {
+            guard let workspace = snapshot.workspace,
+                  workspace.defaultNodeId != nodeId,
+                  workspace.nodes.contains(where: {
+                      $0.nodeId == nodeId && $0.state == .active && $0.presence == .online
+                  }) else {
                 throw LifecycleCommandError.nodeUnavailable
             }
             return .init(request: .workspaceDefaultNodeSet(nodeId: nodeId))
