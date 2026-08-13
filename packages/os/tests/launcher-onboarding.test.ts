@@ -101,6 +101,33 @@ describe('launcher onboarding', () => {
     expect(html).toContain('data-agent-fallback');
   });
 
+  it('renders escaped local launcher sections after Sites and before Guides', () => {
+    const html = renderLauncherOnboarding({
+      mcpUrl: 'https://os.consuelohq.com/mcp',
+      workspaceHostname: 'internal.consuelohq.com',
+      extraSections: [{
+        id: 'internal',
+        label: 'Internal <ops>',
+        links: [{
+          label: 'Users & installs <private>',
+          href: 'https://internal.consuelohq.com/users?view=a&scope=b',
+        }],
+      }],
+    });
+
+    expect(html).toContain('<h2 class="section-title">Internal &lt;ops&gt;</h2>');
+    expect(html).toContain('Users &amp; installs &lt;private&gt;');
+    expect(html).toContain('href="https://internal.consuelohq.com/users?view=a&amp;scope=b"');
+    expect(html).not.toContain('Internal <ops>');
+    expect(html).not.toContain('Users & installs <private>');
+
+    const sitesIndex = html.indexOf('<h2 class="section-title">Sites</h2>');
+    const internalIndex = html.indexOf('<h2 class="section-title">Internal &lt;ops&gt;</h2>');
+    const guidesIndex = html.indexOf('<h2 class="section-title">Guides and Tips</h2>');
+    expect(internalIndex).toBeGreaterThan(sitesIndex);
+    expect(guidesIndex).toBeGreaterThan(internalIndex);
+  });
+
   it('derives every product link from an arbitrary authenticated customer workspace', () => {
     const html = renderLauncherOnboarding({
       mcpUrl: 'https://os.consuelohq.com/mcp',

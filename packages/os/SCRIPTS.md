@@ -1579,6 +1579,25 @@ Generate and lint user LaunchAgent plist files plus shell syntax checks without 
 
 ## Sites page publishing
 
+### Launcher local customization
+
+The launcher at `$CONSUELO_HOME/sites/index.html` is generated OS output and is rewritten whenever Sites are materialized. Do not edit that HTML directly. Add local launcher sections to the durable global `$CONSUELO_HOME/consuelo.yaml` instead:
+
+```yaml
+version: 1
+launcher:
+  extraSections:
+    - id: internal
+      label: Internal
+      links:
+        - label: Users & installs
+          href: https://internal.consuelohq.com/users
+```
+
+`launcher.extraSections` is optional. Users without it receive the stock launcher. Each section id must be a lowercase slug and each link must use an HTTPS absolute URL or a root-relative path such as `/tools`; script URLs, protocol-relative URLs, insecure HTTP URLs, embedded credentials, and arbitrary HTML are rejected by config validation. Labels and hrefs are HTML-escaped again during rendering.
+
+Local sections render after the built-in Sites links and before Guides and Tips. The overlay remains user-owned state in `consuelo.yaml`, so lifecycle update, restart, rollback, and repair can replace the runtime without replacing launcher customization. After changing the file, any normal Sites materialization regenerates the launcher from the current runtime plus the local overlay.
+
 Render typed reader pages and publish generated local pages into OS Sites with immutable versions:
 
 ```bash
