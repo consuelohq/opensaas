@@ -988,7 +988,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
   });
 
-  it('should fail closed when the configured Cloudflare account IP list is missing', async () => {
+  it('should let the Rulesets API validate the configured account IP list reference', async () => {
     const { ensureManagedOsMcpIngressPolicy } =
       await loadWorkspaceCloudflareProvisioningContract();
     const fakeCloudflare = createFakeCloudflarePolicyClient({ accountLists: [] });
@@ -1003,12 +1003,12 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
           mcpAllowedIpsListName: 'mcp_allowed_ips',
         },
       }),
-    ).rejects.toThrow(/Cloudflare account IP list mcp_allowed_ips was not found/);
+    ).resolves.toMatchObject({
+      allowedIpsListName: 'mcp_allowed_ips',
+    });
     expect(
-      fakeCloudflare.calls.some((call) =>
-        ['createZoneCustomRuleset', 'createZoneCustomRulesetRule'].includes(
-          call.operation,
-        ),
+      fakeCloudflare.calls.some(
+        (call) => call.operation === 'getAccountIpList',
       ),
     ).toBe(false);
   });
@@ -1053,7 +1053,6 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
 
     expect(fakeCloudflare.calls.map((call) => call.operation)).toEqual([
-      'getAccountIpList',
       'getZoneCustomRuleset',
       'createZoneCustomRulesetRule',
       'createZoneCustomRulesetRule',
@@ -1105,7 +1104,6 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
 
     expect(fakeCloudflare.calls.map((call) => call.operation)).toEqual([
-      'getAccountIpList',
       'getZoneCustomRuleset',
       'createZoneCustomRulesetRule',
       'createZoneCustomRulesetRule',
@@ -1239,12 +1237,11 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
     expect(calls.map((call) => call.method)).toEqual([
       'GET',
-      'GET',
       'PATCH',
       'PATCH',
     ]);
     expect(calls.some((call) => call.method === 'POST')).toBe(false);
-    expect(calls[2]?.body).toMatchObject({
+    expect(calls[1]?.body).toMatchObject({
       ref: 'consuelo-os-mcp-provider-allow',
       action_parameters: {
         ruleset: 'current',

@@ -87,6 +87,22 @@ describe('lifecycle restart parity', () => {
     ]);
   });
 
+  it('reconciles preserved Caddy topology before lifecycle restart', () => {
+    const lifecycle = source('scripts/lifecycle.ts');
+    const service = source('scripts/lib/lifecycle/service.ts');
+
+    expect(lifecycle).toContain('nodeHome: lifecyclePaths.nodeDir');
+    expect(service).toContain('reconcileCaddyWorkerPoolConfig');
+    expect(service).toContain("'com.consuelo.caddy'");
+    expect(service).toContain("const caddy = await run('launchctl'");
+    expect(service).toContain("'kickstart',");
+    expect(service).toContain("'-k',");
+    const workflow = source('../../.github/workflows/consuelo-os-runtime-publish.yaml');
+    expect(workflow).toContain(
+      '--migration "2026-08-13-reconcile-caddy-worker-pool:scripts/migrations/reconcile-caddy-worker-pool.ts"',
+    );
+  });
+
   it('fails service restart when the canonical adapter exits non-zero', async () => {
     const controller = createReloadServiceController({
       osRoot,

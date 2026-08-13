@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_909582883083",
+  "tmuxSession": "opensaas-os-finish-internal-mcp-ingress-security-and-audit-u-90958288",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-internal-mcp-ingress-security-and-audit-unknown-tokens",
+  "branch": "task/os/finish-internal-mcp-ingress-security-and-audit-unknown-tokens",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-internal-mcp-ingress-security-and-audit-unknown-tokens",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-internal-mcp-ingress-security-and-audit-unknown-tokens",
+  "prNumber": 1908,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1908",
+  "createdAt": "2026-08-13T18:20:37.167Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-internal-mcp-ingress-security-and-audit-unknown-tokens/.task/os/finish-internal-mcp-ingress-security-and-audit-unknown-tokens/session.json"
+}
