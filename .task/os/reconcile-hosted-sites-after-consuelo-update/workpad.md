@@ -149,6 +149,9 @@ started: 2026-08-13
 - Final full `verify --base origin/stream/os`: passed with `publishValid: true`; review passed, selected tests passed, and DB guard reported 0 risks/findings (trace `trc_021a76d88781`).
 - Review emitted one non-blocking documentation opportunity because lifecycle code changed. No public docs were changed: this task repairs internal hosted-state reconciliation after an existing `consuelo update` operation and does not change install/update syntax, flags, or the documented user contract.
 - Ready for normal `task.push` and `task.pr` promotion into `stream/os`; no publish bypass remains.
+- Final promotion retry: after the guarded task push, `stream/os` advanced another 22 commits and GitHub correctly reported #1911 as `DIRTY`. The isolated task worktree was fast-forwarded to pushed task SHA `4ca4583d3381a9416604431ed9183ef19e7c04a6`, then latest stream head `bd2e00fc8481f2a9f2d4012d482165c38cfad44c` was merged locally.
+- That latest-stream merge produced exactly one conflict: generated `packages/workspace/test-selection.registry.json`. The canonical source rule/test files merged automatically with no conflict markers. The registry was regenerated from those merged sources rather than choosing ours/theirs, yielding 45 rules / 26 explicit rules and preserving both stream additions and the hosted-site rule.
+- Post-resolution selector regression passed 24/24 against the latest merged stream (trace `trc_4e50ad7d6409`).
 
 - 2026-08-13 19:13:49 write: `.task/os/reconcile-hosted-sites-after-consuelo-update/workpad.md`
 
@@ -191,3 +194,5 @@ started: 2026-08-13
 - 2026-08-13 21:29:41 apply-patch: `.task/os/reconcile-hosted-sites-after-consuelo-update/workpad.md`
 
 - 2026-08-13 21:30:54 apply-patch: `.task/os/reconcile-hosted-sites-after-consuelo-update/workpad.md`
+
+- 2026-08-13 21:33:46 apply-patch: `.task/os/reconcile-hosted-sites-after-consuelo-update/workpad.md`

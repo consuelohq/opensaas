@@ -16,6 +16,7 @@ import type {
   InstallDiagnosticBundleStore,
   InstallDiagnosticR2Bucket,
 } from '../../../scripts/lib/install-control-plane-r2';
+import type { InstallTelemetryObserver } from '../../../scripts/lib/install-observability';
 
 export type GrantStatus = 'pending' | 'approved' | 'denied' | 'failed';
 export type GrantFailureCode = 'workspace_route_setup_failed';
@@ -467,6 +468,9 @@ export type Env = {
   OS_DEVICE_AUTH_LOGGER?: DeviceAuthorityLogger;
   INSTALL_DIAGNOSTICS?: InstallDiagnosticR2Bucket;
   OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS?: string;
+  SENTRY_DSN?: string;
+  POSTHOG_API_KEY?: string;
+  POSTHOG_HOST?: string;
 };
 
 export type DeviceAuthorityOperationalLogContext = {
@@ -503,4 +507,6 @@ export type DeviceAuthorityRuntime = {
   operationalLogger?: DeviceAuthorityLogger;
   installControlPlaneRepository?: InstallControlPlaneRepository;
   installDiagnosticBundleStore?: InstallDiagnosticBundleStore;
+  installTelemetryObserver?: InstallTelemetryObserver;
+  installSentryDsn?: string;
 };

@@ -21,7 +21,12 @@ import {
   createInstallDashboardApiHandler,
   type InstallDashboardAuthorizer,
 } from '../../../scripts/lib/install-control-plane-http';
-import { INSTALL_DASHBOARD_API_PREFIX } from '../../../scripts/lib/install-telemetry-contract';
+import {
+  INSTALL_DASHBOARD_API_PREFIX,
+  INSTALL_DASHBOARD_API_ROUTES,
+  isInstallId,
+} from '../../../scripts/lib/install-telemetry-contract';
+import { createInternalUserDashboardPageHandler } from '../../../scripts/lib/internal-user-dashboard';
 
 type WorkspaceEdgeLogContext = {
   component: 'workspace-edge';
@@ -145,6 +150,94 @@ function closedAuthResponse(): Response {
   });
 }
 
+function forbiddenInternalDashboardResponse(): Response {
+  return new Response(JSON.stringify({ error: 'forbidden' }), {
+    status: 403,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+      'x-content-type-options': 'nosniff',
+    },
+  });
+}
+
+async function proxyInstallDiagnosticRequest(input: {
+  request: Request;
+  stub?: AuthorityStub;
+  internalAuthSecret?: string;
+  authorize: InstallDashboardAuthorizer;
+}): Promise<Response | undefined> {
+  const incoming = new URL(input.request.url);
+  const prefix = `${INSTALL_DASHBOARD_API_ROUTES.installs}/`;
+  if (!incoming.pathname.startsWith(prefix) || !incoming.pathname.endsWith('/diagnostic')) {
+    return undefined;
+  }
+  const encodedInstallId = incoming.pathname.slice(
+    prefix.length,
+    -'/diagnostic'.length,
+  );
+  if (encodedInstallId.includes('/')) return undefined;
+  let installId = '';
+  try {
+    installId = decodeURIComponent(encodedInstallId);
+  } catch {
+    return new Response(JSON.stringify({ error: 'invalid_install_id' }), {
+      status: 400,
+      headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+    });
+  }
+  if (!isInstallId(installId)) {
+    return new Response(JSON.stringify({ error: 'invalid_install_id' }), {
+      status: 400,
+      headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+    });
+  }
+  if (input.request.method !== 'GET') {
+    return new Response(JSON.stringify({ error: 'method_not_allowed' }), {
+      status: 405,
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'no-store',
+        allow: 'GET',
+      },
+    });
+  }
+  let authorized = false;
+  try {
+    authorized = await input.authorize(input.request);
+  } catch {
+    authorized = false;
+  }
+  if (!authorized) return forbiddenInternalDashboardResponse();
+  const internalAuthSecret = input.internalAuthSecret?.trim();
+  if (!input.stub || !internalAuthSecret) return closedAuthResponse();
+  try {
+    const response = await input.stub.fetch(
+      new Request(
+        `https://os.consuelohq.com/internal/install-control-plane/diagnostics/${encodeURIComponent(installId)}`,
+        {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            'x-consuelo-internal-auth-secret': internalAuthSecret,
+          },
+        },
+      ),
+    );
+    const headers = new Headers({
+      'cache-control': 'no-store',
+      'x-content-type-options': 'nosniff',
+    });
+    for (const name of ['content-type', 'content-disposition']) {
+      const value = response.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+    return new Response(response.body, { status: response.status, headers });
+  } catch {
+    return closedAuthResponse();
+  }
+}
+
 const NODE_CONTROL_PATHS = new Map<string, { authorityPath: string; method: 'GET' | 'POST' }>([
   ['/gateway/nodes/snapshot', { authorityPath: '/internal/workspace/nodes', method: 'GET' }],
   ['/gateway/nodes/default', { authorityPath: '/internal/workspace/nodes/default', method: 'POST' }],
@@ -236,6 +329,14 @@ export function createWorkspaceEdgeHandler(
         now,
       })
     : undefined;
+  const internalDashboardPageHandler = internalDashboardService
+    ? createInternalUserDashboardPageHandler({
+        service: internalDashboardService,
+        authorize: authorizeInternalDashboard,
+        now,
+        expectedHost: INSTALL_INTERNAL_DASHBOARD_HOST,
+      })
+    : undefined;
   const router = createWorkspaceCloudflareEdgeRouter({
     registry,
     internalSigningSecret: env.CONSUELO_EDGE_SIGNING_SECRET,
@@ -278,13 +379,23 @@ export function createWorkspaceEdgeHandler(
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url);
-      if (
-        url.hostname.toLowerCase() === INSTALL_INTERNAL_DASHBOARD_HOST &&
-        (url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
-          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`))
-      ) {
-        if (!internalDashboardHandler) return closedAuthResponse();
-        return await internalDashboardHandler(request);
+      if (url.hostname.toLowerCase() === INSTALL_INTERNAL_DASHBOARD_HOST) {
+        if (
+          url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
+          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`)
+        ) {
+          const diagnostic = await proxyInstallDiagnosticRequest({
+            request,
+            stub,
+            internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+            authorize: authorizeInternalDashboard,
+          });
+          if (diagnostic) return diagnostic;
+          if (!internalDashboardHandler) return closedAuthResponse();
+          return await internalDashboardHandler(request);
+        }
+        if (!internalDashboardPageHandler) return closedAuthResponse();
+        return await internalDashboardPageHandler(request);
       }
       if (
         (url.pathname === '/auth/consume' && request.method === 'GET') ||

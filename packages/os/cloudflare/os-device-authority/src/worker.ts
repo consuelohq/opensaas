@@ -3,6 +3,7 @@ import {
   type InstallControlPlaneD1Database,
 } from '../../../scripts/lib/install-control-plane-d1';
 import { createInstallDiagnosticBundleStore } from '../../../scripts/lib/install-control-plane-r2';
+import { createDeviceAuthorityInstallObservability } from '../../../scripts/lib/install-observability';
 import { createOsDeviceAuthorityHandler } from './app';
 import {
   DEFAULT_SITE_SNAPSHOT_KEY,
@@ -37,10 +38,20 @@ export class OsDeviceGrantDurableObject {
             successfulRetentionDays: successfulDiagnosticRetentionDays,
           })
         : undefined;
+    const installTelemetryObserver = installControlPlaneRepository
+      ? createDeviceAuthorityInstallObservability({
+          repository: installControlPlaneRepository,
+          posthogApiKey: env.POSTHOG_API_KEY,
+          posthogHost: env.POSTHOG_HOST,
+          fetchImpl: (url, init) => globalThis.fetch(url, init),
+        })
+      : undefined;
     this.handler = createOsDeviceAuthorityHandler({
       store: new DurableStore(state.storage),
       installControlPlaneRepository,
       installDiagnosticBundleStore,
+      installTelemetryObserver,
+      installSentryDsn: env.SENTRY_DSN,
       origin: env.OS_DEVICE_AUTH_ORIGIN ?? ORIGIN,
       approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET,
       googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,

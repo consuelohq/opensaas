@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2609,
-    "mappedTestCount": 2528,
+    "testFileCount": 2613,
+    "mappedTestCount": 2532,
     "unmappedTestCount": 81,
-    "ruleCount": 43,
-    "explicitRuleCount": 24,
+    "ruleCount": 45,
+    "explicitRuleCount": 26,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 240,
+      "packages/os/tests": 244,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 58,
       "packages/twenty-sdk/src/cli": 51,
@@ -631,7 +631,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 516,
+      "test": 520,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -971,6 +971,74 @@
       "origin": "explicit"
     },
     {
+      "id": "os-lifecycle-update-handoff",
+      "source": [
+        "packages/os/SCRIPTS.md",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/native/windows-service/**",
+        "packages/os/scripts/lifecycle.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/native-lifecycle-operation.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/cli-update-routing.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/lifecycle-facade.test.ts",
+        "packages/os/tests/lifecycle-tool-surface.test.ts",
+        "packages/os/tests/native-lifecycle-operation.test.ts",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/tool-package-layout.test.ts",
+        "packages/os/scripts/lib/windows-platform.ts",
+        "packages/os/tools/lifecycle/**",
+        "packages/os/tools/registry.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts"
+          ]
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
       "id": "os-managed-cloud-one-click-provisioning",
       "source": [
         "packages/os/cloudflare/os-device-authority/src/app.ts",
@@ -1069,6 +1137,51 @@
       "critical": true,
       "exclusive": true,
       "reason": "Verifier-only OS test fixes must prove rejection observation, child-process coordination, and lock-wait cleanup in the package's native Vitest runtime without selecting unrelated full OS package tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-macos-menu-app",
+      "source": [
+        "packages/os/docs/macos-platform.md",
+        "packages/os/native/macos/**",
+        "packages/os/scripts/testing/macos-alpha-package.sh",
+        "packages/os/tests/macos-platform.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "macOS menu Swift contracts",
+          "command": [
+            "swift",
+            "run",
+            "--package-path",
+            "packages/os/native/macos",
+            "--scratch-path",
+            "/tmp/consuelo-os-macos-contract-tests",
+            "ConsueloMacContractTests"
+          ]
+        },
+        {
+          "name": "macOS menu platform contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/macos-platform.test.ts"
+          ]
+        },
+        {
+          "name": "macOS alpha package syntax",
+          "command": [
+            "bash",
+            "-n",
+            "packages/os/scripts/testing/macos-alpha-package.sh"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Native macOS menu, lifecycle presentation, and alpha packaging changes must run the focused Swift and platform contracts without selecting the broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -3176,6 +3289,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/install-observability-integrations.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/install-state.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3221,6 +3339,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/internal-dashboard-integration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/internal-user-dashboard.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3256,6 +3379,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/lifecycle-facade.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3272,6 +3400,11 @@
     },
     {
       "path": "packages/os/tests/lifecycle-retention-uninstall.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-tool-surface.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

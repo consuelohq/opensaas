@@ -17,6 +17,22 @@ OS_DEVICE_AUTH_BASE_DOMAIN = "consuelohq.com"
 OS_DEVICE_AUTH_WORKSPACE_EDGE_HOSTNAME = "workspace-edge.consuelohq.com"
 OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL = "http://127.0.0.1:46320"
 OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS = "0"
+POSTHOG_HOST = "https://us.i.posthog.com"
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true
+persist = true
+head_sampling_rate = 1
 
 [[d1_databases]]
 binding = "WORKSPACE_ROUTE_REGISTRY"

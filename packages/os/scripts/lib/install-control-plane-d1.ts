@@ -480,6 +480,28 @@ export function createCloudflareD1InstallControlPlaneRepository(
       }
     },
 
+    async getDiagnosticBundleRecord(installId, options) {
+      try {
+        const diagnostic = await first<InstallDiagnosticRow>(
+          db,
+          'SELECT bundle_id, install_id, object_key, outcome, created_at, expires_at FROM os_install_diagnostic_bundles WHERE install_id = ? AND expires_at > ? ORDER BY created_at DESC LIMIT 1',
+          [installId, new Date(options.nowMs).toISOString()],
+        );
+        return diagnostic
+          ? {
+              bundleId: diagnostic.bundle_id,
+              installId: diagnostic.install_id as InstallId,
+              objectKey: diagnostic.object_key,
+              outcome: diagnostic.outcome,
+              createdAt: diagnostic.created_at,
+              expiresAt: diagnostic.expires_at,
+            }
+          : undefined;
+      } catch (error: unknown) {
+        throw d1Error('diagnostic metadata read', error);
+      }
+    },
+
     async recordEvidence(record: InstallControlPlaneEvidenceRecord) {
       try {
         const session = await first<InstallSessionRow>(

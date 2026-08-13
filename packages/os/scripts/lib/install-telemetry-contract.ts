@@ -442,3 +442,7 @@ export function installDashboardDetailRoute(installId: InstallId): string {
   }
   return `${INSTALL_DASHBOARD_API_ROUTES.installs}/${encodeURIComponent(installId)}`;
 }
+
+export function installDashboardDiagnosticRoute(installId: InstallId): string {
+  return `${installDashboardDetailRoute(installId)}/diagnostic`;
+}

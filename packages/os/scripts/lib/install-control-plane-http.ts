@@ -25,8 +25,13 @@ export const INSTALL_CONTROL_PLANE_EVENT_INGEST_PATH =
   '/api/os/v1/install-events' as const;
 export const INSTALL_CONTROL_PLANE_DIAGNOSTIC_INGEST_PATH =
   '/api/os/v1/install-diagnostics' as const;
+export const INSTALL_CONTROL_PLANE_EVIDENCE_INGEST_PATH =
+  '/api/os/v1/install-evidence' as const;
+export const INSTALL_CONTROL_PLANE_OBSERVABILITY_CONFIG_PATH =
+  '/api/os/v1/install-observability' as const;
 export const INSTALL_CONTROL_PLANE_MAX_EVENT_BYTES = 64 * 1024;
 export const INSTALL_CONTROL_PLANE_MAX_DIAGNOSTIC_BYTES = 2 * 1024 * 1024;
+export const INSTALL_CONTROL_PLANE_MAX_EVIDENCE_BYTES = 8 * 1024;
 export const INSTALL_INTERNAL_DASHBOARD_HOST = 'internal.consuelohq.com' as const;
 
 export type InstallDashboardAuthorizer = (
@@ -66,6 +71,35 @@ function included<T extends string>(
   value: unknown,
 ): value is T {
   return typeof value === 'string' && (values as readonly string[]).includes(value);
+}
+
+function validSentryDsn(value: string | undefined): string | undefined {
+  const candidate = value?.trim();
+  if (!candidate) return undefined;
+  try {
+    const url = new URL(candidate);
+    return url.protocol === 'https:' && url.username && url.hostname && url.pathname !== '/'
+      ? candidate
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function createInstallObservabilityConfigHandler(input: {
+  sentryDsn?: string;
+}): (request: Request) => Promise<Response> {
+  const sentryDsn = validSentryDsn(input.sentryDsn);
+  return async (request) => {
+    const url = new URL(request.url);
+    if (url.pathname !== INSTALL_CONTROL_PLANE_OBSERVABILITY_CONFIG_PATH) {
+      return json({ error: 'not_found' }, 404);
+    }
+    if (request.method !== 'GET') {
+      return json({ error: 'method_not_allowed' }, 405, { allow: 'GET' });
+    }
+    return json(sentryDsn ? { sentryDsn } : {});
+  };
 }
 
 export function parseInstallTelemetryEvent(
@@ -189,6 +223,10 @@ export function parseInstallTelemetryEvent(
 export function createInstallTelemetryIngestHandler(input: {
   repository: InstallControlPlaneRepository;
   now?: () => number;
+  onAccepted?: (
+    event: InstallTelemetryEvent,
+    metadata: { request: Request; created: boolean },
+  ) => Promise<void> | void;
 }): (request: Request) => Promise<Response> {
   const now = input.now ?? (() => Date.now());
   return async (request) => {
@@ -238,9 +276,84 @@ export function createInstallTelemetryIngestHandler(input: {
         trust: 'installer',
         ingestedAt: new Date(now()).toISOString(),
       });
+      if (input.onAccepted) {
+        try {
+          await input.onAccepted(event, { request, created: result.created });
+        } catch {
+          // Vendor projections must not change canonical ingest success.
+        }
+      }
       return json({ accepted: true, duplicate: !result.created }, 202);
     } catch {
       return json({ error: 'ingest_unavailable' }, 503);
+    }
+  };
+}
+
+export function createInstallEvidenceIngestHandler(input: {
+  repository: InstallControlPlaneRepository;
+  now?: () => number;
+}): (request: Request) => Promise<Response> {
+  const now = input.now ?? (() => Date.now());
+  return async (request) => {
+    const url = new URL(request.url);
+    if (url.pathname !== INSTALL_CONTROL_PLANE_EVIDENCE_INGEST_PATH) {
+      return json({ error: 'not_found' }, 404);
+    }
+    if (request.method !== 'POST') {
+      return json({ error: 'method_not_allowed' }, 405, { allow: 'POST' });
+    }
+    if (!(request.headers.get('content-type') ?? '').toLowerCase().includes('application/json')) {
+      return json({ error: 'application_json_required' }, 415);
+    }
+    const declaredLength = Number.parseInt(request.headers.get('content-length') ?? '', 10);
+    if (
+      Number.isFinite(declaredLength) &&
+      declaredLength > INSTALL_CONTROL_PLANE_MAX_EVIDENCE_BYTES
+    ) {
+      return json({ error: 'evidence_too_large' }, 413);
+    }
+    let text: string;
+    try {
+      text = await request.text();
+    } catch {
+      return json({ error: 'invalid_evidence' }, 400);
+    }
+    if (new TextEncoder().encode(text).byteLength > INSTALL_CONTROL_PLANE_MAX_EVIDENCE_BYTES) {
+      return json({ error: 'evidence_too_large' }, 413);
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return json({ error: 'invalid_evidence' }, 400);
+    }
+    const body = object(parsed);
+    if (
+      !body ||
+      !exactKeys(body, ['installId', 'kind', 'referenceId']) ||
+      typeof body.installId !== 'string' ||
+      !isInstallId(body.installId) ||
+      body.kind !== 'sentry' ||
+      typeof body.referenceId !== 'string' ||
+      !/^[a-f0-9]{32}$/i.test(body.referenceId)
+    ) {
+      return json({ error: 'invalid_evidence' }, 400);
+    }
+    const installHeader = request.headers.get(INSTALL_ID_HEADER)?.trim() ?? '';
+    if (!installHeader || installHeader !== body.installId) {
+      return json({ error: 'install_id_mismatch' }, 400);
+    }
+    try {
+      await input.repository.recordEvidence({
+        installId: body.installId,
+        kind: 'sentry',
+        referenceId: body.referenceId.toLowerCase(),
+        createdAt: new Date(now()).toISOString(),
+      });
+      return json({ accepted: true }, 202);
+    } catch {
+      return json({ error: 'evidence_store_unavailable' }, 503);
     }
   };
 }

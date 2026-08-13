@@ -61,31 +61,35 @@ async function recordCanonicalInstallIdentity(
     return;
   }
   const occurredAt = new Date(runtime.now()).toISOString();
+  const event = {
+    schemaVersion: INSTALL_TELEMETRY_SCHEMA_VERSION,
+    eventId: grant.installIdentityEventId,
+    installId: grant.installId,
+    producer: 'device_authority',
+    name: 'install.identity.bound',
+    stage: 'node_registration',
+    outcome: 'succeeded',
+    occurredAt,
+    sequence: 1,
+    identity: {
+      state: 'canonical',
+      userId: grant.canonicalUserId,
+      workspaceId: grant.canonicalWorkspaceId,
+      ...(grant.nodeId ? { nodeId: grant.nodeId } : {}),
+    },
+    context: {
+      ...(grant.nodeRole ? { nodeRole: grant.nodeRole } : {}),
+      ...(grant.nodeStatus ? { nodeStatus: grant.nodeStatus } : {}),
+    },
+  } as const;
   try {
     await runtime.installControlPlaneRepository.ingestEvent(
-      {
-        schemaVersion: INSTALL_TELEMETRY_SCHEMA_VERSION,
-        eventId: grant.installIdentityEventId,
-        installId: grant.installId,
-        producer: 'device_authority',
-        name: 'install.identity.bound',
-        stage: 'node_registration',
-        outcome: 'succeeded',
-        occurredAt,
-        sequence: 1,
-        identity: {
-          state: 'canonical',
-          userId: grant.canonicalUserId,
-          workspaceId: grant.canonicalWorkspaceId,
-          ...(grant.nodeId ? { nodeId: grant.nodeId } : {}),
-        },
-        context: {
-          ...(grant.nodeRole ? { nodeRole: grant.nodeRole } : {}),
-          ...(grant.nodeStatus ? { nodeStatus: grant.nodeStatus } : {}),
-        },
-      },
+      event,
       { trust: 'trusted', ingestedAt: occurredAt },
     );
+    if (runtime.installTelemetryObserver) {
+      await runtime.installTelemetryObserver.observe(event);
+    }
   } catch {
     // Correlation/telemetry must never change device authorization control flow.
   }

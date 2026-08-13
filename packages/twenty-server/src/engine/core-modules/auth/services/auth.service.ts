@@ -334,22 +334,30 @@ export class AuthService {
           params.authParams,
         );
 
-      return await this.signInUpService.signInUp({
+      const result = await this.signInUpService.signInUp({
         ...params,
         userData: {
           type: 'newUserWithPicture',
           newUserWithPicture: partialUserWithPicture,
         },
       });
+
+      void this.syncInstallControlPlaneUserDirectory(result);
+
+      return result;
     }
 
-    return await this.signInUpService.signInUp({
+    const result = await this.signInUpService.signInUp({
       ...params,
       userData: {
         type: 'existingUser',
         existingUser: params.userData.existingUser,
       },
     });
+
+    void this.syncInstallControlPlaneUserDirectory(result);
+
+    return result;
   }
 
   async verify(
@@ -848,6 +856,86 @@ export class AuthService {
     return (value ?? '').replace(/[^a-z0-9]/gi, '').toUpperCase();
   }
 
+  private authEntityTimestamp(value: Date | string | undefined): string {
+    if (value instanceof Date) return value.toISOString();
+    if (typeof value === 'string' && Number.isFinite(Date.parse(value))) {
+      return new Date(value).toISOString();
+    }
+    return new Date().toISOString();
+  }
+
+  private createInstallControlPlaneUserAssertion(input: {
+    user: UserEntity;
+    workspace?: WorkspaceEntity;
+    sharedKey: string;
+  }): string {
+    const displayName = [input.user.firstName, input.user.lastName]
+      .filter((value): value is string => Boolean(value?.trim()))
+      .join(' ')
+      .trim();
+    const payload = Buffer.from(
+      JSON.stringify({
+        purpose: 'install-control-plane-user-sync',
+        user_id: input.user.id,
+        email: input.user.email,
+        display_name: displayName || input.user.email,
+        ...(input.workspace?.id
+          ? { workspace_id: input.workspace.id }
+          : {}),
+        created_at: this.authEntityTimestamp(input.user.createdAt),
+        updated_at: this.authEntityTimestamp(input.user.updatedAt),
+        expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+      }),
+    ).toString('base64url');
+
+    const signature = createHmac('sha256', input.sharedKey)
+      .update(payload)
+      .digest('base64url');
+
+    return `${payload}.${signature}`;
+  }
+
+  private async syncInstallControlPlaneUserDirectory(input: {
+    user: UserEntity;
+    workspace?: WorkspaceEntity;
+  }): Promise<void> {
+    try {
+      const origin = this.twentyConfigService.get('OS_DEVICE_AUTH_ORIGIN');
+      const sharedKey = this.twentyConfigService.get(
+        'OS_DEVICE_AUTH_ASSERTION_SECRET',
+      );
+      if (
+        typeof origin !== 'string' ||
+        !origin.trim() ||
+        typeof sharedKey !== 'string' ||
+        !sharedKey.trim()
+      ) {
+        return;
+      }
+      if (!input.user.id || input.user.id.startsWith('google:')) return;
+
+      const syncUrl = new URL(
+        '/internal/install-control-plane/users',
+        origin,
+      );
+      const assertion = this.createInstallControlPlaneUserAssertion({
+        ...input,
+        sharedKey,
+      });
+      const response = await fetch(syncUrl, {
+        signal: AbortSignal.timeout(5_000),
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'x-consuelo-user-directory-assertion': assertion,
+        },
+      });
+      if (!response.ok) return;
+    } catch {
+      // Best effort by design: authentication must never depend on telemetry.
+    }
+  }
+
   private createOsDeviceApprovalAssertion(input: {
     accountId: string;
     workspaceId: string;
@@ -930,6 +1018,11 @@ export class AuthService {
 
         approvedUser = signInResult.user;
         approvedWorkspace = signInResult.workspace;
+      } else {
+        void this.syncInstallControlPlaneUserDirectory({
+          user: approvedUser,
+          workspace: approvedWorkspace,
+        });
       }
 
       const approvalUrl = new URL(
@@ -1019,6 +1112,8 @@ export class AuthService {
             provider: authProvider,
           },
         ));
+
+      void this.syncInstallControlPlaneUserDirectory({ user });
 
       const url = this.domainServerConfigService.buildBaseUrl({
         pathname: AppPath.SignInUp,
