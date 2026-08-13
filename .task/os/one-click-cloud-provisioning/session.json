@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_24ed1e325fe1",
+  "tmuxSession": "opensaas-os-one-click-cloud-provisioning-24ed1e32",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/one-click-cloud-provisioning",
+  "branch": "task/os/one-click-cloud-provisioning",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-one-click-cloud-provisioning",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-one-click-cloud-provisioning",
+  "prNumber": 1910,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1910",
+  "createdAt": "2026-08-13T18:33:12.326Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-one-click-cloud-provisioning/.task/os/one-click-cloud-provisioning/session.json"
+}

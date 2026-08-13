@@ -42,6 +42,8 @@ describe('Cloudflare Worker release readiness', () => {
               stdout: JSON.stringify({ secrets: [
                 { name: 'CLOUDFLARE_API_TOKEN' },
                 { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET' },
+                { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET' },
+                { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET' },
               ] }),
               stderr: '',
             }

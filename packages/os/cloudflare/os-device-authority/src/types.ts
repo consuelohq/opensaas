@@ -1,6 +1,12 @@
 import type { WorkspaceRouteD1Database } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import type { WorkspaceSiteSnapshotId } from '../../../scripts/lib/workspace-edge-route-seed';
 import type { ManagedCloudPricingRuntime } from './services/managed-cloud-pricing';
+import type {
+  ManagedCloudProvisioningClaimResult,
+  ManagedCloudProvisioningCreateResult,
+  ManagedCloudProvisioningJob,
+  ManagedCloudProvisioningStatus,
+} from '../../../scripts/lib/managed-cloud-provisioning';
 import type { InstallControlPlaneRepository } from '../../../scripts/lib/install-control-plane';
 import type {
   InstallEventId,
@@ -20,7 +26,8 @@ export type StrongerAuthMethod =
   | 'passkey'
   | 'magic_link'
   | 'hardware_key'
-  | 'admin_invite';
+  | 'admin_invite'
+  | 'managed_cloud_provisioning';
 
 export type Grant = {
   hash: string;
@@ -388,6 +395,35 @@ export type Store = {
   byWorkspaceAgentStatus(
     workspaceHost: string,
   ): Promise<WorkspaceAgentStatus | undefined>;
+  createManagedCloudProvisioningJob(
+    job: ManagedCloudProvisioningJob,
+  ): Promise<ManagedCloudProvisioningCreateResult>;
+  byManagedCloudProvisioningJob(
+    jobId: string,
+  ): Promise<ManagedCloudProvisioningJob | undefined>;
+  claimNextManagedCloudProvisioningJob(input: {
+    leaseId: string;
+    nowMs: number;
+    leaseExpiresAt: number;
+    enrollmentNonce: string;
+    enrollmentExpiresAt: number;
+  }): Promise<ManagedCloudProvisioningClaimResult>;
+  updateManagedCloudProvisioningJob(input: {
+    jobId: string;
+    leaseId?: string;
+    status: ManagedCloudProvisioningStatus;
+    nowMs: number;
+    errorCode?: string;
+    errorMessage?: string;
+  }): Promise<ManagedCloudProvisioningJob | undefined>;
+  consumeManagedCloudProvisioningEnrollment(input: {
+    jobId: string;
+    nowMs: number;
+  }): Promise<ManagedCloudProvisioningJob | undefined>;
+  markManagedCloudProvisioningReadyByNode(input: {
+    nodeId: string;
+    nowMs: number;
+  }): Promise<ManagedCloudProvisioningJob | undefined>;
 };
 export type StorageTransactionLike = {
   get<T>(key: string): Promise<T | undefined>;
@@ -426,6 +462,8 @@ export type Env = {
   OS_DEVICE_AUTH_CLOUDFLARE_API_BASE_URL?: string;
   OS_MANAGED_CLOUD_PRICING_POLICY_JSON?: string;
   OS_MANAGED_CLOUD_RATE_CARDS_JSON?: string;
+  OS_MANAGED_CLOUD_PROVISIONER_SECRET?: string;
+  OS_MANAGED_CLOUD_ENROLLMENT_SECRET?: string;
   OS_DEVICE_AUTH_LOGGER?: DeviceAuthorityLogger;
   INSTALL_DIAGNOSTICS?: InstallDiagnosticR2Bucket;
   OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS?: string;
@@ -460,6 +498,8 @@ export type DeviceAuthorityRuntime = {
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
+  managedCloudProvisionerSecret?: string;
+  managedCloudEnrollmentSecret?: string;
   operationalLogger?: DeviceAuthorityLogger;
   installControlPlaneRepository?: InstallControlPlaneRepository;
   installDiagnosticBundleStore?: InstallDiagnosticBundleStore;

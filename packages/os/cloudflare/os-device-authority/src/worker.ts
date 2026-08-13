@@ -53,6 +53,8 @@ export class OsDeviceGrantDurableObject {
       workspaceEdgeInternalSigningSecret:
         env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
       operationalLogger: env.OS_DEVICE_AUTH_LOGGER,
+      managedCloudProvisionerSecret: env.OS_MANAGED_CLOUD_PROVISIONER_SECRET,
+      managedCloudEnrollmentSecret: env.OS_MANAGED_CLOUD_ENROLLMENT_SECRET,
       managedCloudPricing: managedCloudPricingFromJson({
         policyJson: env.OS_MANAGED_CLOUD_PRICING_POLICY_JSON,
         rateCardsJson: env.OS_MANAGED_CLOUD_RATE_CARDS_JSON,
