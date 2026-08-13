@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'packages/os/**'
+      - 'packages/diff-cockpit/**'
       - '.github/workflows/consuelo-os-runtime-publish.yaml'
       - 'bun.lock'
       - 'package.json'
@@ -103,7 +104,9 @@ jobs:
         id: fingerprint
         run: |
           bun run --cwd packages/os runtime-bundle:fingerprint -- \
-            --source-root . > .release/fingerprint.json
+            --source-root . \
+            --vendored-source "scripts/server/vendor/diff-cockpit.ts=../diff-cockpit/src/index.ts" \
+            > .release/fingerprint.json
           echo "value=$(jq -r '.releaseFingerprint' .release/fingerprint.json)" >> "$GITHUB_OUTPUT"
       - name: Allocate release version only when changed
         id: plan
@@ -191,6 +194,7 @@ jobs:
             --version "${{ needs.plan.outputs.version }}" \
             --source-commit "${GITHUB_SHA}" \
             --minimum-updater-version "${{ vars.CONSUELO_OS_MINIMUM_UPDATER_VERSION || '0.1.0' }}" \
+            --vendored-source "scripts/server/vendor/diff-cockpit.ts=../diff-cockpit/src/index.ts" \
             --output "../../${OUTPUT_PATH}"
           bun run --cwd packages/os runtime-bundle:verify -- \
             --archive "../../${OUTPUT_PATH}"
