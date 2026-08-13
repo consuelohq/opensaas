@@ -933,6 +933,16 @@ describe('runtime bundle contract', () => {
       writeFileSync(target, entry.bytes);
       chmodSync(target, entry.mode);
     }
+    const dependencyInstall = spawnSync(
+      'bun',
+      ['install', '--frozen-lockfile', '--production'],
+      {
+        cwd: runtimeRoot,
+        encoding: 'utf8',
+      },
+    );
+    expect(dependencyInstall.status, dependencyInstall.stderr).toBe(0);
+    expect(existsSync(join(runtimeRoot, 'node_modules', 'zod'))).toBe(true);
     const lifecycleStatus = spawnSync(
       'bun',
       [
