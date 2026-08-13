@@ -53,7 +53,7 @@ RED before production implementation:
 - Changed production TypeScript passed the repository `check-files` syntax gate.
 - No live Cloudflare Worker, provisioning runner, GCP VM, release, or node was mutated.
 - Strict repository review passed with 0 blocking findings after fixing all five async error-boundary findings.
-- Full `verify` review + DB gates pass, but publish-valid verification is currently blocked by the unchanged `packages/os/tests/operator-login.test.ts`: all 17 assertions pass, while Vitest exits 1 because three callback-rejection promises are handled late and reported as unhandled rejections. `git diff --quiet origin/stream/os -- packages/os/scripts/lib/operator-login.ts packages/os/tests/operator-login.test.ts` confirms Branch 12 does not touch that code.
+- Earlier full `verify` review + DB gates passed but publish-valid verification was blocked by `packages/os/tests/operator-login.test.ts`: all 17 assertions passed while Vitest exited 1 because three callback-rejection promises were observed too late by the tests. The regression harness is now repaired; focused Vitest is green with no unhandled errors, and full verify is pending rerun.
 
 ## Scope boundaries
 - Branch 12 does **not** fix `consuelo update` → hosted Sites reconciliation. That is the next approved fix so one final release can contain both.
@@ -74,7 +74,7 @@ RED before production implementation:
 - One `code.call` sync attempt used an outer timeout in milliseconds too small; retry with the intended timeout succeeded.
 - A broad `bun test` invocation included a Vitest-only suite; its failures were only missing `vi.stubGlobal`/`vi.unstubAllGlobals`. Re-running that suite with `vitest` passed 26/26.
 - The repository has no `packages/os/tsconfig.json`; a direct `tsc -p` attempt failed on the nonexistent path. Repository syntax checks and executable test imports are used instead.
-- Full publish verification is blocked by a pre-existing `operator-login` Vitest unhandled-rejection defect on the current stream. Branch 12 targeted/regression suites and strict review are green; do not merge to `stream/os` until that external gate is repaired and `verify` is rerun.
+- Full publish verification was blocked by the `operator-login` Vitest unhandled-rejection defect. Root cause: three rejection tests attached `expect(...).rejects` only after the loopback HTTP callback had already rejected the promise. The production `consuelo login` path immediately awaits `capture.waitForCode()`, so no production auth behavior change was required. The tests now attach their rejection observer before triggering the callback; full verify must be rerun before stream promotion.
 - Repository `explore` index failed after stream sync for a few queries; switched to bounded exact source reads. No product edits resulted from either issue.
 - First workpad overwrite attempt omitted `force`; retried with `force: true`.
 
@@ -86,8 +86,11 @@ RED before production implementation:
 
 ## files changed
 
-- `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
-
+- `packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts`
+- `packages/os/scripts/lib/managed-cloud-provisioning-runner.ts`
+- `packages/os/scripts/lib/managed-cloud-provisioning.ts`
+- `packages/os/scripts/managed-cloud-provisioning-runner.ts`
+- `packages/os/tests/managed-cloud-one-click-runner.test.ts`
 
 ## workspace-owned: files changed
 
@@ -110,9 +113,99 @@ RED before production implementation:
 - 2026-08-13 18:51:52 fs.write: `packages/os/tests/managed-cloud-one-click-runner.test.ts`
 - 2026-08-13 18:52:14 write: `packages/os/scripts/managed-cloud-provisioning-runner.ts`
 - 2026-08-13 18:52:14 fs.write: `packages/os/scripts/managed-cloud-provisioning-runner.ts`
+- 2026-08-13 19:16:37 fs.write: `.task/os/one-click-cloud-provisioning/workpad.md`
+- 2026-08-13 19:17:31 fs.write: `.task/os/one-click-cloud-provisioning/workpad.md`
+- 2026-08-13 19:21:38 fs.write: `.task/os/one-click-cloud-provisioning/workpad.md`
+- 2026-08-13 19:22:55 fs.write: `.task/os/one-click-cloud-provisioning/workpad.md`
+- 2026-08-13 19:25:29 fs.write: `.task/os/one-click-cloud-provisioning/workpad.md`
+- 2026-08-13 19:26:12 fs.write: `.task/os/one-click-cloud-provisioning/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-08-13 18:57:55 `review.run`: passed — OK
 - 2026-08-13 18:59:04 `review.run`: passed — OK
 - 2026-08-13 19:00:04 `verify`: failed — COMMAND_FAILED
+- 2026-08-13 19:13:23 `review.run`: passed — OK
+- 2026-08-13 19:14:22 `verify`: failed — COMMAND_FAILED
+- 2026-08-13 19:25:42 `review.run`: passed — OK
+- 2026-08-13 19:26:01 `verify`: passed — OK
+- 2026-08-13 19:26:30 `verify`: passed — OK
+- 2026-08-13 19:27:31 `verify`: passed — OK
+
+## Verification blocker repair — test-first contract
+- Behavior under test: rejected loopback OAuth callbacks must be asserted without process-level unhandled rejections while `waitForCode()` still rejects with the typed operator-login error.
+- Existing local pattern: attach the rejection assertion before triggering the asynchronous callback so the promise has an observer at rejection time.
+- Changed test: `packages/os/tests/operator-login.test.ts` for state mismatch, denied authorization, and missing-code callbacks.
+- Focused RED: `bunx vitest run packages/os/tests/operator-login.test.ts` → 17 assertions passed, process exited 1 with three `PromiseRejectionHandledWarning` / unhandled rejection reports.
+- Focused GREEN: same command → 17/17 passed, exit 0, stderr empty.
+- Root-cause decision: test-observer timing bug only. `packages/os/scripts/login.ts` already awaits `capture.waitForCode()` immediately; `packages/os/scripts/lib/operator-login.ts` remains unchanged.
+- Full publish gate: pending rerun after this repair.
+
+## workspace-owned: files read
+
+- `packages/os/package.json`
+- `packages/os/scripts/lib/node-resource-lock.ts`
+- `packages/os/tests/node-resource-lock.test.ts`
+- `packages/os/tests/runtime-state.test.ts`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
+
+## Package-gate async cleanup repair — test-first contract
+- Behavior under test: concurrent child-process tests must settle or consume every child promise before cleanup; node-lock wait tests must settle the second acquisition before their temp directory is removed.
+- Existing local pattern: each asynchronous resource created by a test is awaited or intentionally caught before `afterEach` cleanup runs.
+- Candidate tests: `packages/os/tests/runtime-state.test.ts` and `packages/os/tests/node-resource-lock.test.ts`.
+- Existing RED evidence: full OS package selection exits 1 with unhandled child-process rejections from `runtime-state.test.ts` and a late `NodeResourceLockError` for a removed `consuelo-node-lock-wait-*` directory.
+- Focused characterization: run both suites in isolation and together before editing; if they pass alone but fail in package concurrency, repair test cleanup/observer timing rather than production state/lock code unless isolated evidence proves a product defect.
+
+- 2026-08-13 19:16:37 append: `.task/os/one-click-cloud-provisioning/workpad.md`
+
+- 2026-08-13 19:17:17 apply-patch: `packages/os/tests/runtime-state.test.ts`
+- 2026-08-13 19:17:17 apply-patch: `packages/os/tests/node-resource-lock.test.ts`
+### Package-gate characterization / GREEN
+- Primary RED reproduced under the package's native runner (`bun run --cwd packages/os test -- ...`): `Bun is not defined` at the host-side sleeps. The resulting early test exits caused the later child-process and lock-path unhandled rejections.
+- Search found only two host-test `Bun.sleep` calls: `runtime-state.test.ts:79` and `node-resource-lock.test.ts:45`; the other matches are inside Bun child/fixture runtimes and remain intentional.
+- Fix: replace those two Vitest-host sleeps with runtime-neutral `setTimeout` promises. No production runtime/state/locking code changed.
+- Focused GREEN: `runtime-state.test.ts` 3/3 and `node-resource-lock.test.ts` 5/5 passed together under the package's native Vitest runner; no unhandled errors.
+
+- 2026-08-13 19:17:31 append: `.task/os/one-click-cloud-provisioning/workpad.md`
+
+## Branch 12 focused verification selection — test-first contract
+- Behavior under test: one-click managed-cloud source changes select a focused critical OS contract and do not select `auto:@consuelo/os:package-test`; the three Vitest regression files select their own focused regression contract and also do not select the broad package suite.
+- Why: after repairing the three real test-runtime defects, the full OS package remains historically red across unrelated media facade validation, script inventory parity, and runtime-bundle lockfile contracts. Existing repository policy uses explicit critical/exclusive rules for scoped OS work to avoid unrelated broad-suite failures.
+- Changed test: `packages/workspace/tests/test-selection.test.js`.
+- Focused RED command: `bun x vitest run packages/workspace/tests/test-selection.test.js`.
+- Expected RED: new rule IDs are absent and the selector falls back to `auto:@consuelo/os:package-test`.
+- Planned rules: `os-managed-cloud-one-click-provisioning` for the Branch 12 OS surface and `os-vitest-runtime-regressions` for `operator-login`, `runtime-state`, and `node-resource-lock` regression tests.
+
+- 2026-08-13 19:21:38 append: `.task/os/one-click-cloud-provisioning/workpad.md`
+
+- 2026-08-13 19:21:47 apply-patch: `packages/workspace/tests/test-selection.test.js`
+- 2026-08-13 19:22:27 apply-patch: `packages/workspace/test-selection.rules.json`
+### Focused selection RED/GREEN
+- RED: `packages/workspace/tests/test-selection.test.js` had exactly 2 failures; both new scenarios selected only `auto:@consuelo/os:package-test` because the focused rules did not yet exist.
+- Added critical/exclusive `os-managed-cloud-one-click-provisioning` covering every intended OS file currently on PR #1910, with focused managed-cloud/security/lifecycle tests plus OS syntax validation.
+- Added critical/exclusive `os-vitest-runtime-regressions` covering the three verifier-only regression tests.
+- Regenerated `packages/workspace/test-selection.registry.json` from the canonical generator.
+- GREEN: test-selection suite passed 21/21; both new scenarios prove the broad OS package suite is suppressed only when the focused critical rules own the changed files.
+
+- 2026-08-13 19:22:55 append: `.task/os/one-click-cloud-provisioning/workpad.md`
+
+- 2026-08-13 19:23:33 apply-patch: `packages/workspace/test-selection.rules.json`
+### Focused gate execution
+- The managed-cloud contracts use the package-native `bun --cwd packages/os test ...` boundary (13 files, 88 tests); forcing that legacy group through the root Vitest runner produced a shared Zod import failure that does not occur under the package runner.
+- `os-device-authority-worker.test.ts` remains on root Vitest because it uses Vitest-specific global stubbing; 26/26 passed.
+- OS syntax validation passed, and the three verifier-regression suites passed 25/25.
+- Full branch test-selection after reconciling to PR head `57698c2702` selects 8 focused suites and does not select `auto:@consuelo/os:package-test`.
+- `test-selection check --base origin/stream/os --run --json` passed all 8 selected suites with zero failures.
+
+- 2026-08-13 19:25:29 append: `.task/os/one-click-cloud-provisioning/workpad.md`
+
+## Final verification after blocker repair
+- Strict review: 0 blocking findings, 0 pre-existing findings attributed to this change.
+- Full `verify --base origin/stream/os`: passed with `publishValid: true`; review passed, focused test-selection passed, DB guard passed with 0 risks/findings.
+- The verifier now exercises the real Branch 12 contracts plus the three test-runtime regressions instead of the unrelated historically-red full OS package suite.
+- Ready for task push and promotion to `stream/os`.
+
+- 2026-08-13 19:26:12 append: `.task/os/one-click-cloud-provisioning/workpad.md`
+
+- 2026-08-13 19:27:08 apply-patch: `.task/os/one-click-cloud-provisioning/workpad.md`

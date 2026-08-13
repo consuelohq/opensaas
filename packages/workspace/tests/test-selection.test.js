@@ -286,6 +286,50 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused one-click managed cloud contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/settings-site.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-managed-cloud-one-click-provisioning');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'OS one-click managed cloud contracts',
+        'OS one-click managed cloud syntax contracts',
+      ]),
+    );
+  });
+
+  it('uses focused Vitest runtime regression contracts for verifier-only OS test fixes', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/operator-login.test.ts',
+      '--changed-file',
+      'packages/os/tests/runtime-state.test.ts',
+      '--changed-file',
+      'packages/os/tests/node-resource-lock.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('os-vitest-runtime-regressions');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'OS Vitest runtime regression contracts',
+    );
+  });
+
   it('uses the API package Jest configuration for API changes', () => {
     const result = run([
       'check',
