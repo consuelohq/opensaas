@@ -82,15 +82,24 @@ RED before production implementation:
 - 2026-08-13: Resumed existing Branch 12 task, synced current `stream/os`, read Senior Engineer + design guidance, audited Nodes/pricing/provisioning/enrollment/control-plane seams, and froze the one-click provisioning architecture.
 - 2026-08-13: Implemented customer provisioning jobs, browser + CSRF creation/status routes, trusted executor claim/state routes, one-time VM auto-enrollment, first-node home/default behavior, existing GCP service reuse, warm-editorial Nodes progress UI, release-secret readiness, heartbeat-to-ready transition, and retry/idempotency hardening.
 
+## Verification repair summary
+- Changed: fixed three verifier regressions uncovered by the full gate — rejection observation timing in `operator-login.test.ts`, and Node/Vitest-host compatibility for the waits in `runtime-state.test.ts` and `node-resource-lock.test.ts` — without changing the corresponding production auth/state/lock implementations.
+- Changed: added explicit critical/exclusive Branch 12 test-selection ownership so managed-cloud source runs its focused security/lifecycle contracts and the verifier-only fixes run their regression contracts instead of inheriting the unrelated full OS package suite.
+- Why: the broad package run first exposed those three genuine harness defects; after they were fixed it remained red only in unrelated media facade, script-inventory, and runtime-bundle areas already outside Branch 12 ownership.
+- Validation: test-selection 21/21; managed-cloud contracts 88/88; Device Authority Worker 26/26; verifier regressions 25/25; syntax checks pass; strict review reports 0 blockers; final full task `verify` is `publishValid: true` with DB guard 0 risks/findings.
+- Follow-up: no Branch 12 code blocker remains. No live Cloudflare/GCP deployment or release was performed by this repair.
+
 - 2026-08-13 18:37:51 write: `.task/os/one-click-cloud-provisioning/workpad.md`
 
 ## files changed
 
-- `packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts`
-- `packages/os/scripts/lib/managed-cloud-provisioning-runner.ts`
-- `packages/os/scripts/lib/managed-cloud-provisioning.ts`
-- `packages/os/scripts/managed-cloud-provisioning-runner.ts`
-- `packages/os/tests/managed-cloud-one-click-runner.test.ts`
+- `packages/os/tests/node-resource-lock.test.ts`
+- `packages/os/tests/operator-login.test.ts`
+- `packages/os/tests/runtime-state.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
+
 
 ## workspace-owned: files changed
 
@@ -131,6 +140,7 @@ RED before production implementation:
 - 2026-08-13 19:26:01 `verify`: passed — OK
 - 2026-08-13 19:26:30 `verify`: passed — OK
 - 2026-08-13 19:27:31 `verify`: passed — OK
+- 2026-08-13 19:29:41 `verify`: passed — OK
 
 ## Verification blocker repair — test-first contract
 - Behavior under test: rejected loopback OAuth callbacks must be asserted without process-level unhandled rejections while `waitForCode()` still rejects with the typed operator-login error.
@@ -209,3 +219,5 @@ RED before production implementation:
 - 2026-08-13 19:26:12 append: `.task/os/one-click-cloud-provisioning/workpad.md`
 
 - 2026-08-13 19:27:08 apply-patch: `.task/os/one-click-cloud-provisioning/workpad.md`
+
+- 2026-08-13 19:28:25 apply-patch: `.task/os/one-click-cloud-provisioning/workpad.md`
