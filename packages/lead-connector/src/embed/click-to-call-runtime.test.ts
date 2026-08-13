@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { JSDOM } from 'jsdom';
 
 const asset = readFileSync(
-  'packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js',
+  join(import.meta.dir, 'public', 'consuelo-lead-connector-click-to-call.js'),
   'utf8',
 );
 const embedOrigin =
@@ -73,6 +74,137 @@ describe('LeadConnector click-to-call runtime', () => {
     await new Promise((resolve) => dom.window.setTimeout(resolve, 0));
 
     expect(exposeSessionDetails).toHaveBeenCalledWith(appId);
+    expect(postMessage).toHaveBeenCalledWith(
+      {
+        message: 'REQUEST_USER_DATA_RESPONSE',
+        payload: 'opaque-encrypted-context',
+      },
+      embedOrigin,
+    );
+  });
+
+
+  it('remounts and reauthenticates after GHL replaces route DOM', async () => {
+    const { dom, exposeSessionDetails } = boot({
+      path: '/v2/location/location-1/contacts',
+      body: '<nav><a id="tb_lists">Smart Lists</a></nav>',
+    });
+    const { document } = dom.window;
+    document.getElementById('consuelo-dialer-launcher')?.click();
+    const firstFrame = document.querySelector<HTMLIFrameElement>(
+      'iframe[name="consuelo-dialer"]',
+    );
+    expect(firstFrame).not.toBeNull();
+
+    const firstPostMessage = mock(() => undefined);
+    Object.defineProperty(firstFrame!.contentWindow!, 'postMessage', {
+      configurable: true,
+      value: firstPostMessage,
+    });
+    dom.window.dispatchEvent(
+      new dom.window.MessageEvent('message', {
+        data: { message: 'REQUEST_USER_DATA' },
+        origin: embedOrigin,
+        source: firstFrame!.contentWindow,
+      }),
+    );
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 0));
+    expect(exposeSessionDetails).toHaveBeenCalledTimes(1);
+
+    document.getElementById('consuelo-dialer-overlay-host')?.remove();
+    document.getElementById('consuelo-dialer-launcher')?.remove();
+    document.body.innerHTML +=
+      '<div class="bar"><div class="view" id="list-view"><span class="view-label">List</span></div></div>';
+    dom.window.history.pushState(
+      {},
+      '',
+      '/v2/location/location-1/opportunities',
+    );
+    dom.window.dispatchEvent(new dom.window.Event('routeLoaded'));
+
+    const launcher = document.getElementById('consuelo-dialer-launcher');
+    expect(launcher).not.toBeNull();
+    launcher?.click();
+    const secondFrame = document.querySelector<HTMLIFrameElement>(
+      'iframe[name="consuelo-dialer"]',
+    );
+    expect(secondFrame).not.toBeNull();
+    expect(secondFrame).not.toBe(firstFrame);
+
+    const secondPostMessage = mock(() => undefined);
+    Object.defineProperty(secondFrame!.contentWindow!, 'postMessage', {
+      configurable: true,
+      value: secondPostMessage,
+    });
+    dom.window.dispatchEvent(
+      new dom.window.MessageEvent('message', {
+        data: { message: 'REQUEST_USER_DATA' },
+        origin: embedOrigin,
+        source: secondFrame!.contentWindow,
+      }),
+    );
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 0));
+
+    expect(exposeSessionDetails).toHaveBeenCalledTimes(2);
+    expect(secondPostMessage).toHaveBeenCalledWith(
+      {
+        message: 'REQUEST_USER_DATA_RESPONSE',
+        payload: 'opaque-encrypted-context',
+      },
+      embedOrigin,
+    );
+    expect(document.querySelectorAll('#consuelo-dialer-launcher')).toHaveLength(
+      1,
+    );
+    expect(
+      document.querySelectorAll('iframe[name="consuelo-dialer"]'),
+    ).toHaveLength(1);
+  });
+
+
+  it('refreshes signed context on a route change without replacing a connected iframe', async () => {
+    const { dom, exposeSessionDetails } = boot({
+      path: '/v2/location/location-1/contacts',
+      body: '<nav><a id="tb_lists">Smart Lists</a></nav>',
+    });
+    const { document } = dom.window;
+    document.getElementById('consuelo-dialer-launcher')?.click();
+    const frame = document.querySelector<HTMLIFrameElement>(
+      'iframe[name="consuelo-dialer"]',
+    );
+    expect(frame).not.toBeNull();
+    const postMessage = mock(() => undefined);
+    Object.defineProperty(frame!.contentWindow!, 'postMessage', {
+      configurable: true,
+      value: postMessage,
+    });
+    dom.window.dispatchEvent(
+      new dom.window.MessageEvent('message', {
+        data: { message: 'REQUEST_USER_DATA' },
+        origin: embedOrigin,
+        source: frame!.contentWindow,
+      }),
+    );
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 0));
+    expect(exposeSessionDetails).toHaveBeenCalledTimes(1);
+    postMessage.mockClear();
+
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<div class="bar"><div class="view" id="list-view"><span class="view-label">List</span></div></div>',
+    );
+    dom.window.history.pushState(
+      {},
+      '',
+      '/v2/location/location-1/opportunities',
+    );
+    dom.window.dispatchEvent(new dom.window.Event('routeLoaded'));
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 0));
+
+    expect(
+      document.querySelector<HTMLIFrameElement>('iframe[name="consuelo-dialer"]'),
+    ).toBe(frame);
+    expect(exposeSessionDetails).toHaveBeenCalledTimes(2);
     expect(postMessage).toHaveBeenCalledWith(
       {
         message: 'REQUEST_USER_DATA_RESPONSE',

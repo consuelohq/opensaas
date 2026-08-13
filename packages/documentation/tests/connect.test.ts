@@ -14,10 +14,6 @@ const connectPages = [
   ['connect/agents/opencode.mdx', 'OpenCode'],
   ['connect/agents/gemini.mdx', 'Gemini'],
   ['connect/agents/other-agents.mdx', 'Other agents'],
-  ['connect/nodes/how-nodes-work.mdx', 'How nodes work'],
-  ['connect/nodes/home-node.mdx', 'Home node'],
-  ['connect/nodes/local-nodes.mdx', 'Local nodes'],
-  ['connect/nodes/cloud-nodes.mdx', 'Cloud nodes'],
   ['connect/apps-and-services/index.mdx', 'Apps and services'],
   ['connect/apps-and-services/google-workspace.mdx', 'Google Workspace'],
   ['connect/apps-and-services/gmail.mdx', 'Gmail'],
@@ -56,11 +52,6 @@ describe('Connect documentation contract', () => {
       "label: 'OpenCode'",
       "label: 'Gemini'",
       "label: 'Other agents'",
-      "label: 'Nodes'",
-      "label: 'How nodes work'",
-      "label: 'Home node'",
-      "label: 'Local nodes'",
-      "label: 'Cloud nodes'",
       "label: 'Apps and services'",
       "label: 'Overview', slug: 'connect/apps-and-services'",
       "label: 'Productivity and communication'",
@@ -233,20 +224,6 @@ describe('Connect documentation contract', () => {
     expect(slack).toContain('outbound');
   });
 
-  test('documents the current home, member, local, and cloud-node boundary', () => {
-    const how = read('src/content/docs/connect/nodes/how-nodes-work.mdx');
-    expect(how).toContain('home');
-    expect(how).toContain('member');
-    expect(how).toContain('created');
-    expect(how).toContain('reconnected');
-    const local = read('src/content/docs/connect/nodes/local-nodes.mdx');
-    expect(local).toContain('cloudflare-tunnel');
-    expect(local).toContain('websocket-relay');
-    const cloud = read('src/content/docs/connect/nodes/cloud-nodes.mdx');
-    expect(cloud).toContain('handled by the Consuelo team');
-    expect(cloud).not.toContain('Create a cloud node now');
-  });
-
   test('keeps a checked-in Connect claim ledger', () => {
     const ledger = read('evidence/connect-claims.md');
     for (const heading of [
@@ -263,7 +240,7 @@ describe('Connect documentation contract', () => {
     expect(ledger).toContain('Google Workspace');
     expect(ledger).toContain('Railway');
     expect(ledger).toContain('Apple Keychain');
-    expect(ledger).toContain('home node');
+    expect(ledger).not.toContain('| Node pages |');
   });
 
   test('removes directly superseded integration pages and preserves useful redirects', () => {

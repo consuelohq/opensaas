@@ -68,10 +68,19 @@ async function loadWorkspaceEdgeRouteSeedScriptContract(): Promise<WorkspaceEdge
   return module as WorkspaceEdgeRouteSeedScriptContract;
 }
 
+const INTERNAL_SEED_IDENTITY = {
+  workspaceId: 'workspace_internal',
+  workspaceSlug: 'internal',
+  hostname: 'internal.consuelohq.com',
+  baseDomain: 'consuelohq.com',
+} as const;
+
 contractDescribe('workspace edge route seed contract', () => {
-  it('should default the migration host to internal.consuelohq.com without routing unpublished child Sites', async () => {
+  it('should seed an explicitly named migration host without routing unpublished child Sites', async () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
-    const record = seed.createWorkspaceEdgeRouteSeedRecord() as {
+    const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      ...INTERNAL_SEED_IDENTITY,
+    }) as {
       workspaceId: string;
       workspaceSlug: string;
       hostname: string;
@@ -269,6 +278,7 @@ contractDescribe('workspace edge route seed contract', () => {
       workspaceId: 'workspace_internal',
       workspaceSlug: 'internal',
       hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
       siteSnapshotKey: 'sites/workspace_internal/launcher/sha256-release/index.html',
       siteVersionId: 'sha256-release',
       siteContentHashes: {
@@ -420,6 +430,7 @@ contractDescribe('workspace edge route seed contract', () => {
       workspaceId: 'workspace_internal',
       workspaceSlug: 'internal',
       hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
       siteSnapshotKey: 'sites/workspace_internal/launcher/sha256-release/index.html',
       siteVersionId: 'sha256-release',
       publishedSiteIds: [
@@ -518,51 +529,43 @@ contractDescribe('workspace edge route seed contract', () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
 
     expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      ...INTERNAL_SEED_IDENTITY,
       publishedSiteIds: [],
     })).toThrow('workspace edge seed requires a published launcher snapshot');
 
     expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      ...INTERNAL_SEED_IDENTITY,
       publishedSiteIds: ['tools'],
     })).toThrow('workspace edge seed requires a published launcher snapshot');
 
     expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      ...INTERNAL_SEED_IDENTITY,
       publishedSiteIds: ['launcher', 'not-a-site'],
     })).toThrow('workspace edge seed received unknown Site snapshot: not-a-site');
 
     expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
+      ...INTERNAL_SEED_IDENTITY,
       publishedSiteIds: ['launcher'],
       siteContentHashes: { launcher: 'not-a-sha256' },
     })).toThrow('workspace edge seed received invalid site snapshot content hash');
   });
 
-  it('should replace empty seed identity inputs with defaults before normalization', async () => {
+  it('should reject empty seed identity inputs instead of selecting a default tenant', async () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
-    const record = seed.createWorkspaceEdgeRouteSeedRecord({
+    expect(() => seed.createWorkspaceEdgeRouteSeedRecord({
       workspaceId: '   ',
       workspaceSlug: '   ',
       hostname: '   ',
       baseDomain: '   ',
       appUpstreamUrl: '   ',
-    });
-
-    expect(record).toMatchObject({
-      workspaceId: 'workspace_internal',
-      workspaceSlug: 'internal',
-      hostname: 'internal.consuelohq.com',
-      baseDomain: 'consuelohq.com',
-    });
-    expect((record as { routes: Array<{ pathPrefix: string; surface: string; target: { kind: string; manifestKey?: string } }> }).routes.find((route) => route.pathPrefix === '/')).toMatchObject({
-      surface: 'sites',
-      target: {
-        kind: 'site-snapshot',
-        manifestKey: 'sites/workspace_internal/launcher/seeded-workspace-site-shell/index.html',
-      },
-    });
+    })).toThrow(/workspace edge seed requires explicit workspace identity/);
   });
 
   it('should emit D1-safe SQL without secrets and include connector rows only when OS route inputs are provided', async () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
-    const appOnlySql = seed.createWorkspaceEdgeRouteSeedSql();
+    const appOnlySql = seed.createWorkspaceEdgeRouteSeedSql({
+      ...INTERNAL_SEED_IDENTITY,
+    });
 
     expect(appOnlySql).toMatch(/INSERT INTO workspace_route_registry/i);
     expect(appOnlySql).toMatch(/ON CONFLICT\(hostname\) DO UPDATE SET/i);
@@ -576,6 +579,7 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(appOnlySql).not.toMatch(/INSERT OR REPLACE INTO workspace_route_registry \(\n/);
 
     const osSql = seed.createWorkspaceEdgeRouteSeedSql({
+      ...INTERNAL_SEED_IDENTITY,
       connectorId: '  connector_internal  ',
       tunnelOriginUrl: '  https://c-97c89262e0970bc466db457d4484f366.consuelohq.com  ',
       localServiceUrl: '  http://127.0.0.1:8787  ',
@@ -608,6 +612,7 @@ contractDescribe('workspace edge route seed contract', () => {
       hostname: 'acme.consuelohq.com',
       workspaceId: 'workspace_acme',
       workspaceSlug: 'acme',
+      baseDomain: 'consuelohq.com',
       connectorId: 'connector_acme',
       tunnelOriginUrl: 'https://connector-acme.example.test',
     }) as { routes: Array<{ pathPrefix: string; auth: string; target: { kind: string; connectorId?: string } }> };
@@ -659,6 +664,7 @@ contractDescribe('workspace edge route seed contract', () => {
       );
     `);
     db.exec(seed.createWorkspaceEdgeRouteSeedSql({
+      ...INTERNAL_SEED_IDENTITY,
       connectorId: 'connector_home',
       tunnelOriginUrl: 'https://connector-home.example.test',
       localServiceUrl: 'http://127.0.0.1:46320',
@@ -687,6 +693,7 @@ contractDescribe('workspace edge route seed contract', () => {
     ).run(JSON.stringify(initialRecord), 'internal.consuelohq.com');
 
     db.exec(seed.createWorkspaceEdgeRouteSeedSql({
+      ...INTERNAL_SEED_IDENTITY,
       siteSnapshotKey:
         'sites/workspace_internal/launcher/sha256-sites-refresh/index.html',
       siteVersionId: 'sha256-sites-refresh',
@@ -737,6 +744,7 @@ contractDescribe('workspace edge route seed contract', () => {
   it('should ignore incomplete connector inputs instead of persisting empty connector routes', async () => {
     const seed = await loadWorkspaceEdgeRouteSeedContract();
     const osSql = seed.createWorkspaceEdgeRouteSeedSql({
+      ...INTERNAL_SEED_IDENTITY,
       connectorId: '   ',
       tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
     });

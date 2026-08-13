@@ -14,14 +14,14 @@ describe('LeadConnector custom menu deployment contract', () => {
       }),
     ).toEqual({
       title: 'Consuelo Dialer',
-      url: 'https://dialer.example.test/embed/',
+      url: 'https://dialer.example.test/admin',
       icon: { name: 'phone', fontFamily: 'fas' },
       showOnCompany: false,
       showOnLocation: true,
       showToAllLocations: false,
       locations: ['sandbox-location-1'],
       openMode: 'iframe',
-      userRole: 'all',
+      userRole: 'admin',
       allowCamera: false,
       allowMicrophone: true,
     });

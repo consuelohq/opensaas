@@ -17,6 +17,7 @@
     "test:browser": "bun scripts/test-foundation-browser.mjs",
     "test:connect": "bun test tests/connect.test.ts",
     "test:connect-browser": "bun scripts/test-connect-browser.mjs",
+    "test:nodes": "bun test tests/nodes.test.ts",
     "test:build": "bun test tests/build.test.ts",
     "test:build-browser": "bun scripts/test-build-browser.mjs",
     "test:sites": "bun test tests/sites.test.ts",

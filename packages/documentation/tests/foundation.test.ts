@@ -107,12 +107,14 @@ describe('documentation navigation', () => {
   const sidebar = [
     { type: 'group', label: 'Start', collapsed: true, entries: [{ type: 'link', label: 'Overview', href: '/start/', isCurrent: false, attrs: {} }] },
     { type: 'group', label: 'Connect', collapsed: true, entries: [{ type: 'link', label: 'Overview', href: '/connect/', isCurrent: true, attrs: {} }] },
+    { type: 'group', label: 'Nodes', collapsed: true, entries: [{ type: 'link', label: 'Overview', href: '/nodes/', isCurrent: false, attrs: {} }] },
   ] satisfies DocsSidebarEntry[];
 
   test('derives direct global links, breadcrumbs, and footer columns from one registry', () => {
     expect(globalSectionLinks).toEqual([
       { label: 'Start', href: '/start/' },
       { label: 'Connect', href: '/connect/' },
+      { label: 'Nodes', href: '/nodes/' },
       { label: 'Tools', href: '/tools/' },
       { label: 'Skills', href: '/skills/' },
       { label: 'Steering', href: '/steering/' },
@@ -126,6 +128,11 @@ describe('documentation navigation', () => {
     expect(getBreadcrumbs('/start/')).toEqual([
       { label: 'Start', href: '/start/', current: true },
     ]);
+    expect(getBreadcrumbs('/nodes/routing/')).toEqual([
+      { label: 'Nodes', href: '/nodes/' },
+      { label: 'Routing work', href: '/nodes/routing/', current: true },
+    ]);
+    expect(getBreadcrumbs('/connect/nodes/how-nodes-work/')).toEqual([]);
     expect(getBreadcrumbs('/build/tools/how-tools-work/')).toEqual([
       { label: 'Tools', href: '/tools/' },
       { label: 'How tools work', href: '/build/tools/how-tools-work/', current: true },
@@ -140,7 +147,7 @@ describe('documentation navigation', () => {
       { label: 'Publish', href: '/sites/publish/', current: true },
     ]);
 
-    expect(footerSections).toHaveLength(9);
+    expect(footerSections).toHaveLength(10);
     expect(footerSections.find((section) => section.label === 'Start')?.links).toContainEqual({
       label: 'Install Consuelo OS',
       href: '/start/install-consuelo-os/',
@@ -167,10 +174,10 @@ describe('documentation navigation', () => {
 describe('foundation source contract', () => {
   const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
-  test('declares the nine approved top-level areas and Starlight overrides', () => {
+  test('declares the ten approved top-level areas and Starlight overrides', () => {
     const config = read('astro.config.mjs');
     const navigation = read('src/lib/docs-navigation.ts');
-    for (const label of ['Start', 'Connect', 'Tools', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference']) {
+    for (const label of ['Start', 'Connect', 'Nodes', 'Tools', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference']) {
       expect(navigation).toContain(`label: '${label}'`);
     }
     expect(navigation).not.toContain("label: 'Build with OS'");
@@ -181,7 +188,7 @@ describe('foundation source contract', () => {
   });
 
   test('scaffolds every top-level route', () => {
-    for (const route of ['start', 'connect', 'tools', 'skills', 'steering', 'memory', 'observe', 'secure', 'reference']) {
+    for (const route of ['start', 'connect', 'nodes', 'tools', 'skills', 'steering', 'memory', 'observe', 'secure', 'reference']) {
       expect(existsSync(new URL(`../src/content/docs/${route}/index.mdx`, import.meta.url))).toBe(true);
     }
   });

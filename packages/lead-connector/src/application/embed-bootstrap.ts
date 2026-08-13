@@ -40,6 +40,8 @@ export const exchangeLeadConnectorEmbedContext = (input: {
       userId: context.userId,
       installationId: installation.installationId,
       locationId: installation.locationId,
+      role: context.role,
+      contextType: context.type,
     } satisfies LeadConnectorEmbedIdentity;
   });
 

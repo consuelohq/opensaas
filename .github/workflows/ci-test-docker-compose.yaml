@@ -39,6 +39,7 @@ jobs:
           yq eval '.services.worker.build.context = "../../"' -i docker-compose.yml
           yq eval '.services.worker.build.dockerfile = "./packages/twenty-docker/twenty/Dockerfile.worker"' -i docker-compose.yml
           yq eval '.services.worker.restart = "no"' -i docker-compose.yml
+          yq eval '.services.db.image = "pgvector/pgvector:pg16"' -i docker-compose.yml
 
           echo "Setting up .env file..."
           cp .env.example .env

@@ -195,6 +195,36 @@ describe('Build with OS documentation contract', () => {
     expect(workflows).not.toContain('runbook');
   });
 
+  test('promotes the current subagent tool and retires the legacy OS page', () => {
+    const navigation = read('src/lib/docs-navigation.ts');
+    expect(navigation).toContain("label: 'Subagents', slug: 'tools/subagents'");
+
+    const sourcePath = 'tools/subagents.mdx';
+    expect(existsSync(packageFile(`src/content/docs/${sourcePath}`))).toBe(true);
+    const source = read(`src/content/docs/${sourcePath}`);
+    for (const term of [
+      'run',
+      'start',
+      'status',
+      'wait',
+      'logs',
+      'cancel',
+      'instructionPath',
+      'taskSession',
+      'requestId',
+      'CAPABILITY_NOT_SUPPORTED',
+    ]) {
+      expect(source).toContain(term);
+    }
+    expect(source).toContain('verifiedAt: 2026-08-12');
+    expect(source).toContain('packages/os/tools/subagent/schema.ts');
+    expect(source).toContain('packages/os/tests/subagent-orchestration-contract.test.ts');
+
+    expect(existsSync(packageFile('src/content/docs/os/tools/subagents.mdx'))).toBe(false);
+    const redirects = read('src/lib/legacy-redirects.mjs');
+    expect(redirects).toContain("'/os/tools/subagents': '/tools/subagents/'");
+  });
+
   test('documents current support boundaries instead of planned product behavior', () => {
     const approvals = read('src/content/docs/build/approvals.mdx');
     expect(approvals).toContain('APPROVAL_REQUIRED');

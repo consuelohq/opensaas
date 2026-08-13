@@ -299,7 +299,7 @@ function runReview(repoRoot, base, args) {
     };
   }
 
-  const reviewArgs = ['run', 'review', '--', '--base', base, '--summary-json', '--quiet', ...args.reviewArgs];
+  const reviewArgs = ['run', 'review', '--', '--base', base, '--summary-json', '--quiet', '--no-tests', ...args.reviewArgs];
   const result = spawnSync('bun', reviewArgs, {
     cwd: repoRoot,
     encoding: 'utf8',

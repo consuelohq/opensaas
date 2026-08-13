@@ -239,7 +239,7 @@ function readFileLines(filePath) {
 }
 
 function isTestFile(f) {
-  return /__tests__|\.spec\.|\.test\./.test(f);
+  return /__tests__|\.spec\.|\.test\.|\.stories\./.test(f);
 }
 
 function isLoggerFile(f) {

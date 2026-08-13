@@ -318,7 +318,6 @@
       "packages/dialer-server",
       "packages/lead-connector",
       "packages/logger",
-      "packages/metering",
       "packages/sdk",
       "packages/twenty-apps",
       "packages/twenty-cli",
