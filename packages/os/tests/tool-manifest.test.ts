@@ -246,9 +246,9 @@ describe('tool manifest generator', () => {
     const registry = buildToolManifest({ write: false });
     const generatedDefinitions = registry.full.tools.map((entry) => entry.definition);
     expect(generatedDefinitions).toEqual(baselineDefinitions);
-    expect(registry.full.tools).toHaveLength(154);
+    expect(registry.full.tools).toHaveLength(baselineDefinitions.length);
     expect(registry.report.oldRegularToolCount).toBe(0);
-    expect(registry.report.oldDevToolCount).toBe(154);
+    expect(registry.report.oldDevToolCount).toBe(baselineDefinitions.length);
     expect(registry.report.duplicateNames).toEqual([]);
     expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'media.svg.convert']));
     expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
@@ -545,7 +545,7 @@ describe('tool manifest generator', () => {
 
   it('keeps the generated catalog limited to canonical facade packages', () => {
     const registry = buildToolManifest({ write: false });
-    expect(registry.full.tools).toHaveLength(154);
+    expect(registry.full.tools).toHaveLength(baselineDefinitions.length);
     expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
     expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });

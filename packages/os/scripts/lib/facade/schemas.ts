@@ -1139,6 +1139,12 @@ export const WebsiteDeployInput = z.object({
   buildOnly: z.boolean().optional(),
 });
 
+export const LifecycleUpdateInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  channel: z.enum(['stable', 'beta', 'canary', 'dev', 'nightly']).optional(),
+});
+
 export const ServerInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -1340,6 +1346,7 @@ export const schemaRegistry = {
   RailwayLogsInput,
   RailwayRedeployInput,
   WebsiteDeployInput,
+  LifecycleUpdateInput,
   ServerInput,
   CheckFilesInput,
   EditFlowInput,
@@ -1459,6 +1466,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  LifecycleUpdateInput: '{ channel?: "stable" | "beta" | "canary" | "dev" | "nightly"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ServerInput: '{ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CheckFilesInput: '{ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }',
   EditFlowInput: '{ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }',

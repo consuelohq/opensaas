@@ -4134,6 +4134,105 @@
       "sessionRequired": false
     },
     {
+      "name": "lifecycle.status",
+      "methodPath": [
+        "lifecycle",
+        "status"
+      ],
+      "description": "check Consuelo OS lifecycle and runtime status, including the latest durable update operation",
+      "category": "lifecycle",
+      "underlying": "workspace lifecycle.status",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "consuelo",
+          "os",
+          "runtime",
+          "release",
+          "lifecycle",
+          "status",
+          "update status",
+          "upgrade status"
+        ],
+        "entities": [
+          "consuelo os",
+          "runtime release",
+          "lifecycle operation"
+        ]
+      },
+      "command": {
+        "script": "lifecycle",
+        "subcommand": "status",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "exampleInput": {},
+      "sessionRequired": false
+    },
+    {
+      "name": "lifecycle.update",
+      "methodPath": [
+        "lifecycle",
+        "update"
+      ],
+      "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater",
+      "category": "lifecycle",
+      "underlying": "workspace lifecycle.update",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 120000,
+      "inputSchema": "LifecycleUpdateInput",
+      "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "consuelo",
+          "os",
+          "runtime",
+          "release",
+          "lifecycle",
+          "update",
+          "upgrade",
+          "updater",
+          "install latest"
+        ],
+        "entities": [
+          "consuelo os",
+          "runtime release",
+          "lifecycle updater"
+        ]
+      },
+      "command": {
+        "script": "lifecycle",
+        "subcommand": "update",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "channel",
+            "flag": "--channel",
+            "kind": "value"
+          }
+        ]
+      },
+      "exampleInput": {
+        "channel": "stable"
+      },
+      "sessionRequired": false
+    },
+    {
       "name": "linear.createIssue",
       "methodPath": [
         "linear",
