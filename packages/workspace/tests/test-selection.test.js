@@ -375,6 +375,32 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses the focused OS install-state inventory contract instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/install-state.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const installStateSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS install-state tool inventory contract',
+    );
+
+    expect(matchedRuleIds).toContain('os-install-state-tool-inventory');
+    expect(suiteNames).toContain('OS install-state tool inventory contract');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(installStateSuite?.command).toEqual([
+      'bun',
+      '--cwd',
+      'packages/os',
+      'test',
+      'tests/install-state.test.ts',
+    ]);
+  });
+
   it('uses focused Vitest runtime regression contracts for verifier-only OS test fixes', () => {
     const result = run([
       'check',

@@ -319,6 +319,27 @@
       "reason": "OS dependency lock changes must prove the exact frozen Bun install contract used by distribution and release workflows without selecting unrelated package-wide tests."
     },
     {
+      "id": "os-install-state-tool-inventory",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tests/install-state.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS install-state tool inventory contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/install-state.test.ts"
+          ]
+        }
+      ],
+      "reason": "Install-state tool inventory regressions must run the focused manifest/install contract without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "os-lifecycle-legacy-mcp-scrub",
       "critical": true,
       "source": [

@@ -5,8 +5,8 @@
     "testFileCount": 2613,
     "mappedTestCount": 2532,
     "unmappedTestCount": 81,
-    "ruleCount": 46,
-    "explicitRuleCount": 27,
+    "ruleCount": 47,
+    "explicitRuleCount": 28,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -966,6 +966,28 @@
       "critical": true,
       "exclusive": true,
       "reason": "OS dependency lock changes must prove the exact frozen Bun install contract used by distribution and release workflows without selecting unrelated package-wide tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-install-state-tool-inventory",
+      "source": [
+        "packages/os/tests/install-state.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS install-state tool inventory contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/install-state.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Install-state tool inventory regressions must run the focused manifest/install contract without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
