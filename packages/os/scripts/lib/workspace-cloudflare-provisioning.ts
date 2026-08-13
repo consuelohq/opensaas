@@ -1615,14 +1615,6 @@ export const ensureManagedOsMcpIngressPolicy = async (input: {
     const allowedIpsListName = normalizeCloudflareListName(
       input.config.mcpAllowedIpsListName,
     );
-    const accountList = await input.cloudflare.getAccountIpList({
-      name: allowedIpsListName,
-    });
-
-    if (!accountList) {
-      throw new Error(`Cloudflare account IP list ${allowedIpsListName} was not found`);
-    }
-
     const desiredRules = buildManagedOsMcpIngressPolicyRules({
       ...input.config,
       mcpAllowedIpsListName: allowedIpsListName,

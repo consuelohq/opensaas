@@ -5,6 +5,9 @@ import type {
   LifecycleHealthAcceptance,
   LifecycleServiceController,
 } from './types';
+import { reconcileCaddyWorkerPoolConfig } from '../caddy-worker-pool-reconciliation';
+
+const CADDY_SERVICE_LABEL = 'com.consuelo.caddy';
 
 export type LifecycleProcessResult = {
   exitCode: number;
@@ -49,25 +52,54 @@ function commandFailure(result: LifecycleProcessResult, fallback: string): Error
 
 export function createReloadServiceController(input: {
   osRoot: string;
+  nodeHome?: string;
   run?: LifecycleProcessRunner;
   platform?: NodeJS.Platform;
+  environment?: NodeJS.ProcessEnv;
+  userId?: number;
 }): LifecycleServiceController {
   const reloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
   const uninstallScript = resolve(input.osRoot, 'scripts', 'uninstall-system-daemons.sh');
   const run = input.run ?? defaultRunner;
   const platform = input.platform ?? process.platform;
+  let caddyTopologyChanged = false;
+  const reconcileCaddy = (): void => {
+    if (platform !== 'darwin' || !input.nodeHome) return;
+    caddyTopologyChanged =
+      reconcileCaddyWorkerPoolConfig({
+        nodeHome: input.nodeHome,
+        env: input.environment ?? process.env,
+      }).changed || caddyTopologyChanged;
+  };
   return {
     async preflight() {
       if (!existsSync(reloadScript)) {
         throw new Error(`canonical reload adapter is missing: ${reloadScript}`);
       }
+      reconcileCaddy();
     },
     async restart(options = {}) {
       try {
+        reconcileCaddy();
         const command = options.waitForCompletion ? 'restart-now' : 'restart';
         const result = await run(process.execPath, [reloadScript, command]);
         if (result.exitCode !== 0) {
           throw commandFailure(result, `reload adapter exited ${result.exitCode}`);
+        }
+        if (caddyTopologyChanged) {
+          const userId = input.userId ?? process.getuid?.();
+          if (userId === undefined) {
+            throw new Error('cannot resolve the user id for Caddy restart');
+          }
+          const caddy = await run('launchctl', [
+            'kickstart',
+            '-k',
+            'gui/' + String(userId) + '/' + CADDY_SERVICE_LABEL,
+          ]);
+          if (caddy.exitCode !== 0) {
+            throw commandFailure(caddy, `Caddy restart exited ${caddy.exitCode}`);
+          }
+          caddyTopologyChanged = false;
         }
       } catch (error: unknown) {
         throw new Error(
