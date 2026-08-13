@@ -124,6 +124,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",
+    "@sentry/node": "^10.38.0",
     "@supabase/supabase-js": "latest",
     "@tanstack/virtual-core": "^3.17.3",
     "chalk": "^5.6.2",
