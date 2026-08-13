@@ -30,10 +30,10 @@ started: 2026-08-13
 
 ## files changed
 
-- Lifecycle CLI/engine handoff and durable-operation state in `packages/os/scripts/lifecycle.ts` and `packages/os/scripts/lib/native-lifecycle-operation.ts`.
-- Windows breakaway/service integration and platform helpers in `packages/os/native/windows-service/Program.cs` and `packages/os/scripts/lib/windows-platform.ts`.
-- New manifest-backed lifecycle tool package under `packages/os/tools/lifecycle/`, registry/schema/generated manifest/types/docs updates, and focused lifecycle tests.
-- Test-selection rule/registry/test updates reconciled with the current `stream/os` managed-cloud and Vitest-runtime selectors.
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
+
 
 ## workspace-owned: files changed
 

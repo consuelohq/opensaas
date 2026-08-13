@@ -84,27 +84,29 @@ describe('operator login', () => {
 
     it('rejects a callback whose state does not match', async () => {
       const capture = await startLoopbackCapture({ state: 'expected' });
-      const pending = capture.waitForCode();
+      const pending = expect(capture.waitForCode()).rejects.toMatchObject({
+        code: 'StateMismatch',
+      });
       await fetch(`${capture.redirectUri}?code=abc123&state=forged`);
-      await expect(pending).rejects.toMatchObject({ code: 'StateMismatch' });
+      await pending;
     });
 
     it('rejects a denied authorization', async () => {
       const capture = await startLoopbackCapture({ state: 's' });
-      const pending = capture.waitForCode();
-      await fetch(`${capture.redirectUri}?error=access_denied&state=s`);
-      await expect(pending).rejects.toMatchObject({
+      const pending = expect(capture.waitForCode()).rejects.toMatchObject({
         code: 'AuthorizationDenied',
       });
+      await fetch(`${capture.redirectUri}?error=access_denied&state=s`);
+      await pending;
     });
 
     it('rejects a callback carrying no code', async () => {
       const capture = await startLoopbackCapture({ state: 's' });
-      const pending = capture.waitForCode();
-      await fetch(`${capture.redirectUri}?state=s`);
-      await expect(pending).rejects.toMatchObject({
+      const pending = expect(capture.waitForCode()).rejects.toMatchObject({
         code: 'AuthorizationDenied',
       });
+      await fetch(`${capture.redirectUri}?state=s`);
+      await pending;
     });
 
     it('times out rather than waiting forever', async () => {

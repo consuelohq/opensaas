@@ -555,7 +555,8 @@ export function createDefaultLifecycleServiceController(input: {
   bunExecutable?: string;
 }): LifecycleServiceController {
   const platform = input.platform ?? process.platform;
-  const lifecycleHome = resolveLifecyclePaths(input.home).home;
+  const lifecyclePaths = resolveLifecyclePaths(input.home);
+  const lifecycleHome = lifecyclePaths.home;
   const bunExecutable =
     input.bunExecutable ?? process.env.BUN_BIN ?? process.execPath;
   if (platform === 'linux') {
@@ -576,7 +577,11 @@ export function createDefaultLifecycleServiceController(input: {
       currentUserSid: process.env.CONSUELO_WINDOWS_USER_SID,
     });
   }
-  return createReloadServiceController({ osRoot: input.osRoot, platform });
+  return createReloadServiceController({
+    osRoot: input.osRoot,
+    nodeHome: lifecyclePaths.nodeDir,
+    platform,
+  });
 }
 
 const DEFAULT_ADVISORY_PROCESS_TIMEOUT_MS = 30_000;
