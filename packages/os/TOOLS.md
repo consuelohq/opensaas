@@ -37,6 +37,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | git | 1 |
 | github | 2 |
 | http | 1 |
+| lifecycle | 2 |
 | linear | 8 |
 | mac | 8 |
 | media | 25 |
@@ -3145,6 +3146,124 @@ await workspace.call({
   "input": {
     "method": "get",
     "url": "https://example.com"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## lifecycle
+
+### workspace.lifecycle.status
+
+check Consuelo OS lifecycle and runtime status, including the latest durable update operation
+
+| Field | Value |
+| --- | --- |
+| Category | lifecycle |
+| Signature | `workspace.lifecycle.status({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace lifecycle.status` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "lifecycle.status",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.lifecycle.update
+
+update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater
+
+| Field | Value |
+| --- | --- |
+| Category | lifecycle |
+| Signature | `workspace.lifecycle.update({ channel?: "stable" &#124; "beta" &#124; "canary" &#124; "dev" &#124; "nightly"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace lifecycle.update` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "lifecycle.update",
+  "input": {
+    "channel": "stable"
   }
 });
 ```
@@ -7037,7 +7156,7 @@ merge task to stream and create or refresh the stream review PR
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.pr({ branch?: string; pr?: string &#124; number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.task.pr({ branch?: string; repo?: string; pr?: string &#124; number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; ackWorkpadIncomplete?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace task.pr` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -7157,7 +7276,7 @@ push changed task files to the task branch through GitHub API
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.push({ branch?: string; pr?: string &#124; number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.task.push({ branch?: string; repo?: string; pr?: string &#124; number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace task.push` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -7335,13 +7454,13 @@ await workspace.call({
 
 ### workspace.tools.search
 
-search workspace tools by intent and return ranked usage guidance
+search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback
 
 | Field | Value |
 | --- | --- |
 | Category | tooling |
-| Signature | `workspace.tools.search({ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: "high" &#124; "medium" &#124; "low"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record<string, number>; description?: string; capabilities: Record<string, unknown>; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; docs?: { heading: string; snippet: string; source: string }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string &#124; Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }>>` |
-| Runtime | `workspace tools.search` |
+| Signature | `workspace.tools.search({ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; detail?: "compact" &#124; "full"; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; confidence: "high" &#124; "medium" &#124; "low"; ambiguous: boolean; retrievalMode: "exact" &#124; "deterministic" &#124; "semantic-fallback" &#124; "abstain"; recommended?: string; matches: Array<{ name: string; category?: string; description?: string; capabilities: { readOnly: boolean; mutating: boolean }; inputSignature?: string; sessionRequired?: boolean }>; diagnostics?: Record<string, unknown> }>>` |
+| Runtime | `Consuelo OS tools.search` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 30000ms |
 

@@ -600,6 +600,28 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes lifecycle updater changes through the focused universal handoff contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lifecycle.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-lifecycle-update-handoff',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual(
+      expect.arrayContaining([
+        'OS lifecycle update handoff contracts',
+        'OS lifecycle syntax contracts',
+      ]),
+    );
+  });
+
   it('runs focused Consuelo OS contracts with Bun, OS cwd, and root Vitest', () => {
     const registry = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'packages/workspace/test-selection.registry.json'), 'utf8'));
     const rules = new Map(registry.rules.map((rule) => [rule.id, rule]));

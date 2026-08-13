@@ -1,0 +1,600 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/universal-lifecycle-update-handoff",
+  "events": [
+    {
+      "id": "3069cce5-3fee-4523-b29f-802907b86bfd",
+      "occurred_at": "2026-08-13T18:40:43.437Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/fixtures/tool-package-baseline.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "3f30e1e1-4d6a-46a0-b20d-14b21e82f6ee",
+      "occurred_at": "2026-08-13T18:40:49.371Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/fixtures/tool-package-baseline.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "5008057e-5f8e-4320-a5a4-f0516225099f",
+      "occurred_at": "2026-08-13T18:41:39.327Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "f9991524-33a2-42a6-b5ef-6f3dc331053c",
+      "occurred_at": "2026-08-13T18:41:55.058Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/native-lifecycle-operation.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "2998fe3e-f81a-426e-bc29-4b482b427696",
+      "occurred_at": "2026-08-13T18:42:00.201Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/native-lifecycle-operation.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "73b3341f-eb18-45b9-a51e-cade00c802f8",
+      "occurred_at": "2026-08-13T18:43:38.184Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/native-lifecycle-operation.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "ce92b6d0-d0f5-4891-b389-5fe00fc6cb3b",
+      "occurred_at": "2026-08-13T18:43:38.246Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/lifecycle/handler.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "1d1a5403-08d5-4a57-b52b-cafca157d79a",
+      "occurred_at": "2026-08-13T18:43:45.788Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/native/windows-service/Program.cs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "e7d81b25-5b0a-481c-9834-fd1cec6c94d9",
+      "occurred_at": "2026-08-13T18:44:01.218Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/project.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "78e5d9d8-818b-48e6-9f5b-05483e864240",
+      "occurred_at": "2026-08-13T18:45:59.039Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/universal-lifecycle-update-handoff/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "6fbe7a8d-3310-4f1f-839a-731863c135fe",
+      "occurred_at": "2026-08-13T18:48:04.512Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "3f669d8e-e57a-4b79-a97b-462166efa858",
+      "occurred_at": "2026-08-13T18:48:12.675Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "88dea1b0-3526-45aa-b8d3-b67cf3a9bf37",
+      "occurred_at": "2026-08-13T18:49:22.441Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "fc073fc9-4d6f-434a-adef-991586eeadf4",
+      "occurred_at": "2026-08-13T18:49:27.594Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "2c4cb6ba-8a1a-4ac2-978c-700d3cc4515b",
+      "occurred_at": "2026-08-13T18:49:53.279Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "6ead5c18-be4b-4b8f-ac95-397fe0f0a716",
+      "occurred_at": "2026-08-13T18:51:17.018Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/operator-login.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "200bdf58-6419-497e-bad8-8c965c8c760b",
+      "occurred_at": "2026-08-13T18:53:52.018Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "2c7fb13c-7a2f-4d4c-a7d8-78a735d30863",
+      "occurred_at": "2026-08-13T18:56:57.644Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/universal-lifecycle-update-handoff/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "a61527dc-dd6c-4976-93f1-7cad3f9aaf2f",
+      "occurred_at": "2026-08-13T18:57:23.085Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-tool-surface.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "5f381bd7-3734-4341-bcfc-4bd69174a9e9",
+      "occurred_at": "2026-08-13T18:58:27.746Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "3ff651f3-140c-4fdd-933c-26aa33903c30",
+      "occurred_at": "2026-08-13T18:58:34.151Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "33cdb7e7-d860-4777-9686-5c8b0b7ac8fe",
+      "occurred_at": "2026-08-13T19:00:45.258Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "464d4dbb-7190-4cdd-be3d-758b80b91f0e",
+      "occurred_at": "2026-08-13T19:00:45.321Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "4931bc4e-150c-4b31-b33b-f4c4fc2ba72f",
+      "occurred_at": "2026-08-13T19:01:37.378Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "6f106073-8b5a-427d-aa7c-1893e690f1dd",
+      "occurred_at": "2026-08-13T19:04:24.688Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/universal-lifecycle-update-handoff/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "0412a00d-cb08-4afd-a87e-6950174bf16b",
+      "occurred_at": "2026-08-13T19:34:33.040Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/skills/senior-engineer/SKILL.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "2d3a7626-f29a-4cef-8d13-8b422cecbf93",
+      "occurred_at": "2026-08-13T19:40:00.194Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "a3519fc9-ccd2-4504-ac4e-7f8f3d627d35",
+      "occurred_at": "2026-08-13T19:50:08.562Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/universal-lifecycle-update-handoff/session.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "c3a0b036-447d-42bc-a035-4f27243aabc0",
+      "occurred_at": "2026-08-13T19:53:43.075Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/universal-lifecycle-update-handoff/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "36375e65-6345-455b-8ee8-5ab7efd68f8d",
+      "occurred_at": "2026-08-13T19:53:57.394Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/universal-lifecycle-update-handoff/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "72572462-8b43-486a-be13-0d704ad1f61c",
+      "occurred_at": "2026-08-13T19:55:09.747Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/universal-lifecycle-update-handoff/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "739dfc78-b574-4c83-ac81-1d902d40b2b2",
+      "occurred_at": "2026-08-13T19:57:29.049Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "1e212078-f82f-4091-9565-1ef5fa62d8fc",
+      "occurred_at": "2026-08-13T19:57:33.881Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "6efc63fa-e02d-4e88-812c-ef37ee7a93e3",
+      "occurred_at": "2026-08-13T19:57:39.058Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "a7fc0dc0-3cc4-4be0-9da7-856eae3bde14",
+      "occurred_at": "2026-08-13T19:57:45.062Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "ab7d0d58-70c8-4e88-bccc-80cc29d62a10",
+      "occurred_at": "2026-08-13T19:58:02.808Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/git.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    },
+    {
+      "id": "82f15065-7714-413d-a836-5b6bd4c84abb",
+      "occurred_at": "2026-08-13T20:03:06.634Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/universal-lifecycle-update-handoff/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/universal-lifecycle-update-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/universal-lifecycle-update-handoff"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-13T20:03:06.774Z"
+}
