@@ -63,7 +63,16 @@ started: 2026-08-13
 
 ## files changed
 
-- `.task/os/install-control-plane/workpad.md`
+- `packages/os/cloudflare/os-device-authority/src/app.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/device.ts`
+- `packages/os/cloudflare/os-device-authority/src/security/device-auth.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/grants.ts`
+- `packages/os/cloudflare/os-device-authority/src/stores.ts`
+- `packages/os/cloudflare/os-device-authority/src/types.ts`
+- `packages/os/cloudflare/os-device-authority/src/worker.ts`
+- `packages/os/cloudflare/os-device-authority/wrangler.toml`
+- `packages/os/cloudflare/workspace-edge/src/index.ts`
+- `packages/twenty-server/src/engine/core-modules/auth/services/auth.service.ts`
 - `packages/os/cloudflare/os-device-authority/install-diagnostics-r2-lifecycle.json`
 - `packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts`
 - `packages/os/cloudflare/workspace-edge/migrations/0004_install_control_plane.sql`
@@ -77,6 +86,7 @@ started: 2026-08-13
 - `packages/os/tests/install-control-plane-http.test.ts`
 - `packages/os/tests/install-control-plane-r2.test.ts`
 - `packages/os/tests/install-control-plane.test.ts`
+
 
 ## workspace-owned: files changed
 
