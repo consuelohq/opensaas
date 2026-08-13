@@ -162,6 +162,57 @@ describe('launcher Nodes workspace-session control plane', () => {
     expect(serialized).not.toMatch(/machineType|providerMachine|providerCost|landedCost|grossMargin|contingency|e2-standard|e2-medium/i);
   });
 
+  it('creates an idempotent managed-cloud provisioning job without exposing provider internals', async () => {
+    const { edge, cookie } = await fixture({ pricing: true });
+    const request = () => new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
+      method: 'POST',
+      headers: {
+        cookie,
+        'content-type': 'application/json',
+        origin: `https://${workspaceHost}`,
+        'x-consuelo-csrf-token': csrfToken,
+      },
+      body: JSON.stringify({
+        planId: 'standard',
+        region: 'us-east1',
+        pricingVersion: pricingPolicy.pricingVersion,
+        idempotencyKey: 'create-cloud-standard-1',
+      }),
+    });
+    const first = await edge(request());
+    expect(first.status).toBe(202);
+    const firstPayload = await first.json() as { job: { jobId: string; status: string; planId: string; region: string; monthlyPriceCents: number } };
+    expect(firstPayload.job).toMatchObject({ status: 'requested', planId: 'standard', region: 'us-east1' });
+    expect(firstPayload.job.monthlyPriceCents).toBeGreaterThan(0);
+    expect(JSON.stringify(firstPayload)).not.toMatch(/machineType|providerMachine|providerCost|landedCost|grossMargin|enrollment|token|secret/i);
+
+    const duplicate = await edge(request());
+    expect(duplicate.status).toBe(200);
+    const duplicatePayload = await duplicate.json() as typeof firstPayload;
+    expect(duplicatePayload.job.jobId).toBe(firstPayload.job.jobId);
+
+    const status = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provisioning?job_id=${encodeURIComponent(firstPayload.job.jobId)}`, { headers: { cookie } }));
+    expect(status.status).toBe(200);
+    await expect(status.json()).resolves.toMatchObject({ job: { jobId: firstPayload.job.jobId, status: 'requested' } });
+  });
+
+  it('requires same-origin CSRF and a current pricing revision to provision', async () => {
+    const { edge, cookie } = await fixture({ pricing: true });
+    const missingCsrf = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
+      method: 'POST',
+      headers: { cookie, 'content-type': 'application/json', origin: `https://${workspaceHost}` },
+      body: JSON.stringify({ planId: 'standard', region: 'us-east1', pricingVersion: pricingPolicy.pricingVersion, idempotencyKey: 'csrf-missing' }),
+    }));
+    expect(missingCsrf.status).toBe(403);
+
+    const stale = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
+      method: 'POST',
+      headers: { cookie, 'content-type': 'application/json', origin: `https://${workspaceHost}`, 'x-consuelo-csrf-token': csrfToken },
+      body: JSON.stringify({ planId: 'standard', region: 'us-east1', pricingVersion: 'stale-pricing', idempotencyKey: 'stale-pricing' }),
+    }));
+    expect(stale.status).toBe(409);
+  });
+
   it('returns the public plan catalog without inventing prices when no rate card is published', async () => {
     const { edge, cookie } = await fixture();
     const response = await edge(new Request(`https://${workspaceHost}/gateway/nodes/pricing?region=us-east1`, { headers: { cookie } }));

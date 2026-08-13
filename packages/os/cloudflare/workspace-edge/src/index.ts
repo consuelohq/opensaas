@@ -6,6 +6,22 @@ import {
   createWorkspaceCloudflareEdgeRouter,
   type WorkspaceSitesEdgeR2Bucket,
 } from '../../../scripts/lib/workspace-cloudflare-edge-router';
+import {
+  createInstallControlPlaneService,
+  type InstallControlPlaneDeviceSource,
+  type InstallControlPlaneService,
+} from '../../../scripts/lib/install-control-plane';
+import {
+  createCloudflareD1InstallControlPlaneRepository,
+  type InstallControlPlaneD1Database,
+} from '../../../scripts/lib/install-control-plane-d1';
+import {
+  INSTALL_INTERNAL_DASHBOARD_HOST,
+  createCloudflareAccessDashboardAuthorizer,
+  createInstallDashboardApiHandler,
+  type InstallDashboardAuthorizer,
+} from '../../../scripts/lib/install-control-plane-http';
+import { INSTALL_DASHBOARD_API_PREFIX } from '../../../scripts/lib/install-telemetry-contract';
 
 type WorkspaceEdgeLogContext = {
   component: 'workspace-edge';
@@ -35,12 +51,17 @@ export type WorkspaceEdgeEnvironment = {
   OS_DEVICE_AUTHORITY?: AuthorityNamespace;
   SITES_SNAPSHOTS?: WorkspaceSitesEdgeR2Bucket;
   WORKSPACE_EDGE_LOGGER?: WorkspaceEdgeLogger;
+  OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN?: string;
+  OS_INTERNAL_DASHBOARD_ACCESS_AUD?: string;
+  OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS?: string;
 };
 
 export type WorkspaceEdgeHandlerOptions = {
   fetchUpstream?: (request: Request) => Promise<Response>;
   now?: () => number;
   createNonce?: () => string;
+  internalDashboardService?: InstallControlPlaneService;
+  authorizeInternalDashboard?: InstallDashboardAuthorizer;
 };
 
 const errorMessage = (error: unknown): string =>
@@ -72,6 +93,47 @@ function authorityStub(
   return namespace?.get(namespace.idFromName('global'));
 }
 
+function internalDashboardAllowedEmails(value?: string): string[] {
+  return (value ?? '')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function createAuthorityInstallDeviceSource(input: {
+  stub?: AuthorityStub;
+  internalAuthSecret?: string;
+}): InstallControlPlaneDeviceSource {
+  return {
+    async listDevices() {
+      try {
+        const secret = input.internalAuthSecret?.trim();
+        if (!input.stub || !secret) {
+          throw new Error('install device directory is unavailable');
+        }
+        const response = await input.stub.fetch(
+          new Request('https://os.consuelohq.com/internal/install-control-plane/devices', {
+            method: 'GET',
+            headers: {
+              accept: 'application/json',
+              'x-consuelo-internal-auth-secret': secret,
+            },
+          }),
+        );
+        if (!response.ok) throw new Error('install device directory request failed');
+        const body = (await response.json()) as { devices?: unknown };
+        if (!Array.isArray(body.devices)) {
+          throw new Error('install device directory response is invalid');
+        }
+        return body.devices as Awaited<ReturnType<InstallControlPlaneDeviceSource['listDevices']>>;
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`install device directory read failed: ${message}`);
+      }
+    },
+  };
+}
+
 function closedAuthResponse(): Response {
   return new Response(JSON.stringify({ error: 'workspace_auth_unavailable' }), {
     status: 503,
@@ -87,6 +149,8 @@ const NODE_CONTROL_PATHS = new Map<string, { authorityPath: string; method: 'GET
   ['/gateway/nodes/snapshot', { authorityPath: '/internal/workspace/nodes', method: 'GET' }],
   ['/gateway/nodes/default', { authorityPath: '/internal/workspace/nodes/default', method: 'POST' }],
   ['/gateway/nodes/pricing', { authorityPath: '/internal/workspace/nodes/pricing', method: 'GET' }],
+  ['/gateway/nodes/provision', { authorityPath: '/internal/workspace/nodes/provision', method: 'POST' }],
+  ['/gateway/nodes/provisioning', { authorityPath: '/internal/workspace/nodes/provisioning', method: 'GET' }],
 ]);
 
 async function proxyNodeControlRequest(input: {
@@ -141,6 +205,37 @@ export function createWorkspaceEdgeHandler(
     env.WORKSPACE_ROUTE_REGISTRY,
   );
   const stub = authorityStub(env);
+  const now = options.now ?? (() => Date.now());
+  const internalDashboardService =
+    options.internalDashboardService ??
+    (typeof env.WORKSPACE_ROUTE_REGISTRY.prepare === 'function'
+      ? createInstallControlPlaneService({
+          repository: createCloudflareD1InstallControlPlaneRepository(
+            env.WORKSPACE_ROUTE_REGISTRY as unknown as InstallControlPlaneD1Database,
+          ),
+          devices: createAuthorityInstallDeviceSource({
+            stub,
+            internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+          }),
+        })
+      : undefined);
+  const authorizeInternalDashboard =
+    options.authorizeInternalDashboard ??
+    createCloudflareAccessDashboardAuthorizer({
+      teamDomain: env.OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN ?? '',
+      audience: env.OS_INTERNAL_DASHBOARD_ACCESS_AUD ?? '',
+      allowedEmails: internalDashboardAllowedEmails(
+        env.OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS,
+      ),
+      now,
+    });
+  const internalDashboardHandler = internalDashboardService
+    ? createInstallDashboardApiHandler({
+        service: internalDashboardService,
+        authorize: authorizeInternalDashboard,
+        now,
+      })
+    : undefined;
   const router = createWorkspaceCloudflareEdgeRouter({
     registry,
     internalSigningSecret: env.CONSUELO_EDGE_SIGNING_SECRET,
@@ -183,6 +278,14 @@ export function createWorkspaceEdgeHandler(
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url);
+      if (
+        url.hostname.toLowerCase() === INSTALL_INTERNAL_DASHBOARD_HOST &&
+        (url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
+          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`))
+      ) {
+        if (!internalDashboardHandler) return closedAuthResponse();
+        return await internalDashboardHandler(request);
+      }
       if (
         (url.pathname === '/auth/consume' && request.method === 'GET') ||
         (url.pathname === '/auth/logout' && request.method === 'POST')
