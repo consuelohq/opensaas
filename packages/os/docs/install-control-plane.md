@@ -1,6 +1,6 @@
 # Consuelo OS Install Control Plane
 
-Status: implementation contract for Branch 3  
+Status: implementation contract through Branch 6
 Last reviewed: 2026-08-13
 
 This document describes the hosted persistence, diagnostics, device projection, and private read API that implement `docs/install-telemetry-contract.md`.
@@ -65,7 +65,9 @@ The reviewed lifecycle configuration is `cloudflare/os-device-authority/install-
 
 ## Private dashboard API
 
-The read-only dashboard API is intercepted by Workspace Edge before normal workspace-site routing:
+The entire `internal.consuelohq.com` host is intercepted by Workspace Edge before normal workspace-site routing. Branch 6 serves the read-only dashboard HTML and its static assets from the same worker and loads the page from the same `InstallControlPlaneService` that backs the JSON API. The browser surface does not query Sentry, Cloudflare observability, PostHog, or R2 for canonical counts.
+
+The read-only dashboard API is available at:
 
 ```text
 https://internal.consuelohq.com/api/internal/os/v1/overview
@@ -74,11 +76,18 @@ https://internal.consuelohq.com/api/internal/os/v1/installs
 https://internal.consuelohq.com/api/internal/os/v1/devices
 https://internal.consuelohq.com/api/internal/os/v1/errors
 https://internal.consuelohq.com/api/internal/os/v1/installs/:installId
+https://internal.consuelohq.com/api/internal/os/v1/installs/:installId/diagnostic
 ```
 
 There are no user/device/install mutation endpoints in v1.
 
-All responses are `Cache-Control: no-store`. The worker checks the exact internal hostname and fails closed unless the request passes an explicit operator authorizer.
+All HTML, assets, JSON, and diagnostic responses are `Cache-Control: no-store`. The worker checks the exact internal hostname and fails closed unless the request passes the explicit operator authorizer. `/users/:userId` is deliberately derived from the users/installs/devices read models; v1 does not introduce a second user-detail API.
+
+### Diagnostic retrieval
+
+Dashboard install detail exposes diagnostic availability, bundle ID, outcome, and expiry only. It never exposes the R2 object key. When an authorized operator follows the diagnostic link, Workspace Edge re-validates operator access and proxies the request to Device Authority over `WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET`. Device Authority resolves the current unexpired private object key from D1 and reads the server-redacted object from R2.
+
+The browser receives only the redacted JSON attachment. A launcher link, guessed `install_id`, D1 row, or R2 key is not sufficient to retrieve a diagnostic.
 
 ### Operator authorization
 
@@ -101,6 +110,21 @@ OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS
 ```
 
 If any authorization configuration is absent, the private API fails closed.
+
+## Canonical user directory hydration
+
+Installer telemetry never carries email or display name. Branch 6 hydrates those fields from the canonical Consuelo application identity after successful authentication/sign-in-up.
+
+The application sends a short-lived HMAC assertion to Device Authority:
+
+```text
+POST https://os.consuelohq.com/internal/install-control-plane/users
+x-consuelo-user-directory-assertion: <base64url-json>.<hmac-sha256>
+```
+
+The assertion reuses the existing application-to-Device-Authority `OS_DEVICE_AUTH_ASSERTION_SECRET` trust boundary and carries only the canonical `UserEntity.id`, optional email/display name, optional `WorkspaceEntity.id`, original user creation/update timestamps, purpose, and expiry. Device Authority rejects expired assertions and any `user_id` beginning with `google:`.
+
+The sync is best effort and asynchronous from the authentication caller's perspective: control-plane unavailability cannot fail or block a successful login. Device approval also hydrates existing canonical user/workspace pairs that do not pass through a fresh sign-in/up operation. User/workspace upserts are idempotent and preserve multi-workspace membership.
 
 ## Device projection
 
@@ -164,6 +188,10 @@ Create/maintain the Access application for `internal.consuelohq.com` with the in
 
 The worker performs Access JWT verification itself as defense in depth; the Access policy and the worker allow-list should agree.
 
+Workspace Edge and Device Authority must also continue to share `WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET`; Branch 6 uses that existing private worker-to-worker trust path for diagnostic downloads in addition to the device projection.
+
+The application and Device Authority must continue to share `OS_DEVICE_AUTH_ASSERTION_SECRET`; Branch 6 reuses it for canonical user-directory hydration rather than introducing a second application-to-authority secret.
+
 ### 5. Validate before enabling the UI
 
 At minimum:
@@ -173,12 +201,10 @@ bun run cloudflare:device-authority:deploy:dry-run
 bun run cloudflare:workspace-edge:deploy:dry-run
 ```
 
-Then verify in Canary that anonymous install events are ingested, trusted identity binds to the same `install_id`, diagnostic references expire correctly, Device Authority state projects safely, and a request without valid operator authorization cannot read `/api/internal/os/v1/*`.
+Then verify in Canary that anonymous install events are ingested, trusted identity binds to the same `install_id`, canonical user profiles hydrate after sign-in, diagnostic references expire correctly, an authorized diagnostic download never reveals the R2 object key, Device Authority state projects safely, and a request without valid operator authorization cannot read dashboard HTML, assets, `/api/internal/os/v1/*`, or diagnostics.
 
 ## Parallel-branch handoff
 
-Branch 2 may emit installer telemetry against the public ingest contract and should bind canonical identity only after trusted device approval. Branch 5 can build against the shared dashboard types/API routes. Branch 4 only needs to link the private site; it must not duplicate the authorization boundary.
-
-The later dashboard-integration branch should hydrate registered-user profile fields from the canonical Consuelo application user source through `InstallControlPlaneRepository.upsertUser()`. Installer events never carry email/display name.
+Branches 2, 3, and 5 are integrated by Branch 6: installer telemetry feeds the D1/R2 control plane and the private dashboard renders that real read model. Branch 4 only links the private site; it does not duplicate the authorization boundary. Installer events still never carry email/display name; Branch 6 hydrates those fields from canonical application auth through `InstallControlPlaneRepository.upsertUser()`.
 
 The later observability-integration branch should populate Sentry and Cloudflare evidence references and PostHog projections while preserving D1 as the canonical count/read model.

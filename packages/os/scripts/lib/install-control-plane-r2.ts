@@ -15,6 +15,7 @@ export type InstallDiagnosticR2Bucket = {
       customMetadata?: Record<string, string>;
     },
   ): Promise<unknown>;
+  get?(key: string): Promise<{ text(): Promise<string> } | null>;
   delete(key: string): Promise<unknown>;
 };
 
@@ -36,6 +37,15 @@ export type InstallDiagnosticBundleStore = {
     outcome: 'failed' | 'successful';
     diagnostic: unknown;
   }): Promise<InstallDiagnosticBundleStoreResult>;
+  get(installId: InstallId): Promise<
+    | {
+        bundleId: string;
+        body: string;
+        createdAt: string;
+        expiresAt: string;
+      }
+    | undefined
+  >;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -149,6 +159,32 @@ export function createInstallDiagnosticBundleStore(input: {
         }
 
         return { stored: true, bundleId, createdAt, expiresAt };
+      } catch (error: unknown) {
+        throw diagnosticStoreError(error);
+      }
+    },
+
+    async get(installId: InstallId) {
+      if (!isInstallId(installId)) {
+        throw new Error('diagnostic bundle requires a valid install id');
+      }
+      try {
+        if (!input.bucket.get) {
+          throw new Error('diagnostic bundle reads are unavailable');
+        }
+        const nowMs = now();
+        const record = await input.repository.getDiagnosticBundleRecord(installId, {
+          nowMs,
+        });
+        if (!record) return undefined;
+        const object = await input.bucket.get(record.objectKey);
+        if (!object) return undefined;
+        return {
+          bundleId: record.bundleId,
+          body: await object.text(),
+          createdAt: record.createdAt,
+          expiresAt: record.expiresAt,
+        };
       } catch (error: unknown) {
         throw diagnosticStoreError(error);
       }

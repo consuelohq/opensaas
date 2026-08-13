@@ -1,14 +1,18 @@
 import {
   INSTALL_DASHBOARD_API_ROUTES,
+  installDashboardDiagnosticRoute,
   installDashboardDetailRoute,
+  isInstallId,
   type InstallDashboardDeviceSummary,
   type InstallDashboardErrorGroup,
   type InstallDashboardInstallDetail,
   type InstallDashboardInstallSummary,
   type InstallDashboardOverview,
+  type InstallDashboardPage,
   type InstallDashboardUserSummary,
   type InstallId,
 } from './install-telemetry-contract';
+import type { InstallControlPlaneService } from './install-control-plane';
 import {
   INTERNAL_DASHBOARD_FIXTURES,
   type InternalDashboardFixtures,
@@ -588,9 +592,9 @@ function installsPage(fixtures: InternalDashboardFixtures): string {
   return `<section aria-labelledby="installs-finding">
     <p class="eyebrow">Installations · ${escapeHtml(overview.window)}</p>
     <h1 class="finding" id="installs-finding">${overview.installs.completed} of ${overview.installs.started} install starts completed; ${overview.installs.failed} failed.</h1>
-    <p class="finding-detail">Every row is keyed by <code>install_id</code>, so Branch 6 can correlate the same attempt with Cloudflare, Sentry, diagnostics, and a canonical user after authorization.</p>
+    <p class="finding-detail">Every row is keyed by <code>install_id</code>, so the same attempt can be correlated with Cloudflare, Sentry, diagnostics, and a canonical user after authorization.</p>
     <section class="dashboard-section section-rule" aria-labelledby="install-table-title">
-      <div class="section-heading"><h2 id="install-table-title">Recent installation attempts</h2><p>Fixture rows intentionally include completed, failed, in-progress, degraded, and anonymous pre-auth states.</p></div>
+      <div class="section-heading"><h2 id="install-table-title">Recent installation attempts</h2><p>Completed, failed, in-progress, degraded, and anonymous pre-auth states remain distinct.</p></div>
       ${installTable(fixtures.installs.items)}
     </section>
   </section>`;
@@ -635,7 +639,7 @@ function errorsPage(fixtures: InternalDashboardFixtures): string {
 function userDetailPage(fixtures: InternalDashboardFixtures, userId: string): string {
   const user = fixtures.users.items.find((candidate) => candidate.userId === userId);
   if (!user) {
-    return `<section><a class="back-link" href="/users">← Users</a><h1 class="finding">User not found in this fixture page.</h1><p class="finding-detail">The production integration will resolve users from the contracted users list; Branch 5 intentionally does not invent a <code>/users/:id</code> API.</p></section>`;
+    return `<section><a class="back-link" href="/users">← Users</a><h1 class="finding">User not found.</h1><p class="finding-detail">User detail is derived from the contracted users, installs, and devices read models; there is no separate <code>/users/:id</code> backend API.</p></section>`;
   }
   const installs = fixtures.installs.items.filter((install) => install.userId === user.userId);
   const devices = fixtures.devices.items.filter((device) => device.userId === user.userId);
@@ -649,7 +653,7 @@ function userDetailPage(fixtures: InternalDashboardFixtures, userId: string): st
       <div class="detail-fact"><span>Devices</span><b>${user.deviceCount}</b></div>
     </div>
     <div class="detail-layout">
-      <section class="dashboard-section section-rule"><div class="section-heading"><h2>Install history</h2><p>Derived client-side from the contracted installs list in this branch.</p></div>${installTable(installs)}</section>
+      <section class="dashboard-section section-rule"><div class="section-heading"><h2>Install history</h2><p>Derived from the contracted installs list for this canonical user.</p></div>${installTable(installs)}</section>
       <aside class="dashboard-section section-rule"><div class="section-heading"><h2>Devices</h2></div>${deviceTable(devices)}</aside>
     </div>
   </section>`;
@@ -657,7 +661,7 @@ function userDetailPage(fixtures: InternalDashboardFixtures, userId: string): st
 
 function evidenceMarkup(detail: InstallDashboardInstallDetail): string {
   const diagnostic = detail.diagnosticBundle.available
-    ? `<li><strong>Diagnostic bundle</strong><code>${escapeHtml(detail.diagnosticBundle.bundleId)}</code><span>Expires ${escapeHtml(formatDateTime(detail.diagnosticBundle.expiresAt))}</span></li>`
+    ? `<li><strong>Diagnostic bundle</strong><a href="${escapeHtml(installDashboardDiagnosticRoute(detail.install.installId))}">Download redacted diagnostic</a><code>${escapeHtml(detail.diagnosticBundle.bundleId)}</code><span>Expires ${escapeHtml(formatDateTime(detail.diagnosticBundle.expiresAt))}</span></li>`
     : '<li><strong>Diagnostic bundle</strong><span>Not retained for this install.</span></li>';
   const sentry = detail.evidence.sentryEventIds.length
     ? detail.evidence.sentryEventIds.map((id) => `<li><strong>Sentry evidence</strong><code>${escapeHtml(id)}</code></li>`).join('')
@@ -672,10 +676,10 @@ function installDetailPage(fixtures: InternalDashboardFixtures, installId: strin
   const detail = fixtures.installDetails[installId];
   const summary = detail?.install ?? fixtures.installs.items.find((candidate) => candidate.installId === installId);
   if (!summary) {
-    return `<section><a class="back-link" href="/installs">← Installs</a><h1 class="finding">Install not found in this fixture page.</h1></section>`;
+    return `<section><a class="back-link" href="/installs">← Installs</a><h1 class="finding">Install not found.</h1></section>`;
   }
   if (!detail) {
-    return `<section><a class="back-link" href="/installs">← Installs</a><div class="detail-header"><div><p class="eyebrow">Install · ${escapeHtml(summary.status)}</p><h1>${escapeHtml(summary.userId ?? 'Anonymous install')}</h1></div><code class="detail-id">${escapeHtml(summary.installId)}</code></div><p class="finding-detail">The summary exists, but this fixture does not carry a full timeline. Branch 6 will load this page from the contracted install-detail endpoint.</p></section>`;
+    return `<section><a class="back-link" href="/installs">← Installs</a><div class="detail-header"><div><p class="eyebrow">Install · ${escapeHtml(summary.status)}</p><h1>${escapeHtml(summary.userId ?? 'Anonymous install')}</h1></div><code class="detail-id">${escapeHtml(summary.installId)}</code></div><p class="finding-detail">The install summary exists, but a full timeline is not available for this record.</p></section>`;
   }
   return `<section>
     <a class="back-link" href="/installs">← Installs</a>
@@ -712,6 +716,7 @@ export type InternalUserDashboardRenderOptions = {
   pathname?: string;
   assetMode?: 'hono' | 'inline';
   fixtureMode?: boolean;
+  dataMode?: 'fixture' | 'contract' | 'live';
   fixtures?: InternalDashboardFixtures;
 };
 
@@ -726,8 +731,13 @@ export function renderInternalUserDashboard(options: InternalUserDashboardRender
   const script = inline
     ? `<script>${INTERNAL_DASHBOARD_JAVASCRIPT}</script>`
     : `<script defer src="/internal/assets/dashboard.js?v=${INTERNAL_DASHBOARD_ASSET_VERSION}"></script>`;
-  const fixtureFlag = options.fixtureMode === true ? 'fixture' : 'contract';
+  const fixtureFlag =
+    options.dataMode ?? (options.fixtureMode === true ? 'fixture' : 'contract');
   const generatedAt = fixtures.overview.generatedAt;
+  const footer =
+    fixtureFlag === 'live'
+      ? '<footer class="dashboard-footnote"><strong>Live control-plane data.</strong> Read-only Consuelo user, install, device, error, and diagnostic state.</footer>'
+      : '<footer class="dashboard-footnote"><strong>Fixture surface.</strong> Branch 5 renders the shared Branch 1 read model only. Authentication, storage, live query APIs, and real evidence links land in the control-plane/integration branches.</footer>';
 
   return `<!doctype html>
 <html lang="en">
@@ -749,9 +759,148 @@ export function renderInternalUserDashboard(options: InternalUserDashboardRender
     </header>
     ${navMarkup(route.nav)}
     <main class="dashboard-main" id="main-content">${pageMarkup(route, fixtures)}</main>
-    <footer class="dashboard-footnote"><strong>Fixture surface.</strong> Branch 5 renders the shared Branch 1 read model only. Authentication, storage, live query APIs, and real evidence links land in the control-plane/integration branches.</footer>
+    ${footer}
   </div>
   ${script}
 </body>
 </html>`;
+}
+
+async function loadAllDashboardPages<T>(
+  load: (cursor?: string) => Promise<InstallDashboardPage<T>>,
+): Promise<InstallDashboardPage<T>> {
+  try {
+    const items: T[] = [];
+    let cursor: string | undefined;
+    do {
+      const page = await load(cursor);
+      items.push(...page.items);
+      cursor = page.nextCursor;
+    } while (cursor);
+    return { items };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`internal dashboard pagination failed: ${message}`);
+  }
+}
+
+export async function loadLiveInternalDashboardData(input: {
+  route: InternalDashboardRoute;
+  service: InstallControlPlaneService;
+  nowMs: number;
+}): Promise<InternalDashboardFixtures> {
+  try {
+    const [overview, users, installs, devices, errors] = await Promise.all([
+      input.service.getOverview({ window: '30d', nowMs: input.nowMs }),
+      loadAllDashboardPages((cursor) =>
+        input.service.listUsers({ nowMs: input.nowMs, limit: 500, cursor }),
+      ),
+      loadAllDashboardPages((cursor) =>
+        input.service.listInstalls({ nowMs: input.nowMs, limit: 500, cursor }),
+      ),
+      loadAllDashboardPages((cursor) =>
+        input.service.listDevices({ nowMs: input.nowMs, limit: 500, cursor }),
+      ),
+      loadAllDashboardPages((cursor) =>
+        input.service.listErrors({
+          window: '30d',
+          nowMs: input.nowMs,
+          limit: 500,
+          cursor,
+        }),
+      ),
+    ]);
+    const installDetails: Record<string, InstallDashboardInstallDetail> = {};
+    if (input.route.kind === 'install-detail' && isInstallId(input.route.id)) {
+      const detail = await input.service.getInstallDetail(input.route.id, {
+        nowMs: input.nowMs,
+      });
+      if (detail) installDetails[input.route.id] = detail;
+    }
+    return { overview, users, installs, devices, errors, installDetails };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`internal dashboard live data load failed: ${message}`);
+  }
+}
+
+type InternalDashboardPageAuthorizer = (request: Request) => Promise<boolean>;
+
+function internalDashboardResponseHeaders(contentType: string): HeadersInit {
+  return {
+    'content-type': contentType,
+    'cache-control': 'no-store',
+    'x-content-type-options': 'nosniff',
+    'referrer-policy': 'no-referrer',
+  };
+}
+
+export function createInternalUserDashboardPageHandler(input: {
+  service: InstallControlPlaneService;
+  authorize: InternalDashboardPageAuthorizer;
+  now?: () => number;
+  expectedHost?: string;
+}): (request: Request) => Promise<Response> {
+  const now = input.now ?? (() => Date.now());
+  const expectedHost = (input.expectedHost ?? 'internal.consuelohq.com').toLowerCase();
+  return async (request: Request): Promise<Response> => {
+    const url = new URL(request.url);
+    if (url.hostname.toLowerCase() !== expectedHost) {
+      return new Response('not found', { status: 404 });
+    }
+    if (request.method !== 'GET') {
+      return new Response('method not allowed', {
+        status: 405,
+        headers: { allow: 'GET', 'cache-control': 'no-store' },
+      });
+    }
+    let authorized = false;
+    try {
+      authorized = await input.authorize(request);
+    } catch {
+      authorized = false;
+    }
+    if (!authorized) {
+      return new Response('forbidden', {
+        status: 403,
+        headers: internalDashboardResponseHeaders('text/plain; charset=utf-8'),
+      });
+    }
+    if (url.pathname === '/internal/assets/dashboard.css') {
+      return new Response(INTERNAL_DASHBOARD_CSS, {
+        headers: internalDashboardResponseHeaders('text/css; charset=utf-8'),
+      });
+    }
+    if (url.pathname === '/internal/assets/dashboard.js') {
+      return new Response(INTERNAL_DASHBOARD_JAVASCRIPT, {
+        headers: internalDashboardResponseHeaders(
+          'text/javascript; charset=utf-8',
+        ),
+      });
+    }
+    const route = resolveInternalDashboardRoute(url.pathname);
+    try {
+      const fixtures = await loadLiveInternalDashboardData({
+        route,
+        service: input.service,
+        nowMs: now(),
+      });
+      return new Response(
+        renderInternalUserDashboard({
+          pathname: url.pathname,
+          fixtures,
+          dataMode: 'live',
+        }),
+        {
+          status: 200,
+          headers: internalDashboardResponseHeaders('text/html; charset=utf-8'),
+        },
+      );
+    } catch {
+      return new Response('internal dashboard data unavailable', {
+        status: 503,
+        headers: internalDashboardResponseHeaders('text/plain; charset=utf-8'),
+      });
+    }
+  };
 }
