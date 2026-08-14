@@ -48,7 +48,10 @@ type TraceWindow = Window & {
     scrollToTop: () => void;
     openFilters: () => void;
     closeFilters: () => void;
+    toggleFilters: () => void;
     filtersOpen: () => boolean;
+    setQuery: (query: string) => void;
+    query: () => string;
     prependRows: (rows: TraceRecord[]) => void;
     replaceRows: (rows: TraceRecord[], nextCursor?: string | null) => void;
   };
@@ -121,6 +124,89 @@ function updateTraceClock(): void {
 function installTraceClock(): void {
   updateTraceClock();
   window.setInterval(updateTraceClock, 15_000);
+}
+
+function ensureTraceSearchStyle(): void {
+  if (document.querySelector('[data-trace-search-style]')) return;
+  const style = document.createElement('style');
+  style.dataset.traceSearchStyle = '';
+  style.textContent = `
+    .trxChromeActions { position: relative; }
+    .trxClock { transition: opacity 110ms ease, transform 110ms ease; }
+    .trxClock[data-trace-search-hidden="true"] { opacity: 0; transform: translateY(2px); pointer-events: none; }
+    [data-trace-search-shell] {
+      position: absolute; right: 0; top: 50%; z-index: 4;
+      width: min(280px, 42vw); height: 22px; box-sizing: border-box;
+      display: flex; align-items: center; gap: 5px;
+      border: 1px solid rgba(154,149,132,.38); border-radius: 5px;
+      background: rgba(14,14,12,.96); color: inherit; padding: 0 4px 0 7px;
+      opacity: 0; transform: translateY(-50%) translateX(3px) scale(.985);
+      transform-origin: right center;
+      transition: opacity 110ms ease, transform 110ms ease;
+    }
+    [data-trace-search-shell].is-open { opacity: 1; transform: translateY(-50%) translateX(0) scale(1); }
+    [data-trace-search] {
+      min-width: 0; width: 100%; height: 18px; border: 0; outline: 0;
+      background: transparent; color: inherit; padding: 0; margin: 0;
+      font: inherit; font-size: 11px; line-height: 18px;
+    }
+    [data-trace-search]::placeholder { color: rgba(192,186,166,.48); }
+    [data-trace-search-close] {
+      flex: 0 0 auto; width: 16px; height: 16px; border: 0; border-radius: 3px;
+      background: transparent; color: rgba(216,211,197,.62); padding: 0;
+      font: 13px/16px ui-monospace, SFMono-Regular, Menlo, monospace; cursor: pointer;
+    }
+    [data-trace-search-close]:hover, [data-trace-search-close]:focus-visible {
+      color: #d8d3c5; background: rgba(255,255,255,.06); outline: none;
+    }
+    @media (max-width: 640px) { [data-trace-search-shell] { width: min(220px, 58vw); } }
+    @media (prefers-reduced-motion: reduce) {
+      [data-trace-search-shell], .trxClock { transition: none; }
+    }
+  `;
+  document.head.append(style);
+}
+
+function traceSearchIsOpen(): boolean {
+  return Boolean(document.querySelector('[data-trace-search-shell].is-open'));
+}
+
+function openTraceSearch(): void {
+  const virtualList = (window as TraceWindow).__traceVirtualList;
+  const actions = document.querySelector<HTMLElement>('.trxChromeActions');
+  const clock = document.querySelector<HTMLElement>('[data-trace-clock]');
+  if (!actions || !clock) return;
+  ensureTraceSearchStyle();
+  let shell = actions.querySelector<HTMLElement>('[data-trace-search-shell]');
+  if (!shell) {
+    shell = document.createElement('div');
+    shell.dataset.traceSearchShell = '';
+    shell.innerHTML = '<input type="search" data-trace-search data-search autocomplete="off" spellcheck="false" placeholder="Search traces" aria-label="Search traces"><button type="button" data-trace-search-close aria-label="Close trace search" title="Close search">×</button>';
+    const input = shell.querySelector<HTMLInputElement>('[data-trace-search]');
+    input?.addEventListener('input', () => virtualList?.setQuery(input.value));
+    shell.querySelector<HTMLButtonElement>('[data-trace-search-close]')?.addEventListener('click', () => closeTraceSearch());
+    actions.append(shell);
+  }
+  shell.classList.remove('is-closing');
+  clock.dataset.traceSearchHidden = 'true';
+  const input = shell.querySelector<HTMLInputElement>('[data-trace-search]');
+  if (input) input.value = virtualList?.query() ?? '';
+  requestAnimationFrame(() => shell?.classList.add('is-open'));
+  input?.focus({ preventScroll: true });
+}
+
+function closeTraceSearch(clearQuery = true): void {
+  const virtualList = (window as TraceWindow).__traceVirtualList;
+  const shell = document.querySelector<HTMLElement>('[data-trace-search-shell]');
+  const clock = document.querySelector<HTMLElement>('[data-trace-clock]');
+  if (clearQuery) virtualList?.setQuery('');
+  if (clock) delete clock.dataset.traceSearchHidden;
+  if (!shell) return;
+  shell.classList.remove('is-open');
+  shell.classList.add('is-closing');
+  window.setTimeout(() => {
+    if (shell.classList.contains('is-closing')) shell.remove();
+  }, 120);
 }
 
 function traceMap(): Map<string, TraceRecord> {
@@ -927,6 +1013,11 @@ document.addEventListener('keydown', (event) => {
   const editing = isTextEditingTarget(event.target);
 
   if (event.key === 'Escape') {
+    if (traceSearchIsOpen() || document.querySelector('[data-trace-search-shell]')) {
+      event.preventDefault();
+      closeTraceSearch();
+      return;
+    }
     if (document.querySelector('[data-trace-home-confirm]')) {
       event.preventDefault();
       closeReturnHomeConfirm();
@@ -957,9 +1048,15 @@ document.addEventListener('keydown', (event) => {
     return;
   }
 
+  if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key === '/') {
+    event.preventDefault();
+    openTraceSearch();
+    return;
+  }
+
   if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key.toLowerCase() === 'f') {
     event.preventDefault();
-    virtualList?.openFilters();
+    virtualList?.toggleFilters();
     return;
   }
 
@@ -973,9 +1070,11 @@ document.addEventListener('keydown', (event) => {
     return;
   }
 
-  if (!event.metaKey && !event.ctrlKey && !event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+  const moveUp = event.key === 'ArrowUp' || event.key.toLowerCase() === 'k';
+  const moveDown = event.key === 'ArrowDown' || event.key.toLowerCase() === 'j';
+  if (!event.metaKey && !event.ctrlKey && !event.altKey && (moveUp || moveDown)) {
     event.preventDefault();
-    const direction: -1 | 1 = event.key === 'ArrowUp' ? -1 : 1;
+    const direction: -1 | 1 = moveUp ? -1 : 1;
     if (inspectorIsOpen()) {
       moveInspectorPeer(direction);
       return;

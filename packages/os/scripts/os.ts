@@ -36,6 +36,7 @@ import { readArtifactCatalog } from './lib/artifacts';
 import { loadOsConfig, readLocalNodeIdentity } from './lib/install-state';
 import { runConfigurationOverlayCommand } from './lib/settings-overlay-command';
 import { readSteeringSnapshot } from './lib/steering-snapshot-cache';
+import { recordToolTraceSafely } from './lib/trace-persistence';
 import type { McpNodeRoutingContext } from './lib/mcp-node-routing';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
@@ -576,6 +577,10 @@ function recordStarted(traceId: string, name: string, input: unknown): void {
   recordExecutionStarted({ traceId, name, input });
 }
 
+function estimatedSteeringTokens(steering: string): number {
+  return Math.max(1, Math.floor(steering.length / 4));
+}
+
 function finishSteeringExecution(args: {
   traceId: string;
   name: string;
@@ -586,9 +591,10 @@ function finishSteeringExecution(args: {
   reason?: string;
 }): void {
   const durationMs = Date.now() - args.started;
+  const outputTokens = estimatedSteeringTokens(args.steering);
   const result: Record<string, unknown> = {
     chars: args.steering.length,
-    estimatedOutputTokens: Math.max(1, Math.floor(args.steering.length / 4)),
+    estimatedOutputTokens: outputTokens,
     content: args.steering,
     decision: args.decision,
   };
@@ -606,6 +612,51 @@ function finishSteeringExecution(args: {
       code: args.code,
     },
     durationMs,
+  });
+  recordToolTraceSafely({
+    traceId: args.traceId,
+    source: 'steering',
+    tool: args.name,
+    status: 'succeeded',
+    ok: true,
+    code: args.code,
+    exitCode: 0,
+    durationMs,
+    input: args.reason !== undefined ? { reason: args.reason } : {},
+    result: {
+      decision: args.decision,
+      chars: args.steering.length,
+      message: args.name === 'refresh_steering' ? 'steering refreshed' : 'steering loaded',
+    },
+    inputTokens: 0,
+    outputTokens,
+    totalTokens: outputTokens,
+  });
+}
+
+function failSteeringToolTrace(args: {
+  traceId: string;
+  name: string;
+  started: number;
+  code: string;
+  message: string;
+  reason?: string;
+}): void {
+  recordToolTraceSafely({
+    traceId: args.traceId,
+    source: 'steering',
+    tool: args.name,
+    status: 'failed',
+    ok: false,
+    code: args.code,
+    exitCode: 1,
+    durationMs: Date.now() - args.started,
+    input: args.reason !== undefined ? { reason: args.reason } : {},
+    result: { message: args.message },
+    stderr: args.message,
+    inputTokens: 0,
+    outputTokens: 0,
+    totalTokens: 0,
   });
 }
 
@@ -742,12 +793,20 @@ export function executeGetSteering(
     return steering;
   } catch (error: unknown) {
     const durationMs = Date.now() - started;
+    const message = error instanceof Error ? error.message : 'OS bootstrap failed.';
     recordExecutionFinished({
       traceId,
       status: 'failed',
       errorCode: 'BOOTSTRAP_FAILED',
-      errorMessage: error instanceof Error ? error.message : 'OS bootstrap failed.',
+      errorMessage: message,
       durationMs,
+    });
+    failSteeringToolTrace({
+      traceId,
+      name: 'get_steering',
+      started,
+      code: 'BOOTSTRAP_FAILED',
+      message,
     });
     throw error;
   }
@@ -810,12 +869,21 @@ export function executeRefreshSteering(
     return steering;
   } catch (error: unknown) {
     const durationMs = Date.now() - started;
+    const message = error instanceof Error ? error.message : 'OS steering refresh failed.';
     recordExecutionFinished({
       traceId,
       status: 'failed',
       errorCode: 'REFRESH_STEERING_FAILED',
-      errorMessage: error instanceof Error ? error.message : 'OS steering refresh failed.',
+      errorMessage: message,
       durationMs,
+    });
+    failSteeringToolTrace({
+      traceId,
+      name: 'refresh_steering',
+      started,
+      code: 'REFRESH_STEERING_FAILED',
+      message,
+      reason: normalizedReason,
     });
     throw error;
   }

@@ -17,10 +17,22 @@ import {
 } from '../scripts/lib/trace-site-inspector/interactions';
 import {
   formatTraceTableRow,
+  matchesTraceTableFilters,
 } from '../scripts/lib/trace-site-inspector/table-formatters';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const inspectorRoot = resolve(here, '../scripts/lib/trace-site-inspector');
+
+function queryFilters(query: string) {
+  return {
+    query,
+    tools: new Set<string>(),
+    branches: new Set<string>(),
+    nodes: new Set<string>(),
+    routes: new Set<string>(),
+    statuses: new Set<string>(),
+  };
+}
 
 describe('Trace Burn keyboard and row interaction contracts', () => {
   it('uses safe tool aliases instead of falling back to trace', () => {
@@ -67,21 +79,52 @@ describe('Trace Burn keyboard and row interaction contracts', () => {
     expect(traceIdentityCopyText({ name: 'code.call', traceId: 'trc_abc' })).toBe('code.call · trc_abc');
   });
 
-  it('wires the requested keyboard shortcuts and last-interaction copy behavior into the OS browser runtime', () => {
+  it('matches trace search by free text, structured fields, and date', () => {
+    const row = {
+      traceId: 'trc_search_1',
+      name: 'fs.read',
+      branch: 'feature/trace-search',
+      startTime: '2026-08-13T17:42:10.000Z',
+      status: 'success',
+      code: 'OK',
+      inputJson: { path: 'packages/os/scripts/os.ts' },
+      resultJson: { message: 'read complete' },
+    };
+
+    expect(matchesTraceTableFilters(row, queryFilters('fs.read'))).toBe(true);
+    expect(matchesTraceTableFilters(row, queryFilters('feature/trace-search'))).toBe(true);
+    expect(matchesTraceTableFilters(row, queryFilters('2026-08-13'))).toBe(true);
+    expect(matchesTraceTableFilters(
+      row,
+      queryFilters('tool:fs.read branch:feature/trace-search date:2026-08-13 status:success'),
+    )).toBe(true);
+    expect(matchesTraceTableFilters(row, queryFilters('tool:code.call'))).toBe(false);
+  });
+
+  it('wires toggle filters, Vim navigation, slash search, and last-interaction copy into the OS browser runtime', () => {
     const browser = readFileSync(resolve(inspectorRoot, 'browser.ts'), 'utf8');
     const virtualList = readFileSync(resolve(inspectorRoot, 'virtual-list-browser.ts'), 'utf8');
     expect(browser).toContain("event.key === 'ArrowUp'");
     expect(browser).toContain("event.key === 'ArrowDown'");
+    expect(browser).toContain("event.key.toLowerCase() === 'j'");
+    expect(browser).toContain("event.key.toLowerCase() === 'k'");
+    expect(browser).toContain("event.key === '/'");
     expect(browser).toContain("event.key === 'Enter'");
     expect(browser).toContain("event.key.toLowerCase() === 'c'");
     expect(browser).toContain("event.key.toLowerCase() === 'f'");
     expect(browser).toContain("event.key === 'Escape'");
+    expect(browser).toContain('virtualList?.toggleFilters()');
+    expect(browser).toContain('openTraceSearch');
+    expect(browser).toContain('closeTraceSearch');
+    expect(browser).toContain('data-trace-search');
+    expect(browser).toContain('data-trace-search-close');
     expect(browser).toContain('lastTraceInteraction');
     expect(browser).toContain('consuelo.trace-return-home.preference');
     expect(browser).toContain('Do not ask again');
     expect(browser).toContain('Return home?');
     expect(virtualList).toContain('moveFocus');
     expect(virtualList).toContain('clearSelection');
-    expect(virtualList).toContain('openFilters');
+    expect(virtualList).toContain('toggleFilters');
+    expect(virtualList).toContain('setQuery');
   });
 });

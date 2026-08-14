@@ -1,4 +1,10 @@
 import {
+  parseTraceSearchTerms,
+  type TraceSearchField,
+  type TraceSearchTerm,
+} from '../trace-search-query';
+
+import {
   branchName,
   childTraceRecords,
   clean,
@@ -54,6 +60,7 @@ const TOOL_LABELS: Record<string, string> = {
   'fs.apply_patch': 'fs.patch',
   'fs.search': 'files.search',
   get_steering: 'steering',
+  refresh_steering: 'steering.refresh',
   'review.run': 'review',
   'tools.search': 'search',
 };
@@ -194,24 +201,57 @@ export function matchesTraceTableFilters(
   ) {
     return false;
   }
-  const query = filters.query.trim().toLowerCase();
-  if (!query) return true;
-  return records.some((record) => {
-    const formatted = formatTraceTableRow(record);
-    return [
-      formatted.toolLabel,
-      formatted.inputLabel,
-      formatted.outputLabel,
-      formatted.nodeLabel,
-      formatted.routeLabel,
-      branchName(record),
-      clean(record.traceId ?? record.trace),
-      clean(record.code),
-    ]
-      .join(' ')
-      .toLowerCase()
-      .includes(query);
-  });
+  const terms = parseTraceSearchTerms(filters.query);
+  if (!terms.length) return true;
+  return terms.every((term) =>
+    records.some((record) => traceRecordMatchesSearchTerm(record, term)),
+  );
+}
+
+function traceRecordMatchesSearchTerm(
+  record: TraceRecord,
+  term: TraceSearchTerm,
+): boolean {
+  const formatted = formatTraceTableRow(record);
+  const status = isFailure(record) ? 'error' : 'success';
+  const time = traceSearchTime(record);
+  const values: Record<TraceSearchField, string> = {
+    tool: formatted.toolLabel,
+    branch: branchName(record),
+    status: [status, clean(record.status)].filter(Boolean).join(' '),
+    node: formatted.nodeLabel,
+    route: formatted.routeLabel,
+    trace: clean(record.traceId ?? record.trace),
+    code: clean(record.code),
+    date: time,
+  };
+  if (term.field) return values[term.field].toLowerCase().includes(term.value);
+  return [
+    formatted.toolLabel,
+    formatted.nodeLabel,
+    formatted.routeLabel,
+    branchName(record),
+    clean(record.traceId ?? record.trace),
+    clean(record.code),
+    status,
+    time,
+  ]
+    .join(' ')
+    .toLowerCase()
+    .includes(term.value);
+}
+
+function traceSearchTime(record: TraceRecord): string {
+  const raw = clean(record.startTime ?? record.time ?? record.ts ?? record.displayTime);
+  if (!raw) return '';
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return raw;
+  return [
+    raw,
+    parsed.toISOString(),
+    parsed.toLocaleDateString('en-US', { timeZone: 'America/New_York' }),
+    parsed.toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false }),
+  ].join(' ');
 }
 
 function summarizeInput(
@@ -251,6 +291,9 @@ function summarizeInput(
       : 'inspect source';
   }
   if (tool === 'get_steering') return 'workspace guidance';
+  if (tool === 'refresh_steering') {
+    return clean(input?.reason) || 'refresh workspace guidance';
+  }
   if (tool === 'authentication.mcp' || tool === 'authorization.mcp') {
     return summarizeMcpAuthentication(input, tool);
   }
@@ -371,6 +414,7 @@ function summarizeOutput(
     );
   }
   if (tool === 'get_steering') return 'steering loaded';
+  if (tool === 'refresh_steering') return 'steering refreshed';
   const result = resultRecord(row);
   const data = record(result?.data) ?? result;
   if (tool === 'code.call') {
