@@ -271,6 +271,8 @@ describe('foundation source contract', () => {
     const head = read('src/components/Head.astro');
     const header = read('src/components/Header.astro');
     const browseMenu = read('src/components/BrowseMenu.astro');
+    const docsMenuTriggerPath = new URL('../src/components/DocsMenuTrigger.astro', import.meta.url);
+    const docsMenuTrigger = existsSync(docsMenuTriggerPath) ? readFileSync(docsMenuTriggerPath, 'utf8') : '';
     const mobileMenuToggle = read('src/components/MobileMenuToggle.astro');
     const mobileToc = read('src/components/MobileTableOfContents.astro');
     const siteTitle = read('src/components/SiteTitle.astro');
@@ -282,17 +284,25 @@ describe('foundation source contract', () => {
     expect(config).toContain("Head: './src/components/Head.astro'");
     expect(config).toContain("SiteTitle: './src/components/SiteTitle.astro'");
     expect(siteTitle).toContain('src="/favicon.svg"');
-    expect(siteTitle).toContain('Consuelo OS');
-    expect(siteTitle).toContain('consuelo-site-title-label');
-    expect(siteTitle).toContain('@media (max-width: 49.999rem)');
+    expect(siteTitle).toContain('href="/"');
+    expect(siteTitle).toContain('consuelo-site-title-slash');
+    expect(siteTitle).toContain('>Docs<');
+    expect(siteTitle).not.toContain('>Consuelo OS<');
     expect(siteTitle).toContain('color: var(--sl-color-white)');
     expect(sidebar).toContain('color: var(--sl-color-gray-2)');
     expect(sidebar).toContain('data-docs-sidebar-search-trigger');
     expect(sidebar).toContain('Search Docs');
     expect(sidebar).not.toContain('var(--sl-color-text-accent) 12%');
-    expect(header).toContain('BrowseMenu');
+    expect(header).toContain('DocsMenuTrigger');
+    expect(header).not.toContain('<BrowseMenu />');
     expect(header).toContain('data-docs-header-search');
-    expect(browseMenu).toContain('data-docs-browse-trigger');
+    expect(existsSync(docsMenuTriggerPath)).toBe(true);
+    expect(docsMenuTrigger).toContain('data-docs-menu-toggle');
+    expect(docsMenuTrigger).toContain('starlight__sidebar');
+    expect(docsMenuTrigger).toContain('aria-label="Open docs menu"');
+    expect(docsMenuTrigger).toContain('xPercent: -100');
+    expect(docsMenuTrigger).toContain("from 'gsap'");
+    expect(browseMenu).toContain('data-docs-build-trigger');
     expect(browseMenu).toContain('data-docs-browse-overlay');
     expect(browseMenu).toContain("from 'gsap'");
     expect(browseMenu).toContain('https://consuelohq.com/changelog');
@@ -301,8 +311,10 @@ describe('foundation source contract', () => {
     expect(browseMenu).toContain('/build/skills/bundled/');
     expect(browseMenu).toContain('https://os.consuelohq.com/');
     expect(browseMenu).not.toContain('Ask AI');
-    expect(mobileMenuToggle).toContain("from 'gsap'");
-    expect(mobileMenuToggle).toContain('data-docs-menu-toggle');
+    expect(mobileMenuToggle).toContain('BrowseMenu');
+    expect(mobileMenuToggle).not.toContain('starlight__sidebar');
+    expect(browseMenu).toContain('M4 9h16');
+    expect(browseMenu).toContain('M4 15h16');
     expect(mobileToc).toContain("from 'gsap'");
     expect(mobileToc).toContain('data-docs-mobile-toc-sheet');
     expect(mobileToc).not.toContain('starlight__mobile-toc');
@@ -313,6 +325,29 @@ describe('foundation source contract', () => {
     expect(css).toContain('@keyframes docs-page-in');
     expect(css).toContain('prefers-reduced-motion: reduce');
     expect(packageJson).toContain('"gsap"');
+  });
+
+  test('uses a left docs drawer, clean page chrome, and a landing-page home', () => {
+    const css = read('src/styles/docs.css');
+    const pageTitle = read('src/components/PageTitle.astro');
+    const home = read('src/content/docs/index.mdx');
+    expect(css).toContain('left: 0');
+    expect(css).toContain('right: auto');
+    expect(css).toContain('border-right: 1px solid var(--docs-line)');
+    expect(css).toContain('.content-panel + .content-panel');
+    expect(css).toContain('border-top: 0');
+    expect(css).toContain('.page > header.header');
+    expect(css).toContain('border-bottom: 0');
+    expect(css).toContain('.sl-markdown-content .sl-anchor-link');
+    expect(css).toContain('display: none');
+    expect(pageTitle).toContain('isHome');
+    for (const href of ['/start/', '/connect/', '/tools/']) expect(pageTitle).toContain(`href="${href}"`);
+    expect(home).toContain('data-home-install-command');
+    expect(home).toContain('data-home-install-copy');
+    expect(home).not.toContain('```bash');
+    expect(css).toContain('overflow-wrap: anywhere');
+    expect(css).toContain('.home-install-command button');
+    expect(pageTitle).toContain("closest('[data-home-install-copy]')");
   });
 
   test('uses the launcher warm editorial palette without changing fonts', () => {
