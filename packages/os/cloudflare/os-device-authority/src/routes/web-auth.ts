@@ -13,14 +13,19 @@ import type {
   WorkspaceMembership,
 } from '../types';
 import { hash, htmlEscape, params, rand } from '../utils';
+import {
+  CloudFirstOnboardingError,
+  cloudFirstProvisioningStatus,
+  createCloudFirstWorkspace,
+} from '../services/cloud-first-onboarding';
 
 export const AUTHORITY_SESSION_COOKIE = '__Host-consuelo_os_authority';
 export const WORKSPACE_SESSION_COOKIE = '__Host-consuelo_os_session';
 export const WORKSPACE_CSRF_COOKIE = '__Host-consuelo_os_csrf';
 
-const AUTHORITY_SESSION_TTL_MS = 15 * 60 * 1000;
+const AUTHORITY_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const WORKSPACE_HANDOFF_TTL_MS = 60 * 1000;
-const WORKSPACE_SESSION_TTL_MS = 8 * 60 * 60 * 1000;
+const WORKSPACE_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const INTERNAL_AUTH_HEADER = 'x-consuelo-internal-auth-secret';
 
 function cookieValue(request: Request, name: string): string {
@@ -210,8 +215,115 @@ async function issueHandoff(input: {
   }
 }
 
+async function pendingCloudOnboardingResponse(input: {
+  runtime: DeviceAuthorityRuntime;
+  membership: WorkspaceMembership;
+}): Promise<Response | undefined> {
+  try {
+    const trial = await input.runtime.store.byWorkspaceCloudTrial(
+      input.membership.workspaceId,
+    );
+    if (!trial) return undefined;
+    const job = await input.runtime.store.byManagedCloudProvisioningJob(
+      trial.provisioningJobId,
+    );
+    if (!job || job.accountId !== input.membership.accountId) {
+      return text(onboardingErrorPage('Cloud workspace state is temporarily unavailable.'), {
+        status: 503,
+      });
+    }
+    if (job.status === 'ready') return undefined;
+    const location = new URL('/onboarding/provisioning', input.runtime.origin);
+    location.searchParams.set('job_id', job.jobId);
+    return Response.redirect(location.toString(), 302);
+  } catch {
+    return text(onboardingErrorPage('Cloud workspace state is temporarily unavailable.'), {
+      status: 503,
+    });
+  }
+}
+
+const authShellStyles = `
+  :root{color-scheme:light dark;--bg:#fff;--fg:#0a0a0a;--muted:#666;--line:#e6e6e6;--surface:#fff;--hover:#fafafa;--stripe-a:#a7a7a7;--stripe-b:#dadada}
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg)}
+  body{min-height:100svh;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .site-header{position:fixed;z-index:2;top:0;left:0;right:0;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;pointer-events:none}
+  .site-header a{pointer-events:auto;text-decoration:none}
+  .brand{display:inline-flex;align-items:center;gap:10px;font-weight:650;letter-spacing:-.03em}
+  .brand-monogram{position:relative;display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--fg);font-family:Georgia,"Times New Roman",serif;font-size:15px;line-height:1}
+  .brand-monogram::after{content:"";position:absolute;width:1px;height:42px;background:var(--fg);transform:rotate(45deg)}
+  .brand-monogram span{position:relative;z-index:1;background:var(--bg);padding:1px 2px}
+  .brand-monogram span:last-child{position:absolute;right:-9px;bottom:-7px;font-size:10px;letter-spacing:.02em}
+  .top-action{min-height:42px;display:inline-flex;align-items:center;justify-content:center;padding:0 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-weight:520;transition:background .16s ease,border-color .16s ease}
+  .top-action:hover{background:var(--hover);border-color:#b5b5b5}
+  .auth-main{min-height:100svh;display:grid;place-items:center;padding:120px 24px 100px}
+  .auth-card{width:min(100%,402px);text-align:center}
+  .auth-card h1{margin:0 0 30px;font-size:32px;line-height:1.16;letter-spacing:-.045em;font-weight:650}
+  .lede{max-width:360px;margin:-12px auto 28px;color:var(--muted);font-size:15px;line-height:1.55}
+  .provider-button,.primary-button{width:100%;min-height:52px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);display:flex;align-items:center;justify-content:center;gap:12px;text-decoration:none;font-size:16px;font-weight:520;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}
+  .provider-button:hover,.primary-button:hover{background:var(--hover);border-color:#b5b5b5}
+  .provider-button:active,.primary-button:active{transform:translateY(1px)}
+  .provider-button svg{width:20px;height:20px;flex:0 0 auto}
+  .auth-footer{margin:34px 0 0;color:var(--muted);font-size:14px}
+  .auth-footer a{color:var(--fg);text-underline-offset:4px;text-decoration-thickness:1px}
+  .auth-footer a:hover{text-decoration-thickness:2px}
+  .field{display:grid;gap:9px;text-align:left;margin-bottom:14px}
+  .field label{font-size:13px;font-weight:560}
+  .field input{width:100%;height:52px;padding:0 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit;font-size:16px;outline:none}
+  .field input::placeholder{color:#8a8a8a}
+  .field input:focus{border-color:var(--fg);box-shadow:0 0 0 1px var(--fg)}
+  .trial-note{margin:20px 0 22px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:10px 18px;text-align:left}
+  .trial-note strong{font-size:14px;font-weight:620}.trial-note span{color:var(--muted);line-height:1.45}.trial-note .spec{font-variant-numeric:tabular-nums;text-align:right;color:var(--fg)}
+  .workspace-options{display:grid;gap:10px}.workspace-options button{width:100%;min-height:50px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}.workspace-options button:hover{background:var(--hover)}
+  .progress-shell{display:grid;gap:18px}.progress-status{padding:20px;border:1px solid var(--line);border-radius:10px;text-align:left}.progress-status small{display:block;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-size:10px;margin-bottom:8px}.progress-status strong{font-size:18px}.progress-detail{margin-top:8px;color:var(--muted);line-height:1.5}.pulse{display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:999px;background:currentColor;animation:pulse 1.5s ease-in-out infinite}.error-text{margin-top:14px;color:#b42318;line-height:1.45}
+  .consuelo-stripes{position:fixed;left:0;right:0;bottom:0;height:7px;display:grid;grid-template-rows:3px 4px;pointer-events:none}.consuelo-stripes i:first-child{background:var(--stripe-a)}.consuelo-stripes i:last-child{background:var(--stripe-b)}
+  :focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+  @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+  @media (prefers-color-scheme: dark){:root{--bg:#000;--fg:#ededed;--muted:#8f8f8f;--line:#2d2d2d;--surface:#090909;--hover:#111;--stripe-a:#626262;--stripe-b:#272727}.top-action:hover,.provider-button:hover,.primary-button:hover{border-color:#555}.error-text{color:#ff8a80}}
+  @media (max-width:560px){.site-header{height:80px;padding:0 18px}.auth-main{padding:108px 18px 76px}.auth-card h1{font-size:29px}.top-action{min-height:38px;padding:0 13px}.trial-note{grid-template-columns:1fr}.trial-note .spec{text-align:left}}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+`;
+
+function authShell(input: {
+  title: string;
+  body: string;
+  topActionHref?: string;
+  topActionLabel?: string;
+  script?: string;
+}): string {
+  const topActionHref = input.topActionHref ?? '/login/google/start?purpose=web&amp;intent=signup';
+  const topActionLabel = input.topActionLabel ?? 'Sign Up';
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><title>${htmlEscape(input.title)} · Consuelo OS</title><style>${authShellStyles}</style></head><body><header class="site-header"><a class="brand" href="/" aria-label="Consuelo OS home"><span class="brand-monogram" aria-hidden="true"><span>C</span><span>OS</span></span><span>Consuelo OS</span></a><a class="top-action" href="${topActionHref}">${htmlEscape(topActionLabel)}</a></header><main class="auth-main">${input.body}</main><div class="consuelo-stripes" aria-hidden="true"><i></i><i></i></div>${input.script ? `<script>${input.script}</script>` : ''}</body></html>`;
+}
+
+function googleMark(): string {
+  return '<svg id="google-mark" class="google-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3Z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4L15.4 17c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.2H3.1v2.6A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.4 13.8A6 6 0 0 1 6 12c0-.6.1-1.2.4-1.8V7.6H3.1A10 10 0 0 0 2 12c0 1.6.4 3.1 1.1 4.4l3.3-2.6Z"/><path fill="#EA4335" d="M12 6c1.5 0 2.9.5 4 1.6l3-3A10 10 0 0 0 3.1 7.6l3.3 2.6C7.2 7.8 9.4 6 12 6Z"/></svg>';
+}
+
 export function universalLoginPage(): string {
-  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Consuelo OS</title></head><body><main><h1>Consuelo OS</h1><p>Continue to your workspace.</p><a href="/login/google/start?purpose=web">Sign in with Google</a></main></body></html>';
+  return authShell({
+    title: 'Log in',
+    body: `<section class="auth-card"><h1>Log in to Consuelo OS</h1><a class="provider-button" href="/login/google/start?purpose=web&amp;intent=login">${googleMark()}<span>Continue with Google</span></a><p class="auth-footer">Don't have an account? <a href="/login/google/start?purpose=web&amp;intent=signup">Sign Up</a></p></section>`,
+  });
+}
+
+export async function universalLoginResponse(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  try {
+    const session = await authoritySession(request, runtime);
+    if (session) {
+      return Response.redirect(new URL('/auth/workspaces', runtime.origin), 302);
+    }
+    return text(universalLoginPage());
+  } catch {
+    return text(onboardingErrorPage('Sign in is temporarily unavailable.'), {
+      status: 503,
+    });
+  }
 }
 
 export async function completeWebGoogleLogin(input: {
@@ -255,11 +367,46 @@ function chooserPage(input: {
         `<button type="submit" name="workspace_id" value="${htmlEscape(membership.workspaceId)}">${htmlEscape(membership.workspaceHost)}</button>`,
     )
     .join('');
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Choose workspace</title></head><body><main><h1>Choose a workspace</h1><form method="post" action="/auth/handoff"><input type="hidden" name="csrf_token" value="${htmlEscape(input.csrfToken)}"><input type="hidden" name="return_to" value="${htmlEscape(input.returnPath)}">${options}</form></main></body></html>`;
+  return authShell({
+    title: 'Choose workspace',
+    topActionHref: '/',
+    topActionLabel: 'Home',
+    body: `<section class="auth-card"><h1>Choose a workspace</h1><p class="lede">Continue to the Consuelo OS workspace you want to use.</p><form class="workspace-options" method="post" action="/auth/handoff"><input type="hidden" name="csrf_token" value="${htmlEscape(input.csrfToken)}"><input type="hidden" name="return_to" value="${htmlEscape(input.returnPath)}">${options}</form></section>`,
+  });
 }
 
-function noMembershipPage(): string {
-  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>No workspace</title></head><body><main><h1>No workspace is connected</h1><p>Ask a workspace administrator for access.</p></main></body></html>';
+function noMembershipPage(csrfToken: string): string {
+  return authShell({
+    title: 'Create workspace',
+    topActionHref: '/',
+    topActionLabel: 'Home',
+    body: `<section class="auth-card"><h1>Name your workspace</h1><p class="lede">Start with a 14-day free trial of Consuelo Cloud. No local install is required.</p><form method="post" action="/onboarding/workspace"><div class="field"><label for="workspace-name">Workspace name</label><input id="workspace-name" name="workspace-name" type="text" maxlength="80" autocomplete="organization" placeholder="Acme" required autofocus></div><input type="hidden" name="csrf_token" value="${htmlEscape(csrfToken)}"><div class="trial-note"><span><strong>Standard</strong><br>Recommended cloud workspace</span><span class="spec">2 vCPU · 8 GB<br>14 days free</span></div><button class="primary-button" type="submit">Create workspace</button></form></section>`,
+  });
+}
+
+function provisioningPage(input: {
+  jobId: string;
+  status: string;
+}): string {
+  const safeJobId = htmlEscape(input.jobId);
+  const statusLabel = htmlEscape(input.status.charAt(0).toUpperCase() + input.status.slice(1));
+  const script = `const jobId=${JSON.stringify(input.jobId)};const label=document.querySelector('[data-status]');const detail=document.querySelector('[data-detail]');async function poll(){try{const r=await fetch('/onboarding/status?job_id='+encodeURIComponent(jobId),{credentials:'same-origin',headers:{accept:'application/json'}});if(!r.ok)throw new Error('status');const p=await r.json();const s=p.job.status;label.textContent=s.charAt(0).toUpperCase()+s.slice(1);if(s==='ready'){detail.textContent='Your cloud workspace is ready. Opening Consuelo OS…';window.location.assign('/auth/workspaces');return}if(s==='failed'){detail.textContent=p.job.errorMessage||'Cloud setup could not finish. Retry from this page or contact Consuelo support.';document.querySelector('.pulse')?.remove();return}detail.textContent=s==='requested'?'Your workspace is queued.':s==='provisioning'?'Creating your Consuelo Cloud machine.':s==='booting'?'Starting Consuelo OS and its background services.':'Connecting your workspace and finishing setup.';setTimeout(poll,1800)}catch{detail.textContent='Still waiting for Consuelo Cloud. Retrying…';setTimeout(poll,3000)}}setTimeout(poll,700);`;
+  return authShell({
+    title: 'Setting up workspace',
+    topActionHref: '/',
+    topActionLabel: 'Home',
+    script,
+    body: `<section class="auth-card"><h1>Setting up Consuelo OS</h1><p class="lede">We’re creating your Standard cloud workspace, installing the OS runtime, and connecting its background services.</p><div class="progress-shell" aria-live="polite"><div class="progress-status"><small>Cloud workspace</small><strong><span class="pulse" aria-hidden="true"></span><span data-status>${statusLabel}</span></strong><div class="progress-detail" data-detail>Preparing your workspace…</div></div></div><p class="auth-footer">You can keep this page open. Setup will continue automatically.</p><span hidden data-job-id="${safeJobId}"></span></section>`,
+  });
+}
+
+function onboardingErrorPage(message: string): string {
+  return authShell({
+    title: 'Setup unavailable',
+    topActionHref: '/',
+    topActionLabel: 'Home',
+    body: `<section class="auth-card"><h1>Setup needs another try</h1><p class="lede">${htmlEscape(message)}</p><a class="provider-button" href="/auth/workspaces">Return to workspace setup</a></section>`,
+  });
 }
 
 async function handleWebAuthRequest(
@@ -278,10 +425,12 @@ async function handleWebAuthRequest(
     );
     const returnPath = normalizeAuthReturnPath(url.searchParams.get('return_to'));
     const choice = resolveMembershipChoice(memberships);
-    if (choice.kind === 'none') return text(noMembershipPage());
+    if (choice.kind === 'none') return text(noMembershipPage(session.csrfToken));
     if (choice.kind === 'single') {
       const membership = memberships[0];
       if (!membership) return json({ error: 'membership_not_found' }, { status: 404 });
+      const onboarding = await pendingCloudOnboardingResponse({ runtime, membership });
+      if (onboarding) return onboarding;
       return issueHandoff({ runtime, session, membership, returnPath });
     }
     return text(
@@ -291,6 +440,71 @@ async function handleWebAuthRequest(
         returnPath,
       }),
     );
+  }
+
+  if (url.pathname === '/onboarding/workspace') {
+    if (request.method !== 'POST') return methodNotAllowed('POST');
+    if (request.headers.get('origin') !== runtime.origin) {
+      return json({ error: 'csrf_failed' }, { status: 403 });
+    }
+    const session = await authoritySession(request, runtime);
+    if (!session) return json({ error: 'authority_session_required' }, { status: 401 });
+    const body = await params(request);
+    if (body.get('csrf_token') !== session.csrfToken) {
+      return json({ error: 'csrf_failed' }, { status: 403 });
+    }
+    try {
+      const created = await createCloudFirstWorkspace({
+        runtime,
+        accountId: session.accountId,
+        email: session.email,
+        workspaceName: body.get('workspace-name') ?? body.get('workspace_name') ?? '',
+      });
+      const location = new URL('/onboarding/provisioning', runtime.origin);
+      location.searchParams.set('job_id', created.job.jobId);
+      return Response.redirect(location.toString(), 302);
+    } catch (error: unknown) {
+      if (error instanceof CloudFirstOnboardingError) {
+        return text(onboardingErrorPage(error.message), { status: error.status });
+      }
+      return text(onboardingErrorPage('Cloud workspace setup is temporarily unavailable.'), {
+        status: 503,
+      });
+    }
+  }
+
+  if (url.pathname === '/onboarding/provisioning') {
+    if (request.method !== 'GET') return methodNotAllowed('GET');
+    const session = await authoritySession(request, runtime);
+    if (!session) return json({ error: 'authority_session_required' }, { status: 401 });
+    const status = await cloudFirstProvisioningStatus({
+      runtime,
+      accountId: session.accountId,
+      jobId: url.searchParams.get('job_id')?.trim() ?? '',
+    });
+    if (!status) return json({ error: 'onboarding_not_found' }, { status: 404 });
+    if (status.job.status === 'ready') {
+      return Response.redirect(new URL('/auth/workspaces', runtime.origin), 302);
+    }
+    return text(
+      provisioningPage({
+        jobId: status.job.jobId,
+        status: status.job.status,
+      }),
+    );
+  }
+
+  if (url.pathname === '/onboarding/status') {
+    if (request.method !== 'GET') return methodNotAllowed('GET');
+    const session = await authoritySession(request, runtime);
+    if (!session) return json({ error: 'authority_session_required' }, { status: 401 });
+    const status = await cloudFirstProvisioningStatus({
+      runtime,
+      accountId: session.accountId,
+      jobId: url.searchParams.get('job_id')?.trim() ?? '',
+    });
+    if (!status) return json({ error: 'onboarding_not_found' }, { status: 404 });
+    return json(status, { headers: { 'cache-control': 'no-store' } });
   }
 
   if (url.pathname === '/auth/handoff') {
@@ -314,6 +528,8 @@ async function handleWebAuthRequest(
     if (!membership) {
       return json({ error: 'membership_not_found' }, { status: 404 });
     }
+    const onboarding = await pendingCloudOnboardingResponse({ runtime, membership });
+    if (onboarding) return onboarding;
     return issueHandoff({
       runtime,
       session,
@@ -405,6 +621,9 @@ export function registerWebAuthRoutes(
     '/auth/handoff',
     '/auth/consume',
     '/auth/logout',
+    '/onboarding/workspace',
+    '/onboarding/provisioning',
+    '/onboarding/status',
     '/internal/auth/session/validate',
   ]) {
     app.all(path, (context) => handleWebAuthRequest(context.req.raw, runtime));
