@@ -240,7 +240,14 @@ describe('Consuelo OS universal login', () => {
     expect(html).toContain('google-mark');
     expect(html).toContain('prefers-color-scheme: dark');
     expect(html).toContain(':focus-visible');
-    expect(html).toContain('consuelo-stripes');
+    expect(html).toContain('class="brand-logo"');
+    expect(html).toContain('src="https://consuelohq.com/favicon.svg"');
+    expect(html).toContain('class="auth-main auth-main--login"');
+    expect(html).toContain('.auth-main--login .auth-card{width:min(100%,320px)');
+    expect(html).toContain('.auth-main--login .provider-button{min-height:40px');
+    expect(html).toContain('.auth-main--login .auth-footer a{color:#52a8ff;text-decoration:none}');
+    expect(html).not.toContain('brand-monogram');
+    expect(html).not.toContain('consuelo-stripes');
     expect(html).not.toContain('Continue to your workspace.');
     expect(html).not.toMatch(/workspace_one|one\.consuelohq\.com|connector_|node_|token|secret/i);
   });
