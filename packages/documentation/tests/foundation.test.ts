@@ -186,6 +186,9 @@ describe('foundation source contract', () => {
     expect(config).toContain('Footer:');
     expect(config).toContain('ThemeSelect:');
     expect(config).toContain('MobileMenuFooter:');
+    expect(config).toContain('Header:');
+    expect(config).toContain('MobileMenuToggle:');
+    expect(config).toContain('MobileTableOfContents:');
     expect(config).toContain('customCss:');
   });
 
@@ -253,7 +256,7 @@ describe('foundation source contract', () => {
     expect(runtimeLanguageSelect).not.toContain('Show English');
     expect(css).toContain("#starlight__sidebar a:focus:not(:focus-visible)");
     expect(css).toContain("#starlight__sidebar a[aria-current='page']");
-    expect(css).toContain('var(--sl-color-gray');
+    expect(css).toContain('var(--docs-panel)');
     expect(css).toContain('box-shadow: none');
     expect(css).not.toContain('box-shadow: inset 3px 0 0 var(--sl-color-text-accent)');
     expect(css).toContain('#starlight__sidebar ul ul li');
@@ -266,6 +269,12 @@ describe('foundation source contract', () => {
     const config = read('astro.config.mjs');
     const packageJson = read('package.json');
     const head = read('src/components/Head.astro');
+    const header = read('src/components/Header.astro');
+    const browseMenu = read('src/components/BrowseMenu.astro');
+    const docsMenuTriggerPath = new URL('../src/components/DocsMenuTrigger.astro', import.meta.url);
+    const docsMenuTrigger = existsSync(docsMenuTriggerPath) ? readFileSync(docsMenuTriggerPath, 'utf8') : '';
+    const mobileMenuToggle = read('src/components/MobileMenuToggle.astro');
+    const mobileToc = read('src/components/MobileTableOfContents.astro');
     const siteTitle = read('src/components/SiteTitle.astro');
     const sidebar = read('src/components/Sidebar.astro');
     const css = read('src/styles/docs.css');
@@ -275,17 +284,91 @@ describe('foundation source contract', () => {
     expect(config).toContain("Head: './src/components/Head.astro'");
     expect(config).toContain("SiteTitle: './src/components/SiteTitle.astro'");
     expect(siteTitle).toContain('src="/favicon.svg"');
-    expect(siteTitle).toContain('Consuelo OS');
+    expect(siteTitle).toContain('href="/"');
+    expect(siteTitle).toContain('consuelo-site-title-slash');
+    expect(siteTitle).toContain('>Docs<');
+    expect(siteTitle).not.toContain('>Consuelo OS<');
     expect(siteTitle).toContain('color: var(--sl-color-white)');
     expect(sidebar).toContain('color: var(--sl-color-gray-2)');
+    expect(sidebar).toContain('data-docs-sidebar-search-trigger');
+    expect(sidebar).toContain('Search Docs');
     expect(sidebar).not.toContain('var(--sl-color-text-accent) 12%');
+    expect(header).toContain('DocsMenuTrigger');
+    expect(header).not.toContain('<BrowseMenu />');
+    expect(header).toContain('data-docs-header-search');
+    expect(existsSync(docsMenuTriggerPath)).toBe(true);
+    expect(docsMenuTrigger).toContain('data-docs-menu-toggle');
+    expect(docsMenuTrigger).toContain('starlight__sidebar');
+    expect(docsMenuTrigger).toContain('aria-label="Open docs menu"');
+    expect(docsMenuTrigger).toContain('xPercent: -100');
+    expect(docsMenuTrigger).toContain("from 'gsap'");
+    expect(browseMenu).toContain('data-docs-build-trigger');
+    expect(browseMenu).toContain('data-docs-browse-overlay');
+    expect(browseMenu).toContain("from 'gsap'");
+    expect(browseMenu).toContain('https://consuelohq.com/changelog');
+    expect(browseMenu).toContain('https://consuelohq.com/blog');
+    expect(browseMenu).toContain('https://discord.gg/87YtkVUBvc');
+    expect(browseMenu).toContain('/build/skills/bundled/');
+    expect(browseMenu).toContain('https://os.consuelohq.com/');
+    expect(browseMenu).not.toContain('Ask AI');
+    expect(mobileMenuToggle).toContain('BrowseMenu');
+    expect(mobileMenuToggle).not.toContain('starlight__sidebar');
+    expect(browseMenu).toContain('M4 9h16');
+    expect(browseMenu).toContain('M4 15h16');
+    expect(mobileToc).toContain("from 'gsap'");
+    expect(mobileToc).toContain('data-docs-mobile-toc-sheet');
+    expect(mobileToc).not.toContain('starlight__mobile-toc');
     expect(head).toContain("dataset.docsInputModality = 'pointer'");
     expect(head).toContain("event.key === 'Tab'");
     expect(css).toContain("html[data-docs-input-modality='pointer']");
     expect(css).toContain('animation: docs-page-in 150ms');
     expect(css).toContain('@keyframes docs-page-in');
     expect(css).toContain('prefers-reduced-motion: reduce');
-    expect(packageJson).not.toContain('"gsap"');
+    expect(packageJson).toContain('"gsap"');
+  });
+
+  test('uses a left docs drawer, clean page chrome, and a landing-page home', () => {
+    const css = read('src/styles/docs.css');
+    const pageTitle = read('src/components/PageTitle.astro');
+    const home = read('src/content/docs/index.mdx');
+    expect(css).toContain('left: 0');
+    expect(css).toContain('right: auto');
+    expect(css).toContain('border-right: 1px solid var(--docs-line)');
+    expect(css).toContain('.content-panel + .content-panel');
+    expect(css).toContain('border-top: 0');
+    expect(css).toContain('.page > header.header');
+    expect(css).toContain('border-bottom: 0');
+    expect(css).toContain('.sl-markdown-content .sl-anchor-link');
+    expect(css).toContain('display: none');
+    expect(pageTitle).toContain('isHome');
+    for (const href of ['/start/', '/connect/', '/tools/']) expect(pageTitle).toContain(`href="${href}"`);
+    expect(home).toContain('data-home-install-command');
+    expect(home).toContain('data-home-install-copy');
+    expect(home).not.toContain('```bash');
+    expect(css).toContain('overflow-wrap: anywhere');
+    expect(css).toContain('.home-install-command button');
+    expect(pageTitle).toContain("closest('[data-home-install-copy]')");
+  });
+
+  test('uses the launcher warm editorial palette without changing fonts', () => {
+    const css = read('src/styles/docs.css');
+    for (const token of [
+      '--docs-paper: #0f0f0d',
+      '--docs-ink: #f7efe7',
+      '--docs-surface: #191814',
+      '--docs-muted: #c3b4a7',
+      '--docs-accent: #e06b3e',
+      '--docs-paper: #faf7f2',
+      '--docs-ink: #1c1a17',
+      '--docs-surface: #fffaf3',
+      '--docs-muted: #8a817a',
+      '--docs-accent: #c0512f',
+    ]) {
+      expect(css).toContain(token);
+    }
+    expect(css).toContain('--sl-mobile-toc-height: 0rem');
+    expect(css).not.toContain('@font-face');
+    expect(css).not.toContain('--sl-font:');
   });
 
   test('uses a calm reading measure without changing the font family', () => {

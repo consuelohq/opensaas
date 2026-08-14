@@ -3,12 +3,28 @@ import { getBreadcrumbs } from '../lib/docs-navigation';
 import { pagePathToMarkdownHref } from '../lib/markdown-pages';
 
 const title = Astro.locals.starlightRoute.entry.data.title;
+const description = Astro.locals.starlightRoute.entry.data.description;
 const markdownHref = pagePathToMarkdownHref(Astro.url.pathname);
 const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
+const hasToc = Boolean(Astro.locals.starlightRoute.toc);
+const isHome = Astro.url.pathname === '/';
 ---
 
+{isHome && (
+  <section class="docs-home-hero" aria-labelledby="_top">
+    <p class="docs-home-kicker">Consuelo OS documentation</p>
+    <h1 id="_top">{title}</h1>
+    {description && <p class="docs-home-description">{description}</p>}
+    <div class="docs-home-actions" aria-label="Documentation shortcuts">
+      <a class="docs-home-primary" href="/start/">Get started</a>
+      <a href="/connect/">Connect an agent</a>
+      <a href="/tools/">Browse tools</a>
+    </div>
+  </section>
+)}
+
 {
-  breadcrumbs.length > 0 && (
+  !isHome && breadcrumbs.length > 0 && (
     <nav class="page-breadcrumbs" aria-label="Breadcrumb">
       <ol>
         {breadcrumbs.map((crumb, index) => (
@@ -26,9 +42,10 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
   )
 }
 
-<div class="page-title-row">
+{!isHome && (<div class="page-title-row">
   <h1 id="_top">{title}</h1>
-  <div class="page-actions" data-markdown-href={markdownHref} data-copy-state="">
+  <div class="page-title-controls">
+    <div class="page-actions" data-markdown-href={markdownHref} data-copy-state="">
     <button type="button" class="copy-page" data-page-action="copy">
       <svg class="page-action-icon" aria-hidden="true" viewBox="0 0 24 24">
         <rect x="9" y="9" width="11" height="11" rx="2" />
@@ -99,9 +116,21 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
         </a>
       </div>
     </details>
-    <span class="action-status" aria-live="polite"></span>
+      <span class="action-status" aria-live="polite"></span>
+    </div>
+    {hasToc && (
+      <button
+        class="page-toc-trigger"
+        type="button"
+        aria-controls="docs-mobile-toc-sheet"
+        aria-expanded="false"
+        data-docs-toc-trigger
+      >
+        On this page
+      </button>
+    )}
   </div>
-</div>
+</div>)}
 
 <script>
   async function copyText(text) {
@@ -119,6 +148,27 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
     document.execCommand('copy');
     textarea.remove();
   }
+
+  document.addEventListener('click', async (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest('[data-home-install-copy]');
+    if (!(button instanceof HTMLButtonElement)) return;
+    const container = button.closest('[data-home-install-command]');
+    if (!(container instanceof HTMLElement)) return;
+    const command = container.dataset.command || Array.from(container.childNodes)
+      .filter((node) => node.nodeType === Node.TEXT_NODE)
+      .map((node) => node.textContent?.trim() || '')
+      .find(Boolean);
+    if (!command) return;
+    await copyText(command);
+    button.dataset.copied = 'true';
+    button.setAttribute('aria-label', 'Install command copied');
+    window.setTimeout(() => {
+      delete button.dataset.copied;
+      button.setAttribute('aria-label', 'Copy install command');
+    }, 1400);
+  });
 
   document.querySelectorAll('.page-actions').forEach((actions) => {
     if (!(actions instanceof HTMLElement)) return;
@@ -230,11 +280,90 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
       color: var(--sl-color-gray-5);
     }
 
+    .docs-home-hero {
+      display: grid;
+      gap: 1.25rem;
+      padding: clamp(2rem, 7vw, 5.5rem) 0 clamp(1rem, 3vw, 2rem);
+    }
+
+    .docs-home-kicker {
+      color: var(--docs-accent);
+      font-size: var(--sl-text-sm);
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .docs-home-hero h1 {
+      font-size: clamp(2.8rem, 8vw, 5.25rem);
+      letter-spacing: -0.045em;
+      line-height: 0.98;
+      margin: 0;
+      max-width: 12ch;
+    }
+
+    .docs-home-description {
+      color: var(--docs-muted);
+      font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+      line-height: 1.55;
+      margin: 0;
+      max-width: 42rem;
+    }
+
+    .docs-home-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-top: 0.35rem;
+    }
+
+    .docs-home-actions a {
+      align-items: center;
+      border: 1px solid var(--docs-line-strong);
+      border-radius: 0.55rem;
+      color: var(--docs-ink);
+      display: inline-flex;
+      font-size: var(--sl-text-sm);
+      font-weight: 600;
+      justify-content: center;
+      min-height: 2.8rem;
+      padding: 0 1rem;
+      text-decoration: none;
+    }
+
+    .docs-home-actions a:hover,
+    .docs-home-actions a:focus-visible {
+      border-color: var(--docs-accent);
+      color: var(--docs-accent);
+    }
+
+    .docs-home-actions .docs-home-primary {
+      background: var(--docs-ink);
+      border-color: var(--docs-ink);
+      color: var(--docs-paper);
+    }
+
+    .docs-home-actions .docs-home-primary:hover,
+    .docs-home-actions .docs-home-primary:focus-visible {
+      background: var(--docs-accent);
+      border-color: var(--docs-accent);
+      color: var(--docs-paper);
+    }
+
     .page-title-row {
       align-items: flex-start;
       display: flex;
       gap: 1.5rem;
       justify-content: space-between;
+    }
+
+    .page-title-controls {
+      align-items: center;
+      display: flex;
+      flex: 0 0 auto;
+      gap: 0.65rem;
+      margin-top: 1rem;
     }
 
     h1 {
@@ -248,20 +377,26 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
 
     .page-actions {
       align-items: stretch;
+      background: var(--sl-color-bg-nav);
+      border: 1px solid var(--sl-color-hairline-light);
+      border-radius: 0.5rem;
+      box-sizing: border-box;
       display: flex;
       flex: 0 0 auto;
-      margin-top: 1rem;
+      min-height: 2.5rem;
       position: relative;
     }
 
     .copy-page,
     summary {
       align-items: center;
-      background: var(--sl-color-bg-nav);
-      border: 1px solid var(--sl-color-hairline-light);
+      background: transparent;
+      border: 0;
+      box-sizing: border-box;
       color: var(--sl-color-white);
       display: inline-flex;
-      min-height: 2.25rem;
+      height: 2.5rem;
+      min-height: 2.5rem;
     }
 
     .copy-page {
@@ -271,21 +406,23 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
       font-size: var(--sl-text-sm);
       font-weight: 600;
       gap: 0.45rem;
-      padding: 0.45rem 0.7rem;
+      padding: 0 0.75rem;
     }
 
     details {
+      display: flex;
+      margin: 0;
       position: relative;
     }
 
     summary {
-      border-left: 0;
+      border-inline-start: 1px solid var(--sl-color-hairline-light);
       border-radius: 0 0.45rem 0.45rem 0;
       cursor: pointer;
       justify-content: center;
       list-style: none;
-      min-width: 2.25rem;
-      padding: 0.45rem;
+      min-width: 2.5rem;
+      padding: 0 0.55rem;
     }
 
     summary::-webkit-details-marker {
@@ -308,10 +445,14 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
       display: none;
     }
 
-    .page-actions[data-copy-state='success'] .copy-page,
-    .page-actions[data-copy-state='success'] summary {
+    .page-actions[data-copy-state='success'] {
       background: #16a34a;
       border-color: #16a34a;
+      color: #fff;
+    }
+
+    .page-actions[data-copy-state='success'] .copy-page,
+    .page-actions[data-copy-state='success'] summary {
       color: #fff;
     }
 
@@ -327,8 +468,7 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
     .copy-page:focus-visible,
     summary:hover,
     summary:focus-visible {
-      background: var(--sl-color-gray-6);
-      border-color: var(--sl-color-gray-4);
+      background: var(--docs-panel);
     }
 
     .copy-page:focus:not(:focus-visible),
@@ -409,23 +549,76 @@ const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
       width: 1px;
     }
 
-    @media (max-width: 35rem) {
+    .page-toc-trigger {
+      align-items: center;
+      background: transparent;
+      border: 1px solid var(--sl-color-hairline-light);
+      border-radius: 0.5rem;
+      color: var(--sl-color-white);
+      cursor: pointer;
+      display: inline-flex;
+      font: inherit;
+      font-size: var(--sl-text-sm);
+      font-weight: 500;
+      justify-content: center;
+      min-height: 2.5rem;
+      padding: 0 0.8rem;
+      white-space: nowrap;
+    }
+
+    .page-toc-trigger:hover,
+    .page-toc-trigger:focus-visible {
+      border-color: var(--docs-line-strong);
+      color: var(--docs-accent);
+    }
+
+    @media (max-width: 71.999rem) {
       .page-title-row {
-        display: block;
+        display: grid;
+        gap: 0.7rem;
+      }
+
+      .page-title-controls {
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 0.35rem;
+        order: -1;
+        width: 100%;
       }
 
       h1 {
-        max-width: none;
+        margin-top: 0.8rem;
       }
 
-      .page-actions {
-        width: max-content;
+      .docs-home-hero {
+        padding-top: 2.5rem;
+      }
+    }
+
+    @media (min-width: 72rem) {
+      .page-toc-trigger {
+        display: none;
+      }
+    }
+
+    @media (max-width: 35rem) {
+      h1 {
+        max-width: none;
       }
 
       .page-actions-menu {
         left: 0;
         min-width: min(18.5rem, calc(100vw - 2.5rem));
         right: auto;
+      }
+
+      .docs-home-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .docs-home-actions .docs-home-primary {
+        grid-column: 1 / -1;
       }
     }
   }
