@@ -310,6 +310,31 @@ describe('test selection registry', () => {
     );
   });
 
+  it('uses focused canonical device approval contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/install-control-plane.ts',
+      '--changed-file',
+      'packages/consuelo-website/src/pages/login/device.astro',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-device-approval-canonical-identity');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS canonical device approval contracts',
+      'OS canonical device approval syntax contracts',
+    ]);
+  });
+
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

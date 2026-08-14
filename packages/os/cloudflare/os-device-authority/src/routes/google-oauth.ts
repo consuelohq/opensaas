@@ -3,6 +3,7 @@ import type { Hono } from 'hono';
 import { TTL_MS } from '../constants';
 import { json, methodNotAllowed, page, text } from '../http';
 import { normalizeAuthReturnPath } from '../security/web-auth-contract';
+import { resolveCanonicalDeviceIdentity } from '../services/canonical-device-identity';
 import type { DeviceAuthorityRuntime } from '../types';
 import { rand } from '../utils';
 import {
@@ -19,6 +20,7 @@ import {
   prepareGrantApproval,
 } from '../services/grants';
 import { registerApprovedWorkspaceRoute } from '../services/connectors';
+import { recordCanonicalInstallIdentity } from '../services/install-identity';
 import { finishMcpOAuthGoogleCallback } from '../services/mcp-oauth';
 import { completeWebGoogleLogin } from './web-auth';
 
@@ -217,14 +219,37 @@ async function handleGoogleOAuthRequest(
           { status: 502 },
         );
       }
-      const accountId = `google:${identity.sub}`;
-      const existingWorkspace = await input.store.byAccountWorkspace(accountId);
-      if (existingWorkspace) {
+      const canonicalIdentity = await resolveCanonicalDeviceIdentity({
+        repository: input.installControlPlaneRepository,
+        store: input.store,
+        email: identity.email,
+        googleSubject: identity.sub,
+        nowMs: now(),
+      });
+      if (canonicalIdentity.status === 'denied') {
+        await input.store.delOAuthState(stateValue);
+        return text(
+          page({
+            code: oauthState.userCode,
+            origin,
+            error:
+              'This Google account is not ready for Consuelo OS. Sign in to Consuelo first, then retry device approval.',
+          }),
+          { status: 403 },
+        );
+      }
+      const accountId = canonicalIdentity.operatingAccountId;
+      grant.canonicalUserId = canonicalIdentity.canonicalUserId;
+      grant.canonicalWorkspaceId = canonicalIdentity.canonicalWorkspaceId;
+      grant.workspaceId = canonicalIdentity.canonicalWorkspaceId;
+      grant.accountId = accountId;
+      grant.accountAuthMethod = 'google';
+      if (canonicalIdentity.workspaceRoute) {
         assignGrantWorkspace({
           grant,
-          workspaceId: existingWorkspace.workspaceId,
-          workspaceSlug: existingWorkspace.workspaceSlug,
-          workspaceHost: existingWorkspace.workspaceHost,
+          workspaceId: canonicalIdentity.canonicalWorkspaceId,
+          workspaceSlug: canonicalIdentity.workspaceRoute.workspaceSlug,
+          workspaceHost: canonicalIdentity.workspaceRoute.workspaceHost,
         });
       }
       if (grant.workspaceSlug && grant.workspaceHost) {
@@ -264,6 +289,7 @@ async function handleGoogleOAuthRequest(
           accountId,
           nowMs: now(),
         });
+        await recordCanonicalInstallIdentity(runtime, grant);
         return text(
           page({
             code: oauthState.userCode,
@@ -272,8 +298,6 @@ async function handleGoogleOAuthRequest(
           }),
         );
       }
-      grant.accountId = accountId;
-      grant.accountAuthMethod = 'google';
       await input.store.put(grant);
       await input.store.delOAuthState(stateValue);
       return text(

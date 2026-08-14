@@ -28,8 +28,20 @@ export type InstallControlPlaneUserRecord = {
   email?: string;
   displayName?: string;
   workspaceIds: string[];
+  workspaceMembershipVerifiedAt?: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type InstallControlPlaneWorkspaceMembership = {
+  workspaceId: string;
+  verifiedAt: string;
+};
+
+export type InstallControlPlaneCanonicalUser = {
+  userId: string;
+  email?: string;
+  workspaceMemberships: InstallControlPlaneWorkspaceMembership[];
 };
 
 export type InstallControlPlaneDiagnosticRecord = {
@@ -61,6 +73,9 @@ export type InstallControlPlaneRepository = {
     options: InstallControlPlaneIngestOptions,
   ): Promise<{ created: boolean; install: InstallDashboardInstallSummary }>;
   upsertUser(record: InstallControlPlaneUserRecord): Promise<void>;
+  findCanonicalUsersByEmail(
+    email: string,
+  ): Promise<InstallControlPlaneCanonicalUser[]>;
   recordDiagnosticBundle(record: InstallControlPlaneDiagnosticRecord): Promise<void>;
   getDiagnosticBundleRecord(
     installId: InstallId,
@@ -102,6 +117,7 @@ type MemoryState = {
   events: Map<string, StoredEvent>;
   sessions: Map<InstallId, StoredSession>;
   users: Map<string, InstallControlPlaneUserRecord>;
+  userWorkspaceVerifiedAt: Map<string, string>;
   diagnostics: Map<string, InstallControlPlaneDiagnosticRecord>;
   evidence: Map<string, InstallControlPlaneEvidenceRecord>;
 };
@@ -115,6 +131,63 @@ function isoMs(value: string, label: string): number {
   const ms = Date.parse(value);
   if (!Number.isFinite(ms)) throw new Error(`invalid ${label}`);
   return ms;
+}
+
+function normalizedEmail(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function userWorkspaceKey(userId: string, workspaceId: string): string {
+  return `${userId}\u0000${workspaceId}`;
+}
+
+function upsertMemoryUser(
+  state: MemoryState,
+  record: InstallControlPlaneUserRecord,
+): void {
+  if (!record.userId.trim() || record.userId.startsWith('google:')) {
+    throw new Error('user directory requires canonical Consuelo user id');
+  }
+  isoMs(record.createdAt, 'user createdAt');
+  isoMs(record.updatedAt, 'user updatedAt');
+  if (record.workspaceMembershipVerifiedAt) {
+    isoMs(
+      record.workspaceMembershipVerifiedAt,
+      'workspace membership verifiedAt',
+    );
+  }
+  const current = state.users.get(record.userId);
+  const email = record.email?.trim()
+    ? normalizedEmail(record.email)
+    : current?.email;
+  state.users.set(record.userId, {
+    ...(current ?? record),
+    ...record,
+    ...(email ? { email } : {}),
+    workspaceIds: [
+      ...new Set([...(current?.workspaceIds ?? []), ...record.workspaceIds]),
+    ].sort(),
+    createdAt: [current?.createdAt, record.createdAt]
+      .filter((value): value is string => Boolean(value))
+      .sort()[0]!,
+    updatedAt: [current?.updatedAt, record.updatedAt]
+      .filter((value): value is string => Boolean(value))
+      .sort()
+      .at(-1)!,
+  });
+  if (record.workspaceMembershipVerifiedAt) {
+    for (const workspaceId of [...new Set(record.workspaceIds)].filter(Boolean)) {
+      const key = userWorkspaceKey(record.userId, workspaceId);
+      const currentVerifiedAt = state.userWorkspaceVerifiedAt.get(key);
+      state.userWorkspaceVerifiedAt.set(
+        key,
+        [currentVerifiedAt, record.workspaceMembershipVerifiedAt]
+          .filter((value): value is string => Boolean(value))
+          .sort()
+          .at(-1)!,
+      );
+    }
+  }
 }
 
 function cloneEvent(event: InstallTelemetryEvent): InstallTelemetryEvent {
@@ -390,6 +463,7 @@ export function createMemoryInstallControlPlaneRepository(): InstallControlPlane
     events: new Map(),
     sessions: new Map(),
     users: new Map(),
+    userWorkspaceVerifiedAt: new Map(),
     diagnostics: new Map(),
     evidence: new Map(),
   };
@@ -434,13 +508,7 @@ export function createMemoryInstallControlPlaneRepository(): InstallControlPlane
       if (session.userId && session.workspaceId) {
         const inferred = inferredUserFromInstall(session);
         if (inferred) {
-          const current = state.users.get(inferred.userId);
-          state.users.set(inferred.userId, {
-            ...inferred,
-            ...current,
-            workspaceIds: [...new Set([...(current?.workspaceIds ?? []), ...inferred.workspaceIds])].sort(),
-            updatedAt: [current?.updatedAt ?? inferred.updatedAt, inferred.updatedAt].sort().at(-1)!,
-          });
+          upsertMemoryUser(state, inferred);
         }
       }
       state.events.set(event.eventId, storedEvent);
@@ -449,24 +517,34 @@ export function createMemoryInstallControlPlaneRepository(): InstallControlPlane
     },
 
     async upsertUser(record) {
-      if (!record.userId.trim() || record.userId.startsWith('google:')) {
-        throw new Error('user directory requires canonical Consuelo user id');
-      }
-      isoMs(record.createdAt, 'user createdAt');
-      isoMs(record.updatedAt, 'user updatedAt');
-      const current = state.users.get(record.userId);
-      state.users.set(record.userId, {
-        ...(current ?? record),
-        ...record,
-        workspaceIds: [...new Set([...(current?.workspaceIds ?? []), ...record.workspaceIds])].sort(),
-        createdAt: [current?.createdAt, record.createdAt]
-          .filter((value): value is string => Boolean(value))
-          .sort()[0]!,
-        updatedAt: [current?.updatedAt, record.updatedAt]
-          .filter((value): value is string => Boolean(value))
-          .sort()
-          .at(-1)!,
-      });
+      upsertMemoryUser(state, record);
+    },
+
+    async findCanonicalUsersByEmail(email) {
+      const normalized = normalizedEmail(email);
+      if (!normalized) return [];
+      return [...state.users.values()]
+        .filter(
+          (record) =>
+            Boolean(record.email) && normalizedEmail(record.email ?? '') === normalized,
+        )
+        .sort((left, right) => left.userId.localeCompare(right.userId))
+        .map((record) => ({
+          userId: record.userId,
+          ...(record.email ? { email: normalizedEmail(record.email) } : {}),
+          workspaceMemberships: record.workspaceIds
+            .flatMap((workspaceId) => {
+              const verifiedAt = state.userWorkspaceVerifiedAt.get(
+                userWorkspaceKey(record.userId, workspaceId),
+              );
+              return verifiedAt ? [{ workspaceId, verifiedAt }] : [];
+            })
+            .sort(
+              (left, right) =>
+                right.verifiedAt.localeCompare(left.verifiedAt) ||
+                left.workspaceId.localeCompare(right.workspaceId),
+            ),
+        }));
     },
 
     async recordDiagnosticBundle(record) {

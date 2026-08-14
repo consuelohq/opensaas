@@ -504,6 +504,55 @@
       "reason": "Launcher onboarding copy-interaction changes must prove generated UI behavior, Sites materialization, and Astro source validity without selecting the historically red unrelated OS package suite."
     },
     {
+      "id": "os-device-approval-canonical-identity",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/consuelo-website/src/pages/login/device.astro",
+        "packages/os/cloudflare/os-device-authority/src/routes/device.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/canonical-device-identity.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/install-identity.ts",
+        "packages/os/cloudflare/workspace-edge/migrations/0005_install_user_workspace_verification.sql",
+        "packages/os/scripts/lib/install-control-plane-d1.ts",
+        "packages/os/scripts/lib/install-control-plane.ts",
+        "packages/os/tests/canonical-device-identity.test.ts",
+        "packages/os/tests/install-control-plane-d1.test.ts",
+        "packages/os/tests/install-control-plane.test.ts",
+        "packages/os/tests/internal-dashboard-integration.test.ts",
+        "packages/os/tests/native-google-device-approval.test.ts",
+        "packages/os/tests/oauth-device-page-contract.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS canonical device approval syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests."
+    },
+    {
       "id": "os-managed-cloud-one-click-provisioning",
       "critical": true,
       "exclusive": true,

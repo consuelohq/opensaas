@@ -263,6 +263,20 @@ describe('Branch 6 internal dashboard integration', () => {
         }),
       ],
     });
+    await expect(
+      repository.findCanonicalUsersByEmail('katherine@consuelo.test'),
+    ).resolves.toEqual([
+      {
+        userId: 'user_katherine',
+        email: 'katherine@consuelo.test',
+        workspaceMemberships: [
+          {
+            workspaceId: 'workspace_katherine',
+            verifiedAt: new Date(NOW).toISOString(),
+          },
+        ],
+      },
+    ]);
 
     const forged = await authority(
       new Request('https://os.consuelohq.com/internal/install-control-plane/users', {

@@ -44,6 +44,58 @@ function event(
 }
 
 describe('install control plane repository', () => {
+  it('finds canonical users by normalized email and preserves workspace synchronization recency', async () => {
+    const repository = createMemoryInstallControlPlaneRepository();
+    await repository.upsertUser({
+      userId: 'user_123',
+      email: 'Ko@Example.com',
+      workspaceIds: ['workspace_old'],
+      workspaceMembershipVerifiedAt: '2026-08-10T12:00:00.000Z',
+      createdAt: '2026-08-10T12:00:00.000Z',
+      updatedAt: '2026-08-10T12:00:00.000Z',
+    });
+    await repository.upsertUser({
+      userId: 'user_123',
+      email: 'ko@example.com',
+      workspaceIds: ['workspace_new'],
+      workspaceMembershipVerifiedAt: '2026-08-13T12:00:00.000Z',
+      createdAt: '2026-08-10T12:00:00.000Z',
+      updatedAt: '2026-08-13T12:00:00.000Z',
+    });
+
+    await expect(repository.findCanonicalUsersByEmail(' KO@EXAMPLE.COM ')).resolves.toEqual([
+      {
+        userId: 'user_123',
+        email: 'ko@example.com',
+        workspaceMemberships: [
+          { workspaceId: 'workspace_new', verifiedAt: '2026-08-13T12:00:00.000Z' },
+          { workspaceId: 'workspace_old', verifiedAt: '2026-08-10T12:00:00.000Z' },
+        ],
+      },
+    ]);
+  });
+
+  it('never treats install-derived workspace identity as signed membership verification', async () => {
+    const repository = createMemoryInstallControlPlaneRepository();
+    await repository.upsertUser({
+      userId: 'user_install_only',
+      email: 'install-only@example.com',
+      workspaceIds: ['workspace_install_only'],
+      createdAt: '2026-08-13T12:00:00.000Z',
+      updatedAt: '2026-08-13T12:00:00.000Z',
+    });
+
+    await expect(
+      repository.findCanonicalUsersByEmail('install-only@example.com'),
+    ).resolves.toEqual([
+      {
+        userId: 'user_install_only',
+        email: 'install-only@example.com',
+        workspaceMemberships: [],
+      },
+    ]);
+  });
+
   it('accepts anonymous installer events idempotently and refuses canonical identity from the public installer trust boundary', async () => {
     const repository = createMemoryInstallControlPlaneRepository();
     const started = event({

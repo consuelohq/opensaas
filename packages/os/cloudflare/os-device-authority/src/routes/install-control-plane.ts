@@ -235,6 +235,11 @@ export function registerInstallControlPlaneRoutes(
         ...(payload.email ? { email: payload.email } : {}),
         ...(payload.display_name ? { displayName: payload.display_name } : {}),
         workspaceIds: payload.workspace_id ? [payload.workspace_id] : [],
+        ...(payload.workspace_id
+          ? {
+              workspaceMembershipVerifiedAt: new Date(runtime.now()).toISOString(),
+            }
+          : {}),
         createdAt: payload.created_at,
         updatedAt: payload.updated_at,
       });
