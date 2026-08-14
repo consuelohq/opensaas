@@ -310,6 +310,28 @@ describe('test selection registry', () => {
     );
   });
 
+  it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/launcher-onboarding.ts',
+      '--changed-file',
+      'packages/consuelo-website/src/pages/os/launcher.astro',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-launcher-copy-interaction');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS launcher copy interaction contracts',
+      'OS launcher Sites materialization contracts',
+      'Consuelo website launcher Astro check',
+    ]);
+  });
+
   it('uses focused hosted-site reconciliation contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

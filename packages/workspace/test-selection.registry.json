@@ -5,8 +5,8 @@
     "testFileCount": 2613,
     "mappedTestCount": 2532,
     "unmappedTestCount": 81,
-    "ruleCount": 48,
-    "explicitRuleCount": 29,
+    "ruleCount": 49,
+    "explicitRuleCount": 30,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -1104,6 +1104,56 @@
       "critical": true,
       "exclusive": true,
       "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-launcher-copy-interaction",
+      "source": [
+        "packages/consuelo-website/src/pages/os/launcher.astro",
+        "packages/os/scripts/lib/launcher-onboarding.ts",
+        "packages/os/tests/launcher-astro-source.test.ts",
+        "packages/os/tests/launcher-onboarding.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS launcher copy interaction contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/launcher-onboarding.test.ts",
+            "tests/launcher-astro-source.test.ts"
+          ]
+        },
+        {
+          "name": "OS launcher Sites materialization contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/sites-cli.test.ts",
+            "-t",
+            "launcher"
+          ]
+        },
+        {
+          "name": "Consuelo website launcher Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Launcher onboarding copy-interaction changes must prove generated UI behavior, Sites materialization, and Astro source validity without selecting the historically red unrelated OS package suite.",
       "origin": "explicit"
     },
     {
