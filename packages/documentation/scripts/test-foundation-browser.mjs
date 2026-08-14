@@ -39,13 +39,13 @@ try {
   if ((await siteTitleLogo.getAttribute('src')) !== '/favicon.svg') throw new Error('Header brand must use the docs favicon');
   const mainFrameAnimation = await page.locator('.main-frame').evaluate((element) => getComputedStyle(element).animationName);
   if (mainFrameAnimation !== 'docs-page-in') throw new Error(`Main frame entrance animation is ${mainFrameAnimation}`);
-  const globalLinks = page.locator('#starlight__sidebar a.global-section-link');
+  const globalLinks = page.locator('#starlight__sidebar .global-sidebar-desktop a.global-section-link');
   const globalCount = await globalLinks.count();
-  if (globalCount !== 10) throw new Error(`Expected 10 direct global section links, found ${globalCount}`);
-  if ((await page.locator('#starlight__sidebar details').count()) !== 0) throw new Error('Global sidebar must not render dropdown groups');
-  const startGlobalLink = page.locator('#starlight__sidebar').getByRole('link', { name: 'Start', exact: true });
+  if (globalCount !== 11) throw new Error(`Expected 11 direct desktop global section links, found ${globalCount}`);
+  if (await page.locator('#starlight__sidebar .global-sidebar-mobile').isVisible()) throw new Error('Mobile accordion navigation must be hidden on desktop');
+  const startGlobalLink = page.locator('#starlight__sidebar .global-sidebar-desktop').getByRole('link', { name: 'Start', exact: true });
   if ((await startGlobalLink.getAttribute('href')) !== '/start/') throw new Error('Start must link directly to its overview');
-  const nodesGlobalLink = page.locator('#starlight__sidebar').getByRole('link', { name: 'Nodes', exact: true });
+  const nodesGlobalLink = page.locator('#starlight__sidebar .global-sidebar-desktop').getByRole('link', { name: 'Nodes', exact: true });
   if ((await nodesGlobalLink.getAttribute('href')) !== '/nodes/') throw new Error('Nodes must link directly to its overview');
   const globalLinkRest = await startGlobalLink.evaluate((element) => ({
     backgroundColor: getComputedStyle(element).backgroundColor,
@@ -75,8 +75,21 @@ try {
     }
   };
   const header = page.getByRole('banner');
-  await assertPointerFocusIsQuiet(header.getByLabel('Translate this page'), 'Translation select');
-  await assertPointerFocusIsQuiet(header.locator('starlight-theme-select select'), 'Theme select');
+  if ((await header.getByLabel('Translate this page').count()) !== 0) throw new Error('Translate selector must not be visible');
+  for (const label of ['Use system appearance', 'Use light appearance', 'Use dark appearance']) {
+    await assertPointerFocusIsQuiet(header.getByRole('button', { name: label }), `${label} button`);
+  }
+  const lightThemeButton = header.getByRole('button', { name: 'Use light appearance' });
+  const darkThemeButton = header.getByRole('button', { name: 'Use dark appearance' });
+  const autoThemeButton = header.getByRole('button', { name: 'Use system appearance' });
+  await lightThemeButton.click();
+  if ((await page.locator('html').getAttribute('data-theme')) !== 'light') throw new Error('Light display toggle did not set the light theme');
+  if ((await page.evaluate(() => localStorage.getItem('starlight-theme'))) !== 'light') throw new Error('Light display preference was not persisted');
+  await darkThemeButton.click();
+  if ((await page.locator('html').getAttribute('data-theme')) !== 'dark') throw new Error('Dark display toggle did not set the dark theme');
+  await autoThemeButton.click();
+  if ((await page.evaluate(() => localStorage.getItem('starlight-theme'))) !== null) throw new Error('System display toggle must clear the explicit theme preference');
+  if ((await autoThemeButton.getAttribute('aria-pressed')) !== 'true') throw new Error('System display toggle did not become selected');
   const searchButton = page.getByRole('button', { name: /Search/ }).first();
   await assertPointerFocusIsQuiet(searchButton, 'Search button');
 
@@ -144,10 +157,11 @@ try {
   await startCard.hover();
   const cardHover = await startCard.evaluate((element) => {
     const style = getComputedStyle(element);
-    return { borderWidth: style.borderTopWidth, boxShadow: style.boxShadow };
+    return { borderWidth: style.borderTopWidth, borderColor: style.borderTopColor, boxShadow: style.boxShadow };
   });
-  if (cardHover.borderWidth !== '2px') throw new Error(`Start card hover border is ${cardHover.borderWidth}`);
+  if (cardHover.borderWidth !== '1px') throw new Error(`Start card hover border is ${cardHover.borderWidth}`);
   if (cardHover.boxShadow !== 'none') throw new Error(`Start card hover has a doubled outline: ${cardHover.boxShadow}`);
+  await assertPointerFocusIsQuiet(startCard, 'Start card');
   await page.goto(`${origin}/start/`, { waitUntil: 'networkidle' });
 
   const markdownResponse = await fetch(`${origin}/start.md`);
@@ -246,7 +260,7 @@ try {
   if (shellStyles.nestedGuideWidth !== '0px') throw new Error(`Nested sidebar guide remains ${shellStyles.nestedGuideWidth}`);
 
   const registry = page.locator('.docs-registry-grid');
-  if ((await registry.locator('.docs-registry-column').count()) !== 10) throw new Error('Footer registry must contain ten sections');
+  if ((await registry.locator('.docs-registry-column').count()) !== 11) throw new Error('Footer registry must contain eleven sections');
   const desktopColumns = await registry.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
   if (desktopColumns !== 7) throw new Error(`Footer registry must use seven desktop columns, found ${desktopColumns}`);
   const lastHeadingY = await page.locator('#tools-skills-and-scripts').evaluate(
@@ -305,17 +319,75 @@ try {
       await page.goto(origin, { waitUntil: 'networkidle' });
       const globalMenuButton = page.locator('button[aria-controls="starlight__sidebar"]');
       await globalMenuButton.click();
-      const mobileGlobalLabels = (await page.locator('#starlight__sidebar a.global-section-link').allTextContents()).map((label) => label.trim());
-      const expectedGlobalLabels = ['Start', 'Connect', 'Nodes', 'Tools', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference'];
+      const mobileSidebar = page.locator('#starlight__sidebar .global-sidebar-mobile');
+      if (!(await mobileSidebar.isVisible())) throw new Error('Mobile accordion navigation is not visible');
+      const mobileGlobalLabels = (await mobileSidebar.locator(':scope > ul > li > details > summary').allTextContents()).map((label) => label.trim());
+      const expectedGlobalLabels = ['Start', 'Connect', 'Nodes', 'Tools', 'Sites', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference'];
       if (JSON.stringify(mobileGlobalLabels) !== JSON.stringify(expectedGlobalLabels)) {
         throw new Error(`Mobile global navigation order is wrong: ${JSON.stringify(mobileGlobalLabels)}`);
       }
+      const startDetails = mobileSidebar.locator(':scope > ul > li > details').filter({ has: page.locator('summary', { hasText: 'Start' }) }).first();
+      const urlBeforeToggle = page.url();
+      await startDetails.locator(':scope > summary').click();
+      if (page.url() !== urlBeforeToggle) throw new Error('Tapping a mobile top-level section navigated instead of toggling');
+      if (!(await startDetails.evaluate((element) => element.open))) throw new Error('Tapping Start did not expand the mobile section');
+      if (!(await startDetails.getByRole('link', { name: 'Overview', exact: true }).isVisible())) throw new Error('Expanded Start section does not reveal its overview link');
+
+      const mobilePreferences = page.locator('[data-docs-mobile-preferences]');
+      const githubLink = mobilePreferences.getByRole('link', { name: 'GitHub' });
+      const mobileThemeToggle = mobilePreferences.locator('[data-docs-theme-toggle]');
+      if (!(await githubLink.isVisible()) || !(await mobileThemeToggle.isVisible())) throw new Error('GitHub and display controls must both be visible in the mobile footer');
+      const [githubBox, themeBox] = await Promise.all([githubLink.boundingBox(), mobileThemeToggle.boundingBox()]);
+      if (!githubBox || !themeBox) throw new Error('Could not measure the mobile footer controls');
+      if (Math.abs((githubBox.y + githubBox.height / 2) - (themeBox.y + themeBox.height / 2)) > 8) throw new Error('GitHub and display controls are not aligned on one row');
+      if (themeBox.x <= githubBox.x) throw new Error('Display control must sit to the right of GitHub in the mobile footer');
+      if ((await mobilePreferences.locator('select').count()) !== 0) throw new Error('Mobile footer must not contain language or theme dropdowns');
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });
   }
 
-  process.stdout.write(`${JSON.stringify({ ok: true, globalLinks: globalCount, markdownBytes: expectedMarkdown.length, paragraphWidth, viewportChecks }, null, 2)}\n`);
+  const translationContext = await browser.newContext({ locale: 'es-ES' });
+  const translationPage = await translationContext.newPage();
+  let translationRequestUrl = null;
+  let translationRequestCount = 0;
+  await translationPage.route('**/api/docs/translate?*', async (route) => {
+    try {
+      translationRequestCount += 1;
+      translationRequestUrl = new URL(route.request().url());
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          cached: false,
+          provider: 'google',
+          sourceLanguage: 'en',
+          targetLanguage: 'es',
+          route: '/start/',
+          contentHash: 'browser-test',
+          cacheKey: 'browser-test:es',
+          title: 'Inicio',
+          description: null,
+          segments: ['Contenido traducido de prueba.'],
+        }),
+      });
+    } catch (error) {
+      throw new Error('Failed to stub automatic translation', { cause: error });
+    }
+  });
+  await translationPage.goto(`${origin}/start/`, { waitUntil: 'networkidle' });
+  await translationPage.locator('[data-docs-runtime-translation-panel]').waitFor({ state: 'visible' });
+  if (!translationRequestUrl || translationRequestUrl.searchParams.get('lang') !== 'es') throw new Error(`Browser locale did not request Spanish translation: ${translationRequestUrl}`);
+  if (translationRequestCount !== 1) throw new Error(`Automatic translation made ${translationRequestCount} requests for one page load`);
+  if ((await translationPage.locator('html').getAttribute('lang')) !== 'es') throw new Error('Translated page did not update the document language');
+  if ((await translationPage.locator('html').getAttribute('data-docs-translation-state')) !== 'ready') throw new Error('Automatic translation did not reach the ready state');
+  if (!(await translationPage.getByText('Contenido traducido de prueba.', { exact: true }).isVisible())) throw new Error('Automatic translation payload was not rendered');
+  if ((await translationPage.getByLabel('Translate this page').count()) !== 0) throw new Error('Automatic translation must not expose a translate selector');
+  if ((await translationPage.getByRole('button', { name: /Show English|Dismiss/ }).count()) !== 0) throw new Error('Automatic translation must not expose a manual clear button');
+  await translationContext.close();
+
+  process.stdout.write(`${JSON.stringify({ ok: true, globalLinks: globalCount, markdownBytes: expectedMarkdown.length, paragraphWidth, viewportChecks, automaticTranslation: 'es' }, null, 2)}\n`);
 } finally {
   await browser?.close();
   await stopDocumentationServer(server);

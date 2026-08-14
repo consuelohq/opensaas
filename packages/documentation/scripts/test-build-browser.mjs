@@ -64,13 +64,14 @@ try {
 
   const sidebar = page.locator('#starlight__sidebar');
   const toolGroups = sidebar.locator('details');
-  if ((await toolGroups.count()) !== 2) throw new Error(`Expected Tools plus nested Sites groups, found ${await toolGroups.count()}`);
+  if ((await toolGroups.count()) !== 1) throw new Error(`Expected one top-level Tools group, found ${await toolGroups.count()}`);
   for (let index = 0; index < await toolGroups.count(); index += 1) {
     if (!(await toolGroups.nth(index).evaluate((element) => element.open))) throw new Error('A Tools navigation group started collapsed');
   }
-  for (const label of ['Tool List', 'Subagents', 'Workflows', 'Sites']) {
+  for (const label of ['Tool List', 'Subagents', 'Workflows']) {
     if (!(await sidebar.getByText(label, { exact: true }).first().isVisible())) throw new Error(`${label} is missing from Tools navigation`);
   }
+  if ((await sidebar.getByText('Sites', { exact: true }).count()) !== 0) throw new Error('Sites must not remain nested in Tools navigation');
 
   for (const [label, href] of routes) {
     const response = await fetch(`${origin}${href}`);
@@ -120,9 +121,10 @@ try {
     if (viewport.name === 'mobile') {
       await page.locator('button[aria-controls="starlight__sidebar"]').click();
       const mobileSidebar = page.locator('#starlight__sidebar');
-      for (const label of ['Subagents', 'Workflows', 'Sites']) {
+      for (const label of ['Subagents', 'Workflows']) {
         if (!(await mobileSidebar.getByText(label, { exact: true }).first().isVisible())) throw new Error(`${label} is unavailable in mobile Tools navigation`);
       }
+      if ((await mobileSidebar.getByText('Sites', { exact: true }).count()) !== 0) throw new Error('Sites must not appear inside mobile Tools navigation');
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });
