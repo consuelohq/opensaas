@@ -2,6 +2,7 @@ import type {
   AccountWorkspace,
   AuthoritySession,
   Grant,
+  ManagedCloudCheckout,
   McpOAuthAccessToken,
   McpOAuthCode,
   McpOAuthRefreshToken,
@@ -349,6 +350,37 @@ export class DurableStore implements Store {
       return trial ? { ...trial } : undefined;
     } catch {
       throw new Error('workspace cloud trial read failed');
+    }
+  }
+  async putManagedCloudCheckout(checkout: ManagedCloudCheckout) {
+    const put = async (storage: StorageLike) => {
+      await storage.put(`mcc:${checkout.checkoutId}`, checkout);
+      await storage.put(`mcca:${checkout.accountId}`, checkout.checkoutId);
+    };
+    try {
+      if (this.storage.transaction) {
+        await this.storage.transaction((transaction) => put(transaction));
+      } else {
+        await put(this.storage);
+      }
+    } catch {
+      throw new Error('managed cloud checkout write failed');
+    }
+  }
+  async byManagedCloudCheckout(checkoutId: string) {
+    try {
+      const checkout = await this.storage.get<ManagedCloudCheckout>(`mcc:${checkoutId}`);
+      return checkout ? { ...checkout } : undefined;
+    } catch {
+      throw new Error('managed cloud checkout read failed');
+    }
+  }
+  async byAccountManagedCloudCheckout(accountId: string) {
+    try {
+      const checkoutId = await this.storage.get<string>(`mcca:${accountId}`);
+      return checkoutId ? await this.byManagedCloudCheckout(checkoutId) : undefined;
+    } catch {
+      throw new Error('managed cloud checkout account read failed');
     }
   }
   async putWorkspaceMembership(membership: WorkspaceMembership) {
@@ -977,6 +1009,8 @@ export function createMemoryDeviceGrantStore(): Store {
   const mcpRefreshTokens = new Map<string, McpOAuthRefreshToken>();
   const accountWorkspaces = new Map<string, AccountWorkspace>();
   const workspaceCloudTrials = new Map<string, WorkspaceCloudTrial>();
+  const managedCloudCheckouts = new Map<string, ManagedCloudCheckout>();
+  const managedCloudCheckoutAccounts = new Map<string, string>();
   const workspaceMemberships = new Map<string, WorkspaceMembership>();
   const authoritySessions = new Map<string, AuthoritySession>();
   const workspaceLoginHandoffs = new Map<string, WorkspaceLoginHandoff>();
@@ -1112,6 +1146,20 @@ export function createMemoryDeviceGrantStore(): Store {
     byWorkspaceCloudTrial(workspaceId) {
       const trial = workspaceCloudTrials.get(workspaceId);
       return Promise.resolve(trial ? { ...trial } : undefined);
+    },
+    putManagedCloudCheckout(checkout) {
+      managedCloudCheckouts.set(checkout.checkoutId, { ...checkout });
+      managedCloudCheckoutAccounts.set(checkout.accountId, checkout.checkoutId);
+      return Promise.resolve();
+    },
+    byManagedCloudCheckout(checkoutId) {
+      const checkout = managedCloudCheckouts.get(checkoutId);
+      return Promise.resolve(checkout ? { ...checkout } : undefined);
+    },
+    byAccountManagedCloudCheckout(accountId) {
+      const checkoutId = managedCloudCheckoutAccounts.get(accountId);
+      const checkout = checkoutId ? managedCloudCheckouts.get(checkoutId) : undefined;
+      return Promise.resolve(checkout ? { ...checkout } : undefined);
     },
     putWorkspaceMembership(membership) {
       workspaceMemberships.set(

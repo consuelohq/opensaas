@@ -18,6 +18,14 @@ import {
   cloudFirstProvisioningStatus,
   createCloudFirstWorkspace,
 } from '../services/cloud-first-onboarding';
+import {
+  ManagedCloudBillingError,
+  handleManagedCloudStripeWebhook,
+  isPaidCloudFirstPlanId,
+  managedCloudCheckoutStatus,
+  managedCloudSignupCatalog,
+  startManagedCloudCheckout,
+} from '../services/managed-cloud-billing';
 
 export const AUTHORITY_SESSION_COOKIE = '__Host-consuelo_os_authority';
 export const WORKSPACE_SESSION_COOKIE = '__Host-consuelo_os_session';
@@ -223,9 +231,20 @@ async function pendingCloudOnboardingResponse(input: {
     const trial = await input.runtime.store.byWorkspaceCloudTrial(
       input.membership.workspaceId,
     );
-    if (!trial) return undefined;
+    const paidCheckout = trial
+      ? undefined
+      : await input.runtime.store.byAccountManagedCloudCheckout(
+          input.membership.accountId,
+        );
+    const provisioningJobId = trial?.provisioningJobId ?? (
+      paidCheckout?.status === 'paid' &&
+      paidCheckout.workspaceId === input.membership.workspaceId
+        ? paidCheckout.provisioningJobId
+        : undefined
+    );
+    if (!provisioningJobId) return undefined;
     const job = await input.runtime.store.byManagedCloudProvisioningJob(
-      trial.provisioningJobId,
+      provisioningJobId,
     );
     if (!job || job.accountId !== input.membership.accountId) {
       return text(onboardingErrorPage('Cloud workspace state is temporarily unavailable.'), {
@@ -280,6 +299,15 @@ const authShellStyles = `
   .field input:focus{border-color:var(--fg);box-shadow:0 0 0 1px var(--fg)}
   .trial-note{margin:20px 0 22px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:10px 18px;text-align:left}
   .trial-note strong{font-size:14px;font-weight:620}.trial-note span{color:var(--muted);line-height:1.45}.trial-note .spec{font-variant-numeric:tabular-nums;text-align:right;color:var(--fg)}
+  .auth-card--plans{width:min(100%,520px)}
+  .plan-options{display:grid;gap:10px;margin:18px 0 22px;text-align:left}
+  .plan-choice{position:relative}
+  .plan-radio{position:absolute;opacity:0;pointer-events:none}
+  .plan-card{min-height:70px;padding:13px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);display:grid;grid-template-columns:1fr auto;gap:8px 18px;align-items:center;cursor:pointer;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
+  .plan-card:hover{background:var(--hover);border-color:#b5b5b5}
+  .plan-radio:checked + .plan-card{border-color:var(--fg);box-shadow:0 0 0 1px var(--fg)}
+  .plan-radio:focus-visible + .plan-card{outline:2px solid var(--fg);outline-offset:3px}
+  .plan-name{display:block;font-weight:620}.plan-detail{display:block;margin-top:3px;color:var(--muted);font-size:13px;line-height:1.35}.plan-price{text-align:right;font-variant-numeric:tabular-nums;font-weight:560}.plan-price small{display:block;margin-top:3px;color:var(--muted);font-size:12px;font-weight:400}
   .workspace-options{display:grid;gap:10px}.workspace-options button{width:100%;min-height:50px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}.workspace-options button:hover{background:var(--hover)}
   .progress-shell{display:grid;gap:18px}.progress-status{padding:20px;border:1px solid var(--line);border-radius:10px;text-align:left}.progress-status small{display:block;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-size:10px;margin-bottom:8px}.progress-status strong{font-size:18px}.progress-detail{margin-top:8px;color:var(--muted);line-height:1.5}.pulse{display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:999px;background:currentColor;animation:pulse 1.5s ease-in-out infinite}.error-text{margin-top:14px;color:#b42318;line-height:1.45}
   :focus-visible{outline:2px solid var(--fg);outline-offset:3px}
@@ -383,12 +411,38 @@ function chooserPage(input: {
   });
 }
 
-function noMembershipPage(csrfToken: string): string {
+function formatUsdMonthly(cents: number): string {
+  const dollars = cents / 100;
+  return `$${Number.isInteger(dollars) ? dollars.toFixed(0) : dollars.toFixed(2)}/mo`;
+}
+
+function planDisplayName(planId: string): string {
+  return planId.charAt(0).toUpperCase() + planId.slice(1);
+}
+
+function noMembershipPage(runtime: DeviceAuthorityRuntime, csrfToken: string): string {
+  const catalog = managedCloudSignupCatalog(runtime);
+  if (!catalog.pricingAvailable) {
+    return onboardingErrorPage('Cloud pricing is temporarily unavailable.');
+  }
+  const quotes = catalog.billingConfigured
+    ? catalog.quotes
+    : catalog.quotes.filter((quote) => quote.plan.id === 'standard');
+  const planOptions = quotes.map((quote) => {
+    const isStandard = quote.plan.id === 'standard';
+    const paid = !isStandard;
+    const id = `plan-${quote.plan.id}`;
+    const price = isStandard ? '14 days free' : formatUsdMonthly(quote.monthlyPriceCents);
+    const priceNote = isStandard ? 'No card required' : 'Billed monthly';
+    return `<div class="plan-choice"><input class="plan-radio" id="${id}" type="radio" name="plan_id" value="${htmlEscape(quote.plan.id)}" data-paid="${paid ? 'true' : 'false'}"${isStandard ? ' checked' : ''}><label class="plan-card" for="${id}"><span><span class="plan-name">${htmlEscape(quote.plan.name)}</span><span class="plan-detail">${quote.plan.cpu.vcpus} vCPU · ${quote.plan.memoryGb} GB</span></span><span class="plan-price">${htmlEscape(price)}<small>${htmlEscape(priceNote)}</small></span></label></div>`;
+  }).join('');
+  const script = `const radios=[...document.querySelectorAll('.plan-radio')];const cta=document.querySelector('[data-plan-cta]');function syncPlanCta(){const selected=radios.find((radio)=>radio.checked);if(cta)cta.textContent=selected?.dataset.paid==='true'?'Checkout and Create Workspace':'Create Workspace'}for(const radio of radios)radio.addEventListener('change',syncPlanCta);syncPlanCta();`;
   return authShell({
     title: 'Create workspace',
     topActionHref: '/',
     topActionLabel: 'Home',
-    body: `<section class="auth-card"><h1>Name your workspace</h1><p class="lede">Start with a 14-day free trial of Consuelo Cloud. No local install is required.</p><form method="post" action="/onboarding/workspace"><div class="field"><label for="workspace-name">Workspace name</label><input id="workspace-name" name="workspace-name" type="text" maxlength="80" autocomplete="organization" placeholder="Acme" required autofocus></div><input type="hidden" name="csrf_token" value="${htmlEscape(csrfToken)}"><div class="trial-note"><span><strong>Standard</strong><br>Recommended cloud workspace</span><span class="spec">2 vCPU · 8 GB<br>14 days free</span></div><button class="primary-button" type="submit">Create workspace</button></form></section>`,
+    script,
+    body: `<section class="auth-card auth-card--plans"><h1>Name your workspace</h1><p class="lede">Start with a 14-day free trial on Standard, or choose a larger Consuelo Cloud plan and check out now.</p><form method="post" action="/onboarding/workspace"><div class="field"><label for="workspace-name">Workspace name</label><input id="workspace-name" name="workspace-name" type="text" maxlength="80" autocomplete="organization" placeholder="Acme" required autofocus></div><input type="hidden" name="csrf_token" value="${htmlEscape(csrfToken)}"><div class="plan-options" role="radiogroup" aria-label="Cloud plan">${planOptions}</div><button class="primary-button" type="submit" data-plan-cta>Create Workspace</button></form></section>`,
   });
 }
 
@@ -413,6 +467,7 @@ export function accountNotFoundPage(): string {
 function provisioningPage(input: {
   jobId: string;
   status: string;
+  planId: string;
 }): string {
   const safeJobId = htmlEscape(input.jobId);
   const statusLabel = htmlEscape(input.status.charAt(0).toUpperCase() + input.status.slice(1));
@@ -422,7 +477,18 @@ function provisioningPage(input: {
     topActionHref: '/',
     topActionLabel: 'Home',
     script,
-    body: `<section class="auth-card"><h1>Setting up Consuelo OS</h1><p class="lede">We’re creating your Standard cloud workspace, installing the OS runtime, and connecting its background services.</p><div class="progress-shell" aria-live="polite"><div class="progress-status"><small>Cloud workspace</small><strong><span class="pulse" aria-hidden="true"></span><span data-status>${statusLabel}</span></strong><div class="progress-detail" data-detail>Preparing your workspace…</div></div></div><p class="auth-footer">You can keep this page open. Setup will continue automatically.</p><span hidden data-job-id="${safeJobId}"></span></section>`,
+    body: `<section class="auth-card"><h1>Setting up Consuelo OS</h1><p class="lede">We’re creating your ${htmlEscape(planDisplayName(input.planId))} cloud workspace, installing the OS runtime, and connecting its background services.</p><div class="progress-shell" aria-live="polite"><div class="progress-status"><small>Cloud workspace</small><strong><span class="pulse" aria-hidden="true"></span><span data-status>${statusLabel}</span></strong><div class="progress-detail" data-detail>Preparing your workspace…</div></div></div><p class="auth-footer">You can keep this page open. Setup will continue automatically.</p><span hidden data-job-id="${safeJobId}"></span></section>`,
+  });
+}
+
+function checkoutConfirmationPage(sessionId: string): string {
+  const script = `const sessionId=${JSON.stringify(sessionId)};const detail=document.querySelector('[data-checkout-detail]');async function pollCheckout(){try{const r=await fetch('/onboarding/checkout/status?session_id='+encodeURIComponent(sessionId),{credentials:'same-origin',headers:{accept:'application/json'}});if(!r.ok)throw new Error('status');const p=await r.json();if(p.status==='paid'&&p.jobId){window.location.assign('/onboarding/provisioning?job_id='+encodeURIComponent(p.jobId));return}if(p.status==='expired'){detail.textContent='This checkout expired. Return to workspace setup to choose a plan again.';return}detail.textContent='Payment is still being confirmed. This page will continue automatically.';setTimeout(pollCheckout,1400)}catch{detail.textContent='Still confirming payment. Retrying…';setTimeout(pollCheckout,2500)}}setTimeout(pollCheckout,500);`;
+  return authShell({
+    title: 'Confirming payment',
+    topActionHref: '/',
+    topActionLabel: 'Home',
+    script,
+    body: `<section class="auth-card"><h1>Confirming your payment</h1><p class="lede">Stripe checkout is complete. Consuelo will create your workspace only after the signed payment event is verified.</p><div class="progress-status" aria-live="polite"><strong><span class="pulse" aria-hidden="true"></span>Payment confirmation</strong><div class="progress-detail" data-checkout-detail>Waiting for Stripe confirmation…</div></div></section>`,
   });
 }
 
@@ -454,7 +520,7 @@ async function handleWebAuthRequest(
     if (choice.kind === 'none') {
       return text(
         session.cloudOnboardingEligible === true
-          ? noMembershipPage(session.csrfToken)
+          ? noMembershipPage(runtime, session.csrfToken)
           : existingAccountNoWorkspacePage(),
       );
     }
@@ -488,18 +554,40 @@ async function handleWebAuthRequest(
     if (body.get('csrf_token') !== session.csrfToken) {
       return json({ error: 'csrf_failed' }, { status: 403 });
     }
+    const workspaceName = body.get('workspace-name') ?? body.get('workspace_name') ?? '';
+    const planId = body.get('plan_id')?.trim() || 'standard';
     try {
-      const created = await createCloudFirstWorkspace({
+      if (planId === 'standard') {
+        const created = await createCloudFirstWorkspace({
+          runtime,
+          accountId: session.accountId,
+          email: session.email,
+          workspaceName,
+        });
+        const location = new URL('/onboarding/provisioning', runtime.origin);
+        location.searchParams.set('job_id', created.job.jobId);
+        return Response.redirect(location.toString(), 302);
+      }
+      if (!isPaidCloudFirstPlanId(planId)) {
+        return text(onboardingErrorPage('Choose a supported Consuelo Cloud plan.'), { status: 400 });
+      }
+      const checkout = await startManagedCloudCheckout({
         runtime,
         accountId: session.accountId,
         email: session.email,
-        workspaceName: body.get('workspace-name') ?? body.get('workspace_name') ?? '',
+        workspaceName,
+        planId,
       });
-      const location = new URL('/onboarding/provisioning', runtime.origin);
-      location.searchParams.set('job_id', created.job.jobId);
-      return Response.redirect(location.toString(), 302);
+      if (!checkout.stripeCheckoutUrl) {
+        throw new ManagedCloudBillingError(
+          'BILLING_UNAVAILABLE',
+          503,
+          'Cloud billing is temporarily unavailable.',
+        );
+      }
+      return Response.redirect(checkout.stripeCheckoutUrl, 302);
     } catch (error: unknown) {
-      if (error instanceof CloudFirstOnboardingError) {
+      if (error instanceof CloudFirstOnboardingError || error instanceof ManagedCloudBillingError) {
         return text(onboardingErrorPage(error.message), { status: error.status });
       }
       return text(onboardingErrorPage('Cloud workspace setup is temporarily unavailable.'), {
@@ -525,6 +613,7 @@ async function handleWebAuthRequest(
       provisioningPage({
         jobId: status.job.jobId,
         status: status.job.status,
+        planId: status.job.planId,
       }),
     );
   }
@@ -540,6 +629,56 @@ async function handleWebAuthRequest(
     });
     if (!status) return json({ error: 'onboarding_not_found' }, { status: 404 });
     return json(status, { headers: { 'cache-control': 'no-store' } });
+  }
+
+  if (url.pathname === '/onboarding/checkout/success') {
+    if (request.method !== 'GET') return methodNotAllowed('GET');
+    const session = await authoritySession(request, runtime);
+    if (!session) return json({ error: 'authority_session_required' }, { status: 401 });
+    const sessionId = url.searchParams.get('session_id')?.trim() ?? '';
+    const status = await managedCloudCheckoutStatus({
+      runtime,
+      accountId: session.accountId,
+      sessionId,
+    });
+    if (!status) return json({ error: 'checkout_not_found' }, { status: 404 });
+    if (status.status === 'paid') {
+      const location = new URL('/onboarding/provisioning', runtime.origin);
+      location.searchParams.set('job_id', status.jobId);
+      return Response.redirect(location.toString(), 302);
+    }
+    return text(checkoutConfirmationPage(sessionId));
+  }
+
+  if (url.pathname === '/onboarding/checkout/status') {
+    if (request.method !== 'GET') return methodNotAllowed('GET');
+    const session = await authoritySession(request, runtime);
+    if (!session) return json({ error: 'authority_session_required' }, { status: 401 });
+    const status = await managedCloudCheckoutStatus({
+      runtime,
+      accountId: session.accountId,
+      sessionId: url.searchParams.get('session_id')?.trim() ?? '',
+    });
+    if (!status) return json({ error: 'checkout_not_found' }, { status: 404 });
+    return json(status, { headers: { 'cache-control': 'no-store' } });
+  }
+
+  if (url.pathname === '/webhooks/stripe') {
+    if (request.method !== 'POST') return methodNotAllowed('POST');
+    const rawBody = await request.text();
+    try {
+      const result = await handleManagedCloudStripeWebhook({
+        runtime,
+        rawBody,
+        signatureHeader: request.headers.get('stripe-signature') ?? '',
+      });
+      return json({ received: true, handled: result.handled }, { headers: { 'cache-control': 'no-store' } });
+    } catch (error: unknown) {
+      if (error instanceof ManagedCloudBillingError) {
+        return json({ error: error.code.toLowerCase() }, { status: error.status });
+      }
+      return json({ error: 'billing_unavailable' }, { status: 503 });
+    }
   }
 
   if (url.pathname === '/auth/handoff') {
@@ -659,6 +798,9 @@ export function registerWebAuthRoutes(
     '/onboarding/workspace',
     '/onboarding/provisioning',
     '/onboarding/status',
+    '/onboarding/checkout/success',
+    '/onboarding/checkout/status',
+    '/webhooks/stripe',
     '/internal/auth/session/validate',
   ]) {
     app.all(path, (context) => handleWebAuthRequest(context.req.raw, runtime));
