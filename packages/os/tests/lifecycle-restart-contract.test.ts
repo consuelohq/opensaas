@@ -71,6 +71,9 @@ describe('lifecycle restart parity', () => {
     await controller.restart({ waitForCompletion: true });
 
     expect(calls).toEqual([
+      ...(process.platform === 'darwin'
+        ? [{ command: 'bash', args: [resolve(osRoot, 'scripts', 'retire-legacy-system-daemons.sh'), '--check'] }]
+        : []),
       {
         command: process.execPath,
         args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'restart-now'],
@@ -101,6 +104,29 @@ describe('lifecycle restart parity', () => {
     expect(workflow).toContain(
       '--migration "2026-08-13-reconcile-caddy-worker-pool:scripts/migrations/reconcile-caddy-worker-pool.ts"',
     );
+  });
+
+  it('fails macOS lifecycle preflight when recognized legacy root supervision remains', async () => {
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const controller = createReloadServiceController({
+      osRoot,
+      platform: 'darwin',
+      run: async (command, args) => {
+        calls.push({ command, args });
+        if (args.includes('--check')) {
+          return { exitCode: 2, stdout: 'legacy root supervision found', stderr: '' };
+        }
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+    });
+
+    await expect(controller.preflight()).rejects.toThrow(/legacy.*LaunchDaemon|administrator|sudo/i);
+    expect(calls).toEqual([
+      {
+        command: 'bash',
+        args: [resolve(osRoot, 'scripts', 'retire-legacy-system-daemons.sh'), '--check'],
+      },
+    ]);
   });
 
   it('fails service restart when the canonical adapter exits non-zero', async () => {

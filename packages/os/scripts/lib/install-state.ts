@@ -2114,6 +2114,36 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     });
   }
 
+  if (process.platform === 'darwin') {
+    const legacyRetirementScript = path.join(
+      PACKAGE_ROOT,
+      'scripts',
+      'retire-legacy-system-daemons.sh',
+    );
+    if (!fs.existsSync(legacyRetirementScript)) {
+      checks.push({
+        name: 'legacy-system-daemons',
+        status: 'unhealthy',
+        message: 'legacy system-daemon retirement adapter is missing',
+      });
+    } else {
+      const legacy = Bun.spawnSync(['bash', legacyRetirementScript, '--check'], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      });
+      const stdout = legacy.stdout.toString().trim();
+      const stderr = legacy.stderr.toString().trim();
+      checks.push({
+        name: 'legacy-system-daemons',
+        status: legacy.exitCode === 0 ? 'connected' : 'unhealthy',
+        message: legacy.exitCode === 0
+          ? (stdout || 'no legacy root Consuelo LaunchDaemons found')
+          : legacy.exitCode === 2
+            ? `Legacy root Consuelo LaunchDaemons remain. Run once: sudo bash '${legacyRetirementScript}' --apply`
+            : (stderr || stdout || 'legacy system-daemon check exited ' + String(legacy.exitCode)),
+      });
+    }
+  }
   const skillIssues = validateBundledSkills();
   checks.push({
     name: 'skills',
