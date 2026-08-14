@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_97d4382239a0",
+  "tmuxSession": "opensaas-dialer-release-caller-id-lock-on-machine-only-completio-97d43822",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/release-caller-id-lock-on-machine-only-completion",
+  "branch": "task/dialer/release-caller-id-lock-on-machine-only-completion",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-release-caller-id-lock-on-machine-only-completion",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-release-caller-id-lock-on-machine-only-completion",
+  "prNumber": 1761,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1761",
+  "createdAt": "2026-08-03T22:01:52.614Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-release-caller-id-lock-on-machine-only-completion/.task/dialer/release-caller-id-lock-on-machine-only-completion/session.json"
+}

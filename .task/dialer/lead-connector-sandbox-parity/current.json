@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/lead-connector-sandbox-parity",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1621,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1621",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1621",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1621/lead-connector-sandbox-parity",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1621",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1621/lead-connector-sandbox-parity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-lead-connector-sandbox-parity",
+  "taskSession": "tsk_6a7583e79252",
+  "tmuxSession": "opensaas-dialer-lead-connector-sandbox-parity-6a7583e7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-lead-connector-sandbox-parity/.task/dialer/lead-connector-sandbox-parity/session.json",
+  "createdAt": "2026-07-24T04:46:10.945Z"
+}

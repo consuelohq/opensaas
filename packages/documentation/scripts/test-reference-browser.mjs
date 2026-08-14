@@ -72,7 +72,7 @@ try {
   }
 
   const contentChecks = [
-    ['/reference/cli/', 'bun ./scripts/os.ts'],
+    ['/reference/cli/', 'consuelo help'],
     ['/reference/configuration/', 'manifest.overlay.json'],
     ['/reference/mcp/', '2024-11-05'],
     ['/reference/tools/', 'sessionRequired'],
@@ -102,7 +102,7 @@ try {
     if (!(await page.getByRole('button', { name: 'Copy page' }).isVisible())) throw new Error(`Copy page is hidden on ${viewport.name}`);
     if (viewport.name === 'mobile') {
       await page.locator('button[aria-controls="starlight__sidebar"]').click();
-      if (!(await page.getByRole('link', { name: 'Environment variables', exact: true }).isVisible())) throw new Error('Reference navigation is unavailable on mobile');
+      if (!(await page.locator('#starlight__sidebar').getByRole('link', { name: 'Environment variables', exact: true }).isVisible())) throw new Error('Reference navigation is unavailable on mobile');
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });

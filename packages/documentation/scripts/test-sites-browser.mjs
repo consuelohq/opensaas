@@ -53,8 +53,10 @@ try {
 
   const sidebar = page.locator('#starlight__sidebar');
   const groups = sidebar.locator('details');
-  if ((await groups.count()) !== 1) throw new Error(`Expected one expanded Sites group, found ${await groups.count()}`);
-  if (!(await groups.first().evaluate((element) => element.open))) throw new Error('Sites navigation started collapsed');
+  if ((await groups.count()) !== 2) throw new Error(`Expected Tools plus nested Sites groups, found ${await groups.count()}`);
+  for (let index = 0; index < await groups.count(); index += 1) {
+    if (!(await groups.nth(index).evaluate((element) => element.open))) throw new Error('Sites navigation started collapsed');
+  }
 
   for (const [label, href] of routes) {
     const response = await fetch(`${origin}${href}`);
@@ -96,13 +98,13 @@ try {
     if (!(await page.getByRole('button', { name: 'Copy page' }).isVisible())) throw new Error(`Copy page is hidden on ${viewport.name}`);
     if (viewport.name === 'mobile') {
       await page.locator('button[aria-controls="starlight__sidebar"]').click();
-      if (!(await page.getByRole('link', { name: 'Troubleshooting', exact: true }).isVisible())) throw new Error('Sites navigation is unavailable on mobile');
+      if (!(await page.locator('#starlight__sidebar').getByRole('link', { name: 'Troubleshooting', exact: true }).isVisible())) throw new Error('Sites navigation is unavailable on mobile');
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });
   }
 
-  process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: 1, port, viewportChecks }, null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: 2, port, viewportChecks }, null, 2)}\n`);
 } finally {
   await browser?.close();
   await stopDocumentationServer(server);

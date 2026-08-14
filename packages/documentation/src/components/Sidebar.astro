@@ -71,7 +71,7 @@ const navigation = selectSectionSidebar(
     .global-section-link {
       align-items: center;
       border-radius: 0.45rem;
-      color: var(--sl-color-white);
+      color: var(--sl-color-gray-2);
       display: flex;
       font-size: var(--sl-text-base);
       font-weight: 600;
@@ -92,12 +92,8 @@ const navigation = selectSectionSidebar(
     }
 
     .global-section-link:hover {
-      background: color-mix(
-        in srgb,
-        var(--sl-color-text-accent) 12%,
-        transparent
-      );
-      color: var(--sl-color-text-accent);
+      background: transparent;
+      color: var(--sl-color-white);
     }
 
     .global-section-link:focus:not(:focus-visible) {
@@ -105,7 +101,7 @@ const navigation = selectSectionSidebar(
     }
 
     .global-section-link:focus-visible {
-      outline: 2px solid var(--sl-color-text-accent);
+      outline: 2px solid color-mix(in srgb, var(--sl-color-white) 55%, transparent);
       outline-offset: 2px;
     }
   }

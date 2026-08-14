@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".task/os/consolidate-office-into-os-artifacts/workpad.md",
+    "cron_jobs/index.ts",
+    "cron_jobs/sites_launcher/cron.json",
+    "cron_jobs/tests/cron_jobs.test.ts",
+    "packages/consuelo-design/package.json",
+    "packages/os/scripts/lib/install-edge-site-publisher.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/local-os-server-hono-architecture.test.ts",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/tests/tool-manifest.test.ts"
+  ],
+  "updatedAt": "2026-07-15T19:33:04.442Z"
+}

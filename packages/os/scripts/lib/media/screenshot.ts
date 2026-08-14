@@ -1,8 +1,9 @@
 import { Effect } from 'effect';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, statSync } from 'node:fs';
-import { dirname, extname } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
 
 import { MediaScreenshotResultSchema } from './schema';
 import { liveMediaProcess } from './process';
@@ -55,8 +56,10 @@ const DITHER_CLOUDS = [
   { file: 'cloud-4.png', widthRatio: 0.35, alpha: '0.40' },
 ].map((cloud) => ({
   ...cloud,
-  path: fileURLToPath(new URL('../../../assets/media/screenshot/dither/' + cloud.file, import.meta.url)),
+  base64Path: fileURLToPath(new URL('../../../assets/media/screenshot/dither/' + cloud.file + '.base64', import.meta.url)),
 }));
+
+type MaterializedDitherCloud = (typeof DITHER_CLOUDS)[number] & { path: string };
 
 function stableId(value: unknown): string {
   return 'screenshot_' + createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 16);
@@ -82,7 +85,7 @@ function normalizeTemplate(input: ScreenshotRenderInput): ScreenshotRenderPlan['
   const height = input.height ?? 900;
   const theme = input.theme ?? 'dark';
   const accent = normalizeHex(input.accent ?? '#0000F2', 'accent');
-  const background = normalizeHex(input.background ?? (theme === 'light' ? '#F5F5F5' : '#0000F2'), 'background');
+  const background = normalizeHex(input.background ?? (theme === 'light' ? '#F5F5F5' : '#08080A'), 'background');
   const padding = input.padding ?? 120;
   const fit = input.fit ?? 'contain';
   const pattern = input.pattern ?? 'none';
@@ -122,16 +125,30 @@ function patternFilter(template: ScreenshotRenderPlan['template']): string {
   return 'drawgrid=w=' + spacing + ':h=' + spacing + ':t=2:c=' + accent + '@0.14';
 }
 
-function validateDitherAssets(template: ScreenshotRenderPlan['template']): void {
-  if (!template.dots) return;
-  const missing = DITHER_CLOUDS.find((cloud) => !existsSync(cloud.path));
-  if (missing) throw new Error('screenshot dither asset is missing: ' + missing.path);
+function materializeDitherAssets(template: ScreenshotRenderPlan['template']): MaterializedDitherCloud[] {
+  if (!template.dots) return [];
+
+  return DITHER_CLOUDS.map((cloud) => {
+    if (!existsSync(cloud.base64Path)) throw new Error('screenshot dither asset is missing: ' + cloud.base64Path);
+    const bytes = Buffer.from(readFileSync(cloud.base64Path, 'utf8').trim(), 'base64');
+    if (bytes.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') {
+      throw new Error('screenshot dither asset is not a valid PNG: ' + cloud.base64Path);
+    }
+    const digest = createHash('sha256').update(bytes).digest('hex').slice(0, 16);
+    const outputDir = join(tmpdir(), 'consuelo-os-media', 'screenshot-dither', digest);
+    const path = join(outputDir, cloud.file);
+    if (!existsSync(path) || statSync(path).size !== bytes.length) {
+      mkdirSync(outputDir, { recursive: true });
+      writeFileSync(path, bytes);
+    }
+    return { ...cloud, path };
+  });
 }
 
-function ditherFilter(template: ScreenshotRenderPlan['template']): { filters: string[]; output: string } {
+function ditherFilter(template: ScreenshotRenderPlan['template'], clouds: MaterializedDitherCloud[]): { filters: string[]; output: string } {
   if (!template.dots) return { filters: [], output: 'bg' };
 
-  const filters = DITHER_CLOUDS.map((cloud, index) => {
+  const filters = clouds.map((cloud, index) => {
     const width = Math.round(template.width * cloud.widthRatio);
     return '[' + (index + 2) + ':v]format=rgba,scale=' + width + ':-1:flags=neighbor,colorchannelmixer=aa=' + cloud.alpha + '[dot' + (index + 1) + ']';
   });
@@ -147,23 +164,18 @@ function ditherFilter(template: ScreenshotRenderPlan['template']): { filters: st
 export function buildScreenshotRenderPlan(input: ScreenshotRenderInput): ScreenshotRenderPlan {
   validatePaths(input);
   const template = normalizeTemplate(input);
-  validateDitherAssets(template);
-  const contentWidth = template.width - template.padding * 2 - 8;
-  const contentHeight = template.height - template.padding * 2 - 8;
-  const frameColor = template.theme === 'light' ? '#D8D8DF' : '#34343A';
-  const shadowAlpha = template.theme === 'light' ? '0.28' : '0.48';
+  const ditherClouds = materializeDitherAssets(template);
+  const contentWidth = template.width - template.padding * 2;
+  const contentHeight = template.height - template.padding * 2;
   const scale = template.fit === 'cover'
     ? 'scale=' + contentWidth + ':' + contentHeight + ':force_original_aspect_ratio=increase,crop=' + contentWidth + ':' + contentHeight
     : 'scale=' + contentWidth + ':' + contentHeight + ':force_original_aspect_ratio=decrease';
-  const dither = ditherFilter(template);
+  const dither = ditherFilter(template, ditherClouds);
   const filter = [
     '[0:v]format=rgba,' + patternFilter(template) + '[bg]',
     ...dither.filters,
-    '[1:v]' + scale + ',pad=iw+8:ih+8:4:4:color=' + ffmpegColor(frameColor) + ',format=rgba[card]',
-    '[card]split=2[cardmain][shadow]',
-    '[shadow]colorchannelmixer=rr=0:gg=0:bb=0:aa=' + shadowAlpha + ',gblur=sigma=28[shadowblur]',
-    '[' + dither.output + '][shadowblur]overlay=x=(W-w)/2+16:y=(H-h)/2+22[withshadow]',
-    '[withshadow][cardmain]overlay=x=(W-w)/2:y=(H-h)/2[out]',
+    '[1:v]' + scale + ',format=rgba[card]',
+    '[' + dither.output + '][card]overlay=x=(W-w)/2:y=(H-h)/2[out]',
   ].join(';');
 
   return {
@@ -172,7 +184,7 @@ export function buildScreenshotRenderPlan(input: ScreenshotRenderInput): Screens
       '-v', 'error', '-y',
       '-f', 'lavfi', '-i', 'color=c=' + ffmpegColor(template.background) + ':s=' + template.width + 'x' + template.height + ':d=1',
       '-i', input.inputPath,
-      ...(template.dots ? DITHER_CLOUDS.flatMap((cloud) => ['-i', cloud.path]) : []),
+      ...ditherClouds.flatMap((cloud) => ['-i', cloud.path]),
       '-filter_complex', filter,
       '-map', '[out]',
       '-frames:v', '1',

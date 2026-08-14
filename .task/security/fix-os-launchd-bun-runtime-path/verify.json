@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-os-launchd-bun-runtime-path",
+  "base": "HEAD",
+  "headSha": "28e7ca9b0d16c4e8cc6ac2542ee7eac6aeedae79",
+  "changeHash": "297335f10754085d4e0f6e6eed2d10a632284886e634760fa82acc08b9bb23f9",
+  "changedFiles": [
+    "packages/os/scripts/start-consuelo-daemon.sh",
+    "packages/os/tests/daemon-bun-path.test.ts"
+  ],
+  "verifiedAt": "2026-07-15T03:52:08.494Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-os-launchd-bun-runtime-path/current.json",
+        ".task/security/fix-os-launchd-bun-runtime-path/session.json",
+        ".task/security/fix-os-launchd-bun-runtime-path/workpad.md",
+        ".task/tasks/security/fix-os-launchd-bun-runtime-path.json",
+        "packages/os/scripts/start-consuelo-daemon.sh",
+        "packages/os/tests/daemon-bun-path.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

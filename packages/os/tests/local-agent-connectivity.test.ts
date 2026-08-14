@@ -1,30 +1,36 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { provisionLocalOs } from '../scripts/lib/install-state';
 import {
   configureLocalAgents,
   detectLocalAgents,
   localAgentMcpCommandPath,
-  parseMcpContentLengthFrames,
+  parseMcpJsonLines,
   verifyLocalAgents,
   type AgentName,
 } from '../scripts/lib/local-agent-connectivity';
 
 let osHome: string;
 let userHome: string;
+const daemonProcesses: ChildProcess[] = [];
 
 beforeEach(() => {
   osHome = mkdtempSync(join(tmpdir(), 'consuelo-agent-os-'));
   userHome = mkdtempSync(join(tmpdir(), 'consuelo-agent-user-'));
+  process.env.CONSUELO_OS_PACKAGE_ROOT = process.cwd();
 });
 
 afterEach(() => {
+  for (const daemon of daemonProcesses.splice(0)) daemon.kill('SIGTERM');
   rmSync(osHome, { recursive: true, force: true });
   rmSync(userHome, { recursive: true, force: true });
+  delete process.env.CONSUELO_OS_PACKAGE_ROOT;
 });
 
 function writeJson(path: string, value: unknown): void {
@@ -34,6 +40,64 @@ function writeJson(path: string, value: unknown): void {
 
 function readJson(path: string): Record<string, unknown> {
   return JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
+}
+
+async function getFreeTcpPort(): Promise<number> {
+  const server = createServer();
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const address = server.address();
+  if (!address || typeof address === 'string') throw new Error('failed to reserve a test port');
+  const port = address.port;
+  await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  return port;
+}
+
+async function provisionAgentAndStartDaemon(agentName: AgentName): Promise<void> {
+  const port = await getFreeTcpPort();
+  execFileSync('bun', ['-e', `
+    const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
+    provisionLocalOs({
+      home: process.env.CONSUELO_HOME,
+      mode: 'local',
+      port: Number(process.env.CONSUELO_TEST_PORT),
+      connectAgents: [process.env.CONSUELO_TEST_AGENT],
+    });
+  `], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      CONSUELO_HOME: osHome,
+      CONSUELO_TEST_AGENT: agentName,
+      CONSUELO_TEST_PORT: String(port),
+      HOME: userHome,
+    },
+    encoding: 'utf8',
+  });
+  const daemon = spawn('bun', ['scripts/server/main.ts'], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      CONSUELO_HOME: osHome,
+      CONSUELO_OS_PORT: String(port),
+      CONSUELO_RELEASE_PUBLIC_KEYS_JSON: '{}',
+      HOME: userHome,
+    },
+    stdio: 'ignore',
+  });
+  daemonProcesses.push(daemon);
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/health`);
+      if (response.ok) return;
+    } catch {
+      // The daemon is still starting.
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  throw new Error('Consuelo test daemon did not become healthy');
 }
 
 const supportedAgents: AgentName[] = [
@@ -46,16 +110,16 @@ const supportedAgents: AgentName[] = [
 ];
 
 describe('local agent connectivity', () => {
-  it('parses Content-Length frames by UTF-8 byte length across partial chunks', () => {
+  it('should parse newline-delimited MCP responses across partial UTF-8 chunks', () => {
     const body = JSON.stringify({ jsonrpc: '2.0', id: 1, result: { label: 'Consuelo ✓' } });
-    const frame = Buffer.from(`Content-Length: ${Buffer.byteLength(body)}\r\n\r\n${body}`, 'utf8');
+    const frame = Buffer.from(`\n\n${body}\n`, 'utf8');
     const splitAt = frame.length - 3;
 
-    const partial = parseMcpContentLengthFrames(frame.subarray(0, splitAt));
+    const partial = parseMcpJsonLines(frame.subarray(0, splitAt));
     expect(partial.messages).toEqual([]);
-    expect(partial.remainder.equals(frame.subarray(0, splitAt))).toBe(true);
+    expect(partial.remainder.equals(frame.subarray(2, splitAt))).toBe(true);
 
-    const complete = parseMcpContentLengthFrames(Buffer.concat([
+    const complete = parseMcpJsonLines(Buffer.concat([
       partial.remainder,
       frame.subarray(splitAt),
     ]));
@@ -63,6 +127,47 @@ describe('local agent connectivity', () => {
       { jsonrpc: '2.0', id: 1, result: { label: 'Consuelo ✓' } },
     ]);
     expect(complete.remainder.length).toBe(0);
+  });
+
+  it('should emit JSON lines and skip blank request lines without recursion', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'scripts', 'mcp-stdio.ts'),
+      'utf8',
+    );
+    const writeStart = source.indexOf('function writeMessage');
+    const writeEnd = source.indexOf('\n}\n\nasync function main', writeStart);
+    const writeMessage = source.slice(writeStart, writeEnd);
+
+    expect(writeMessage).toContain('process.stdout.write(`${body}\\n`);');
+    expect(writeMessage).not.toContain('Content-Length');
+    expect(source).not.toContain(
+      'line.length > 0 ? line : takeMessage()',
+    );
+  });
+
+  it('should detect local agents when provisioning uses the supplied user home', () => {
+    // Arrange
+    const codexHome = join(userHome, '.codex');
+    mkdirSync(codexHome, { recursive: true });
+    writeFileSync(join(codexHome, 'config.toml'), 'model = "gpt-5"\n');
+
+    // Act
+    const result = provisionLocalOs({
+      home: osHome,
+      userHome,
+      mode: 'local',
+    });
+
+    // Assert
+    expect(result.agents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'codex',
+          homePath: codexHome,
+          detected: true,
+        }),
+      ]),
+    );
   });
 
   it('writes idempotent native MCP configuration for every supported client', () => {
@@ -97,22 +202,25 @@ describe('local agent connectivity', () => {
     );
     expect(existsSync(commandPath)).toBe(true);
     expect(statSync(commandPath).mode & 0o111).not.toBe(0);
+    const commandSource = readFileSync(commandPath, 'utf8');
+    expect(commandSource).toContain('$OS_HOME/runtime/current/scripts/mcp-stdio.ts');
+    expect(commandSource).not.toContain('$OS_HOME/runtime/current/packages/os/scripts/mcp-stdio.ts');
 
     const codexConfig = readFileSync(configPaths.codex, 'utf8');
     expect(codexConfig).toContain('model = "gpt-5"');
-    expect(codexConfig).toContain('[mcp_servers."consuelo-os"]');
+    expect(codexConfig).toContain('[mcp_servers."os"]');
     expect(codexConfig).toContain(`command = ${JSON.stringify(commandPath)}`);
-    expect(codexConfig.match(/BEGIN CONSUELO OS MCP/g)).toHaveLength(1);
+    expect(codexConfig.match(/BEGIN CONSUELO MCP/g)).toHaveLength(1);
 
     const cursor = readJson(configPaths.cursor);
     expect(cursor.theme).toBe('dark');
     expect(cursor.mcpServers).toMatchObject({
       existing: { command: 'existing' },
-      'consuelo-os': {
+      os: {
         type: 'stdio',
         command: commandPath,
         args: [],
-        env: { CONSUELO_HOME: osHome },
+        env: { CONSUELO_HOME: osHome, CONSUELO_AGENT_ID: 'cursor' },
       },
     });
 
@@ -120,10 +228,10 @@ describe('local agent connectivity', () => {
     expect(claude.hasCompletedOnboarding).toBe(true);
     expect(claude.mcpServers).toMatchObject({
       existing: { command: 'existing' },
-      'consuelo-os': {
+      os: {
         command: commandPath,
         args: [],
-        env: { CONSUELO_HOME: osHome },
+        env: { CONSUELO_HOME: osHome, CONSUELO_AGENT_ID: 'claude' },
       },
     });
 
@@ -131,12 +239,12 @@ describe('local agent connectivity', () => {
     expect(opencode.theme).toBe('system');
     expect(opencode.mcp).toMatchObject({
       existing: { type: 'local', command: ['existing'] },
-      'consuelo-os': {
+      os: {
         type: 'local',
         command: [commandPath],
         cwd: osHome,
         enabled: true,
-        environment: { CONSUELO_HOME: osHome },
+        environment: { CONSUELO_HOME: osHome, CONSUELO_AGENT_ID: 'opencode' },
       },
     });
 
@@ -144,10 +252,10 @@ describe('local agent connectivity', () => {
       const config = readJson(configPaths[name]);
       expect(config.mcpServers).toMatchObject({
         existing: { command: 'existing' },
-        'consuelo-os': {
+        os: {
           command: commandPath,
           args: [],
-          env: { CONSUELO_HOME: osHome },
+          env: { CONSUELO_HOME: osHome, CONSUELO_AGENT_ID: name },
         },
       });
     }
@@ -232,17 +340,8 @@ describe('local agent connectivity', () => {
   });
 
   it('persists verified only after the installed stdio command completes an MCP handshake', async () => {
-    execFileSync('bun', ['-e', `
-      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
-      provisionLocalOs({ home: process.env.CONSUELO_HOME, mode: 'local' });
-    `], {
-      cwd: process.cwd(),
-      env: { ...process.env, CONSUELO_HOME: osHome, HOME: userHome },
-      encoding: 'utf8',
-    });
     mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
-
-    configureLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
+    await provisionAgentAndStartDaemon('opencode');
     const before = detectLocalAgents({ home: osHome, userHome }).find((agent) => agent.name === 'opencode');
     expect(before).toMatchObject({ status: 'configured' });
 
@@ -254,7 +353,7 @@ describe('local agent connectivity', () => {
     });
 
     expect(verification.handshake).toMatchObject({
-      protocolVersion: '2024-11-05',
+      protocolVersion: '2026-07-28',
     });
     expect(Number.isInteger(verification.handshake?.toolCount)).toBe(true);
     expect((verification.handshake?.toolCount ?? 0) > 0).toBe(true);
@@ -281,7 +380,11 @@ describe('local agent connectivity', () => {
       process.stdout.write(JSON.stringify({
         health: getCapabilityHealth(home),
         launcher: fs.readFileSync(path.join(home, 'sites', 'index.html'), 'utf8'),
-        settings: fs.readFileSync(path.join(home, 'sites', 'settings', 'index.html'), 'utf8'),
+        configuration: fs.readFileSync(path.join(home, 'sites', 'configuration', 'index.html'), 'utf8'),
+        configurationSnapshot: JSON.parse(fs.readFileSync(
+          path.join(home, 'sites', '.data', 'configuration', 'snapshot.json'),
+          'utf8',
+        )),
         legacyDbExists: fs.existsSync(path.join(home, 'consuelo.db')),
       }));
     `], {
@@ -291,7 +394,10 @@ describe('local agent connectivity', () => {
     })) as {
       health: Array<{ id: string; status: string; details?: unknown }>;
       launcher: string;
-      settings: string;
+      configuration: string;
+      configurationSnapshot: {
+        localAgents: Array<{ name: string; status: string }>;
+      };
       legacyDbExists: boolean;
     };
 
@@ -300,25 +406,62 @@ describe('local agent connectivity', () => {
       status: 'connected',
       details: ['opencode'],
     });
-    expect(integration.launcher).toContain('Connected to 1 local agent');
-    expect(integration.launcher).toContain('OpenCode');
-    expect(integration.settings).toContain('status-connected">verified</span>');
-    expect(integration.settings).toContain('OpenCode MCP connection is verified.');
+    expect(integration.launcher).toContain("agentStatusUrl.searchParams.set('workspace_host'");
+    expect(integration.launcher).toContain("countElement.textContent = 'Connected to ' + count");
+    expect(integration.launcher).toContain('item.textContent = agent.label');
+    expect(integration.configuration).toContain('<title>Configuration');
+    expect(integration.configurationSnapshot.localAgents).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'opencode', status: 'verified' })]),
+    );
     expect(integration.legacyDbExists).toBe(false);
   });
 
-  it('requires re-verification after a selected client is reconfigured', async () => {
-    execFileSync('bun', ['-e', `
-      const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
-      provisionLocalOs({ home: process.env.CONSUELO_HOME, mode: 'local' });
-    `], {
-      cwd: process.cwd(),
-      env: { ...process.env, CONSUELO_HOME: osHome, HOME: userHome },
-      encoding: 'utf8',
-    });
+  it('persists verification outcomes independently for each configured agent', async () => {
     mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    mkdirSync(join(userHome, '.cursor'), { recursive: true });
+    await provisionAgentAndStartDaemon('opencode');
+    configureLocalAgents({ home: osHome, userHome, agentNames: ['cursor'] });
 
-    configureLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
+    const credentialPath = join(
+      osHome,
+      'node',
+      'security',
+      'generated',
+      'local-agent-mcp.json',
+    );
+    const credentials = readJson(credentialPath);
+    const agents = credentials.agents as Record<string, unknown>;
+    agents.cursor = {
+      tokenId: 'invalid-cursor-token',
+      bearerToken: 'invalid-cursor-secret',
+    };
+    writeJson(credentialPath, credentials);
+
+    const verification = await verifyLocalAgents({
+      home: osHome,
+      userHome,
+      agentNames: ['cursor', 'opencode'],
+      timeoutMs: 10_000,
+    });
+
+    expect(verification.agents.find((agent) => agent.name === 'opencode')).toMatchObject({
+      status: 'verified',
+    });
+    expect(verification.agents.find((agent) => agent.name === 'cursor')).toMatchObject({
+      status: 'failed',
+      error: expect.objectContaining({ code: 'MCP_HANDSHAKE_FAILED' }),
+    });
+
+    const persisted = readJson(join(osHome, 'config.json'));
+    expect(persisted.agents).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'opencode', status: 'verified' }),
+      expect.objectContaining({ name: 'cursor', status: 'failed' }),
+    ]));
+  });
+
+  it('requires re-verification after a selected client is reconfigured', async () => {
+    mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    await provisionAgentAndStartDaemon('opencode');
     await verifyLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
     expect(detectLocalAgents({ home: osHome, userHome }).find((agent) => agent.name === 'opencode')).toMatchObject({
       status: 'verified',
@@ -331,5 +474,162 @@ describe('local agent connectivity', () => {
     expect(detectLocalAgents({ home: osHome, userHome }).find((agent) => agent.name === 'opencode')).toMatchObject({
       status: 'configured',
     });
+  });
+
+  it('requires re-verification when the package-root MCP server changes', async () => {
+    mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    await provisionAgentAndStartDaemon('opencode');
+    await verifyLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
+    expect(
+      detectLocalAgents({ home: osHome, userHome }).find(
+        (agent) => agent.name === 'opencode',
+      ),
+    ).toMatchObject({ status: 'verified' });
+
+    const packageRoot = join(osHome, 'package-root-fixture');
+    const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');
+    mkdirSync(join(packageRoot, 'scripts'), { recursive: true });
+    writeFileSync(
+      packageServerPath,
+      readFileSync(join(process.cwd(), 'scripts', 'mcp-stdio.ts')),
+    );
+    process.env.CONSUELO_OS_PACKAGE_ROOT = packageRoot;
+
+    expect(
+      detectLocalAgents({ home: osHome, userHome }).find(
+        (agent) => agent.name === 'opencode',
+      ),
+    ).toMatchObject({ status: 'configured' });
+  });
+
+  it('should verify a retained legacy MCP runtime when discovery returns a nonstandard error', async () => {
+    const packageRoot = join(osHome, 'legacy-package-root');
+    const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');
+    mkdirSync(join(packageRoot, 'scripts'), { recursive: true });
+    mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    writeFileSync(packageServerPath, `
+      process.stdin.setEncoding('utf8');
+      let buffer = '';
+      process.stdin.on('data', (chunk) => {
+        buffer += chunk;
+        let newline = buffer.indexOf('\\n');
+        while (newline >= 0) {
+          const line = buffer.slice(0, newline).trim();
+          buffer = buffer.slice(newline + 1);
+          if (line) {
+            const request = JSON.parse(line);
+            if (request.method === 'server/discover') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, error: { code: -32602, message: 'Invalid params' } }) + '\\n');
+            } else if (request.method === 'initialize') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { protocolVersion: '2024-11-05', capabilities: {}, serverInfo: { name: 'legacy-fixture', version: '1.0.0' } } }) + '\\n');
+            } else if (request.method === 'tools/list') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { tools: [{ name: 'status', inputSchema: { type: 'object' } }] } }) + '\\n');
+            }
+          }
+          newline = buffer.indexOf('\\n');
+        }
+      });
+    `);
+    process.env.CONSUELO_OS_PACKAGE_ROOT = packageRoot;
+    configureLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
+
+    const verification = await verifyLocalAgents({
+      home: osHome,
+      userHome,
+      agentNames: ['opencode'],
+      timeoutMs: 10_000,
+    });
+
+    expect(verification.agents.find((agent) => agent.name === 'opencode')).toMatchObject({
+      status: 'verified',
+    });
+    expect(verification.handshake).toMatchObject({
+      protocolVersion: '2024-11-05',
+    });
+  });
+
+  it('should verify a retained legacy MCP runtime when discovery omits the modern version', async () => {
+    const packageRoot = join(osHome, 'legacy-discovery-package-root');
+    const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');
+    mkdirSync(join(packageRoot, 'scripts'), { recursive: true });
+    mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    writeFileSync(packageServerPath, `
+      process.stdin.setEncoding('utf8');
+      let buffer = '';
+      process.stdin.on('data', (chunk) => {
+        buffer += chunk;
+        let newline = buffer.indexOf('\\n');
+        while (newline >= 0) {
+          const line = buffer.slice(0, newline).trim();
+          buffer = buffer.slice(newline + 1);
+          if (line) {
+            const request = JSON.parse(line);
+            if (request.method === 'server/discover') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { supportedVersions: ['2024-11-05'] } }) + '\\n');
+            } else if (request.method === 'initialize') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { protocolVersion: '2024-11-05', capabilities: {}, serverInfo: { name: 'legacy-fixture', version: '1.0.0' } } }) + '\\n');
+            } else if (request.method === 'tools/list') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { tools: [{ name: 'status', inputSchema: { type: 'object' } }] } }) + '\\n');
+            }
+          }
+          newline = buffer.indexOf('\\n');
+        }
+      });
+    `);
+    process.env.CONSUELO_OS_PACKAGE_ROOT = packageRoot;
+    configureLocalAgents({ home: osHome, userHome, agentNames: ['opencode'] });
+
+    const verification = await verifyLocalAgents({
+      home: osHome,
+      userHome,
+      agentNames: ['opencode'],
+      timeoutMs: 2_000,
+    });
+
+    expect(verification.agents.find((agent) => agent.name === 'opencode')).toMatchObject({
+      status: 'verified',
+    });
+    expect(verification.handshake).toMatchObject({
+      protocolVersion: '2024-11-05',
+    });
+  });
+
+  it('should launch MCP with the persisted package root and Bun executable', () => {
+    const packageRoot = join(osHome, 'package-root-fixture');
+    const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');
+    const bunExecutable = join(osHome, 'managed-bun');
+    mkdirSync(join(packageRoot, 'scripts'), { recursive: true });
+    writeFileSync(packageServerPath, '// MCP fixture\n');
+    writeFileSync(
+      bunExecutable,
+      '#!/bin/bash\nprintf \'%s\\n\' "$@"\n',
+      { mode: 0o755 },
+    );
+    writeFileSync(
+      join(osHome, '.env'),
+      [
+        `BUN_BIN=${bunExecutable}`,
+        `CONSUELO_OS_PACKAGE_ROOT=${packageRoot}`,
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+    delete process.env.CONSUELO_OS_PACKAGE_ROOT;
+    mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
+    configureLocalAgents({
+      home: osHome,
+      userHome,
+      agentNames: ['opencode'],
+    });
+
+    const output = execFileSync(localAgentMcpCommandPath(osHome), {
+      encoding: 'utf8',
+      env: {
+        CONSUELO_HOME: osHome,
+        HOME: userHome,
+        PATH: '/usr/bin:/bin',
+      },
+    });
+    expect(output.trim().split('\n')).toEqual([packageServerPath]);
   });
 });

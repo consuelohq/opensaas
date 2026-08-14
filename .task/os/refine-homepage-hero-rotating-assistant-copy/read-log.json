@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/src/components/site/SiteHeader.astro",
+    "packages/consuelo-website/src/lib/motion.ts",
+    "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+    "packages/consuelo-website/tests/site-header.test.mjs",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-29T16:45:39.411Z"
+}

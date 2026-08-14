@@ -1,0 +1,93 @@
+name: Consuelo Dialer Rollback
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      railway_deployment_id:
+        description: Exact known-good Railway deployment ID to roll back to.
+        required: true
+        type: string
+      cloudflare_version_id:
+        description: Exact known-good Cloudflare Worker version ID to roll back to.
+        required: true
+        type: string
+
+concurrency:
+  group: consuelo-production-release
+  cancel-in-progress: false
+
+jobs:
+  rollback-dialer:
+    name: Consuelo / dialer explicit rollback
+    environment: consuelo dialer / production
+    timeout-minutes: 25
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Link Railway rollback target
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+          RAILWAY_DIALER_PROJECT_ID: ${{ vars.RAILWAY_DIALER_PROJECT_ID }}
+          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
+          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
+        run: >-
+          bunx @railway/cli@5.27.2 link
+          --project "$RAILWAY_DIALER_PROJECT_ID"
+          --environment "$RAILWAY_DIALER_ENVIRONMENT_ID"
+          --service "$RAILWAY_DIALER_SERVICE_ID"
+          --json
+
+      - name: Roll back Railway to explicit deployment
+        id: railway-rollback
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+        run: |
+          bun packages/dialer-server/scripts/rollback-production.ts "${{ inputs.railway_deployment_id }}" > "$RUNNER_TEMP/railway-rollback.json"
+          echo "deployment_id=$(jq -r '.deploymentId' "$RUNNER_TEMP/railway-rollback.json")" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for Railway rollback success
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
+          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
+        run: >-
+          bun packages/dialer-server/scripts/railway-deployment.ts wait-id
+          "${{ steps.railway-rollback.outputs.deployment_id }}"
+
+      - name: Roll back Cloudflare to explicit version
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+        run: >-
+          bun run --cwd packages/lead-connector release:rollback-worker --
+          "${{ inputs.cloudflare_version_id }}"
+          --config wrangler.jsonc
+          --message "GitHub Actions explicit dialer rollback"
+          --yes
+
+      - name: Verify rollback through Railway origin
+        env:
+          DIALER_PRODUCTION_ORIGIN: ${{ vars.RAILWAY_DIALER_PUBLIC_ORIGIN }}
+        run: bun packages/dialer-server/scripts/production-smoke.ts
+
+      - name: Verify rollback through Cloudflare proxy
+        env:
+          DIALER_PRODUCTION_ORIGIN: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
+        run: bun packages/dialer-server/scripts/production-smoke.ts
+
+      - name: Publish rollback summary
+        run: |
+          echo "### Consuelo Dialer rollback" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Railway source deployment: `${{ inputs.railway_deployment_id }}`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Cloudflare version: `${{ inputs.cloudflare_version_id }}`" >> "$GITHUB_STEP_SUMMARY"

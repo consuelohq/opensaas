@@ -2,16 +2,23 @@
 
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
-const REPO_ROOT = resolve(import.meta.dir, '..', '..', '..');
+const REPO_ROOT = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  '..',
+);
 const DEFAULT_BOOTSTRAP_PATH = 'packages/os/scripts/bootstrap.sh';
 const DEFAULT_WORKER_NAME = 'consuelo-os-install';
 const DEFAULT_DOMAIN = 'install.consuelohq.com';
 const DEFAULT_PATHNAME = '/os';
 const DEFAULT_COMPATIBILITY_DATE = '2026-06-02';
+const RELEASE_KEYS_PLACEHOLDER = '__CONSUELO_RELEASE_PUBLIC_KEYS_BASE64__';
 
 
 function writeOut(message = ''): void {
@@ -36,6 +43,65 @@ type Options = {
   verifyAttempts: number;
   verifyDelayMs: number;
 };
+
+function requiredEnvironmentValue(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) throw new Error(`${name} is required`);
+  return value;
+}
+
+export function trustedReleaseKeysJson(
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  const keyId = env.CONSUELO_OS_RELEASE_SIGNING_KEY_ID?.trim();
+  const publicKey = env.CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY?.trim();
+  const encoded = env.CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS?.trim();
+  let keys: Record<string, string> = {};
+  if (encoded) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(encoded) as unknown;
+    } catch (error: unknown) {
+      throw new Error(
+        'CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS is not valid JSON',
+        { cause: error },
+      );
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error(
+        'CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS must be a JSON object',
+      );
+    }
+    keys = Object.fromEntries(
+      Object.entries(parsed as Record<string, unknown>).map(([id, value]) => {
+        if (typeof value !== 'string' || !value.trim()) {
+          throw new Error(`trusted release key ${id} must be a PEM string`);
+        }
+        return [id, value];
+      }),
+    );
+  }
+  if (keyId && publicKey) keys[keyId] = publicKey;
+  if (Object.keys(keys).length === 0) {
+    throw new Error(
+      'CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS or the current signing key is required',
+    );
+  }
+  return JSON.stringify(keys);
+}
+
+export function materializeHostedBootstrap(
+  bootstrap: string,
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  if (!bootstrap.includes(RELEASE_KEYS_PLACEHOLDER)) {
+    throw new Error('bootstrap release-key placeholder is missing');
+  }
+  const encoded = Buffer.from(trustedReleaseKeysJson(env), 'utf8').toString(
+    'base64',
+  );
+  return bootstrap.replaceAll(RELEASE_KEYS_PLACEHOLDER, encoded);
+}
 
 function printHelp() {
   writeOut(`Usage: bun run os:release-install -- [options]
@@ -179,53 +245,123 @@ function run(command: string, args: string[], options: { allowFailure?: boolean 
   return result;
 }
 
-function buildWorkerSource(bootstrap: string, options: Options, sha256: string): string {
+export function buildWorkerSource(
+  bootstrap: string,
+  options: Pick<Options, 'pathname'>,
+  sha256: string,
+): string {
   const bootstrapLiteral = JSON.stringify(bootstrap);
   const pathLiteral = JSON.stringify(options.pathname);
   const shaLiteral = JSON.stringify(sha256);
 
   return `const BOOTSTRAP = ${bootstrapLiteral};
 const INSTALL_PATH = ${pathLiteral};
+const RELEASE_PATH = \`\${INSTALL_PATH}/releases/\`;
 const BOOTSTRAP_SHA256 = ${shaLiteral};
 
 export default {
-  async fetch(request) {
-    const url = new URL(request.url);
+  async fetch(request, env) {
+    try {
+      const url = new URL(request.url);
 
-    if (url.pathname === '/') {
-      return Response.redirect(new URL(INSTALL_PATH, url.origin), 302);
-    }
+      if (url.pathname === '/') {
+        return Response.redirect(new URL(INSTALL_PATH, url.origin), 302);
+      }
 
-    if (url.pathname !== INSTALL_PATH) {
-      return new Response('Not found\\n', {
-        status: 404,
+      if (url.pathname.startsWith(RELEASE_PATH)) {
+        if (request.method !== 'GET' && request.method !== 'HEAD') {
+          return new Response('Method not allowed\\n', {
+            status: 405,
+            headers: {
+              allow: 'GET, HEAD',
+              'content-type': 'text/plain; charset=utf-8',
+              'x-content-type-options': 'nosniff',
+            },
+          });
+        }
+        const key = url.pathname.slice(RELEASE_PATH.length);
+        const allowed = /^channels\\/(?:dev|canary|beta|stable|nightly)\\.json$/.test(key) ||
+          /^bundles\\/sha256:[a-f0-9]{64}\\/[A-Za-z0-9._+-]+\\.tar\\.gz(?:\\.sig)?$/.test(key);
+        if (!allowed || key.includes('..')) {
+          return new Response('Not found\\n', {
+            status: 404,
+            headers: {
+              'content-type': 'text/plain; charset=utf-8',
+              'x-content-type-options': 'nosniff',
+            },
+          });
+        }
+        const object = await env.CONSUELO_OS_RELEASES.get(key);
+        if (!object) {
+          return new Response('Not found\\n', {
+            status: 404,
+            headers: {
+              'content-type': 'text/plain; charset=utf-8',
+              'x-content-type-options': 'nosniff',
+            },
+          });
+        }
+        const headers = new Headers();
+        object.writeHttpMetadata(headers);
+        headers.set(
+          'cache-control',
+          key.startsWith('bundles/')
+            ? 'public, max-age=31536000, immutable'
+            : 'public, max-age=60, must-revalidate',
+        );
+        headers.set(
+          'content-type',
+          key.endsWith('.json')
+            ? 'application/json; charset=utf-8'
+            : 'application/gzip',
+        );
+        headers.set('etag', object.httpEtag);
+        headers.set('x-content-type-options', 'nosniff');
+        return new Response(request.method === 'HEAD' ? null : object.body, {
+          status: 200,
+          headers,
+        });
+      }
+
+      if (url.pathname !== INSTALL_PATH) {
+        return new Response('Not found\\n', {
+          status: 404,
+          headers: {
+            'content-type': 'text/plain; charset=utf-8',
+            'x-content-type-options': 'nosniff',
+          },
+        });
+      }
+
+      if (request.method !== 'GET' && request.method !== 'HEAD') {
+        return new Response('Method not allowed\\n', {
+          status: 405,
+          headers: {
+            allow: 'GET, HEAD',
+            'content-type': 'text/plain; charset=utf-8',
+            'x-content-type-options': 'nosniff',
+          },
+        });
+      }
+
+      return new Response(request.method === 'HEAD' ? null : BOOTSTRAP, {
+        status: 200,
+        headers: {
+          'cache-control': 'public, max-age=300',
+          'content-type': 'text/x-shellscript; charset=utf-8',
+          'x-consuelo-os-bootstrap-sha256': BOOTSTRAP_SHA256,
+          'x-content-type-options': 'nosniff',
+        },
+      });
+    } catch {
+      return new Response('Internal error\\n', {
+        status: 500,
         headers: {
           'content-type': 'text/plain; charset=utf-8',
           'x-content-type-options': 'nosniff',
         },
       });
     }
-
-    if (request.method !== 'GET' && request.method !== 'HEAD') {
-      return new Response('Method not allowed\\n', {
-        status: 405,
-        headers: {
-          allow: 'GET, HEAD',
-          'content-type': 'text/plain; charset=utf-8',
-          'x-content-type-options': 'nosniff',
-        },
-      });
-    }
-
-    return new Response(request.method === 'HEAD' ? null : BOOTSTRAP, {
-      status: 200,
-      headers: {
-        'cache-control': 'public, max-age=300',
-        'content-type': 'text/x-shellscript; charset=utf-8',
-        'x-consuelo-os-bootstrap-sha256': BOOTSTRAP_SHA256,
-        'x-content-type-options': 'nosniff',
-      },
-    });
   },
 };
 `;
@@ -283,7 +419,9 @@ async function main() {
   options.pathname = normalizePathname(options.pathname);
 
   const bootstrapPath = resolve(REPO_ROOT, options.scriptPath);
-  const bootstrap = readFileSync(bootstrapPath, 'utf8');
+  const bootstrap = materializeHostedBootstrap(
+    readFileSync(bootstrapPath, 'utf8'),
+  );
   const sha256 = createHash('sha256').update(bootstrap).digest('hex');
   const installUrl = `https://${options.domain}${options.pathname}`;
 
@@ -292,26 +430,46 @@ async function main() {
   writeOut(`installUrl=${installUrl}`);
 
   if (options.verifyOnly) {
-    await verifyInstallUrl(installUrl, sha256, options);
+    try {
+      await verifyInstallUrl(installUrl, sha256, options);
+    } catch (error: unknown) {
+      throw new Error(
+        `Hosted installer verification failed for ${installUrl}`,
+        { cause: error },
+      );
+    }
     return;
   }
 
   const tempDir = mkdtempSync(join(tmpdir(), 'consuelo-os-install-worker-'));
   const workerPath = join(tempDir, 'worker.js');
+  const wranglerPath = join(tempDir, 'wrangler.toml');
   writeFileSync(workerPath, buildWorkerSource(bootstrap, options, sha256));
+  const releaseBucket = requiredEnvironmentValue(
+    'CONSUELO_OS_RELEASE_R2_BUCKET',
+  );
+  writeFileSync(
+    wranglerPath,
+    [
+      `name = ${JSON.stringify(options.workerName)}`,
+      `main = ${JSON.stringify(workerPath)}`,
+      `compatibility_date = ${JSON.stringify(options.compatibilityDate)}`,
+      `routes = [{ pattern = ${JSON.stringify(options.domain)}, custom_domain = true }]`,
+      '',
+      '[[r2_buckets]]',
+      'binding = "CONSUELO_OS_RELEASES"',
+      `bucket_name = ${JSON.stringify(releaseBucket)}`,
+      '',
+    ].join('\n'),
+  );
   writeOut(`generated=${workerPath}`);
 
   try {
     if (!options.noDeploy) {
       const deployArgs = [
         'deploy',
-        workerPath,
-        '--name',
-        options.workerName,
-        '--compatibility-date',
-        options.compatibilityDate,
-        '--domain',
-        options.domain,
+        '--config',
+        wranglerPath,
         '--message',
         `release ${options.workerName} ${sha256.slice(0, 12)}`,
         '--keep-vars',
@@ -334,7 +492,9 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  writeErr(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((error) => {
+    writeErr(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}

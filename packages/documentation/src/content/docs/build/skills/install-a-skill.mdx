@@ -1,49 +1,84 @@
 ---
 title: Install a skill
-description: Enable a bundled skill during setup or add a validated local skill to the OS home.
+description: Add or remove bundled Consuelo OS skills with the interactive CLI or direct skill names.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-11
 evidence:
-  - source: packages/os/scripts/install.ts
+  - source: packages/os/scripts/lib/skill-selection.ts
     tests:
-      - packages/os/scripts/onboarding-flow.test.ts
-    runtime: The interactive skill multiselect and non-interactive defaults were inspected on 2026-07-13.
-  - source: packages/os/scripts/lib/install-state.ts
+      - packages/os/tests/skill-selection-cli.test.ts
+    runtime: Interactive and direct add/remove flows were verified on 2026-08-11.
+  - source: packages/os/scripts/lib/managed-component-install.ts
     tests:
-      - packages/os/tests/install-state.test.ts
-    runtime: Focused provisioning tests verified selected bundled skills, local-skill preservation, and registry refresh behavior.
+      - packages/os/tests/skill-selection-cli.test.ts
+    runtime: Clean removal and locally modified skill preservation were verified on 2026-08-11.
 ---
 
-Consuelo OS currently has two skill sources: bundled skills shipped with OS and user-owned local skills.
+Consuelo OS ships with skill templates that you can enable or remove after installation.
 
-## Choose bundled skills during setup
+## Add a skill
 
-The interactive installer asks which skills to enable. Selected bundled skills are materialized under `~/.consuelo/skills` and recorded in `~/.consuelo/config.json`.
+Run the picker:
 
-A non-interactive `--yes` installation uses the current default selection. There is not yet a standalone public `consuelo skill install <name>` command.
-
-To change the selected bundled set through the supported self-service UI, rerun the interactive installer and choose the desired skills. The installer preserves locally edited bundled skills instead of silently replacing them.
-
-## Add a local skill
-
-A local skill is a folder under:
-
-```text
-~/.consuelo/skills/<skill-name>/
+```bash
+consuelo add skill
 ```
 
-At minimum it needs a valid `SKILL.md` and `skill.json`. Use the structure in [Create a skill](/build/skills/create-a-skill/) and [Skill structure](/build/skills/skill-structure/).
+The picker shows only skill templates that are not currently selected.
 
-Run the normal OS provisioning flow after adding the folder so `skills.json` is refreshed. Folders without Consuelo's bundled-install metadata are treated as user owned and preserved on later provisions.
+To add one or more skills directly:
+
+```bash
+consuelo add skill branch
+consuelo add skill branch browser debugger
+```
+
+Unknown bundled skill names fail instead of creating a silent configuration entry.
+
+## Remove a skill
+
+Run the installed-skill picker:
+
+```bash
+consuelo remove skill
+```
+
+Or remove by name:
+
+```bash
+consuelo remove skill branch
+```
+
+A clean managed skill is removed from the visible `~/Consuelo/Skills/<name>/` tree. If you modified the managed copy locally, Consuelo removes it from the selected set but preserves those files for explicit review.
+
+## What changes
+
+Skill selection updates one canonical intent and then reconciles the derived surfaces:
+
+```text
+<CONSUELO_HOME>/config.json
+  selectedSkills              # durable desired set
+
+<CONSUELO_HOME>/components/installed-skills.json
+                              # active managed index
+
+~/Consuelo/Skills/<name>/     # visible selected skill copy
+~/Consuelo/Skills/skills.json # full bundled catalog
+```
+
+On the next normal agent bootstrap, steering reads the active installed index and advertises selected skills that are not disabled by the manifest overlay.
 
 ## Verify
 
-Check that:
+After adding a skill, check that:
 
-1. the skill folder exists under `~/.consuelo/skills`;
-2. its entry appears in `~/.consuelo/skills/skills.json`;
-3. the metadata status is `active`;
-4. its referenced guidance entrypoint and tools exist;
-5. permission and approval metadata match the manifest when a runtime skill entry is present.
+1. its name is present in `config.json.selectedSkills`;
+2. it appears in `components/installed-skills.json`;
+3. `~/Consuelo/Skills/<name>/SKILL.md` exists;
+4. a fresh agent bootstrap lists it in Installed skills.
 
-A folder being present does not prove its runtime dependencies are available. Exercise the skill's documented verification step before relying on it.
+See the individual pages in [Skill Templates](/build/skills/bundled/) for each skill's purpose and boundary.
+
+## Custom skill note
+
+The current `add skill` command selects skill templates. Existing custom skills from the legacy hidden `<CONSUELO_HOME>/skills/` tree are preserved for migration; the CLI does not treat an arbitrary new folder name as a bundled install.

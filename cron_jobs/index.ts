@@ -88,7 +88,7 @@ const DEFAULT_INTERVAL_MS = 30_000;
 const DEFAULT_REPO = 'consuelohq/opensaas';
 const DEFAULT_ORIGIN = 'https://diffs.consuelohq.com';
 const DEFAULT_SITES_ORIGIN = 'https://sites.consuelohq.com';
-const DEFAULT_SITES_REFRESH_COMMAND = ['bun', 'packages/workspace/scripts/consuelo-design.ts', 'refresh', '--json'];
+const DEFAULT_SITES_REFRESH_COMMAND = ['bun', 'packages/os/scripts/os.ts', 'sites', 'refresh', '--json'];
 const DEFAULT_SITES_EXPECTED_CACHE_CONTROL = 'public, max-age=60, s-maxage=86400';
 const DEFAULT_WARM_PULL_LIMIT = 20;
 const DEFAULT_WARM_INTERVAL_MS = 5 * 60_000;

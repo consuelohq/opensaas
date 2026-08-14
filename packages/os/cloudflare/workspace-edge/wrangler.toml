@@ -3,6 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2026-06-11"
 compatibility_flags = ["nodejs_compat"]
 
+[[durable_objects.bindings]]
+name = "OS_DEVICE_AUTHORITY"
+class_name = "OsDeviceGrantDurableObject"
+script_name = "consuelo-os-device-authority"
+
 [[routes]]
 pattern = "internal.consuelohq.com/*"
 zone_name = "consuelohq.com"

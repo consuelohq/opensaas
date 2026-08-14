@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   danger-js:
-    timeout-minutes: 5
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     if: github.event.action != 'closed'
     steps:

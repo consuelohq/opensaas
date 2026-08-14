@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6a7583e79252",
+  "tmuxSession": "opensaas-dialer-lead-connector-sandbox-parity-6a7583e7",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/lead-connector-sandbox-parity",
+  "branch": "task/dialer/lead-connector-sandbox-parity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-lead-connector-sandbox-parity",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-lead-connector-sandbox-parity",
+  "prNumber": 1621,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1621",
+  "createdAt": "2026-07-24T04:46:10.943Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-lead-connector-sandbox-parity/.task/dialer/lead-connector-sandbox-parity/session.json"
+}

@@ -2,9 +2,9 @@
 title: Tools
 description: Generated facade-tool metadata, typed invocation, and execution policy.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
-  - source: packages/os/tooling/tool-manifest.schema.json
+  - source: packages/os/manifests/schemas/tool-manifest.schema.json
     tests:
       - packages/os/tests/tool-manifest.test.ts
       - packages/os/tests/facade/facade.test.ts
@@ -90,6 +90,14 @@ Agent clients call the facade with a tool name and typed input. Task-scoped oper
 ```
 
 The facade validates input before executing the backing command. It returns a `ToolResult`, not unstructured terminal prose.
+
+## Node and task routing
+
+When a workspace has more than one node, the OS routing layer can resolve a facade call from task ownership, an explicit node target, or the workspace default. Task-scoped operations continue to put `taskSession` at the call envelope's top level.
+
+Do not assume that changing the default node moves an active task. A successful `task.start` binds that session to the node that started it; follow-up calls carrying the session keep using that owner until the task affinity is successfully released.
+
+See [Routing work](/nodes/routing/) for user-facing behavior and [Result and error formats](/reference/result-and-error-formats/#node-routing-errors) for mismatch and offline failures.
 
 ## Discovery
 

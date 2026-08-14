@@ -20,10 +20,6 @@ const routes = [
   ['OpenCode', '/connect/agents/opencode/'],
   ['Gemini', '/connect/agents/gemini/'],
   ['Other agents', '/connect/agents/other-agents/'],
-  ['How nodes work', '/connect/nodes/how-nodes-work/'],
-  ['Home node', '/connect/nodes/home-node/'],
-  ['Local nodes', '/connect/nodes/local-nodes/'],
-  ['Cloud nodes', '/connect/nodes/cloud-nodes/'],
   ['Apps and services', '/connect/apps-and-services/'],
   ['Google Workspace', '/connect/apps-and-services/google-workspace/'],
   ['Gmail', '/connect/apps-and-services/gmail/'],
@@ -71,7 +67,7 @@ try {
 
   const sidebar = page.locator('#starlight__sidebar');
   const groups = sidebar.locator('details');
-  const expectedGroups = 11;
+  const expectedGroups = 10;
   if ((await groups.count()) !== expectedGroups) throw new Error(`Expected ${expectedGroups} expanded Connect groups, found ${await groups.count()}`);
   for (let index = 0; index < await groups.count(); index += 1) {
     if (!(await groups.nth(index).evaluate((element) => element.open))) throw new Error('A Connect navigation group started collapsed');
@@ -95,10 +91,7 @@ try {
   if (!(await sidebar.getByRole('link', { name: 'Google Workspace', exact: true }).getAttribute('aria-current'))) throw new Error('Deep link did not mark Google Workspace current');
 
   await page.goto(`${origin}/connect/apps-and-services/railway/`, { waitUntil: 'networkidle' });
-  if (!(await page.getByText('railway.logs', { exact: false }).first().isVisible())) throw new Error('Railway partial support guidance is missing');
-
-  await page.goto(`${origin}/connect/nodes/local-nodes/`, { waitUntil: 'networkidle' });
-  if (!(await page.getByText('cloudflare-tunnel', { exact: false }).first().isVisible())) throw new Error('Local node transport guidance is missing');
+  if (!(await page.getByText('deployment.logs', { exact: false }).first().isVisible())) throw new Error('Railway canonical deployment guidance is missing');
 
   const viewportChecks = [];
   for (const viewport of [
@@ -112,7 +105,7 @@ try {
     if (!(await page.getByRole('button', { name: 'Copy page' }).isVisible())) throw new Error(`Copy page is hidden on ${viewport.name}`);
     if (viewport.name === 'mobile') {
       await page.locator('button[aria-controls="starlight__sidebar"]').click();
-      if (!(await page.getByRole('link', { name: 'Additional services', exact: true }).isVisible())) throw new Error('Nested Apps and services navigation is unavailable on mobile');
+      if (!(await page.locator('#starlight__sidebar').getByRole('link', { name: 'Additional services', exact: true }).isVisible())) throw new Error('Nested Apps and services navigation is unavailable on mobile');
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ebbe3db64e02",
+  "tmuxSession": "opensaas-os-consolidate-office-into-os-artifacts-ebbe3db6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/consolidate-office-into-os-artifacts",
+  "branch": "task/os/consolidate-office-into-os-artifacts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-consolidate-office-into-os-artifacts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-consolidate-office-into-os-artifacts",
+  "prNumber": 1516,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1516",
+  "createdAt": "2026-07-15T18:39:43.748Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-consolidate-office-into-os-artifacts/.task/os/consolidate-office-into-os-artifacts/session.json"
+}

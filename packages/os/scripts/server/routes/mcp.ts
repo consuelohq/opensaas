@@ -1,13 +1,25 @@
+import { createHash } from 'node:crypto';
 import { Hono } from 'hono';
 
 import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
 } from '../../lib/mcp-gateway';
+import { validateModernMcpHttpRequest } from '../../lib/mcp-protocol';
 import {
+  decodeMcpNodeRoutingContext,
+  inspectMcpNodeRoutingBody,
+  MCP_NODE_CONTEXT_HEADER,
+  MCP_ROUTE_SOURCE_HEADER,
+  type McpNodeRoutingContext,
+} from '../../lib/mcp-node-routing';
+import { hasAnyWorkspaceEdgeNodeHeaders } from '../../lib/workspace-edge-node-auth';
+import {
+  authenticateBearerMcpRequest,
+  authenticateSignedRequest,
   authorizeBearerMcpRequest,
-  authorizeSignedRequest,
   hasSignedGatewayHeaders,
+  loadAuthConfigForRequest,
   requestHeaders,
 } from '../middleware/auth';
 import {
@@ -15,17 +27,139 @@ import {
   admitRawMcpBody,
 } from '../middleware/dangerous-material';
 import { internalError, jsonResponse } from '../middleware/errors';
+import { queueGatewayAuthenticationTraceSafely } from '../../lib/trace-persistence';
+import type { TraceRoutingContext } from '../../lib/trace-routing-context';
 import { logLocalOsServerError } from '../logger';
-import { executeLocalOsCall } from '../services/call-service';
+import { validateMcpRequestOrigin } from '../security/mcp-origin';
+import { executeLocalOsFacadeTool } from '../services/call-service';
+import { resolveMcpRequestSession } from '../services/mcp-session';
+import { readGuardedLocalOsSteering } from '../services/steering-service';
 
 const MCP_PATH = '/mcp';
 
-export function createMcpRoutes(): Hono {
+type McpRouteDependencies = {
+  getSteering: (
+    callerKey: string,
+    nodeRouting?: McpNodeRoutingContext,
+  ) => Promise<string>;
+  executeFacadeTool: (
+    toolName: string,
+    toolInput: Record<string, unknown>,
+    routing?: TraceRoutingContext,
+  ) => Promise<unknown>;
+};
+
+function resolveTraceRoutingContext(input: {
+  requestedNodeId?: string;
+  resolvedNodeId?: string;
+  nodeRouting?: McpNodeRoutingContext;
+  routeSource?: string;
+}): TraceRoutingContext | undefined {
+  const resolvedNodeName = input.resolvedNodeId
+    ? input.nodeRouting?.nodes.find((node) => node.nodeId === input.resolvedNodeId)?.displayName
+    : undefined;
+  const routing: TraceRoutingContext = {
+    ...(input.requestedNodeId ? { requestedNodeId: input.requestedNodeId } : {}),
+    ...(input.resolvedNodeId ? { resolvedNodeId: input.resolvedNodeId } : {}),
+    ...(resolvedNodeName ? { resolvedNodeName } : {}),
+    ...(input.nodeRouting?.defaultNodeId
+      ? { defaultNodeId: input.nodeRouting.defaultNodeId }
+      : {}),
+    ...(input.routeSource ? { routeSource: input.routeSource } : {}),
+  };
+  return Object.keys(routing).length ? routing : undefined;
+}
+
+function trustedNodeRoutingContext(input: {
+  request: Request;
+  workspaceId?: string;
+}): McpNodeRoutingContext | undefined {
+  const context = decodeMcpNodeRoutingContext(
+    input.request.headers.get(MCP_NODE_CONTEXT_HEADER),
+  );
+  if (!context || !input.workspaceId || context.workspaceId !== input.workspaceId) {
+    return undefined;
+  }
+  const resolvedNodeId = input.request.headers.get('x-consuelo-node-id')?.trim();
+  if (!resolvedNodeId || resolvedNodeId !== context.currentNodeId) return undefined;
+  const routeSource = input.request.headers.get(MCP_ROUTE_SOURCE_HEADER)?.trim();
+  if (routeSource !== context.routeSource) return undefined;
+  return context;
+}
+
+const defaultDependencies: McpRouteDependencies = {
+  getSteering: readGuardedLocalOsSteering,
+  executeFacadeTool: async (toolName, toolInput, routing) => {
+    try {
+      return await executeLocalOsFacadeTool(toolName, toolInput, routing);
+    } catch (error: unknown) {
+      logLocalOsServerError(
+        'local_os.mcp_tool_execution_failed',
+        error,
+        {
+          code: 'OS_EXECUTION_FAILED',
+          route: MCP_PATH,
+          toolName,
+        },
+      );
+      return {
+        ok: false,
+        code: 'OS_EXECUTION_FAILED',
+        message: 'OS tool execution failed.',
+      };
+    }
+  },
+};
+
+function resolveSteeringCallerKey(input: {
+  request: Request;
+  authMode: 'oauth' | 'local-bearer' | 'machine' | 'workspace-edge';
+  principalKey: string;
+}): string {
+  if (input.authMode !== 'workspace-edge') return input.principalKey;
+  const authorization = input.request.headers.get('authorization')?.trim() ?? '';
+  const bearerMatch = /^Bearer\s+(\S+)$/i.exec(authorization);
+  if (!bearerMatch) return input.principalKey;
+  const bearerToken = bearerMatch[1];
+
+  const digest = createHash('sha256')
+    .update([
+      'workspace-edge-oauth',
+      input.principalKey,
+      bearerToken,
+    ].join('\n'))
+    .digest('hex');
+  return `prn_${digest.slice(0, 32)}`;
+}
+
+export function createMcpRoutes(
+  dependencies: McpRouteDependencies = defaultDependencies,
+): Hono {
   const app = new Hono();
 
   app.all(MCP_PATH, async (context) => {
     try {
       const request = context.req.raw;
+
+      try {
+        const config = loadAuthConfigForRequest();
+        const originValidation = validateMcpRequestOrigin(request, {
+          workspaceHost: config.workspaceHost,
+        });
+        if (!originValidation.ok) {
+          return jsonResponse(
+            {
+              error: {
+                code: originValidation.code,
+                message: originValidation.message,
+              },
+            },
+            originValidation.status,
+          );
+        }
+      } catch {
+        // Authentication below remains authoritative if generated auth is unavailable.
+      }
 
       if (request.method !== 'POST') {
         const denied = await authorizeBearerMcpRequest({
@@ -56,47 +190,83 @@ export function createMcpRoutes(): Hono {
       }
 
       const headers = requestHeaders(request);
-      const denied = hasSignedGatewayHeaders(headers)
-        ? await authorizeSignedRequest({
+      const signedGatewayRequest =
+        hasSignedGatewayHeaders(headers) || hasAnyWorkspaceEdgeNodeHeaders(headers);
+      const authentication = signedGatewayRequest
+        ? await authenticateSignedRequest({
             request,
             path: MCP_PATH,
             body,
             requiredScope: mcpScope.requiredScope,
           })
-        : await authorizeBearerMcpRequest({
+        : await authenticateBearerMcpRequest({
             request,
             path: MCP_PATH,
             requiredScope: mcpScope.requiredScope,
           });
-      if (denied) return denied;
-
-      const result = await handleMcpGatewayJsonRpc(body, {
-        executeCall: async (input) => {
-          try {
-            return await executeLocalOsCall(input);
-          } catch (error: unknown) {
-            logLocalOsServerError(
-              'local_os.mcp_tool_execution_failed',
-              error,
-              {
-                code: 'OS_EXECUTION_FAILED',
-                route: MCP_PATH,
-                toolName: input.name,
-              },
-            );
-            return {
-              ok: false,
-              name: input.name,
-              permission: 'execute',
-              error: {
-                code: 'OS_EXECUTION_FAILED',
-                message: 'OS tool execution failed.',
-              },
-            };
-          }
-        },
+      if (!authentication.ok) return authentication.response;
+      const routingInspection = inspectMcpNodeRoutingBody(body);
+      const nodeRouting = trustedNodeRoutingContext({
+        request,
+        workspaceId: authentication.principal.workspaceId,
       });
-      return jsonResponse(result);
+      const routeSourceHeader = request.headers.get(MCP_ROUTE_SOURCE_HEADER)?.trim();
+      const routeSource =
+        routeSourceHeader === 'default' ||
+        routeSourceHeader === 'explicit' ||
+        routeSourceHeader === 'task'
+          ? routeSourceHeader
+          : undefined;
+      const resolvedNodeId = request.headers.get('x-consuelo-node-id')?.trim() || undefined;
+      const requestedNodeId = routingInspection.ok ? routingInspection.nodeId : undefined;
+      const traceRouting = resolveTraceRoutingContext({
+        requestedNodeId,
+        resolvedNodeId,
+        nodeRouting,
+        routeSource,
+      });
+      queueGatewayAuthenticationTraceSafely({
+        workspaceId: authentication.principal.workspaceId ?? '',
+        route: MCP_PATH,
+        requiredScope: mcpScope.requiredScope,
+        authMode: authentication.principal.authMode,
+        principalKey: authentication.principal.principalKey,
+        ...(requestedNodeId
+          ? { requestedNodeId }
+          : {}),
+        ...(resolvedNodeId
+          ? { resolvedNodeId }
+          : {}),
+        ...(traceRouting?.resolvedNodeName
+          ? { resolvedNodeName: traceRouting.resolvedNodeName }
+          : {}),
+        ...(nodeRouting?.defaultNodeId ? { defaultNodeId: nodeRouting.defaultNodeId } : {}),
+        ...(routeSource ? { routeSource } : {}),
+      });
+
+      const protocol = validateModernMcpHttpRequest(body, request.headers);
+      if (!protocol.ok) {
+        return jsonResponse(protocol.response, protocol.status);
+      }
+
+      const session = protocol.modern
+        ? null
+        : resolveMcpRequestSession(request, body);
+      const steeringCallerKey = resolveSteeringCallerKey({
+        request,
+        authMode: authentication.principal.authMode,
+        principalKey: authentication.principal.principalKey,
+      });
+      const result = await handleMcpGatewayJsonRpc(body, {
+        getSteering: () => dependencies.getSteering(steeringCallerKey, nodeRouting),
+        executeFacadeTool: (toolName, toolInput) =>
+          dependencies.executeFacadeTool(toolName, toolInput, traceRouting),
+      });
+      const response = jsonResponse(result);
+      if (session?.responseSessionId) {
+        response.headers.set('mcp-session-id', session.responseSessionId);
+      }
+      return response;
     } catch (error: unknown) {
       return internalError(error);
     }

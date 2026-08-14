@@ -9,7 +9,22 @@ export type ErrorCode =
   | 'NOT_FOUND'
   | 'TASK_SESSION_NOT_FOUND'
   | 'TASK_SESSION_REQUIRED'
-  | 'DRY_RUN';
+  | 'DRY_RUN'
+  | 'CLI_MISSING'
+  | 'UNSUPPORTED_VERSION'
+  | 'UNAUTHENTICATED'
+  | 'NO_CONTEXT'
+  | 'PERMISSION_DENIED'
+  | 'RATE_LIMITED'
+  | 'UNAVAILABLE'
+  | 'MALFORMED_OUTPUT'
+  | 'INVALID_INPUT'
+  | 'UNSUPPORTED_CAPABILITY'
+  | 'CAPABILITY_NOT_SUPPORTED'
+  | 'WAIT_TIMEOUT'
+  | 'IDEMPOTENCY_CONFLICT'
+  | 'APPROVAL_REQUIRED'
+  | 'CANCELLED';
 
 export type ToolCapabilities = {
   readOnly: boolean;
@@ -28,6 +43,7 @@ export type ToolResult<TData = unknown> = {
   exitCode: number;
   durationMs: number;
   traceId: string;
+  parentTraceId?: string;
   requestId?: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -48,9 +64,11 @@ export type CommandArgument = {
 
 export type BranchMode = 'none' | 'optional' | 'required';
 export type BranchArgumentStyle = 'flag' | 'prefix';
+export type CommandExecutionScope = 'runtime' | 'workspace';
 
 export type ToolCommand = {
   script: string;
+  executionScope?: CommandExecutionScope;
   subcommand?: string;
   branchMode?: BranchMode;
   branchArgumentStyle?: BranchArgumentStyle;
@@ -123,6 +141,12 @@ export type ExecuteToolOptions = {
   now?: () => number;
   randomUUID?: () => string;
   logMode?: LogMode;
+};
+
+export type BatchExecutionContext = {
+  taskSession?: string;
+  branch?: string;
+  taskWorktree?: string;
 };
 
 export type BatchStep = {

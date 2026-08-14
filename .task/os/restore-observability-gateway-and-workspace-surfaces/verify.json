@@ -1,0 +1,48 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/restore-observability-gateway-and-workspace-surfaces",
+  "base": "origin/task/os/restore-observability-gateway-and-workspace-surfaces",
+  "headSha": "044271e7516b29997a588346b9393e2e74bbd53e",
+  "changeHash": "4f11badbc48df9fb5b80a64ac1a2f4258e94a40160c0e37d4e1a5ed3f5327387",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-06T00:48:38.883Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/restore-observability-gateway-and-workspace-surfaces/current.json",
+        ".task/os/restore-observability-gateway-and-workspace-surfaces/evidence-log.json",
+        ".task/os/restore-observability-gateway-and-workspace-surfaces/read-log.json",
+        ".task/os/restore-observability-gateway-and-workspace-surfaces/verify.json",
+        ".task/os/restore-observability-gateway-and-workspace-surfaces/workpad.md",
+        ".task/tasks/os/restore-observability-gateway-and-workspace-surfaces.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

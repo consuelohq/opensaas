@@ -4,6 +4,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import {
+  createDefaultWorkspaceYamlConfig,
+  resolveConsueloHomeLayout,
+  writeYamlConfig,
+} from '../scripts/lib/consuelo-home';
 import { readFullToolManifest } from '../scripts/lib/manifest';
 import {
   createGatewaySecurityConfig,
@@ -17,6 +22,7 @@ import { handleRequest } from '../scripts/server/app';
 let home = '';
 let config: GatewaySecurityConfig;
 let token: AgentAppToken;
+const workspaceId = 'workspace_configuration_hono';
 
 function writeMinimalOsConfig(): void {
   writeFileSync(join(home, 'config.json'), JSON.stringify({
@@ -55,23 +61,35 @@ function signedRequest(input: {
 }
 
 beforeEach(() => {
-  home = mkdtempSync(join(tmpdir(), 'consuelo-settings-hono-'));
+  home = mkdtempSync(join(tmpdir(), 'consuelo-configuration-hono-'));
   writeMinimalOsConfig();
   config = createGatewaySecurityConfig({
     home,
-    workspaceId: 'workspace_settings_hono',
-    workspaceSlug: 'settings-hono',
-    workspaceHost: 'settings-hono.consuelohq.com',
+    workspaceId,
+    workspaceSlug: 'configuration-hono',
+    workspaceHost: 'configuration-hono.consuelohq.com',
   });
+  writeYamlConfig(
+    resolveConsueloHomeLayout(home).workspaceConfigPath(workspaceId),
+    createDefaultWorkspaceYamlConfig({
+      workspaceId,
+      workspaceName: 'Configuration Hono',
+      workspaceSlug: 'configuration-hono',
+      workspaceHost: 'configuration-hono.consuelohq.com',
+    }),
+    false,
+  );
   token = issueAgentAppToken({
     config,
-    callerId: 'caller_settings_hono',
-    appId: 'app_settings_hono',
-    subjectId: 'subject_settings_hono',
-    deviceId: 'device_settings_hono',
-    connectorId: 'connector_settings_hono',
-    connectionId: 'connection_settings_hono',
+    callerId: 'caller_configuration_hono',
+    appId: 'app_configuration_hono',
+    subjectId: 'subject_configuration_hono',
+    deviceId: 'device_configuration_hono',
+    connectorId: 'connector_configuration_hono',
+    connectionId: 'connection_configuration_hono',
     scopes: [
+      'route:/gateway/configuration:read',
+      'route:/gateway/configuration:write',
       'route:/gateway/settings:read',
       'route:/gateway/settings:write',
     ],
@@ -90,12 +108,12 @@ afterEach(() => {
   home = '';
 });
 
-describe('Hono Settings routes', () => {
-  it('serves a signed Settings snapshot', async () => {
+describe('Hono Configuration routes', () => {
+  it('serves a signed canonical configuration snapshot', async () => {
     const response = await handleRequest(signedRequest({
       method: 'GET',
-      path: '/gateway/settings/snapshot',
-      nonce: 'settings-snapshot-nonce',
+      path: '/gateway/configuration/snapshot',
+      nonce: 'configuration-snapshot-nonce',
     }));
 
     expect(response.status).toBe(200);
@@ -108,25 +126,111 @@ describe('Hono Settings routes', () => {
     });
   });
 
-  it('applies a signed Settings overlay patch', async () => {
+  it('applies a signed canonical configuration overlay patch', async () => {
     const tool = readFullToolManifest().tools.find((entry) => entry.kind === 'facade-tool');
     expect(tool).toBeTruthy();
     const body = JSON.stringify({ kind: 'tool', name: tool!.name, enabled: false });
 
     const response = await handleRequest(signedRequest({
       method: 'POST',
-      path: '/gateway/settings/overlay',
+      path: '/gateway/configuration/overlay',
       body,
-      nonce: 'settings-overlay-nonce',
+      nonce: 'configuration-overlay-nonce',
     }));
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
+      snapshot: { overlay: { disabledTools: expect.arrayContaining([tool!.name]) } },
+    });
+  });
+
+
+  it('reads and writes source-control repositories through Configuration without secret values', async () => {
+    const initial = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/gateway/configuration/source-control',
+      nonce: 'configuration-source-control-read-nonce',
+    }));
+    expect(initial.status).toBe(200);
+    await expect(initial.json()).resolves.toMatchObject({
+      ok: true,
+      snapshot: { configured: false, repositories: [] },
+    });
+
+    const body = JSON.stringify({
+      defaultRepositoryId: 'app',
+      repositories: [{
+        id: 'app',
+        name: 'App',
+        provider: 'github',
+        nameWithOwner: 'acme/app',
+        defaultBranch: 'main',
+        connectionRef: 'github-app:primary',
+        codeRoots: ['src'],
+      }],
+    });
+    const updated = await handleRequest(signedRequest({
+      method: 'POST',
+      path: '/gateway/configuration/source-control',
+      body,
+      nonce: 'configuration-source-control-write-nonce',
+    }));
+    expect(updated.status).toBe(200);
+    const serialized = await updated.text();
+    expect(serialized).not.toContain('credentialValue');
+    expect(serialized).not.toContain('token');
+    expect(JSON.parse(serialized)).toMatchObject({
+      ok: true,
       snapshot: {
-        overlay: { disabledTools: expect.arrayContaining([tool!.name]) },
+        configured: true,
+        defaultRepositoryId: 'app',
+        repositories: [{
+          id: 'app',
+          provider: 'github',
+          nameWithOwner: 'acme/app',
+          connectionRef: 'github-app:primary',
+          codeRoots: ['src'],
+          ready: true,
+        }],
       },
     });
+  });
+
+  it('rejects unsafe source-control code roots before writing workspace configuration', async () => {
+    const body = JSON.stringify({
+      defaultRepositoryId: 'app',
+      repositories: [{
+        id: 'app',
+        provider: 'github',
+        nameWithOwner: 'acme/app',
+        defaultBranch: 'main',
+        connectionRef: 'github-app:primary',
+        codeRoots: ['../private'],
+      }],
+    });
+    const response = await handleRequest(signedRequest({
+      method: 'POST',
+      path: '/gateway/configuration/source-control',
+      body,
+      nonce: 'configuration-source-control-unsafe-root-nonce',
+    }));
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_SOURCE_CONTROL_CONFIGURATION' },
+    });
+  });
+
+  it('keeps the signed settings snapshot route as a compatibility alias', async () => {
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/gateway/settings/snapshot',
+      nonce: 'legacy-settings-snapshot-nonce',
+    }));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ ok: true, snapshot: { version: 1 } });
   });
 
   it('authorizes before disclosing missing OS-home configuration', async () => {
@@ -135,23 +239,20 @@ describe('Hono Settings routes', () => {
     process.env.CONSUELO_OS_AUTH_CONFIG = join(home, 'missing-auth.json');
 
     const response = await handleRequest(new Request(
-      'http://127.0.0.1:46321/gateway/settings/snapshot',
+      'http://127.0.0.1:46321/gateway/configuration/snapshot',
     ));
 
     expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toMatchObject({
-      error: { code: 'AUTH_CONFIG_REQUIRED' },
-    });
+    await expect(response.json()).resolves.toMatchObject({ error: { code: 'AUTH_CONFIG_REQUIRED' } });
   });
 
   it.each([
+    ['POST', '/gateway/configuration/snapshot'],
+    ['GET', '/gateway/configuration/overlay'],
     ['POST', '/gateway/settings/snapshot'],
     ['GET', '/gateway/settings/overlay'],
   ] as const)('returns not found for unsupported %s %s', async (method, path) => {
-    const response = await handleRequest(new Request(
-      `http://127.0.0.1:46321${path}`,
-      { method },
-    ));
+    const response = await handleRequest(new Request(`http://127.0.0.1:46321${path}`, { method }));
     expect(response.status).toBe(404);
   });
 });

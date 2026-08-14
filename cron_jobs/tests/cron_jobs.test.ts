@@ -181,7 +181,7 @@ describe('cron_jobs primitive', () => {
     expect(result.checked).toBe(1);
     expect(result.changed).toBe(1);
     expect(result.errors).toBe(0);
-    expect(commands[0]).toEqual(['bun', 'packages/workspace/scripts/consuelo-design.ts', 'refresh', '--json']);
+    expect(commands[0]).toEqual(['bun', 'packages/os/scripts/os.ts', 'sites', 'refresh', '--json']);
     expect(await readFile(statePath, 'utf8')).toContain('sites-launcher');
     expect(await readFile(logPath, 'utf8')).toContain('sites-launcher: refreshed status=200');
   });

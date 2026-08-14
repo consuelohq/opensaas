@@ -3,6 +3,7 @@ import {
   startDocumentationServer,
   stopDocumentationServer,
 } from './lib/documentation-browser-test.mjs';
+import { readFileSync } from 'node:fs';
 
 const port = 4327;
 const origin = `http://127.0.0.1:${port}`;
@@ -32,25 +33,80 @@ try {
 
   await page.goto(origin, { waitUntil: 'networkidle' });
   if ((await page.locator('main h1#_top').count()) !== 1) throw new Error('Homepage must render one page title');
+  const siteTitle = page.locator('.consuelo-site-title');
+  if ((await siteTitle.textContent())?.trim() !== 'Consuelo OS') throw new Error('Header brand must read Consuelo OS');
+  const siteTitleLogo = siteTitle.locator('img');
+  if ((await siteTitleLogo.getAttribute('src')) !== '/favicon.svg') throw new Error('Header brand must use the docs favicon');
+  const mainFrameAnimation = await page.locator('.main-frame').evaluate((element) => getComputedStyle(element).animationName);
+  if (mainFrameAnimation !== 'docs-page-in') throw new Error(`Main frame entrance animation is ${mainFrameAnimation}`);
   const globalLinks = page.locator('#starlight__sidebar a.global-section-link');
   const globalCount = await globalLinks.count();
-  if (globalCount !== 7) throw new Error(`Expected 7 direct global section links, found ${globalCount}`);
+  if (globalCount !== 10) throw new Error(`Expected 10 direct global section links, found ${globalCount}`);
   if ((await page.locator('#starlight__sidebar details').count()) !== 0) throw new Error('Global sidebar must not render dropdown groups');
   const startGlobalLink = page.locator('#starlight__sidebar').getByRole('link', { name: 'Start', exact: true });
   if ((await startGlobalLink.getAttribute('href')) !== '/start/') throw new Error('Start must link directly to its overview');
+  const nodesGlobalLink = page.locator('#starlight__sidebar').getByRole('link', { name: 'Nodes', exact: true });
+  if ((await nodesGlobalLink.getAttribute('href')) !== '/nodes/') throw new Error('Nodes must link directly to its overview');
+  const globalLinkRest = await startGlobalLink.evaluate((element) => ({
+    backgroundColor: getComputedStyle(element).backgroundColor,
+    color: getComputedStyle(element).color,
+  }));
+  await startGlobalLink.hover();
+  const globalLinkHover = await startGlobalLink.evaluate((element) => ({
+    backgroundColor: getComputedStyle(element).backgroundColor,
+    color: getComputedStyle(element).color,
+  }));
+  if (globalLinkHover.backgroundColor !== 'rgba(0, 0, 0, 0)') throw new Error(`Global sidebar hover has a background: ${globalLinkHover.backgroundColor}`);
+  if (globalLinkHover.color === globalLinkRest.color) throw new Error('Global sidebar hover must brighten the text');
+
+  const assertPointerFocusIsQuiet = async (locator, label) => {
+    try {
+      await locator.dispatchEvent('pointerdown', { pointerType: 'mouse' });
+      await locator.focus();
+      const focusStyle = await locator.evaluate((element) => ({
+        boxShadow: getComputedStyle(element).boxShadow,
+        outlineStyle: getComputedStyle(element).outlineStyle,
+        outlineWidth: getComputedStyle(element).outlineWidth,
+      }));
+      if (focusStyle.boxShadow !== 'none') throw new Error(`${label} pointer focus has a box shadow: ${focusStyle.boxShadow}`);
+      if (focusStyle.outlineStyle !== 'none' && focusStyle.outlineWidth !== '0px') throw new Error(`${label} pointer focus has an outline: ${JSON.stringify(focusStyle)}`);
+    } catch (error) {
+      throw new Error(`${label} pointer-focus verification failed`, { cause: error });
+    }
+  };
+  const header = page.getByRole('banner');
+  await assertPointerFocusIsQuiet(header.getByLabel('Translate this page'), 'Translation select');
+  await assertPointerFocusIsQuiet(header.locator('starlight-theme-select select'), 'Theme select');
+  const searchButton = page.getByRole('button', { name: /Search/ }).first();
+  await assertPointerFocusIsQuiet(searchButton, 'Search button');
+
+  await page.keyboard.press('Tab');
+  await startGlobalLink.focus();
+  const keyboardFocusStyle = await startGlobalLink.evaluate((element) => ({
+    outlineStyle: getComputedStyle(element).outlineStyle,
+    outlineWidth: getComputedStyle(element).outlineWidth,
+  }));
+  if (keyboardFocusStyle.outlineStyle === 'none' || keyboardFocusStyle.outlineWidth === '0px') {
+    throw new Error(`Keyboard focus indicator is missing: ${JSON.stringify(keyboardFocusStyle)}`);
+  }
   await startGlobalLink.click();
   await page.waitForURL(`${origin}/start/`);
   if (!(await page.getByRole('link', { name: 'All documentation' }).isVisible())) throw new Error('Missing All documentation link');
   const localGroups = page.locator('#starlight__sidebar details');
   if ((await localGroups.count()) !== 1) throw new Error('Section sidebar must show one group');
   if (!(await localGroups.first().evaluate((element) => element.open))) throw new Error('Section sidebar must start expanded');
+  const activeStartStyle = await page.locator('#starlight__sidebar a[aria-current="page"]').evaluate((element) => ({
+    backgroundColor: getComputedStyle(element).backgroundColor,
+    boxShadow: getComputedStyle(element).boxShadow,
+  }));
+  if (activeStartStyle.boxShadow !== 'none') throw new Error(`Active sidebar item still has an accent bar: ${activeStartStyle.boxShadow}`);
+  if (activeStartStyle.backgroundColor === 'rgba(0, 0, 0, 0)') throw new Error('Active sidebar item must keep a neutral gray background');
 
   const startRoutes = [
     ['Overview', '/start/'],
     ['Install Consuelo OS', '/start/install-consuelo-os/'],
     ['Create a workspace', '/start/create-a-workspace/'],
     ['Connect your first agent', '/start/connect-your-first-agent/'],
-    ['Local and Consuelo Cloud', '/start/local-and-consuelo-cloud/'],
     ['Core concepts', '/start/core-concepts/'],
   ];
   const sectionNavigation = page.locator('#starlight__sidebar');
@@ -62,6 +118,20 @@ try {
     const markdownHref = href === '/start/' ? '/start.md' : `${href.slice(0, -1)}.md`;
     const markdown = await fetch(`${origin}${markdownHref}`);
     if (!markdown.ok) throw new Error(`${label} Markdown returned ${markdown.status}`);
+  }
+
+  const nodeRoutes = [
+    ['Overview', '/nodes/'],
+    ['Local nodes', '/nodes/local/'],
+    ['Cloud nodes', '/nodes/cloud/'],
+    ['Routing work', '/nodes/routing/'],
+  ];
+  for (const [label, href] of nodeRoutes) {
+    const response = await fetch(`${origin}${href}`);
+    if (!response.ok) throw new Error(`Nodes: ${label} returned ${response.status}`);
+    const markdownHref = href === '/nodes/' ? '/nodes.md' : `${href.slice(0, -1)}.md`;
+    const markdown = await fetch(`${origin}${markdownHref}`);
+    if (!markdown.ok) throw new Error(`Nodes: ${label} Markdown returned ${markdown.status}`);
   }
 
   await page.goto(`${origin}/start/connect-your-first-agent/`, { waitUntil: 'networkidle' });
@@ -87,10 +157,21 @@ try {
   if (legacyMarkdown.status !== 308) throw new Error(`Legacy Markdown returned ${legacyMarkdown.status}`);
   if (legacyMarkdown.headers.get('location') !== '/reference/configuration.md') throw new Error('Legacy Markdown redirect points to the wrong route');
   if (await page.locator('.page-actions-menu').isVisible()) throw new Error('Page actions menu is visible before opening details');
-  await page.getByRole('button', { name: 'Copy page', exact: true }).first().click();
+  const copyActions = page.locator('.page-actions');
+  const copyButton = page.getByRole('button', { name: 'Copy page', exact: true }).first();
+  const normalCopyBackground = await copyButton.evaluate((element) => getComputedStyle(element).backgroundColor);
+  await copyButton.click();
   await page.waitForTimeout(100);
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   if (copied !== expectedMarkdown) throw new Error('Copy page did not use canonical Markdown output');
+  if ((await copyActions.getAttribute('data-copy-state')) !== 'success') throw new Error('Copy page did not enter success state');
+  if (!(await copyActions.locator('.page-action-success-icon').isVisible())) throw new Error('Copy success check icon is not visible');
+  if (await copyActions.locator('.page-action-chevron').isVisible()) throw new Error('Copy success did not replace the down arrow');
+  const successCopyBackground = await copyButton.evaluate((element) => getComputedStyle(element).backgroundColor);
+  if (successCopyBackground === normalCopyBackground) throw new Error('Copy success did not change the button color');
+  await page.waitForTimeout(1800);
+  if (await copyActions.getAttribute('data-copy-state')) throw new Error('Copy success state did not reset');
+  if (!(await copyActions.locator('.page-action-chevron').isVisible())) throw new Error('Copy down arrow did not return after success');
 
   await page.getByLabel('More page actions').click();
   const actionMenu = page.locator('.page-actions-menu');
@@ -126,19 +207,71 @@ try {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`${origin}/build/tools/how-tools-work/`, { waitUntil: 'networkidle' });
   const breadcrumbs = page.getByRole('navigation', { name: 'Breadcrumb' });
-  for (const label of ['Build with OS', 'Tools', 'How tools work']) {
+  for (const label of ['Tools', 'How tools work']) {
     if (!(await breadcrumbs.getByText(label, { exact: true }).isVisible())) throw new Error(`Missing breadcrumb: ${label}`);
   }
+  if ((await breadcrumbs.getByText('Build with OS', { exact: true }).count()) !== 0) throw new Error('Build with OS must not remain in promoted breadcrumbs');
+
+  const toolManifest = JSON.parse(readFileSync(new URL('../../os/manifests/generated/tool.manifest.json', import.meta.url), 'utf8'));
+  const expectedToolNames = toolManifest.tools.map((tool) => tool.name).filter(Boolean).sort((left, right) => left.localeCompare(right));
+  await page.goto(`${origin}/tools/tool-list/`, { waitUntil: 'networkidle' });
+  const toolTocLabels = (await page.locator('starlight-toc a').allTextContents()).map((label) => label.trim());
+  const missingToolTocEntries = expectedToolNames.filter((name) => !toolTocLabels.includes(name));
+  if (missingToolTocEntries.length !== 0) throw new Error(`Tool List TOC is missing ${missingToolTocEntries.length} tools: ${missingToolTocEntries.slice(0, 5).join(', ')}`);
+  await page.goto(`${origin}/build/tools/how-tools-work/`, { waitUntil: 'networkidle' });
+  const siteFooter = page.locator('[data-docs-site-footer]');
+  if ((await siteFooter.count()) !== 1) throw new Error('Missing dedicated site footer');
+  const siteFooterPlacement = await siteFooter.evaluate((element) => ({
+    parentIsPage: element.parentElement?.classList.contains('page') ?? false,
+    previousIsMainFrame: element.previousElementSibling?.classList.contains('main-frame') ?? false,
+    rect: element.getBoundingClientRect(),
+    viewportWidth: document.documentElement.clientWidth,
+  }));
+  if (!siteFooterPlacement.parentIsPage || !siteFooterPlacement.previousIsMainFrame) {
+    throw new Error('Desktop site footer must be a page-level section after the documentation shell');
+  }
+  if (Math.abs(siteFooterPlacement.rect.left) > 1 || Math.abs(siteFooterPlacement.rect.width - siteFooterPlacement.viewportWidth) > 2) {
+    throw new Error(`Desktop site footer is not full width: ${JSON.stringify(siteFooterPlacement)}`);
+  }
+
+  const shellStyles = await page.evaluate(() => ({
+    headerPosition: getComputedStyle(document.querySelector('.header')).position,
+    leftPosition: getComputedStyle(document.querySelector('.sidebar-pane')).position,
+    rightPosition: getComputedStyle(document.querySelector('.right-sidebar')).position,
+    nestedGuideWidth: getComputedStyle(document.querySelector('#starlight__sidebar ul ul li')).borderInlineStartWidth,
+  }));
+  if (shellStyles.headerPosition !== 'fixed') throw new Error(`Header is ${shellStyles.headerPosition}, not fixed`);
+  if (shellStyles.leftPosition !== 'sticky') throw new Error(`Left sidebar is ${shellStyles.leftPosition}, not sticky`);
+  if (shellStyles.rightPosition !== 'sticky') throw new Error(`Right sidebar is ${shellStyles.rightPosition}, not sticky`);
+  if (shellStyles.nestedGuideWidth !== '0px') throw new Error(`Nested sidebar guide remains ${shellStyles.nestedGuideWidth}`);
+
   const registry = page.locator('.docs-registry-grid');
-  if ((await registry.locator('.docs-registry-column').count()) !== 7) throw new Error('Footer registry must contain seven sections');
+  if ((await registry.locator('.docs-registry-column').count()) !== 10) throw new Error('Footer registry must contain ten sections');
   const desktopColumns = await registry.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
-  if (desktopColumns < 4) throw new Error(`Footer registry only has ${desktopColumns} desktop columns`);
+  if (desktopColumns !== 7) throw new Error(`Footer registry must use seven desktop columns, found ${desktopColumns}`);
   const lastHeadingY = await page.locator('#tools-skills-and-scripts').evaluate(
     (element) => element.getBoundingClientRect().top + window.scrollY,
   );
   for (let scrollY = 0; scrollY <= lastHeadingY; scrollY += 200) {
     await page.evaluate((nextY) => window.scrollTo(0, nextY), scrollY);
     await page.waitForTimeout(60);
+  }
+  await page.evaluate((nextY) => window.scrollTo(0, nextY), lastHeadingY);
+  await page.waitForTimeout(250);
+  const siteFooterY = await siteFooter.evaluate((element) => element.getBoundingClientRect().top + window.scrollY);
+  await page.evaluate((nextY) => window.scrollTo(0, nextY), siteFooterY);
+  await page.waitForTimeout(250);
+  const footerBoundary = await page.evaluate(() => {
+    const footer = document.querySelector('[data-docs-site-footer]')?.getBoundingClientRect();
+    const left = document.querySelector('.sidebar-pane')?.getBoundingClientRect();
+    const right = document.querySelector('.right-sidebar')?.getBoundingClientRect();
+    return { footerTop: footer?.top, leftBottom: left?.bottom, rightBottom: right?.bottom };
+  });
+  if (footerBoundary.footerTop === undefined || footerBoundary.leftBottom === undefined || footerBoundary.rightBottom === undefined) {
+    throw new Error(`Could not measure footer boundary: ${JSON.stringify(footerBoundary)}`);
+  }
+  if (footerBoundary.leftBottom > footerBoundary.footerTop + 2 || footerBoundary.rightBottom > footerBoundary.footerTop + 2) {
+    throw new Error(`Sticky documentation navigation overlaps the site footer: ${JSON.stringify(footerBoundary)}`);
   }
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   await page.waitForTimeout(250);
@@ -158,11 +291,25 @@ try {
     if ((await page.locator('main h1#_top').count()) !== 1) throw new Error(`Missing page title on ${viewport.name}`);
 
     if (viewport.name === 'mobile') {
+      const mobileFooterIsNested = await page.locator('[data-docs-site-footer]').evaluate(
+        (element) => element.parentElement?.hasAttribute('data-docs-site-footer-home') ?? false,
+      );
+      if (!mobileFooterIsNested) throw new Error('Mobile site footer must remain inside the page footer');
       const mobileColumns = await page.locator('.docs-registry-grid').evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
       if (mobileColumns !== 2) throw new Error(`Footer registry must use two mobile columns, found ${mobileColumns}`);
       const menuButton = page.locator('button[aria-controls="starlight__sidebar"]');
       await menuButton.click();
       if (!(await page.getByRole('link', { name: 'All documentation' }).isVisible())) throw new Error('Section navigation is unavailable on mobile');
+      await page.keyboard.press('Escape');
+
+      await page.goto(origin, { waitUntil: 'networkidle' });
+      const globalMenuButton = page.locator('button[aria-controls="starlight__sidebar"]');
+      await globalMenuButton.click();
+      const mobileGlobalLabels = (await page.locator('#starlight__sidebar a.global-section-link').allTextContents()).map((label) => label.trim());
+      const expectedGlobalLabels = ['Start', 'Connect', 'Nodes', 'Tools', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference'];
+      if (JSON.stringify(mobileGlobalLabels) !== JSON.stringify(expectedGlobalLabels)) {
+        throw new Error(`Mobile global navigation order is wrong: ${JSON.stringify(mobileGlobalLabels)}`);
+      }
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });

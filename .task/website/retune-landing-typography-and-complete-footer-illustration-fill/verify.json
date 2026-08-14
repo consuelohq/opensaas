@@ -1,0 +1,70 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/retune-landing-typography-and-complete-footer-illustration-fill",
+  "base": "origin/stream/website",
+  "headSha": "5852c90b9f69ef33fcac67f8d776945605bfe41a",
+  "changeHash": "00392a697eefb3b52ca6c0989331666cb4f19cd1e21a5bf2fbff2f41945cbd72",
+  "changedFiles": [
+    "packages/consuelo-website/.gitignore",
+    "packages/consuelo-website/package.json",
+    "packages/consuelo-website/public/images/home/consuelo-footer-badge.png",
+    "packages/consuelo-website/public/images/home/holding-world-editorial.png",
+    "packages/consuelo-website/scripts/generate-footer-art.ts",
+    "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/tests/footer-art.test.mjs",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+    "packages/consuelo-website/tests/homepage-responsive.test.mjs"
+  ],
+  "verifiedAt": "2026-07-16T06:17:28.178Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/retune-landing-typography-and-complete-footer-illustration-fill.json",
+        ".task/website/retune-landing-typography-and-complete-footer-illustration-fill/current.json",
+        ".task/website/retune-landing-typography-and-complete-footer-illustration-fill/evidence-log.json",
+        ".task/website/retune-landing-typography-and-complete-footer-illustration-fill/read-log.json",
+        ".task/website/retune-landing-typography-and-complete-footer-illustration-fill/session.json",
+        ".task/website/retune-landing-typography-and-complete-footer-illustration-fill/verify.json",
+        ".task/website/retune-landing-typography-and-complete-footer-illustration-fill/workpad.md",
+        "packages/consuelo-website/.gitignore",
+        "packages/consuelo-website/package.json",
+        "packages/consuelo-website/public/images/home/consuelo-footer-badge.png",
+        "packages/consuelo-website/public/images/home/holding-world-editorial.png",
+        "packages/consuelo-website/scripts/generate-footer-art.ts",
+        "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+        "packages/consuelo-website/src/components/home/HomeHero.astro",
+        "packages/consuelo-website/tests/footer-art.test.mjs",
+        "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+        "packages/consuelo-website/tests/homepage-responsive.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cedb1c3f9c60",
+  "tmuxSession": "opensaas-os-steering-publish-dialer-stream-instructions-cedb1c3f",
+  "area": "os-steering",
+  "stream": "stream/os-steering",
+  "taskBranch": "task/os-steering/publish-dialer-stream-instructions",
+  "branch": "task/os-steering/publish-dialer-stream-instructions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-steering-publish-dialer-stream-instructions",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-steering-publish-dialer-stream-instructions",
+  "prNumber": 1771,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1771",
+  "createdAt": "2026-08-04T20:12:03.054Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-steering-publish-dialer-stream-instructions/.task/os-steering/publish-dialer-stream-instructions/session.json"
+}

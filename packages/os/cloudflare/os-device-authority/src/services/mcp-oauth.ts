@@ -15,15 +15,18 @@ import type {
   Store,
 } from '../types';
 import {
-  hasGrantedScope,
   hash,
   hashChallenge,
   host,
+  isChatGptClientMetadataDocumentId,
   normalizeScopes,
   params,
   rand,
   validChatGptClientId,
   validChatGptRedirectUri,
+  scopesForClient,
+  validOperatorClientId,
+  validOperatorRedirectUri,
   workspaceHostFromMcpResource,
 } from '../utils';
 import {
@@ -185,6 +188,7 @@ export async function startMcpOAuthAuthorization(input: {
   store: Store;
   origin: string;
   googleClientId: string;
+  fetchImpl: typeof fetch;
   nowMs: number;
 }): Promise<Response> {
   const url = new URL(input.request.url);
@@ -200,16 +204,58 @@ export async function startMcpOAuthAuthorization(input: {
       'unsupported_response_type',
       'Only authorization code is supported.',
     );
-  if (!validChatGptClientId(clientId))
+  // Client and redirect kinds must match. Allowing a ChatGPT client id with a loopback redirect, or
+  // the operator client with a chatgpt.com redirect, would let one client's registration be used to
+  // deliver another's authorization code.
+  const isChatGptClient = validChatGptClientId(clientId);
+  const isOperatorClient = validOperatorClientId(clientId);
+  if (!isChatGptClient && !isOperatorClient)
     return invalidOauthRequest(
       'unauthorized_client',
       'OAuth client is not allowed.',
     );
-  if (!validChatGptRedirectUri(redirectUriValue))
+  const redirectAllowed = isChatGptClient
+    ? validChatGptRedirectUri(redirectUriValue)
+    : validOperatorRedirectUri(redirectUriValue);
+  if (!redirectAllowed)
     return invalidOauthRequest(
       'invalid_request',
       'redirect_uri is not allowed.',
     );
+  if (isChatGptClientMetadataDocumentId(clientId)) {
+    try {
+      const metadataResponse = await input.fetchImpl(clientId, {
+        method: 'GET',
+        headers: { accept: 'application/json' },
+        redirect: 'error',
+      });
+      const metadata = (await metadataResponse.json().catch(() => null)) as
+        | Record<string, unknown>
+        | null;
+      const metadataRedirectUris = Array.isArray(metadata?.redirect_uris)
+        ? metadata.redirect_uris.filter(
+            (value): value is string => typeof value === 'string',
+          )
+        : [];
+      if (
+        !metadataResponse.ok ||
+        !metadata ||
+        metadata.client_id !== clientId ||
+        metadataRedirectUris.length === 0 ||
+        !metadataRedirectUris.includes(redirectUriValue)
+      ) {
+        return invalidOauthRequest(
+          'invalid_client',
+          'Client ID Metadata Document validation failed.',
+        );
+      }
+    } catch {
+      return invalidOauthRequest(
+        'invalid_client',
+        'Client ID Metadata Document validation failed.',
+      );
+    }
+  }
   if (!codeChallenge || codeChallengeMethod !== 'S256')
     return invalidOauthRequest('invalid_request', 'PKCE S256 is required.');
   let workspaceHost: string;
@@ -222,7 +268,12 @@ export async function startMcpOAuthAuthorization(input: {
     );
   }
   const state = rand('mcp_oauth_state', 24);
-  const scopes = normalizeScopes(url.searchParams.get('scope') ?? '');
+  // Restrict to what this client may hold before the grant is stored, so an over-requesting client
+  // never gets an operator-only scope persisted against its authorization code.
+  const scopes = scopesForClient(
+    normalizeScopes(url.searchParams.get('scope') ?? ''),
+    clientId,
+  );
   await input.store.putMcpOAuthState({
     state,
     clientId,
@@ -320,6 +371,7 @@ export async function finishMcpOAuthGoogleCallback(input: {
   await input.store.delMcpOAuthState(stateValue);
   return redirectWithParams(oauthState.redirectUri, {
     code,
+    iss: input.origin,
     ...(oauthState.requestedState ? { state: oauthState.requestedState } : {}),
   });
 }
@@ -442,7 +494,8 @@ async function exchangeMcpOAuthRefreshToken(input: {
   if (resource && resource !== stored.resource)
     return invalidOauthRequest('invalid_grant', 'Resource binding mismatch.');
 
-  const requestedScopes = normalizeScopes(input.params.get('scope') ?? '');
+  const requestedScope = input.params.get('scope');
+  const requestedScopes = requestedScope ? normalizeScopes(requestedScope) : [];
   if (
     requestedScopes.length > 0 &&
     requestedScopes.some((scope) => !stored.scopes.includes(scope))
@@ -541,15 +594,13 @@ export async function introspectMcpOAuthToken(input: {
     const p = await params(input.request);
     const token = p.get('token') ?? '';
     const resource = p.get('resource') ?? '';
-    const requiredScope = p.get('scope') ?? '';
     const stored = token
       ? await input.store.byMcpOAuthAccessToken(await hash(token))
       : undefined;
     if (
       !stored ||
       input.nowMs >= stored.expiresAt ||
-      (resource && resource !== stored.resource) ||
-      !hasGrantedScope(stored.scopes, requiredScope)
+      (resource && resource !== stored.resource)
     ) {
       return json({ active: false });
     }

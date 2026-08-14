@@ -1,0 +1,43 @@
+{
+  "name": "@consuelo/lead-connector",
+  "version": "0.0.1",
+  "description": "LeadConnector provider integration and standalone embedded dialer contracts",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./embed": {
+      "types": "./dist/embed/index.d.ts",
+      "import": "./dist/embed/index.js"
+    }
+  },
+  "scripts": {
+    "test": "bun test src",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc && bun run build:embed",
+    "build:embed": "bun ./scripts/build-embed.ts",
+    "deploy:embed": "bun run build:embed && wrangler deploy --config wrangler.jsonc",
+    "configure:sandbox-menu": "bun ./scripts/configure-sandbox-menu.ts",
+    "release:configure-menu": "bun ./scripts/configure-production-menu.ts",
+    "release:verify-edge": "bun ./scripts/verify-production-edge.ts",
+    "release:wrangler-evidence": "bun ./scripts/read-wrangler-deployment.ts",
+    "release:deploy-worker": "wrangler deploy --config wrangler.jsonc",
+    "release:rollback-worker": "wrangler rollback"
+  },
+  "dependencies": {
+    "@twilio/voice-sdk": "^2.12.1",
+    "effect": "^3.21.3"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "5.9.2",
+    "wrangler": "^4.27.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

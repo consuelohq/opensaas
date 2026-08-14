@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8259c0096f94",
+  "tmuxSession": "opensaas-os-foundation-two-fix-pr-1691-review-findings-8259c009",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/fix-pr-1691-review-findings",
+  "branch": "task/os-foundation-two/fix-pr-1691-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-pr-1691-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-pr-1691-review-findings",
+  "prNumber": 1692,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1692",
+  "createdAt": "2026-07-28T02:40:06.756Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-pr-1691-review-findings/.task/os-foundation-two/fix-pr-1691-review-findings/session.json"
+}

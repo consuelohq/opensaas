@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const {
   DEFAULT_MAIN_BRANCH,
@@ -17,7 +18,6 @@ const {
   getDefaultTaskBranch,
   normalizeArea,
 } = require('./lib/validation');
-const { resolveRemoteStreamAction } = require('./lib/stream-lifecycle');
 const {
   createBranch,
   createPullRequest,
@@ -35,7 +35,9 @@ const {
   setBranchUpstream,
 } = require('./lib/git');
 const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
+const { getTaskWorkpadPathFromMeta } = require('./lib/task-workpad');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
+const { compactTaskStartOutput } = require('./lib/task-start-output');
 const { renderHookResult } = require('../hooks/dispatcher.js');
 const { createWorkflowIntentRuntime } = require('../hooks/intent.js');
 
@@ -58,9 +60,9 @@ function printHelp() {
   writeStdout('  --title <value>        task title used for branch slug and pr title');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --workflow <value>    workflow bundle to return: task|office|design|sites|media (default: task)');
+  writeStdout('  --workflow <value>    workflow bundle to return: task|artifacts|design|sites|media (default: task)');
   writeStdout('  --stream <branch>      target stream branch for later push/pr flow (default: stream/<area>)');
-  writeStdout('  --create-stream        explicitly create the remote stream when it does not exist');
+  writeStdout('                         create missing streams first with stream.create');
   writeStdout(`  --start-from <mode>    source branch for the new task: ${Array.from(START_FROM_OPTIONS).join('|')} (default: ${DEFAULT_START_FROM})`);
   writeStdout('  --branch <name>        task branch (default: task/<area>/<slug>)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
@@ -87,7 +89,7 @@ function parseArgs(argv) {
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
-    const isBooleanFlag = flag === '--json' || flag === '--help' || flag === '--create-stream';
+    const isBooleanFlag = flag === '--json' || flag === '--help';
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -114,9 +116,6 @@ function parseArgs(argv) {
         break;
       case '--start-from':
         args.startFrom = value;
-        break;
-      case '--create-stream':
-        args.createStream = true;
         break;
       case '--branch':
         args.branch = value;
@@ -212,34 +211,19 @@ function resolveSourceBranch(startFrom, stream) {
   return DEFAULT_MAIN_BRANCH;
 }
 
-async function ensureRemoteStreamBranch({ token, repository, streamBranch, mainRef, createStream }) {
+async function ensureRemoteStreamBranch({ token, repository, streamBranch }) {
   try {
-    let streamRef = await getBranchRef({ token, repository, branch: streamBranch });
-    const action = resolveRemoteStreamAction({
-      streamBranch,
-      remoteExists: Boolean(streamRef),
-      createStream: Boolean(createStream),
-    });
-
-    if (action === 'reuse') {
-      return {
-        streamRef,
-        created: false,
-      };
-    }
-
-    writeStderr(`creating remote ${streamBranch} from ${DEFAULT_MAIN_BRANCH}...`);
-    streamRef = await createBranch({
+    const streamRef = await getBranchRef({
       token,
       repository,
       branch: streamBranch,
-      sha: mainRef.object.sha,
     });
-
-    return {
-      streamRef,
-      created: true,
-    };
+    if (!streamRef) {
+      throw new Error(
+        `remote stream ${streamBranch} does not exist. Create it first with stream.create.`,
+      );
+    }
+    return { streamRef, created: false };
   } catch (error) {
     throw new Error(`failed to ensure stream branch ${streamBranch}: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -283,6 +267,57 @@ function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
   runGit(['-C', worktreePath, 'push', 'origin', taskBranch], { cwd: repoRoot });
 }
 
+function compactResolvedStreamContext(result) {
+  return {
+    area: result?.area || null,
+    stream: result?.stream || null,
+    aheadBehind: result?.aheadBehind || null,
+    openTaskPrCount: Array.isArray(result?.openTaskPullRequests?.pullRequests)
+      ? result.openTaskPullRequests.pullRequests.length
+      : 0,
+    recentWorkpadCount: Array.isArray(result?.recentWorkpads?.workpads)
+      ? result.recentWorkpads.workpads.length
+      : 0,
+  };
+}
+
+function resolveStreamContextBeforeTaskMutation({ repoRoot, args, area, stream }) {
+  const preflight = createWorkflowIntentRuntime().start({
+    workflow: args.workflow,
+    area,
+    title: args.title,
+    hasStreamContext: false,
+  });
+  const requiredAction = preflight.hookResult?.requiredNextAction;
+
+  if (args.workflow !== 'task') return null;
+  if (!requiredAction || requiredAction.tool !== 'stream.context') {
+    throw new Error('task.start preflight did not resolve the required stream.context action');
+  }
+
+  const streamContextScript = path.join(__dirname, 'stream-context.js');
+  try {
+    const stdout = execFileSync(process.execPath, [
+      streamContextScript,
+      '--area', area,
+      '--stream', stream,
+      '--repo', args.repo,
+      '--json',
+    ], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return compactResolvedStreamContext(JSON.parse(stdout));
+  } catch (error) {
+    const stderr = error && typeof error === 'object' && 'stderr' in error
+      ? String(error.stderr || '').trim()
+      : '';
+    const message = stderr || (error instanceof Error ? error.message : String(error));
+    throw new Error(`task.start stream.context preflight failed before mutation: ${message}`);
+  }
+}
+
 async function main() {
   try {
     const args = parseArgs(process.argv.slice(2));
@@ -311,25 +346,20 @@ async function main() {
     assertTaskBranchName(taskBranch, area);
     assertTmuxAvailable();
 
+    const streamContext = resolveStreamContextBeforeTaskMutation({
+      repoRoot,
+      args,
+      area,
+      stream,
+    });
+
     fetchOrigin(repoRoot);
 
-    const mainRef = await getBranchRef({ token, repository: args.repo, branch: DEFAULT_MAIN_BRANCH });
-
-    if (!mainRef) {
-      throw new Error(`remote ${DEFAULT_MAIN_BRANCH} branch not found in ${args.repo}`);
-    }
-
-    const streamDetails = await ensureRemoteStreamBranch({
+    await ensureRemoteStreamBranch({
       token,
       repository: args.repo,
       streamBranch: stream,
-      mainRef,
-      createStream: args.createStream,
     });
-
-    if (streamDetails.created) {
-      fetchOrigin(repoRoot);
-    }
 
     const sourceBranch = resolveSourceBranch(args.startFrom, stream);
     const sourceRef = `refs/remotes/origin/${sourceBranch}`;
@@ -498,7 +528,8 @@ async function main() {
     await saveTaskMetaMemory(taskMeta);
 
     // create fresh workpad — always overwrite, never reuse from previous task
-    const workpadPath = path.join(worktreePath, '.task', 'workpad.md');
+    const workpadPath = getTaskWorkpadPathFromMeta(worktreePath, taskMeta);
+    fs.mkdirSync(path.dirname(workpadPath), { recursive: true });
     const slug = taskBranch.split('/').pop();
     const workpad = [
       `# ${args.title}`,
@@ -564,6 +595,7 @@ async function main() {
       createdWorktree,
       bootstrappedBranch,
       createdPr,
+      streamContext,
     };
     const workflowStart = createWorkflowIntentRuntime().start({
       workflow: args.workflow,
@@ -574,14 +606,14 @@ async function main() {
       worktreePath,
       taskResult,
     });
-    const combinedResult = {
+    const combinedResult = compactTaskStartOutput({
       ...taskResult,
       workflow: workflowStart.workflow,
       requestedWorkflow: workflowStart.requestedWorkflow,
       manifestBundle: workflowStart.manifestBundle,
       hookEvent: workflowStart.hookEvent,
       hookResult: workflowStart.hookResult,
-    };
+    });
 
     printResult(combinedResult, args.json);
 

@@ -5,9 +5,11 @@ import {
   CONSUELO_DEVICE_VERIFICATION_URL,
   CONSUELO_DEVICE_WORKSPACE_URL,
   CONSUELO_OAUTH_ACCESS_TOKEN_URL,
+  CONSUELO_WORKSPACE_AGENT_STATUS_URL,
   type WorkspaceDeviceAuthorizationPollResult,
   type WorkspaceDeviceAuthorizationSession,
 } from './workspace-device-authorization';
+import type { AgentName } from './local-agent-connectivity';
 
 export type DeviceLoginFetchResponse = {
   ok: boolean;
@@ -38,11 +40,18 @@ export type DeviceAccessTokenPollResult =
 export type RequestWorkspaceDeviceCodeInput = {
   clientId: string;
   scope: string[];
+  workspaceId?: string;
   workspaceName?: string;
   workspaceSlug?: string;
   workspaceHost?: string;
   nodeId?: string;
   nodeName?: string;
+  /**
+   * Declares that this enrolment re-registers an existing node id under a new device key, which is
+   * what reinstalling a machine produces. Registration still rejects a thumbprint mismatch without
+   * it, so this expresses intent rather than granting anything.
+   */
+  nodeIdentityReplacement?: boolean;
   deviceKeyPair?: WorkspaceDeviceKeyPair;
   fetchImpl?: DeviceLoginFetch;
   now?: string;
@@ -68,6 +77,16 @@ export type SelectWorkspaceForDeviceLoginInput = {
   devicePublicKeyThumbprint?: string;
   fetchImpl?: DeviceLoginFetch;
 };
+
+export type SyncWorkspaceAgentStatusInput = {
+  connectorBootstrapToken: string;
+  agentNames: AgentName[];
+  fetchImpl?: DeviceLoginFetch;
+};
+
+export type SyncWorkspaceAgentStatusResult =
+  | { status: 'synced'; connectedAgentCount: number }
+  | { status: 'unavailable'; message: string };
 
 const DEVICE_KEY_ALGORITHM = 'Ed25519';
 
@@ -194,8 +213,26 @@ async function createDeviceProof(input: {
 }
 
 async function readJson(fetchImpl: DeviceLoginFetch, url: string, init: RequestInit): Promise<Record<string, unknown>> {
-  const response = await fetchImpl(url, init);
-  const json = asRecord(await response.json());
+  let response: Response;
+  try {
+    response = await fetchImpl(url, init);
+  } catch (error: unknown) {
+    // The URL can carry a device code, so report the failure without echoing the request.
+    throw new Error(
+      `device login endpoint is unreachable: ${error instanceof Error ? error.message : 'network error'}`,
+    );
+  }
+
+  let json: Record<string, unknown>;
+  try {
+    json = asRecord(await response.json());
+  } catch (_error: unknown) {
+    // A non-JSON body is usually an edge error page. Surface the status rather than the body,
+    // which is untrusted and may be large.
+    throw new Error(
+      `device login endpoint returned a non-JSON response (HTTP ${response.status})`,
+    );
+  }
 
   if (!response.ok && !json.error) {
     throw new Error(`device login endpoint returned HTTP ${response.status}`);
@@ -214,11 +251,17 @@ export async function requestWorkspaceDeviceCode(
     device_public_key_jwk: deviceKeyPair.publicKeyJwk,
     device_key_algorithm: deviceKeyPair.algorithm,
   });
+  if (input.workspaceId) body.set('workspace_id', input.workspaceId);
   if (input.workspaceName) body.set('workspace_name', input.workspaceName);
   if (input.workspaceSlug) body.set('workspace_slug', input.workspaceSlug);
   if (input.workspaceHost) body.set('workspace_host', input.workspaceHost);
   if (input.nodeId) body.set('node_id', input.nodeId);
   if (input.nodeName) body.set('node_name', input.nodeName);
+  // Declared only when re-enrolling an existing node id whose device key changed, which is what a
+  // reinstall produces. Registration still fails closed without it.
+  if (input.nodeIdentityReplacement) {
+    body.set('node_identity_replacement', 'true');
+  }
 
   try {
     const json = await readJson(input.fetchImpl ?? defaultFetch, CONSUELO_DEVICE_CODE_URL, {
@@ -273,6 +316,7 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
   const nodeRole = stringField(json, 'node_role', 'nodeRole');
   const nodeStatus = stringField(json, 'node_status', 'nodeStatus');
   const connectorBootstrapToken = stringField(json, 'connector_bootstrap_token', 'connectorBootstrapToken');
+  const edgeRequestSigningSecret = stringField(json, 'edge_request_signing_secret', 'edgeRequestSigningSecret');
   const connectorBootstrapExpiresAt = stringField(json, 'connector_bootstrap_expires_at', 'connectorBootstrapExpiresAt');
   const cloudflareTunnelToken = stringField(json, 'cloudflare_tunnel_token', 'cloudflareTunnelToken');
 
@@ -286,6 +330,7 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
     workspaceSlug,
     workspaceHost,
     connectorId,
+    ...(edgeRequestSigningSecret ? { edgeRequestSigningSecret } : {}),
     ...(nodeId ? { nodeId } : {}),
     ...(nodeName ? { nodeName } : {}),
     ...(nodeRole === 'home' || nodeRole === 'member' ? { nodeRole } : {}),
@@ -392,6 +437,48 @@ export async function selectWorkspaceForDeviceLogin(
     if (error) return unavailable(errorWithMessage(json, error));
 
     return approvedDeviceGrantFromJson(json) ?? unavailable('approved workspace selection response was missing workspace bootstrap fields');
+  } catch (error: unknown) {
+    return unavailable(error instanceof Error ? error.message : String(error));
+  }
+}
+
+export async function syncWorkspaceAgentStatus(
+  input: SyncWorkspaceAgentStatusInput,
+): Promise<SyncWorkspaceAgentStatusResult> {
+  const connectorBootstrapToken = input.connectorBootstrapToken.trim();
+  if (!connectorBootstrapToken) {
+    return unavailable('connector bootstrap credential is required');
+  }
+  const agentNames = [...new Set(input.agentNames)].sort();
+
+  try {
+    const response = await (input.fetchImpl ?? defaultFetch)(
+      CONSUELO_WORKSPACE_AGENT_STATUS_URL,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${connectorBootstrapToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ agents: agentNames }),
+      },
+    );
+    const body = asRecord(await response.json());
+    if (!response.ok) {
+      const error = asRecord(body.error);
+      const message =
+        stringField(error, 'message') ??
+        stringField(error, 'code') ??
+        stringField(body, 'error') ??
+        `HTTP ${response.status}`;
+      return unavailable(message);
+    }
+    const connectedAgentCount = body.connectedAgentCount;
+    if (typeof connectedAgentCount !== 'number' || !Number.isInteger(connectedAgentCount)) {
+      return unavailable('agent status response was missing connectedAgentCount');
+    }
+    return { status: 'synced', connectedAgentCount };
   } catch (error: unknown) {
     return unavailable(error instanceof Error ? error.message : String(error));
   }

@@ -1,3 +1,8 @@
+import type { ToolInput } from '../../lib/facade/types';
+import {
+  withTraceRoutingContext,
+  type TraceRoutingContext,
+} from '../../lib/trace-routing-context';
 import type { CallInput } from '../../lib/types';
 
 import { loadOsRuntime } from './os-runtime';
@@ -20,5 +25,20 @@ export async function executeLocalOsCall(input: CallInput) {
     return await executeCall(input);
   } catch (error: unknown) {
     throw error instanceof Error ? error : new Error('OS call failed.');
+  }
+}
+
+export async function executeLocalOsFacadeTool(
+  toolName: string,
+  input: ToolInput,
+  routing?: TraceRoutingContext,
+) {
+  try {
+    const { executeTool } = await import('../../lib/facade/executor');
+    return await withTraceRoutingContext(routing, () =>
+      executeTool(toolName, input, { logMode: 'errors' }),
+    );
+  } catch (error: unknown) {
+    throw error instanceof Error ? error : new Error('OS facade call failed.');
   }
 }

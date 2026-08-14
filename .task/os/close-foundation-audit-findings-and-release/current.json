@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-foundation-audit-findings-and-release",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1715,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1715",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1715",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1715/close-foundation-audit-findings-and-release",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1715",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1715/close-foundation-audit-findings-and-release",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-close-foundation-audit-findings-and-release",
+  "taskSession": "tsk_c1c95b40e67d",
+  "tmuxSession": "opensaas-os-close-foundation-audit-findings-and-release-c1c95b40",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-close-foundation-audit-findings-and-release/.task/os/close-foundation-audit-findings-and-release/session.json",
+  "createdAt": "2026-07-29T02:20:15.552Z"
+}

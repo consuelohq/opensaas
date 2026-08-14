@@ -1,0 +1,13 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "consuelo-lead-connector-embed",
+  "compatibility_date": "2026-07-24",
+  "main": "./src/embed/cloudflare-worker.ts",
+  "keep_vars": true,
+  "assets": {
+    "directory": "./dist/embed-app",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true,
+  },
+}

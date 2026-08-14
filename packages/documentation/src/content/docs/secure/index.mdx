@@ -2,7 +2,7 @@
 title: Secure
 description: Understand the boundaries that keep agents, workspaces, credentials, and network paths separate.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
   - source: packages/os/scripts/lib/security-gateway.ts
     tests:
@@ -41,7 +41,7 @@ Each hop has a narrower job. A network route does not grant tool access. A valid
 ## Choose a boundary
 
 <CardGroup cols={2}>
-  <Card title="Security model" href="/secure/security-model/">See the trust boundaries from browser or agent to the home node.</Card>
+  <Card title="Security model" href="/secure/security-model/">See the trust boundaries from browser or agent to the workspace node selected for a request.</Card>
   <Card title="Access and permissions" href="/secure/access-and-permissions/">Understand workspace binding, scopes, tool permissions, and fail-closed policy.</Card>
   <Card title="Credentials" href="/secure/credentials/">Issue, rotate, revoke, and store credentials without treating secrets as configuration.</Card>
   <Card title="Approvals" href="/secure/approvals/">Separate device approval from approval for one sensitive action.</Card>

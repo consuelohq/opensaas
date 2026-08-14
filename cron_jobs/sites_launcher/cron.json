@@ -8,7 +8,8 @@
   "origin": "https://sites.consuelohq.com",
   "refreshCommand": [
     "bun",
-    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/os/scripts/os.ts",
+    "sites",
     "refresh",
     "--json"
   ],
