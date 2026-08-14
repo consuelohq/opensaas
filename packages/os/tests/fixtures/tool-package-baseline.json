@@ -4235,7 +4235,8 @@
         "subcommand": "status",
         "branchMode": "none",
         "jsonFlag": "--json",
-        "arguments": []
+        "arguments": [],
+        "executionScope": "runtime"
       },
       "exampleInput": {},
       "sessionRequired": false
@@ -4287,7 +4288,8 @@
             "flag": "--channel",
             "kind": "value"
           }
-        ]
+        ],
+        "executionScope": "runtime"
       },
       "exampleInput": {
         "channel": "stable"
