@@ -244,23 +244,27 @@ async function pendingCloudOnboardingResponse(input: {
 }
 
 const authShellStyles = `
-  :root{color-scheme:light dark;--bg:#fff;--fg:#0a0a0a;--muted:#666;--line:#e6e6e6;--surface:#fff;--hover:#fafafa;--stripe-a:#a7a7a7;--stripe-b:#dadada}
+  :root{color-scheme:light dark;--bg:#fff;--fg:#0a0a0a;--muted:#666;--line:#e6e6e6;--surface:#fff;--hover:#fafafa}
   *{box-sizing:border-box}
   html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg)}
   body{min-height:100svh;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
   a{color:inherit}
-  .site-header{position:fixed;z-index:2;top:0;left:0;right:0;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;pointer-events:none}
+  .site-header{position:fixed;z-index:2;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;pointer-events:none}
   .site-header a{pointer-events:auto;text-decoration:none}
-  .brand{display:inline-flex;align-items:center;gap:10px;font-weight:650;letter-spacing:-.03em}
-  .brand-monogram{position:relative;display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--fg);font-family:Georgia,"Times New Roman",serif;font-size:15px;line-height:1}
-  .brand-monogram::after{content:"";position:absolute;width:1px;height:42px;background:var(--fg);transform:rotate(45deg)}
-  .brand-monogram span{position:relative;z-index:1;background:var(--bg);padding:1px 2px}
-  .brand-monogram span:last-child{position:absolute;right:-9px;bottom:-7px;font-size:10px;letter-spacing:.02em}
-  .top-action{min-height:42px;display:inline-flex;align-items:center;justify-content:center;padding:0 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-weight:520;transition:background .16s ease,border-color .16s ease}
+  .brand-logo{display:inline-flex;width:32px;height:32px;align-items:center;justify-content:center}
+  .brand-logo img{display:block;width:32px;height:32px;border-radius:6px}
+  .top-action{min-height:32px;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-size:14px;font-weight:500;transition:background .16s ease,border-color .16s ease}
   .top-action:hover{background:var(--hover);border-color:#b5b5b5}
   .auth-main{min-height:100svh;display:grid;place-items:center;padding:120px 24px 100px}
   .auth-card{width:min(100%,402px);text-align:center}
   .auth-card h1{margin:0 0 30px;font-size:32px;line-height:1.16;letter-spacing:-.045em;font-weight:650}
+  .auth-main--login{place-items:start center;padding:max(104px,calc(50svh - 296px)) 24px 64px}
+  .auth-main--login .auth-card{width:min(100%,320px)}
+  .auth-main--login .auth-card h1{margin-bottom:32px;font-size:28px;line-height:36px;font-weight:600;letter-spacing:-.035em}
+  .auth-main--login .provider-button{min-height:40px;padding:0 14px;font-weight:500}
+  .auth-main--login .auth-footer{margin-top:32px;font-size:16px;line-height:24px}
+  .auth-main--login .auth-footer a{color:#52a8ff;text-decoration:none}
+  .auth-main--login .auth-footer a:hover{color:#79bcff}
   .lede{max-width:360px;margin:-12px auto 28px;color:var(--muted);font-size:15px;line-height:1.55}
   .provider-button,.primary-button{width:100%;min-height:52px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);display:flex;align-items:center;justify-content:center;gap:12px;text-decoration:none;font-size:16px;font-weight:520;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}
   .provider-button:hover,.primary-button:hover{background:var(--hover);border-color:#b5b5b5}
@@ -278,11 +282,10 @@ const authShellStyles = `
   .trial-note strong{font-size:14px;font-weight:620}.trial-note span{color:var(--muted);line-height:1.45}.trial-note .spec{font-variant-numeric:tabular-nums;text-align:right;color:var(--fg)}
   .workspace-options{display:grid;gap:10px}.workspace-options button{width:100%;min-height:50px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}.workspace-options button:hover{background:var(--hover)}
   .progress-shell{display:grid;gap:18px}.progress-status{padding:20px;border:1px solid var(--line);border-radius:10px;text-align:left}.progress-status small{display:block;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-size:10px;margin-bottom:8px}.progress-status strong{font-size:18px}.progress-detail{margin-top:8px;color:var(--muted);line-height:1.5}.pulse{display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:999px;background:currentColor;animation:pulse 1.5s ease-in-out infinite}.error-text{margin-top:14px;color:#b42318;line-height:1.45}
-  .consuelo-stripes{position:fixed;left:0;right:0;bottom:0;height:7px;display:grid;grid-template-rows:3px 4px;pointer-events:none}.consuelo-stripes i:first-child{background:var(--stripe-a)}.consuelo-stripes i:last-child{background:var(--stripe-b)}
   :focus-visible{outline:2px solid var(--fg);outline-offset:3px}
   @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
-  @media (prefers-color-scheme: dark){:root{--bg:#000;--fg:#ededed;--muted:#8f8f8f;--line:#2d2d2d;--surface:#090909;--hover:#111;--stripe-a:#626262;--stripe-b:#272727}.top-action:hover,.provider-button:hover,.primary-button:hover{border-color:#555}.error-text{color:#ff8a80}}
-  @media (max-width:560px){.site-header{height:80px;padding:0 18px}.auth-main{padding:108px 18px 76px}.auth-card h1{font-size:29px}.top-action{min-height:38px;padding:0 13px}.trial-note{grid-template-columns:1fr}.trial-note .spec{text-align:left}}
+  @media (prefers-color-scheme: dark){:root{--bg:#000;--fg:#ededed;--muted:#8f8f8f;--line:#2d2d2d;--surface:#090909;--hover:#111}.top-action:hover,.provider-button:hover,.primary-button:hover{border-color:#555}.error-text{color:#ff8a80}}
+  @media (max-width:560px){.auth-main{padding:108px 18px 76px}.auth-main--login{padding:max(104px,calc(50svh - 296px)) 18px 64px}.auth-card h1{font-size:29px}.auth-main--login .auth-card h1{font-size:28px}.trial-note{grid-template-columns:1fr}.trial-note .spec{text-align:left}}
   @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 `;
 
@@ -291,11 +294,13 @@ function authShell(input: {
   body: string;
   topActionHref?: string;
   topActionLabel?: string;
+  mainClass?: string;
   script?: string;
 }): string {
   const topActionHref = input.topActionHref ?? '/login/google/start?purpose=web&amp;intent=signup';
   const topActionLabel = input.topActionLabel ?? 'Sign Up';
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><title>${htmlEscape(input.title)} · Consuelo OS</title><style>${authShellStyles}</style></head><body><header class="site-header"><a class="brand" href="/" aria-label="Consuelo OS home"><span class="brand-monogram" aria-hidden="true"><span>C</span><span>OS</span></span><span>Consuelo OS</span></a><a class="top-action" href="${topActionHref}">${htmlEscape(topActionLabel)}</a></header><main class="auth-main">${input.body}</main><div class="consuelo-stripes" aria-hidden="true"><i></i><i></i></div>${input.script ? `<script>${input.script}</script>` : ''}</body></html>`;
+  const mainClass = input.mainClass ?? 'auth-main';
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><title>${htmlEscape(input.title)} · Consuelo OS</title><style>${authShellStyles}</style></head><body><header class="site-header"><a class="brand-logo" href="/" aria-label="Consuelo OS home"><img src="https://consuelohq.com/favicon.svg" alt="" width="32" height="32"></a><a class="top-action" href="${topActionHref}">${htmlEscape(topActionLabel)}</a></header><main class="${htmlEscape(mainClass)}">${input.body}</main>${input.script ? `<script>${input.script}</script>` : ''}</body></html>`;
 }
 
 function googleMark(): string {
@@ -305,6 +310,7 @@ function googleMark(): string {
 export function universalLoginPage(): string {
   return authShell({
     title: 'Log in',
+    mainClass: 'auth-main auth-main--login',
     body: `<section class="auth-card"><h1>Log in to Consuelo OS</h1><a class="provider-button" href="/login/google/start?purpose=web&amp;intent=login">${googleMark()}<span>Continue with Google</span></a><p class="auth-footer">Don't have an account? <a href="/login/google/start?purpose=web&amp;intent=signup">Sign Up</a></p></section>`,
   });
 }
