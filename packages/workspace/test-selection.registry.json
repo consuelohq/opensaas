@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2628,
-    "mappedTestCount": 2544,
+    "testFileCount": 2629,
+    "mappedTestCount": 2545,
     "unmappedTestCount": 84,
-    "ruleCount": 50,
-    "explicitRuleCount": 31,
+    "ruleCount": 51,
+    "explicitRuleCount": 32,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 253,
+      "packages/os/tests": 254,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 61,
       "packages/twenty-sdk/src/cli": 51,
@@ -634,7 +634,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 535,
+      "test": 536,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -1159,6 +1159,56 @@
       "critical": true,
       "exclusive": true,
       "reason": "Launcher onboarding copy-interaction changes must prove generated UI behavior, Sites materialization, and Astro source validity without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-cloud-first-auth-onboarding",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/health.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/cloud-first-onboarding.ts",
+        "packages/os/tests/cloud-first-web-onboarding.test.ts",
+        "packages/os/tests/os-universal-login.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS cloud-first auth onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-universal-login.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-lifecycle-onboarding.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/managed-cloud-pricing.test.ts"
+          ]
+        },
+        {
+          "name": "OS cloud-first auth onboarding Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS cloud-first auth onboarding syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Cloud-first Consuelo OS login, canonical signup, workspace trial, and provisioning handoff changes must prove the exact browser auth, managed-cloud, installer-lifecycle, launcher, Worker, and syntax contracts without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -3113,6 +3163,11 @@
     },
     {
       "path": "packages/os/tests/cli-update-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/cloud-first-web-onboarding.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
