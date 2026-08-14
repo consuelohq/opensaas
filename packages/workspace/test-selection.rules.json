@@ -64,7 +64,9 @@
             "bun",
             "test",
             "packages/workspace/tests/task-session.test.js",
-            "packages/workspace/tests/task-meta.test.ts"
+            "packages/workspace/tests/task-meta.test.ts",
+            "packages/workspace/tests/task-init.test.js",
+            "packages/workspace/tests/task-selection.test.js"
           ]
         }
       ],
