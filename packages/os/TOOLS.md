@@ -27,7 +27,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 | Category | Tools |
 | --- | ---: |
-| artifacts | 21 |
+| artifacts | 22 |
 | codemode | 2 |
 | composed | 3 |
 | decision engine | 6 |
@@ -42,7 +42,9 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | mac | 8 |
 | media | 25 |
 | memory | 1 |
+| observability | 1 |
 | review | 4 |
+| security | 1 |
 | sentry | 7 |
 | stream | 4 |
 | subagent | 1 |
@@ -1239,6 +1241,66 @@ show vendored Open Design metadata and runtime requirements
 await workspace.call({
   "tool": "artifacts.upstreamStatus",
   "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.dailySchedules.publish
+
+publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index
+
+| Field | Value |
+| --- | --- |
+| Category | artifacts |
+| Signature | `workspace.dailySchedules.publish({ kind: "security-scan" &#124; "security-workpad" &#124; "self-healing-workpad"; sourceFile?: string; content?: string; format?: "auto" &#124; "json" &#124; "markdown" &#124; "text"; date?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `Consuelo durable artifact catalog` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "dailySchedules.publish",
+  "input": {
+    "kind": "security-workpad",
+    "sourceFile": "/tmp/security-workpad.md"
+  }
 });
 ```
 
@@ -5820,6 +5882,65 @@ await workspace.call({
 }
 ```
 
+## observability
+
+### workspace.monitor.errors
+
+analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates
+
+| Field | Value |
+| --- | --- |
+| Category | observability |
+| Signature | `workspace.monitor.errors({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `Consuelo canonical OS trace database and current OS tool contracts` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "monitor.errors",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## review
 
 ### workspace.aiReview
@@ -6023,6 +6144,65 @@ await workspace.call({
     "noStamp": true,
     "dryRun": true
   }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## security
+
+### workspace.security.scan
+
+run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths
+
+| Field | Value |
+| --- | --- |
+| Category | security |
+| Signature | `workspace.security.scan({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `Consuelo defensive repository security scanners` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 900000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "security.scan",
+  "input": {}
 });
 ```
 

@@ -20,6 +20,9 @@ import { toolPackage as package18 } from './tool-discovery/manifest';
 import { toolPackage as package19 } from './utilities/manifest';
 import { toolPackage as package20 } from './deployment-provider/manifest';
 import { toolPackage as package21 } from './lifecycle/manifest';
+import { toolPackage as package22 } from './security/manifest';
+import { toolPackage as package23 } from './monitor/manifest';
+import { toolPackage as package24 } from './daily-schedules/manifest';
 
 import type { ToolPackage } from './package';
 
@@ -46,4 +49,7 @@ export const toolPackages = [
   package19,
   package20,
   package21,
+  package22,
+  package23,
+  package24,
 ] satisfies readonly ToolPackage[];
