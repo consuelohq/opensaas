@@ -1,6 +1,7 @@
 export const DAILY_SCHEDULE_KINDS = [
   'security-scan',
   'security-workpad',
+  'self-healing-report',
   'self-healing-workpad',
 ] as const;
 
@@ -50,6 +51,7 @@ export function createDailyScheduleEntry(input: DailyScheduleEntry): DailySchedu
 function kindLabel(kind: DailyScheduleKind): string {
   if (kind === 'security-scan') return 'Security scan';
   if (kind === 'security-workpad') return 'Security workpad';
+  if (kind === 'self-healing-report') return 'Self-healing report';
   return 'Self-healing workpad';
 }
 

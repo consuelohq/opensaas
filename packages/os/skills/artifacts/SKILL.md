@@ -18,7 +18,7 @@ brief
   -> create or edit source-first output
   -> render materialized output
   -> validate in browser
-  -> publish with artifacts.publish
+  -> publish with artifacts operation=publish
   -> verify /artifacts and the stable artifact route
   -> report source, durable link, version, validation, and remaining decisions
 ```
@@ -38,14 +38,15 @@ The packaged operator reference is available at `references/agents.md`.
 
 ## Canonical commands and tools
 
-Use `bun run artifacts` and `artifacts.*` tools. Do not use retired archive names or workspace publishing fallbacks.
+Use `bun run artifacts` and the canonical `artifacts` tool with an explicit `operation`. Do not use retired dotted artifact tools, archive names, or workspace publishing fallbacks.
 
 Primary operations:
 
-- `artifacts.publish` — publish a materialized file or directory to a stable route.
-- `artifacts.refresh` — regenerate the Artifacts index and catalog output.
-- `artifacts.check` — validate catalog and stored artifact files.
-- `artifacts.generateWebsite`, `artifacts.generateDigitalEguide`, `artifacts.generateEmail`, and related generation tools — create work orders or design sessions.
+- `artifacts({ operation: "publish", ... })` — publish a materialized file or directory to a stable route.
+- `artifacts({ operation: "refresh" })` — regenerate the Artifacts index and catalog output.
+- `artifacts({ operation: "check" })` — validate catalog and stored artifact files.
+- `artifacts({ operation: "generate.website" | "generate.digital-eguide" | "generate.email" | ... })` — create work orders or design sessions.
+- `artifacts({ operation: "schedule.publish", schedule, reportFile, taskSession })` — publish a Daily Schedules report plus the generated task workpad for that task session.
 - `bun run artifacts history --id <artifact-id>` — inspect immutable versions.
 - `bun run artifacts rollback --id <artifact-id> --version-id <version-id>` — create a new current version from an earlier immutable version.
 

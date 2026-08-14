@@ -5,7 +5,8 @@
     "artifacts"
   ],
   "workflow": "email",
-  "defaultTool": "artifacts.generateEmail",
+  "defaultTool": "artifacts",
+  "defaultOperation": "generate.email",
   "primaryOpenDesignSkill": "email-marketing",
   "templates": [
     "email"

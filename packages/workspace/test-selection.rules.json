@@ -116,6 +116,59 @@
       "reason": "OS trace watcher changes must preserve terminal rendering, canonical sidecar resolution, and real SQLite CLI behavior."
     },
     {
+      "id": "os-artifacts-scheduled-maintenance",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/benchmarks/tools-search-gold.json",
+        "packages/os/scripts/artifacts.ts",
+        "packages/os/scripts/daily-schedules.ts",
+        "packages/os/scripts/lib/artifacts.ts",
+        "packages/os/scripts/lib/daily-schedules-publisher.ts",
+        "packages/os/scripts/lib/daily-schedules.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/monitor-errors-report.ts",
+        "packages/os/scripts/lib/tool-scope-authorization.ts",
+        "packages/os/skills/artifacts/**",
+        "packages/os/tests/artifacts-legacy-contract.test.ts",
+        "packages/os/tests/artifacts-skill.test.ts",
+        "packages/os/tests/daily-schedules.test.ts",
+        "packages/os/tests/monitor-errors.test.ts",
+        "packages/os/tests/workflow-intent.test.ts",
+        "packages/os/tools/artifacts/**",
+        "packages/os/tools/daily-schedules/**",
+        "packages/os/workflows/generated/workflow-bundles.json",
+        "packages/os/workflows/workflows.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Artifacts and Daily Schedules contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/daily-schedules.test.ts",
+            "packages/os/tools/artifacts/handler.test.ts",
+            "packages/os/tests/artifacts-skill.test.ts",
+            "packages/os/tests/workflow-intent.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/artifacts-legacy-contract.test.ts"
+          ]
+        },
+        {
+          "name": "OS self-healing monitor report contract",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts"
+          ]
+        }
+      ],
+      "reason": "Artifacts, Daily Schedules, and self-healing report changes must prove their focused durable-publication, typed-tool, generated-catalog, and Bun-native monitor contracts without selecting the historically red unrelated OS package suite."
+    },
+    {
       "id": "workspace-audit-docs",
       "critical": false,
       "source": [

@@ -46,25 +46,26 @@ Do not read from or write to retired archive, vendored Open Design runtime, or w
 3. Create or update source files.
 4. Render a file or directory with `index.html`.
 5. Validate the rendered output in a browser.
-6. Publish with `artifacts.publish` and the current base version when updating.
+6. Publish with `artifacts({ operation: "publish", ... })` and the current base version when updating.
 7. Verify `/artifacts`, the stable artifact route, and history.
 8. Report source, route, artifact ID, version ID, validation, and approval-gated actions.
 
 ## Tool calls
 
 ```ts
-await workspace.call({ tool: "artifacts.check", input: {}, timeout: 120 })
-await workspace.call({ tool: "artifacts.listSkills", input: {}, timeout: 120 })
-await workspace.call({ tool: "artifacts.listDesignSystems", input: {}, timeout: 120 })
-await workspace.call({ tool: "artifacts.uiStatus", input: {}, timeout: 120 })
+await workspace.call({ tool: "artifacts", input: { operation: "check" }, timeout: 120 })
+await workspace.call({ tool: "artifacts", input: { operation: "skills.list" }, timeout: 120 })
+await workspace.call({ tool: "artifacts", input: { operation: "design-systems.list" }, timeout: 120 })
+await workspace.call({ tool: "artifacts", input: { operation: "ui.status" }, timeout: 120 })
 ```
 
 Publish materialized output:
 
 ```ts
 await workspace.call({
-  tool: "artifacts.publish",
+  tool: "artifacts",
   input: {
+    operation: "publish",
     target: "/absolute/path/to/rendered-output",
     path: "/specs/example",
     name: "Example Specification",
@@ -80,8 +81,8 @@ Generation tools create design sessions or work orders. They do not create catal
 
 ```ts
 await workspace.call({
-  tool: "artifacts.generateWebsite",
-  input: { name: "Campaign landing page", prompt: "...", dryRun: true },
+  tool: "artifacts",
+  input: { operation: "generate.website", name: "Campaign landing page", prompt: "...", dryRun: true },
   timeout: 600
 })
 ```

@@ -2,14 +2,6 @@ export const OS_TOOLS_SCOPE = 'os:tools';
 export const MCP_CALL_SCOPE = 'mcp:call';
 
 export const CENTRAL_MCP_READ_ONLY_FACADE_TOOLS = new Set([
-  'artifacts.check',
-  'artifacts.getDesignSystem',
-  'artifacts.listDesignSystems',
-  'artifacts.listSkills',
-  'artifacts.railwayCheck',
-  'artifacts.uiLogs',
-  'artifacts.uiStatus',
-  'artifacts.upstreamStatus',
   'audit',
   'browser.snap',
   'browser.status',
@@ -68,10 +60,30 @@ function isJsonObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+const READ_ONLY_ARTIFACT_OPERATIONS = new Set([
+  'list',
+  'get',
+  'history',
+  'check',
+  'design-system.get',
+  'design-systems.list',
+  'skills.list',
+  'railway.check',
+  'ui.logs',
+  'ui.status',
+  'upstream.status',
+]);
+
 export function resolveToolActionCategory(
   toolName: string,
   toolInput: unknown,
 ): 'read' | 'dangerous' | null {
+  if (toolName === 'artifacts') {
+    const operation = isJsonObject(toolInput) && typeof toolInput.operation === 'string'
+      ? toolInput.operation
+      : '';
+    return READ_ONLY_ARTIFACT_OPERATIONS.has(operation) ? 'read' : 'dangerous';
+  }
   if (toolName !== 'mac.process') return null;
 
   return isJsonObject(toolInput) && toolInput.action === 'list'

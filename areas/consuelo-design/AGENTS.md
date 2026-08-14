@@ -16,7 +16,7 @@ brief
   -> read DESIGN.md + relevant template
   -> create/edit local artifact source
   -> validate in browser
-  -> publish with artifacts.publish
+  -> publish with `artifacts({ operation: "publish", ... })`
   -> verify /design-wiki
 ```
 
@@ -82,7 +82,7 @@ Do:
 5. Treat the generated `workOrder` as the spec. Do not expect or use `project.pendingPrompt` unless `live: true` was explicitly requested.
 6. Create or update the local artifact source directly.
 7. Validate with browser tools.
-8. Publish durable links through `artifacts.publish`.
+8. Publish durable links through the canonical `artifacts` tool with `operation: "publish"`.
 9. Verify the artifact route and `/design-wiki`.
 10. Report the source path, durable links, validation, and remaining decisions.
 
@@ -103,18 +103,19 @@ Common calls:
 ```ts
 await workspace.get_steering()
 
-await workspace.call({ tool: "artifacts.check", input: {}, timeout: 120 })
-await workspace.call({ tool: "artifacts.listSkills", input: {}, timeout: 120 })
-await workspace.call({ tool: "artifacts.listDesignSystems", input: {}, timeout: 120 })
-await workspace.call({ tool: "artifacts.uiStatus", input: {}, timeout: 120 })
+await workspace.call({ tool: "artifacts", input: { operation: "check" }, timeout: 120 })
+await workspace.call({ tool: "artifacts", input: { operation: "skills.list" }, timeout: 120 })
+await workspace.call({ tool: "artifacts", input: { operation: "design-systems.list" }, timeout: 120 })
+await workspace.call({ tool: "artifacts", input: { operation: "ui.status" }, timeout: 120 })
 ```
 
 Use dry run to inspect the generated headless work order before creating files:
 
 ```ts
 await workspace.call({
-  tool: "artifacts.generateDigitalEguide",
+  tool: "artifacts",
   input: {
+    operation: "generate.digital-eguide",
     dryRun: true,
     name: "example-artifact",
     template: "research",
@@ -128,7 +129,7 @@ Dry-run output should return `mode: "headless-work-order"` and a `workOrder` fie
 
 ## current tool contract
 
-Default `artifacts.generate*` behavior:
+Default `artifacts` generation-operation behavior:
 
 ```json
 {
@@ -155,19 +156,19 @@ Choose the closest workflow:
 
 | User wants                                                                    | Tool                                   | Notes                                                           |
 | ----------------------------------------------------------------------------- | -------------------------------------- | --------------------------------------------------------------- |
-| research guide, e-guide, designed doc, flyer, pricing card, PDF-like artifact | `artifacts.generateDigitalEguide` | Use `template` when applicable.                                 |
-| website section or landing page                                               | `artifacts.generateWebsite`       | Use for site layout and source handoff.                         |
-| demo or prototype                                                             | `artifacts.generateDemo`          | Use for multi-screen or product story work.                     |
-| image/media direction                                                         | `artifacts.generateImageBrief`    | Use for briefs and direction, not final source unless extended. |
-| HTML email                                                                    | `artifacts.generateEmail`         | Use for email source and preview.                               |
-| motion frame                                                                  | `artifacts.generateMotionFrame`   | Use for motion concepts and still frames.                       |
-| HTML-to-video / HyperFrames                                                   | `artifacts.renderHyperframes`     | Use for render/video work.                                      |
+| research guide, e-guide, designed doc, flyer, pricing card, PDF-like artifact | `artifacts` + `generate.digital-eguide` | Use `template` when applicable.                           |
+| website section or landing page                                               | `artifacts` + `generate.website`       | Use for site layout and source handoff.                   |
+| demo or prototype                                                             | `artifacts` + `generate.demo`          | Use for multi-screen or product story work.               |
+| image/media direction                                                         | `artifacts` + `generate.image-brief`   | Use for briefs and direction, not final source unless extended. |
+| HTML email                                                                    | `artifacts` + `generate.email`         | Use for email source and preview.                         |
+| motion frame                                                                  | `artifacts` + `generate.motion-frame`  | Use for motion concepts and still frames.                 |
+| HTML-to-video / HyperFrames                                                   | `artifacts` + `render.hyperframes`     | Use for render/video work.                                |
 
-If no workflow fits, call `artifacts.listSkills`, choose the nearest existing workflow, and ask Ko only if the choice affects the output. Keep execution headless unless Ko explicitly asks for a live UI session.
+If no workflow fits, call `artifacts` with `operation: "skills.list"`, choose the nearest existing workflow, and ask Ko only if the choice affects the output. Keep execution headless unless Ko explicitly asks for a live UI session.
 
 ## digital e-guide templates
 
-For `artifacts.generateDigitalEguide`, use:
+For `artifacts` with `operation: "generate.digital-eguide"`, use:
 
 | Template   | Use for                                                                             |
 | ---------- | ----------------------------------------------------------------------------------- |
@@ -187,8 +188,9 @@ Example:
 
 ```ts
 await workspace.call({
-  tool: "artifacts.generateDigitalEguide",
+  tool: "artifacts",
   input: {
+    operation: "generate.digital-eguide",
     name: "daily-deep-idea-2026-05-12-example",
     template: "research",
     prompt: "<full source content and design instructions>"
@@ -246,7 +248,7 @@ then
 
 2. generate/build with `template: "plan"`
 3. apply the shared reader shell
-4. publish with `artifacts.publish`
+4. publish with `artifacts({ operation: "publish", ... })`
 5. verify the artifact route, `/design-wiki`, and reader shell behavior
 
 ## specs
@@ -304,7 +306,7 @@ then
 
 2. generate/build with `template: "spec"`
 3. apply the shared reader shell
-4. publish with `artifacts.publish`
+4. publish with `artifacts({ operation: "publish", ... })`
 5. verify the artifact route, `/design-wiki`, and reader shell behavior
 
 ## research guides and Daily Deep Idea
@@ -353,7 +355,7 @@ Use GSAP for reader shell motion. Respect `prefers-reduced-motion` by setting du
 
 ## durable Tailscale publishing
 
-Use `artifacts.publish` for durable reading/review links.
+Use `artifacts` with `operation: "publish"` for durable reading/review links.
 
 Durable model:
 
@@ -371,8 +373,9 @@ Publish like this:
 
 ```ts
 await workspace.call({
-  tool: "artifacts.publish",
+  tool: "artifacts",
   input: {
+    operation: "publish",
     target: "<local artifact file or directory>",
     path: "/daily-deep-idea/2026-05-12-example",
     name: "Daily Deep Idea — Example",
@@ -385,7 +388,7 @@ await workspace.call({
 
 Use the direct Tailnet HTTP link when Ko is reading on iPhone or HTTPS Tailscale has secure-connection issues.
 
-`artifacts.publish` should update `/design-wiki` automatically.
+`artifacts` with `operation: "publish"` should update `/design-wiki` automatically.
 
 Verify:
 
@@ -400,7 +403,7 @@ Verify:
 
 Hydration matters only when Ko explicitly wants project inspection, live collaboration, reusable Open Design project files, or `live: true` operation.
 
-For normal headless delivery, durable artifact source + `artifacts.publish` is enough.
+For normal headless delivery, durable artifact source + `artifacts` with `operation: "publish"` is enough.
 
 When UI/project hydration is required:
 
@@ -529,7 +532,7 @@ Do not:
 - The canonical Consuelo design facade lives in `packages/os/scripts/artifacts.ts`.
 - The package-local script at `packages/os/scripts/artifacts-design.ts` is a thin Bun passthrough to `packages/os/scripts/artifacts.ts`.
 - Human commands start from the repo root with `bun run artifacts ...`.
-- Tool calls go through the typed workspace facade as `workspace artifacts.*`.
+- Tool calls go through the typed workspace facade as the single `artifacts` tool with an explicit `operation`.
 - Open Design upstream remains vendored at `packages/consuelo-design/upstream/open-design`.
 - `pnpm` is not a Consuelo-facing workflow tool. It is used only behind the Bun facade because upstream Open Design pins `pnpm@10.33.2`.
 - `generate <workflow>` returns a headless work order by default. Only `generate <workflow> --live` or an explicit `live: true` input starts a live Open Design working session, and only that live path may set `project.pendingPrompt`.
@@ -617,11 +620,11 @@ Generated Open Design state belongs under ignored runtime paths such as `.od/`, 
 
 ## Consuelo Artifacts archive
 
-Every `artifacts.publish` call records the published artifact in the private Consuelo Artifacts. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the Consuelo Artifacts can filter it correctly. The Consuelo Artifacts is automatically regenerated and published at `/design-wiki`.
+Every `artifacts` call with `operation: "publish"` records the published artifact in the private Consuelo Artifacts. Pass `name` for the human-readable artifact title and `template` when the artifact is a templated e-guide so the Consuelo Artifacts can filter it correctly. The Consuelo Artifacts is automatically regenerated and published at `/design-wiki`.
 
 The archive exposes both HTTPS Tailscale Serve URLs and direct tailnet HTTP URLs. Use the direct URL when iPhone Safari cannot open the HTTPS Serve link.
 
-The publish path is durable. `artifacts.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The Consuelo Artifacts and every archived artifact are served by the same tailnet archive server.## publish concurrency guard
+The publish path is durable. `artifacts` with `operation: "publish"` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The Consuelo Artifacts and every archived artifact are served by the same tailnet archive server.## publish concurrency guard
 
 When publishing over an existing `/design-wiki` page, read the latest page/archive state first and pass the current page revision to publish:
 

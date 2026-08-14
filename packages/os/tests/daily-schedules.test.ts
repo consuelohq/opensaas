@@ -10,7 +10,7 @@ import {
   renderDailySchedulesIndex,
   type DailyScheduleEntry,
 } from '../scripts/lib/daily-schedules';
-import { publishDailySchedule } from '../scripts/lib/daily-schedules-publisher';
+import { publishDailySchedule, publishDailyScheduleBundle } from '../scripts/lib/daily-schedules-publisher';
 
 let tempHome = '';
 
@@ -35,6 +35,12 @@ describe('Daily Schedules artifact model', () => {
     }),
     createDailyScheduleEntry({
       date: '2026-08-14',
+      kind: 'self-healing-report',
+      title: 'Self-healing report',
+      href: '/daily-schedules/2026-08-14/self-healing-report/',
+    }),
+    createDailyScheduleEntry({
+      date: '2026-08-14',
       kind: 'self-healing-workpad',
       title: 'Self-healing workpad',
       href: '/daily-schedules/2026-08-14/self-healing/',
@@ -47,10 +53,11 @@ describe('Daily Schedules artifact model', () => {
     }),
   ];
 
-  it('keeps the three schedule entry kinds explicit and validates ISO dates', () => {
+  it('keeps the four schedule entry kinds explicit and validates ISO dates', () => {
     expect(entries.map((entry) => entry.kind)).toEqual([
       'security-scan',
       'security-workpad',
+      'self-healing-report',
       'self-healing-workpad',
       'security-scan',
     ]);
@@ -70,6 +77,7 @@ describe('Daily Schedules artifact model', () => {
     expect(html).toContain('data-schedule-date="2026-08-14"');
     expect(html).toContain('data-schedule-kind="security-scan"');
     expect(html).toContain('security-workpad');
+    expect(html).toContain('self-healing-report');
     expect(html).toContain('self-healing-workpad');
     expect(html.indexOf('2026-08-14')).toBeLessThan(html.indexOf('2026-08-13'));
     expect(html).toContain('type="date"');
@@ -141,6 +149,39 @@ describe('Daily Schedules artifact model', () => {
     const updatedCatalog = readArtifactCatalog(tempHome);
     const workpad = updatedCatalog.entries.find((entry) => entry.path === '/daily-schedules/2026-08-14/security');
     expect(workpad?.versionCount).toBe(2);
+  });
+
+  it('publishes one report and the existing generated task workpad as a schedule bundle', () => {
+    tempHome = mkdtempSync(join(tmpdir(), 'consuelo-daily-schedules-bundle-'));
+    const reportPath = join(tempHome, 'monitor.json');
+    const workpadPath = join(tempHome, 'workpad.md');
+    writeFileSync(reportPath, JSON.stringify({
+      generatedAt: '2026-08-14T01:00:00.000Z',
+      window: '24h',
+      summary: { total: 9, actionable: 2, expectedPolicy: 4, callerInput: 2, transient: 1, runtimeContractDrift: 0, defectCandidate: 2, external: 0, unknown: 0 },
+      groups: [],
+    }), 'utf8');
+    writeFileSync(workpadPath, '# generated task workpad\n\n## current status\n\nReviewed two defect candidates.\n', 'utf8');
+
+    const result = publishDailyScheduleBundle({
+      home: tempHome,
+      schedule: 'self-healing',
+      reportFile: reportPath,
+      workpadFile: workpadPath,
+      date: '2026-08-14',
+      now: new Date('2026-08-14T01:10:00.000Z'),
+    });
+
+    expect(result.entries).toHaveLength(2);
+    expect(result.entries.map((entry) => entry.kind)).toEqual(['self-healing-report', 'self-healing-workpad']);
+    const catalog = readArtifactCatalog(tempHome);
+    expect(catalog.entries.find((entry) => entry.path === '/daily-schedules/2026-08-14/self-healing-report')).toBeTruthy();
+    expect(catalog.entries.find((entry) => entry.path === '/daily-schedules/2026-08-14/self-healing')).toBeTruthy();
+
+    const reportHtml = readFileSync(resolveArtifactCurrentIndex(tempHome, '/daily-schedules/2026-08-14/self-healing-report'), 'utf8');
+    expect(reportHtml).toContain('aria-label="Self-healing error classification distribution"');
+    expect(reportHtml).toContain('Compared with');
+    expect(reportHtml).not.toContain('legend');
   });
 
   it('validates the publish contract before creating any artifact state', () => {

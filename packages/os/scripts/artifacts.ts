@@ -1,8 +1,10 @@
 #!/usr/bin/env bun
 
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Effect } from 'effect';
 
 import {
   getArtifact,
@@ -14,6 +16,7 @@ import {
   rollbackArtifact,
 } from './lib/artifacts';
 import { resolveConsueloHome } from './lib/consuelo-home';
+import { publishDailyScheduleBundle } from './lib/daily-schedules-publisher';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DESIGN_SCRIPT = path.join(SCRIPT_DIR, 'artifacts-design.ts');
@@ -42,6 +45,26 @@ const DESIGN_COMMANDS = new Set([
   'railway:check',
   'railway-check',
 ]);
+
+const OPERATION_COMMANDS: Record<string, string> = {
+  'generate.demo': 'generate-demo',
+  'generate.digital-eguide': 'generate-digital-eguide',
+  'generate.email': 'generate-email',
+  'generate.image-brief': 'generate-image-brief',
+  'generate.motion-frame': 'generate-motion-frame',
+  'generate.website': 'generate-website',
+  'design-system.get': 'get-design-system',
+  'design-systems.list': 'list-design-systems',
+  'skills.list': 'list-skills',
+  'open-design.build': 'od:build',
+  'railway.check': 'railway:check',
+  'render.hyperframes': 'render-hyperframes',
+  'ui.background': 'ui:bg',
+  'ui.logs': 'ui:logs',
+  'ui.status': 'ui:status',
+  'ui.stop': 'ui:stop',
+  'upstream.status': 'upstream-status',
+};
 
 type ParsedArgs = {
   command: string;
@@ -88,6 +111,16 @@ function parseArgs(argv: string[]): ParsedArgs {
   };
 }
 
+function normalizeOperationArgs(args: ParsedArgs): ParsedArgs {
+  const command = OPERATION_COMMANDS[args.command] ?? args.command;
+  if (command === args.command) return args;
+  return {
+    ...args,
+    command,
+    raw: [command, ...args.raw.slice(1)],
+  };
+}
+
 function value(args: ParsedArgs, name: string): string | undefined {
   return args.values.get(name);
 }
@@ -96,6 +129,54 @@ function required(args: ParsedArgs, name: string): string {
   const result = value(args, name);
   if (!result) throw new Error(`${name} is required`);
   return result;
+}
+
+type StoredTaskMeta = {
+  taskSession?: string;
+  taskBranch?: string;
+  branch?: string;
+  area?: string;
+  worktreePath?: string;
+  worktree?: string;
+};
+
+function taskWorkpadPath(meta: StoredTaskMeta): string | undefined {
+  const worktree = meta.worktreePath ?? meta.worktree;
+  const branch = meta.taskBranch ?? meta.branch;
+  if (!worktree || !branch) return undefined;
+  const parts = branch.split('/');
+  if (parts[0] !== 'task' || !parts[1] || !parts[2]) return undefined;
+  const area = String(meta.area ?? parts[1]).split('/').filter(Boolean).join('-');
+  const slug = parts.slice(2).join('-');
+  return path.join(worktree, '.task', area, slug, 'workpad.md');
+}
+
+function workpadForTaskSession(taskSession: string): string {
+  const memoryDir = path.join(os.homedir(), '.kiro', 'workspace-tasks');
+  if (!existsSync(memoryDir)) throw new Error(`task metadata directory is unavailable: ${memoryDir}`);
+  for (const fileName of readdirSync(memoryDir)) {
+    if (!fileName.endsWith('.json')) continue;
+    try {
+      const meta = JSON.parse(readFileSync(path.join(memoryDir, fileName), 'utf8')) as StoredTaskMeta;
+      if (meta.taskSession !== taskSession) continue;
+      const workpad = taskWorkpadPath(meta);
+      if (!workpad || !existsSync(workpad) || !statSync(workpad).isFile()) {
+        throw new Error(`generated task workpad is unavailable for ${taskSession}`);
+      }
+      return workpad;
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes(taskSession)) throw error;
+    }
+  }
+  throw new Error(`no task metadata found for task session ${taskSession}`);
+}
+
+function resolveScheduleWorkpad(args: ParsedArgs): string {
+  const explicit = value(args, '--workpad-file');
+  if (explicit) return explicit;
+  const taskSession = value(args, '--task-session');
+  if (!taskSession) throw new Error('schedule.publish requires --task-session or --workpad-file');
+  return workpadForTaskSession(taskSession);
 }
 
 function title(args: ParsedArgs): string {
@@ -231,6 +312,24 @@ function runDomainCommand(args: ParsedArgs): CommandResult {
       if (missing.length > 0) throw new Error(`artifact files missing: ${missing.join(', ')}`);
       return { ok: true, output, text: `artifacts check passed\nartifacts: ${catalog.entries.length}\n` };
     }
+    case 'schedule.publish': {
+      const schedule = required(args, '--schedule');
+      if (schedule !== 'security' && schedule !== 'self-healing') {
+        throw new Error('--schedule must be security or self-healing');
+      }
+      const result = publishDailyScheduleBundle({
+        home: args.home,
+        schedule,
+        reportFile: required(args, '--report-file'),
+        workpadFile: resolveScheduleWorkpad(args),
+        date: value(args, '--date'),
+      });
+      return {
+        ok: true,
+        output: result,
+        text: `daily schedule published\nschedule: ${result.schedule}\ndate: ${result.date}\nindex: ${result.indexUrl}\n`,
+      };
+    }
     case 'help':
     case '-h':
     case '--help':
@@ -250,22 +349,25 @@ async function runDesignCommand(rawArgs: string[]): Promise<number> {
 }
 
 export async function runArtifactsCli(argv: string[]): Promise<CommandResult> {
-  const args = parseArgs(argv);
+  const args = normalizeOperationArgs(parseArgs(argv));
   if (DESIGN_COMMANDS.has(args.command)) {
-    const exitCode = await runDesignCommand(argv);
+    const exitCode = await runDesignCommand(args.raw);
     return { ok: exitCode === 0, output: { exitCode }, text: '' };
   }
   return runDomainCommand(args);
 }
 
+export function runArtifactsEffect(argv: string[]) {
+  return Effect.tryPromise({
+    try: () => runArtifactsCli(argv),
+    catch: (cause) => cause instanceof Error ? cause : new Error(String(cause)),
+  });
+}
+
 async function main(): Promise<void> {
-  const args = parseArgs(process.argv.slice(2));
+  const args = normalizeOperationArgs(parseArgs(process.argv.slice(2)));
   try {
-    if (DESIGN_COMMANDS.has(args.command)) {
-      process.exitCode = await runDesignCommand(args.raw);
-      return;
-    }
-    const result = runDomainCommand(args);
+    const result = await Effect.runPromise(runArtifactsEffect(process.argv.slice(2)));
     if (args.json) process.stdout.write(safeJson(result.output));
     else if (!args.quiet) process.stdout.write(result.text);
     if (!result.ok) process.exitCode = 1;

@@ -680,9 +680,10 @@ function compactFacadeData(toolName: string, data: unknown): unknown {
 }
 
 function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
-  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'artifacts.check'];
+  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit'];
+  const isArtifactCheck = toolName === 'artifacts' && input.operation === 'check';
   const tddPhase = typeof input.tddPhase === 'string' ? input.tddPhase : '';
-  if (!validationTools.includes(toolName) && !tddPhase) return;
+  if (!validationTools.includes(toolName) && !isArtifactCheck && !tddPhase) return;
   const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
   const taskBranch = typeof input.branch === 'string' ? input.branch : '';
   if (!taskWorktree || !taskBranch.startsWith('task/')) return;

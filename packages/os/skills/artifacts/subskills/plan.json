@@ -5,7 +5,8 @@
     "artifacts"
   ],
   "workflow": "digital-eguide",
-  "defaultTool": "artifacts.generateDigitalEguide",
+  "defaultTool": "artifacts",
+  "defaultOperation": "generate.digital-eguide",
   "primaryOpenDesignSkill": "digital-eguide",
   "templates": [
     "plan"

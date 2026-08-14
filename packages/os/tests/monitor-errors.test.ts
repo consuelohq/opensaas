@@ -1,4 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Database } from 'bun:sqlite';
+
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   classifyTraceFailure,
@@ -6,6 +11,14 @@ import {
   type MonitorToolContract,
   type MonitorTraceFailure,
 } from '../scripts/lib/monitor-errors';
+import { buildMonitorErrorsReport } from '../scripts/lib/monitor-errors-report';
+
+let tempHome = '';
+
+afterEach(() => {
+  if (tempHome) rmSync(tempHome, { recursive: true, force: true });
+  tempHome = '';
+});
 
 const mutatingContract: MonitorToolContract = {
   name: 'fs.write',
@@ -102,5 +115,34 @@ describe('OS self-healing trace classification', () => {
       transient: 1,
       actionable: 1,
     });
+  });
+
+  it('persists the normalized 24h monitor report for artifact publication', () => {
+    tempHome = mkdtempSync(join(tmpdir(), 'consuelo-monitor-errors-'));
+    const traceDb = join(tempHome, 'traces.sqlite');
+    const db = new Database(traceDb);
+    db.run(`CREATE TABLE tool_traces (
+      trace_id TEXT NOT NULL,
+      ts TEXT NOT NULL,
+      tool TEXT NOT NULL,
+      code TEXT,
+      status TEXT,
+      branch TEXT,
+      task_session TEXT
+    )`);
+    db.run(`INSERT INTO tool_traces VALUES (?, datetime('now'), ?, ?, ?, ?, ?)`, [
+      'trc_persist', 'fs.read', 'TASK_SESSION_REQUIRED', 'error', 'main', null,
+    ]);
+    db.close();
+
+    const report = buildMonitorErrorsReport({
+      home: tempHome,
+      env: { ...process.env, CONSUELO_TRACE_DB: traceDb },
+      now: new Date('2026-08-14T01:00:00.000Z'),
+    });
+
+    expect(report.reportPath).toMatch(/monitor-errors\/.*\.json$/);
+    const persisted = JSON.parse(readFileSync(report.reportPath, 'utf8')) as { summary: { runtimeContractDrift: number } };
+    expect(persisted.summary.runtimeContractDrift).toBe(1);
   });
 });

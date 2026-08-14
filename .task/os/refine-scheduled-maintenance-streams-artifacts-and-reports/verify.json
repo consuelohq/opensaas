@@ -1,0 +1,634 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+  "base": "origin/stream/os",
+  "headSha": "c645c9ece18cc4dcbb5a68bc2356765e4da9f575",
+  "changeHash": "698c39a9c917852cefebb5f104b26f2ca602b9d596f799ad1f5c4b8a289d0e33",
+  "changedFiles": [
+    "areas/consuelo-design/AGENTS.md",
+    "packages/documentation/src/content/docs/build/skills/bundled/artifacts.mdx",
+    "packages/documentation/src/content/docs/reference/tools.mdx",
+    "packages/os/TOOLS.md",
+    "packages/os/benchmarks/tools-search-gold.json",
+    "packages/os/manifests/generated/tool.manifest.json",
+    "packages/os/package.json",
+    "packages/os/scripts/artifacts.ts",
+    "packages/os/scripts/daily-schedules.ts",
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/lib/daily-schedules-publisher.ts",
+    "packages/os/scripts/lib/daily-schedules.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/monitor-errors-report.ts",
+    "packages/os/scripts/lib/tool-scope-authorization.ts",
+    "packages/os/skills/artifacts/SKILL.md",
+    "packages/os/skills/artifacts/references/agents.md",
+    "packages/os/skills/artifacts/subskills/digital-eguide.json",
+    "packages/os/skills/artifacts/subskills/html-email.json",
+    "packages/os/skills/artifacts/subskills/hyperframes.json",
+    "packages/os/skills/artifacts/subskills/landing-page.json",
+    "packages/os/skills/artifacts/subskills/motion-frame.json",
+    "packages/os/skills/artifacts/subskills/plan.json",
+    "packages/os/skills/artifacts/subskills/research-guide.json",
+    "packages/os/skills/artifacts/subskills/spec.json",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/artifacts-legacy-contract.test.ts",
+    "packages/os/tests/artifacts-skill.test.ts",
+    "packages/os/tests/daily-schedules.test.ts",
+    "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/os/tests/fixtures/tool-package-baseline.json",
+    "packages/os/tests/monitor-errors.test.ts",
+    "packages/os/tests/workflow-intent.test.ts",
+    "packages/os/tools/artifacts/handler.test.ts",
+    "packages/os/tools/artifacts/handler.ts",
+    "packages/os/tools/artifacts/schema.ts",
+    "packages/os/tools/daily-schedules/handler.test.ts",
+    "packages/os/tools/daily-schedules/handler.ts",
+    "packages/os/tools/daily-schedules/manifest.ts",
+    "packages/os/tools/daily-schedules/schema.ts",
+    "packages/os/tools/registry.ts",
+    "packages/os/workflows/generated/workflow-bundles.json",
+    "packages/os/workflows/workflows.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "verifiedAt": "2026-08-14T04:45:46.538Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/current.json",
+        ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/evidence-log.json",
+        ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/read-log.json",
+        ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/session.json",
+        ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/workpad.md",
+        ".task/tasks/os/refine-scheduled-maintenance-streams-artifacts-and-reports.json",
+        "areas/consuelo-design/AGENTS.md",
+        "packages/documentation/src/content/docs/build/skills/bundled/artifacts.mdx",
+        "packages/documentation/src/content/docs/reference/tools.mdx",
+        "packages/os/TOOLS.md",
+        "packages/os/benchmarks/tools-search-gold.json",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/package.json",
+        "packages/os/scripts/artifacts.ts",
+        "packages/os/scripts/daily-schedules.ts",
+        "packages/os/scripts/lib/artifacts.ts",
+        "packages/os/scripts/lib/daily-schedules-publisher.ts",
+        "packages/os/scripts/lib/daily-schedules.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/monitor-errors-report.ts",
+        "packages/os/scripts/lib/tool-scope-authorization.ts",
+        "packages/os/skills/artifacts/SKILL.md",
+        "packages/os/skills/artifacts/references/agents.md",
+        "packages/os/skills/artifacts/subskills/digital-eguide.json",
+        "packages/os/skills/artifacts/subskills/html-email.json",
+        "packages/os/skills/artifacts/subskills/hyperframes.json",
+        "packages/os/skills/artifacts/subskills/landing-page.json",
+        "packages/os/skills/artifacts/subskills/motion-frame.json",
+        "packages/os/skills/artifacts/subskills/plan.json",
+        "packages/os/skills/artifacts/subskills/research-guide.json",
+        "packages/os/skills/artifacts/subskills/spec.json",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/artifacts-legacy-contract.test.ts",
+        "packages/os/tests/artifacts-skill.test.ts",
+        "packages/os/tests/daily-schedules.test.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/monitor-errors.test.ts",
+        "packages/os/tests/workflow-intent.test.ts",
+        "packages/os/tools/artifacts/handler.test.ts",
+        "packages/os/tools/artifacts/handler.ts",
+        "packages/os/tools/artifacts/schema.ts",
+        "packages/os/tools/daily-schedules/handler.test.ts",
+        "packages/os/tools/daily-schedules/handler.ts",
+        "packages/os/tools/daily-schedules/manifest.ts",
+        "packages/os/tools/daily-schedules/schema.ts",
+        "packages/os/tools/registry.ts",
+        "packages/os/workflows/generated/workflow-bundles.json",
+        "packages/os/workflows/workflows.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-artifacts-scheduled-maintenance",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Artifacts, Daily Schedules, and self-healing report changes must prove their focused durable-publication, typed-tool, generated-catalog, and Bun-native monitor contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/benchmarks/tools-search-gold.json",
+            "packages/os/scripts/artifacts.ts",
+            "packages/os/scripts/daily-schedules.ts",
+            "packages/os/scripts/lib/artifacts.ts",
+            "packages/os/scripts/lib/daily-schedules-publisher.ts",
+            "packages/os/scripts/lib/daily-schedules.ts",
+            "packages/os/scripts/lib/facade/executor.ts",
+            "packages/os/scripts/lib/monitor-errors-report.ts",
+            "packages/os/scripts/lib/tool-scope-authorization.ts",
+            "packages/os/skills/artifacts/SKILL.md",
+            "packages/os/skills/artifacts/references/agents.md",
+            "packages/os/skills/artifacts/subskills/digital-eguide.json",
+            "packages/os/skills/artifacts/subskills/html-email.json",
+            "packages/os/skills/artifacts/subskills/hyperframes.json",
+            "packages/os/skills/artifacts/subskills/landing-page.json",
+            "packages/os/skills/artifacts/subskills/motion-frame.json",
+            "packages/os/skills/artifacts/subskills/plan.json",
+            "packages/os/skills/artifacts/subskills/research-guide.json",
+            "packages/os/skills/artifacts/subskills/spec.json",
+            "packages/os/tests/artifacts-legacy-contract.test.ts",
+            "packages/os/tests/artifacts-skill.test.ts",
+            "packages/os/tests/daily-schedules.test.ts",
+            "packages/os/tests/monitor-errors.test.ts",
+            "packages/os/tests/workflow-intent.test.ts",
+            "packages/os/tools/artifacts/handler.test.ts",
+            "packages/os/tools/artifacts/handler.ts",
+            "packages/os/tools/artifacts/schema.ts",
+            "packages/os/tools/daily-schedules/handler.test.ts",
+            "packages/os/tools/daily-schedules/handler.ts",
+            "packages/os/tools/daily-schedules/manifest.ts",
+            "packages/os/tools/daily-schedules/schema.ts",
+            "packages/os/workflows/generated/workflow-bundles.json",
+            "packages/os/workflows/workflows.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "trace-site-pagination",
+          "critical": true,
+          "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+          "matchedFiles": [
+            "packages/os/package.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-lifecycle-update-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/TOOLS.md",
+            "packages/os/manifests/generated/tool.manifest.json",
+            "packages/os/scripts/lib/facade/schemas.ts",
+            "packages/os/src/generated/workspace.d.ts",
+            "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+            "packages/os/tests/fixtures/tool-package-baseline.json",
+            "packages/os/tools/registry.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "obsolete-metering-artifact-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Removal of the obsolete metering package from the deployed artifact manifest must retain the canonical Artifacts boundary without selecting unrelated OS suites.",
+          "matchedFiles": [
+            "packages/os/tests/artifacts-legacy-contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/package.json"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS Artifacts and Daily Schedules contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/daily-schedules.test.ts",
+            "packages/os/tools/artifacts/handler.test.ts",
+            "packages/os/tests/artifacts-skill.test.ts",
+            "packages/os/tests/workflow-intent.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/artifacts-legacy-contract.test.ts"
+          ],
+          "ruleId": "os-artifacts-scheduled-maintenance",
+          "critical": true
+        },
+        {
+          "name": "OS self-healing monitor report contract",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts"
+          ],
+          "ruleId": "os-artifacts-scheduled-maintenance",
+          "critical": true
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS artifact manifest contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/artifacts-legacy-contract.test.ts"
+          ],
+          "ruleId": "obsolete-metering-artifact-contract",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1923,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-scheduled-maintenance-streams-artifacts-and-reports\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m28 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1664\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 879\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m28 passed\u001b[39m\u001b[22m\u001b[90m (28)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:45:37\n\u001b[2m   Duration \u001b[22m 1.73s\u001b[2m (transform 11ms, setup 0ms, import 17ms, tests 1.66s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS Artifacts and Daily Schedules contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/daily-schedules.test.ts",
+            "packages/os/tools/artifacts/handler.test.ts",
+            "packages/os/tests/artifacts-skill.test.ts",
+            "packages/os/tests/workflow-intent.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/artifacts-legacy-contract.test.ts"
+          ],
+          "ruleId": "os-artifacts-scheduled-maintenance",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 901,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-scheduled-maintenance-streams-artifacts-and-reports\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/artifacts-legacy-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tools/artifacts/handler.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/workflow-intent.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 39\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/artifacts-skill.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 119\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/daily-schedules.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 56\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 75\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-package-layout.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 330\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m generates full, core, and workflow outputs deterministically with no committed drift \u001b[33m 320\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m46 passed\u001b[39m\u001b[22m\u001b[90m (46)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:45:39\n\u001b[2m   Duration \u001b[22m 651ms\u001b[2m (transform 671ms, setup 0ms, import 918ms, tests 626ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS self-healing monitor report contract",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts"
+          ],
+          "ruleId": "os-artifacts-scheduled-maintenance",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 155,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/monitor-errors.test.ts:\n(pass) OS self-healing trace classification > treats a required task session on a mutating tool as expected policy enforcement [0.91ms]\n(pass) OS self-healing trace classification > detects runtime/contract drift when an observed session error contradicts the current read-only tool contract [0.02ms]\n(pass) OS self-healing trace classification > treats a stale optional task session as caller input rather than runtime drift [0.01ms]\n(pass) OS self-healing trace classification > keeps safety blocks and validation errors out of the defect bucket unless current contracts contradict them [0.02ms]\n(pass) OS self-healing trace classification > surfaces repeated command failures as defect candidates while keeping isolated timeouts transient [0.03ms]\n(pass) OS self-healing trace classification > summarizes classifications without equating every non-OK trace with a product defect [0.05ms]\n(pass) OS self-healing trace classification > persists the normalized 24h monitor report for artifact publication [3.41ms]\n\n 7 pass\n 0 fail\n 10 expect() calls\nRan 7 tests across 1 file. [148.00ms]\n"
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 345,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-scheduled-maintenance-streams-artifacts-and-reports/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-history-redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-read-layer.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-history-endpoint-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 25\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-site-inspector-os-owned.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/runtime-bundle-managed-site-assets.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 57\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m47 passed\u001b[39m\u001b[22m\u001b[90m (47)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:45:40\n\u001b[2m   Duration \u001b[22m 182ms\u001b[2m (transform 346ms, setup 0ms, import 424ms, tests 104ms, environment 1ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 257,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-scheduled-maintenance-streams-artifacts-and-reports/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-runtime-boundary.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:45:40\n\u001b[2m   Duration \u001b[22m 77ms\u001b[2m (transform 13ms, setup 0ms, import 19ms, tests 3ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/trace-sites-runtime-boundary.test.ts\n"
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2409,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-scheduled-maintenance-streams-artifacts-and-reports\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/cli-update-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/linux-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/windows-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-tool-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 21\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 76\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-facade.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/native-lifecycle-operation.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 24\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-package-layout.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 350\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m generates full, core, and workflow outputs deterministically with no committed drift \u001b[33m 340\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m61 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1539\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m136 passed\u001b[39m\u001b[22m\u001b[90m (136)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:45:40\n\u001b[2m   Duration \u001b[22m 2.15s\u001b[2m (transform 1.83s, setup 0ms, import 2.89s, tests 2.05s, environment 1ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:41.331Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-14T04:45:41.332Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:41.334Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:41.336Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:41.337Z\"}\n"
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1471,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 640,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-scheduled-maintenance-streams-artifacts-and-reports\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m606 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m597 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m597 skipped\u001b[39m\u001b[90m (606)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:45:44\n\u001b[2m   Duration \u001b[22m 405ms\u001b[2m (transform 163ms, setup 0ms, import 333ms, tests 14ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:44.990Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-14T04:45:44.991Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:44.993Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:44.995Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:44.996Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:44.997Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:44.998Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-14T04:45:44.999Z\"}\n"
+        },
+        {
+          "name": "OS artifact manifest contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/artifacts-legacy-contract.test.ts"
+          ],
+          "ruleId": "obsolete-metering-artifact-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 355,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-scheduled-maintenance-streams-artifacts-and-reports\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/artifacts-legacy-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:45:45\n\u001b[2m   Duration \u001b[22m 109ms\u001b[2m (transform 17ms, setup 0ms, import 22ms, tests 5ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 65,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.655917ms)\n✔ parseCliArguments selects GraphQL generation mode (0.052167ms)\n✔ parseCliArguments selects migration generation mode (0.057958ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.095166ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.059459ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.05125ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.159125ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (1.118875ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.303834ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.077458ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.171709ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.287459ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.080417ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.075208ms)\n✔ server lint configuration resolves the existing workspace rules project (0.33125ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.079208ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.144084ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.061333ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.086292ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.15075ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.106834ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.0985ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 40.033375\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 130,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.08ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [2.26ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.04ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [124.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 786,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.264083ms)\n✔ the configured TypeORM wrapper resolves from the installed package (731.669667ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 763.488375\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

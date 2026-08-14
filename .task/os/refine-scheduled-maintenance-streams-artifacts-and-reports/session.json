@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a29f6cbae1e6",
+  "tmuxSession": "opensaas-os-refine-scheduled-maintenance-streams-artifacts-a-a29f6cba",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+  "branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-scheduled-maintenance-streams-artifacts-and-reports",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-scheduled-maintenance-streams-artifacts-and-reports",
+  "prNumber": 1937,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1937",
+  "createdAt": "2026-08-14T04:01:12.113Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-scheduled-maintenance-streams-artifacts-and-reports/.task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/session.json"
+}
