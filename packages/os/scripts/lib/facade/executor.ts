@@ -853,11 +853,19 @@ async function executeInternalTool<TData>(
   }
 
   if (internal === 'task.current') {
+    const scopedBranch = typeof input.branch === 'string' ? input.branch : undefined;
+    const scopedWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : undefined;
+    const scopedTask = scopedBranch && scopedWorktree ? {
+      branch: scopedBranch,
+      area: getAreaFromBranch(scopedBranch) || 'unknown',
+      worktree: scopedWorktree,
+    } : null;
     const task = getCurrentTask({
+      explicitBranch: scopedBranch,
       cwd: context.cwd,
       env: context.env,
-      currentTask: context.options.currentTask,
-      candidates: context.options.candidates,
+      currentTask: scopedTask ?? context.options.currentTask,
+      candidates: scopedTask ? [scopedTask] : context.options.candidates,
     });
     const result = createToolResult({
       ok: true,
@@ -1272,6 +1280,7 @@ function resolveGitRoot(cwd: string): string {
 function resolveWorkspaceCommandCwd(cwd: string, script: string, input?: ToolInput): string {
   if ((script === 'code-run' || script === 'code-call') && typeof input?.taskWorktree === 'string') return input.taskWorktree;
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
+  if (typeof input?.taskWorktree === 'string') return input.taskWorktree;
   return resolveControllerRoot(cwd) || cwd;
 }
 
