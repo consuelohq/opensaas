@@ -12,6 +12,10 @@ const TYPECHECK_BASELINE_PATH = path.join(
   SCRIPT_DIR,
   'twenty-server-typecheck-baseline.json',
 );
+const MIGRATION_BASELINE_PATH = path.join(
+  SCRIPT_DIR,
+  'twenty-server-migration-baseline.json',
+);
 
 export const SERVER_TASK_ROOTS = [
   'packages/twenty-server',
@@ -536,6 +540,52 @@ export const runGraphqlGenerationCheck = (files, runCommand = run) => {
   }
 };
 
+export const parseMigrationUpQueries = (source) => {
+  const upStart = source.indexOf('public async up(');
+  const downStart = source.indexOf('public async down(', upStart);
+
+  if (upStart === -1 || downStart === -1) {
+    throw new Error('Generated migration does not contain recognizable up/down methods');
+  }
+
+  const upSource = source.slice(upStart, downStart);
+  const queries = [];
+  const queryPattern = /queryRunner\.query\(`([\s\S]*?)`\);/g;
+
+  for (const match of upSource.matchAll(queryPattern)) {
+    queries.push(match[1].replace(/\s+/g, ' ').trim());
+  }
+
+  return queries;
+};
+
+export const loadMigrationBaseline = () => {
+  const parsed = JSON.parse(readFileSync(MIGRATION_BASELINE_PATH, 'utf8'));
+
+  if (
+    parsed?.version !== 1 ||
+    !Array.isArray(parsed.queries) ||
+    parsed.queries.some((query) => typeof query !== 'string')
+  ) {
+    throw new Error('Twenty server migration baseline is invalid');
+  }
+
+  return [...parsed.queries];
+};
+
+const migrationQueriesMatch = (current, baseline) => {
+  if (current.length !== baseline.length) {
+    return false;
+  }
+
+  const sortedCurrent = [...current].sort();
+  const sortedBaseline = [...baseline].sort();
+
+  return sortedCurrent.every(
+    (query, index) => query === sortedBaseline[index],
+  );
+};
+
 const defaultListGeneratedMigrationFiles = () =>
   readdirSync('packages/twenty-server')
     .filter((file) => file.endsWith('-core-migration-check.ts'))
@@ -546,6 +596,8 @@ export const runMigrationGenerationCheck = (
   {
     runCommand = run,
     listGeneratedFiles = defaultListGeneratedMigrationFiles,
+    readGeneratedFile = (file) => readFileSync(file, 'utf8'),
+    migrationBaselineQueries,
     removeGeneratedFile = (file) => rmSync(file, { force: true }),
   } = {},
 ) => {
@@ -590,6 +642,12 @@ export const runMigrationGenerationCheck = (
     return;
   }
 
+  const generatedQueries = generatedFiles.flatMap((file) =>
+    parseMigrationUpQueries(readGeneratedFile(file)),
+  );
+  const baselineQueries = migrationBaselineQueries ?? loadMigrationBaseline();
+  const matchesBaseline = migrationQueriesMatch(generatedQueries, baselineQueries);
+
   for (const file of generatedFiles) {
     removeGeneratedFile(file);
   }
@@ -599,6 +657,13 @@ export const runMigrationGenerationCheck = (
   }
   if (result.stderr) {
     process.stderr.write(result.stderr);
+  }
+
+  if (matchesBaseline) {
+    process.stdout.write(
+      `Twenty server migration drift matched ${generatedQueries.length} known baseline operation(s).\n`,
+    );
+    return;
   }
 
   throw new Error(

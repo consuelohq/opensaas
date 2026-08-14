@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/repair-stream-server-pending-core-migration",
+  "events": [
+    {
+      "id": "9d892d9b-ba4e-4057-8b72-5c42f4f64eac",
+      "occurred_at": "2026-08-14T03:03:42.070Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/database/typeorm/core/core.datasource.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-stream-server-pending-core-migration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-stream-server-pending-core-migration"
+      }
+    },
+    {
+      "id": "c693b5ba-5ce5-434e-872b-66502feaca45",
+      "occurred_at": "2026-08-14T03:05:27.230Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".github/workflows/ci-server.yaml",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-stream-server-pending-core-migration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-stream-server-pending-core-migration"
+      }
+    },
+    {
+      "id": "aa4d43f4-e6e4-4629-92a5-79437e2eaf7f",
+      "occurred_at": "2026-08-14T03:09:26.343Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/run-changed-server-task.test.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-stream-server-pending-core-migration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-stream-server-pending-core-migration"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-14T03:09:26.398Z"
+}
