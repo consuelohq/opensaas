@@ -21,6 +21,9 @@ export function registerHealthRoutes(
         runtime.workspaceRouteRegistry?.exec &&
         runtime.workspaceConnectorProvisioner,
       ),
+      managed_cloud_billing_configured: Boolean(
+        runtime.stripeSecretKey?.trim() && runtime.stripeWebhookSecret?.trim(),
+      ),
     }),
   );
   app.all('/.well-known/oauth-authorization-server', () =>

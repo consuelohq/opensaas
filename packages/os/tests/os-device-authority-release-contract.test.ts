@@ -137,6 +137,46 @@ describe('OS device authority release contract', () => {
     ])).not.toThrow();
   });
 
+  it('should accept Stripe billing as either fully absent or fully configured', async () => {
+    const {
+      OPTIONAL_DEVICE_AUTHORITY_STRIPE_SECRETS,
+      assertRequiredDeviceAuthorityWorkerSecrets,
+    } = await loadReadinessModule();
+    const required = [
+      { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+      { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+    ];
+
+    expect(OPTIONAL_DEVICE_AUTHORITY_STRIPE_SECRETS).toEqual([
+      'OS_STRIPE_SECRET_KEY',
+      'OS_STRIPE_WEBHOOK_SECRET',
+    ]);
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets(required)).not.toThrow();
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
+      ...required,
+      { name: 'OS_STRIPE_SECRET_KEY', type: 'secret_text' },
+      { name: 'OS_STRIPE_WEBHOOK_SECRET', type: 'secret_text' },
+    ])).not.toThrow();
+  });
+
+  it('should reject a half-configured Stripe billing secret pair', async () => {
+    const { assertRequiredDeviceAuthorityWorkerSecrets } = await loadReadinessModule();
+    const required = [
+      { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+      { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+    ];
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
+      ...required,
+      { name: 'OS_STRIPE_SECRET_KEY', type: 'secret_text' },
+    ])).toThrowError(
+      'Device authority Stripe billing secrets must be configured together: OS_STRIPE_SECRET_KEY, OS_STRIPE_WEBHOOK_SECRET',
+    );
+  });
+
   it('should reject release readiness when the Worker secret is missing', async () => {
     const { assertRequiredDeviceAuthorityWorkerSecrets } = await loadReadinessModule();
 
