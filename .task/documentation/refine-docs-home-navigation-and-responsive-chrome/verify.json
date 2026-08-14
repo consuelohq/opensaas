@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/documentation/refine-docs-home-navigation-and-responsive-chrome",
   "base": "origin/main",
-  "headSha": "96fc4761b2d917c5bf40ca42c7d241a653bc509f",
-  "changeHash": "6b35ded9aab0c578ea95fe38063af5c8a0c18f73418bf80b262bbb2a8249eb62",
+  "headSha": "88af9b520b4b2818c8d870e09785988bec271ced",
+  "changeHash": "1f749983138fc37bbb254a0e20fefe0f3ca5a218a7c9bbadd331a0eb1f462078",
   "changedFiles": [
     "packages/documentation/scripts/test-foundation-browser.mjs",
     "packages/documentation/src/components/BrowseMenu.astro",
@@ -18,7 +18,7 @@
     "packages/documentation/src/styles/docs.css",
     "packages/documentation/tests/foundation.test.ts"
   ],
-  "verifiedAt": "2026-08-14T08:56:13.815Z",
+  "verifiedAt": "2026-08-14T08:57:52.505Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -36,6 +36,7 @@
         ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/evidence-log.json",
         ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/read-log.json",
         ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/session.json",
+        ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/verify.json",
         ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/workpad.md",
         ".task/tasks/documentation/refine-docs-home-navigation-and-responsive-chrome.json",
         "packages/documentation/scripts/test-foundation-browser.mjs",
