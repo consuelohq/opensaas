@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-changed-server-ci-baseline",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1924,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1924",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1924",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1924/repair-changed-server-ci-baseline",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1924",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1924/repair-changed-server-ci-baseline",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-changed-server-ci-baseline",
+  "taskSession": "tsk_1c9d929b504f",
+  "tmuxSession": "opensaas-os-repair-changed-server-ci-baseline-1c9d929b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-changed-server-ci-baseline/.task/os/repair-changed-server-ci-baseline/session.json",
+  "createdAt": "2026-08-13T23:50:07.246Z"
+}
