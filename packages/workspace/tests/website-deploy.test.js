@@ -116,7 +116,7 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   const osReleaseIndex = workflow.indexOf('name: Release Consuelo OS');
   expect(provisioningSecretSyncIndex).toBeGreaterThan(-1);
   expect(osReleaseIndex).toBeGreaterThan(-1);
-  expect(provisioningSecretSyncIndex).toBeLessThan(osReleaseIndex);
+  expect(osReleaseIndex).toBeLessThan(provisioningSecretSyncIndex);
   expect(workflow).toContain('CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}');
   expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}');
   expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}');
