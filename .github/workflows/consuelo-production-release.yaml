@@ -282,9 +282,7 @@ jobs:
           RAILWAY_DIALER_PUBLIC_ORIGIN: ${{ vars.RAILWAY_DIALER_PUBLIC_ORIGIN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
-          LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN: ${{ secrets.LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN }}
-          LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID }}
-          LEADCONNECTOR_PRODUCTION_LOCATION_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_LOCATION_ID }}
+          LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256: ${{ vars.LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 }}
           LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
         run: |
           set -euo pipefail
@@ -296,15 +294,21 @@ jobs:
             RAILWAY_DIALER_PUBLIC_ORIGIN \
             CLOUDFLARE_ACCOUNT_ID \
             CLOUDFLARE_API_TOKEN \
-            LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN \
-            LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID \
-            LEADCONNECTOR_PRODUCTION_LOCATION_ID \
+            LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 \
             LEADCONNECTOR_PRODUCTION_EMBED_URL; do
             if [[ -z "${!name:-}" ]]; then
               echo "::error::Missing dialer production deployment setting: ${name}"
               exit 1
             fi
           done
+
+      - name: Verify approved Marketplace bootstrap source
+        env:
+          LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256: ${{ vars.LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 }}
+        run: >-
+          bun packages/lead-connector/scripts/verify-marketplace-bootstrap.ts
+          packages/lead-connector/dist/embed-app/consuelo-lead-connector-click-to-call.marketplace-loader.html
+          > "$RUNNER_TEMP/leadconnector-marketplace-bootstrap.json"
 
       - name: Link Railway release target
         env:
@@ -392,23 +396,13 @@ jobs:
           bun packages/lead-connector/scripts/verify-production-edge.ts
           > "$RUNNER_TEMP/leadconnector-edge.json"
 
-      - name: Reconcile GoHighLevel Custom Menu
-        env:
-          LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN: ${{ secrets.LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN }}
-          LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID }}
-          LEADCONNECTOR_PRODUCTION_LOCATION_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_LOCATION_ID }}
-          LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
-        run: >-
-          bun packages/lead-connector/scripts/configure-production-menu.ts
-          > "$RUNNER_TEMP/leadconnector-menu.json"
-
       - name: Write dialer release manifest
         run: >-
           bun packages/dialer-server/scripts/write-release-manifest.ts
           --railway "$RUNNER_TEMP/railway-deployment.json"
           --cloudflare "$RUNNER_TEMP/cloudflare-deployment.json"
           --edge "$RUNNER_TEMP/leadconnector-edge.json"
-          --custom-menu "$RUNNER_TEMP/leadconnector-menu.json"
+          --launcher-bootstrap "$RUNNER_TEMP/leadconnector-marketplace-bootstrap.json"
           --smoke "$RUNNER_TEMP/dialer-smoke.json"
           --build-marker packages/lead-connector/dist/embed-app/build-marker.json
           --output "$RUNNER_TEMP/dialer-release-manifest.json"
@@ -424,4 +418,4 @@ jobs:
       - name: Publish dialer release summary
         run: |
           echo "### Consuelo Dialer production release" >> "$GITHUB_STEP_SUMMARY"
-          jq -r '"- Git SHA: `\(.gitSha)`\n- Railway deployment: `\(.railway.deploymentId)` (`\(.railway.status)`)\n- Cloudflare version: `\(.cloudflare.versionId)`\n- GHL Custom Menu: `\(.customMenu.customMenuId)` read-back=`\(.customMenu.readBackVerified)`\n- Safe smoke: `\(.smoke.ok)`"' "$RUNNER_TEMP/dialer-release-manifest.json" >> "$GITHUB_STEP_SUMMARY"
+          jq -r '"- Git SHA: `\(.gitSha)`\n- Railway deployment: `\(.railway.deploymentId)` (`\(.railway.status)`)\n- Cloudflare version: `\(.cloudflare.versionId)`\n- Marketplace bootstrap SHA-256: `\(.launcherBootstrap.sha256)` (one-time install)\n- Safe smoke: `\(.smoke.ok)`"' "$RUNNER_TEMP/dialer-release-manifest.json" >> "$GITHUB_STEP_SUMMARY"
