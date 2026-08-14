@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/sync-documentation-stream-with-current-main",
+  "base": "origin/stream/documentation",
+  "headSha": "b2a1e3bb9aae1aad31af887db89ab0d0fcb74f09",
+  "changeHash": "ceee45a8566f3e06d8320b9f03296f6fbe7d9dadd696d17b49dadaf0a7a8ec24",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-14T09:51:22.358Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/sync-documentation-stream-with-current-main/current.json",
+        ".task/documentation/sync-documentation-stream-with-current-main/evidence-log.json",
+        ".task/documentation/sync-documentation-stream-with-current-main/read-log.json",
+        ".task/documentation/sync-documentation-stream-with-current-main/session.json",
+        ".task/documentation/sync-documentation-stream-with-current-main/verify.json",
+        ".task/documentation/sync-documentation-stream-with-current-main/workpad.md",
+        ".task/tasks/documentation/sync-documentation-stream-with-current-main.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

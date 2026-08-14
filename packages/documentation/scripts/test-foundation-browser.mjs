@@ -429,6 +429,42 @@ try {
     for (const label of ['Get started', 'Connect an agent', 'Browse tools']) {
       if (!(await page.getByRole('link', { name: label, exact: true }).isVisible())) throw new Error(`Home CTA ${label} is hidden on ${viewport.name}`);
     }
+    if ((await page.getByText('Consuelo OS documentation', { exact: true }).count()) !== 0) {
+      throw new Error(`Legacy home kicker is still visible on ${viewport.name}`);
+    }
+    const homeHeading = page.getByRole('heading', { level: 1, name: 'Digital workers built on Consuelo', exact: true });
+    if (!(await homeHeading.isVisible())) throw new Error(`New home hero heading is missing on ${viewport.name}`);
+    const homeTitleLines = homeHeading.locator('.docs-home-title-line');
+    const homeTitleTexts = (await homeTitleLines.allTextContents()).map((value) => value.trim());
+    if (JSON.stringify(homeTitleTexts) !== JSON.stringify(['Digital workers', 'built on Consuelo'])) {
+      throw new Error(`Home hero line composition is wrong on ${viewport.name}: ${JSON.stringify(homeTitleTexts)}`);
+    }
+    const homeTitleGeometry = await homeTitleLines.evaluateAll((elements) => elements.map((element) => ({
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      top: element.getBoundingClientRect().top,
+      height: element.getBoundingClientRect().height,
+    })));
+    if (homeTitleGeometry.length !== 2 || homeTitleGeometry.some((line) => line.scrollWidth - line.clientWidth > 1)) {
+      throw new Error(`Home hero title overflows on ${viewport.name}: ${JSON.stringify(homeTitleGeometry)}`);
+    }
+    if (homeTitleGeometry[1].top <= homeTitleGeometry[0].top + homeTitleGeometry[0].height - 2) {
+      throw new Error(`Home hero title is not rendered as two lines on ${viewport.name}: ${JSON.stringify(homeTitleGeometry)}`);
+    }
+    if (viewport.name === 'mobile') {
+      const [getStartedBox, connectBox, browseBox] = await Promise.all([
+        page.getByRole('link', { name: 'Get started', exact: true }).boundingBox(),
+        page.getByRole('link', { name: 'Connect an agent', exact: true }).boundingBox(),
+        page.getByRole('link', { name: 'Browse tools', exact: true }).boundingBox(),
+      ]);
+      if (!getStartedBox || !connectBox || !browseBox) throw new Error('Could not measure mobile home CTAs');
+      if (Math.abs(getStartedBox.y - connectBox.y) > 2 || browseBox.y <= getStartedBox.y + getStartedBox.height + 2) {
+        throw new Error(`Mobile home CTAs do not wrap like the intended compact Vercel layout: ${JSON.stringify({ getStartedBox, connectBox, browseBox })}`);
+      }
+      if (getStartedBox.width > viewport.width * 0.6) {
+        throw new Error(`Mobile primary CTA is still effectively full-width: ${JSON.stringify(getStartedBox)}`);
+      }
+    }
     const installCommand = page.locator('[data-home-install-command]');
     const installOverflow = await installCommand.evaluate((element) => element.scrollWidth - element.clientWidth);
     if (installOverflow > 1) throw new Error(`Home install command overflows by ${installOverflow}px on ${viewport.name}`);

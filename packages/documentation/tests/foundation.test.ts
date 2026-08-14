@@ -342,6 +342,13 @@ describe('foundation source contract', () => {
     expect(css).toContain('display: none');
     expect(pageTitle).toContain('isHome');
     for (const href of ['/start/', '/connect/', '/tools/']) expect(pageTitle).toContain(`href="${href}"`);
+    expect(pageTitle).not.toContain('docs-home-kicker');
+    expect(pageTitle).not.toContain('Consuelo OS documentation');
+    expect(pageTitle).toContain('<span class="docs-home-title-line">Digital workers</span>');
+    expect(pageTitle).toContain('<span class="docs-home-title-line">built on Consuelo</span>');
+    expect(home).toContain('title: Digital workers built on Consuelo');
+    expect(pageTitle).toContain('.docs-home-title-line');
+    expect(pageTitle).not.toContain('grid-column: 1 / -1');
     expect(home).toContain('data-home-install-command');
     expect(home).toContain('data-home-install-copy');
     expect(home).not.toContain('```bash');
