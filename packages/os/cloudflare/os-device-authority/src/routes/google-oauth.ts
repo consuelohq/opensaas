@@ -4,6 +4,10 @@ import { TTL_MS } from '../constants';
 import { json, methodNotAllowed, page, text } from '../http';
 import { normalizeAuthReturnPath } from '../security/web-auth-contract';
 import { resolveCanonicalDeviceIdentity } from '../services/canonical-device-identity';
+import {
+  CloudFirstOnboardingError,
+  resolveOrCreateCanonicalWebUser,
+} from '../services/cloud-first-onboarding';
 import type { DeviceAuthorityRuntime } from '../types';
 import { rand } from '../utils';
 import {
@@ -54,9 +58,11 @@ async function handleGoogleOAuthRequest(
       if (url.searchParams.get('purpose') === 'web') {
         const state = rand('web_state', 24);
         const nonce = rand('web_nonce', 24);
+        const intent = url.searchParams.get('intent') === 'signup' ? 'signup' : 'login';
         await input.store.putWebOAuthState({
           state,
           nonce,
+          intent,
           returnPath: normalizeAuthReturnPath(
             url.searchParams.get('return_to'),
           ),
@@ -150,13 +156,20 @@ async function handleGoogleOAuthRequest(
             fetchImpl,
             expectedNonce: webOAuthState.nonce,
           });
+          const user = await resolveOrCreateCanonicalWebUser({
+            runtime,
+            email: identity.email,
+          });
           return await completeWebGoogleLogin({
             runtime,
-            accountId: `google:${identity.sub}`,
+            accountId: user.userId,
             email: identity.email,
             returnPath: webOAuthState.returnPath,
           });
-        } catch {
+        } catch (error: unknown) {
+          if (error instanceof CloudFirstOnboardingError) {
+            return json({ error: error.code.toLowerCase() }, { status: error.status });
+          }
           return json({ error: 'invalid_login' }, { status: 400 });
         }
       }

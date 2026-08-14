@@ -85,6 +85,7 @@ export type Grant = {
 export type AccountWorkspace = {
   accountId: string;
   workspaceId?: string;
+  displayName?: string;
   workspaceSlug: string;
   workspaceHost: string;
   homeNodeId?: string;
@@ -175,8 +176,20 @@ export type OAuthState = {
 export type WebOAuthState = {
   state: string;
   nonce: string;
+  intent: 'login' | 'signup';
   returnPath: string;
   expiresAt: number;
+};
+
+export type WorkspaceCloudTrial = {
+  accountId: string;
+  workspaceId: string;
+  planId: 'standard';
+  provisioningJobId: string;
+  startedAt: number;
+  endsAt: number;
+  createdAt: number;
+  updatedAt: number;
 };
 
 export type WorkspaceMembership = {
@@ -332,6 +345,12 @@ export type Store = {
   delMcpOAuthRefreshToken(tokenHash: string): Promise<void>;
   putAccountWorkspace(workspace: AccountWorkspace): Promise<void>;
   byAccountWorkspace(accountId: string): Promise<AccountWorkspace | undefined>;
+  createWorkspaceCloudTrial(
+    trial: WorkspaceCloudTrial,
+  ): Promise<WorkspaceCloudTrial>;
+  byWorkspaceCloudTrial(
+    workspaceId: string,
+  ): Promise<WorkspaceCloudTrial | undefined>;
   putWorkspaceMembership(membership: WorkspaceMembership): Promise<void>;
   listWorkspaceMemberships(accountId: string): Promise<WorkspaceMembership[]>;
   putAuthoritySession(session: AuthoritySession): Promise<void>;
