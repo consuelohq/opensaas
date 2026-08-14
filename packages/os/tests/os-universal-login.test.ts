@@ -93,6 +93,7 @@ function createGoogleFetch(getNonce: () => string): typeof fetch {
 async function createAuthority(input: {
   store: MemoryStore;
   now?: () => number;
+  canonicalWorkspaceIds?: string[];
 }): Promise<{ handler: AuthorityHandler; nonce: { value: string } }> {
   const nonce = { value: '' };
   const repository = createMemoryInstallControlPlaneRepository();
@@ -100,7 +101,10 @@ async function createAuthority(input: {
   await repository.upsertUser({
     userId: 'user_canonical_123',
     email: 'ko@example.com',
-    workspaceIds: [],
+    workspaceIds: input.canonicalWorkspaceIds ?? [],
+    ...((input.canonicalWorkspaceIds?.length ?? 0) > 0
+      ? { workspaceMembershipVerifiedAt: nowIso }
+      : {}),
     createdAt: nowIso,
     updatedAt: nowIso,
   });
@@ -252,7 +256,7 @@ describe('Consuelo OS universal login', () => {
     expect(html).not.toMatch(/workspace_one|one\.consuelohq\.com|connector_|node_|token|secret/i);
   });
 
-  it('normalizes unsafe returns, validates Google nonce, and renders the zero-membership outcome without enumeration', async () => {
+  it('normalizes unsafe returns, validates Google nonce, and does not turn an existing zero-membership account into cloud signup', async () => {
     const store = createMemoryDeviceGrantStore();
     const { handler, nonce } = await createAuthority({ store });
     const login = await webLogin({
@@ -269,8 +273,9 @@ describe('Consuelo OS universal login', () => {
     const html = await workspaces.text();
 
     expect(workspaces.status).toBe(200);
-    expect(html).toContain('Name your workspace');
-    expect(html).toContain('Create workspace');
+    expect(html).toContain('Your workspace is not available yet');
+    expect(html).not.toContain('Name your workspace');
+    expect(html).not.toContain('Create workspace');
     expect(html).not.toMatch(/workspace_|\.consuelohq\.com|google-sub-123|ko@example\.com/);
 
     const replay = await handler(new Request(
@@ -278,6 +283,71 @@ describe('Consuelo OS universal login', () => {
     ));
     expect(replay.status).toBe(400);
     expect(await replay.text()).not.toMatch(/google-sub-123|ko@example\.com|workspace_/);
+  });
+
+  it('routes an existing canonical login through the same verified Google identity legacy workspace instead of cloud signup', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await store.putAccountWorkspace({
+      accountId: 'google:google-sub-123',
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+      homeNodeId: 'internal',
+      defaultNodeId: 'internal',
+      updatedAt: baseNow,
+    });
+    const { handler, nonce } = await createAuthority({
+      store,
+      canonicalWorkspaceIds: ['workspace_internal'],
+    });
+    const login = await webLogin({ handler, nonce });
+    const workspaces = await handler(
+      new Request(origin + '/auth/workspaces?return_to=/', {
+        headers: {
+          cookie: cookieHeader({
+            '__Host-consuelo_os_authority': login.authorityCookie,
+          }),
+        },
+      }),
+    );
+
+    expect(workspaces.status).toBe(302);
+    const destination = new URL(workspaces.headers.get('location') ?? '');
+    expect(destination.hostname).toBe('internal.consuelohq.com');
+    expect(destination.pathname).toBe('/auth/consume');
+  });
+
+  it('does not attach a canonical login to a legacy workspace that conflicts with canonical membership evidence', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await store.putAccountWorkspace({
+      accountId: 'google:google-sub-123',
+      workspaceId: 'workspace_other',
+      workspaceSlug: 'other',
+      workspaceHost: 'other.consuelohq.com',
+      homeNodeId: 'other',
+      defaultNodeId: 'other',
+      updatedAt: baseNow,
+    });
+    const { handler, nonce } = await createAuthority({
+      store,
+      canonicalWorkspaceIds: ['workspace_expected'],
+    });
+    const login = await webLogin({ handler, nonce });
+    const workspaces = await handler(
+      new Request(origin + '/auth/workspaces', {
+        headers: {
+          cookie: cookieHeader({
+            '__Host-consuelo_os_authority': login.authorityCookie,
+          }),
+        },
+      }),
+    );
+    const html = await workspaces.text();
+
+    expect(workspaces.status).toBe(200);
+    expect(html).toContain('Your workspace is not available yet');
+    expect(html).not.toContain('other.consuelohq.com');
+    expect(html).not.toContain('Create workspace');
   });
 
   it('auto-selects one active membership, consumes a host-bound handoff once, and gates protected edge routes with a host-only session', async () => {

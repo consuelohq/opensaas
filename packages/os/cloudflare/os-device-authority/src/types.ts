@@ -206,6 +206,7 @@ export type AuthoritySession = {
   tokenHash: string;
   accountId: string;
   email: string;
+  cloudOnboardingEligible?: boolean;
   csrfToken: string;
   issuedAt: number;
   expiresAt: number;

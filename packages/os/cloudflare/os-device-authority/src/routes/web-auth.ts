@@ -337,6 +337,7 @@ export async function completeWebGoogleLogin(input: {
   accountId: string;
   email: string;
   returnPath: string;
+  cloudOnboardingEligible: boolean;
 }): Promise<Response> {
   try {
     const token = rand('was', 32);
@@ -345,6 +346,7 @@ export async function completeWebGoogleLogin(input: {
       tokenHash: await hash(token),
       accountId: input.accountId,
       email: input.email,
+      cloudOnboardingEligible: input.cloudOnboardingEligible,
       csrfToken: rand('csrf', 24),
       issuedAt: nowMs,
       expiresAt: nowMs + AUTHORITY_SESSION_TTL_MS,
@@ -390,6 +392,24 @@ function noMembershipPage(csrfToken: string): string {
   });
 }
 
+function existingAccountNoWorkspacePage(): string {
+  return authShell({
+    title: 'Workspace unavailable',
+    topActionHref: '/login/google/start?purpose=web&intent=login',
+    topActionLabel: 'Sign in again',
+    body: `<section class="auth-card"><h1>Your workspace is not available yet</h1><p class="lede">You are signed in to an existing Consuelo account, so we will not create a new cloud workspace automatically. If you already installed Consuelo OS, make sure that installation is online and sign in again.</p></section>`,
+  });
+}
+
+export function accountNotFoundPage(): string {
+  return authShell({
+    title: 'Account not found',
+    topActionHref: '/',
+    topActionLabel: 'Home',
+    body: `<section class="auth-card"><h1>No Consuelo account found</h1><p class="lede">That Google account is not connected to Consuelo yet.</p><a class="provider-button" href="/login/google/start?purpose=web&amp;intent=signup">Create an account</a></section>`,
+  });
+}
+
 function provisioningPage(input: {
   jobId: string;
   status: string;
@@ -431,7 +451,13 @@ async function handleWebAuthRequest(
     );
     const returnPath = normalizeAuthReturnPath(url.searchParams.get('return_to'));
     const choice = resolveMembershipChoice(memberships);
-    if (choice.kind === 'none') return text(noMembershipPage(session.csrfToken));
+    if (choice.kind === 'none') {
+      return text(
+        session.cloudOnboardingEligible === true
+          ? noMembershipPage(session.csrfToken)
+          : existingAccountNoWorkspacePage(),
+      );
+    }
     if (choice.kind === 'single') {
       const membership = memberships[0];
       if (!membership) return json({ error: 'membership_not_found' }, { status: 404 });
@@ -455,6 +481,9 @@ async function handleWebAuthRequest(
     }
     const session = await authoritySession(request, runtime);
     if (!session) return json({ error: 'authority_session_required' }, { status: 401 });
+    if (session.cloudOnboardingEligible !== true) {
+      return json({ error: 'cloud_onboarding_not_available' }, { status: 403 });
+    }
     const body = await params(request);
     if (body.get('csrf_token') !== session.csrfToken) {
       return json({ error: 'csrf_failed' }, { status: 403 });
