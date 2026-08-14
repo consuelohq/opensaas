@@ -4,8 +4,8 @@
   "mode": "full",
   "branch": "task/documentation/refine-mobile-docs-shell-vercel-style-navigation-and-editorial-theme",
   "base": "origin/main",
-  "headSha": "ac3e8adc148c2d2a9940d5dccd8341ec510ea9ae",
-  "changeHash": "cbfca4b13842de14abe06b9affb6eeb5d7c3c91ccaffc191d3f06a3f4dd2fe30",
+  "headSha": "ae93ea48df641746599ad99f2c3f5c2f443ae2e6",
+  "changeHash": "8a9c1fd68b6ddd23ae0cb6785c88fbaa9bc4277d0cf847abd02fb5cab56d6bf2",
   "changedFiles": [
     "packages/documentation/astro.config.mjs",
     "packages/documentation/bun.lock",
@@ -25,7 +25,7 @@
     "packages/documentation/tests/foundation.test.ts",
     "packages/documentation/tests/navigation-memory.test.ts"
   ],
-  "verifiedAt": "2026-08-14T08:10:21.648Z",
+  "verifiedAt": "2026-08-14T08:12:46.818Z",
   "review": {
     "skipped": false,
     "passed": true,
