@@ -361,6 +361,32 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused ChatGPT MCP OAuth contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts',
+      '--changed-file',
+      'packages/os/tests/operator-oauth-client.test.ts',
+      '--changed-file',
+      'packages/os/tests/os-device-authority-worker.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-chatgpt-mcp-oauth');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS ChatGPT MCP OAuth contracts',
+      'OS ChatGPT MCP OAuth syntax contracts',
+      'OS canonical device approval contracts',
+    ]);
+  });
+
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

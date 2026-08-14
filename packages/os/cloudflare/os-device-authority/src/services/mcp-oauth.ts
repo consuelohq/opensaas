@@ -35,6 +35,65 @@ import {
   redirectUri,
 } from './google-oauth';
 
+const CHATGPT_CALLBACK_ID_PATTERN = /^[A-Za-z0-9_-]{1,160}$/u;
+
+function chatGptClientMetadataCallbackId(value: string): string | undefined {
+  try {
+    const url = new URL(value);
+    if (
+      url.origin !== 'https://chatgpt.com' ||
+      url.username !== '' ||
+      url.password !== '' ||
+      url.search !== '' ||
+      url.hash !== ''
+    ) {
+      return undefined;
+    }
+    const match = /^\/oauth\/([^/]+)\/client\.json$/u.exec(url.pathname);
+    const callbackId = match?.[1];
+    return callbackId && CHATGPT_CALLBACK_ID_PATTERN.test(callbackId)
+      ? callbackId
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function chatGptRedirectCallbackId(value: string): string | undefined {
+  try {
+    const url = new URL(value);
+    if (
+      url.origin !== 'https://chatgpt.com' ||
+      url.username !== '' ||
+      url.password !== '' ||
+      url.search !== '' ||
+      url.hash !== ''
+    ) {
+      return undefined;
+    }
+    const match = /^\/connector\/oauth\/([^/]+)$/u.exec(url.pathname);
+    const callbackId = match?.[1];
+    return callbackId && CHATGPT_CALLBACK_ID_PATTERN.test(callbackId)
+      ? callbackId
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function validChatGptClientMetadataBinding(
+  clientId: string,
+  redirectUri: string,
+): boolean {
+  const clientCallbackId = chatGptClientMetadataCallbackId(clientId);
+  const redirectCallbackId = chatGptRedirectCallbackId(redirectUri);
+  return (
+    clientCallbackId !== undefined &&
+    redirectCallbackId !== undefined &&
+    clientCallbackId === redirectCallbackId
+  );
+}
+
 export function authorizationServerMetadata(
   origin: string,
 ): Record<string, unknown> {
@@ -188,7 +247,6 @@ export async function startMcpOAuthAuthorization(input: {
   store: Store;
   origin: string;
   googleClientId: string;
-  fetchImpl: typeof fetch;
   nowMs: number;
 }): Promise<Response> {
   const url = new URL(input.request.url);
@@ -222,40 +280,18 @@ export async function startMcpOAuthAuthorization(input: {
       'invalid_request',
       'redirect_uri is not allowed.',
     );
-  if (isChatGptClientMetadataDocumentId(clientId)) {
-    try {
-      const metadataResponse = await input.fetchImpl(clientId, {
-        method: 'GET',
-        headers: { accept: 'application/json' },
-        redirect: 'error',
-      });
-      const metadata = (await metadataResponse.json().catch(() => null)) as
-        | Record<string, unknown>
-        | null;
-      const metadataRedirectUris = Array.isArray(metadata?.redirect_uris)
-        ? metadata.redirect_uris.filter(
-            (value): value is string => typeof value === 'string',
-          )
-        : [];
-      if (
-        !metadataResponse.ok ||
-        !metadata ||
-        metadata.client_id !== clientId ||
-        metadataRedirectUris.length === 0 ||
-        !metadataRedirectUris.includes(redirectUriValue)
-      ) {
-        return invalidOauthRequest(
-          'invalid_client',
-          'Client ID Metadata Document validation failed.',
-        );
-      }
-    } catch {
-      return invalidOauthRequest(
-        'invalid_client',
-        'Client ID Metadata Document validation failed.',
-      );
-    }
-  }
+  // Cloudflare Worker subrequests add provider headers that ChatGPT may reject when fetching a
+  // Client ID Metadata Document. For ChatGPT-owned URL client IDs, both URLs carry the same opaque
+  // callback id on the trusted chatgpt.com origin, so bind those ids locally instead of depending
+  // on an external metadata fetch at authorization time.
+  if (
+    isChatGptClientMetadataDocumentId(clientId) &&
+    !validChatGptClientMetadataBinding(clientId, redirectUriValue)
+  )
+    return invalidOauthRequest(
+      'invalid_client',
+      'Client ID Metadata Document validation failed.',
+    );
   if (!codeChallenge || codeChallengeMethod !== 'S256')
     return invalidOauthRequest('invalid_request', 'PKCE S256 is required.');
   let workspaceHost: string;

@@ -667,13 +667,24 @@ describe('os device authority worker', () => {
 
   it('should support ChatGPT CIMD clients and enforce resource echo during MCP OAuth token exchange', async () => {
     const store = createMemoryDeviceGrantStore();
+    const clientId =
+      'https://chatgpt.com/oauth/consuelo-test-client/client.json';
     const handler = createOsDeviceAuthorityHandler({
       store,
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
       googleOAuthClientSecret: 'test-google-client-secret',
-      fetchImpl: googleFetch,
+      fetchImpl: async (input, init) => {
+        const url =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input.url;
+        if (url === clientId) throw new Error('unexpected ChatGPT CIMD fetch');
+        return await googleFetch(input, init);
+      },
     });
     const verifier = 'test-cimd-pkce-verifier';
     const challenge = b64(
@@ -684,9 +695,8 @@ describe('os device authority worker', () => {
         ),
       ),
     );
-    const clientId =
-      'https://chatgpt.com/oauth/consuelo-os/dynamic-workspace/client.json';
-    const redirectUri = 'https://chatgpt.com/connector/oauth/callback';
+    const redirectUri =
+      'https://chatgpt.com/connector/oauth/consuelo-test-client';
     const workspaceSlug = 'dynamic-' + crypto.randomUUID().slice(0, 8);
     const workspaceHost = workspaceSlug + '.consuelohq.com';
     const resource = 'https://' + workspaceHost + '/mcp';
@@ -812,7 +822,7 @@ describe('os device authority worker', () => {
   it('should reject a ChatGPT Client ID Metadata Document that does not bind the requested redirect URI', async () => {
     const store = createMemoryDeviceGrantStore();
     const clientId =
-      'https://chatgpt.com/oauth/consuelo-os/untrusted-redirect/client.json';
+      'https://chatgpt.com/oauth/consuelo-test-client/client.json';
     const handler = createOsDeviceAuthorityHandler({
       store,
       origin,
@@ -826,16 +836,7 @@ describe('os device authority worker', () => {
             : input instanceof URL
               ? input.toString()
               : input.url;
-        if (url === clientId) {
-          return new Response(JSON.stringify({
-            client_id: clientId,
-            client_name: 'ChatGPT',
-            redirect_uris: ['https://chatgpt.com/connector/oauth/other-callback'],
-          }), {
-            status: 200,
-            headers: { 'content-type': 'application/json' },
-          });
-        }
+        if (url === clientId) throw new Error('unexpected ChatGPT CIMD fetch');
         return await googleFetch(input, init);
       },
     });
@@ -844,7 +845,7 @@ describe('os device authority worker', () => {
       `${origin}/oauth/authorize?${new URLSearchParams({
         response_type: 'code',
         client_id: clientId,
-        redirect_uri: 'https://chatgpt.com/connector/oauth/callback',
+        redirect_uri: 'https://chatgpt.com/connector/oauth/other-client',
         scope: 'mcp:read',
         resource: 'https://workspace.consuelohq.com/mcp',
         state: 'chatgpt-state',
