@@ -41,6 +41,7 @@ PATH="${WORKSPACE_WATCHDOG_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:
 export PATH
 
 workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
+caddy_label="${WORKSPACE_WATCHDOG_CADDY_LABEL:-${CADDY_DAEMON_LABEL:-com.consuelo.caddy}}"
 external_label="${WORKSPACE_WATCHDOG_EXTERNAL_LABEL:-${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}}"
 min_restart_gap_seconds="${WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS:-60}"
 local_tcp_failure_threshold="${WORKSPACE_WATCHDOG_LOCAL_TCP_FAILURE_THRESHOLD:-3}"
@@ -51,7 +52,7 @@ http_connect_timeout_seconds="${WORKSPACE_WATCHDOG_HTTP_CONNECT_TIMEOUT_SECONDS:
 http_timeout_seconds="${WORKSPACE_WATCHDOG_HTTP_TIMEOUT_SECONDS:-5}"
 max_restarts_per_window="${WORKSPACE_WATCHDOG_MAX_RESTARTS_PER_WINDOW:-3}"
 restart_window_seconds="${WORKSPACE_WATCHDOG_RESTART_WINDOW_SECONDS:-600}"
-local_port="${WORKSPACE_WATCHDOG_LOCAL_PORT:-${WORKSPACE_DAEMON_PORT:-${PORT:-46321}}}"
+local_port="${WORKSPACE_WATCHDOG_LOCAL_PORT:-${CONSUELO_CADDY_INGRESS_PORT:-46320}}"
 local_health_url="${WORKSPACE_WATCHDOG_LOCAL_URL:-http://127.0.0.1:${local_port}/health}"
 consuelo_home="${CONSUELO_HOME:-${WORKSPACE_DAEMON_CONSUELO_HOME:-${HOME:-/Users/$(id -un)}/.consuelo}}"
 consuelo_cli="${WORKSPACE_WATCHDOG_CONSUELO_CLI:-$consuelo_home/bin/consuelo}"
@@ -318,7 +319,7 @@ if ! local_port_listening; then
   local_tcp_failures="$(increment_counter "$local_tcp_failure_file")"
   log "local tcp probe failed on port $local_port (consecutive=$local_tcp_failures)"
   if [ "$local_tcp_failures" -ge "$local_tcp_failure_threshold" ]; then
-    maybe_restart "$workspace_label" "local tcp probe failed ${local_tcp_failures} times"
+    maybe_restart "$caddy_label" "Caddy ingress tcp probe failed ${local_tcp_failures} times"
     reset_counter "$local_tcp_failure_file"
   fi
   exit 0
@@ -329,7 +330,7 @@ if ! healthy_http "$local_health_url"; then
   local_http_failures="$(increment_counter "$local_http_failure_file")"
   log "local http health failed for $local_health_url (consecutive=$local_http_failures)"
   if [ "$local_http_failures" -ge "$local_http_failure_threshold" ]; then
-    maybe_restart "$workspace_label" "local http health failed ${local_http_failures} times"
+    maybe_restart "$workspace_label" "pooled OS health failed ${local_http_failures} times"
     reset_counter "$local_http_failure_file"
   fi
   exit 0

@@ -279,6 +279,25 @@ function bootstrapLaunchAgent() {
   runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
 }
 
+function kickstartOrBootstrapLaunchAgent() {
+  try {
+    runRequired(
+      'launchctl',
+      ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`],
+      'launchctl kickstart',
+    );
+  } catch (error) {
+    if (
+      !existsSync(PLIST)
+      || !(error instanceof Error)
+      || !/could not find service/i.test(error.message)
+    ) {
+      throw error;
+    }
+    bootstrapLaunchAgent();
+  }
+}
+
 function isHealthyRollingPool(pool) {
   return Boolean(
     pool
@@ -361,11 +380,7 @@ function runReload({ useLaunchd }) {
     const scrubbedRetiredCredential = scrubRetiredLaunchdCredentials();
     stopConflictingLaunchAgents();
     if (isLaunchdLoaded() && !scrubbedRetiredCredential) {
-      runRequired(
-        'launchctl',
-        ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`],
-        'launchctl kickstart',
-      );
+      kickstartOrBootstrapLaunchAgent();
     } else {
       if (scrubbedRetiredCredential && isLaunchdLoaded()) bootoutLaunchAgent();
       bootstrapLaunchAgent();
@@ -444,7 +459,7 @@ switch (command) {
     if (hasLaunchdPlist) {
       const scrubbedRetiredCredential = scrubRetiredLaunchdCredentials();
       if (useLaunchd && !scrubbedRetiredCredential) {
-        runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
+        kickstartOrBootstrapLaunchAgent();
       } else {
         if (scrubbedRetiredCredential && useLaunchd) bootoutLaunchAgent();
         bootstrapLaunchAgent();
