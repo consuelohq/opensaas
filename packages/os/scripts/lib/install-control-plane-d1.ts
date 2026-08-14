@@ -15,6 +15,7 @@ import {
   type InstallControlPlaneIngestOptions,
   type InstallControlPlanePruneResult,
   type InstallControlPlaneRepository,
+  type InstallControlPlaneCanonicalUser,
   type InstallControlPlaneUserRecord,
 } from './install-control-plane';
 
@@ -68,7 +69,10 @@ type InstallUserRow = {
   updated_at: string;
 };
 
-type InstallWorkspaceRow = { workspace_id: string };
+type InstallWorkspaceRow = {
+  workspace_id: string;
+  verified_at?: string | null;
+};
 type InstallDiagnosticRow = {
   bundle_id: string;
   install_id: string;
@@ -432,16 +436,59 @@ export function createCloudflareD1InstallControlPlaneRepository(
           await db
             .prepare(
               [
-                'INSERT INTO os_install_user_workspaces (user_id, workspace_id, created_at, updated_at)',
-                'VALUES (?, ?, ?, ?)',
-                'ON CONFLICT(user_id, workspace_id) DO UPDATE SET updated_at = MAX(os_install_user_workspaces.updated_at, excluded.updated_at)',
+                'INSERT INTO os_install_user_workspaces (user_id, workspace_id, created_at, updated_at, verified_at)',
+                'VALUES (?, ?, ?, ?, ?)',
+                'ON CONFLICT(user_id, workspace_id) DO UPDATE SET',
+                'updated_at = MAX(os_install_user_workspaces.updated_at, excluded.updated_at),',
+                'verified_at = CASE',
+                'WHEN excluded.verified_at IS NULL THEN os_install_user_workspaces.verified_at',
+                'WHEN os_install_user_workspaces.verified_at IS NULL THEN excluded.verified_at',
+                'WHEN excluded.verified_at > os_install_user_workspaces.verified_at THEN excluded.verified_at',
+                'ELSE os_install_user_workspaces.verified_at END',
               ].join(' '),
             )
-            .bind(record.userId, workspaceId, record.createdAt, record.updatedAt)
+            .bind(
+              record.userId,
+              workspaceId,
+              record.createdAt,
+              record.updatedAt,
+              record.workspaceMembershipVerifiedAt ?? null,
+            )
             .run();
         }
       } catch (error: unknown) {
         throw d1Error('user upsert', error);
+      }
+    },
+
+    async findCanonicalUsersByEmail(email): Promise<InstallControlPlaneCanonicalUser[]> {
+      try {
+        const normalized = email.trim().toLowerCase();
+        if (!normalized) return [];
+        const userRows = await rows<Pick<InstallUserRow, 'user_id' | 'email'>>(
+          db,
+          'SELECT user_id, email FROM os_install_users WHERE LOWER(TRIM(email)) = ? ORDER BY user_id ASC LIMIT 2',
+          [normalized],
+        );
+        const users: InstallControlPlaneCanonicalUser[] = [];
+        for (const user of userRows) {
+          const workspaceRows = await rows<InstallWorkspaceRow>(
+            db,
+            'SELECT workspace_id, verified_at FROM os_install_user_workspaces WHERE user_id = ? AND verified_at IS NOT NULL ORDER BY verified_at DESC, workspace_id ASC',
+            [user.user_id],
+          );
+          users.push({
+            userId: user.user_id,
+            ...(user.email ? { email: user.email.trim().toLowerCase() } : {}),
+            workspaceMemberships: workspaceRows.map((workspace) => ({
+              workspaceId: workspace.workspace_id,
+              verifiedAt: workspace.verified_at ?? '',
+            })),
+          });
+        }
+        return users;
+      } catch (error: unknown) {
+        throw d1Error('canonical user email lookup', error);
       }
     },
 

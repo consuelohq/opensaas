@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2613,
-    "mappedTestCount": 2532,
-    "unmappedTestCount": 81,
-    "ruleCount": 49,
-    "explicitRuleCount": 30,
+    "testFileCount": 2628,
+    "mappedTestCount": 2544,
+    "unmappedTestCount": 84,
+    "ruleCount": 50,
+    "explicitRuleCount": 31,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 244,
+      "packages/os/tests": 253,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 58,
+      "packages/workspace/tests": 61,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -340,6 +340,7 @@
       "packages/os/tools/artifacts": 1,
       "packages/os/tools/codemode": 1,
       "packages/os/tools/composed": 1,
+      "packages/os/tools/daily-schedules": 1,
       "packages/os/tools/decision-engine": 1,
       "packages/os/tools/filesystem": 1,
       "packages/os/tools/generation": 1,
@@ -350,8 +351,10 @@
       "packages/os/tools/mac": 1,
       "packages/os/tools/media": 1,
       "packages/os/tools/memory": 1,
+      "packages/os/tools/monitor": 1,
       "packages/os/tools/railway": 1,
       "packages/os/tools/review": 1,
+      "packages/os/tools/security": 1,
       "packages/os/tools/sentry": 1,
       "packages/os/tools/stream": 1,
       "packages/os/tools/subagent": 1,
@@ -631,7 +634,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 520,
+      "test": 535,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -704,7 +707,9 @@
             "bun",
             "test",
             "packages/workspace/tests/task-session.test.js",
-            "packages/workspace/tests/task-meta.test.ts"
+            "packages/workspace/tests/task-meta.test.ts",
+            "packages/workspace/tests/task-init.test.js",
+            "packages/workspace/tests/task-selection.test.js"
           ]
         }
       ],
@@ -1154,6 +1159,56 @@
       "critical": true,
       "exclusive": true,
       "reason": "Launcher onboarding copy-interaction changes must prove generated UI behavior, Sites materialization, and Astro source validity without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-device-approval-canonical-identity",
+      "source": [
+        "packages/consuelo-website/src/pages/login/device.astro",
+        "packages/os/cloudflare/os-device-authority/src/routes/device.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/canonical-device-identity.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/install-identity.ts",
+        "packages/os/cloudflare/workspace-edge/migrations/0005_install_user_workspace_verification.sql",
+        "packages/os/scripts/lib/install-control-plane-d1.ts",
+        "packages/os/scripts/lib/install-control-plane.ts",
+        "packages/os/tests/canonical-device-identity.test.ts",
+        "packages/os/tests/install-control-plane-d1.test.ts",
+        "packages/os/tests/install-control-plane.test.ts",
+        "packages/os/tests/internal-dashboard-integration.test.ts",
+        "packages/os/tests/native-google-device-approval.test.ts",
+        "packages/os/tests/oauth-device-page-contract.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS canonical device approval syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -3037,7 +3092,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/caddy-ha-watchdog-migration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/canonical-device-identity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3168,6 +3233,11 @@
     },
     {
       "path": "packages/os/tests/daemon-bun-path.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/daily-schedules.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3488,6 +3558,11 @@
     },
     {
       "path": "packages/os/tests/launcher-onboarding.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/legacy-system-daemons.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3847,6 +3922,16 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/monitor-errors.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/native-google-device-approval.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/native-lifecycle-client.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3957,6 +4042,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/os-steering-tool-trace.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/os-universal-login.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4043,6 +4133,11 @@
     },
     {
       "path": "packages/os/tests/security-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/security-scan.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4262,6 +4357,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/trace-search-query.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/trace-site-inspector-interactions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4477,6 +4577,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tools/daily-schedules/handler.test.ts",
+      "group": "packages/os/tools/daily-schedules",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tools/decision-engine/handler.test.ts",
       "group": "packages/os/tools/decision-engine",
       "kind": "test"
@@ -4547,6 +4652,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tools/monitor/handler.test.ts",
+      "group": "packages/os/tools/monitor",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tools/railway/handler.test.ts",
       "group": "packages/os/tools/railway",
       "kind": "test"
@@ -4554,6 +4664,11 @@
     {
       "path": "packages/os/tools/review/handler.test.ts",
       "group": "packages/os/tools/review",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/security/handler.test.ts",
+      "group": "packages/os/tools/security",
       "kind": "test"
     },
     {
@@ -14927,6 +15042,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/review-generated-artifact-contract.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/review-run-state.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -14977,6 +15097,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/task-init.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/task-meta.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -14998,6 +15123,11 @@
     },
     {
       "path": "packages/workspace/tests/task-push-session.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-selection.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -15134,6 +15264,7 @@
     "packages/workspace/tests/pr-review.test.js",
     "packages/workspace/tests/research-ingest.test.js",
     "packages/workspace/tests/review-documentation-opportunity.test.js",
+    "packages/workspace/tests/review-generated-artifact-contract.test.js",
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/stream-lifecycle.test.ts",
     "packages/workspace/tests/stream-sync-node-modules.test.js",
@@ -15141,11 +15272,13 @@
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
     "packages/workspace/tests/task-hook-workflow-contract.test.ts",
     "packages/workspace/tests/task-hooks.test.ts",
+    "packages/workspace/tests/task-init.test.js",
     "packages/workspace/tests/task-meta.test.ts",
     "packages/workspace/tests/task-node-modules.test.js",
     "packages/workspace/tests/task-pr-repository-recovery.test.ts",
     "packages/workspace/tests/task-push-local-sync.test.ts",
     "packages/workspace/tests/task-push-session.test.ts",
+    "packages/workspace/tests/task-selection.test.js",
     "packages/workspace/tests/task-selector-pr-ref.test.js",
     "packages/workspace/tests/task-session.test.js",
     "packages/workspace/tests/task-workpad.test.js",
