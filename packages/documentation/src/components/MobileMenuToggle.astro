@@ -1,0 +1,169 @@
+<docs-menu-toggle class="print:hidden" data-docs-menu-toggle aria-expanded="false">
+  <button
+    type="button"
+    aria-expanded="false"
+    aria-label={Astro.locals.t('menuButton.accessibleLabel')}
+    aria-controls="starlight__sidebar"
+  >
+    <svg class="menu-open-icon" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+    <svg class="menu-close-icon" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="m6 6 12 12M18 6 6 18" />
+    </svg>
+  </button>
+</docs-menu-toggle>
+
+<script>
+  import { gsap } from 'gsap';
+
+  class DocsMenuToggle extends HTMLElement {
+    button: HTMLButtonElement | null = null;
+    pane: HTMLElement | null = null;
+    reducedMotion: MediaQueryList | null = null;
+    desktopQuery: MediaQueryList | null = null;
+    closing = false;
+
+    connectedCallback() {
+      if (this.dataset.bound === 'true') return;
+      this.dataset.bound = 'true';
+      this.button = this.querySelector('button');
+      this.pane = this.parentElement?.querySelector('#starlight__sidebar') as HTMLElement | null;
+      this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      this.desktopQuery = window.matchMedia('(min-width: 72rem)');
+      this.button?.addEventListener('click', () => this.toggle());
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && this.expanded) this.close(true);
+      });
+      this.pane?.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target instanceof HTMLAnchorElement) this.close();
+      });
+      this.desktopQuery.addEventListener('change', () => this.syncViewport());
+      this.syncViewport();
+    }
+
+    get expanded() {
+      return this.getAttribute('aria-expanded') === 'true';
+    }
+
+    setExpanded(expanded: boolean) {
+      this.setAttribute('aria-expanded', String(expanded));
+      this.button?.setAttribute('aria-expanded', String(expanded));
+      document.body.toggleAttribute('data-mobile-menu-expanded', expanded);
+    }
+
+    syncViewport() {
+      if (!this.pane) return;
+      if (this.desktopQuery?.matches) {
+        this.setExpanded(false);
+        this.pane.style.visibility = '';
+        this.pane.style.pointerEvents = '';
+        gsap.set(this.pane, { clearProps: 'transform' });
+        return;
+      }
+      if (!this.expanded) {
+        this.pane.style.visibility = 'hidden';
+        this.pane.style.pointerEvents = 'none';
+        gsap.set(this.pane, { xPercent: 100 });
+      }
+    }
+
+    open() {
+      if (!this.pane || this.desktopQuery?.matches) return;
+      this.closing = false;
+      this.pane.style.visibility = 'visible';
+      this.pane.style.pointerEvents = 'auto';
+      this.setExpanded(true);
+      if (this.reducedMotion?.matches) {
+        gsap.set(this.pane, { xPercent: 0 });
+      } else {
+        gsap.fromTo(this.pane, { xPercent: 100 }, { xPercent: 0, duration: 0.4, ease: 'power3.out' });
+      }
+    }
+
+    close(restoreFocus = false) {
+      if (!this.pane || !this.expanded || this.closing) return;
+      this.closing = true;
+      const finish = () => {
+        this.setExpanded(false);
+        this.pane!.style.visibility = 'hidden';
+        this.pane!.style.pointerEvents = 'none';
+        gsap.set(this.pane, { xPercent: 100 });
+        this.closing = false;
+        if (restoreFocus) this.button?.focus();
+      };
+      if (this.reducedMotion?.matches) {
+        finish();
+      } else {
+        gsap.to(this.pane, { xPercent: 100, duration: 0.3, ease: 'power3.in', onComplete: finish });
+      }
+    }
+
+    toggle() {
+      this.expanded ? this.close() : this.open();
+    }
+  }
+
+  if (!customElements.get('docs-menu-toggle')) customElements.define('docs-menu-toggle', DocsMenuToggle);
+</script>
+
+<style>
+  @layer starlight.core {
+    docs-menu-toggle {
+      display: block;
+      position: relative;
+      z-index: var(--sl-z-index-navbar);
+    }
+
+    button {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      color: var(--sl-color-white);
+      cursor: pointer;
+      display: inline-flex;
+      height: 2.5rem;
+      justify-content: center;
+      padding: 0.45rem;
+      position: fixed;
+      right: var(--sl-nav-pad-x);
+      top: calc((var(--sl-nav-height) - 2.5rem) / 2);
+      width: 2.5rem;
+      z-index: var(--sl-z-index-navbar);
+    }
+
+    button:hover,
+    button:focus-visible {
+      color: var(--docs-accent);
+    }
+
+    svg {
+      fill: none;
+      height: 1.45rem;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-width: 1.65;
+      width: 1.45rem;
+    }
+
+    .menu-close-icon {
+      display: none;
+    }
+
+    docs-menu-toggle[aria-expanded='true'] .menu-open-icon {
+      display: none;
+    }
+
+    docs-menu-toggle[aria-expanded='true'] .menu-close-icon {
+      display: block;
+    }
+
+    @media (min-width: 72rem) {
+      docs-menu-toggle {
+        display: none;
+      }
+    }
+  }
+</style>
