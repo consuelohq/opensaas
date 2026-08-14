@@ -15,6 +15,7 @@ import type {
   WorkspaceAgentStatus,
   WebOAuthState,
   WorkspaceBrowserSession,
+  WorkspaceCloudTrial,
   WorkspaceLoginHandoff,
   WorkspaceMembership,
 } from './types';
@@ -322,6 +323,32 @@ export class DurableStore implements Store {
       return await this.storage.get<AccountWorkspace>(`aw:${accountId}`);
     } catch {
       throw new Error('account workspace read failed');
+    }
+  }
+  async createWorkspaceCloudTrial(trial: WorkspaceCloudTrial) {
+    const create = async (storage: StorageLike) => {
+      const key = `wct:${trial.workspaceId}`;
+      const existing = await storage.get<WorkspaceCloudTrial>(key);
+      if (existing) return { ...existing };
+      await storage.put(key, trial);
+      return { ...trial };
+    };
+    try {
+      return this.storage.transaction
+        ? await this.storage.transaction((transaction) => create(transaction))
+        : await create(this.storage);
+    } catch {
+      throw new Error('workspace cloud trial create failed');
+    }
+  }
+  async byWorkspaceCloudTrial(workspaceId: string) {
+    try {
+      const trial = await this.storage.get<WorkspaceCloudTrial>(
+        `wct:${workspaceId}`,
+      );
+      return trial ? { ...trial } : undefined;
+    } catch {
+      throw new Error('workspace cloud trial read failed');
     }
   }
   async putWorkspaceMembership(membership: WorkspaceMembership) {
@@ -949,6 +976,7 @@ export function createMemoryDeviceGrantStore(): Store {
   const mcpTokens = new Map<string, McpOAuthAccessToken>();
   const mcpRefreshTokens = new Map<string, McpOAuthRefreshToken>();
   const accountWorkspaces = new Map<string, AccountWorkspace>();
+  const workspaceCloudTrials = new Map<string, WorkspaceCloudTrial>();
   const workspaceMemberships = new Map<string, WorkspaceMembership>();
   const authoritySessions = new Map<string, AuthoritySession>();
   const workspaceLoginHandoffs = new Map<string, WorkspaceLoginHandoff>();
@@ -1074,6 +1102,16 @@ export function createMemoryDeviceGrantStore(): Store {
     byAccountWorkspace(accountId) {
       const workspace = accountWorkspaces.get(accountId);
       return Promise.resolve(workspace ? { ...workspace } : undefined);
+    },
+    createWorkspaceCloudTrial(trial) {
+      const existing = workspaceCloudTrials.get(trial.workspaceId);
+      if (existing) return Promise.resolve({ ...existing });
+      workspaceCloudTrials.set(trial.workspaceId, { ...trial });
+      return Promise.resolve({ ...trial });
+    },
+    byWorkspaceCloudTrial(workspaceId) {
+      const trial = workspaceCloudTrials.get(workspaceId);
+      return Promise.resolve(trial ? { ...trial } : undefined);
     },
     putWorkspaceMembership(membership) {
       workspaceMemberships.set(
