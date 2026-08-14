@@ -116,6 +116,7 @@ describe('documentation navigation', () => {
       { label: 'Connect', href: '/connect/' },
       { label: 'Nodes', href: '/nodes/' },
       { label: 'Tools', href: '/tools/' },
+      { label: 'Sites', href: '/sites/' },
       { label: 'Skills', href: '/skills/' },
       { label: 'Steering', href: '/steering/' },
       { label: 'Memory', href: '/memory/' },
@@ -142,12 +143,11 @@ describe('documentation navigation', () => {
       { label: 'How skills work', href: '/build/skills/how-skills-work/', current: true },
     ]);
     expect(getBreadcrumbs('/sites/publish/')).toEqual([
-      { label: 'Tools', href: '/tools/' },
-      { label: 'Sites' },
+      { label: 'Sites', href: '/sites/' },
       { label: 'Publish', href: '/sites/publish/', current: true },
     ]);
 
-    expect(footerSections).toHaveLength(10);
+    expect(footerSections).toHaveLength(11);
     expect(footerSections.find((section) => section.label === 'Start')?.links).toContainEqual({
       label: 'Install Consuelo OS',
       href: '/start/install-consuelo-os/',
@@ -174,21 +174,23 @@ describe('documentation navigation', () => {
 describe('foundation source contract', () => {
   const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
-  test('declares the ten approved top-level areas and Starlight overrides', () => {
+  test('declares the eleven approved top-level areas and Starlight overrides', () => {
     const config = read('astro.config.mjs');
     const navigation = read('src/lib/docs-navigation.ts');
-    for (const label of ['Start', 'Connect', 'Nodes', 'Tools', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference']) {
+    for (const label of ['Start', 'Connect', 'Nodes', 'Tools', 'Sites', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference']) {
       expect(navigation).toContain(`label: '${label}'`);
     }
     expect(navigation).not.toContain("label: 'Build with OS'");
     expect(config).toContain('PageTitle:');
     expect(config).toContain('Sidebar:');
     expect(config).toContain('Footer:');
+    expect(config).toContain('ThemeSelect:');
+    expect(config).toContain('MobileMenuFooter:');
     expect(config).toContain('customCss:');
   });
 
   test('scaffolds every top-level route', () => {
-    for (const route of ['start', 'connect', 'nodes', 'tools', 'skills', 'steering', 'memory', 'observe', 'secure', 'reference']) {
+    for (const route of ['start', 'connect', 'nodes', 'tools', 'sites', 'skills', 'steering', 'memory', 'observe', 'secure', 'reference']) {
       expect(existsSync(new URL(`../src/content/docs/${route}/index.mdx`, import.meta.url))).toBe(true);
     }
   });
@@ -219,17 +221,36 @@ describe('foundation source contract', () => {
     const footer = read('src/components/Footer.astro');
     const siteFooter = read('src/components/SiteFooter.astro');
     const card = read('src/components/mintlify/Card.astro');
+    const themeSelect = read('src/components/ThemeSelect.astro');
+    const mobileMenuFooter = read('src/components/MobileMenuFooter.astro');
+    const runtimeLanguageSelect = read('src/components/translation/RuntimeLanguageSelect.astro');
     const css = read('src/styles/docs.css');
 
     expect(sidebar).toContain('global-section-link');
     expect(sidebar).toContain('globalSectionLinks');
+    expect(sidebar).toContain('global-sidebar-mobile');
+    expect(sidebar).toContain('SidebarSublist sublist={navigation.entries}');
     expect(footer).toContain('SiteFooter');
     expect(footer).toContain('data-docs-site-footer-home');
     expect(siteFooter).toContain('footerSections');
     expect(siteFooter).toContain('data-docs-site-footer');
     expect(siteFooter).toContain('docs-registry-grid');
-    expect(card).toContain('border: 2px solid var(--sl-color-text-accent)');
+    expect(card).not.toContain('border: 2px solid var(--sl-color-text-accent)');
+    expect(card).toContain('border-color: var(--sl-color-gray-4)');
     expect(card).toContain(':focus:not(:focus-visible)');
+    expect(themeSelect).toContain('data-docs-theme-toggle');
+    expect(themeSelect).toContain('data-theme-value="auto"');
+    expect(themeSelect).toContain('data-theme-value="light"');
+    expect(themeSelect).toContain('data-theme-value="dark"');
+    expect(themeSelect).not.toContain('<select');
+    expect(mobileMenuFooter).toContain('SocialIcons');
+    expect(mobileMenuFooter).toContain('ThemeSelect');
+    expect(mobileMenuFooter).not.toContain('LanguageSelect');
+    expect(runtimeLanguageSelect).toContain('navigator.languages');
+    expect(runtimeLanguageSelect).toContain('resolvePreferredTranslationLanguage');
+    expect(runtimeLanguageSelect).not.toContain('Translate this page');
+    expect(runtimeLanguageSelect).not.toContain('<select');
+    expect(runtimeLanguageSelect).not.toContain('Show English');
     expect(css).toContain("#starlight__sidebar a:focus:not(:focus-visible)");
     expect(css).toContain("#starlight__sidebar a[aria-current='page']");
     expect(css).toContain('var(--sl-color-gray');

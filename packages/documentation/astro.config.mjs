@@ -20,6 +20,8 @@ export default defineConfig({
       components: {
         Head: './src/components/Head.astro',
         LanguageSelect: './src/components/translation/RuntimeLanguageSelect.astro',
+        ThemeSelect: './src/components/ThemeSelect.astro',
+        MobileMenuFooter: './src/components/MobileMenuFooter.astro',
         PageTitle: './src/components/PageTitle.astro',
         Sidebar: './src/components/Sidebar.astro',
         SiteTitle: './src/components/SiteTitle.astro',

@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/documentation/refine-docs-navigation-display-translation-and-connect-ia/workpad.md",
+    "packages/documentation/scripts/lib/documentation-browser-test.mjs",
+    "packages/documentation/scripts/test-build-browser.mjs",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/scripts/test-sites-browser.mjs",
+    "packages/documentation/scripts/test-translation.mjs",
+    "packages/documentation/src/styles/docs.css"
+  ],
+  "updatedAt": "2026-08-14T06:45:43.907Z"
+}

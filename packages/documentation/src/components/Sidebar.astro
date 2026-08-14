@@ -19,7 +19,7 @@ const navigation = selectSectionSidebar(
       <SidebarSublist sublist={navigation.entries} />
     </nav>
   ) : (
-    <nav aria-label="Documentation sections" class="global-sidebar">
+    <nav aria-label="Documentation sections" class="global-sidebar global-sidebar-desktop">
       <ul class="global-section-list">
         {globalSectionLinks.map((section) => (
           <li>
@@ -32,6 +32,14 @@ const navigation = selectSectionSidebar(
           </li>
         ))}
       </ul>
+    </nav>
+  )
+}
+
+{
+  navigation.mode === 'global' && (
+    <nav aria-label="Documentation sections" class="global-sidebar global-sidebar-mobile">
+      <SidebarSublist sublist={navigation.entries} />
     </nav>
   )
 }
@@ -103,6 +111,20 @@ const navigation = selectSectionSidebar(
     .global-section-link:focus-visible {
       outline: 2px solid color-mix(in srgb, var(--sl-color-white) 55%, transparent);
       outline-offset: 2px;
+    }
+
+    .global-sidebar-mobile {
+      display: none;
+    }
+
+    @media (max-width: 49.999rem) {
+      .global-sidebar-desktop {
+        display: none;
+      }
+
+      .global-sidebar-mobile {
+        display: block;
+      }
     }
   }
 </style>
