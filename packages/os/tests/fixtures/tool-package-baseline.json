@@ -1,4 +1,5 @@
 {
+  "version": 1,
   "definitions": [
     {
       "name": "aiReview",
@@ -2413,6 +2414,67 @@
       },
       "exampleInput": {
         "verify": true
+      },
+      "sessionRequired": false
+    },
+    {
+      "name": "dailySchedules.publish",
+      "methodPath": [
+        "dailySchedules",
+        "publish"
+      ],
+      "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
+      "category": "artifacts",
+      "underlying": "Consuelo durable artifact catalog",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 120000,
+      "inputSchema": "DailySchedulesPublishInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "daily-schedules",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "kind",
+            "flag": "--kind",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "sourceFile",
+            "flag": "--source-file",
+            "kind": "value"
+          },
+          {
+            "source": "content",
+            "flag": "--content",
+            "kind": "value"
+          },
+          {
+            "source": "format",
+            "flag": "--format",
+            "kind": "value"
+          },
+          {
+            "source": "date",
+            "flag": "--date",
+            "kind": "value"
+          },
+          {
+            "source": "title",
+            "flag": "--title",
+            "kind": "value"
+          }
+        ]
+      },
+      "exampleInput": {
+        "kind": "security-workpad",
+        "sourceFile": "/tmp/security-workpad.md"
       },
       "sessionRequired": false
     },
@@ -6237,6 +6299,32 @@
       "sessionRequired": false
     },
     {
+      "name": "monitor.errors",
+      "methodPath": [
+        "monitor",
+        "errors"
+      ],
+      "description": "analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates",
+      "category": "observability",
+      "underlying": "Consuelo canonical OS trace database and current OS tool contracts",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 120000,
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "monitor:errors",
+        "branchMode": "optional",
+        "arguments": []
+      },
+      "exampleInput": {},
+      "sessionRequired": false
+    },
+    {
       "name": "prReview",
       "methodPath": [
         "prReview"
@@ -6430,6 +6518,32 @@
       },
       "sessionRequired": true,
       "workflowRole": "validation.review"
+    },
+    {
+      "name": "security.scan",
+      "methodPath": [
+        "security",
+        "scan"
+      ],
+      "description": "run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths",
+      "category": "security",
+      "underlying": "Consuelo defensive repository security scanners",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 900000,
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "security:scan",
+        "branchMode": "optional",
+        "arguments": []
+      },
+      "exampleInput": {},
+      "sessionRequired": false
     },
     {
       "name": "sentry.config",

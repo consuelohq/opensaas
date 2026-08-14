@@ -87,6 +87,9 @@ declare const workspace: {
     call: (input: { language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" | "edit" | "verify"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     run: (input: { code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
+  dailySchedules: {
+    publish: (input: { kind: "security-scan" | "security-workpad" | "self-healing-workpad"; sourceFile?: string; content?: string; format?: "auto" | "json" | "markdown" | "text"; date?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
   deployment: {
     context: (input: { provider: "railway" | "vercel" | "cloudflare"; action: "auth" | "current"; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     deploy: (input: { provider: "railway" | "vercel" | "cloudflare"; action: "deploy" | "redeploy" | "promote"; target?: string; projectId?: string; serviceId?: string; source?: string; deploymentId?: string; environment?: string; wait?: boolean; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
@@ -195,11 +198,17 @@ declare const workspace: {
     svg: (input: { action: "create" | "inspect" | "render" | "measure" | "edit" | "verify" | "snapshot" | "restore"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: "png"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: "light" | "dark" | "no-preference" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     transcribe: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
+  monitor: {
+    errors: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
   research: {
     ingest: (input: { source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; memoryTitle?: string; memoryCategory?: string; noMemorySave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   review: {
     run: (input: { branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
+  security: {
+    scan: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   sentry: {
     config: (input: { verify?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
