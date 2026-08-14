@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'bun:test';
+import { createHash } from 'node:crypto';
 
-import { createLeadConnectorMarketplaceBootstrap } from './marketplace-bootstrap';
+import {
+  createLeadConnectorMarketplaceBootstrap,
+  verifyLeadConnectorMarketplaceBootstrap,
+} from './marketplace-bootstrap';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -16,8 +20,10 @@ describe('stable HighLevel Marketplace bootstrap', () => {
     expect(html).toContain(
       'https://calls.consuelohq.com/consuelo-lead-connector-click-to-call.js',
     );
-    expect(html).toContain('<link');
-    expect(html).toContain('<script');
+    expect(html.startsWith('<script>')).toBe(true);
+    expect(html).toContain("document.createElement('link')");
+    expect(html).toContain("document.createElement('script')");
+    expect(html).toContain('data-consuelo-dialer-loader');
     expect(html).not.toMatch(/authorization|bearer|token|secret/i);
   });
 
@@ -29,6 +35,27 @@ describe('stable HighLevel Marketplace bootstrap', () => {
     ).toThrow('Marketplace asset origin must use HTTPS');
   });
 
+  it('verifies the built loader against the approved one-time source SHA-256', () => {
+    const html = createLeadConnectorMarketplaceBootstrap({
+      assetOrigin: 'https://calls.consuelohq.com',
+    });
+    const sha256 = createHash('sha256').update(html).digest('hex');
+
+    expect(
+      verifyLeadConnectorMarketplaceBootstrap({
+        contents: html,
+        expectedSha256: sha256,
+      }),
+    ).toEqual({ sha256, installationMode: 'one-time' });
+
+    expect(() =>
+      verifyLeadConnectorMarketplaceBootstrap({
+        contents: `${html}<!-- drift -->`,
+        expectedSha256: sha256,
+      }),
+    ).toThrow('does not match the approved one-time bootstrap source');
+  });
+
   it('is emitted as a dedicated one-time Marketplace installation artifact', () => {
     const packageRoot = join(import.meta.dir, '..', '..');
     const build = readFileSync(
@@ -37,6 +64,10 @@ describe('stable HighLevel Marketplace bootstrap', () => {
     );
     expect(build).toContain('marketplace-loader.html');
     expect(build).toContain('createLeadConnectorMarketplaceBootstrap');
+    expect(build).toContain(
+      'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev',
+    );
+    expect(build).not.toContain("assetOrigin: 'https://calls.consuelohq.com'");
     expect(
       existsSync(
         join(packageRoot, 'src', 'deployment', 'marketplace-bootstrap.ts'),

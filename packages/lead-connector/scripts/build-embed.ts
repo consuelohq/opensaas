@@ -98,7 +98,7 @@ writeFileSync(
     'consuelo-lead-connector-click-to-call.marketplace-loader.html',
   ),
   createLeadConnectorMarketplaceBootstrap({
-    assetOrigin: 'https://calls.consuelohq.com',
+    assetOrigin: 'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev',
   }),
 );
 const marketplaceArtifacts = {
