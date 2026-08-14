@@ -7,11 +7,18 @@ status: preview
 import Card from '../../components/mintlify/Card.astro';
 import CardGroup from '../../components/mintlify/CardGroup.astro';
 
-Build your workspace once. Use it from ChatGPT, Codex, Claude, and whatever comes next.
+## Start in one command
 
-```bash
+Install the local OS, then connect whichever agent you already use.
+
+<div class="home-install-command" data-home-install-command data-command={'curl -fsSL https://install.consuelohq.com/os ' + String.fromCharCode(124) + ' bash'}>
 curl -fsSL https://install.consuelohq.com/os | bash
-```
+  <button type="button" aria-label="Copy install command" data-home-install-copy>
+    <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+  </button>
+</div>
+
+## Pick up where you need
 
 <CardGroup cols={2}>
   <Card title="Start" href="/start/">Install Consuelo OS and reach your first working connection.</Card>
