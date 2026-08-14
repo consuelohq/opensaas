@@ -100,7 +100,14 @@ describe('configuration site', () => {
     expect(nodesHtml).toContain('/gateway/nodes/default');
     expect(nodesHtml).toContain('/gateway/nodes/pricing');
     expect(nodesHtml).toContain('Make default');
-    expect(nodesHtml).toContain('Provisioning coming soon');
+    expect(nodesHtml).not.toContain('Provisioning coming soon');
+    expect(nodesHtml).toContain('/gateway/nodes/provision');
+    expect(nodesHtml).toContain('/gateway/nodes/provisioning');
+    expect(nodesHtml).toContain('Create cloud node');
+    expect(nodesHtml).toContain('aria-live');
+    expect(nodesHtml).not.toContain('e2-standard-');
+    expect(nodesHtml).not.toContain('e2-medium');
+    expect(nodesHtml).toContain('currentProvisioningKey = null; updateCreateButton(); return;');
     expect(nodesHtml).not.toMatch(/e2-(?:medium|standard)/);
     expect(nodesHtml).not.toContain('machineType');
     expect(nodesHtml).not.toContain('providerCost');

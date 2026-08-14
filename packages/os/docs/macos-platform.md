@@ -12,7 +12,7 @@ Closing the app cancels only the UI subscription. It never stops, unloads, resta
 
 ## Workspace and diagnostics safety
 
-Workspace rendering accepts only Worker 25's safe node projection: identifiers, display name, role, platform, architecture, channel, connector identifier, capability summary, timestamps, presence, state, and public-key thumbprint. Token, authorization, private-key, tunnel-origin, credential, and local-service fields fail decoding.
+Workspace decoding accepts only the control plane's safe node projection. The native presentation intentionally exposes a smaller user-facing subset: display name, Default/Current/Home badges, platform, release channel, and Online/Stale/Offline/Revoked state. Connector identifiers, capability lists, agent plumbing, key/thumbprint data, credentials, and provider internals are not rendered in the menu.
 
 Diagnostics export is lifecycle-engine owned. The native redactor removes representative tokens, authorization values, tunnel origins, key material, credential fields, and user-specific home paths before support artifacts are presented.
 
@@ -22,10 +22,18 @@ The `macos-26` arm64 CI lane runs the Swift contract executable, builds the menu
 
 ## Human checkpoint
 
-After CI or a local isolated package smoke produces the alpha artifact, a human may launch it without installing or changing the Consuelo service:
+Until Developer ID signing and notarization are available, the menu app remains a separate alpha/development install from the public Consuelo OS installer. To build, install it under your user account, and launch it:
+
+```bash
+bash packages/os/scripts/testing/macos-alpha-package.sh --install --launch
+```
+
+The default destination is `~/Applications/Consuelo.app`. `CONSUELO_MAC_APP_INSTALL_DIR` may point at another directory inside your home folder for isolated development installs. The alpha installer does not write to system `/Applications` and does not require elevated privileges.
+
+To launch a build artifact without installing it:
 
 ```bash
 open packages/os/.tmp-macos-alpha/Consuelo.app
 ```
 
-Expected result: a Consuelo icon appears in the menu bar, status is read from the owner-local lifecycle endpoint, and quitting the menu app leaves the background service unchanged. Do not copy the app into a managed location or run lifecycle mutations on Ko's Mac Mini or MacBook Air during this worker task.
+Expected result: a Consuelo icon appears in the menu bar, status and Nodes are read from the owner-local lifecycle endpoint, and quitting the menu app leaves the background service unchanged. The app may request lifecycle actions such as update or default-node changes, but it never replaces the lifecycle engine or service supervisor.

@@ -127,6 +127,30 @@
       "kind": "facade-tool",
       "path": "packages/os/tools/deployment-provider/manifest.ts",
       "entryCount": 8
+    },
+    {
+      "label": "lifecycle",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/lifecycle/manifest.ts",
+      "entryCount": 2
+    },
+    {
+      "label": "security",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/security/manifest.ts",
+      "entryCount": 1
+    },
+    {
+      "label": "monitor",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/monitor/manifest.ts",
+      "entryCount": 1
+    },
+    {
+      "label": "daily-schedules",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/daily-schedules/manifest.ts",
+      "entryCount": 1
     }
   ],
   "tools": [
@@ -3024,6 +3048,76 @@
       }
     },
     {
+      "name": "dailySchedules.publish",
+      "kind": "facade-tool",
+      "source": "daily-schedules",
+      "sourcePath": "packages/os/tools/daily-schedules/manifest.ts",
+      "category": "artifacts",
+      "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
+      "core": false,
+      "definition": {
+        "name": "dailySchedules.publish",
+        "methodPath": [
+          "dailySchedules",
+          "publish"
+        ],
+        "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
+        "category": "artifacts",
+        "underlying": "Consuelo durable artifact catalog",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "DailySchedulesPublishInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "daily-schedules",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "kind",
+              "flag": "--kind",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "sourceFile",
+              "flag": "--source-file",
+              "kind": "value"
+            },
+            {
+              "source": "content",
+              "flag": "--content",
+              "kind": "value"
+            },
+            {
+              "source": "format",
+              "flag": "--format",
+              "kind": "value"
+            },
+            {
+              "source": "date",
+              "flag": "--date",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "kind": "security-workpad",
+          "sourceFile": "/tmp/security-workpad.md"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "decideNext",
       "kind": "facade-tool",
       "source": "decision-engine",
@@ -4970,6 +5064,123 @@
         "exampleInput": {
           "method": "get",
           "url": "https://example.com"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "lifecycle.status",
+      "kind": "facade-tool",
+      "source": "lifecycle",
+      "sourcePath": "packages/os/tools/lifecycle/manifest.ts",
+      "category": "lifecycle",
+      "description": "check Consuelo OS lifecycle and runtime status, including the latest durable update operation",
+      "core": false,
+      "definition": {
+        "name": "lifecycle.status",
+        "methodPath": [
+          "lifecycle",
+          "status"
+        ],
+        "description": "check Consuelo OS lifecycle and runtime status, including the latest durable update operation",
+        "category": "lifecycle",
+        "underlying": "workspace lifecycle.status",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 60000,
+        "inputSchema": "EmptyInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "consuelo",
+            "os",
+            "runtime",
+            "release",
+            "lifecycle",
+            "status",
+            "update status",
+            "upgrade status"
+          ],
+          "entities": [
+            "consuelo os",
+            "runtime release",
+            "lifecycle operation"
+          ]
+        },
+        "command": {
+          "script": "lifecycle",
+          "subcommand": "status",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {},
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "lifecycle.update",
+      "kind": "facade-tool",
+      "source": "lifecycle",
+      "sourcePath": "packages/os/tools/lifecycle/manifest.ts",
+      "category": "lifecycle",
+      "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater",
+      "core": false,
+      "definition": {
+        "name": "lifecycle.update",
+        "methodPath": [
+          "lifecycle",
+          "update"
+        ],
+        "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater",
+        "category": "lifecycle",
+        "underlying": "workspace lifecycle.update",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "LifecycleUpdateInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "consuelo",
+            "os",
+            "runtime",
+            "release",
+            "lifecycle",
+            "update",
+            "upgrade",
+            "updater",
+            "install latest"
+          ],
+          "entities": [
+            "consuelo os",
+            "runtime release",
+            "lifecycle updater"
+          ]
+        },
+        "command": {
+          "script": "lifecycle",
+          "subcommand": "update",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "channel",
+              "flag": "--channel",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "channel": "stable"
         },
         "sessionRequired": false
       }
@@ -7357,6 +7568,41 @@
       }
     },
     {
+      "name": "monitor.errors",
+      "kind": "facade-tool",
+      "source": "monitor",
+      "sourcePath": "packages/os/tools/monitor/manifest.ts",
+      "category": "observability",
+      "description": "analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates",
+      "core": false,
+      "definition": {
+        "name": "monitor.errors",
+        "methodPath": [
+          "monitor",
+          "errors"
+        ],
+        "description": "analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates",
+        "category": "observability",
+        "underlying": "Consuelo canonical OS trace database and current OS tool contracts",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "EmptyInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "monitor:errors",
+          "branchMode": "optional",
+          "arguments": []
+        },
+        "exampleInput": {},
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "prReview",
       "kind": "facade-tool",
       "source": "review",
@@ -7576,6 +7822,41 @@
         },
         "sessionRequired": true,
         "workflowRole": "validation.review"
+      }
+    },
+    {
+      "name": "security.scan",
+      "kind": "facade-tool",
+      "source": "security",
+      "sourcePath": "packages/os/tools/security/manifest.ts",
+      "category": "security",
+      "description": "run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths",
+      "core": false,
+      "definition": {
+        "name": "security.scan",
+        "methodPath": [
+          "security",
+          "scan"
+        ],
+        "description": "run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths",
+        "category": "security",
+        "underlying": "Consuelo defensive repository security scanners",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 900000,
+        "inputSchema": "EmptyInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "security:scan",
+          "branchMode": "optional",
+          "arguments": []
+        },
+        "exampleInput": {},
+        "sessionRequired": false
       }
     },
     {

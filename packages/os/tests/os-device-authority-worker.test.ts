@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
 import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
+import { createMemoryInstallControlPlaneRepository } from '../scripts/lib/install-control-plane';
 import { createConnectorOriginHostname } from '../scripts/lib/connector-origin-hostname';
 import { deriveWorkspaceEdgeNodeSecret } from '../scripts/lib/workspace-edge-node-auth';
 import {
@@ -175,6 +176,22 @@ const googleFetch: typeof fetch = async (input) => {
     status: 500,
   });
 };
+
+async function createVerifiedCanonicalDirectory(input?: {
+  userId?: string;
+  workspaceId?: string;
+}) {
+  const repository = createMemoryInstallControlPlaneRepository();
+  await repository.upsertUser({
+    userId: input?.userId ?? 'user_canonical_123',
+    email: 'ko@example.com',
+    workspaceIds: [input?.workspaceId ?? 'workspace_testing'],
+    workspaceMembershipVerifiedAt: '2026-06-13T00:00:00.000Z',
+    createdAt: '2026-06-12T00:00:00.000Z',
+    updatedAt: '2026-06-13T00:00:00.000Z',
+  });
+  return repository;
+}
 
 type CapturedRouteRegistry = {
   statements: string[];
@@ -947,6 +964,9 @@ describe('os device authority worker', () => {
   it('should require workspace selection after Google approval when no pre-auth workspace was supplied', async () => {
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        workspaceId: 'workspace_macbook_air_test',
+      }),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -1342,6 +1362,9 @@ describe('os device authority worker', () => {
     const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        workspaceId: 'workspace_macbook_air_test',
+      }),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -1502,6 +1525,9 @@ describe('os device authority worker', () => {
       const deviceKeyPair = generateWorkspaceDeviceKeyPair();
       const handler = createOsDeviceAuthorityHandler({
         store,
+        installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+          workspaceId: 'workspace_macbook_air_test',
+        }),
         origin,
         now: () => Date.parse('2026-06-13T00:00:00.000Z'),
         approvalAssertionSecret,
@@ -1741,12 +1767,15 @@ describe('os device authority worker', () => {
     expect(routeRegistry.statements).toEqual([]);
   });
 
-  it('should reuse an existing Google account workspace during later auth-first installs', async () => {
+  it('should reuse an existing canonical account workspace during later auth-first installs', async () => {
     const routeRegistry = createCapturedRouteRegistry();
     const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
     const store = createMemoryDeviceGrantStore();
     const handler = createOsDeviceAuthorityHandler({
       store,
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        workspaceId: 'workspace_macbook_air_test',
+      }),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -1863,6 +1892,9 @@ describe('os device authority worker', () => {
     const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        workspaceId: 'workspace_macbook_air_test',
+      }),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -1956,6 +1988,7 @@ describe('os device authority worker', () => {
     const handler = createOsDeviceAuthorityHandler({
       ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -2014,6 +2047,7 @@ describe('os device authority worker', () => {
     const handler = createOsDeviceAuthorityHandler({
       ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -2085,6 +2119,7 @@ describe('os device authority worker', () => {
     const handler = createOsDeviceAuthorityHandler({
       ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',

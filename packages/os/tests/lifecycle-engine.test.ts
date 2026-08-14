@@ -57,6 +57,7 @@ const requiredRuntimePaths = [
   'bun.lock',
   'scripts/os.ts',
   'scripts/native-lifecycle-operation.ts',
+  'scripts/retire-legacy-system-daemons.sh',
   'scripts/server/main.ts',
   'scripts/server/supervisor.ts',
   'scripts/server/routes/mcp.ts',
@@ -70,9 +71,11 @@ const requiredRuntimePaths = [
   'scripts/workspace-node-heartbeat.ts',
   'scripts/lib/workspace-node-heartbeat-client.ts',
   'scripts/lib/install-state.ts',
+  'scripts/lib/subagent/runner.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
   'scripts/lib/managed-component-install.ts',
+  'scripts/lib/subagent/runner.ts',
   'manifests/generated/tool.manifest.json',
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
@@ -495,6 +498,32 @@ describe('unified lifecycle engine', () => {
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
     expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(true);
     expect(check.serviceOperations).toEqual([]);
+  });
+
+  it('reconciles connector-backed hosted state when update is already current', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const current = createEngine({ bundle: bundle100, publicReadiness: true });
+
+    await expect(current.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.0.0',
+    });
+
+    expect(current.serviceOperations).toEqual(['connector-readiness']);
+  });
+
+  it('keeps current-version check-only updates free of hosted reconciliation side effects', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const current = createEngine({ bundle: bundle100, publicReadiness: true });
+
+    await expect(current.update({ channel: 'dev', check: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.0.0',
+    });
+
+    expect(current.serviceOperations).toEqual([]);
   });
 
   it('finalizes an interrupted candidate that is already current and healthy', async () => {
@@ -953,6 +982,29 @@ describe('unified lifecycle engine', () => {
     expect(update.serviceOperations).toContain('connectivity');
   });
 
+  it('preserves local launcher customization across a runtime update', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const configPath = join(tempHome, 'consuelo.yaml');
+    const configWithLauncher = `${readFileSync(configPath, 'utf8').trimEnd()}\nlauncher:\n  extraSections:\n    - id: internal\n      label: Internal\n      links:\n        - label: Users & installs\n          href: https://internal.consuelohq.com/users\n`;
+    writeFileSync(configPath, configWithLauncher, { mode: 0o600 });
+
+    const update = createEngine({ bundle: bundle110 });
+    await expect(update.update({ channel: 'dev' })).resolves.toMatchObject({
+      operation: 'update',
+      changed: true,
+      version: bundle110.manifest.version,
+    });
+
+    expect(readFileSync(configPath, 'utf8')).toBe(configWithLauncher);
+
+    await update.setChannel('canary');
+    const afterChannelChange = readFileSync(configPath, 'utf8');
+    expect(afterChannelChange).toContain('channel: canary');
+    expect(afterChannelChange).toContain('launcher:');
+    expect(afterChannelChange).toContain('href: https://internal.consuelohq.com/users');
+  });
+
   it('persists channel and notification preferences and expires snooze at read time', async () => {
     writeInstalledIdentity();
     const now = new Date('2026-07-23T00:00:00.000Z');
@@ -1060,9 +1112,28 @@ describe('unified lifecycle engine', () => {
     });
   });
 
-  it('rejects a synchronous self-hosted update before lifecycle activation', async () => {
+  it('hands a self-hosted update to the durable lifecycle worker before activation', async () => {
     const engine = createEngine();
-    const update = vi.spyOn(engine, 'update');
+    const update = vi.spyOn(engine, 'update').mockResolvedValue({
+      operation: 'update',
+      changed: false,
+      updateAvailable: true,
+      version: '1.5.0',
+      bundleId: 'bundle-1.5.0',
+    });
+    const launch = vi.fn(async () => ({
+      accepted: true as const,
+      operationId: 'daemon-update-1',
+    }));
+    const read = vi.fn(() => ({
+      schemaVersion: 1 as const,
+      operationId: 'daemon-update-1',
+      kind: 'update' as const,
+      phase: 'queued' as const,
+      updatedAt: '2026-08-13T18:00:00.000Z',
+      targetVersion: '1.5.0',
+      channel: 'dev' as const,
+    }));
     const stdout: string[] = [];
     const stderr: string[] = [];
 
@@ -1073,50 +1144,142 @@ describe('unified lifecycle engine', () => {
         environment: {
           XPC_SERVICE_NAME: 'com.consuelo.system',
         },
+        operationLauncher: { launch, read },
         stdout: (value) => stdout.push(value),
         stderr: (value) => stderr.push(value),
       },
     );
 
-    expect(exitCode).toBe(1);
-    expect(update).not.toHaveBeenCalled();
-    expect(stdout).toEqual([]);
-    expect(JSON.parse(stderr.join(''))).toMatchObject({
+    expect(exitCode).toBe(0);
+    expect(stderr).toEqual([]);
+    expect(update).toHaveBeenCalledWith({
+      channel: 'dev',
+      check: true,
+      yes: true,
+    });
+    expect(launch).toHaveBeenCalledWith({
+      kind: 'update',
+      targetVersion: '1.5.0',
+      channel: 'dev',
+    });
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
       schemaVersion: 1,
       command: 'update',
-      ok: false,
-      error: {
-        message: expect.stringContaining('separate lifecycle process'),
+      ok: true,
+      result: {
+        operation: 'update',
+        changed: false,
+        version: '1.5.0',
+        detail: {
+          detached: true,
+          accepted: true,
+          operationId: 'daemon-update-1',
+        },
       },
     });
   });
 
-  it('should reject a synchronous update when inherited daemon context survives launchd rewriting XPC_SERVICE_NAME', async () => {
+  it('should hand off an update when inherited daemon context survives launchd rewriting XPC_SERVICE_NAME', async () => {
     const engine = createEngine();
-    const update = vi.spyOn(engine, 'update');
+    const update = vi.spyOn(engine, 'update').mockResolvedValue({
+      operation: 'update',
+      changed: false,
+      updateAvailable: true,
+      version: '1.6.0',
+      bundleId: 'bundle-1.6.0',
+    });
+    const launch = vi.fn(async () => ({
+      accepted: true as const,
+      operationId: 'daemon-update-2',
+    }));
     const stderr: string[] = [];
+    const stdout: string[] = [];
 
     const exitCode = await runLifecycleCli(
-      ['update', '--channel', 'dev', '--yes', '--json'],
+      ['update', '--yes', '--json'],
       {
         engine,
         environment: {
           CONSUELO_OS_DAEMON_PROCESS: '1',
           XPC_SERVICE_NAME: '0',
         },
-        stdout: vi.fn(),
+        operationLauncher: { launch, read: () => undefined },
+        stdout: (value) => stdout.push(value),
         stderr: (value) => stderr.push(value),
       },
     );
 
-    expect(exitCode).toBe(1);
-    expect(update).not.toHaveBeenCalled();
-    expect(JSON.parse(stderr.join(''))).toMatchObject({
+    expect(exitCode).toBe(0);
+    expect(stderr).toEqual([]);
+    expect(update).toHaveBeenCalledWith({
+      channel: undefined,
+      check: true,
+      yes: true,
+    });
+    expect(launch).toHaveBeenCalledWith({
+      kind: 'update',
+      targetVersion: '1.6.0',
+    });
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
       command: 'update',
-      ok: false,
-      error: {
-        code: 'DAEMON_MUTATION_NOT_ALLOWED',
-        message: expect.stringContaining('separate lifecycle process'),
+      ok: true,
+      result: {
+        detail: {
+          detached: true,
+          operationId: 'daemon-update-2',
+        },
+      },
+    });
+  });
+
+  it('includes the durable lifecycle operation in JSON status', async () => {
+    const engine = createEngine();
+    vi.spyOn(engine, 'status').mockResolvedValue({
+      operation: 'status',
+      changed: false,
+      installState: 'valid',
+      version: '1.5.0',
+      bundleId: 'bundle-1.5.0',
+      preferences: { channel: 'canary', notifications: { mode: 'on' } },
+    });
+    const stdout: string[] = [];
+
+    const exitCode = await runLifecycleCli(['status', '--json'], {
+      engine,
+      operationLauncher: {
+        launch: vi.fn(),
+        read: () => ({
+          schemaVersion: 1,
+          operationId: 'daemon-update-1',
+          kind: 'update',
+          phase: 'succeeded',
+          updatedAt: '2026-08-13T18:00:30.000Z',
+          targetVersion: '1.5.0',
+          channel: 'canary',
+          resultingVersion: '1.5.0',
+          resultingBundleId: 'bundle-1.5.0',
+        }),
+      },
+      stdout: (value) => stdout.push(value),
+      stderr: vi.fn(),
+    });
+
+    expect(exitCode).toBe(0);
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
+      command: 'status',
+      ok: true,
+      result: {
+        detail: {
+          lifecycleOperation: {
+            operationId: 'daemon-update-1',
+            kind: 'update',
+            phase: 'succeeded',
+            targetVersion: '1.5.0',
+            channel: 'canary',
+            resultingVersion: '1.5.0',
+            resultingBundleId: 'bundle-1.5.0',
+          },
+        },
       },
     });
   });

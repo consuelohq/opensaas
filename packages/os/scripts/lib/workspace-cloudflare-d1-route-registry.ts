@@ -789,15 +789,23 @@ export const upsertWorkspaceNodeTargetInD1 = async (
     const defaultTarget = targets.find(
       (candidate) => candidate.nodeId === defaultNodeId,
     );
-    const existingRouteKeys = new Set(
-      base.routes.map((route) => `${route.surface}:${route.pathPrefix}`),
+    const incomingControlPlaneRoutes = input.record.routes.filter((route) =>
+      route.target.kind === 'os-connector' ||
+      route.target.kind === 'consuelo-gateway-service' ||
+      route.target.kind === 'redirect',
     );
-    const missingOsRoutes = input.record.routes.filter(
-      (route) =>
-        route.target.kind === 'os-connector' &&
-        !existingRouteKeys.has(`${route.surface}:${route.pathPrefix}`),
+    const incomingControlPlanePaths = new Set(
+      incomingControlPlaneRoutes.map((route) => route.pathPrefix),
     );
-    const routes = [...base.routes, ...missingOsRoutes].map((route) =>
+    const preservedPublishedRoutes = base.routes.filter((route) => {
+      if (incomingControlPlanePaths.has(route.pathPrefix)) return false;
+      return (
+        route.target.kind !== 'os-connector' &&
+        route.target.kind !== 'consuelo-gateway-service' &&
+        route.target.kind !== 'redirect'
+      );
+    });
+    const routes = [...preservedPublishedRoutes, ...incomingControlPlaneRoutes].map((route) =>
       route.target.kind === 'os-connector' && defaultTarget
         ? { ...route, target: connectorTargetForNode(defaultTarget) }
         : cloneRoute(route),

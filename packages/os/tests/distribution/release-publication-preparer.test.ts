@@ -45,6 +45,7 @@ function createRuntimeSource(root: string): string {
     'scripts/os.ts': 'export const osFixture = true;\n',
     'scripts/native-lifecycle-operation.ts':
       'export const nativeLifecycleOperationFixture = true;\n',
+    'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
     'scripts/server/main.ts': 'export const serverFixture = true;\n',
     'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
     'scripts/lib/install-state.ts': 'export const installFixture = true;\n',

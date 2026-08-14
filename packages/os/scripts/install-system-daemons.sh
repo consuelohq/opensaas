@@ -26,6 +26,34 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
 env_file="$root_dir/.env"
 log_prefix="[consuelo-os-launchagent-install]"
+install_id="${CONSUELO_INSTALL_ID:-}"
+background_service_result_file="${CONSUELO_BACKGROUND_SERVICE_RESULT_FILE:-}"
+background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
+stage_pid=""
+
+record_background_service_failure() {
+  local status="$1"
+  [ "$status" -ne 0 ] || return 0
+  if [ -n "$background_service_result_file" ]; then
+    {
+      printf 'install_id=%s\n' "$install_id"
+      printf 'error_code=%s\n' "$background_service_failure_code"
+    } > "$background_service_result_file" 2>/dev/null || true
+  fi
+  if [ -n "$install_id" ]; then
+    printf '%s install_id=%s error_code=%s\n' "$log_prefix" "$install_id" "$background_service_failure_code" >&2
+  fi
+}
+
+cleanup_background_service_install() {
+  local status=$?
+  if [ -n "$stage_pid" ]; then
+    kill "$stage_pid" 2>/dev/null || true
+  fi
+  record_background_service_failure "$status"
+}
+
+trap cleanup_background_service_install EXIT
 
 daemon_user="${CONSUELO_DAEMON_USER:-${USER:-$(id -un)}}"
 if ! id -u "$daemon_user" >/dev/null 2>&1; then
@@ -539,19 +567,21 @@ if ! "$caddy_bin" validate --config "$caddyfile" --adapter caddyfile >/dev/null;
 fi
 
 [ "$quiet" = "1" ] || log "running Consuelo OS smoke test on port $stage_port"
+background_service_failure_code="BACKGROUND_SERVICE_START_FAILED"
 WORKSPACE_DAEMON_PORT="$stage_port" bash "$script_dir/start-consuelo-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
 stage_pid=$!
-trap 'kill "$stage_pid" 2>/dev/null || true' EXIT
+background_service_failure_code="BACKGROUND_SERVICE_HEALTHCHECK_FAILED"
 if ! wait_for_health "http://127.0.0.1:${stage_port}/health" 20 1; then
   log "stage Consuelo OS service did not become healthy"
   exit 1
 fi
 kill "$stage_pid" 2>/dev/null || true
 wait "$stage_pid" 2>/dev/null || true
-trap - EXIT
+stage_pid=""
 
 retire_legacy_portless_services
 
+background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
 install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
 install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
 if [ "$portless_enabled" = "1" ]; then
@@ -586,6 +616,7 @@ fi
 bootout_agent "$caddy_label"
 bootout_agent "$workspace_label"
 
+background_service_failure_code="BACKGROUND_SERVICE_START_FAILED"
 if [ "$availability_enabled" = "1" ]; then
   bootstrap_agent "$availability_label" "$availability_agent_plist"
 fi
@@ -602,6 +633,7 @@ for index in "${!heartbeat_labels[@]}"; do
 done
 bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
 
+background_service_failure_code="BACKGROUND_SERVICE_HEALTHCHECK_FAILED"
 if ! wait_for_workspace_health; then
   log "local Consuelo OS health failed after LaunchAgent cutover"
   print_repair_hint

@@ -18,6 +18,10 @@ import type {
   WorkspaceLoginHandoff,
   WorkspaceMembership,
 } from './types';
+import {
+  managedCloudProvisioningTerminal,
+  type ManagedCloudProvisioningJob,
+} from '../../../scripts/lib/managed-cloud-provisioning';
 import { cleanCode } from './utils';
 
 const cloneWorkspaceNode = (node: WorkspaceNode): WorkspaceNode => ({
@@ -40,6 +44,15 @@ const workspaceTaskAffinityKey = (input: {
   taskSession: string;
 }): string =>
   `wta:${input.accountId}:${encodeURIComponent(input.workspaceHost)}:${encodeURIComponent(input.taskSession)}`;
+
+const managedCloudProvisioningJobKey = (jobId: string): string => `mcpj:${jobId}`;
+const managedCloudProvisioningIdempotencyKey = (job: Pick<ManagedCloudProvisioningJob, 'accountId' | 'workspaceHost' | 'idempotencyKey'>): string =>
+  `mcpji:${job.accountId}:${encodeURIComponent(job.workspaceHost)}:${encodeURIComponent(job.idempotencyKey)}`;
+const managedCloudProvisioningActiveKey = (job: Pick<ManagedCloudProvisioningJob, 'accountId' | 'workspaceHost'>): string =>
+  `mcpja:${job.accountId}:${encodeURIComponent(job.workspaceHost)}`;
+const managedCloudProvisioningNodeKey = (nodeId: string): string => `mcpjn:${encodeURIComponent(nodeId)}`;
+const MANAGED_CLOUD_PROVISIONING_QUEUE_KEY = 'mcpjq';
+const cloneManagedCloudProvisioningJob = (job: ManagedCloudProvisioningJob): ManagedCloudProvisioningJob => ({ ...job });
 
 export const WORKSPACE_TASK_AFFINITY_TTL_MS = 7 * 24 * 60 * 60_000;
 
@@ -640,6 +653,13 @@ export class DurableStore implements Store {
       throw new Error('workspace node host list failed');
     }
   }
+  async listAllWorkspaceNodes() {
+    try {
+      return await this.legacyWorkspaceNodes();
+    } catch {
+      throw new Error('workspace node global list failed');
+    }
+  }
   async byWorkspaceTaskAffinity(input: {
     accountId: string;
     workspaceHost: string;
@@ -788,6 +808,120 @@ export class DurableStore implements Store {
       throw new Error('node bootstrap credential delete failed');
     }
   }
+  async createManagedCloudProvisioningJob(job: ManagedCloudProvisioningJob) {
+    const create = async (storage: StorageLike) => {
+      const idempotencyKey = managedCloudProvisioningIdempotencyKey(job);
+      const existingJobId = await storage.get<string>(idempotencyKey);
+      if (existingJobId) {
+        const existing = await storage.get<ManagedCloudProvisioningJob>(managedCloudProvisioningJobKey(existingJobId));
+        if (existing) return { status: 'idempotent' as const, job: cloneManagedCloudProvisioningJob(existing) };
+      }
+      const activeKey = managedCloudProvisioningActiveKey(job);
+      const activeJobId = await storage.get<string>(activeKey);
+      if (activeJobId) {
+        const active = await storage.get<ManagedCloudProvisioningJob>(managedCloudProvisioningJobKey(activeJobId));
+        if (active && !managedCloudProvisioningTerminal(active.status)) {
+          return { status: 'active-conflict' as const, job: cloneManagedCloudProvisioningJob(active) };
+        }
+      }
+      await storage.put(managedCloudProvisioningJobKey(job.jobId), job);
+      await storage.put(idempotencyKey, job.jobId);
+      await storage.put(activeKey, job.jobId);
+      await storage.put(managedCloudProvisioningNodeKey(job.nodeId), job.jobId);
+      const queue = (await storage.get<string[]>(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY)) ?? [];
+      if (!queue.includes(job.jobId)) await storage.put(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY, [...queue, job.jobId]);
+      return { status: 'created' as const, job: cloneManagedCloudProvisioningJob(job) };
+    };
+    try {
+      return this.storage.transaction ? await this.storage.transaction((tx) => create(tx)) : await create(this.storage);
+    } catch { throw new Error('managed cloud provisioning job create failed'); }
+  }
+  async byManagedCloudProvisioningJob(jobId: string) {
+    try {
+      const job = await this.storage.get<ManagedCloudProvisioningJob>(managedCloudProvisioningJobKey(jobId));
+      return job ? cloneManagedCloudProvisioningJob(job) : undefined;
+    } catch { throw new Error('managed cloud provisioning job read failed'); }
+  }
+  async claimNextManagedCloudProvisioningJob(input: { leaseId: string; nowMs: number; leaseExpiresAt: number; enrollmentNonce: string; enrollmentExpiresAt: number }) {
+    const claim = async (storage: StorageLike) => {
+      const queue = (await storage.get<string[]>(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY)) ?? [];
+      for (const jobId of queue) {
+        const key = managedCloudProvisioningJobKey(jobId);
+        const job = await storage.get<ManagedCloudProvisioningJob>(key);
+        if (!job || managedCloudProvisioningTerminal(job.status) || job.status === 'booting' || job.status === 'connecting') continue;
+        const leaseActive = job.leaseExpiresAt !== undefined && job.leaseExpiresAt > input.nowMs;
+        if (leaseActive && job.leaseId) continue;
+        const updated: ManagedCloudProvisioningJob = {
+          ...job, status: 'provisioning', leaseId: input.leaseId, leaseExpiresAt: input.leaseExpiresAt,
+          enrollmentNonce: job.enrollmentNonce ?? input.enrollmentNonce,
+          enrollmentExpiresAt: job.enrollmentExpiresAt && job.enrollmentExpiresAt > input.nowMs ? job.enrollmentExpiresAt : input.enrollmentExpiresAt,
+          updatedAt: input.nowMs,
+        };
+        await storage.put(key, updated);
+        return { status: 'claimed' as const, job: cloneManagedCloudProvisioningJob(updated) };
+      }
+      return { status: 'empty' as const };
+    };
+    try { return this.storage.transaction ? await this.storage.transaction((tx) => claim(tx)) : await claim(this.storage); }
+    catch { throw new Error('managed cloud provisioning job claim failed'); }
+  }
+  async updateManagedCloudProvisioningJob(input: { jobId: string; leaseId?: string; status: import('../../../scripts/lib/managed-cloud-provisioning').ManagedCloudProvisioningStatus; nowMs: number; errorCode?: string; errorMessage?: string }) {
+    const update = async (storage: StorageLike) => {
+      const key = managedCloudProvisioningJobKey(input.jobId);
+      const job = await storage.get<ManagedCloudProvisioningJob>(key);
+      if (!job) return undefined;
+      if (input.leaseId && (job.leaseId !== input.leaseId || (job.leaseExpiresAt ?? 0) < input.nowMs)) return undefined;
+      const updated: ManagedCloudProvisioningJob = { ...job, status: input.status, updatedAt: input.nowMs,
+        ...(input.errorCode ? { errorCode: input.errorCode } : {}),
+        ...(input.errorMessage ? { errorMessage: input.errorMessage } : {}),
+        ...(input.status === 'ready' ? { readyAt: input.nowMs } : {}),
+      };
+      if (input.status === 'booting' || managedCloudProvisioningTerminal(input.status)) { delete updated.leaseId; delete updated.leaseExpiresAt; }
+      await storage.put(key, updated);
+      if (managedCloudProvisioningTerminal(input.status)) {
+        const activeKey = managedCloudProvisioningActiveKey(job);
+        if ((await storage.get<string>(activeKey)) === job.jobId) await storage.delete(activeKey);
+        const queue = ((await storage.get<string[]>(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY)) ?? []).filter((id) => id !== job.jobId);
+        await storage.put(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY, queue);
+      }
+      return cloneManagedCloudProvisioningJob(updated);
+    };
+    try { return this.storage.transaction ? await this.storage.transaction((tx) => update(tx)) : await update(this.storage); }
+    catch { throw new Error('managed cloud provisioning job update failed'); }
+  }
+  async consumeManagedCloudProvisioningEnrollment(input: { jobId: string; nowMs: number }) {
+    const consume = async (storage: StorageLike) => {
+      const key = managedCloudProvisioningJobKey(input.jobId);
+      const job = await storage.get<ManagedCloudProvisioningJob>(key);
+      if (!job || !job.enrollmentNonce || !job.enrollmentExpiresAt || job.enrollmentExpiresAt < input.nowMs || job.enrollmentConsumedAt) return undefined;
+      if (job.status !== 'provisioning' && job.status !== 'booting') return undefined;
+      const updated: ManagedCloudProvisioningJob = { ...job, status: 'connecting', enrollmentConsumedAt: input.nowMs, updatedAt: input.nowMs };
+      delete updated.leaseId; delete updated.leaseExpiresAt;
+      await storage.put(key, updated);
+      return cloneManagedCloudProvisioningJob(updated);
+    };
+    try { return this.storage.transaction ? await this.storage.transaction((tx) => consume(tx)) : await consume(this.storage); }
+    catch { throw new Error('managed cloud provisioning enrollment consume failed'); }
+  }
+  async markManagedCloudProvisioningReadyByNode(input: { nodeId: string; nowMs: number }) {
+    const mark = async (storage: StorageLike) => {
+      const jobId = await storage.get<string>(managedCloudProvisioningNodeKey(input.nodeId));
+      if (!jobId) return undefined;
+      const key = managedCloudProvisioningJobKey(jobId);
+      const job = await storage.get<ManagedCloudProvisioningJob>(key);
+      if (!job || managedCloudProvisioningTerminal(job.status)) return job ? cloneManagedCloudProvisioningJob(job) : undefined;
+      const updated: ManagedCloudProvisioningJob = { ...job, status: 'ready', readyAt: input.nowMs, updatedAt: input.nowMs };
+      delete updated.leaseId; delete updated.leaseExpiresAt;
+      await storage.put(key, updated);
+      const activeKey = managedCloudProvisioningActiveKey(job);
+      if ((await storage.get<string>(activeKey)) === job.jobId) await storage.delete(activeKey);
+      const queue = ((await storage.get<string[]>(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY)) ?? []).filter((id) => id !== job.jobId);
+      await storage.put(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY, queue);
+      return cloneManagedCloudProvisioningJob(updated);
+    };
+    try { return this.storage.transaction ? await this.storage.transaction((tx) => mark(tx)) : await mark(this.storage); }
+    catch { throw new Error('managed cloud provisioning ready update failed'); }
+  }
   async putWorkspaceAgentStatus(status: WorkspaceAgentStatus) {
     try {
       await this.storage.put(`was:${status.workspaceHost}`, status);
@@ -825,6 +959,12 @@ export function createMemoryDeviceGrantStore(): Store {
   const workspaceNodeNonces = new Map<string, number>();
   const nodeBootstrapCredentials = new Map<string, NodeBootstrapCredential>();
   const workspaceAgentStatuses = new Map<string, WorkspaceAgentStatus>();
+  const managedCloudProvisioningJobs = new Map<string, ManagedCloudProvisioningJob>();
+  const managedCloudProvisioningIdempotency = new Map<string, string>();
+  const managedCloudProvisioningActive = new Map<string, string>();
+  const managedCloudProvisioningNode = new Map<string, string>();
+  const managedCloudProvisioningQueue: string[] = [];
+
   const cloneWorkspaceAgentStatus = (
     status: WorkspaceAgentStatus,
   ): WorkspaceAgentStatus => ({
@@ -1082,6 +1222,11 @@ export function createMemoryDeviceGrantStore(): Store {
           .map(cloneWorkspaceNode),
       );
     },
+    listAllWorkspaceNodes() {
+      return Promise.resolve(
+        [...workspaceNodes.values()].map(cloneWorkspaceNode),
+      );
+    },
     byWorkspaceTaskAffinity(input) {
       const key = workspaceTaskAffinityKey(input);
       const affinity = workspaceTaskAffinities.get(key);
@@ -1161,6 +1306,26 @@ export function createMemoryDeviceGrantStore(): Store {
       nodeBootstrapCredentials.delete(tokenHash);
       return Promise.resolve();
     },
+    createManagedCloudProvisioningJob(job) {
+      const idemKey = managedCloudProvisioningIdempotencyKey(job);
+      const existingId = managedCloudProvisioningIdempotency.get(idemKey);
+      if (existingId) { const existing = managedCloudProvisioningJobs.get(existingId); if (existing) return Promise.resolve({ status: 'idempotent' as const, job: cloneManagedCloudProvisioningJob(existing) }); }
+      const activeKey = managedCloudProvisioningActiveKey(job);
+      const activeId = managedCloudProvisioningActive.get(activeKey);
+      if (activeId) { const active = managedCloudProvisioningJobs.get(activeId); if (active && !managedCloudProvisioningTerminal(active.status)) return Promise.resolve({ status: 'active-conflict' as const, job: cloneManagedCloudProvisioningJob(active) }); }
+      managedCloudProvisioningJobs.set(job.jobId, cloneManagedCloudProvisioningJob(job));
+      managedCloudProvisioningIdempotency.set(idemKey, job.jobId); managedCloudProvisioningActive.set(activeKey, job.jobId); managedCloudProvisioningNode.set(job.nodeId, job.jobId);
+      if (!managedCloudProvisioningQueue.includes(job.jobId)) managedCloudProvisioningQueue.push(job.jobId);
+      return Promise.resolve({ status: 'created' as const, job: cloneManagedCloudProvisioningJob(job) });
+    },
+    byManagedCloudProvisioningJob(jobId) { const job = managedCloudProvisioningJobs.get(jobId); return Promise.resolve(job ? cloneManagedCloudProvisioningJob(job) : undefined); },
+    claimNextManagedCloudProvisioningJob(input) {
+      for (const jobId of managedCloudProvisioningQueue) { const job = managedCloudProvisioningJobs.get(jobId); if (!job || managedCloudProvisioningTerminal(job.status) || job.status === 'booting' || job.status === 'connecting') continue; if (job.leaseId && (job.leaseExpiresAt ?? 0) > input.nowMs) continue; const updated = { ...job, status: 'provisioning' as const, leaseId: input.leaseId, leaseExpiresAt: input.leaseExpiresAt, enrollmentNonce: job.enrollmentNonce ?? input.enrollmentNonce, enrollmentExpiresAt: job.enrollmentExpiresAt && job.enrollmentExpiresAt > input.nowMs ? job.enrollmentExpiresAt : input.enrollmentExpiresAt, updatedAt: input.nowMs }; managedCloudProvisioningJobs.set(jobId, updated); return Promise.resolve({ status: 'claimed' as const, job: cloneManagedCloudProvisioningJob(updated) }); }
+      return Promise.resolve({ status: 'empty' as const });
+    },
+    updateManagedCloudProvisioningJob(input) { const job = managedCloudProvisioningJobs.get(input.jobId); if (!job || (input.leaseId && (job.leaseId !== input.leaseId || (job.leaseExpiresAt ?? 0) < input.nowMs))) return Promise.resolve(undefined); const updated: ManagedCloudProvisioningJob = { ...job, status: input.status, updatedAt: input.nowMs, ...(input.errorCode ? { errorCode: input.errorCode } : {}), ...(input.errorMessage ? { errorMessage: input.errorMessage } : {}), ...(input.status === 'ready' ? { readyAt: input.nowMs } : {}) }; if (input.status === 'booting' || managedCloudProvisioningTerminal(input.status)) { delete updated.leaseId; delete updated.leaseExpiresAt; } if (managedCloudProvisioningTerminal(input.status)) { managedCloudProvisioningActive.delete(managedCloudProvisioningActiveKey(job)); const i=managedCloudProvisioningQueue.indexOf(job.jobId); if(i>=0) managedCloudProvisioningQueue.splice(i,1); } managedCloudProvisioningJobs.set(job.jobId, updated); return Promise.resolve(cloneManagedCloudProvisioningJob(updated)); },
+    consumeManagedCloudProvisioningEnrollment(input) { const job=managedCloudProvisioningJobs.get(input.jobId); if(!job || !job.enrollmentNonce || !job.enrollmentExpiresAt || job.enrollmentExpiresAt < input.nowMs || job.enrollmentConsumedAt || (job.status !== 'provisioning' && job.status !== 'booting')) return Promise.resolve(undefined); const updated: ManagedCloudProvisioningJob={...job,status:'connecting',enrollmentConsumedAt:input.nowMs,updatedAt:input.nowMs}; delete updated.leaseId; delete updated.leaseExpiresAt; managedCloudProvisioningJobs.set(job.jobId,updated); return Promise.resolve(cloneManagedCloudProvisioningJob(updated)); },
+    markManagedCloudProvisioningReadyByNode(input) { const jobId=managedCloudProvisioningNode.get(input.nodeId); const job=jobId?managedCloudProvisioningJobs.get(jobId):undefined; if(!job) return Promise.resolve(undefined); if(managedCloudProvisioningTerminal(job.status)) return Promise.resolve(cloneManagedCloudProvisioningJob(job)); const updated: ManagedCloudProvisioningJob={...job,status:'ready',readyAt:input.nowMs,updatedAt:input.nowMs}; delete updated.leaseId; delete updated.leaseExpiresAt; managedCloudProvisioningJobs.set(job.jobId,updated); managedCloudProvisioningActive.delete(managedCloudProvisioningActiveKey(job)); const i=managedCloudProvisioningQueue.indexOf(job.jobId); if(i>=0) managedCloudProvisioningQueue.splice(i,1); return Promise.resolve(cloneManagedCloudProvisioningJob(updated)); },
     putWorkspaceAgentStatus(status) {
       workspaceAgentStatuses.set(
         status.workspaceHost,

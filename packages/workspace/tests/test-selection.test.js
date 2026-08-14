@@ -41,6 +41,7 @@ describe('test selection registry', () => {
     const explicitRuleIds = registry.rules
       .filter((rule) => rule.origin === 'explicit')
       .map((rule) => rule.id);
+    expect(new Set(explicitRuleIds).size).toBe(explicitRuleIds.length);
     expect(explicitRuleIds).toEqual(
       expect.arrayContaining([
         'workspace-facade',
@@ -284,6 +285,214 @@ describe('test selection registry', () => {
       'GitHub workflow policy tests',
       'changed GitHub workflow security checks',
     ]);
+  });
+
+  it('uses focused one-click managed cloud contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/settings-site.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-managed-cloud-one-click-provisioning');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'OS one-click managed cloud contracts',
+        'OS one-click managed cloud syntax contracts',
+      ]),
+    );
+  });
+
+  it('uses focused canonical device approval contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/install-control-plane.ts',
+      '--changed-file',
+      'packages/consuelo-website/src/pages/login/device.astro',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-device-approval-canonical-identity');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS canonical device approval contracts',
+      'OS canonical device approval syntax contracts',
+    ]);
+  });
+
+  it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/launcher-onboarding.ts',
+      '--changed-file',
+      'packages/consuelo-website/src/pages/os/launcher.astro',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-launcher-copy-interaction');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS launcher copy interaction contracts',
+      'OS launcher Sites materialization contracts',
+      'Consuelo website launcher Astro check',
+    ]);
+  });
+
+  it('uses focused hosted-site reconciliation contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/connectors.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/lifecycle/engine.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts',
+      '--changed-file',
+      'packages/os/tests/cloudflare-d1-route-registry.test.ts',
+      '--changed-file',
+      'packages/os/tests/install-edge-site-publisher.test.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-engine.test.ts',
+      '--changed-file',
+      'packages/os/tests/workspace-node-registry-routing.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-hosted-site-update-reconciliation');
+    expect(matchedRuleIds).toContain('os-managed-cloud-one-click-provisioning');
+    expect(matchedRuleIds).toContain('os-workspace-edge-rollout');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'OS hosted-site D1 reconciliation contract',
+        'OS hosted-site lifecycle and node routing contracts',
+      ]),
+    );
+  });
+
+  it('uses the frozen OS Bun lock contract instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/bun.lock',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const lockSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS Bun frozen lockfile contract',
+    );
+
+    expect(matchedRuleIds).toContain('os-bun-lockfile-consistency');
+    expect(suiteNames).toContain('OS Bun frozen lockfile contract');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(lockSuite?.command).toEqual([
+      'bun',
+      'install',
+      '--cwd',
+      'packages/os',
+      '--frozen-lockfile',
+      '--lockfile-only',
+      '--dry-run',
+    ]);
+  });
+
+  it('uses the focused OS install-state inventory contract instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/install-state.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const installStateSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS install-state tool inventory contract',
+    );
+
+    expect(matchedRuleIds).toContain('os-install-state-tool-inventory');
+    expect(suiteNames).toContain('OS install-state tool inventory contract');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(installStateSuite?.command).toEqual([
+      'bun',
+      '--cwd',
+      'packages/os',
+      'test',
+      'tests/install-state.test.ts',
+    ]);
+  });
+
+  it('uses the focused OS runtime-bundle distribution contract instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/distribution/runtime-bundle.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const runtimeBundleSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS runtime-bundle distribution contract',
+    );
+
+    expect(matchedRuleIds).toContain('os-runtime-bundle-distribution-contract');
+    expect(suiteNames).toContain('OS runtime-bundle distribution contract');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(runtimeBundleSuite?.command).toEqual([
+      'bun',
+      '--cwd',
+      'packages/os',
+      'test',
+      'tests/distribution/runtime-bundle.test.ts',
+    ]);
+  });
+
+  it('uses focused Vitest runtime regression contracts for verifier-only OS test fixes', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/operator-login.test.ts',
+      '--changed-file',
+      'packages/os/tests/runtime-state.test.ts',
+      '--changed-file',
+      'packages/os/tests/node-resource-lock.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('os-vitest-runtime-regressions');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'OS Vitest runtime regression contracts',
+    );
   });
 
   it('uses the API package Jest configuration for API changes', () => {
@@ -554,6 +763,53 @@ describe('test selection registry', () => {
       'tests/finish-line-lifecycle-contract.test.ts',
       'tests/daemon-bun-path.test.ts',
     ]));
+  });
+
+  it('routes lifecycle updater changes through the focused universal handoff contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lifecycle.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-lifecycle-update-handoff',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual(
+      expect.arrayContaining([
+        'OS lifecycle update handoff contracts',
+        'OS lifecycle syntax contracts',
+      ]),
+    );
+  });
+
+  it('routes native macOS menu changes through focused Mac contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift',
+      '--changed-file',
+      'packages/os/scripts/testing/macos-alpha-package.sh',
+      '--changed-file',
+      'packages/os/tests/macos-platform.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-macos-menu-app',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'macOS menu Swift contracts',
+      'macOS menu platform contracts',
+      'macOS alpha package syntax',
+    ]);
   });
 
   it('runs focused Consuelo OS contracts with Bun, OS cwd, and root Vitest', () => {
