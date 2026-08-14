@@ -379,6 +379,13 @@ export function createWorkspaceEdgeHandler(
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url);
+      if (
+        (url.pathname === '/auth/consume' && request.method === 'GET') ||
+        (url.pathname === '/auth/logout' && request.method === 'POST')
+      ) {
+        if (!stub) return closedAuthResponse();
+        return await stub.fetch(request);
+      }
       if (url.hostname.toLowerCase() === INSTALL_INTERNAL_DASHBOARD_HOST) {
         if (
           url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
@@ -394,15 +401,19 @@ export function createWorkspaceEdgeHandler(
           if (!internalDashboardHandler) return closedAuthResponse();
           return await internalDashboardHandler(request);
         }
-        if (!internalDashboardPageHandler) return closedAuthResponse();
-        return await internalDashboardPageHandler(request);
-      }
-      if (
-        (url.pathname === '/auth/consume' && request.method === 'GET') ||
-        (url.pathname === '/auth/logout' && request.method === 'POST')
-      ) {
-        if (!stub) return closedAuthResponse();
-        return await stub.fetch(request);
+        const internalDashboardPage =
+          url.pathname === '/users' ||
+          url.pathname.startsWith('/users/') ||
+          url.pathname === '/installs' ||
+          url.pathname.startsWith('/installs/') ||
+          url.pathname === '/devices' ||
+          url.pathname === '/errors' ||
+          url.pathname === '/internal/assets/dashboard.css' ||
+          url.pathname === '/internal/assets/dashboard.js';
+        if (internalDashboardPage) {
+          if (!internalDashboardPageHandler) return closedAuthResponse();
+          return await internalDashboardPageHandler(request);
+        }
       }
       if (url.pathname.startsWith('/gateway/nodes/')) {
         const internalAuthSecret = env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?.trim();

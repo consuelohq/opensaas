@@ -187,6 +187,85 @@ async function signup(input: {
 }
 
 describe('cloud-first web onboarding', () => {
+  it('does not create a canonical account when an unknown user chooses Log in', async () => {
+    const fixture = createFixture({ pricing: true });
+    const start = await fixture.handler(
+      new Request(`${origin}/login/google/start?purpose=web&intent=login&return_to=/`),
+    );
+    expect(start.status).toBe(302);
+    const google = new URL(start.headers.get('location') ?? '');
+    const state = google.searchParams.get('state') ?? '';
+    fixture.nonce.value = google.searchParams.get('nonce') ?? '';
+
+    const callback = await fixture.handler(
+      new Request(
+        `${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      ),
+    );
+    expect(callback.status).toBe(404);
+    expect(await callback.text()).toContain('No Consuelo account found');
+    await expect(
+      fixture.repository.findCanonicalUsersByEmail('new.user@example.com'),
+    ).resolves.toEqual([]);
+  });
+
+  it('reuses an existing account on signup and does not expose cloud-first creation to existing zero-workspace accounts', async () => {
+    const fixture = createFixture({ pricing: true });
+    await fixture.repository.upsertUser({
+      userId: 'user_existing_local',
+      email: 'new.user@example.com',
+      workspaceIds: [],
+      createdAt: '2026-08-01T12:00:00.000Z',
+      updatedAt: new Date(nowMs).toISOString(),
+    });
+    const start = await fixture.handler(
+      new Request(`${origin}/login/google/start?purpose=web&intent=signup&return_to=/`),
+    );
+    const google = new URL(start.headers.get('location') ?? '');
+    const state = google.searchParams.get('state') ?? '';
+    fixture.nonce.value = google.searchParams.get('nonce') ?? '';
+    const callback = await fixture.handler(
+      new Request(
+        `${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+      ),
+    );
+    expect(callback.status).toBe(302);
+    const token = cookieValue(callback, '__Host-consuelo_os_authority');
+    const session = await fixture.store.byAuthoritySession(await hash(token));
+    expect(session?.accountId).toBe('user_existing_local');
+    expect(session?.cloudOnboardingEligible).toBe(false);
+    await expect(
+      fixture.repository.findCanonicalUsersByEmail('new.user@example.com'),
+    ).resolves.toHaveLength(1);
+
+    const workspaces = await fixture.handler(
+      new Request(`${origin}/auth/workspaces`, {
+        headers: { cookie: authorityCookie(token) },
+      }),
+    );
+    const html = await workspaces.text();
+    expect(html).toContain('Your workspace is not available yet');
+    expect(html).not.toContain('Create workspace');
+
+    const attempt = await fixture.handler(
+      new Request(origin + '/onboarding/workspace', {
+        ...form({
+          workspace_name: 'Should Not Exist',
+          csrf_token: session?.csrfToken ?? '',
+        }),
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          origin,
+          cookie: authorityCookie(token),
+        },
+      }),
+    );
+    expect(attempt.status).toBe(403);
+    await expect(
+      fixture.store.byAccountWorkspace('user_existing_local'),
+    ).resolves.toBeUndefined();
+  });
+
   it('turns first Google sign-in into one canonical Consuelo user and keeps the browser login durable', async () => {
     const fixture = createFixture({ pricing: true });
     const signedUp = await signup(fixture);
