@@ -4,8 +4,8 @@ import { renderHook } from '@testing-library/react';
 import { type ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { type MutableSnapshot, RecoilRoot } from 'recoil';
+import { type Billing } from '@/client-config/types/ClientConfig';
 import {
-  type Billing,
   OnboardingStatus,
   PermissionFlagType,
 } from '~/generated-metadata/graphql';
@@ -42,7 +42,6 @@ const mockBilling: Billing = {
   isBillingEnabled: false,
   billingUrl: '',
   trialPeriods: [],
-  __typename: 'Billing',
 };
 
 const initializeState = ({ set }: MutableSnapshot) => {
