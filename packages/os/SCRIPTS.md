@@ -1168,7 +1168,11 @@ Runs the typed lifecycle engine for install-state inspection, first install, ver
 
 `install` preserves the existing interactive onboarding flow. `update`, `restart`, `rollback`, and `repair` never repeat onboarding or replace workspace identity, node identity, secrets, databases, selected skills, or user-owned content. Mutating lifecycle success is accepted only after local worker health and, on connector-managed nodes, public connector health plus a signed heartbeat that reconciles the authority/D1 `/mcp` route. A missing heartbeat config keeps local-only installs usable. Successful activation retains only current, previous, explicitly pinned releases, and unresolved merge content bases. Staging, test-home, and dev-slot directories are bounded by count and age. Inconsistent references and symlinked release roots fail closed.
 
+`update` has one implementation in the lifecycle engine. Terminal invocations remain synchronous and return only after the selected release is accepted or rolled back. When the same command is invoked from the active Consuelo daemon, it first resolves the exact signed target release, then hands that target to the durable lifecycle operation worker and returns its `operationId` before the runtime restarts. The worker preserves the requested channel and survives service replacement through a one-shot LaunchAgent on macOS, a transient systemd user unit on managed Linux services, or the Windows service-host breakaway helper. `status --json` includes the latest durable lifecycle operation without exposing its worker PID as public identity.
+
 Native Windows release acceptance runs `scripts/testing/windows-platform-acceptance.ps1`. Its fixture must materialize `scripts/server/supervisor.ts`, matching the SCM service configuration and the managed process entrypoint; `scripts/server/main.ts` is the direct worker/smoke entrypoint and is not a valid service-host fixture.
+
+Native macOS alpha packaging runs `scripts/testing/macos-alpha-package.sh`. With no flags it builds, ad-hoc signs, and archives `Consuelo.app` for development/CI. `--install` copies the alpha app to `~/Applications/Consuelo.app`; `--launch` installs and opens it. `CONSUELO_MAC_APP_INSTALL_DIR` may override the destination only with a path inside the current user's home directory. This remains separate from the public OS installer until Developer ID signing and notarization are available.
 
 `add skill` and `remove skill` are opposite views over the same selected-skill control plane. With no names, they open the Clack multiselect UI: add shows only bundled skills that are not selected; remove shows only selected bundled skills; labels are the skill names. With explicit names they are non-interactive and scriptable. Selection is persisted in `$CONSUELO_HOME/config.json.selectedSkills`, then the existing managed-component reconciler refreshes `$CONSUELO_HOME/components/installed-skills.json` and `~/Consuelo/Skills/<name>`. Clean removed skills are deleted; locally modified managed skills are deselected but preserved for explicit review. `~/Consuelo/Skills/skills.json` remains the full bundled catalog, not the selected-skill list.
 
@@ -1196,6 +1200,13 @@ bun run lifecycle -- channel show
 bun run lifecycle -- channel set beta
 bun run lifecycle -- updates notifications off
 bun run lifecycle -- updates notifications snooze --until 2026-08-01T12:00:00.000Z
+```
+
+Agents use the same authority through the manifest-backed facade tools. `lifecycle.update` delegates to `scripts/lifecycle.ts update`; `lifecycle.status` delegates to `scripts/lifecycle.ts status`. They are discoverable through `tools.search` and do not implement a second updater.
+
+```bash
+workspace lifecycle.update '{"channel":"canary"}'
+workspace lifecycle.status '{}'
 ```
 
 Production install and update require `CONSUELO_RELEASE_BASE_URL` plus trusted Ed25519 public keys supplied through `CONSUELO_RELEASE_PUBLIC_KEYS_JSON` or `CONSUELO_RELEASE_KEY_ID` and `CONSUELO_RELEASE_PUBLIC_KEY`.
@@ -1578,6 +1589,25 @@ bun run install:system-daemons:dry-run
 Generate and lint user LaunchAgent plist files plus shell syntax checks without installing, bootstrapping, or starting background services. Use this before local Mac testing.
 
 ## Sites page publishing
+
+### Launcher local customization
+
+The launcher at `$CONSUELO_HOME/sites/index.html` is generated OS output and is rewritten whenever Sites are materialized. Do not edit that HTML directly. Add local launcher sections to the durable global `$CONSUELO_HOME/consuelo.yaml` instead:
+
+```yaml
+version: 1
+launcher:
+  extraSections:
+    - id: internal
+      label: Internal
+      links:
+        - label: Users & installs
+          href: https://internal.consuelohq.com/users
+```
+
+`launcher.extraSections` is optional. Users without it receive the stock launcher. Each section id must be a lowercase slug and each link must use an HTTPS absolute URL or a root-relative path such as `/tools`; script URLs, protocol-relative URLs, insecure HTTP URLs, embedded credentials, and arbitrary HTML are rejected by config validation. Labels and hrefs are HTML-escaped again during rendering.
+
+Local sections render after the built-in Sites links and before Guides and Tips. The overlay remains user-owned state in `consuelo.yaml`, so lifecycle update, restart, rollback, and repair can replace the runtime without replacing launcher customization. After changing the file, any normal Sites materialization regenerates the launcher from the current runtime plus the local overlay.
 
 Render typed reader pages and publish generated local pages into OS Sites with immutable versions:
 

@@ -14,6 +14,7 @@ import type {
 } from './trace-sites-gateway-contract';
 import { redactTraceJson, redactTraceText } from './redaction';
 import { ensureTraceDatabaseSchema } from './trace-database-schema';
+import { compileTraceHistorySearch } from './trace-search-query';
 
 export type LocalTraceSitesReadBackendOptions = {
   dbPath: string;
@@ -171,9 +172,14 @@ async function readNewerTracePage(
   try {
     const afterRowid = resolveHistoryAfterRowid(db, input.cursor);
     const pageSize = Math.max(1, Math.floor(input.limit));
+    const search = compileTraceHistorySearch(input.query ?? '');
+    const sql = TRACE_NEWER_PAGE_SQL.replace(
+      'WHERE rowid > ?',
+      `WHERE rowid > ? AND ${search.sql}`,
+    );
     const rows = db
-      .query(TRACE_NEWER_PAGE_SQL)
-      .all(afterRowid, pageSize) as TraceRow[];
+      .query(sql)
+      .all(afterRowid, ...search.values, pageSize) as TraceRow[];
     const nextCursor = rows.length
       ? rowidToCursor(rows[rows.length - 1].rowid)
       : rowidToCursor(afterRowid);
@@ -198,9 +204,14 @@ async function readTraceHistoryPage(
     const beforeRowid = resolveHistoryBeforeRowid(db, input.cursor);
     if (beforeRowid <= 1) return { rows: [], nextCursor: null };
     const pageSize = Math.max(1, Math.floor(input.limit));
+    const search = compileTraceHistorySearch(input.query ?? '');
+    const sql = TRACE_HISTORY_PAGE_SQL.replace(
+      'WHERE rowid < ?',
+      `WHERE rowid < ? AND ${search.sql}`,
+    );
     const rows = db
-      .query(TRACE_HISTORY_PAGE_SQL)
-      .all(beforeRowid, pageSize + 1) as TraceRow[];
+      .query(sql)
+      .all(beforeRowid, ...search.values, pageSize + 1) as TraceRow[];
     const pageRows = rows.slice(0, pageSize);
     return {
       rows: pageRows.map(historyRowFromTraceRow),

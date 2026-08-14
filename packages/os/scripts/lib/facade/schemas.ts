@@ -99,6 +99,20 @@ export const ArtifactsDigitalEguideInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
+export const DailySchedulesPublishInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  kind: z.enum(['security-scan', 'security-workpad', 'self-healing-workpad']),
+  sourceFile: optionalString,
+  content: z.string().optional(),
+  format: z.enum(['auto', 'json', 'markdown', 'text']).optional(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  title: optionalString,
+}).refine((input) => Boolean(input.sourceFile) !== (input.content !== undefined), {
+  message: 'provide exactly one of sourceFile or content',
+  path: ['sourceFile'],
+});
+
 const SvgRenderOptions = z.object({
   format: z.enum(['png']).optional(),
   width: z.number().int().positive().optional(),
@@ -1139,6 +1153,12 @@ export const WebsiteDeployInput = z.object({
   buildOnly: z.boolean().optional(),
 });
 
+export const LifecycleUpdateInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  channel: z.enum(['stable', 'beta', 'canary', 'dev', 'nightly']).optional(),
+});
+
 export const ServerInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -1249,6 +1269,7 @@ export const schemaRegistry = {
   ArtifactsUiInput,
   ArtifactsSessionInput,
   ArtifactsDigitalEguideInput,
+  DailySchedulesPublishInput,
   MediaSvgInput,
   CodeRunInput,
   CodeCallInput,
@@ -1340,6 +1361,7 @@ export const schemaRegistry = {
   RailwayLogsInput,
   RailwayRedeployInput,
   WebsiteDeployInput,
+  LifecycleUpdateInput,
   ServerInput,
   CheckFilesInput,
   EditFlowInput,
@@ -1368,6 +1390,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ArtifactsUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   ArtifactsSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   ArtifactsDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  DailySchedulesPublishInput: '{ kind: "security-scan" | "security-workpad" | "self-healing-workpad"; sourceFile?: string; content?: string; format?: "auto" | "json" | "markdown" | "text"; date?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaSvgInput: '{ action: \"create\" | \"inspect\" | \"render\" | \"measure\" | \"edit\" | \"verify\" | \"snapshot\" | \"restore\"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: \"png\"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: \"light\" | \"dark\" | \"no-preference\" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1459,6 +1482,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  LifecycleUpdateInput: '{ channel?: "stable" | "beta" | "canary" | "dev" | "nightly"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ServerInput: '{ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CheckFilesInput: '{ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }',
   EditFlowInput: '{ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }',

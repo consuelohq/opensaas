@@ -2110,6 +2110,76 @@
             "workflowRole": "artifacts.upstreamStatus",
             "workflowAliases": []
           }
+        },
+        {
+          "name": "dailySchedules.publish",
+          "kind": "facade-tool",
+          "source": "daily-schedules",
+          "sourcePath": "packages/os/tools/daily-schedules/manifest.ts",
+          "category": "artifacts",
+          "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
+          "core": false,
+          "definition": {
+            "name": "dailySchedules.publish",
+            "methodPath": [
+              "dailySchedules",
+              "publish"
+            ],
+            "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
+            "category": "artifacts",
+            "underlying": "Consuelo durable artifact catalog",
+            "capabilities": {
+              "readOnly": false,
+              "mutating": true,
+              "deterministic": false,
+              "safeToRetry": false
+            },
+            "defaultTimeout": 120000,
+            "inputSchema": "DailySchedulesPublishInput",
+            "outputSchema": "RawOutput",
+            "command": {
+              "script": "daily-schedules",
+              "branchMode": "none",
+              "arguments": [
+                {
+                  "source": "kind",
+                  "flag": "--kind",
+                  "kind": "value",
+                  "required": true
+                },
+                {
+                  "source": "sourceFile",
+                  "flag": "--source-file",
+                  "kind": "value"
+                },
+                {
+                  "source": "content",
+                  "flag": "--content",
+                  "kind": "value"
+                },
+                {
+                  "source": "format",
+                  "flag": "--format",
+                  "kind": "value"
+                },
+                {
+                  "source": "date",
+                  "flag": "--date",
+                  "kind": "value"
+                },
+                {
+                  "source": "title",
+                  "flag": "--title",
+                  "kind": "value"
+                }
+              ]
+            },
+            "exampleInput": {
+              "kind": "security-workpad",
+              "sourceFile": "/tmp/security-workpad.md"
+            },
+            "sessionRequired": false
+          }
         }
       ]
     },

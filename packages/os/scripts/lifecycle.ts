@@ -28,6 +28,11 @@ import {
   type LifecycleServiceController,
 } from './lib/lifecycle';
 import { resolveVisibleUserRoot } from './lib/managed-user-content-release';
+import {
+  createDetachedNativeLifecycleOperationLauncher,
+  type NativeLifecycleOperationLauncher,
+  type NativeLifecycleOperationState,
+} from './lib/native-lifecycle-operation';
 import { createLinuxPlatformAdapter } from './lib/platforms/linux';
 import {
   applySkillSelectionChange,
@@ -45,11 +50,19 @@ export type LifecycleCliIo = {
 export type LifecycleCliDependencies = Partial<LifecycleCliIo> & {
   engine?: LifecycleEngine;
   environment?: NodeJS.ProcessEnv;
+  operationLauncher?: NativeLifecycleOperationLauncher;
   visibleUserRoot?: string;
   selectSkills?: (input: {
     action: SkillSelectionAction;
     candidates: string[];
   }) => Promise<string[] | null>;
+};
+
+const publicLifecycleOperationState = (
+  state: NativeLifecycleOperationState,
+): Omit<NativeLifecycleOperationState, 'workerPid'> => {
+  const { workerPid: _workerPid, ...publicState } = state;
+  return publicState;
 };
 
 type ManagedCloudNodeOnboardingDescriptor = {
@@ -781,13 +794,10 @@ export async function runLifecycleCli(
     const runsInsideActiveDaemon =
       environment.CONSUELO_OS_DAEMON_PROCESS === '1' ||
       environment.XPC_SERVICE_NAME === 'com.consuelo.system';
-    const mutatesDaemonSynchronously =
-      (parsed.command === 'update' && !parsed.check) ||
-      parsed.command === 'repair';
-    if (runsInsideActiveDaemon && mutatesDaemonSynchronously) {
+    if (runsInsideActiveDaemon && parsed.command === 'repair') {
       throw lifecycleError(
         'DAEMON_MUTATION_NOT_ALLOWED',
-        `Consuelo OS cannot run a synchronous ${parsed.command} inside its active daemon process. Run the ${parsed.command} from Terminal or through the separate lifecycle process.`,
+        'Consuelo OS cannot run a synchronous repair inside its active daemon process. Run the repair from Terminal or through the separate lifecycle process.',
       );
     }
     const engine =
@@ -798,7 +808,59 @@ export async function runLifecycleCli(
         json: parsed.json,
         progress: (event) => stderr(renderLifecycleProgress(event)),
       });
-    const result = await executeCommand(parsed, engine);
+    const operationLauncher =
+      dependencies.operationLauncher ??
+      createDetachedNativeLifecycleOperationLauncher({
+        home: resolveLifecyclePaths(parsed.home).home,
+        platform: process.platform,
+        env: environment,
+      });
+    let result: LifecycleOperationResult;
+    if (runsInsideActiveDaemon && parsed.command === 'update' && !parsed.check) {
+      const checked = await engine.update({
+        channel: parsed.channel,
+        check: true,
+        yes: parsed.yes,
+      });
+      if (checked.updateAvailable !== true) {
+        result = checked;
+      } else {
+        if (!checked.version) {
+          throw lifecycleError(
+            'MANIFEST_INVALID',
+            'update check did not return a target release version',
+          );
+        }
+        const accepted = await operationLauncher.launch({
+          kind: 'update',
+          targetVersion: checked.version,
+          ...(parsed.channel ? { channel: parsed.channel } : {}),
+        });
+        result = {
+          ...checked,
+          detail: {
+            ...checked.detail,
+            detached: true,
+            accepted: accepted.accepted,
+            operationId: accepted.operationId,
+          },
+        };
+      }
+    } else {
+      result = await executeCommand(parsed, engine);
+    }
+    if (parsed.command === 'status') {
+      const lifecycleOperation = operationLauncher.read();
+      if (lifecycleOperation) {
+        result = {
+          ...result,
+          detail: {
+            ...result.detail,
+            lifecycleOperation: publicLifecycleOperationState(lifecycleOperation),
+          },
+        };
+      }
+    }
     if (parsed.json)
       stdout(
         `${JSON.stringify(lifecycleSuccessEnvelope(parsed.command, result))}\n`,

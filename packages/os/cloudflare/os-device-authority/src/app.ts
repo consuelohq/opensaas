@@ -5,6 +5,8 @@ import { json } from './http';
 import { registerDeviceRoutes } from './routes/device';
 import { registerGoogleOAuthRoutes } from './routes/google-oauth';
 import { registerHealthRoutes } from './routes/health';
+import { registerInstallControlPlaneRoutes } from './routes/install-control-plane';
+import { registerManagedCloudProvisioningRoutes } from './routes/managed-cloud-provisioning';
 import { registerMcpOAuthRoutes } from './routes/mcp-oauth';
 import { registerMcpProxyRoutes } from './routes/mcp-proxy';
 import { registerWorkspaceAgentRoutes } from './routes/workspace-agents';
@@ -33,7 +35,13 @@ export type CreateDeviceAuthorityHandlerInput = {
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
+  managedCloudProvisionerSecret?: string;
+  managedCloudEnrollmentSecret?: string;
   operationalLogger?: DeviceAuthorityLogger;
+  installControlPlaneRepository?: DeviceAuthorityRuntime['installControlPlaneRepository'];
+  installDiagnosticBundleStore?: DeviceAuthorityRuntime['installDiagnosticBundleStore'];
+  installTelemetryObserver?: DeviceAuthorityRuntime['installTelemetryObserver'];
+  installSentryDsn?: string;
 };
 
 export function createOsDeviceAuthorityApp(
@@ -48,6 +56,8 @@ export function createOsDeviceAuthorityApp(
   const app = new Hono();
 
   registerHealthRoutes(app, runtime);
+  registerInstallControlPlaneRoutes(app, runtime);
+  registerManagedCloudProvisioningRoutes(app, runtime);
   registerMcpProxyRoutes(app, runtime);
   registerMcpOAuthRoutes(app, runtime);
   registerGoogleOAuthRoutes(app, runtime);

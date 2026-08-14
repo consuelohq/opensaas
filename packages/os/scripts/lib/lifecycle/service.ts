@@ -8,6 +8,7 @@ import type {
 import { reconcileCaddyWorkerPoolConfig } from '../caddy-worker-pool-reconciliation';
 
 const CADDY_SERVICE_LABEL = 'com.consuelo.caddy';
+const LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT = 'retire-legacy-system-daemons.sh';
 
 export type LifecycleProcessResult = {
   exitCode: number;
@@ -59,6 +60,7 @@ export function createReloadServiceController(input: {
   userId?: number;
 }): LifecycleServiceController {
   const reloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
+  const legacySystemDaemonRetirementScript = resolve(input.osRoot, 'scripts', LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT);
   const uninstallScript = resolve(input.osRoot, 'scripts', 'uninstall-system-daemons.sh');
   const run = input.run ?? defaultRunner;
   const platform = input.platform ?? process.platform;
@@ -75,6 +77,18 @@ export function createReloadServiceController(input: {
     async preflight() {
       if (!existsSync(reloadScript)) {
         throw new Error(`canonical reload adapter is missing: ${reloadScript}`);
+      }
+      if (platform === 'darwin') {
+        if (!existsSync(legacySystemDaemonRetirementScript)) {
+          throw new Error(`legacy system-daemon retirement adapter is missing: ${legacySystemDaemonRetirementScript}`);
+        }
+        const legacy = await run('bash', [legacySystemDaemonRetirementScript, '--check']);
+        if (legacy.exitCode === 2) {
+          throw new Error('Legacy root Consuelo LaunchDaemons are still installed. Retire them once with: ' + `sudo bash '${legacySystemDaemonRetirementScript}' --apply` + ', then rerun the lifecycle command.');
+        }
+        if (legacy.exitCode !== 0) {
+          throw commandFailure(legacy, `legacy system-daemon check exited ${legacy.exitCode}`);
+        }
       }
       reconcileCaddy();
     },

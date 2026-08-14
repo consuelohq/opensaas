@@ -42,6 +42,7 @@ export type TraceSitesGatewayReadLayerRequest = {
   sourceMode: TraceSourceMode;
   cursor: string;
   limit?: number;
+  query?: string;
   bridgeConfigured?: boolean;
   includeRawPayload?: boolean;
   requesterCanReadRawPayload?: boolean;
@@ -55,6 +56,7 @@ export type TraceSitesGatewayReadBackendInput = {
   sourceMode: TraceSourceMode;
   cursor: string;
   limit: number;
+  query?: string;
 };
 
 export type TraceSitesGatewayReadBackendHealth = {

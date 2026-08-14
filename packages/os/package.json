@@ -53,6 +53,9 @@
     "mac": "bun ./scripts/mac.js",
     "linear": "bun ./scripts/linear.js",
     "sentry": "bun ./scripts/sentry.js",
+    "security:scan": "bun ./scripts/security-scan.ts",
+    "monitor:errors": "bun ./scripts/monitor-errors.ts",
+    "daily-schedules": "bun ./scripts/daily-schedules.ts",
     "workspace": "bun ./scripts/workspace.ts",
     "workspace:nodes": "bun ./scripts/workspace-nodes.ts",
     "tool-runner": "bun ./scripts/tool-runner.ts",
@@ -124,6 +127,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",
+    "@sentry/node": "^10.38.0",
     "@supabase/supabase-js": "latest",
     "@tanstack/virtual-core": "^3.17.3",
     "chalk": "^5.6.2",

@@ -49,6 +49,9 @@ export const DEVICE_AUTHORITY_ROUTE_POLICIES = [
   { method: 'POST', path: '/login/device/workspace', trust: 'device-proof' },
   { method: 'POST', path: '/login/device/approve', trust: 'internal' },
   { method: 'POST', path: '/login/oauth/access_token', trust: 'device-proof' },
+  { method: 'POST', path: '/internal/managed-cloud/provisioning/claim', trust: 'internal' },
+  { method: 'POST', path: '/internal/managed-cloud/provisioning/state', trust: 'internal' },
+  { method: 'POST', path: '/managed-cloud/provisioning/enroll', trust: 'node-bootstrap' },
   { method: 'GET', path: '/workspace/agents', trust: 'public' },
   { method: 'POST', path: '/workspace/agents', trust: 'node-bootstrap' },
 ] as const satisfies ReadonlyArray<{
