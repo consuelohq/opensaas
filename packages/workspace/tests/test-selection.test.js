@@ -310,6 +310,32 @@ describe('test selection registry', () => {
     );
   });
 
+  it('uses focused cloud-first auth onboarding contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/cloud-first-onboarding.ts',
+      '--changed-file',
+      'packages/os/tests/cloud-first-web-onboarding.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-cloud-first-auth-onboarding');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'OS cloud-first auth onboarding contracts',
+        'OS cloud-first auth onboarding Worker contract',
+        'OS cloud-first auth onboarding syntax contracts',
+      ]),
+    );
+  });
+
   it('uses focused canonical device approval contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
