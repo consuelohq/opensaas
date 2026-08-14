@@ -14,6 +14,7 @@ import {
   type WorkspaceNodeHeartbeatResult,
 } from './lib/workspace-node-heartbeat-client';
 import { reconcileGatewayWorkspaceEdgeProxyAuth } from './lib/security-gateway';
+import { writeStoredWorkspaceNodeSnapshot } from './lib/workspace-node-snapshot-cache';
 
 type WorkspaceNodeHeartbeatFileConfig = WorkspaceNodeHeartbeatConfig & {
   osHome?: string;
@@ -169,6 +170,14 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
     });
     const result = await client.send();
     reconcileHeartbeatEdgeProxyAuth({ configPath, config, result });
+    if (result.workspace) {
+      writeStoredWorkspaceNodeSnapshot({
+        home: resolveOsHome(configPath, config),
+        workspace: result.workspace,
+        expectedWorkspaceId: config.workspaceId,
+        expectedCurrentNodeId: config.nodeId,
+      });
+    }
     return result;
   } catch (error: unknown) {
     if (error instanceof Error) throw error;
