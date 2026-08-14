@@ -6,7 +6,8 @@ import { normalizeAuthReturnPath } from '../security/web-auth-contract';
 import { resolveCanonicalDeviceIdentity } from '../services/canonical-device-identity';
 import {
   CloudFirstOnboardingError,
-  resolveOrCreateCanonicalWebUser,
+  resolveCanonicalWebUser,
+  resolveWebOperatingAccountId,
 } from '../services/cloud-first-onboarding';
 import type { DeviceAuthorityRuntime } from '../types';
 import { rand } from '../utils';
@@ -26,7 +27,7 @@ import {
 import { registerApprovedWorkspaceRoute } from '../services/connectors';
 import { recordCanonicalInstallIdentity } from '../services/install-identity';
 import { finishMcpOAuthGoogleCallback } from '../services/mcp-oauth';
-import { completeWebGoogleLogin } from './web-auth';
+import { accountNotFoundPage, completeWebGoogleLogin } from './web-auth';
 
 async function handleGoogleOAuthRequest(
   request: Request,
@@ -156,18 +157,28 @@ async function handleGoogleOAuthRequest(
             fetchImpl,
             expectedNonce: webOAuthState.nonce,
           });
-          const user = await resolveOrCreateCanonicalWebUser({
+          const resolved = await resolveCanonicalWebUser({
             runtime,
             email: identity.email,
+            intent: webOAuthState.intent,
+          });
+          const accountId = await resolveWebOperatingAccountId({
+            runtime,
+            user: resolved.user,
+            googleSubject: identity.sub,
           });
           return await completeWebGoogleLogin({
             runtime,
-            accountId: user.userId,
+            accountId,
             email: identity.email,
             returnPath: webOAuthState.returnPath,
+            cloudOnboardingEligible: resolved.created,
           });
         } catch (error: unknown) {
           if (error instanceof CloudFirstOnboardingError) {
+            if (error.code === 'ACCOUNT_NOT_FOUND') {
+              return text(accountNotFoundPage(), { status: error.status });
+            }
             return json({ error: error.code.toLowerCase() }, { status: error.status });
           }
           return json({ error: 'invalid_login' }, { status: 400 });

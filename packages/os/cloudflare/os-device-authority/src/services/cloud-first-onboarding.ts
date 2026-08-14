@@ -24,6 +24,7 @@ export class CloudFirstOnboardingError extends Error {
     readonly code:
       | 'IDENTITY_DIRECTORY_UNAVAILABLE'
       | 'IDENTITY_AMBIGUOUS'
+      | 'ACCOUNT_NOT_FOUND'
       | 'WORKSPACE_NAME_INVALID'
       | 'WORKSPACE_EXISTS'
       | 'PRICING_UNAVAILABLE'
@@ -41,10 +42,11 @@ const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 const normalizeWorkspaceName = (value: string): string =>
   value.replace(/\s+/g, ' ').trim();
 
-export async function resolveOrCreateCanonicalWebUser(input: {
+export async function resolveCanonicalWebUser(input: {
   runtime: DeviceAuthorityRuntime;
   email: string;
-}): Promise<InstallControlPlaneCanonicalUser> {
+  intent: 'login' | 'signup';
+}): Promise<{ user: InstallControlPlaneCanonicalUser; created: boolean }> {
   try {
     const repository = input.runtime.installControlPlaneRepository;
     if (!repository) {
@@ -71,7 +73,14 @@ export async function resolveOrCreateCanonicalWebUser(input: {
           'A legacy Google alias cannot be used as a canonical Consuelo user.',
         );
       }
-      return existing[0];
+      return { user: existing[0], created: false };
+    }
+    if (input.intent === 'login') {
+      throw new CloudFirstOnboardingError(
+        'ACCOUNT_NOT_FOUND',
+        404,
+        'No Consuelo account found for this Google account.',
+      );
     }
 
     const digest = await hashHex(`consuelo:web-user:${email}`);
@@ -93,13 +102,56 @@ export async function resolveOrCreateCanonicalWebUser(input: {
         'This Google identity could not be bound unambiguously.',
       );
     }
-    return created[0];
+    return { user: created[0], created: true };
   } catch (error: unknown) {
     if (error instanceof CloudFirstOnboardingError) throw error;
     throw new CloudFirstOnboardingError(
       'IDENTITY_DIRECTORY_UNAVAILABLE',
       503,
       'Consuelo identity is temporarily unavailable.',
+    );
+  }
+}
+
+export async function resolveWebOperatingAccountId(input: {
+  runtime: DeviceAuthorityRuntime;
+  user: InstallControlPlaneCanonicalUser;
+  googleSubject: string;
+}): Promise<string> {
+  try {
+    const canonicalMemberships = await input.runtime.store.listWorkspaceMemberships(
+      input.user.userId,
+    );
+    if (canonicalMemberships.some((membership) => membership.status === 'active')) {
+      return input.user.userId;
+    }
+
+    const googleSubject = input.googleSubject.trim();
+    if (!googleSubject) return input.user.userId;
+    const legacyAccountId = `google:${googleSubject}`;
+    const legacyMemberships = (
+      await input.runtime.store.listWorkspaceMemberships(legacyAccountId)
+    ).filter((membership) => membership.status === 'active');
+    if (legacyMemberships.length === 0) return input.user.userId;
+
+    const canonicalWorkspaceIds = new Set(
+      input.user.workspaceMemberships.map((membership) => membership.workspaceId),
+    );
+    if (
+      canonicalWorkspaceIds.size > 0 &&
+      !legacyMemberships.some((membership) =>
+        canonicalWorkspaceIds.has(membership.workspaceId),
+      )
+    ) {
+      return input.user.userId;
+    }
+    return legacyAccountId;
+  } catch (error: unknown) {
+    if (error instanceof CloudFirstOnboardingError) throw error;
+    throw new CloudFirstOnboardingError(
+      'IDENTITY_DIRECTORY_UNAVAILABLE',
+      503,
+      'Consuelo workspace identity is temporarily unavailable.',
     );
   }
 }
