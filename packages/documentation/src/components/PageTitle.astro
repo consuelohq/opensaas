@@ -12,8 +12,10 @@ const isHome = Astro.url.pathname === '/';
 
 {isHome && (
   <section class="docs-home-hero" aria-labelledby="_top">
-    <p class="docs-home-kicker">Consuelo OS documentation</p>
-    <h1 id="_top">{title}</h1>
+    <h1 id="_top" aria-label={title}>
+      <span class="docs-home-title-line">Digital workers</span>
+      <span class="docs-home-title-line">built on Consuelo</span>
+    </h1>
     {description && <p class="docs-home-description">{description}</p>}
     <div class="docs-home-actions" aria-label="Documentation shortcuts">
       <a class="docs-home-primary" href="/start/">Get started</a>
@@ -286,21 +288,17 @@ const isHome = Astro.url.pathname === '/';
       padding: clamp(2rem, 7vw, 5.5rem) 0 clamp(1rem, 3vw, 2rem);
     }
 
-    .docs-home-kicker {
-      color: var(--docs-accent);
-      font-size: var(--sl-text-sm);
-      font-weight: 650;
-      letter-spacing: 0.04em;
-      margin: 0;
-      text-transform: uppercase;
-    }
-
     .docs-home-hero h1 {
       font-size: clamp(2.8rem, 8vw, 5.25rem);
       letter-spacing: -0.045em;
       line-height: 0.98;
       margin: 0;
-      max-width: 12ch;
+      max-width: none;
+    }
+
+    .docs-home-title-line {
+      display: block;
+      white-space: nowrap;
     }
 
     .docs-home-description {
@@ -612,14 +610,6 @@ const isHome = Astro.url.pathname === '/';
         right: auto;
       }
 
-      .docs-home-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .docs-home-actions .docs-home-primary {
-        grid-column: 1 / -1;
-      }
     }
   }
 </style>
