@@ -5,7 +5,8 @@
     "artifacts"
   ],
   "workflow": "digital-eguide",
-  "defaultTool": "artifacts.generateDigitalEguide",
+  "defaultTool": "artifacts",
+  "defaultOperation": "generate.digital-eguide",
   "primaryOpenDesignSkill": "digital-eguide",
   "templates": [
     "research",
@@ -16,6 +17,6 @@
   "extraRules": [
     "Choose the specific template from the user brief: research, spec, or plan.",
     "Use the reader shell for polished long-form e-guide output.",
-    "Publish durable artifacts through artifacts.publish and verify the artifacts catalog entry."
+    "Publish durable artifacts through the canonical artifacts tool with operation publish and verify the artifacts catalog entry."
   ]
 }

@@ -83,27 +83,7 @@ export const workflows = [
     "id": "artifacts",
     "aliases": [],
     "roles": [
-      "artifacts.publish",
-      "artifacts.refresh",
-      "artifacts.run",
-      "artifacts.designSystem.get",
-      "artifacts.skills.list",
-      "artifacts.designSystems.list",
-      "artifacts.upstreamStatus",
-      "artifacts.railwayCheck",
-      "artifacts.check",
-      "artifacts.generate.website",
-      "artifacts.generate.demo",
-      "artifacts.generate.imageBrief",
-      "artifacts.generate.digitalEguide",
-      "artifacts.generate.email",
-      "artifacts.generate.motionFrame",
-      "artifacts.render.hyperframes",
-      "artifacts.ui.background",
-      "artifacts.ui.stop",
-      "artifacts.ui.status",
-      "artifacts.ui.logs",
-      "artifacts.openDesign.build"
+      "artifacts"
     ],
     "categories": [
       "artifacts"

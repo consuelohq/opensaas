@@ -701,7 +701,7 @@
       "query": "publish design artifact",
       "source": "gold",
       "expected": [
-        "artifacts.publish"
+        "artifacts"
       ],
       "domain": "artifacts"
     },
@@ -738,7 +738,7 @@
       "query": "generate digital eguide artifact",
       "source": "gold",
       "expected": [
-        "artifacts.generateDigitalEguide"
+        "artifacts"
       ],
       "domain": "artifacts"
     },

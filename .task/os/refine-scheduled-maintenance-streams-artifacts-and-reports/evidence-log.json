@@ -1,0 +1,1176 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+  "events": [
+    {
+      "id": "e3f323ed-c2dc-47bf-b42b-66260beccd5b",
+      "occurred_at": "2026-08-14T04:01:18.954Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "18f0289e-0146-4326-a502-a2e65ad6e73b",
+      "occurred_at": "2026-08-14T04:01:19.442Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "32e0dbeb-26c1-4436-85f4-2d04c98323ad",
+      "occurred_at": "2026-08-14T04:01:19.927Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "dbd62c72-2a2c-47aa-9fcf-3174c71b09fd",
+      "occurred_at": "2026-08-14T04:01:20.413Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/artifacts/schema.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "9096d72a-46d6-4147-948e-60ddd823c956",
+      "occurred_at": "2026-08-14T04:01:20.900Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/artifacts/handler.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "9c06dfd6-6d52-40a6-8469-ea1fd154da13",
+      "occurred_at": "2026-08-14T04:01:21.388Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/security-scan.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "f5e2b229-a567-49c0-b592-2c78b4d3a089",
+      "occurred_at": "2026-08-14T04:01:21.871Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/monitor-errors-report.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "63317fb8-8df8-4d9e-a09a-d8b7ae14ce5c",
+      "occurred_at": "2026-08-14T04:01:22.337Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/daily-schedules-publisher.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "1cc8854d-ad1e-4ab2-94b2-b6b0c9c4362a",
+      "occurred_at": "2026-08-14T04:01:30.966Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/DESIGN.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "305c25ef-563b-4d12-9c5f-ac4647a6bdfa",
+      "occurred_at": "2026-08-14T04:02:00.909Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/daily-schedules.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "d0cf7188-1c67-4310-8184-af23c66f0d9e",
+      "occurred_at": "2026-08-14T04:02:01.362Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/daily-schedules.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "760a07d5-5509-4b52-a2d1-c0af40277301",
+      "occurred_at": "2026-08-14T04:02:01.820Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/security-scan.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "ee530daa-cfa3-4a5b-93ca-74313f782ced",
+      "occurred_at": "2026-08-14T04:02:02.268Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/monitor-errors.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "58dc6ebe-745a-44bf-bd71-e8b9d64d3e87",
+      "occurred_at": "2026-08-14T04:02:02.736Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/security-scan-runner.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "d1d4a859-2401-41bc-9fae-a86f16baa10f",
+      "occurred_at": "2026-08-14T04:02:03.191Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/security-scan.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "25a015ca-2098-4492-8d89-5462397631d2",
+      "occurred_at": "2026-08-14T04:02:03.638Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/monitor-errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "ec7e4b27-b230-47ef-8e4c-749d57dcef77",
+      "occurred_at": "2026-08-14T04:02:04.090Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "3256164b-6bfa-4634-8e98-5a0de2c0f3c3",
+      "occurred_at": "2026-08-14T04:02:33.457Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/artifacts/handler.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "881212bb-ed5a-4a6b-891e-1f23eb3cbe6d",
+      "occurred_at": "2026-08-14T04:03:50.757Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/artifacts/manifest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "1bcefca9-cf8c-4a8b-b667-6ad02b8e2188",
+      "occurred_at": "2026-08-14T04:03:51.206Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/daily-schedules/schema.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "7e40a1f1-3863-4141-9912-da0a3e7f9659",
+      "occurred_at": "2026-08-14T04:03:51.694Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/daily-schedules/handler.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "9053b755-7e7a-4020-95db-b554708d5742",
+      "occurred_at": "2026-08-14T04:03:52.144Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/registry.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "04a4b7a8-9cd4-422a-acf1-f967b0d881ac",
+      "occurred_at": "2026-08-14T04:04:11.578Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "5e5698a2-913f-4dab-b924-57f7eed272b9",
+      "occurred_at": "2026-08-14T04:07:09.360Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/daily-schedules.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "599e3719-ff10-4d27-808b-7b294251e69a",
+      "occurred_at": "2026-08-14T04:07:21.239Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/workflows/workflows.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "3b602a44-667c-4757-b084-841c565bb581",
+      "occurred_at": "2026-08-14T04:07:33.907Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/tool-scope-authorization.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "c6ed675d-98ca-49a1-9572-568eeed54ca5",
+      "occurred_at": "2026-08-14T04:09:10.866Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/skills/artifacts/subskills/landing-page.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "30278898-e3ed-4a30-8aef-3d41a497c795",
+      "occurred_at": "2026-08-14T04:09:14.404Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/security-scan.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "5e1f1e6b-28f5-48e9-bb68-62f94f24970f",
+      "occurred_at": "2026-08-14T04:09:15.900Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/skills/artifacts/SKILL.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "466d4810-2081-47fb-9086-b434bd2d24c6",
+      "occurred_at": "2026-08-14T04:09:16.502Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/artifacts-skill.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "65da70a5-447b-41be-90bc-7a61eb2619d8",
+      "occurred_at": "2026-08-14T04:09:21.032Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/security-scan-runner.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "6e97f7d0-d331-468a-8998-c40bac2002d9",
+      "occurred_at": "2026-08-14T04:09:39.320Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "98b27291-c6a5-4eb2-a228-6bff4be4c1c5",
+      "occurred_at": "2026-08-14T04:09:39.782Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/skills/artifacts/references/agents.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "bd101459-a808-49c5-b749-95f7ec75378f",
+      "occurred_at": "2026-08-14T04:09:40.243Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workflow-intent.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "c587be92-3e17-4522-8f08-986c156d1da5",
+      "occurred_at": "2026-08-14T04:09:40.696Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/artifacts-legacy-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "a0231468-2535-4cd5-a3c6-430229dcacbb",
+      "occurred_at": "2026-08-14T04:10:12.202Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "areas/consuelo-design/AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "00b7e42f-d91b-4bcc-8f54-6940addab71d",
+      "occurred_at": "2026-08-14T04:10:29.839Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/README.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "b596840f-5ccd-4a44-beca-1af4d042a3d2",
+      "occurred_at": "2026-08-14T04:11:05.513Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/generate-docs.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "3e543ea7-ef8f-4eac-b91c-36ea5ac4feaf",
+      "occurred_at": "2026-08-14T04:11:05.961Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/generate-types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "16632c00-17d8-4eff-b9c7-0193eb70c052",
+      "occurred_at": "2026-08-14T04:11:06.411Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/generate-tool-manifest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "879cc0db-43c8-42a8-979a-fb6e4787fca7",
+      "occurred_at": "2026-08-14T04:13:37.656Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/generate-docs.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "83e9f3ad-d4b2-4175-840b-2dbc075fa380",
+      "occurred_at": "2026-08-14T04:13:38.124Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/generate-types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "be2e72dc-a33f-4644-bb72-815b6acabc18",
+      "occurred_at": "2026-08-14T04:13:53.703Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "2872d799-4edd-4f96-a01c-138d77ebba88",
+      "occurred_at": "2026-08-14T04:14:05.565Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/generation/schema.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "82e7ba82-085c-4aaf-af4d-2d2df1221c1e",
+      "occurred_at": "2026-08-14T04:15:10.435Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/generated/tool.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "720fe948-9c74-4c8e-8a86-fef7768481b6",
+      "occurred_at": "2026-08-14T04:15:41.995Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/generated/tool.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "2a08771d-1ac6-4789-b4fd-067bf8a3d289",
+      "occurred_at": "2026-08-14T04:15:42.447Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/generated/tool.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "984c210a-87df-48e1-85c5-c4caaa4ac629",
+      "occurred_at": "2026-08-14T04:17:14.071Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/AUTHORING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "e91a0e7e-e43c-42f7-bf3f-a8082eb2a537",
+      "occurred_at": "2026-08-14T04:17:18.499Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/src/content/docs/build/skills/bundled/artifacts.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "ee90407b-a948-428c-a7f2-6bac56baa86e",
+      "occurred_at": "2026-08-14T04:17:22.452Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/skills/artifacts/SKILL.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "d9064f50-6095-4953-9b81-979212d9cbc8",
+      "occurred_at": "2026-08-14T04:18:34.329Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "47e7ab37-7aaa-4106-b713-8c4ae2b4ad27",
+      "occurred_at": "2026-08-14T04:18:41.241Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/evidence-log.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "d9cd15a3-7f6d-4f67-85bb-4047c78be2de",
+      "occurred_at": "2026-08-14T04:18:45.108Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/evidence-log.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "c06a1f5c-4f08-4a91-8fcb-82abc58ebd4d",
+      "occurred_at": "2026-08-14T04:18:48.077Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "5e9299b3-5ba3-43d5-a685-c4d490321775",
+      "occurred_at": "2026-08-14T04:18:50.516Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "21703a70-f8f2-4d64-986d-2daa9ea8f97e",
+      "occurred_at": "2026-08-14T04:19:02.798Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "943ef79e-0a62-4a49-b08c-2f74d785a5a0",
+      "occurred_at": "2026-08-14T04:20:17.840Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "c7208ca5-c2f2-429c-a736-b5315b38e5cf",
+      "occurred_at": "2026-08-14T04:20:18.290Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-package-layout.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "32a46e68-3664-403a-b535-a451b6c8fd61",
+      "occurred_at": "2026-08-14T04:20:29.277Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/fixtures/tool-package-baseline.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "ae3c3c0c-7a7c-4ad9-a6ea-ea084d0ec5aa",
+      "occurred_at": "2026-08-14T04:20:52.190Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/generation/handler.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "6bac1d49-3cbf-4fd2-a9fe-608db06f9bee",
+      "occurred_at": "2026-08-14T04:21:06.385Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/security-scan-runner.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "05f883e6-75e3-4621-a09d-c9a7a5d0bbc0",
+      "occurred_at": "2026-08-14T04:21:08.779Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/security-scan-runner.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "549c4afc-6cee-4e47-8c95-12ac4d25c757",
+      "occurred_at": "2026-08-14T04:21:33.723Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/package.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "a6dc2448-2edd-410e-8625-0769c5c4a84f",
+      "occurred_at": "2026-08-14T04:39:04.373Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "0214787e-a264-4e38-abed-dfddef44cd42",
+      "occurred_at": "2026-08-14T04:39:54.204Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/daily-schedules-publisher.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "e6734f90-d651-4e10-82b0-54d61481225f",
+      "occurred_at": "2026-08-14T04:39:58.597Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "058eab47-49ea-4eec-a2ac-15f179b26f07",
+      "occurred_at": "2026-08-14T04:40:06.887Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "c12b6c04-73d8-4d50-ab26-ae8f02f55847",
+      "occurred_at": "2026-08-14T04:40:13.179Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "40571e5b-4e6f-4a23-a415-cf897625843b",
+      "occurred_at": "2026-08-14T04:40:58.285Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "2524caeb-538e-4417-92c9-7a5aeda0053c",
+      "occurred_at": "2026-08-14T04:43:47.151Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "8e2fe323-5142-492b-9478-bb825ef194dd",
+      "occurred_at": "2026-08-14T04:43:49.887Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "b86b79f9-0af7-484e-8e95-1a52c500d0c3",
+      "occurred_at": "2026-08-14T04:44:45.391Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    },
+    {
+      "id": "bb8a9cdb-7ab8-4462-a0a9-87ef442cbfe3",
+      "occurred_at": "2026-08-14T04:46:28.628Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/refine-scheduled-maintenance-streams-artifacts-and-reports/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refine-scheduled-maintenance-streams-artifacts-and-reports"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-14T04:46:28.683Z"
+}

@@ -95,8 +95,8 @@ describe('OS workflow intent bundles', () => {
     );
 
     expect(artifacts.aliases).toEqual([]);
-    expect(artifacts.roles).toEqual(expect.arrayContaining(['artifacts.publish', 'artifacts.generate.website']));
-    expect(toolNames(artifacts)).toEqual(expect.arrayContaining(['artifacts.publish', 'artifacts.generateWebsite']));
+    expect(artifacts.roles).toEqual(['artifacts']);
+    expect(toolNames(artifacts)).toEqual(['artifacts']);
   });
 
   test('should bind the task workflow bundle and post-start guidance to the real task session', () => {
@@ -205,9 +205,7 @@ describe('OS workflow intent bundles', () => {
     expect(artifacts.workflow).toBe('artifacts');
     expect(artifacts.requestedWorkflow).toBe('artifacts');
     expect(artifacts.manifestBundle.aliases).toEqual([]);
-    expect(artifacts.manifestBundle.tools.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(['artifacts.publish', 'artifacts.generateWebsite']),
-    );
+    expect(artifacts.manifestBundle.tools.map((tool) => tool.name)).toEqual(['artifacts']);
     for (const legacy of ['office', 'design', 'sites']) {
       expect(() => runtime.start({ workflow: legacy, taskSession: `tsk_${legacy}` })).toThrow(`unknown workflow: ${legacy}`);
     }

@@ -23,11 +23,11 @@ evidence:
       - packages/os/tests/monitor-errors.test.ts
       - packages/os/tools/monitor/handler.test.ts
     runtime: The canonical Consuelo trace database was analyzed on 2026-08-14 and grouped failures were classified against current tool contracts.
-  - source: packages/os/tools/daily-schedules/schema.ts
+  - source: packages/os/tools/artifacts/schema.ts
     tests:
       - packages/os/tests/daily-schedules.test.ts
-      - packages/os/tools/daily-schedules/handler.test.ts
-    runtime: A private Daily Schedules artifact was published, listed in the artifact archive, and checked at desktop and mobile sizes on 2026-08-14.
+      - packages/os/tools/artifacts/handler.test.ts
+    runtime: The canonical operation-based Artifacts facade publishes a private Daily Schedules report plus the generated task workpad and refreshes the dated index.
 ---
 
 A facade tool is a typed operation exposed through the workspace tool facade. The generated full manifest marks these entries with `kind: "facade-tool"`.
@@ -114,9 +114,9 @@ The full manifest can expose higher-level maintenance operations in addition to 
 | --- | --- |
 | `security.scan` | Runs a defensive scan of the current Git repository with the configured Bun audit, OSV-Scanner, Trivy, and Semgrep binaries. It returns normalized findings, scanner status, local evidence paths, cross-scanner groups, and new/persistent/resolved deltas. It does not accept a remote host target. |
 | `monitor.errors` | Reads the last 24 hours of the canonical Consuelo tool-trace database and compares failures with the current tool contract. Expected policy enforcement and caller-input errors remain distinct from drift, transient failures, external failures, and defect candidates. |
-| `dailySchedules.publish` | Explicitly publishes a dated security scan or maintenance workpad into the private artifact archive and refreshes the Daily Schedules index. Existing entries use artifact version concurrency rather than an unconditional overwrite. |
+| `artifacts` | One operation-based artifact facade covers archive reads/writes, design generation/runtime operations, and `schedule.publish`. Daily Schedules publication uses the normalized security/self-healing report plus the existing generated task workpad and preserves artifact version concurrency. |
 
-`security.scan` and `monitor.errors` are read surfaces. Publishing a durable Daily Schedules entry is a separate mutating operation so callers can inspect evidence without creating an artifact as a hidden side effect.
+`security.scan` and `monitor.errors` are read surfaces. `artifacts({ operation: "schedule.publish", ... })` is the separate mutating step, so inspecting maintenance evidence never creates an artifact as a hidden side effect.
 
 ## Node and task routing
 

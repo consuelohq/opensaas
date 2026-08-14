@@ -28,6 +28,7 @@ describe('artifacts skill', () => {
       id: string;
       workflow: string;
       defaultTool: string;
+      defaultOperation: string;
       primaryOpenDesignSkill: string;
     }>('skills/artifacts/subskills/landing-page.json');
     const guide = readFileSync(resolve(packageRoot, 'skills/artifacts/SKILL.md'), 'utf8');
@@ -40,26 +41,21 @@ describe('artifacts skill', () => {
     });
     expect(registry.skills.find((skill) => skill.name === metadata.name)).toMatchObject({
       status: 'active',
-      load: { path: 'packages/os/skills/artifacts/SKILL.md' },
+      load: { path: 'skills/artifacts/SKILL.md' },
     });
-    expect(manifest.tools.some((tool) => tool.name === metadata.name)).toBe(false);
-    expect(manifest.tools.map((tool) => tool.name)).toEqual(expect.arrayContaining([
-      'artifacts.publish',
-      'artifacts.generateWebsite',
-      'artifacts.refresh',
-    ]));
-    expect(
-      manifest.tools
-        .filter((tool) => tool.name.startsWith('artifacts.'))
-        .every((tool) => tool.kind === 'facade-tool'),
-    ).toBe(true);
+    expect(manifest.tools.find((tool) => tool.name === metadata.name)).toMatchObject({
+      name: 'artifacts',
+      kind: 'facade-tool',
+    });
+    expect(manifest.tools.filter((tool) => tool.name.startsWith('artifacts.'))).toEqual([]);
     expect(landingPage).toMatchObject({
       id: 'landing-page',
       workflow: 'website',
-      defaultTool: 'artifacts.generateWebsite',
+      defaultTool: 'artifacts',
+      defaultOperation: 'generate.website',
       primaryOpenDesignSkill: 'saas-landing',
     });
-    expect(guide).toContain('Use `bun run artifacts` and `artifacts.*` tools.');
+    expect(guide).toContain('Use `bun run artifacts` and the canonical `artifacts` tool with an explicit `operation`.');
     expect(guide).not.toContain('executeCall');
 
     const cli = spawnSync('bun', ['./scripts/artifacts.ts', 'help'], {

@@ -309,6 +309,28 @@ function replaceDirectory(sourceDir: string, destinationDir: string): void {
   fs.cpSync(sourceDir, destinationDir, { recursive: true, errorOnExist: true });
 }
 
+function restoreDescendantCurrentArtifacts(
+  home: string,
+  catalog: ArtifactCatalog,
+  parentPath: string,
+): void {
+  const normalizedParentPath = normalizeRoutePath(parentPath);
+  const prefix = `${normalizedParentPath}/`;
+  const descendants = Object.values(catalog.artifacts)
+    .filter((artifact) => artifact.path.startsWith(prefix))
+    .sort((left, right) => pathSegments(left.path).length - pathSegments(right.path).length);
+
+  for (const artifact of descendants) {
+    const versionDir = artifactVersionDir(home, artifact.path, artifact.currentVersionId);
+    if (!fs.existsSync(versionDir)) {
+      throw new Error(
+        `artifact current version is missing for descendant ${artifact.path}: ${artifact.currentVersionId}`,
+      );
+    }
+    replaceDirectory(versionDir, artifactCurrentDir(home, artifact.path));
+  }
+}
+
 function listTreeFiles(root: string): string[] {
   if (!fs.existsSync(root)) return [];
   const files: string[] = [];
@@ -518,6 +540,7 @@ export function publishArtifact(input: PublishArtifactInput): PublishArtifactRes
   const digest = digestTree(versionDir);
   const currentDir = artifactCurrentDir(input.home, routePath);
   replaceDirectory(versionDir, currentDir);
+  restoreDescendantCurrentArtifacts(input.home, catalog, routePath);
 
   const category = input.category?.trim() || pathSegments(routePath)[0] || 'uncategorized';
   const template = input.template ?? 'uncategorized';
@@ -587,6 +610,7 @@ export function rollbackArtifact(input: RollbackArtifactInput): PublishArtifactR
   fs.mkdirSync(path.dirname(versionDir), { recursive: true });
   fs.cpSync(sourceDir, versionDir, { recursive: true, errorOnExist: true });
   replaceDirectory(versionDir, artifactCurrentDir(input.home, artifact.path));
+  restoreDescendantCurrentArtifacts(input.home, catalog, artifact.path);
 
   const version: ArtifactVersion = {
     ...target,

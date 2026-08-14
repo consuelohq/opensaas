@@ -1,6 +1,9 @@
 import { Database } from 'bun:sqlite';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { toolPackages } from '../../tools/registry';
+import { resolveConsueloHomeLayout } from './consuelo-home';
 import { resolveCanonicalTraceDbPath } from './trace-persistence';
 import {
   classifyTraceFailure,
@@ -25,9 +28,19 @@ export type MonitorErrorsReport = {
   generatedAt: string;
   window: '24h';
   traceDb: string;
+  reportPath: string;
   summary: ReturnType<typeof summarizeTraceFailures>;
   groups: ClassifiedTraceFailure[];
 };
+
+function reportTimestamp(now: Date): string {
+  return now.toISOString().replace(/[:.]/g, '-');
+}
+
+function writePrivateJson(filePath: string, value: unknown): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true, mode: 0o700 });
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
+}
 
 function toolContracts(): Map<string, MonitorToolContract> {
   const contracts = new Map<string, MonitorToolContract>();
@@ -88,6 +101,9 @@ export function buildMonitorErrorsReport(options: {
   now?: Date;
 } = {}): MonitorErrorsReport {
   const traceDb = resolveCanonicalTraceDbPath({ home: options.home, env: options.env });
+  const now = options.now ?? new Date();
+  const layout = resolveConsueloHomeLayout(options.home);
+  const reportPath = path.join(layout.nodeCacheDir, 'monitor-errors', `${reportTimestamp(now)}.json`);
   const database = new Database(traceDb, { readonly: true, strict: true });
   try {
     const rows = database.query<TraceRow, []>(`
@@ -111,14 +127,17 @@ export function buildMonitorErrorsReport(options: {
         }
         return right.ts.localeCompare(left.ts);
       });
-    return {
+    const report: MonitorErrorsReport = {
       schemaVersion: 1,
-      generatedAt: (options.now ?? new Date()).toISOString(),
+      generatedAt: now.toISOString(),
       window: '24h',
       traceDb,
+      reportPath,
       summary: summarizeTraceFailures(groups),
       groups,
     };
+    writePrivateJson(reportPath, report);
+    return report;
   } finally {
     database.close();
   }

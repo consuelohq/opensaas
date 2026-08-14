@@ -99,18 +99,35 @@ export const ArtifactsDigitalEguideInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
-export const DailySchedulesPublishInput = z.object({
+export const ArtifactsOperationInput = z.object({
   ...requestFields,
   ...dryRunField,
-  kind: z.enum(['security-scan', 'security-workpad', 'self-healing-workpad']),
-  sourceFile: optionalString,
-  content: z.string().optional(),
-  format: z.enum(['auto', 'json', 'markdown', 'text']).optional(),
+  operation: z.enum([
+    'publish', 'refresh', 'list', 'get', 'history', 'rollback', 'check',
+    'generate.demo', 'generate.digital-eguide', 'generate.email', 'generate.image-brief',
+    'generate.motion-frame', 'generate.website', 'design-system.get', 'design-systems.list',
+    'skills.list', 'open-design.build', 'railway.check', 'render.hyperframes', 'run',
+    'ui.background', 'ui.logs', 'ui.status', 'ui.stop', 'upstream.status', 'schedule.publish',
+  ]),
+  target: optionalString,
+  portlessName: optionalString,
+  path: optionalString,
+  name: optionalString,
+  category: optionalString,
+  template: digitalEguideTemplate,
+  tailscaleBin: optionalString,
+  live: z.boolean().optional(),
+  prompt: optionalString,
+  timeout: z.number().int().positive().optional(),
+  id: optionalString,
+  versionId: optionalString,
+  reason: optionalString,
+  baseVersion: optionalString,
+  forcePublish: z.boolean().optional(),
+  schedule: z.enum(['security', 'self-healing']).optional(),
+  reportFile: optionalString,
+  workpadFile: optionalString,
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  title: optionalString,
-}).refine((input) => Boolean(input.sourceFile) !== (input.content !== undefined), {
-  message: 'provide exactly one of sourceFile or content',
-  path: ['sourceFile'],
 });
 
 const SvgRenderOptions = z.object({
@@ -1269,7 +1286,7 @@ export const schemaRegistry = {
   ArtifactsUiInput,
   ArtifactsSessionInput,
   ArtifactsDigitalEguideInput,
-  DailySchedulesPublishInput,
+  ArtifactsOperationInput,
   MediaSvgInput,
   CodeRunInput,
   CodeCallInput,
@@ -1390,7 +1407,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ArtifactsUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   ArtifactsSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   ArtifactsDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
-  DailySchedulesPublishInput: '{ kind: "security-scan" | "security-workpad" | "self-healing-workpad"; sourceFile?: string; content?: string; format?: "auto" | "json" | "markdown" | "text"; date?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ArtifactsOperationInput: '{ operation: "publish" | "refresh" | "list" | "get" | "history" | "rollback" | "check" | "generate.demo" | "generate.digital-eguide" | "generate.email" | "generate.image-brief" | "generate.motion-frame" | "generate.website" | "design-system.get" | "design-systems.list" | "skills.list" | "open-design.build" | "railway.check" | "render.hyperframes" | "run" | "ui.background" | "ui.logs" | "ui.status" | "ui.stop" | "upstream.status" | "schedule.publish"; target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; live?: boolean; prompt?: string; timeout?: number; id?: string; versionId?: string; reason?: string; baseVersion?: string; forcePublish?: boolean; schedule?: "security" | "self-healing"; reportFile?: string; workpadFile?: string; date?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   MediaSvgInput: '{ action: \"create\" | \"inspect\" | \"render\" | \"measure\" | \"edit\" | \"verify\" | \"snapshot\" | \"restore\"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: \"png\"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: \"light\" | \"dark\" | \"no-preference\" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',

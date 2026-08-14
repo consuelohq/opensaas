@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2613,
-    "mappedTestCount": 2532,
-    "unmappedTestCount": 81,
-    "ruleCount": 49,
-    "explicitRuleCount": 30,
+    "testFileCount": 2625,
+    "mappedTestCount": 2541,
+    "unmappedTestCount": 84,
+    "ruleCount": 50,
+    "explicitRuleCount": 31,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 244,
+      "packages/os/tests": 251,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 58,
+      "packages/workspace/tests": 61,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -350,8 +350,10 @@
       "packages/os/tools/mac": 1,
       "packages/os/tools/media": 1,
       "packages/os/tools/memory": 1,
+      "packages/os/tools/monitor": 1,
       "packages/os/tools/railway": 1,
       "packages/os/tools/review": 1,
+      "packages/os/tools/security": 1,
       "packages/os/tools/sentry": 1,
       "packages/os/tools/stream": 1,
       "packages/os/tools/subagent": 1,
@@ -631,7 +633,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 520,
+      "test": 532,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -704,7 +706,9 @@
             "bun",
             "test",
             "packages/workspace/tests/task-session.test.js",
-            "packages/workspace/tests/task-meta.test.ts"
+            "packages/workspace/tests/task-meta.test.ts",
+            "packages/workspace/tests/task-init.test.js",
+            "packages/workspace/tests/task-selection.test.js"
           ]
         }
       ],
@@ -755,6 +759,60 @@
       ],
       "critical": true,
       "reason": "OS trace watcher changes must preserve terminal rendering, canonical sidecar resolution, and real SQLite CLI behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-artifacts-scheduled-maintenance",
+      "source": [
+        "packages/os/benchmarks/tools-search-gold.json",
+        "packages/os/scripts/artifacts.ts",
+        "packages/os/scripts/daily-schedules.ts",
+        "packages/os/scripts/lib/artifacts.ts",
+        "packages/os/scripts/lib/daily-schedules-publisher.ts",
+        "packages/os/scripts/lib/daily-schedules.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/monitor-errors-report.ts",
+        "packages/os/scripts/lib/tool-scope-authorization.ts",
+        "packages/os/skills/artifacts/**",
+        "packages/os/tests/artifacts-legacy-contract.test.ts",
+        "packages/os/tests/artifacts-skill.test.ts",
+        "packages/os/tests/daily-schedules.test.ts",
+        "packages/os/tests/monitor-errors.test.ts",
+        "packages/os/tests/workflow-intent.test.ts",
+        "packages/os/tools/artifacts/**",
+        "packages/os/tools/daily-schedules/**",
+        "packages/os/workflows/generated/workflow-bundles.json",
+        "packages/os/workflows/workflows.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Artifacts and Daily Schedules contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/daily-schedules.test.ts",
+            "packages/os/tools/artifacts/handler.test.ts",
+            "packages/os/tests/artifacts-skill.test.ts",
+            "packages/os/tests/workflow-intent.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/artifacts-legacy-contract.test.ts"
+          ]
+        },
+        {
+          "name": "OS self-healing monitor report contract",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Artifacts, Daily Schedules, and self-healing report changes must prove their focused durable-publication, typed-tool, generated-catalog, and Bun-native monitor contracts without selecting the historically red unrelated OS package suite.",
       "origin": "explicit"
     },
     {
@@ -3037,6 +3095,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/caddy-ha-watchdog-migration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3168,6 +3231,11 @@
     },
     {
       "path": "packages/os/tests/daemon-bun-path.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/daily-schedules.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3488,6 +3556,11 @@
     },
     {
       "path": "packages/os/tests/launcher-onboarding.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/legacy-system-daemons.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -3847,6 +3920,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/monitor-errors.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/native-lifecycle-client.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3957,6 +4035,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/os-steering-tool-trace.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/os-universal-login.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4043,6 +4126,11 @@
     },
     {
       "path": "packages/os/tests/security-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/security-scan.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4258,6 +4346,11 @@
     },
     {
       "path": "packages/os/tests/trace-persistence.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-search-query.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4547,6 +4640,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tools/monitor/handler.test.ts",
+      "group": "packages/os/tools/monitor",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tools/railway/handler.test.ts",
       "group": "packages/os/tools/railway",
       "kind": "test"
@@ -4554,6 +4652,11 @@
     {
       "path": "packages/os/tools/review/handler.test.ts",
       "group": "packages/os/tools/review",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/security/handler.test.ts",
+      "group": "packages/os/tools/security",
       "kind": "test"
     },
     {
@@ -14927,6 +15030,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/review-generated-artifact-contract.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/review-run-state.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -14977,6 +15085,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/task-init.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/task-meta.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -14998,6 +15111,11 @@
     },
     {
       "path": "packages/workspace/tests/task-push-session.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-selection.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -15134,6 +15252,7 @@
     "packages/workspace/tests/pr-review.test.js",
     "packages/workspace/tests/research-ingest.test.js",
     "packages/workspace/tests/review-documentation-opportunity.test.js",
+    "packages/workspace/tests/review-generated-artifact-contract.test.js",
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/stream-lifecycle.test.ts",
     "packages/workspace/tests/stream-sync-node-modules.test.js",
@@ -15141,11 +15260,13 @@
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
     "packages/workspace/tests/task-hook-workflow-contract.test.ts",
     "packages/workspace/tests/task-hooks.test.ts",
+    "packages/workspace/tests/task-init.test.js",
     "packages/workspace/tests/task-meta.test.ts",
     "packages/workspace/tests/task-node-modules.test.js",
     "packages/workspace/tests/task-pr-repository-recovery.test.ts",
     "packages/workspace/tests/task-push-local-sync.test.ts",
     "packages/workspace/tests/task-push-session.test.ts",
+    "packages/workspace/tests/task-selection.test.js",
     "packages/workspace/tests/task-selector-pr-ref.test.js",
     "packages/workspace/tests/task-session.test.js",
     "packages/workspace/tests/task-workpad.test.js",

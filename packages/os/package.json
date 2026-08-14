@@ -55,7 +55,6 @@
     "sentry": "bun ./scripts/sentry.js",
     "security:scan": "bun ./scripts/security-scan.ts",
     "monitor:errors": "bun ./scripts/monitor-errors.ts",
-    "daily-schedules": "bun ./scripts/daily-schedules.ts",
     "workspace": "bun ./scripts/workspace.ts",
     "workspace:nodes": "bun ./scripts/workspace-nodes.ts",
     "tool-runner": "bun ./scripts/tool-runner.ts",

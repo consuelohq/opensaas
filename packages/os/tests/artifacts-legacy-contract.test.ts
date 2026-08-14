@@ -73,7 +73,7 @@ describe('Artifacts strict legacy cutover', () => {
     }
 
     expect(source('workflows/workflows.ts')).toContain('"id": "artifacts"');
-    expect(source('tools/artifacts/schema.ts')).toContain('"name": "artifacts.publish"');
+    expect(source('tools/artifacts/schema.ts')).toContain("name: 'artifacts'");
     expect(source('skills/skills.json')).toContain('"name": "artifacts"');
   });
 

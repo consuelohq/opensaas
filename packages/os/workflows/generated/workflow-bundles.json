@@ -1041,27 +1041,7 @@
       "id": "artifacts",
       "aliases": [],
       "roles": [
-        "artifacts.publish",
-        "artifacts.refresh",
-        "artifacts.run",
-        "artifacts.designSystem.get",
-        "artifacts.skills.list",
-        "artifacts.designSystems.list",
-        "artifacts.upstreamStatus",
-        "artifacts.railwayCheck",
-        "artifacts.check",
-        "artifacts.generate.website",
-        "artifacts.generate.demo",
-        "artifacts.generate.imageBrief",
-        "artifacts.generate.digitalEguide",
-        "artifacts.generate.email",
-        "artifacts.generate.motionFrame",
-        "artifacts.render.hyperframes",
-        "artifacts.ui.background",
-        "artifacts.ui.stop",
-        "artifacts.ui.status",
-        "artifacts.ui.logs",
-        "artifacts.openDesign.build"
+        "artifacts"
       ],
       "categories": [
         "artifacts"
@@ -1086,62 +1066,21 @@
       ],
       "tools": [
         {
-          "name": "artifacts.check",
+          "name": "artifacts",
           "kind": "facade-tool",
           "source": "artifacts",
           "sourcePath": "packages/os/tools/artifacts/manifest.ts",
           "category": "artifacts",
-          "description": "run artifacts package boundary and Railway checks",
+          "description": "canonical typed artifact facade; choose an operation for archive, generation, design-runtime, or Daily Schedules publication work",
           "core": false,
           "definition": {
-            "name": "artifacts.check",
+            "name": "artifacts",
             "methodPath": [
-              "artifacts",
-              "check"
+              "artifacts"
             ],
-            "description": "run artifacts package boundary and Railway checks",
+            "description": "canonical typed artifact facade; choose an operation for archive, generation, design-runtime, or Daily Schedules publication work",
             "category": "artifacts",
-            "underlying": "OS artifacts check",
-            "capabilities": {
-              "readOnly": true,
-              "mutating": false,
-              "deterministic": true,
-              "safeToRetry": true
-            },
-            "defaultTimeout": 30000,
-            "inputSchema": "ArtifactsInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "check",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {},
-            "sessionRequired": false,
-            "workflowRole": "artifacts.check",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.generateDemo",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session",
-          "core": false,
-          "definition": {
-            "name": "artifacts.generateDemo",
-            "methodPath": [
-              "artifacts",
-              "generateDemo"
-            ],
-            "description": "create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session",
-            "category": "artifacts",
-            "underlying": "OS artifacts generate-demo",
+            "underlying": "OS artifacts operation facade (Effect-backed execution boundary)",
             "capabilities": {
               "readOnly": false,
               "mutating": true,
@@ -1149,530 +1088,37 @@
               "safeToRetry": false
             },
             "defaultTimeout": 600000,
-            "inputSchema": "ArtifactsSessionInput",
+            "inputSchema": "ArtifactsOperationInput",
             "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "generate-demo",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": [
-                {
-                  "source": "name",
-                  "flag": "--name",
-                  "kind": "value"
-                },
-                {
-                  "source": "prompt",
-                  "flag": "--prompt",
-                  "kind": "value"
-                },
-                {
-                  "source": "live",
-                  "flag": "--live",
-                  "kind": "boolean"
-                }
+            "search": {
+              "domainAliases": [
+                "artifact",
+                "daily schedules",
+                "design"
+              ],
+              "keywords": [
+                "publish artifact",
+                "daily schedules",
+                "security report",
+                "self healing report",
+                "design system",
+                "artifact history",
+                "generate website",
+                "generate eguide",
+                "open design"
               ]
             },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.generate.demo",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.generateDigitalEguide",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template",
-          "core": false,
-          "definition": {
-            "name": "artifacts.generateDigitalEguide",
-            "methodPath": [
-              "artifacts",
-              "generateDigitalEguide"
-            ],
-            "description": "create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template",
-            "category": "artifacts",
-            "underlying": "OS artifacts generate-digital-eguide",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 600000,
-            "inputSchema": "ArtifactsDigitalEguideInput",
-            "outputSchema": "RawOutput",
             "command": {
               "script": "artifacts",
-              "subcommand": "generate-digital-eguide",
               "branchMode": "none",
               "jsonFlag": "--json",
               "dryRunFlag": "--dry-run",
               "arguments": [
                 {
-                  "source": "name",
-                  "flag": "--name",
-                  "kind": "value"
+                  "source": "operation",
+                  "kind": "value",
+                  "required": true
                 },
-                {
-                  "source": "prompt",
-                  "flag": "--prompt",
-                  "kind": "value"
-                },
-                {
-                  "source": "template",
-                  "flag": "--template",
-                  "kind": "value"
-                },
-                {
-                  "source": "live",
-                  "flag": "--live",
-                  "kind": "boolean"
-                }
-              ]
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.generate.digitalEguide",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.generateEmail",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session",
-          "core": false,
-          "definition": {
-            "name": "artifacts.generateEmail",
-            "methodPath": [
-              "artifacts",
-              "generateEmail"
-            ],
-            "description": "create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session",
-            "category": "artifacts",
-            "underlying": "OS artifacts generate-email",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 600000,
-            "inputSchema": "ArtifactsSessionInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "generate-email",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": [
-                {
-                  "source": "name",
-                  "flag": "--name",
-                  "kind": "value"
-                },
-                {
-                  "source": "prompt",
-                  "flag": "--prompt",
-                  "kind": "value"
-                },
-                {
-                  "source": "live",
-                  "flag": "--live",
-                  "kind": "boolean"
-                }
-              ]
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.generate.email",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.generateImageBrief",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session",
-          "core": false,
-          "definition": {
-            "name": "artifacts.generateImageBrief",
-            "methodPath": [
-              "artifacts",
-              "generateImageBrief"
-            ],
-            "description": "create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session",
-            "category": "artifacts",
-            "underlying": "OS artifacts generate-image-brief",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 600000,
-            "inputSchema": "ArtifactsSessionInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "generate-image-brief",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": [
-                {
-                  "source": "name",
-                  "flag": "--name",
-                  "kind": "value"
-                },
-                {
-                  "source": "prompt",
-                  "flag": "--prompt",
-                  "kind": "value"
-                },
-                {
-                  "source": "live",
-                  "flag": "--live",
-                  "kind": "boolean"
-                }
-              ]
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.generate.imageBrief",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.generateMotionFrame",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session",
-          "core": false,
-          "definition": {
-            "name": "artifacts.generateMotionFrame",
-            "methodPath": [
-              "artifacts",
-              "generateMotionFrame"
-            ],
-            "description": "create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session",
-            "category": "artifacts",
-            "underlying": "OS artifacts generate-motion-frame",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 600000,
-            "inputSchema": "ArtifactsSessionInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "generate-motion-frame",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": [
-                {
-                  "source": "name",
-                  "flag": "--name",
-                  "kind": "value"
-                },
-                {
-                  "source": "prompt",
-                  "flag": "--prompt",
-                  "kind": "value"
-                },
-                {
-                  "source": "live",
-                  "flag": "--live",
-                  "kind": "boolean"
-                }
-              ]
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.generate.motionFrame",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.generateWebsite",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session",
-          "core": false,
-          "definition": {
-            "name": "artifacts.generateWebsite",
-            "methodPath": [
-              "artifacts",
-              "generateWebsite"
-            ],
-            "description": "create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session",
-            "category": "artifacts",
-            "underlying": "OS artifacts generate-website",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 600000,
-            "inputSchema": "ArtifactsSessionInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "generate-website",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": [
-                {
-                  "source": "name",
-                  "flag": "--name",
-                  "kind": "value"
-                },
-                {
-                  "source": "prompt",
-                  "flag": "--prompt",
-                  "kind": "value"
-                },
-                {
-                  "source": "live",
-                  "flag": "--live",
-                  "kind": "boolean"
-                }
-              ]
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.generate.website",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.getDesignSystem",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "return base Consuelo DESIGN.md and artifacts AGENTS.md only",
-          "core": false,
-          "definition": {
-            "name": "artifacts.getDesignSystem",
-            "methodPath": [
-              "artifacts",
-              "getDesignSystem"
-            ],
-            "description": "return base Consuelo DESIGN.md and artifacts AGENTS.md only",
-            "category": "artifacts",
-            "underlying": "OS artifacts get-design-system",
-            "capabilities": {
-              "readOnly": true,
-              "mutating": false,
-              "deterministic": true,
-              "safeToRetry": true
-            },
-            "defaultTimeout": 30000,
-            "inputSchema": "ArtifactsInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "get-design-system",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {},
-            "sessionRequired": false,
-            "workflowRole": "artifacts.designSystem.get",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.listDesignSystems",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "list Consuelo default design system and upstream reference systems",
-          "core": false,
-          "definition": {
-            "name": "artifacts.listDesignSystems",
-            "methodPath": [
-              "artifacts",
-              "listDesignSystems"
-            ],
-            "description": "list Consuelo default design system and upstream reference systems",
-            "category": "artifacts",
-            "underlying": "OS artifacts list-design-systems",
-            "capabilities": {
-              "readOnly": true,
-              "mutating": false,
-              "deterministic": true,
-              "safeToRetry": true
-            },
-            "defaultTimeout": 30000,
-            "inputSchema": "ArtifactsInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "list-design-systems",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {},
-            "sessionRequired": false,
-            "workflowRole": "artifacts.designSystems.list",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.listSkills",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "list upstream Open Design skills and Consuelo workflow mappings",
-          "core": false,
-          "definition": {
-            "name": "artifacts.listSkills",
-            "methodPath": [
-              "artifacts",
-              "listSkills"
-            ],
-            "description": "list upstream Open Design skills and Consuelo workflow mappings",
-            "category": "artifacts",
-            "underlying": "OS artifacts list-skills",
-            "capabilities": {
-              "readOnly": true,
-              "mutating": false,
-              "deterministic": true,
-              "safeToRetry": true
-            },
-            "defaultTimeout": 30000,
-            "inputSchema": "ArtifactsInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "list-skills",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {},
-            "sessionRequired": false,
-            "workflowRole": "artifacts.skills.list",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.odBuild",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "build the vendored Open Design daemon CLI through the Bun facade",
-          "core": false,
-          "definition": {
-            "name": "artifacts.odBuild",
-            "methodPath": [
-              "artifacts",
-              "odBuild"
-            ],
-            "description": "build the vendored Open Design daemon CLI through the Bun facade",
-            "category": "artifacts",
-            "underlying": "OS artifacts od:build",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 300000,
-            "inputSchema": "ArtifactsUiInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "od:build",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.openDesign.build",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.publish",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "publish a design artifact through private Tailscale Serve and update the artifact catalog",
-          "core": false,
-          "definition": {
-            "name": "artifacts.publish",
-            "methodPath": [
-              "artifacts",
-              "publish"
-            ],
-            "description": "publish a design artifact through private Tailscale Serve and update the artifact catalog",
-            "category": "artifacts",
-            "underlying": "OS artifacts publish",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 120000,
-            "inputSchema": "ArtifactsPublishInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "publish",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": [
                 {
                   "source": "target",
                   "flag": "--target",
@@ -1707,143 +1153,11 @@
                   "source": "tailscaleBin",
                   "flag": "--tailscale-bin",
                   "kind": "value"
-                }
-              ]
-            },
-            "exampleInput": {
-              "portlessName": "design.localhost",
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.publish",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.railwayCheck",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "verify artifacts is excluded from Railway deploy paths",
-          "core": false,
-          "definition": {
-            "name": "artifacts.railwayCheck",
-            "methodPath": [
-              "artifacts",
-              "railwayCheck"
-            ],
-            "description": "verify artifacts is excluded from Railway deploy paths",
-            "category": "artifacts",
-            "underlying": "OS artifacts railway:check",
-            "capabilities": {
-              "readOnly": true,
-              "mutating": false,
-              "deterministic": true,
-              "safeToRetry": true
-            },
-            "defaultTimeout": 30000,
-            "inputSchema": "ArtifactsInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "railway:check",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {},
-            "sessionRequired": false,
-            "workflowRole": "artifacts.railwayCheck",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.refresh",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "regenerate and publish the existing Consuelo Artifacts archive without adding an artifact",
-          "core": false,
-          "definition": {
-            "name": "artifacts.refresh",
-            "methodPath": [
-              "artifacts",
-              "refresh"
-            ],
-            "description": "regenerate and publish the existing Consuelo Artifacts archive without adding an artifact",
-            "category": "artifacts",
-            "underlying": "OS artifacts refresh",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 120000,
-            "inputSchema": "ArtifactsRefreshInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "refresh",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": [
+                },
                 {
-                  "source": "tailscaleBin",
-                  "flag": "--tailscale-bin",
-                  "kind": "value"
-                }
-              ]
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.refresh",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.renderHyperframes",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session",
-          "core": false,
-          "definition": {
-            "name": "artifacts.renderHyperframes",
-            "methodPath": [
-              "artifacts",
-              "renderHyperframes"
-            ],
-            "description": "create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session",
-            "category": "artifacts",
-            "underlying": "OS artifacts render-hyperframes",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 600000,
-            "inputSchema": "ArtifactsSessionInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "render-hyperframes",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": [
-                {
-                  "source": "name",
-                  "flag": "--name",
-                  "kind": "value"
+                  "source": "live",
+                  "flag": "--live",
+                  "kind": "boolean"
                 },
                 {
                   "source": "prompt",
@@ -1851,334 +1165,67 @@
                   "kind": "value"
                 },
                 {
-                  "source": "live",
-                  "flag": "--live",
+                  "source": "timeout",
+                  "flag": "--timeout",
+                  "kind": "value"
+                },
+                {
+                  "source": "id",
+                  "flag": "--id",
+                  "kind": "value"
+                },
+                {
+                  "source": "versionId",
+                  "flag": "--version-id",
+                  "kind": "value"
+                },
+                {
+                  "source": "reason",
+                  "flag": "--reason",
+                  "kind": "value"
+                },
+                {
+                  "source": "baseVersion",
+                  "flag": "--base-version",
+                  "kind": "value"
+                },
+                {
+                  "source": "forcePublish",
+                  "flag": "--force-publish",
                   "kind": "boolean"
-                }
-              ]
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.render.hyperframes",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.run",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "start Open Design daemon and web UI in the foreground through the Bun facade",
-          "core": false,
-          "definition": {
-            "name": "artifacts.run",
-            "methodPath": [
-              "artifacts",
-              "run"
-            ],
-            "description": "start Open Design daemon and web UI in the foreground through the Bun facade",
-            "category": "artifacts",
-            "underlying": "OS artifacts run",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 600000,
-            "inputSchema": "ArtifactsUiInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "run",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.run",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.uiBg",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "start Open Design managed runtimes in the background through the Bun facade",
-          "core": false,
-          "definition": {
-            "name": "artifacts.uiBg",
-            "methodPath": [
-              "artifacts",
-              "uiBg"
-            ],
-            "description": "start Open Design managed runtimes in the background through the Bun facade",
-            "category": "artifacts",
-            "underlying": "OS artifacts ui:bg",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 300000,
-            "inputSchema": "ArtifactsUiInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "ui:bg",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.ui.background",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.uiLogs",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "show Open Design managed runtime logs through the Bun facade",
-          "core": false,
-          "definition": {
-            "name": "artifacts.uiLogs",
-            "methodPath": [
-              "artifacts",
-              "uiLogs"
-            ],
-            "description": "show Open Design managed runtime logs through the Bun facade",
-            "category": "artifacts",
-            "underlying": "OS artifacts ui:logs",
-            "capabilities": {
-              "readOnly": true,
-              "mutating": false,
-              "deterministic": true,
-              "safeToRetry": true
-            },
-            "defaultTimeout": 30000,
-            "inputSchema": "ArtifactsInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "ui:logs",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {},
-            "sessionRequired": false,
-            "workflowRole": "artifacts.ui.logs",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.uiStatus",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "show Open Design managed runtime status through the Bun facade",
-          "core": false,
-          "definition": {
-            "name": "artifacts.uiStatus",
-            "methodPath": [
-              "artifacts",
-              "uiStatus"
-            ],
-            "description": "show Open Design managed runtime status through the Bun facade",
-            "category": "artifacts",
-            "underlying": "OS artifacts ui:status",
-            "capabilities": {
-              "readOnly": true,
-              "mutating": false,
-              "deterministic": true,
-              "safeToRetry": true
-            },
-            "defaultTimeout": 30000,
-            "inputSchema": "ArtifactsInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "ui:status",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {},
-            "sessionRequired": false,
-            "workflowRole": "artifacts.ui.status",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.uiStop",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "stop Open Design managed runtimes through the Bun facade",
-          "core": false,
-          "definition": {
-            "name": "artifacts.uiStop",
-            "methodPath": [
-              "artifacts",
-              "uiStop"
-            ],
-            "description": "stop Open Design managed runtimes through the Bun facade",
-            "category": "artifacts",
-            "underlying": "OS artifacts ui:stop",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 120000,
-            "inputSchema": "ArtifactsUiInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "ui:stop",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {
-              "dryRun": true
-            },
-            "sessionRequired": false,
-            "workflowRole": "artifacts.ui.stop",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "artifacts.upstreamStatus",
-          "kind": "facade-tool",
-          "source": "artifacts",
-          "sourcePath": "packages/os/tools/artifacts/manifest.ts",
-          "category": "artifacts",
-          "description": "show vendored Open Design metadata and runtime requirements",
-          "core": false,
-          "definition": {
-            "name": "artifacts.upstreamStatus",
-            "methodPath": [
-              "artifacts",
-              "upstreamStatus"
-            ],
-            "description": "show vendored Open Design metadata and runtime requirements",
-            "category": "artifacts",
-            "underlying": "OS artifacts upstream-status",
-            "capabilities": {
-              "readOnly": true,
-              "mutating": false,
-              "deterministic": true,
-              "safeToRetry": true
-            },
-            "defaultTimeout": 30000,
-            "inputSchema": "ArtifactsInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "artifacts",
-              "subcommand": "upstream-status",
-              "branchMode": "none",
-              "jsonFlag": "--json",
-              "dryRunFlag": "--dry-run",
-              "arguments": []
-            },
-            "exampleInput": {},
-            "sessionRequired": false,
-            "workflowRole": "artifacts.upstreamStatus",
-            "workflowAliases": []
-          }
-        },
-        {
-          "name": "dailySchedules.publish",
-          "kind": "facade-tool",
-          "source": "daily-schedules",
-          "sourcePath": "packages/os/tools/daily-schedules/manifest.ts",
-          "category": "artifacts",
-          "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
-          "core": false,
-          "definition": {
-            "name": "dailySchedules.publish",
-            "methodPath": [
-              "dailySchedules",
-              "publish"
-            ],
-            "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
-            "category": "artifacts",
-            "underlying": "Consuelo durable artifact catalog",
-            "capabilities": {
-              "readOnly": false,
-              "mutating": true,
-              "deterministic": false,
-              "safeToRetry": false
-            },
-            "defaultTimeout": 120000,
-            "inputSchema": "DailySchedulesPublishInput",
-            "outputSchema": "RawOutput",
-            "command": {
-              "script": "daily-schedules",
-              "branchMode": "none",
-              "arguments": [
-                {
-                  "source": "kind",
-                  "flag": "--kind",
-                  "kind": "value",
-                  "required": true
                 },
                 {
-                  "source": "sourceFile",
-                  "flag": "--source-file",
+                  "source": "schedule",
+                  "flag": "--schedule",
                   "kind": "value"
                 },
                 {
-                  "source": "content",
-                  "flag": "--content",
+                  "source": "reportFile",
+                  "flag": "--report-file",
                   "kind": "value"
                 },
                 {
-                  "source": "format",
-                  "flag": "--format",
+                  "source": "workpadFile",
+                  "flag": "--workpad-file",
+                  "kind": "value"
+                },
+                {
+                  "source": "taskSession",
+                  "flag": "--task-session",
                   "kind": "value"
                 },
                 {
                   "source": "date",
                   "flag": "--date",
                   "kind": "value"
-                },
-                {
-                  "source": "title",
-                  "flag": "--title",
-                  "kind": "value"
                 }
               ]
             },
             "exampleInput": {
-              "kind": "security-workpad",
-              "sourceFile": "/tmp/security-workpad.md"
+              "operation": "list"
             },
-            "sessionRequired": false
+            "sessionRequired": false,
+            "workflowRole": "artifacts"
           }
         }
       ]

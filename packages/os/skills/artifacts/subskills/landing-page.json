@@ -5,7 +5,8 @@
     "artifacts"
   ],
   "workflow": "website",
-  "defaultTool": "artifacts.generateWebsite",
+  "defaultTool": "artifacts",
+  "defaultOperation": "generate.website",
   "primaryOpenDesignSkill": "saas-landing",
   "fallbackOpenDesignSkills": [
     "web-prototype",

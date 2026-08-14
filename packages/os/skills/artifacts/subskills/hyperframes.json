@@ -5,7 +5,8 @@
     "artifacts"
   ],
   "workflow": "hyperframes",
-  "defaultTool": "artifacts.renderHyperframes",
+  "defaultTool": "artifacts",
+  "defaultOperation": "render.hyperframes",
   "primaryOpenDesignSkill": "hyperframes",
   "fallbackOpenDesignSkills": [
     "motion-frames"

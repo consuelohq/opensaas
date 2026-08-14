@@ -5,7 +5,8 @@
     "artifacts"
   ],
   "workflow": "motion-frame",
-  "defaultTool": "artifacts.generateMotionFrame",
+  "defaultTool": "artifacts",
+  "defaultOperation": "generate.motion-frame",
   "primaryOpenDesignSkill": "motion-frames",
   "fallbackOpenDesignSkills": [
     "hyperframes",
