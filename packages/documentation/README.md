@@ -128,9 +128,9 @@ Do not bring these back into public docs:
 
 ## Runtime translation
 
-Runtime translation is Phase 3-owned. The English MDX files remain the only editorial source of truth. Do not add committed translated locale folders under `src/content/docs`. The header language selector calls `/api/docs/translate`, and the server route loads the English source, hashes the content, translates with the configured provider, and caches by route + content hash + target language.
+Runtime translation is Phase 3-owned. The English MDX files remain the only editorial source of truth. Do not add committed translated locale folders under `src/content/docs`. The client detects the browser's preferred language and automatically calls `/api/docs/translate` for a supported non-English locale. The server route loads the English source, hashes the content, translates with the configured provider, and caches by route + content hash + target language.
 
-Provider credentials must stay server-side. The client selector must never reference `GOOGLE_TRANSLATE_API_KEY` or any provider token. Use `DOCS_TRANSLATION_PROVIDER=passthrough` only for local/test validation; production translation is configured with `GOOGLE_TRANSLATE_API_KEY`.
+Provider credentials must stay server-side. Browser-language detection must never reference `GOOGLE_TRANSLATE_API_KEY` or any provider token. Use `DOCS_TRANSLATION_PROVIDER=passthrough` only for local/test validation; production translation is configured with `GOOGLE_TRANSLATE_API_KEY`. `bun run test:translation` covers browser-language resolution, cache expiry, and the Google request contract, while `bun run test:browser` stubs the runtime endpoint under a Spanish browser locale and proves automatic translation without a visible selector.
 
 ## Phase boundaries
 

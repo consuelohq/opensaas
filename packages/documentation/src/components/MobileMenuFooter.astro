@@ -1,0 +1,42 @@
+---
+import SocialIcons from 'virtual:starlight/components/SocialIcons';
+import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
+---
+
+<div class="mobile-preferences" data-docs-mobile-preferences>
+  <div class="mobile-preferences-left">
+    <div class="social-icons"><SocialIcons /></div>
+    <ThemeSelect />
+  </div>
+</div>
+
+<style>
+  @layer starlight.core {
+    .mobile-preferences {
+      border-top: 1px solid var(--sl-color-gray-6);
+      padding-block: 1rem;
+    }
+
+    .mobile-preferences-left {
+      align-items: center;
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-start;
+    }
+
+    .social-icons {
+      align-items: center;
+      display: flex;
+    }
+
+    .social-icons :global(a) {
+      color: var(--sl-color-gray-2);
+      margin: 0;
+      padding: 0.5rem;
+    }
+
+    .social-icons :global(a:hover) {
+      color: var(--sl-color-white);
+    }
+  }
+</style>

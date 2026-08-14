@@ -60,9 +60,10 @@ describe('promoted Tools, Skills, Steering, and Memory documentation contract', 
     expect(navigation).not.toContain("label: 'Build with OS'");
   });
 
-  test('keeps Sites under Tools and durable files under Memory', () => {
+  test('promotes Sites beside Tools and keeps durable files under Memory', () => {
     const navigation = read('src/lib/docs-navigation.ts');
-    expect(navigation).toContain("label: 'Sites'");
+    expect(navigation).toContain("{ label: 'Sites', slug: 'sites'");
+    expect(navigation).not.toContain("{ label: 'Sites', items: sitesItems }");
     expect(navigation).toContain("label: 'Files and artifacts', slug: 'build/files-and-artifacts'");
     expect(navigation).toContain("label: 'Approvals', slug: 'secure/approvals'");
   });
