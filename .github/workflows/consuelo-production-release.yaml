@@ -18,6 +18,7 @@ on:
           - docs
           - website
           - os
+          - os-device-auth
           - dialer
       migrate_mcp_origin_waf:
         description: Migrate the managed OS MCP rules to the canonical connector-origin hostname class.
@@ -141,7 +142,7 @@ jobs:
     needs: [deploy-docs, deploy-website]
     if: >-
       always() &&
-      (github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'os') &&
+      (github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'os' || inputs.target == 'os-device-auth') &&
       (needs.deploy-docs.result == 'success' || needs.deploy-docs.result == 'skipped') &&
       (needs.deploy-website.result == 'success' || needs.deploy-website.result == 'skipped')
     environment: consuelo / production
@@ -181,7 +182,11 @@ jobs:
             echo "::error::Missing OS release trust anchors (CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS or signing key id + public key)"
             exit 1
           fi
-          bun run os:release
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.target }}" == "os-device-auth" ]]; then
+            bun run os:release -- --device-auth-only
+          else
+            bun run os:release
+          fi
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}

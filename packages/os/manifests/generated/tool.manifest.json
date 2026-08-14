@@ -5113,6 +5113,7 @@
         },
         "command": {
           "script": "lifecycle",
+          "executionScope": "runtime",
           "subcommand": "status",
           "branchMode": "none",
           "jsonFlag": "--json",
@@ -5168,6 +5169,7 @@
         },
         "command": {
           "script": "lifecycle",
+          "executionScope": "runtime",
           "subcommand": "update",
           "branchMode": "none",
           "jsonFlag": "--json",

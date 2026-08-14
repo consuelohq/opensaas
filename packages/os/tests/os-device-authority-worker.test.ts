@@ -1507,6 +1507,29 @@ describe('os device authority worker', () => {
     }
   });
 
+  it('should report managed cloud billing readiness only when both Stripe secrets exist', async () => {
+    const cases = [
+      { stripeSecretKey: undefined, stripeWebhookSecret: undefined, expected: false },
+      { stripeSecretKey: 'sk_test', stripeWebhookSecret: undefined, expected: false },
+      { stripeSecretKey: undefined, stripeWebhookSecret: 'whsec_test', expected: false },
+      { stripeSecretKey: 'sk_test', stripeWebhookSecret: 'whsec_test', expected: true },
+    ];
+    for (const testCase of cases) {
+      const handler = createOsDeviceAuthorityHandler({
+        store: createMemoryDeviceGrantStore(),
+        origin,
+        now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+        stripeSecretKey: testCase.stripeSecretKey,
+        stripeWebhookSecret: testCase.stripeWebhookSecret,
+      });
+      const response = await handler(new Request(`${origin}/health`));
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toMatchObject({
+        managed_cloud_billing_configured: testCase.expected,
+      });
+    }
+  });
+
   it('should return a terminal failure when workspace connector provisioning fails', async () => {
     const entryPoints = [
       'Google OAuth callback',

@@ -66,6 +66,9 @@ export class OsDeviceGrantDurableObject {
       operationalLogger: env.OS_DEVICE_AUTH_LOGGER,
       managedCloudProvisionerSecret: env.OS_MANAGED_CLOUD_PROVISIONER_SECRET,
       managedCloudEnrollmentSecret: env.OS_MANAGED_CLOUD_ENROLLMENT_SECRET,
+      stripeSecretKey: env.OS_STRIPE_SECRET_KEY,
+      stripeWebhookSecret: env.OS_STRIPE_WEBHOOK_SECRET,
+      stripeApiBaseUrl: env.OS_STRIPE_API_BASE_URL,
       managedCloudPricing: managedCloudPricingFromJson({
         policyJson: env.OS_MANAGED_CLOUD_PRICING_POLICY_JSON,
         rateCardsJson: env.OS_MANAGED_CLOUD_RATE_CARDS_JSON,

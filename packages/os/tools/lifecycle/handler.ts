@@ -5,6 +5,7 @@ export const toolHandlers = [
     name: 'lifecycle.status',
     command: {
       script: 'lifecycle',
+      executionScope: 'runtime',
       subcommand: 'status',
       branchMode: 'none',
       jsonFlag: '--json',
@@ -15,6 +16,7 @@ export const toolHandlers = [
     name: 'lifecycle.update',
     command: {
       script: 'lifecycle',
+      executionScope: 'runtime',
       subcommand: 'update',
       branchMode: 'none',
       jsonFlag: '--json',

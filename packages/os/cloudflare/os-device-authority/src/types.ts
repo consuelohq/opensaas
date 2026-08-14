@@ -1,6 +1,7 @@
 import type { WorkspaceRouteD1Database } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import type { WorkspaceSiteSnapshotId } from '../../../scripts/lib/workspace-edge-route-seed';
 import type { ManagedCloudPricingRuntime } from './services/managed-cloud-pricing';
+import type { ManagedCloudPlanId, ManagedCloudRegionId } from '../../../scripts/lib/managed-cloud-pricing';
 import type {
   ManagedCloudProvisioningClaimResult,
   ManagedCloudProvisioningCreateResult,
@@ -192,6 +193,31 @@ export type WorkspaceCloudTrial = {
   updatedAt: number;
 };
 
+export type ManagedCloudCheckout = {
+  checkoutId: string;
+  accountId: string;
+  email: string;
+  displayName: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  planId: ManagedCloudPlanId;
+  region: ManagedCloudRegionId;
+  pricingVersion: string;
+  monthlyPriceCents: number;
+  currency: 'USD';
+  status: 'pending' | 'paid';
+  stripeCheckoutSessionId?: string;
+  stripeCheckoutUrl?: string;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  provisioningJobId?: string;
+  createdAt: number;
+  updatedAt: number;
+  expiresAt: number;
+  paidAt?: number;
+};
+
 export type WorkspaceMembership = {
   accountId: string;
   workspaceId: string;
@@ -353,6 +379,9 @@ export type Store = {
   byWorkspaceCloudTrial(
     workspaceId: string,
   ): Promise<WorkspaceCloudTrial | undefined>;
+  putManagedCloudCheckout(checkout: ManagedCloudCheckout): Promise<void>;
+  byManagedCloudCheckout(checkoutId: string): Promise<ManagedCloudCheckout | undefined>;
+  byAccountManagedCloudCheckout(accountId: string): Promise<ManagedCloudCheckout | undefined>;
   putWorkspaceMembership(membership: WorkspaceMembership): Promise<void>;
   listWorkspaceMemberships(accountId: string): Promise<WorkspaceMembership[]>;
   putAuthoritySession(session: AuthoritySession): Promise<void>;
@@ -486,6 +515,9 @@ export type Env = {
   OS_MANAGED_CLOUD_RATE_CARDS_JSON?: string;
   OS_MANAGED_CLOUD_PROVISIONER_SECRET?: string;
   OS_MANAGED_CLOUD_ENROLLMENT_SECRET?: string;
+  OS_STRIPE_SECRET_KEY?: string;
+  OS_STRIPE_WEBHOOK_SECRET?: string;
+  OS_STRIPE_API_BASE_URL?: string;
   OS_DEVICE_AUTH_LOGGER?: DeviceAuthorityLogger;
   INSTALL_DIAGNOSTICS?: InstallDiagnosticR2Bucket;
   OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS?: string;
@@ -525,6 +557,9 @@ export type DeviceAuthorityRuntime = {
   managedCloudPricing?: ManagedCloudPricingRuntime;
   managedCloudProvisionerSecret?: string;
   managedCloudEnrollmentSecret?: string;
+  stripeSecretKey?: string;
+  stripeWebhookSecret?: string;
+  stripeApiBaseUrl?: string;
   operationalLogger?: DeviceAuthorityLogger;
   installControlPlaneRepository?: InstallControlPlaneRepository;
   installDiagnosticBundleStore?: InstallDiagnosticBundleStore;

@@ -39,7 +39,7 @@ export class CloudFirstOnboardingError extends Error {
 
 const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 
-const normalizeWorkspaceName = (value: string): string =>
+export const normalizeCloudFirstWorkspaceName = (value: string): string =>
   value.replace(/\s+/g, ' ').trim();
 
 export async function resolveCanonicalWebUser(input: {
@@ -156,7 +156,7 @@ export async function resolveWebOperatingAccountId(input: {
   }
 }
 
-async function derivedWorkspaceIdentity(input: {
+export async function derivedCloudFirstWorkspaceIdentity(input: {
   accountId: string;
   displayName: string;
 }): Promise<Pick<AccountWorkspace, 'workspaceId' | 'workspaceSlug' | 'workspaceHost'>> {
@@ -187,14 +187,17 @@ async function derivedWorkspaceIdentity(input: {
   }
 }
 
-function standardQuote(runtime: DeviceAuthorityRuntime) {
+export function managedCloudQuoteForPlan(
+  runtime: DeviceAuthorityRuntime,
+  planId: ManagedCloudPlanId,
+) {
   const catalog = buildManagedCloudPublicCatalog(
     runtime.managedCloudPricing,
     CLOUD_FIRST_REGION_ID,
   );
   const quote = catalog.quotes.find(
     (candidate) =>
-      candidate.plan.id === CLOUD_FIRST_PLAN_ID &&
+      candidate.plan.id === planId &&
       candidate.region.id === CLOUD_FIRST_REGION_ID,
   );
   if (!catalog.pricingAvailable || !quote) {
@@ -218,7 +221,7 @@ export async function createCloudFirstWorkspace(input: {
   job: ManagedCloudProvisioningJob;
 }> {
   try {
-  const displayName = normalizeWorkspaceName(input.workspaceName);
+  const displayName = normalizeCloudFirstWorkspaceName(input.workspaceName);
   if (displayName.length < 1 || displayName.length > 80) {
     throw new CloudFirstOnboardingError(
       'WORKSPACE_NAME_INVALID',
@@ -229,7 +232,7 @@ export async function createCloudFirstWorkspace(input: {
 
   // Pricing is validated before any durable workspace/trial mutation. This keeps
   // a temporary provider pricing outage from producing a half-onboarded tenant.
-  const quote = standardQuote(input.runtime);
+  const quote = managedCloudQuoteForPlan(input.runtime, CLOUD_FIRST_PLAN_ID);
   const nowMs = input.runtime.now();
   const nowIso = new Date(nowMs).toISOString();
   const existingWorkspace = await input.runtime.store.byAccountWorkspace(
@@ -286,7 +289,7 @@ export async function createCloudFirstWorkspace(input: {
     ({
       accountId: input.accountId,
       displayName,
-      ...(await derivedWorkspaceIdentity({
+      ...(await derivedCloudFirstWorkspaceIdentity({
         accountId: input.accountId,
         displayName,
       })),
@@ -380,15 +383,32 @@ export async function cloudFirstProvisioningStatus(input: {
       : undefined;
     if (!job || job.accountId !== input.accountId) return undefined;
     const trial = await input.runtime.store.byWorkspaceCloudTrial(job.workspaceId);
-    if (!trial || trial.accountId !== input.accountId) return undefined;
+    const paidCheckout = trial
+      ? undefined
+      : await input.runtime.store.byAccountManagedCloudCheckout(input.accountId);
+    const paidMatches = Boolean(
+      paidCheckout?.status === 'paid' &&
+      paidCheckout.workspaceId === job.workspaceId &&
+      paidCheckout.provisioningJobId === job.jobId,
+    );
+    if ((!trial || trial.accountId !== input.accountId) && !paidMatches) return undefined;
     return {
       job: publicManagedCloudProvisioningJob(job),
-      trial: {
-        planId: trial.planId,
-        provisioningJobId: trial.provisioningJobId,
-        startedAt: trial.startedAt,
-        endsAt: trial.endsAt,
-      },
+      ...(trial
+        ? {
+            trial: {
+              planId: trial.planId,
+              provisioningJobId: trial.provisioningJobId,
+              startedAt: trial.startedAt,
+              endsAt: trial.endsAt,
+            },
+          }
+        : {
+            billing: {
+              kind: 'stripe_subscription' as const,
+              planId: paidCheckout?.planId,
+            },
+          }),
     };
   } catch (error: unknown) {
     if (error instanceof CloudFirstOnboardingError) throw error;
