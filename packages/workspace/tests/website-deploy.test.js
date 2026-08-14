@@ -84,11 +84,13 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(workflow).toContain('- docs');
   expect(workflow).toContain('- website');
   expect(workflow).toContain('- os');
+  expect(workflow).toContain('- os-device-auth');
   expect(workflow.split('environment: consuelo / production')).toHaveLength(4);
   expect(workflow).toContain('needs: [deploy-docs, deploy-website]');
   expect(workflow).toContain("inputs.target == 'docs'");
   expect(workflow).toContain("inputs.target == 'website'");
   expect(workflow).toContain("inputs.target == 'os'");
+  expect(workflow).toContain("inputs.target == 'os-device-auth'");
   expect(workflow).toContain("needs.deploy-docs.result == 'success'");
   expect(workflow).toContain("needs.deploy-docs.result == 'skipped'");
   expect(workflow).toContain("needs.deploy-website.result == 'success'");
@@ -97,6 +99,7 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(workflow).toContain('bun run website:deploy -- --branch main --json');
   expect(workflow).toContain('bun install --global wrangler@4.105.0');
   expect(workflow).toContain('bun run os:release');
+  expect(workflow).toContain('bun run os:release -- --device-auth-only');
   const osReleaseScript = readFileSync(
     join(repoRoot, 'packages/workspace/scripts/os-release.ts'),
     'utf8',
