@@ -290,6 +290,7 @@ export type DefaultSiteSnapshot = {
   key: string;
   versionId: string;
   siteId?: WorkspaceSiteSnapshotId;
+  siteIds?: WorkspaceSiteSnapshotId[];
   contentType?: string;
   cachePolicy?:
     | 'static-shell'
