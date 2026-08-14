@@ -1,6 +1,7 @@
 name: Consuelo OS runtime publish
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main

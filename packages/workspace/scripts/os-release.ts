@@ -27,7 +27,8 @@ Release all public Consuelo OS surfaces.
 
 By default this releases:
   1. install.consuelohq.com/os
-  2. os.consuelohq.com device approval authority
+  2. *.consuelohq.com workspace edge and route registry migrations
+  3. os.consuelohq.com device approval authority
 
 Options:
   --dry-run             Run both deploys in dry-run mode
@@ -111,6 +112,10 @@ function main(): void {
 
   if (!options.deviceAuthOnly) {
     runScript('os:release-install', options);
+  }
+
+  if (!options.installOnly && !options.deviceAuthOnly) {
+    runScript('os:release-workspace-edge', options);
   }
 
   if (!options.installOnly) {

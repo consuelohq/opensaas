@@ -3,10 +3,10 @@
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
     "testFileCount": 2629,
-    "mappedTestCount": 2545,
-    "unmappedTestCount": 84,
-    "ruleCount": 51,
-    "explicitRuleCount": 32,
+    "mappedTestCount": 2546,
+    "unmappedTestCount": 83,
+    "ruleCount": 52,
+    "explicitRuleCount": 33,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -864,6 +864,57 @@
       ],
       "critical": true,
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-release-surface-freshness",
+      "source": [
+        ".github/workflows/consuelo-os-runtime-publish.yaml",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/tests/distribution/release-channel-workflows.test.ts",
+        "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/workspace/scripts/os-release.ts",
+        "packages/workspace/scripts/os-release-device-auth.ts",
+        "packages/workspace/scripts/os-release-workspace-edge.ts",
+        "packages/workspace/tests/website-deploy.test.js"
+      ],
+      "tests": [
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts"
+          ]
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ]
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -15344,7 +15395,6 @@
     "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
     "packages/workspace/tests/verification.test.js",
     "packages/workspace/tests/wait.test.js",
-    "packages/workspace/tests/website-deploy.test.js",
     "packages/workspace/tests/workflow-intent.test.ts",
     "tests/operator.test.ts"
   ],

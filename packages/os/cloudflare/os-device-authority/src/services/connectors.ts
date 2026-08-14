@@ -1,6 +1,7 @@
 import {
   createWorkspaceEdgeRouteSeedRecord,
   createWorkspaceEdgeRouteSeedSql,
+  WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS,
 } from '../../../../scripts/lib/workspace-edge-route-seed';
 import {
   resolveWorkspaceRouteFromD1,
@@ -42,6 +43,10 @@ export function defaultSiteSnapshot(
     key: input?.key?.trim() || DEFAULT_SITE_SNAPSHOT_KEY,
     versionId: input?.versionId?.trim() || DEFAULT_SITE_SNAPSHOT_VERSION_ID,
     siteId: input?.siteId?.trim() || DEFAULT_SITE_ID,
+    siteIds:
+      input?.siteIds?.length
+        ? [...input.siteIds]
+        : [...WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS],
     contentType: input?.contentType?.trim() || DEFAULT_SITE_CONTENT_TYPE,
     cachePolicy: input?.cachePolicy ?? 'static-shell',
   };
@@ -142,7 +147,7 @@ export async function registerApprovedWorkspaceRoute(input: {
       baseDomain: baseDomainFromHost(workspace.workspaceHost),
       siteSnapshotKey: snapshot.key,
       siteVersionId: snapshot.versionId,
-      publishedSiteIds: [snapshot.siteId],
+      publishedSiteIds: snapshot.siteIds,
       connectorId: connector.connectorId,
       tunnelOriginUrl: connector.tunnelOriginUrl,
       localServiceUrl: connector.localServiceUrl,
@@ -243,7 +248,7 @@ export async function reconcileWorkspaceRouteState(input: {
         baseDomain,
         siteSnapshotKey: snapshot.key,
         siteVersionId: snapshot.versionId,
-        publishedSiteIds: [snapshot.siteId],
+        publishedSiteIds: snapshot.siteIds,
         connectorId,
         tunnelOriginUrl,
         localServiceUrl: DEFAULT_CONNECTOR_LOCAL_SERVICE_URL,
@@ -258,6 +263,7 @@ export async function reconcileWorkspaceRouteState(input: {
         heartbeatTtlMs: 60_000,
       },
       makeDefault: node.nodeId === defaultNodeId,
+      refreshSiteSnapshots: true,
       localServiceUrl: DEFAULT_CONNECTOR_LOCAL_SERVICE_URL,
     });
   }

@@ -383,6 +383,36 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused OS release freshness contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      '.github/workflows/consuelo-os-runtime-publish.yaml',
+      '--changed-file',
+      'packages/os/package.json',
+      '--changed-file',
+      'packages/workspace/scripts/os-release.ts',
+      '--changed-file',
+      'packages/workspace/scripts/os-release-workspace-edge.ts',
+      '--changed-file',
+      'packages/workspace/scripts/os-release-device-auth.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-release-surface-freshness');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'OS release freshness contracts',
+        'Workspace production release contracts',
+        'Workspace Edge release dry run',
+      ]),
+    );
+  });
+
   it('uses focused hosted-site reconciliation contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

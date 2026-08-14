@@ -22,7 +22,6 @@ const DEFAULT_VERIFY_ATTEMPTS = 12;
 const DEFAULT_VERIFY_DELAY_MS = 5_000;
 const SNAPSHOT_BUCKET = 'consuelo-sites-snapshots';
 const DEFAULT_SNAPSHOT_WORKSPACE_ID = 'workspace_testing';
-const DEFAULT_SNAPSHOT_HOST = 'testing.consuelohq.com';
 const SNAPSHOT_CONTENT_TYPE = 'text/html; charset=utf-8';
 
 type Options = {
@@ -254,18 +253,30 @@ function releaseDefaultSiteSnapshots(
       home: tempHome,
       dbPath,
       dryRun: false,
-      workspaceHost: DEFAULT_SNAPSHOT_HOST,
+      workspaceHost: null,
     });
     const paths = getSitesPaths(tempHome);
-    const rootHtml = readFileSync(paths.indexPath, 'utf8');
-    const versionId = snapshotVersionId(rootHtml);
     const snapshots = [
       { siteId: 'launcher', filePath: paths.indexPath },
       { siteId: 'artifacts', filePath: paths.artifactsIndexPath },
       { siteId: 'traces', filePath: paths.tracesIndexPath },
       { siteId: 'diffs', filePath: paths.diffsIndexPath },
       { siteId: 'docs', filePath: paths.docsIndexPath },
+      { siteId: 'configuration', filePath: paths.configurationIndexPath },
+      { siteId: 'tools', filePath: paths.toolsIndexPath },
+      { siteId: 'nodes', filePath: paths.nodesIndexPath },
+      { siteId: 'environments', filePath: paths.environmentsIndexPath },
+      { siteId: 'secrets', filePath: paths.secretsIndexPath },
     ];
+    const snapshotFingerprint = JSON.stringify(
+      snapshots.map((snapshot) => ({
+        siteId: snapshot.siteId,
+        sha256: createHash('sha256')
+          .update(readFileSync(snapshot.filePath, 'utf8'))
+          .digest('hex'),
+      })),
+    );
+    const versionId = snapshotVersionId(snapshotFingerprint);
 
     for (const snapshot of snapshots) {
       const key = `sites/${DEFAULT_SNAPSHOT_WORKSPACE_ID}/${snapshot.siteId}/${versionId}/index.html`;
