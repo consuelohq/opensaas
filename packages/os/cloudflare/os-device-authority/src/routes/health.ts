@@ -1,19 +1,18 @@
 import type { Hono } from 'hono';
 
-import { json } from '../http';
+import { json, text } from '../http';
 import type { DeviceAuthorityRuntime } from '../types';
 import {
   authorizationServerMetadata,
   oauthProtectedResourceMetadata,
 } from '../services/mcp-oauth';
+import { universalLoginPage } from './web-auth';
 
 export function registerHealthRoutes(
   app: Hono,
   runtime: DeviceAuthorityRuntime,
 ): void {
-  app.all('/', () =>
-    Response.redirect(new URL('/login/device', runtime.origin), 302),
-  );
+  app.get('/', () => text(universalLoginPage()));
   app.all('/health', () =>
     json({
       ok: true,

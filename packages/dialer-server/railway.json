@@ -1,0 +1,25 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "packages/dialer-server/Dockerfile",
+    "watchPatterns": [
+      "packages/dialer/**",
+      "packages/dialer-server/**",
+      "packages/lead-connector/**",
+      "packages/logger/**",
+      "package.json",
+      "yarn.lock",
+      ".yarnrc.yml",
+      ".yarn/**"
+    ]
+  },
+  "deploy": {
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 5,
+    "overlapSeconds": 30,
+    "drainingSeconds": 20
+  }
+}

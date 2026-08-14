@@ -7,13 +7,18 @@ import { registerGoogleOAuthRoutes } from './routes/google-oauth';
 import { registerHealthRoutes } from './routes/health';
 import { registerMcpOAuthRoutes } from './routes/mcp-oauth';
 import { registerMcpProxyRoutes } from './routes/mcp-proxy';
+import { registerWorkspaceAgentRoutes } from './routes/workspace-agents';
+import { registerWorkspaceNodeRoutes } from './routes/workspace-nodes';
+import { registerWebAuthRoutes } from './routes/web-auth';
 import type {
   DefaultSiteSnapshot,
+  DeviceAuthorityLogger,
   DeviceAuthorityRuntime,
   Store,
   WorkspaceConnectorProvisioner,
   WorkspaceRouteRegistryBinding,
 } from './types';
+import type { ManagedCloudPricingRuntime } from './services/managed-cloud-pricing';
 
 export type CreateDeviceAuthorityHandlerInput = {
   store: Store;
@@ -27,6 +32,8 @@ export type CreateDeviceAuthorityHandlerInput = {
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
+  managedCloudPricing?: ManagedCloudPricingRuntime;
+  operationalLogger?: DeviceAuthorityLogger;
 };
 
 export function createOsDeviceAuthorityApp(
@@ -44,7 +51,10 @@ export function createOsDeviceAuthorityApp(
   registerMcpProxyRoutes(app, runtime);
   registerMcpOAuthRoutes(app, runtime);
   registerGoogleOAuthRoutes(app, runtime);
+  registerWebAuthRoutes(app, runtime);
   registerDeviceRoutes(app, runtime);
+  registerWorkspaceAgentRoutes(app, runtime);
+  registerWorkspaceNodeRoutes(app, runtime);
 
   app.notFound(() => new Response('Not found\n', { status: 404 }));
   app.onError(() => json({ error: 'server_error' }, { status: 500 }));

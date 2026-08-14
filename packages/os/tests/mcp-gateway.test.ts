@@ -8,16 +8,26 @@ import {
   getAgentAppCredentialStatus,
   issueAgentAppToken,
   listAgentAppCredentialStatuses,
+  reconcileGatewayWorkspaceEdgeProxyAuth,
   signMachineRequest,
   verifyMachineRequest,
   type AgentAppToken,
   type GatewaySecurityConfig,
 } from '../scripts/lib/security-gateway';
+import { createWorkspaceEdgeNodeHeaders } from '../scripts/lib/workspace-edge-node-auth';
+import {
+  encodeMcpNodeRoutingContext,
+  MCP_NODE_CONTEXT_HEADER,
+  MCP_ROUTE_SOURCE_HEADER,
+  type McpNodeRoutingContext,
+} from '../scripts/lib/mcp-node-routing';
 import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
 } from '../scripts/lib/mcp-gateway';
 import { handleRequest } from '../scripts/server/app';
+import { createMcpRoutes } from '../scripts/server/routes/mcp';
+import { resolveMcpRequestSession } from '../scripts/server/services/mcp-session';
 import { removeSafeTempDir } from './safe-temp-cleanup';
 
 type JsonObject = Record<string, unknown>;
@@ -73,6 +83,24 @@ function issueMcpToken(config: GatewaySecurityConfig, scopes: string[]): AgentAp
   });
 }
 
+const MODERN_MCP_VERSION = '2026-07-28';
+
+function modernMcpMeta(): JsonObject {
+  return {
+    'io.modelcontextprotocol/protocolVersion': MODERN_MCP_VERSION,
+    'io.modelcontextprotocol/clientInfo': { name: 'consuelo-test-client', version: '1.0.0' },
+    'io.modelcontextprotocol/clientCapabilities': {},
+  };
+}
+
+function modernMcpHeaders(method: string, name?: string): Record<string, string> {
+  return {
+    'mcp-protocol-version': MODERN_MCP_VERSION,
+    'mcp-method': method,
+    ...(name ? { 'mcp-name': name } : {}),
+  };
+}
+
 beforeEach(() => {
   tempHome = mkdtempSync(join(tmpdir(), 'consuelo-os-mcp-gateway-'));
   process.env.CONSUELO_OS_HOME = tempHome;
@@ -92,7 +120,7 @@ afterEach(() => {
 describe('MCP gateway credential lifecycle', () => {
   it('stores scoped credential metadata without raw credential material', () => {
     const config = createConfig();
-    const token = issueMcpToken(config, ['route:/mcp:read', 'tool:get_raw_steering:read']);
+    const token = issueMcpToken(config, ['route:/mcp:read', 'tool:status:read']);
     const storedToken = storedTokenRecord(config, token);
     const [status] = listAgentAppCredentialStatuses({ config });
     const directStatus = getAgentAppCredentialStatus({ config, tokenId: token.tokenId });
@@ -229,7 +257,7 @@ describe('MCP gateway credential lifecycle', () => {
 });
 
 describe('MCP gateway adapter', () => {
-  it('resolves manifest-backed scopes and fails closed for unknown tools', () => {
+  it('should resolve nested facade scopes and fail closed when the MCP call is malformed or unknown', () => {
     const listScope = resolveMcpGatewayRequiredScope(JSON.stringify({
       jsonrpc: '2.0',
       id: 'tools',
@@ -239,25 +267,50 @@ describe('MCP gateway adapter', () => {
       jsonrpc: '2.0',
       id: 'call',
       method: 'tools/call',
-      params: { name: 'get_raw_steering', arguments: {} },
+      params: {
+        name: 'call',
+        arguments: { tool: 'explore', input: { query: 'status' } },
+      },
     }));
     const unknownScope = resolveMcpGatewayRequiredScope(JSON.stringify({
       jsonrpc: '2.0',
       id: 'call',
       method: 'tools/call',
-      params: { name: 'missing_tool', arguments: {} },
+      params: { name: 'call', arguments: { tool: 'missing_tool' } },
+    }));
+    const missingNestedTool = resolveMcpGatewayRequiredScope(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'call',
+      method: 'tools/call',
+      params: { name: 'call', arguments: {} },
+    }));
+    const directFacadeCall = resolveMcpGatewayRequiredScope(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'call',
+      method: 'tools/call',
+      params: { name: 'explore', arguments: {} },
     }));
 
     expect(listScope).toMatchObject({ ok: true, requiredScope: 'route:/mcp:read' });
     expect(callScope).toMatchObject({
       ok: true,
-      toolName: 'get_raw_steering',
-      requiredScope: 'tool:get_raw_steering:read',
+      toolName: 'explore',
+      requiredScope: 'tool:explore:read',
     });
     expect(unknownScope).toMatchObject({
       ok: false,
       status: 403,
       error: { code: 'UNKNOWN_TOOL_SCOPE' },
+    });
+    expect(missingNestedTool).toMatchObject({
+      ok: false,
+      status: 400,
+      error: { code: 'INVALID_MCP_TOOL_CALL' },
+    });
+    expect(directFacadeCall).toMatchObject({
+      ok: false,
+      status: 403,
+      error: { code: 'UNSUPPORTED_MCP_TOOL' },
     });
   });
 
@@ -290,7 +343,7 @@ describe('MCP gateway adapter', () => {
         jsonrpc: '2.0',
         id: 'call',
         method: 'tools/call',
-        params: { name: 'get_raw_steering', arguments: {} },
+        params: { name: 'call', arguments: { tool: 'explore', input: {} } },
       }),
     }));
     await expect(denied.json()).resolves.toMatchObject({
@@ -298,6 +351,66 @@ describe('MCP gateway adapter', () => {
     });
   });
 
+  it('rejects an explicit untrusted Origin at the MCP route before execution', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const executeFacadeTool = vi.fn();
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'tools',
+      method: 'tools/list',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token.bearerToken}`,
+        'content-type': 'application/json',
+        origin: 'https://attacker.example',
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'INVALID_MCP_ORIGIN' },
+    });
+    expect(executeFacadeTool).not.toHaveBeenCalled();
+  });
+
+
+  it('rejects an Origin that only matches the inbound Host-derived request origin', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool: vi.fn(),
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'tools',
+      method: 'tools/list',
+    });
+
+    const response = await app.request(new Request('http://rebind.attacker.example/mcp', {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer ' + token.bearerToken,
+        'content-type': 'application/json',
+        origin: 'http://rebind.attacker.example',
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'INVALID_MCP_ORIGIN' },
+    });
+  });
 
   it('should accept an active Consuelo OAuth token when a public MCP request targets the central resource', async () => {
     const config = createConfig();
@@ -319,6 +432,7 @@ describe('MCP gateway adapter', () => {
       fetchCalls.push({ url, body: String(init?.body ?? '') });
       return new Response(JSON.stringify({
         active: true,
+        client_id: 'chatgpt-consuelo-os',
         workspace_host: config.workspaceHost,
         scopes: ['route:/mcp:read', 'tool:*:read'],
         sub: 'google:123',
@@ -408,52 +522,96 @@ describe('MCP gateway adapter', () => {
     );
   });
 
-  it('filters non-callable facade tools out of the MCP surface', async () => {
+  it('should expose exactly the annotated OS facade tools when ChatGPT lists tools', async () => {
     const listResponse = await handleMcpGatewayJsonRpc(JSON.stringify({
       jsonrpc: '2.0',
       id: 'tools',
       method: 'tools/list',
     }), {
-      executeCall: async () => ({
-        ok: false,
-        name: 'unused',
-        permission: 'read',
-        error: { code: 'UNUSED', message: 'unused' },
-      }),
+      getSteering: async () => 'unused',
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
     });
-    const facadeToolScope = resolveMcpGatewayRequiredScope(JSON.stringify({
-      jsonrpc: '2.0',
-      id: 'call',
-      method: 'tools/call',
-      params: { name: 'code.call', arguments: {} },
-    }));
+    const result = isJsonObject(listResponse.result) ? listResponse.result : {};
+    const tools = Array.isArray(result.tools) ? result.tools : [];
 
-    expect(JSON.stringify(listResponse)).toContain('get_raw_steering');
-    expect(JSON.stringify(listResponse)).not.toContain('code.call');
-    expect(facadeToolScope).toMatchObject({
-      ok: false,
-      status: 403,
-      error: { code: 'UNSUPPORTED_MCP_TOOL' },
+    expect(tools.map((tool) => isJsonObject(tool) ? tool.name : null)).toEqual([
+      'get_steering',
+      'call',
+    ]);
+    for (const tool of tools) {
+      expect(tool).toMatchObject({
+        inputSchema: { type: 'object' },
+        annotations: {
+          readOnlyHint: true,
+          openWorldHint: false,
+          destructiveHint: false,
+        },
+      });
+      const toolRecord = isJsonObject(tool) ? tool : {};
+      const annotations = isJsonObject(toolRecord.annotations) ? toolRecord.annotations : {};
+      expect(Object.keys(annotations).sort()).toEqual([
+        'destructiveHint',
+        'openWorldHint',
+        'readOnlyHint',
+      ]);
+    }
+  });
+
+  it('should return guarded steering when ChatGPT calls get_steering', async () => {
+    const getSteering = vi.fn(async () => '# OS steering');
+    const executeFacadeTool = vi.fn();
+
+    const response = await handleMcpGatewayJsonRpc(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'steering-1',
+      method: 'tools/call',
+      params: { name: 'get_steering', arguments: {} },
+    }), { getSteering, executeFacadeTool });
+
+    expect(getSteering).toHaveBeenCalledOnce();
+    expect(executeFacadeTool).not.toHaveBeenCalled();
+    expect(response).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'steering-1',
+      result: {
+        isError: false,
+        content: [{ type: 'text', text: '# OS steering' }],
+      },
     });
   });
 
-  it('adapts tools/call output into MCP content without echoing request metadata', async () => {
+  it('should dispatch nested facade calls without echoing request metadata', async () => {
     const body = JSON.stringify({
       jsonrpc: '2.0',
       id: 'call-1',
       method: 'tools/call',
-      params: { name: 'get_raw_steering', arguments: { reason: 'unit-test' } },
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'explore',
+          input: { query: 'status' },
+          taskSession: 'tsk_test',
+          nodeId: 'node_cloud_test',
+          timeout: 12_000,
+        },
+      },
     });
+    const executeFacadeTool = vi.fn(async (input) => ({
+      ok: true,
+      code: 'OK',
+      data: { acceptedInput: input },
+    }));
 
     const response = await handleMcpGatewayJsonRpc(body, {
-      executeCall: async (input) => ({
-        ok: true,
-        name: input.name,
-        permission: 'read',
-        result: { acceptedInput: input.input },
-      }),
+      getSteering: async () => 'unused',
+      executeFacadeTool,
     });
 
+    expect(executeFacadeTool).toHaveBeenCalledWith('explore', {
+      query: 'status',
+      taskSession: 'tsk_test',
+      timeout: 12_000,
+    });
     expect(response).toMatchObject({
       jsonrpc: '2.0',
       id: 'call-1',
@@ -462,10 +620,616 @@ describe('MCP gateway adapter', () => {
     expect(JSON.stringify(response)).toContain('acceptedInput');
     expect(JSON.stringify(response)).not.toContain('x-consuelo-signature');
   });
+
 });
 
 describe('MCP gateway server route', () => {
-  it('serves tools/list through the signed /mcp compatibility endpoint', async () => {
+  it('should pass matching node routing context when guarded steering is requested', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const nodeRouting: McpNodeRoutingContext = {
+      version: 1,
+      workspaceId: config.workspaceId,
+      currentNodeId: 'node_cloud_test',
+      defaultNodeId: 'node_cloud_test',
+      routeSource: 'explicit',
+      nodes: [
+        {
+          nodeId: 'node_cloud_test',
+          displayName: 'Cloud Node',
+          role: 'home',
+          platform: 'linux',
+          presence: 'online',
+          state: 'active',
+        },
+      ],
+    };
+    const getSteering = vi.fn(async () => '# OS steering');
+    const app = createMcpRoutes({
+      getSteering,
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'steering-node-routing',
+      method: 'tools/call',
+      params: { name: 'get_steering', arguments: {} },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-steering-node-routing',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        ...signed.headers,
+        'x-consuelo-node-id': nodeRouting.currentNodeId,
+        [MCP_ROUTE_SOURCE_HEADER]: nodeRouting.routeSource,
+        [MCP_NODE_CONTEXT_HEADER]: encodeMcpNodeRoutingContext(nodeRouting),
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(getSteering).toHaveBeenCalledOnce();
+    expect(getSteering.mock.calls[0]?.[1]).toEqual(nodeRouting);
+  });
+
+  it('should propagate resolved node routing without leaking nodeId when facade tracing executes', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read', 'tool:explore:read']);
+    const nodeRouting: McpNodeRoutingContext = {
+      version: 1,
+      workspaceId: config.workspaceId,
+      currentNodeId: 'node_cloud_test',
+      defaultNodeId: 'node_home_test',
+      routeSource: 'explicit',
+      nodes: [
+        {
+          nodeId: 'node_cloud_test',
+          displayName: 'Cloud Node',
+          role: 'member',
+          platform: 'linux',
+          presence: 'online',
+          state: 'active',
+        },
+      ],
+    };
+    const executeFacadeTool = vi.fn(async () => ({ ok: true, code: 'OK' }));
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'node-traced-call',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'explore',
+          nodeId: 'node_cloud_test',
+          input: { query: 'status' },
+        },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-node-traced-call',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        ...signed.headers,
+        'x-consuelo-node-id': 'node_cloud_test',
+        [MCP_ROUTE_SOURCE_HEADER]: 'explicit',
+        [MCP_NODE_CONTEXT_HEADER]: encodeMcpNodeRoutingContext(nodeRouting),
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(executeFacadeTool).toHaveBeenCalledWith(
+      'explore',
+      { query: 'status' },
+      {
+        requestedNodeId: 'node_cloud_test',
+        resolvedNodeId: 'node_cloud_test',
+        resolvedNodeName: 'Cloud Node',
+        defaultNodeId: 'node_home_test',
+        routeSource: 'explicit',
+      },
+    );
+  });
+
+  it('should serve modern MCP discovery without creating a transport session', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'discover-modern',
+      method: 'server/discover',
+      params: { _meta: modernMcpMeta() },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-discovery',
+    });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { ...signed.headers, ...modernMcpHeaders('server/discover') },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+    const result = isJsonObject(json.result) ? json.result : {};
+    const meta = isJsonObject(result._meta) ? result._meta : {};
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('mcp-session-id')).toBeNull();
+    expect(result).toMatchObject({
+      resultType: 'complete',
+      supportedVersions: expect.arrayContaining([MODERN_MCP_VERSION]),
+      capabilities: { tools: expect.any(Object) },
+    });
+    expect(result.serverInfo).toBeUndefined();
+    expect(meta['io.modelcontextprotocol/serverInfo']).toMatchObject({
+      name: 'consuelo-os-gateway',
+      version: '1.0.0',
+    });
+  });
+
+  it('should isolate steering guards by OAuth bearer behind the signed workspace edge', async () => {
+    const config = createConfig();
+    const signingSecret = 'workspace-edge-oauth-isolation-secret';
+    reconcileGatewayWorkspaceEdgeProxyAuth({
+      authConfigPath: config.generatedAuthPath,
+      workspaceId: config.workspaceId,
+      nodeId: 'node_mcp_test',
+      connectorId: 'connector_mcp_test',
+      signingSecret,
+    });
+    const getSteering = vi.fn(async () => '# OS steering');
+    const app = createMcpRoutes({
+      getSteering,
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+    const introspection = vi.fn(async () => new Response(
+      JSON.stringify({ active: false }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    ));
+    globalThis.fetch = introspection as unknown as typeof fetch;
+
+    const sendSteering = async (authorization: string, nonce: string) => {
+      const body = JSON.stringify({
+        jsonrpc: '2.0',
+        id: nonce,
+        method: 'tools/call',
+        params: {
+          name: 'get_steering',
+          arguments: {},
+          _meta: modernMcpMeta(),
+        },
+      });
+      const edgeHeaders = createWorkspaceEdgeNodeHeaders({
+        signingSecret,
+        workspaceId: config.workspaceId,
+        nodeId: 'node_mcp_test',
+        connectorId: 'connector_mcp_test',
+        surface: 'os',
+        method: 'POST',
+        pathWithSearch: '/mcp',
+        body,
+        timestamp: String(Date.now()),
+        nonce,
+      });
+      const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+        method: 'POST',
+        headers: {
+          ...edgeHeaders,
+          ...modernMcpHeaders('tools/call', 'get_steering'),
+          authorization,
+          'content-type': 'application/json',
+        },
+        body,
+      }));
+      expect(response.status).toBe(200);
+    };
+
+    await sendSteering('Bearer coa_oauth_subject_alpha', 'edge-oauth-alpha');
+    await sendSteering('bearer   coa_oauth_subject_alpha', 'edge-oauth-alpha-variant');
+    await sendSteering('Bearer coa_oauth_subject_beta', 'edge-oauth-beta');
+
+    expect(introspection).not.toHaveBeenCalled();
+    expect(getSteering).toHaveBeenCalledTimes(3);
+    const callerKeys = getSteering.mock.calls.map(([callerKey]) => callerKey);
+    expect(callerKeys[0]).toBe(callerKeys[1]);
+    expect(callerKeys[0]).not.toBe(callerKeys[2]);
+    expect(callerKeys).toEqual([
+      expect.stringMatching(/^prn_[a-f0-9]{32}$/),
+      expect.stringMatching(/^prn_[a-f0-9]{32}$/),
+      expect.stringMatching(/^prn_[a-f0-9]{32}$/),
+    ]);
+    expect(callerKeys.join('')).not.toContain('coa_oauth_subject');
+  });
+
+  it('should stamp modern list results and ignore legacy transport session headers', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'tools-modern',
+      method: 'tools/list',
+      params: { _meta: modernMcpMeta() },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-tools-list',
+    });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        ...signed.headers,
+        ...modernMcpHeaders('tools/list'),
+        'mcp-session-id': 'legacy-session-that-modern-must-ignore',
+      },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+    const result = isJsonObject(json.result) ? json.result : {};
+    const meta = isJsonObject(result._meta) ? result._meta : {};
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('mcp-session-id')).toBeNull();
+    expect(result.resultType).toBe('complete');
+    expect(meta['io.modelcontextprotocol/serverInfo']).toMatchObject({
+      name: 'consuelo-os-gateway',
+      version: '1.0.0',
+    });
+  });
+
+  it('should reject modern MCP routing headers that disagree with the authenticated body', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const getSteering = vi.fn(async () => '# OS steering');
+    const app = createMcpRoutes({
+      getSteering,
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'modern-header-mismatch',
+      method: 'tools/call',
+      params: {
+        name: 'get_steering',
+        arguments: {},
+        _meta: modernMcpMeta(),
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-header-mismatch',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { ...signed.headers, ...modernMcpHeaders('tools/call', 'call') },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+
+    expect(response.status).toBe(400);
+    expect(json).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'modern-header-mismatch',
+      error: { code: -32020 },
+    });
+    expect(getSteering).not.toHaveBeenCalled();
+  });
+
+  it('should reject modern routing headers on a legacy request body', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'modern-header-legacy-body',
+      method: 'initialize',
+      params: {
+        protocolVersion: '2024-11-05',
+        capabilities: {},
+        clientInfo: { name: 'legacy-client', version: '1.0.0' },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-header-legacy-body',
+    });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { ...signed.headers, ...modernMcpHeaders('tools/list') },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get('mcp-session-id')).toBeNull();
+    expect(json).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'modern-header-legacy-body',
+      error: { code: -32020 },
+    });
+  });
+
+  it('should reject 2026 metadata on the legacy initialize path', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'modern-initialize',
+      method: 'initialize',
+      params: {
+        protocolVersion: '2026-07-28',
+        capabilities: {},
+        clientInfo: { name: 'modern-client', version: '1.0.0' },
+        _meta: modernMcpMeta(),
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-initialize',
+    });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { ...signed.headers, ...modernMcpHeaders('initialize') },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get('mcp-session-id')).toBeNull();
+    expect(json).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'modern-initialize',
+      error: { code: -32602 },
+    });
+  });
+
+  it('should reject malformed modern request metadata before execution', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'modern-meta-missing-capabilities',
+      method: 'tools/list',
+      params: {
+        _meta: {
+          'io.modelcontextprotocol/protocolVersion': MODERN_MCP_VERSION,
+          'io.modelcontextprotocol/clientInfo': { name: 'test', version: '1.0.0' },
+        },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-modern-meta-invalid',
+    });
+
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { ...signed.headers, ...modernMcpHeaders('tools/list') },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+
+    expect(response.status).toBe(400);
+    expect(json).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'modern-meta-missing-capabilities',
+      error: { code: -32602 },
+    });
+  });
+
+  it('should keep unissued MCP session ids in the authenticated credential bucket', () => {
+    const request = new Request('http://127.0.0.1:46321/mcp', {
+      headers: {
+        authorization: 'Bearer secret-value',
+        'x-consuelo-workspace-id': 'workspace-test',
+      },
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'call',
+      method: 'tools/call',
+      params: { name: 'get_steering', arguments: {} },
+    });
+
+    const first = resolveMcpRequestSession(new Request(request, {
+      headers: {
+        ...Object.fromEntries(request.headers),
+        'mcp-session-id': 'unissued-session-alpha',
+      },
+    }), body);
+    const second = resolveMcpRequestSession(new Request(request, {
+      headers: {
+        ...Object.fromEntries(request.headers),
+        'mcp-session-id': 'unissued-session-beta',
+      },
+    }), body);
+
+    expect(first.callerKey).toBe(second.callerKey);
+    expect(first.callerKey).not.toContain('secret-value');
+  });
+
+  it('should share steering guard identity across legacy sessions for the same authenticated principal', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const callerKeys: string[] = [];
+    const app = createMcpRoutes({
+      getSteering: async (callerKey) => {
+        callerKeys.push(callerKey);
+        return '# OS steering';
+      },
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+
+    const initializeSession = async (nonce: string): Promise<string> => {
+      const body = JSON.stringify({
+        jsonrpc: '2.0',
+        id: nonce,
+        method: 'initialize',
+        params: {
+          protocolVersion: '2025-03-26',
+          capabilities: {},
+          clientInfo: { name: nonce, version: '1.0.0' },
+        },
+      });
+      const signed = signMachineRequest({
+        config,
+        token,
+        method: 'POST',
+        path: '/mcp',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce,
+      });
+      const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+        method: 'POST',
+        headers: signed.headers,
+        body,
+      }));
+      expect(response.status).toBe(200);
+      const sessionId = response.headers.get('mcp-session-id');
+      expect(sessionId).toMatch(/^[a-zA-Z0-9._~-]{8,128}$/);
+      return sessionId!;
+    };
+
+    const callSteering = async (sessionId: string, nonce: string) => {
+      const body = JSON.stringify({
+        jsonrpc: '2.0',
+        id: nonce,
+        method: 'tools/call',
+        params: { name: 'get_steering', arguments: {} },
+      });
+      const signed = signMachineRequest({
+        config,
+        token,
+        method: 'POST',
+        path: '/mcp',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce,
+      });
+      const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+        method: 'POST',
+        headers: {
+          ...signed.headers,
+          'mcp-session-id': sessionId,
+        },
+        body,
+      }));
+      expect(response.status).toBe(200);
+    };
+
+    const sessionAlpha = await initializeSession('nonce-initialize-alpha');
+    const sessionBeta = await initializeSession('nonce-initialize-beta');
+
+    await callSteering(sessionAlpha, 'nonce-session-alpha-1');
+    await callSteering(sessionBeta, 'nonce-session-beta-1');
+    await callSteering(
+      sessionAlpha,
+      'nonce-session-alpha-2',
+    );
+
+    expect(callerKeys).toHaveLength(3);
+    expect(new Set(callerKeys).size).toBe(1);
+    expect(callerKeys[0]).toMatch(/^prn_[a-f0-9]{32}$/);
+    expect(callerKeys.join('')).not.toContain(token.bearerToken);
+  });
+
+  it('should issue an MCP session id when an authenticated client initializes', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'initialize-session',
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-03-26',
+        capabilities: {},
+        clientInfo: { name: 'session-test', version: '1.0.0' },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-initialize-session',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: signed.headers,
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('mcp-session-id')).toMatch(
+      /^[a-zA-Z0-9._~-]{8,128}$/,
+    );
+  });
+
+  it('should serve the two OS facade tools through the signed MCP endpoint', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);
     const body = JSON.stringify({ jsonrpc: '2.0', id: 'tools', method: 'tools/list' });
@@ -486,18 +1250,19 @@ describe('MCP gateway server route', () => {
     const json = await readJsonResponse(response);
 
     expect(response.status).toBe(200);
-    expect(JSON.stringify(json)).toContain('get_raw_steering');
+    expect(JSON.stringify(json)).toContain('get_steering');
+    expect(JSON.stringify(json)).toContain('call');
     expect(JSON.stringify(json)).not.toContain(token.secret);
   });
 
-  it('denies tools/call when the signed credential lacks the tool scope', async () => {
+  it('should deny nested facade calls when the signed credential lacks the tool scope', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);
     const body = JSON.stringify({
       jsonrpc: '2.0',
       id: 'call',
       method: 'tools/call',
-      params: { name: 'get_raw_steering', arguments: {} },
+      params: { name: 'call', arguments: { tool: 'explore', input: { query: 'status' } } },
     });
     const signed = signMachineRequest({
       config,

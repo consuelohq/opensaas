@@ -71,20 +71,20 @@ function toolNames(bundle: WorkflowBundle): string[] {
 }
 
 describe('Workspace workflow intent bundles', () => {
-  test('should generate task and office workflow bundles when loading workflow metadata', () => {
+  test('should generate only the task workflow bundle', () => {
     const bundles = readBundles();
     const task = workflowById(bundles, 'task');
-    const office = workflowById(bundles, 'office');
 
     expect(task.roles).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'workpad.write']));
     expect(toolNames(task)).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'fs.write']));
     expect(task.subscriptions).toEqual(
-      expect.arrayContaining([expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.push' }),
+      ]),
     );
 
-    expect(office.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
-    expect(office.roles).toEqual(expect.arrayContaining(['office.publish', 'office.generate.website']));
-    expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'office.generateWebsite']));
+    expect(bundles.workflows.map((workflow) => workflow.id)).toEqual(['task']);
   });
 
   test('should bind the task workflow bundle and post-start guidance to the real task session', () => {
@@ -120,13 +120,15 @@ describe('Workspace workflow intent bundles', () => {
     }));
     expect(result.hookResult).toEqual(expect.objectContaining({
       workflow: 'task',
-      stage: 'post-task-start-guidance',
+      stage: 'workpad-bootstrap',
       contextInjection: expect.objectContaining({
         taskSession: 'tsk_real_task',
         worktreePath: '/tmp/intent-architecture',
       }),
     }));
-    expect(result.hookResult?.suggestedNextAction.tool).toBe('batch');
+    expect(result.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(result.hookResult?.requiredNextAction.input).toEqual(expect.objectContaining({ append: true, mkdirs: true }));
+    expect(result.hookResult?.requiredNextAction.input.content).toContain('## Test-first contract');
   });
 
   test('should expose task.start as the sole public task workflow entrypoint', () => {
@@ -161,25 +163,26 @@ describe('Workspace workflow intent bundles', () => {
     const parsed = getInputSchema('TaskStartInput').parse({
       area: 'workspace-agents',
       title: 'combined task start',
-      workflow: 'design',
+      workflow: 'task',
     });
 
-    expect(parsed.workflow).toBe('design');
+    expect(parsed.workflow).toBe('task');
+    for (const retiredWorkflow of ['office', 'design', 'sites']) {
+      expect(() => getInputSchema('TaskStartInput').parse({
+        area: 'workspace-agents',
+        title: 'retired workflow',
+        workflow: retiredWorkflow,
+      })).toThrow();
+    }
   });
 
-  test('should resolve office aliases when starting design or sites intent', () => {
+  test('should reject artifact workflow aliases in the workspace controller', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
-    const design = runtime.start({ workflow: 'design', taskSession: 'tsk_design' });
-    const sites = runtime.start({ workflow: 'sites', taskSession: 'tsk_sites' });
-
-    expect(design.workflow).toBe('office');
-    expect(design.requestedWorkflow).toBe('design');
-    expect(sites.workflow).toBe('office');
-    expect(design.manifestBundle.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
-    expect(design.manifestBundle.tools.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(['design.publish', 'office.generateWebsite']),
-    );
+    for (const retiredWorkflow of ['office', 'design', 'sites']) {
+      expect(() => runtime.start({ workflow: retiredWorkflow, taskSession: `tsk_${retiredWorkflow}` }))
+        .toThrow(`unknown workflow: ${retiredWorkflow}`);
+    }
   });
 
   test('should require taskSession when dispatching scoped hook events', () => {
@@ -234,12 +237,12 @@ describe('Workspace workflow intent bundles', () => {
     expect(b.hookResult?.contextInjection).toEqual(
       expect.objectContaining({ taskSession: 'tsk_b', worktreePath: '/tmp/worktree-b' }),
     );
-    expect(a.hookResult?.suggestedNextAction.tool).toBe('batch');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('code.call');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('explore');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('Bun structured repo scanner');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('Python targeted file/snippet ownership read');
-    expect(b.hookResult?.suggestedNextAction.tool).toBe('batch');
+    expect(a.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(a.hookResult?.requiredNextAction.taskSession).toBe('tsk_a');
+    expect(a.hookResult?.requiredNextAction.input.path).toContain('agent-a/workpad.md');
+    expect(b.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(b.hookResult?.requiredNextAction.taskSession).toBe('tsk_b');
+    expect(b.hookResult?.requiredNextAction.input.path).toContain('agent-b/workpad.md');
   });
 
   test('should not expose a separate task-intent package command', () => {

@@ -52,6 +52,44 @@ describe('local OS server review findings', () => {
     );
   });
 
+  it('pins downstream CI verification to the immutable pull-request or merge-group base commit', () => {
+    const workflow = readFileSync(
+      resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),
+      'utf8',
+    );
+
+    expect(workflow).toContain(
+      'base_ref="$(git rev-parse HEAD^1 2>/dev/null || true)"',
+    );
+    expect(workflow).toContain(
+      'fallback_base="${{ github.event.pull_request.base.sha }}"',
+    );
+    expect(workflow).toContain(
+      "jq -r '.merge_group.base_sha // empty' \"$GITHUB_EVENT_PATH\"",
+    );
+    expect(workflow).toContain(
+      'base_ref="$(git rev-parse \"${base_ref}^{commit}\")"',
+    );
+    expect(workflow).toContain(
+      'write_output base_ref "$base_ref"',
+    );
+    expect(workflow).toContain(
+      'head_sha: ${{ steps.classify.outputs.head_sha }}',
+    );
+    expect(workflow).toContain(
+      'write_output head_sha "$(git rev-parse HEAD)"',
+    );
+    expect(
+      workflow.match(/ref: \$\{\{ needs\.consuelo-changes\.outputs\.head_sha \}\}/g)?.length ?? 0,
+    ).toBeGreaterThanOrEqual(6);
+    expect(workflow).toContain(
+      'bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --committed-only-tests --no-stamp --review-arg --no-tests',
+    );
+    expect(workflow).not.toContain(
+      'pull_request)\n              base_ref="origin/${{ github.base_ref }}"',
+    );
+  });
+
   it('preserves the default port when both port variables are unset', () => {
     delete process.env.CONSUELO_OS_PORT;
     delete process.env.PORT;
@@ -153,6 +191,87 @@ describe('local OS server review findings', () => {
     expect(observedSignal).toBe(timeoutSignal);
   });
 
+  it('should authorize an ordinary write tool when the active token grants mcp:call', async () => {
+    vi.stubGlobal('fetch', async () => new Response(JSON.stringify({
+      active: true,
+      workspace_host: 'review-test.consuelohq.com',
+      scopes: ['mcp:read', 'mcp:call', 'tool:*:read'],
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+
+    const response = await authorizeConsueloOAuthMcpRequest({
+      config: {
+        workspaceHost: 'review-test.consuelohq.com',
+      } as GatewaySecurityConfig,
+      bearerToken: 'test-oauth-token',
+      requiredScope: 'tool:mac.process:write',
+    });
+
+    expect(response).toBeNull();
+  });
+
+  it.each([
+    {
+      condition: 'the token has only route read access for a dangerous tool',
+      scopes: ['mcp:read'],
+      requiredScope: 'tool:task.push:dangerous',
+    },
+    {
+      condition: 'the token has only read grants for an ordinary write tool',
+      scopes: ['mcp:read', 'tool:*:read'],
+      requiredScope: 'tool:mac.process:write',
+    },
+  ])(
+    'should return MISSING_SCOPE when $condition',
+    async ({ scopes, requiredScope }) => {
+      vi.stubGlobal('fetch', async () => new Response(JSON.stringify({
+        active: true,
+        workspace_host: 'review-test.consuelohq.com',
+        scopes,
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }));
+
+      const response = await authorizeConsueloOAuthMcpRequest({
+        config: {
+          workspaceHost: 'review-test.consuelohq.com',
+        } as GatewaySecurityConfig,
+        bearerToken: 'test-oauth-token',
+        requiredScope,
+      });
+
+      expect(response?.status).toBe(403);
+      await expect(responseJson(response as Response)).resolves.toMatchObject({
+        error: { code: 'MISSING_SCOPE' },
+      });
+    },
+  );
+
+  it('should return UNKNOWN_TOKEN when OAuth introspection reports an inactive token', async () => {
+    vi.stubGlobal('fetch', async () => new Response(JSON.stringify({
+      active: false,
+    }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+
+    const response = await authorizeConsueloOAuthMcpRequest({
+      config: {
+        workspaceHost: 'review-test.consuelohq.com',
+      } as GatewaySecurityConfig,
+      bearerToken: 'test-oauth-token',
+      requiredScope: 'tool:mac.process:write',
+    });
+
+    expect(response?.status).toBe(401);
+    await expect(responseJson(response as Response)).resolves.toMatchObject({
+      error: { code: 'UNKNOWN_TOKEN' },
+    });
+  });
+
   it('clears a rejected OS runtime import so a later call can retry', async () => {
     const runtimeModule = await import('../scripts/server/services/os-runtime');
     const createLoader = (
@@ -186,49 +305,17 @@ describe('local OS server review findings', () => {
       writes.push(String(chunk));
       return true;
     });
-    vi.doMock('../scripts/server/middleware/auth', () => ({
-      authPreflight: () => null,
-      authorizeBearerMcpRequest: async () => null,
-      authorizeSignedRequest: async () => null,
-      hasGeneratedAuthConfig: () => true,
-      hasSignedGatewayHeaders: () => false,
-      loadAuthConfigForRequest: () => ({
-        workspaceId: 'workspace_review_test',
-        workspaceHost: 'review-test.consuelohq.com',
-      }),
-      requestHeaders: () => ({}),
-    }));
-    vi.doMock('../scripts/server/services/call-service', () => ({
-      executeLocalOsCall: async () => {
-        throw new Error('Bearer mcp-secret-token-123456 failed during execution');
-      },
-      parseCallInput: () => ({ name: 'get_raw_steering' }),
-    }));
+    const { logLocalOsServerError } = await import('../scripts/server/logger');
 
-    const { createLocalOsApp } = await import(
-      '../scripts/server/app.ts?review-mcp-execution-log'
+    logLocalOsServerError(
+      'local_os.mcp_tool_execution_failed',
+      new Error('Bearer mcp-secret-token-123456 failed during execution'),
+      { code: 'OS_EXECUTION_FAILED', route: '/mcp', toolName: 'status' },
     );
-    const response = await createLocalOsApp().fetch(new Request(
-      'http://127.0.0.1:46321/mcp',
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 'review-failure',
-          method: 'tools/call',
-          params: { name: 'get_raw_steering', arguments: {} },
-        }),
-      },
-    ));
-    const body = await responseJson(response);
-    const serialized = JSON.stringify(body);
-    const log = writes.join('');
 
-    expect(response.status).toBe(200);
-    expect(serialized).toContain('OS_EXECUTION_FAILED');
-    expect(serialized).not.toContain('mcp-secret-token-123456');
+    const log = writes.join('');
     expect(log).toContain('local_os.mcp_tool_execution_failed');
+    expect(log).toContain('OS_EXECUTION_FAILED');
     expect(log).toContain('[REDACTED_SECRET]');
     expect(log).not.toContain('mcp-secret-token-123456');
   });

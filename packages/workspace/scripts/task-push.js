@@ -21,13 +21,14 @@ const {
   updateBranchRef,
 } = require('./lib/github');
 const {
-  fetchOrigin,
+  assertApiPushBaseIsSynced,
   getTrackedChanges,
   getCurrentBranch,
-  getRefSha,
-  refExists,
+  resolveApiPushSyncTarget,
+  synchronizeApiPushedTaskBranch,
 } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
+const { dispatchHookEvent, renderHookResult } = require('../hooks/dispatcher.js');
 const { resolvePrRefNumber } = require('./lib/pr-ref');
 const {
   assertCommitMessageFormat,
@@ -88,6 +89,7 @@ function printHelp() {
   writeStdout('  --files-json <json>    explicit JSON array of {path, content, deleted?} objects');
   writeStdout('  --area <name>          select task by area');
   writeStdout('  --branch <name>        select exact task branch');
+  writeStdout('  --task-session <id>    select exact task session');
   writeStdout('  --pr <number-or-url>          select task by pr number');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
@@ -152,6 +154,9 @@ function parseArgs(argv) {
       case '--branch':
         args.branch = value;
         break;
+      case '--task-session':
+        args.taskSession = value;
+        break;
       case '--pr':
       case '--github':
         args.prNumber = resolvePrRefNumber(value);
@@ -198,7 +203,7 @@ function parseArgs(argv) {
 }
 
 function hasExplicitTaskSelector(args) {
-  return Boolean(args.area || args.branch || args.prNumber !== undefined);
+  return Boolean(args.area || args.branch || args.taskSession || args.prNumber !== undefined);
 }
 
 function getSelectedTaskContext(args, startDirectory) {
@@ -207,6 +212,7 @@ function getSelectedTaskContext(args, startDirectory) {
     area: args.area || null,
     branch: args.branch || null,
     prNumber: args.prNumber === undefined ? null : args.prNumber,
+    taskSession: args.taskSession || null,
   });
 
   if (selected.error) {
@@ -333,28 +339,6 @@ function resolveFilesFromPaths(args, repoRoot) {
   });
 }
 
-function assertChangedBranchIsSynced(repoRoot, branch) {
-  fetchOrigin(repoRoot);
-
-  const localRef = `refs/heads/${branch}`;
-  const remoteRef = `refs/remotes/origin/${branch}`;
-
-  if (!refExists(repoRoot, remoteRef)) {
-    throw new Error(
-      `origin/${branch} does not exist. sync the task branch with origin before running task:push --changed.`,
-    );
-  }
-
-  const localSha = getRefSha(repoRoot, localRef);
-  const remoteSha = getRefSha(repoRoot, remoteRef);
-
-  if (localSha !== remoteSha) {
-    throw new Error(
-      `local task branch is not synced with origin/${branch} (local ${localSha.slice(0, 8)} != remote ${remoteSha.slice(0, 8)}). sync the task worktree first, then rerun task:push --changed.`,
-    );
-  }
-}
-
 function resolveChangedFiles(repoRoot) {
   const changes = getTrackedChanges(repoRoot);
 
@@ -472,10 +456,6 @@ async function main() {
     writeStderr('warning: --approved provided but verify stamp is publish-valid; path not needed');
   }
 
-  if (args.changed) {
-    assertChangedBranchIsSynced(repoRoot, branch);
-  }
-
   const token = getToken();
   const userFiles = resolveFiles(args, repoRoot);
 
@@ -517,6 +497,9 @@ async function main() {
   if (!branchRef) {
     throw new Error(`remote branch not found: ${branch}`);
   }
+
+  const syncTarget = resolveApiPushSyncTarget(repoRoot, branch, args.repo, token);
+  assertApiPushBaseIsSynced(repoRoot, branch, branchRef.object.sha, syncTarget);
 
   const headCommit = await getCommit({
     token,
@@ -577,6 +560,20 @@ async function main() {
     sha: commit.sha,
   });
 
+  let localSyncResult;
+  try {
+    localSyncResult = {
+      ok: true,
+      ...synchronizeApiPushedTaskBranch(repoRoot, branch, branchRef.object.sha, commit.sha, syncTarget),
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    localSyncResult = { ok: false, error: message };
+    writeStderr(`local sync warning: remote push succeeded at ${commit.sha.slice(0, 8)} but local sync failed: ${message}`);
+    writeStderr(`recovery: git fetch --no-tags ${syncTarget.remote} refs/heads/${branch}:${syncTarget.trackingRef}`);
+    writeStderr(`recovery: git reset --mixed ${commit.sha}`);
+  }
+
   // save workpad to supabase memories for future agent context
   const workpadFile = taskMeta?.data ? getTaskWorkpadPath(repoRoot, taskMeta.data) : path.join(repoRoot, '.task', 'workpad.md');
   if (fs.existsSync(workpadFile)) {
@@ -617,6 +614,35 @@ async function main() {
 
   const hooks = await runPostTaskPushHooks({ repo: args.repo, taskMeta: taskMeta?.data });
 
+  let workflowHookResult;
+  try {
+    workflowHookResult = dispatchHookEvent({
+      event: {
+        event: 'tool.postInvoke',
+        workflow: 'task',
+        tool: 'task.push',
+        taskSession: taskMeta?.data?.taskSession,
+        state: {
+          area: taskMeta?.data?.area,
+          taskSession: taskMeta?.data?.taskSession,
+          branch,
+          repo: args.repo,
+        },
+        result: {
+          ok: true,
+          branch,
+          sha: commit.sha,
+          taskSession: taskMeta?.data?.taskSession,
+          repo: args.repo,
+        },
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    workflowHookResult = { ok: false, error: message };
+    writeStderr(`hook warning: remote push succeeded but task workflow hook failed: ${message}`);
+  }
+
   const result = {
     repo: args.repo,
     branch,
@@ -626,6 +652,8 @@ async function main() {
     approvalReason: args.approved && verifyMismatch ? args.reason : undefined,
     files: files.map((file) => ({ path: file.path, deleted: Boolean(file.deleted) })),
     hooks,
+    localSync: localSyncResult,
+    hookResult: workflowHookResult,
   };
 
   if (args.json) {
@@ -634,6 +662,10 @@ async function main() {
   }
 
   writeStdout(`pushed ${commit.sha.slice(0, 8)} to ${branch}`);
+  if (workflowHookResult?.requiredNextAction) {
+    writeStdout('');
+    writeStdout(renderHookResult(workflowHookResult).trimEnd());
+  }
 }
 
 main().catch((error) => {

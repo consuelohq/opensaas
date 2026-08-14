@@ -1,0 +1,43 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/caddy-worker-pool-rolling-reload",
+  "base": "origin/task/os/caddy-worker-pool-rolling-reload",
+  "headSha": "62fa0e1f129fd8baad32ee4bdc66fa8e6e8ab77f",
+  "changeHash": "9c7b3355e5a1e684457fc0e959a4b4005ac2d4fb29be23dd085a825d38c5a3d3",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-12T00:27:08.697Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/caddy-worker-pool-rolling-reload/workpad.md"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/canonical-tool-packages-and-generated-manifests",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1561,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1561",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1561",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1561/canonical-tool-packages-and-generated-manifests",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1561",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1561/canonical-tool-packages-and-generated-manifests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-canonical-tool-packages-and-generated-manifests",
+  "taskSession": "tsk_e9b1a3b8f349",
+  "tmuxSession": "opensaas-os-distribution-canonical-tool-packages-and-generated-manifests-e9b1a3b8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-canonical-tool-packages-and-generated-manifests/.task/os-distribution/canonical-tool-packages-and-generated-manifests/session.json",
+  "createdAt": "2026-07-22T22:12:42.386Z"
+}

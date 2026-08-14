@@ -685,7 +685,7 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### task:start — start scoped work and return workflow guidance
 
-Call this directly at the beginning of every scoped repo task. Do not run `tools:search` or search for another task-start tool first. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Use `--workflow` to select task, office, design, or sites; the default is `task`.
+Call this directly at the beginning of every scoped repo task. Do not run `tools:search` or search for another task-start tool first. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Workspace task orchestration supports the `task` workflow; Artifacts orchestration belongs to the OS facade.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
@@ -1172,10 +1172,11 @@ bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 
 ### tool-batch — run typed workspace tools in sequence
 
-runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
+runs a JSON array of facade steps, or an object with `taskSession` and `steps`. the outer task session, task ID, metadata ID, or task branch is resolved once and inherited by every child. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
 
 ```bash
 bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json","offset":1,"limit":80}}]'
+bun run tool-batch -- '{"taskSession":"tsk_example","steps":[{"tool":"fs.read","input":{"path":"packages/workspace/package.json"}}]}'
 bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 
@@ -1332,17 +1333,6 @@ bun run website:deploy -- --build-only  # build only, don't deploy
 ```
 
 ---
-
-### consuelo-design — run local design tooling
-
-Publishes design artifacts into the generated Consuelo Wiki archive and manages the archive server used by the private tailnet and wiki tunnel.
-
-The archive server serves the wiki index, generated search assets, and published artifact pages from the same origin. Keep this route contract aligned with design.publish and design.refresh.
-
-```bash
-bun run consuelo-design -- --help
-bun run consuelo-design -- refresh --json
-```
 
 ---
 ### doctor — workspace diagnostics
@@ -1514,23 +1504,6 @@ always reread SCRIPTS.md when adding or changing scripts. if you add a new scrip
 
 ---
 
-## Design publish
-
-`design.publish` publishes a local design artifact URL, file, directory, or named `portless` service through private Tailscale Serve. It uses one persistent private tailnet host and a unique per-artifact path. It does not use Tailscale Funnel or create a public internet URL.
-
-Recommended Open Design target name: `design.localhost`.
-
-```bash
-bun run office publish --portless-name design.localhost --path "/daily-deep-idea/2026-05-12-prospect-theory"
-bun run office publish --target "/tmp/research/packet.md" --path "/research-packet/2026-05-12-prospect-theory/packet"
-bun run office publish --portless-name design.localhost --category daily-deep-idea --name prospect-theory
-bun run office publish --portless-name design.localhost --path "/daily-deep-idea/example" --dry-run --json
-```
-
-Use this after an Open Design workflow creates or opens an artifact. For daily lessons, publish the digital e-guide project as `/daily-deep-idea/<date>-<slug>` and optionally publish the source packet as `/research-packet/<date>-<slug>/packet`.
-
----
-
 ## CLI tools — fallbacks only
 
 these are installed globally. do not use them if a `bun run` script exists for the same operation. if you ran `--help` on the relevant script and it covers your use case, use the script. ko does not want raw CLI tools used when scripts are available.
@@ -1606,40 +1579,6 @@ workspace linear.projects '{"first":50}'
 ```
 
 ---
-
-## consuelo design e-guide templates
-
-Use `office.generateDigitalEguide` or `bun run office generate digital-eguide` for HTML e-guide artifacts. The workflow stays one command; `--template` is an optional routing hint for the artifact structure.
-
-```bash
-bun run office generate digital-eguide --template research --name "Daily Deep Idea" --prompt "Create the lesson guide..."
-bun run office generate digital-eguide --template spec --name "Workspace agent spec" --prompt "Create the spec..."
-bun run office generate digital-eguide --template plan --name "Execution plan" --prompt "Create the plan..."
-```
-
-Typed facade equivalent:
-
-```ts
-await workspace.call({
-  tool: "office.generateDigitalEguide",
-  input: { name: "Workspace agent spec", template: "spec", prompt: "Create the spec..." },
-  timeout: 600,
-})
-```
-
-Template names are `research`, `spec`, and `plan`. The selected template is injected into the pending Open Design prompt from `packages/office/templates/digital-eguides/` and stored in project metadata. Do not add new facade commands for template variants.
-
-
-## Design wiki archive
-
-Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. Artifacts under `/website/...` also appear under the top-level Website filter. The wiki is automatically regenerated and published at `/office`, sorted by `updatedAt` so republished artifacts return to the top.
-
-`design.publish` also rebuilds the Pagefind search bundle for the managed archive. Search stays inside the same text-card wiki UI: the top search control reveals an inline search input, results update as Ko types, and matching cards keep the same title/date/path presentation as the normal archive list.
-
-The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The wiki and every archived artifact are served by the same tailnet archive server.
-
-
-
 
 
 ### git:diff — structured git diff for agents

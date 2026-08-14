@@ -54,7 +54,7 @@ function printHelp() {
     '  --no-stamp            do not write task-scoped verify report metadata',
   );
   writeStdout(
-    '  --review-arg <value>  pass one extra argument to bun run review; repeatable',
+    '  --review-arg=<value>  pass one extra argument to bun run review; repeatable',
   );
   writeStdout('  --json                output structured json');
   writeStdout('  --quiet               reduce human output');
@@ -96,7 +96,15 @@ function parseArgs(argv) {
           ? undefined
           : argv[index + 1];
 
-    if (!isBooleanFlag && (!value || value.startsWith('--'))) {
+    const isInlineReviewFlag =
+      flag === '--review-arg' &&
+      inlineValue !== undefined &&
+      value?.startsWith('--');
+
+    if (
+      !isBooleanFlag &&
+      (!value || (value.startsWith('--') && !isInlineReviewFlag))
+    ) {
       throw new Error(`missing value for ${flag}`);
     }
 

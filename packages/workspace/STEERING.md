@@ -777,7 +777,7 @@ Treat this as a practical routing table. The goal is to choose the typed workspa
 | writing JSON/Markdown/source as inline command args | `tmp`, `contentFile`, `--input-file`, or `--stdin` | Structured payloads should travel as files. |
 | `kill`, `kill -9`, `pkill` | `mac.process` with explicit action/name/pid; no broad kills | Process cleanup needs scope and confirmation. |
 | `lsof`, `ps`, `netstat` for local diagnostics | `mac.port` / `mac.process` | Typed Mac tools return bounded output and avoid shell parsing. |
-| raw `railway logs` / Railway CLI | `railway.logs`, `railway.redeploy` | Production tooling should use the facade for status/log shape. |
+| raw provider deployment CLIs | `deployment.logs`, `deployment.status`, `deployment.deploy` with an explicit provider | Production tooling should use the canonical deployment facade for normalized status/log shape and approval enforcement. |
 | raw browser/Playwright CLI | `browser.*` tools | Browser tools preserve auth/session/screenshot semantics. |
 | raw Sentry API / curl for Sentry | `sentry.*` tools | Sentry wrappers protect secrets and normalize query shape. |
 | raw Linear API / CLI | `linear.*` tools | Linear writes are durable org changes and need typed defaults. |

@@ -1,0 +1,19 @@
+{
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/consuelo-os-foundation-round-one-provider-control-plane-audit-rerun",
+  "baseBranch": "stream/os-foundation-two",
+  "sourceBranch": "stream/os-foundation-two",
+  "startFrom": "stream",
+  "prNumber": 1690,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1690",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1690",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1690/consuelo-os-foundation-round-one-provider-control-plane-audit-rerun",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1690",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1690/consuelo-os-foundation-round-one-provider-control-plane-audit-rerun",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-consuelo-os-foundation-round-one-provider-control-plane-audit-rerun",
+  "taskSession": "tsk_dcc3ac8872ba",
+  "tmuxSession": "opensaas-os-foundation-two-consuelo-os-foundation-round-one-provider-contro-dcc3ac88",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-consuelo-os-foundation-round-one-provider-control-plane-audit-rerun/.task/os-foundation-two/consuelo-os-foundation-round-one-provider-control-plane-audit-rerun/session.json",
+  "createdAt": "2026-07-28T02:06:58.866Z"
+}

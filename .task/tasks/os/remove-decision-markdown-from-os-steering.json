@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-decision-markdown-from-os-steering",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1515,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1515",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1515",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1515/remove-decision-markdown-from-os-steering",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1515",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1515/remove-decision-markdown-from-os-steering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-decision-markdown-from-os-steering",
+  "taskSession": "tsk_2de62f01fb9f",
+  "tmuxSession": "opensaas-os-remove-decision-markdown-from-os-steering-2de62f01",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-decision-markdown-from-os-steering/.task/os/remove-decision-markdown-from-os-steering/session.json",
+  "createdAt": "2026-07-15T18:26:20.579Z"
+}

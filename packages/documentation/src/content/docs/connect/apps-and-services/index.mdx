@@ -1,10 +1,10 @@
 ---
-title: Apps and services
+title: Applications
 description: Give agents access to the services where your work already lives.
 status: preview
 verifiedAt: 2026-07-14
 evidence:
-  - source: packages/os/tooling/dev-tool-manifest.json
+  - source: packages/os/manifests/generated/tool.manifest.json
     tests:
       - packages/os/tests/tool-manifest.test.ts
     runtime: 'Current provider-specific tools and the absence of other native provider families were verified from the OS manifest on 2026-07-14.'
@@ -14,23 +14,37 @@ import Card from '../../../../components/mintlify/Card.astro';
 import CardGroup from '../../../../components/mintlify/CardGroup.astro';
 import Note from '../../../../components/mintlify/Note.astro';
 
-Apps and services are the systems an agent can work with after the agent itself is connected. A local credential, an official CLI, or an API gives the tool access; Consuelo scopes how the agent discovers and calls that tool.
+Applications are the external systems an agent can work with after the agent itself is connected. A local credential, an official CLI, or an API gives the tool access; Consuelo scopes how the agent discovers and calls that tool.
 
 <Note>
   A service can be useful today even when its native Consuelo tool is planned. Each page separates the current CLI or API path from built-in OS support.
 </Note>
 
-## Choose the outcome
+## Applications
 
 <CardGroup cols={2}>
-  <Card title="Productivity and communication" href="/connect/apps-and-services/google-workspace/">Work with Google Workspace, Slack, and Notion.</Card>
-  <Card title="Code and development" href="/connect/apps-and-services/github/">Work with GitHub and Linear.</Card>
-  <Card title="Deploy and infrastructure" href="/connect/apps-and-services/cloudflare/">Deploy through Cloudflare, Railway, or Vercel.</Card>
-  <Card title="Observe and monitor" href="/connect/apps-and-services/datadog/">Investigate Datadog and Sentry.</Card>
-  <Card title="Data and analytics" href="/connect/apps-and-services/snowflake/">Use Snowflake and Supabase.</Card>
-  <Card title="Sales and CRM" href="/connect/apps-and-services/gohighlevel/">Work with GoHighLevel, Salesforce, and HubSpot.</Card>
-  <Card title="Payments and communication" href="/connect/apps-and-services/stripe/">Use Stripe and Twilio with explicit approvals.</Card>
-  <Card title="Additional services" href="/connect/apps-and-services/additional-services/">Turn another official CLI or API into a focused OS tool.</Card>
+  <Card title="Cloudflare" href="/connect/apps-and-services/cloudflare/">Deploy and operate Cloudflare resources.</Card>
+  <Card title="Datadog" href="/connect/apps-and-services/datadog/">Investigate metrics, logs, and operational signals.</Card>
+  <Card title="GitHub" href="/connect/apps-and-services/github/">Work with repositories, pull requests, issues, and review.</Card>
+  <Card title="Gmail" href="/connect/apps-and-services/gmail/">Read and work with Gmail through the Google Workspace path.</Card>
+  <Card title="GoHighLevel" href="/connect/apps-and-services/gohighlevel/">Work with GoHighLevel accounts and CRM data.</Card>
+  <Card title="Google Calendar" href="/connect/apps-and-services/google-calendar/">Read and work with calendars and events.</Card>
+  <Card title="Google Drive" href="/connect/apps-and-services/google-drive/">Find and work with Drive files.</Card>
+  <Card title="Google Workspace" href="/connect/apps-and-services/google-workspace/">Use the verified Google Workspace CLI path.</Card>
+  <Card title="HubSpot" href="/connect/apps-and-services/hubspot/">Work with HubSpot CRM data.</Card>
+  <Card title="LeadConnector dialer" href="/connect/apps-and-services/leadconnector-dialer/">Use the embedded LeadConnector calling workflow.</Card>
+  <Card title="Linear" href="/connect/apps-and-services/linear/">Work with issues and projects.</Card>
+  <Card title="Notion" href="/connect/apps-and-services/notion/">Work with Notion pages and databases.</Card>
+  <Card title="Railway" href="/connect/apps-and-services/railway/">Inspect and operate Railway deployments.</Card>
+  <Card title="Salesforce" href="/connect/apps-and-services/salesforce/">Work with Salesforce CRM data.</Card>
+  <Card title="Sentry" href="/connect/apps-and-services/sentry/">Investigate application errors and issues.</Card>
+  <Card title="Slack" href="/connect/apps-and-services/slack/">Post approved outbound messages.</Card>
+  <Card title="Snowflake" href="/connect/apps-and-services/snowflake/">Query and inspect Snowflake data.</Card>
+  <Card title="Stripe" href="/connect/apps-and-services/stripe/">Work with Stripe data and approved payment operations.</Card>
+  <Card title="Supabase" href="/connect/apps-and-services/supabase/">Work with Supabase projects and data.</Card>
+  <Card title="Twilio" href="/connect/apps-and-services/twilio/">Use Twilio communication APIs with explicit approvals.</Card>
+  <Card title="Vercel" href="/connect/apps-and-services/vercel/">Inspect and operate Vercel deployments.</Card>
+  <Card title="Create your own" href="/connect/apps-and-services/create-your-own/">Turn another official CLI or API into a focused OS tool.</Card>
 </CardGroup>
 
 ## Read the status first

@@ -127,7 +127,8 @@ describe('prelaunch local OS port cutover', () => {
     expect(caddy).toContain('reverse_proxy 127.0.0.1:46321');
     expect(caddy).not.toContain('127.0.0.1:8960');
     expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:46321/mcp');
-    expect(cloudflaredPlist).toContain('http://127.0.0.1:46321');
+    expect(cloudflaredPlist).toContain('http://127.0.0.1:46320');
+    expect(cloudflaredPlist).not.toContain('http://127.0.0.1:46321');
     expect(cloudflaredPlist).not.toContain('http://127.0.0.1:8960');
   });
 
@@ -161,7 +162,8 @@ describe('prelaunch local OS port cutover', () => {
     expect(config.port).toBe(47_001);
     expect(caddy).toContain('reverse_proxy 127.0.0.1:47001');
     expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:47001/mcp');
-    expect(cloudflaredPlist).toContain('http://127.0.0.1:47001');
+    expect(cloudflaredPlist).toContain('http://127.0.0.1:46320');
+    expect(cloudflaredPlist).not.toContain('http://127.0.0.1:47001');
   });
 
   it('should honor an explicit port when reprovisioning persisted legacy state', () => {
@@ -213,7 +215,8 @@ describe('prelaunch local OS port cutover', () => {
     expect(config.port).toBe(8_960);
     expect(caddy).toContain('reverse_proxy 127.0.0.1:8960');
     expect(chatgptMcp.localUrl).toBe('http://127.0.0.1:8960/mcp');
-    expect(cloudflaredPlist).toContain('http://127.0.0.1:8960');
+    expect(cloudflaredPlist).toContain('http://127.0.0.1:46320');
+    expect(cloudflaredPlist).not.toContain('http://127.0.0.1:8960');
   });
 
   it('should pass the validated environment override into provisioning', () => {
@@ -222,7 +225,7 @@ describe('prelaunch local OS port cutover', () => {
     expect(installSource).toContain('port: resolveLocalOsPortOverride()');
   });
 
-  it('should declare 46321 across every active default-port surface', () => {
+  it('should declare the OS process port and managed Caddy ingress across active surfaces', () => {
     const contracts: Array<[path: string, expected: string]> = [
       ['Dockerfile', 'EXPOSE 46321'],
       ['.env.example', 'CONSUELO_OS_PORT=46321'],
@@ -232,7 +235,7 @@ describe('prelaunch local OS port cutover', () => {
         "process.env.WORKSPACE_DAEMON_PORT || '46321'",
       ],
       ['scripts/start-consuelo-daemon.sh', 'PORT:-46321'],
-      ['scripts/workspace-watchdog.sh', 'PORT:-46321'],
+      ['scripts/workspace-watchdog.sh', 'CONSUELO_CADDY_INGRESS_PORT:-46320'],
       ['scripts/install-system-daemons.sh', '${PORT:-46321}'],
       ['scripts/bootstrap.sh', 'http://127.0.0.1:46321'],
       ['scripts/lib/workspace-state.js', "process.env.PORT || '46321'"],
@@ -240,25 +243,23 @@ describe('prelaunch local OS port cutover', () => {
         'scripts/lib/trace-sites-live-smoke.ts',
         'http://127.0.0.1:46321/gateway/traces/recent',
       ],
-      [
-        'cloudflare/os-device-authority/src/constants.ts',
-        'http://127.0.0.1:46321',
-      ],
-      [
-        'cloudflare/os-device-authority/wrangler.toml',
-        'http://127.0.0.1:46321',
-      ],
       ['README.md', '127.0.0.1:46321'],
       ['SCRIPTS.md', '127.0.0.1:46321'],
       ['docs/runtime-surfaces.md', 'default local port is `46321`'],
       ['docs/installer-runtime-release-checklist.md', '127.0.0.1:46321'],
-      ['../documentation/src/content/docs/os/getting-started/install.mdx', '127.0.0.1:46321/health'],
-      ['../documentation/src/content/docs/os/getting-started/connect-agents.mdx', '127.0.0.1:46321/mcp'],
     ];
 
     for (const [path, expected] of contracts) {
       const contents = source(path);
       expect(contents, path).toContain(expected);
+      expect(contents, path).not.toContain('8960');
+    }
+    for (const path of [
+      'cloudflare/os-device-authority/src/constants.ts',
+      'cloudflare/os-device-authority/wrangler.toml',
+    ]) {
+      const contents = source(path);
+      expect(contents, path).toContain('http://127.0.0.1:46320');
       expect(contents, path).not.toContain('8960');
     }
 

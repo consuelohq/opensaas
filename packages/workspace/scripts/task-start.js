@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const {
   DEFAULT_MAIN_BRANCH,
@@ -61,7 +62,7 @@ function printHelp() {
   writeStdout('  --title <value>        task title used for branch slug and pr title');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --workflow <value>    workflow bundle to return: task|office|design|sites (default: task)');
+  writeStdout('  --workflow <value>    workflow bundle to return: task (default: task)');
   writeStdout('  --stream <branch>      target stream branch for later push/pr flow (default: stream/<area>)');
   writeStdout('  --create-stream        explicitly create the remote stream when it does not exist');
   writeStdout(`  --start-from <mode>    source branch for the new task: ${Array.from(START_FROM_OPTIONS).join('|')} (default: ${DEFAULT_START_FROM})`);
@@ -342,6 +343,57 @@ function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
   runGit(['-C', worktreePath, 'push', 'origin', taskBranch], { cwd: repoRoot });
 }
 
+function compactResolvedStreamContext(result) {
+  return {
+    area: result?.area || null,
+    stream: result?.stream || null,
+    aheadBehind: result?.aheadBehind || null,
+    openTaskPrCount: Array.isArray(result?.openTaskPullRequests?.pullRequests)
+      ? result.openTaskPullRequests.pullRequests.length
+      : 0,
+    recentWorkpadCount: Array.isArray(result?.recentWorkpads?.workpads)
+      ? result.recentWorkpads.workpads.length
+      : 0,
+  };
+}
+
+function resolveStreamContextBeforeTaskMutation({ repoRoot, args, area, stream }) {
+  const preflight = createWorkflowIntentRuntime().start({
+    workflow: args.workflow,
+    area,
+    title: args.title,
+    hasStreamContext: false,
+  });
+  const requiredAction = preflight.hookResult?.requiredNextAction;
+
+  if (args.workflow !== 'task') return null;
+  if (!requiredAction || requiredAction.tool !== 'stream.context') {
+    throw new Error('task.start preflight did not resolve the required stream.context action');
+  }
+
+  const streamContextScript = path.join(__dirname, 'stream-context.js');
+  try {
+    const stdout = execFileSync(process.execPath, [
+      streamContextScript,
+      '--area', area,
+      '--stream', stream,
+      '--repo', args.repo,
+      '--json',
+    ], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return compactResolvedStreamContext(JSON.parse(stdout));
+  } catch (error) {
+    const stderr = error && typeof error === 'object' && 'stderr' in error
+      ? String(error.stderr || '').trim()
+      : '';
+    const message = stderr || (error instanceof Error ? error.message : String(error));
+    throw new Error(`task.start stream.context preflight failed before mutation: ${message}`);
+  }
+}
+
 async function main() {
   try {
     let args = parseArgs(process.argv.slice(2));
@@ -376,6 +428,13 @@ async function main() {
     assertStreamBranchName(stream, area);
     assertTaskBranchName(taskBranch, area);
     assertTmuxAvailable();
+
+    const streamContext = resolveStreamContextBeforeTaskMutation({
+      repoRoot,
+      args,
+      area,
+      stream,
+    });
 
     fetchOrigin(repoRoot);
 
@@ -642,6 +701,7 @@ async function main() {
       createdWorktree,
       bootstrappedBranch,
       createdPr,
+      streamContext,
     };
     const workflowStart = createWorkflowIntentRuntime().start({
       workflow: args.workflow,

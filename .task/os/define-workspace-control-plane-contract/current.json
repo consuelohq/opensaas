@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/define-workspace-control-plane-contract",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1527,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1527",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1527",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1527/define-workspace-control-plane-contract",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1527",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1527/define-workspace-control-plane-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-define-workspace-control-plane-contract",
+  "taskSession": "tsk_18e8452203b3",
+  "tmuxSession": "opensaas-os-define-workspace-control-plane-contract-18e84522",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-define-workspace-control-plane-contract/.task/os/define-workspace-control-plane-contract/session.json",
+  "createdAt": "2026-07-16T15:53:49.383Z"
+}

@@ -254,6 +254,8 @@ export type ParallelAmdPolicy = 'human-only' | 'human-or-unknown';
 
 export type ParallelTerminationPolicy = 'winner-take-all';
 
+export type ParallelProviderMode = 'live' | 'twilio-test';
+
 export type ParallelDialProfile = {
   id: ProfileKey;
   fanout: number;
@@ -268,11 +270,11 @@ export type ProfilePosterior = {
   profileId: ProfileKey;
   alpha: number;
   beta: number;
-}
+};
 
 export type BetaSampler = {
   sample(alpha: number, beta: number): number;
-}
+};
 
 export type PosteriorStore = {
   loadPosteriors(workspaceId?: string): Promise<ProfilePosterior[]>;
@@ -281,7 +283,7 @@ export type PosteriorStore = {
     success: boolean,
     workspaceId?: string,
   ): Promise<void>;
-}
+};
 
 export type ParallelStrategyContext = {
   queueId: string;
@@ -317,19 +319,35 @@ export type ParallelCall = {
   terminatedAt?: string;
 };
 
+export type ParallelCleanupAction = 'terminate-call' | 'unmute-winner';
+
+export type ParallelCleanupFailure = {
+  action: ParallelCleanupAction;
+  callSid: string;
+  message: string;
+  attempts: number;
+  firstFailedAt: string;
+  lastFailedAt: string;
+  retryable?: boolean;
+};
+
 // Full parallel dial group state (stored in redis)
 export type ParallelGroup = {
   groupId: string;
+  dialerSessionId?: string;
+  providerMode?: ParallelProviderMode;
   conferenceName: string;
   status: ParallelGroupStatus;
   winnerSid: string | null;
   calls: ParallelCall[];
+  workspaceId: string;
   queueId: string;
   userId: string;
   createdAt: string;
   campaignSegment?: string;
   profile: ParallelDialProfile;
   resolverReason: string;
+  cleanupFailures: ParallelCleanupFailure[];
   connectedAt?: string;
   completedAt?: string;
   telemetryEmittedAt?: string;
@@ -337,6 +355,9 @@ export type ParallelGroup = {
 
 /** Options for initiating a parallel dial batch */
 export interface ParallelDialOptions {
+  workspaceId: string;
+  dialerSessionId?: string;
+  providerMode?: ParallelProviderMode;
   customerNumbers: string[];
   queueId: string;
   contactIds?: string[];
@@ -366,6 +387,11 @@ export interface ParallelDialResult {
 export interface ParallelStore {
   setGroup(groupId: string, data: string, ttlSeconds: number): Promise<void>;
   getGroup(groupId: string): Promise<string | null>;
+  registerCall(
+    groupId: string,
+    call: ParallelCall,
+    ttlSeconds: number,
+  ): Promise<void>;
   setCallMapping(
     callSid: string,
     groupId: string,
@@ -378,6 +404,12 @@ export interface ParallelStore {
     ttlSeconds: number,
   ): Promise<boolean>;
   getWinner(groupId: string): Promise<string | null>;
+  claimTelemetryEmission(
+    groupId: string,
+    emittedAt: string,
+    ttlSeconds: number,
+  ): Promise<boolean>;
+  withGroupLock<T>(groupId: string, operation: () => Promise<T>): Promise<T>;
   deleteGroup(groupId: string): Promise<void>;
 }
 
@@ -454,4 +486,3 @@ export type TimingModelStore = {
     attemptNumber: number,
   ): Promise<{ hour: number; dayOfWeek: number } | null>;
 };
-

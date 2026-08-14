@@ -3,10 +3,7 @@ import { listBundledSkills, type SkillMetadata } from './skills';
 export const CORE_SKILL_GROUP_LABEL = 'Core OS skills (suggested starting point)';
 export const OPTIONAL_SKILL_GROUP_LABEL = 'Optional skills';
 
-const OPTIONAL_SKILL_NAMES = new Set([
-  'consuelo-workspace-snapshot',
-  'daily-revenue-brief',
-]);
+const OPTIONAL_SKILL_NAMES = new Set<string>();
 
 export type OnboardingSkillOption = {
   value: string;

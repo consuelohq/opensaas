@@ -6,15 +6,29 @@ import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { z } from 'zod';
 
 const DEFAULT_CONSUELO_HOME = '~/.consuelo';
-const DEFAULT_PROJECT_ID = 'opensaas';
-const DEFAULT_PROJECT_REPO = 'consuelohq/opensaas';
 const DEFAULT_BRANCH = 'main';
+
+const sourceControlCodeRootSchema = z.string().min(1).transform((value) => value.trim()).refine((value) => {
+  const normalized = value;
+  if (
+    normalized === '.'
+    || normalized.startsWith('/')
+    || normalized.endsWith('/')
+    || normalized.includes('\\')
+  ) {
+    return false;
+  }
+  return normalized.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..');
+}, 'code root must be a repository-relative path without dot segments');
 
 const projectSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).optional(),
   repo: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/),
   defaultBranch: z.string().min(1).default(DEFAULT_BRANCH),
+  provider: z.string().min(1).default('github'),
+  connectionRef: z.string().min(1).optional(),
+  codeRoots: z.array(sourceControlCodeRootSchema).optional(),
   localPaths: z.record(z.string(), z.string()).optional(),
   worktreeRoot: z.union([z.string(), z.record(z.string(), z.string())]).optional(),
 }).strict();
@@ -51,6 +65,17 @@ const globalYamlConfigSchema = z.object({
   runtime: z.object({
     current: z.string().min(1).optional(),
   }).strict().default({}),
+  updates: z.object({
+    channel: z.enum(['stable', 'beta', 'canary', 'dev', 'nightly']).default('stable'),
+    notifications: z.discriminatedUnion('mode', [
+      z.object({ mode: z.literal('on') }).strict(),
+      z.object({ mode: z.literal('off') }).strict(),
+      z.object({
+        mode: z.literal('snoozed'),
+        snoozedUntil: z.string().datetime(),
+      }).strict(),
+    ]).default({ mode: 'on' }),
+  }).strict().default({ channel: 'stable', notifications: { mode: 'on' } }),
 }).strict();
 
 const nodeYamlConfigSchema = z.object({
@@ -96,6 +121,7 @@ export type ConsueloHomeLayout = {
   nodeCaddyfilePath: string;
   nodeDbDir: string;
   nodeDbPath: string;
+  nodeTraceDbPath: string;
   nodeLogsDir: string;
   nodeRunsDir: string;
   nodeCacheDir: string;
@@ -158,6 +184,7 @@ export function resolveConsueloHomeLayout(home?: string): ConsueloHomeLayout {
     nodeCaddyfilePath: path.join(nodeDir, 'caddy', 'Caddyfile'),
     nodeDbDir: path.join(nodeDir, 'db'),
     nodeDbPath: path.join(nodeDir, 'db', 'consuelo.db'),
+    nodeTraceDbPath: path.join(nodeDir, 'db', 'traces.db'),
     nodeLogsDir: path.join(nodeDir, 'logs'),
     nodeRunsDir: path.join(nodeDir, 'runs'),
     nodeCacheDir: path.join(nodeDir, 'cache'),
@@ -184,10 +211,17 @@ function formatValidationError(filePath: string, error: z.ZodError): Error {
   return new Error(`${path.basename(filePath)} failed validation: ${issues}`);
 }
 
-export function loadWorkspaceYamlConfig(filePath: string): ConsueloWorkspaceYamlConfig {
-  const result = workspaceYamlConfigSchema.safeParse(parseYamlFile(filePath));
-  if (!result.success) throw formatValidationError(filePath, result.error);
+export function validateWorkspaceYamlConfig(
+  value: unknown,
+  sourceName = 'workspace.yaml',
+): ConsueloWorkspaceYamlConfig {
+  const result = workspaceYamlConfigSchema.safeParse(value);
+  if (!result.success) throw formatValidationError(sourceName, result.error);
   return result.data;
+}
+
+export function loadWorkspaceYamlConfig(filePath: string): ConsueloWorkspaceYamlConfig {
+  return validateWorkspaceYamlConfig(parseYamlFile(filePath), filePath);
 }
 
 export function loadGlobalYamlConfig(filePath: string): ConsueloGlobalYamlConfig {
@@ -209,8 +243,34 @@ export function stringifyYamlConfig(value: unknown): string {
 
 export function writeYamlConfig(filePath: string, value: unknown, dryRun: boolean): void {
   if (dryRun) return;
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, stringifyYamlConfig(value), { mode: 0o600 });
+  const directory = path.dirname(filePath);
+  const temporaryPath = path.join(
+    directory,
+    `.${path.basename(filePath)}.${process.pid}.${crypto.randomUUID()}.tmp`,
+  );
+  fs.mkdirSync(directory, { recursive: true });
+  try {
+    const descriptor = fs.openSync(temporaryPath, 'wx', 0o600);
+    try {
+      fs.writeFileSync(descriptor, stringifyYamlConfig(value), 'utf8');
+      fs.fsyncSync(descriptor);
+    } finally {
+      fs.closeSync(descriptor);
+    }
+    fs.renameSync(temporaryPath, filePath);
+    try {
+      const directoryDescriptor = fs.openSync(directory, 'r');
+      try {
+        fs.fsyncSync(directoryDescriptor);
+      } finally {
+        fs.closeSync(directoryDescriptor);
+      }
+    } catch {
+      // Directory fsync is not available on every supported filesystem.
+    }
+  } finally {
+    fs.rmSync(temporaryPath, { force: true });
+  }
 }
 
 export function createDefaultGlobalYamlConfig(input: {
@@ -222,6 +282,7 @@ export function createDefaultGlobalYamlConfig(input: {
     activeWorkspace: input.workspaceId,
     activeNode: input.nodeId,
     runtime: { current: 'runtime/current' },
+    updates: { channel: 'stable', notifications: { mode: 'on' } },
   };
 }
 
@@ -258,15 +319,9 @@ export function createDefaultWorkspaceYamlConfig(input: {
       host: input.workspaceHost,
     },
     defaults: {
-      project: DEFAULT_PROJECT_ID,
       node: 'local',
     },
-    projects: [{
-      id: DEFAULT_PROJECT_ID,
-      name: 'OpenSaaS',
-      repo: DEFAULT_PROJECT_REPO,
-      defaultBranch: DEFAULT_BRANCH,
-    }],
+    projects: [],
     routing: {},
     policy: { allowedAgents: [] },
     sites: {},

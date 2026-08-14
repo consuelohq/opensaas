@@ -1,0 +1,87 @@
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+
+import {
+  createInspectorState,
+  reduceInspectorState,
+} from '../scripts/lib/trace-site-inspector/inspector-state';
+import {
+  childTraceRecords,
+  totalTokens,
+} from '../scripts/lib/trace-site-inspector/model';
+import {
+  nextTraceInteractionIndex,
+  traceIdentityCopyText,
+} from '../scripts/lib/trace-site-inspector/interactions';
+import {
+  formatTraceTableRow,
+} from '../scripts/lib/trace-site-inspector/table-formatters';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const inspectorRoot = resolve(here, '../scripts/lib/trace-site-inspector');
+
+describe('Trace Burn keyboard and row interaction contracts', () => {
+  it('uses safe tool aliases instead of falling back to trace', () => {
+    expect(formatTraceTableRow({ toolName: 'fs.read', traceId: 'trc_1' }).toolLabel).toBe('fs.read');
+    expect(formatTraceTableRow({ facadeTool: 'github', traceId: 'trc_2' }).toolLabel).toBe('github');
+  });
+
+  it('uses persisted token counts first and estimates historical payload burn when counts are absent', () => {
+    expect(totalTokens({ inputTokens: 12, outputTokens: 8, rawInputJson: 'x'.repeat(400) })).toBe(20);
+    expect(totalTokens({ rawInputJson: 'x'.repeat(40), rawResultJson: 'y'.repeat(40) })).toBe(20);
+  });
+
+  it('materializes stored batch children with their tool names and token counts', () => {
+    const children = childTraceRecords({
+      traceId: 'trc_parent',
+      name: 'batch',
+      batchResultsJson: [
+        { tool: 'fs.read', traceId: 'trc_child', inputTokens: 3, outputTokens: 5, ok: true },
+      ],
+    });
+    expect(children).toHaveLength(1);
+    expect(formatTraceTableRow(children[0]).toolLabel).toBe('fs.read');
+    expect(totalTokens(children[0])).toBe(8);
+  });
+
+  it('closing the inspector clears the selected row instead of leaving a stale highlight', () => {
+    const selected = createInspectorState({
+      selectedKey: 'trc_1',
+      selectedRow: { traceId: 'trc_1', name: 'fs.read' },
+      layout: 'split',
+    });
+    expect(reduceInspectorState(selected, { type: 'close' })).toMatchObject({
+      selectedKey: '',
+      selectedRow: null,
+      layout: 'collapsed',
+    });
+  });
+
+  it('moves deterministically through trace targets and copies tool plus trace id', () => {
+    expect(nextTraceInteractionIndex(5, -1, 1)).toBe(0);
+    expect(nextTraceInteractionIndex(5, 0, 1)).toBe(1);
+    expect(nextTraceInteractionIndex(5, 4, 1)).toBe(4);
+    expect(nextTraceInteractionIndex(5, 2, -1)).toBe(1);
+    expect(traceIdentityCopyText({ name: 'code.call', traceId: 'trc_abc' })).toBe('code.call · trc_abc');
+  });
+
+  it('wires the requested keyboard shortcuts and last-interaction copy behavior into the OS browser runtime', () => {
+    const browser = readFileSync(resolve(inspectorRoot, 'browser.ts'), 'utf8');
+    const virtualList = readFileSync(resolve(inspectorRoot, 'virtual-list-browser.ts'), 'utf8');
+    expect(browser).toContain("event.key === 'ArrowUp'");
+    expect(browser).toContain("event.key === 'ArrowDown'");
+    expect(browser).toContain("event.key === 'Enter'");
+    expect(browser).toContain("event.key.toLowerCase() === 'c'");
+    expect(browser).toContain("event.key.toLowerCase() === 'f'");
+    expect(browser).toContain("event.key === 'Escape'");
+    expect(browser).toContain('lastTraceInteraction');
+    expect(browser).toContain('consuelo.trace-return-home.preference');
+    expect(browser).toContain('Do not ask again');
+    expect(browser).toContain('Return home?');
+    expect(virtualList).toContain('moveFocus');
+    expect(virtualList).toContain('clearSelection');
+    expect(virtualList).toContain('openFilters');
+  });
+});

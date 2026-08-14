@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/refine-homepage-hero-against-hermes",
+  "base": "origin/task/website/refine-homepage-hero-against-hermes",
+  "headSha": "9625a7ea728d7bdffedfaba7bb13c22011129c03",
+  "changeHash": "e3d81b6ddad43eba1c295a334372979a1ec385d8a0f2cd57b7f37f5abdf17031",
+  "changedFiles": [
+    "packages/consuelo-website/bun.lock",
+    "packages/consuelo-website/package.json",
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/src/components/site/SiteHeader.astro",
+    "packages/consuelo-website/tests/site-header.test.mjs"
+  ],
+  "verifiedAt": "2026-07-21T12:02:24.805Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/refine-homepage-hero-against-hermes.json",
+        ".task/website/refine-homepage-hero-against-hermes/current.json",
+        ".task/website/refine-homepage-hero-against-hermes/session.json",
+        ".task/website/refine-homepage-hero-against-hermes/workpad.md",
+        "packages/consuelo-website/bun.lock",
+        "packages/consuelo-website/package.json",
+        "packages/consuelo-website/src/components/home/HomeHero.astro",
+        "packages/consuelo-website/src/components/site/SiteHeader.astro",
+        "packages/consuelo-website/tests/site-header.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -160,9 +160,9 @@ contractDescribe('workspace hostname edge routing contract', () => {
     });
 
     const response = await router.fetch(new Request('https://kokayi.consuelohq.com/private'));
-    const body = (await response.json()) as { error: { code: string } };
-    expect(response.status).toBe(503);
-    expect(body.error.code).toBe('WORKSPACE_EDGE_AUTH_REQUIRED');
+    const body = (await response.json()) as { error: string };
+    expect(response.status).toBe(401);
+    expect(body.error).toBe('workspace_session_required');
     expect(cacheMatchCount).toBe(0);
     expect(cachePutCount).toBe(0);
     expect(r2ReadCount).toBe(0);

@@ -2,7 +2,7 @@
 title: Traces
 description: Follow trace IDs across current local records and the authenticated Trace Sites gateway.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
   - source: packages/os/scripts/server/routes/traces.ts
     tests:
@@ -14,9 +14,32 @@ evidence:
       - packages/os/tests/trace-sites-browser-client.test.ts
       - packages/os/tests/trace-sites-gateway-read-layer.test.ts
     runtime: Live, stale, degraded, bridge-required, cached aggregate, and unavailable states were verified through focused contracts.
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/trace-persistence.test.ts
+      - packages/os/tests/trace-site-inspector-os-owned.test.ts
+    runtime: Requested, resolved, default-node, and route-source trace metadata plus node and route inspector labels were verified on 2026-08-12.
 ---
 
 A trace ID is the thread you follow through related evidence. In the current implementation it can connect a request to an OS run, execution events, a tool call, an artifact version, or an error. Which records exist depends on the surface that handled the work.
+
+For multi-node work, a trace should answer one extra question: **why did this call run on that node?**
+
+## Read node routing from the trace
+
+Current OS trace records can preserve:
+
+| Field | What it answers |
+| --- | --- |
+| requested node | Did the caller ask for a specific node? |
+| resolved node | Which node actually received the call? |
+| resolved node name | Which human-readable node was that? |
+| default node | What was the workspace default at the time? |
+| route source | Was the decision `task`, `explicit`, or `default`? |
+
+This is the fastest way to debug a call that ran somewhere unexpected. A task can correctly resolve to its owning node even after the workspace default changes, so the current default alone is not enough to explain historical work.
+
+See [Routing work](/nodes/routing/) for the decision order behind these fields.
 
 ## Trace IDs do not erase storage boundaries
 

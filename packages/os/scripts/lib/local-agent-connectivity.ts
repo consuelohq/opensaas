@@ -6,6 +6,12 @@ import path from 'node:path';
 
 import { Effect } from 'effect';
 
+import {
+  LEGACY_MCP_PROTOCOL_VERSION,
+  MODERN_MCP_PROTOCOL_VERSION,
+  modernMcpClientMeta,
+} from './mcp-protocol';
+
 export type AgentName =
   | 'codex'
   | 'cursor'
@@ -129,9 +135,12 @@ type NativeConfigInspection = {
   error?: AgentConnectivityError;
 };
 
-const CONSUELO_MCP_NAME = 'consuelo-os';
-const CODEX_BLOCK_START = '# BEGIN CONSUELO OS MCP';
-const CODEX_BLOCK_END = '# END CONSUELO OS MCP';
+const CONSUELO_MCP_NAME = 'os';
+const LEGACY_CONSUELO_MCP_NAMES = ['consuelo', 'consuelo-os'] as const;
+const CODEX_BLOCK_START = '# BEGIN CONSUELO MCP';
+const CODEX_BLOCK_END = '# END CONSUELO MCP';
+const LEGACY_CODEX_BLOCK_START = '# BEGIN CONSUELO OS MCP';
+const LEGACY_CODEX_BLOCK_END = '# END CONSUELO OS MCP';
 const DEFAULT_MCP_TIMEOUT_MS = 10_000;
 
 function nowIso(): string {
@@ -184,7 +193,7 @@ function fingerprint(value: unknown): string {
 }
 
 export function localAgentMcpCommandPath(home: string): string {
-  return path.join(home, 'bin', 'consuelo-os-mcp');
+  return path.join(home, 'bin', 'consuelo-mcp');
 }
 
 function localAgentMcpCommandSource(): string {
@@ -192,8 +201,37 @@ function localAgentMcpCommandSource(): string {
     '#!/usr/bin/env bash',
     'set -euo pipefail',
     'OS_HOME="${CONSUELO_OS_HOME:-${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}}"',
-    'cd "$OS_HOME"',
-    'exec bun ./scripts/mcp-stdio.ts',
+    'BUN_EXECUTABLE="${BUN_BIN:-}"',
+    'PACKAGE_ROOT="${CONSUELO_OS_PACKAGE_ROOT:-}"',
+    'if [ -f "$OS_HOME/.env" ]; then',
+    '  while IFS= read -r line || [ -n "$line" ]; do',
+    '    case "$line" in',
+    '      BUN_BIN=*) [ -n "$BUN_EXECUTABLE" ] || BUN_EXECUTABLE="${line#BUN_BIN=}" ;;',
+    '      CONSUELO_OS_PACKAGE_ROOT=*) [ -n "$PACKAGE_ROOT" ] || PACKAGE_ROOT="${line#CONSUELO_OS_PACKAGE_ROOT=}" ;;',
+    '    esac',
+    '  done < "$OS_HOME/.env"',
+    'fi',
+    'HOSTED_SCRIPT="$OS_HOME/runtime/current/scripts/mcp-stdio.ts"',
+    'SOURCE_SCRIPT="$OS_HOME/scripts/mcp-stdio.ts"',
+    'PACKAGE_SCRIPT="$PACKAGE_ROOT/scripts/mcp-stdio.ts"',
+    'if [ -n "$PACKAGE_ROOT" ] && [ -f "$PACKAGE_SCRIPT" ]; then',
+    '  MCP_SCRIPT="$PACKAGE_SCRIPT"',
+    'elif [ -f "$HOSTED_SCRIPT" ]; then',
+    '  MCP_SCRIPT="$HOSTED_SCRIPT"',
+    'elif [ -f "$SOURCE_SCRIPT" ]; then',
+    '  MCP_SCRIPT="$SOURCE_SCRIPT"',
+    'else',
+    '  echo "Consuelo MCP runtime is not installed under $OS_HOME." >&2',
+    '  exit 1',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ]; then',
+    '  BUN_EXECUTABLE="$(command -v bun || true)"',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ] || [ ! -x "$BUN_EXECUTABLE" ]; then',
+    '  echo "Consuelo MCP runtime cannot find the Bun executable. Re-run the installer to repair it." >&2',
+    '  exit 1',
+    'fi',
+    'exec "$BUN_EXECUTABLE" "$MCP_SCRIPT"',
     '',
   ].join('\n');
 }
@@ -290,7 +328,7 @@ function expectedJsonEntry(candidate: AgentCandidate, home: string): JsonObject 
       command: [command],
       cwd: home,
       enabled: true,
-      environment: { CONSUELO_HOME: home },
+      environment: { CONSUELO_HOME: home, CONSUELO_AGENT_ID: candidate.name },
     };
   }
 
@@ -298,7 +336,7 @@ function expectedJsonEntry(candidate: AgentCandidate, home: string): JsonObject 
     ...(candidate.includeStdioType ? { type: 'stdio' } : {}),
     command,
     args: [],
-    env: { CONSUELO_HOME: home },
+    env: { CONSUELO_HOME: home, CONSUELO_AGENT_ID: candidate.name },
   };
 }
 
@@ -312,12 +350,29 @@ function codexManagedBlock(home: string): string {
     '',
     `[mcp_servers.${JSON.stringify(CONSUELO_MCP_NAME)}.env]`,
     `CONSUELO_HOME = ${JSON.stringify(home)}`,
+    `CONSUELO_AGENT_ID = ${JSON.stringify('codex')}`,
     CODEX_BLOCK_END,
   ].join('\n');
 }
 
 function candidateFingerprint(candidate: AgentCandidate, home: string): string {
-  const serverPath = path.join(home, 'scripts', 'mcp-stdio.ts');
+  const hostedServerPath = path.join(
+    home,
+    'runtime',
+    'current',
+    'scripts',
+    'mcp-stdio.ts',
+  );
+  const packageRoot = process.env.CONSUELO_OS_PACKAGE_ROOT;
+  const packageServerPath = packageRoot
+    ? path.join(packageRoot, 'scripts', 'mcp-stdio.ts')
+    : null;
+  const sourceServerPath = path.join(home, 'scripts', 'mcp-stdio.ts');
+  const serverPath = fs.existsSync(hostedServerPath)
+    ? hostedServerPath
+    : packageServerPath && fs.existsSync(packageServerPath)
+      ? packageServerPath
+      : sourceServerPath;
   const serverDigest = fs.existsSync(serverPath)
     ? createHash('sha256').update(fs.readFileSync(serverPath)).digest('hex')
     : 'missing';
@@ -326,6 +381,7 @@ function candidateFingerprint(candidate: AgentCandidate, home: string): string {
       ? codexManagedBlock(home)
       : expectedJsonEntry(candidate, home),
     commandSource: localAgentMcpCommandSource(),
+    serverPath,
     serverDigest,
   });
 }
@@ -668,8 +724,12 @@ function materializeMcpCommandEffect(input: {
 }
 
 function removeCodexConsueloSections(content: string): string {
+  // remove legacy Consuelo OS MCP entries during migration.
   const withoutManaged = content.replace(
     new RegExp(`${CODEX_BLOCK_START}[\\s\\S]*?${CODEX_BLOCK_END}\\s*`, 'g'),
+    '',
+  ).replace(
+    new RegExp(`${LEGACY_CODEX_BLOCK_START}[\\s\\S]*?${LEGACY_CODEX_BLOCK_END}\\s*`, 'g'),
     '',
   );
   const lines = withoutManaged.split('\n');
@@ -679,8 +739,13 @@ function removeCodexConsueloSections(content: string): string {
     const trimmed = line.trim();
     const header = trimmed.match(/^\[([^\]]+)\]$/)?.[1];
     if (header !== undefined) {
-      skipping = header === `mcp_servers.${JSON.stringify(CONSUELO_MCP_NAME)}` ||
-        header === `mcp_servers.${JSON.stringify(CONSUELO_MCP_NAME)}.env`;
+      skipping = [
+        CONSUELO_MCP_NAME,
+        ...LEGACY_CONSUELO_MCP_NAMES,
+      ].some((name) =>
+        header === `mcp_servers.${JSON.stringify(name)}` ||
+        header === `mcp_servers.${JSON.stringify(name)}.env`
+      );
       if (!skipping) output.push(line);
       continue;
     }
@@ -790,13 +855,19 @@ function configureJsonEffect(input: {
         { path: input.candidate.configPath },
       ));
     }
+    const nextContainer = {
+      ...(isJsonObject(existingContainer) ? existingContainer : {}),
+    };
+    for (const legacyName of LEGACY_CONSUELO_MCP_NAMES) {
+      delete nextContainer[legacyName];
+    }
     const next: JsonObject = {
       ...current,
       ...(input.candidate.format === 'json-opencode' && typeof current.$schema !== 'string'
         ? { $schema: 'https://opencode.ai/config.json' }
         : {}),
       [containerKey]: {
-        ...(isJsonObject(existingContainer) ? existingContainer : {}),
+        ...nextContainer,
         [CONSUELO_MCP_NAME]: expectedJsonEntry(input.candidate, input.home),
       },
     };
@@ -985,39 +1056,28 @@ class ProbeFailure extends Error {
   }
 }
 
-export function parseMcpContentLengthFrames(buffer: Buffer): {
+export function parseMcpJsonLines(buffer: Buffer): {
   messages: JsonObject[];
   remainder: Buffer;
 } {
   const messages: JsonObject[] = [];
-  let remainder = buffer;
-  while (remainder.length > 0) {
-    const headerEndCrlf = remainder.indexOf(Buffer.from('\r\n\r\n'));
-    const headerEndLf = headerEndCrlf < 0 ? remainder.indexOf(Buffer.from('\n\n')) : -1;
-    const effectiveHeaderEnd = headerEndCrlf >= 0 ? headerEndCrlf : headerEndLf;
-    const separatorLength = headerEndCrlf >= 0 ? 4 : 2;
-    if (effectiveHeaderEnd < 0) break;
-    const header = remainder.subarray(0, effectiveHeaderEnd).toString('ascii');
-    const lengthMatch = header.match(/content-length:\s*(\d+)/i);
-    if (!lengthMatch) throw new Error('MCP response is missing Content-Length.');
-    const bodyLength = Number.parseInt(lengthMatch[1] ?? '', 10);
-    const bodyStart = effectiveHeaderEnd + separatorLength;
-    const bodyEnd = bodyStart + bodyLength;
-    if (remainder.length < bodyEnd) break;
-    const body = remainder.subarray(bodyStart, bodyEnd).toString('utf8');
-    const parsed = JSON.parse(body) as unknown;
+  let offset = 0;
+  while (offset < buffer.length) {
+    const newline = buffer.indexOf(0x0a, offset);
+    if (newline < 0) break;
+    const line = buffer.subarray(offset, newline).toString('utf8').trim();
+    offset = newline + 1;
+    if (!line) continue;
+    const parsed = JSON.parse(line) as unknown;
     if (!isJsonObject(parsed)) throw new Error('MCP response must be a JSON object.');
     messages.push(parsed);
-    remainder = remainder.subarray(bodyEnd);
-    while (remainder.length > 0 && /\s/.test(String.fromCharCode(remainder[0] ?? 0))) {
-      remainder = remainder.subarray(1);
-    }
   }
-  return { messages, remainder };
+  return { messages, remainder: buffer.subarray(offset) };
 }
 
 function probeMcpCommand(input: {
   home: string;
+  agentId: AgentName;
   timeoutMs: number;
 }): Promise<LocalAgentMcpHandshake> {
   return new Promise((resolve, reject) => {
@@ -1035,14 +1095,36 @@ function probeMcpCommand(input: {
     let settled = false;
     let stdout = Buffer.alloc(0);
     let stderr = '';
+    let discovered: JsonObject | undefined;
     let initialized: JsonObject | undefined;
     let tools: JsonObject | undefined;
     let toolsRequested = false;
+    let legacyInitializationRequested = false;
     const child = spawn(commandPath, [], {
       cwd: input.home,
-      env: { ...process.env, CONSUELO_HOME: input.home, CONSUELO_OS_HOME: input.home },
+      env: {
+        ...process.env,
+        CONSUELO_HOME: input.home,
+        CONSUELO_OS_HOME: input.home,
+        CONSUELO_AGENT_ID: input.agentId,
+      },
       stdio: ['pipe', 'pipe', 'pipe'],
     });
+
+    const requestLegacyInitialization = (): void => {
+      if (legacyInitializationRequested) return;
+      legacyInitializationRequested = true;
+      child.stdin.write(`${JSON.stringify({
+        jsonrpc: '2.0',
+        id: 2,
+        method: 'initialize',
+        params: {
+          protocolVersion: LEGACY_MCP_PROTOCOL_VERSION,
+          capabilities: {},
+          clientInfo: { name: 'consuelo-verifier', version: '1.0.0' },
+        },
+      })}\n`);
+    };
 
     const finish = (result: LocalAgentMcpHandshake | AgentConnectivityError, ok: boolean): void => {
       if (settled) return;
@@ -1075,21 +1157,47 @@ function probeMcpCommand(input: {
     child.stdout.on('data', (chunk: Buffer) => {
       stdout = Buffer.concat([stdout, chunk]);
       try {
-        const parsed = parseMcpContentLengthFrames(stdout);
+        const parsed = parseMcpJsonLines(stdout);
         stdout = parsed.remainder;
         for (const message of parsed.messages) {
           if (isJsonObject(message.error)) {
+            if (message.id === 1) {
+              requestLegacyInitialization();
+              continue;
+            }
             throw new Error(`MCP request ${String(message.id ?? 'unknown')} failed: ${JSON.stringify(message.error)}`);
           }
           if (message.id === 1 && isJsonObject(message.result)) {
+            discovered = message.result;
+            const supportedVersions = discovered.supportedVersions;
+            if (
+              Array.isArray(supportedVersions)
+              && supportedVersions.includes(MODERN_MCP_PROTOCOL_VERSION)
+            ) {
+              if (!toolsRequested) {
+                toolsRequested = true;
+                child.stdin.write(`${JSON.stringify({
+                  jsonrpc: '2.0',
+                  id: 3,
+                  method: 'tools/list',
+                  params: {
+                    _meta: modernMcpClientMeta('consuelo-verifier'),
+                  },
+                })}\n`);
+              }
+            } else {
+              requestLegacyInitialization();
+            }
+          }
+          if (message.id === 2 && isJsonObject(message.result)) {
             initialized = message.result;
+            child.stdin.write(`${JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'notifications/initialized',
+              params: {},
+            })}\n`);
             if (!toolsRequested) {
               toolsRequested = true;
-              child.stdin.write(`${JSON.stringify({
-                jsonrpc: '2.0',
-                method: 'notifications/initialized',
-                params: {},
-              })}\n`);
               child.stdin.write(`${JSON.stringify({
                 jsonrpc: '2.0',
                 id: 3,
@@ -1100,7 +1208,16 @@ function probeMcpCommand(input: {
           }
           if (message.id === 3 && isJsonObject(message.result)) tools = message.result;
         }
-        const protocolVersion = initialized?.protocolVersion;
+        const supportedVersions = discovered?.supportedVersions;
+        const modernProtocolVersion = Array.isArray(supportedVersions)
+          && supportedVersions.includes(MODERN_MCP_PROTOCOL_VERSION)
+          ? MODERN_MCP_PROTOCOL_VERSION
+          : undefined;
+        const initializedProtocolVersion = initialized?.protocolVersion;
+        const legacyProtocolVersion = initializedProtocolVersion === LEGACY_MCP_PROTOCOL_VERSION
+          ? LEGACY_MCP_PROTOCOL_VERSION
+          : undefined;
+        const protocolVersion = modernProtocolVersion ?? legacyProtocolVersion;
         const toolList = tools?.tools;
         if (typeof protocolVersion === 'string' && Array.isArray(toolList)) {
           if (toolList.length === 0) {
@@ -1136,11 +1253,9 @@ function probeMcpCommand(input: {
     child.stdin.write(`${JSON.stringify({
       jsonrpc: '2.0',
       id: 1,
-      method: 'initialize',
+      method: 'server/discover',
       params: {
-        protocolVersion: '2024-11-05',
-        capabilities: {},
-        clientInfo: { name: 'consuelo-os-verifier', version: '1.0.0' },
+        _meta: modernMcpClientMeta('consuelo-verifier'),
       },
     })}\n`);
   });
@@ -1148,6 +1263,7 @@ function probeMcpCommand(input: {
 
 function probeMcpCommandEffect(input: {
   home: string;
+  agentId: AgentName;
   timeoutMs: number;
 }): Effect.Effect<LocalAgentMcpHandshake, AgentConnectivityError> {
   return Effect.tryPromise({
@@ -1174,7 +1290,9 @@ export function verifyLocalAgentsEffect(input: {
   return Effect.gen(function* () {
     const before = detectLocalAgents({ home: input.home, userHome });
     const targets = before.filter(
-      (agent) => requested.has(agent.name) && agent.status === 'configured',
+      (agent) => requested.has(agent.name) && (
+        agent.status === 'configured' || agent.status === 'verified'
+      ),
     );
     const previous = readPersistedRecords(input.home);
     if (targets.length === 0) {
@@ -1183,32 +1301,53 @@ export function verifyLocalAgentsEffect(input: {
       return { agents: before, records };
     }
 
-    const probe = yield* probeMcpCommandEffect({
-      home: input.home,
-      timeoutMs: input.timeoutMs ?? DEFAULT_MCP_TIMEOUT_MS,
-    }).pipe(Effect.either);
-    if (probe._tag === 'Left') {
-      const agents = before.map((agent) => targets.some((target) => target.name === agent.name)
-        ? { ...agent, status: 'failed' as const, message: probe.left.message, error: probe.left }
-        : agent);
-      const records = toLocalAgentConfigRecords(agents, previous);
-      yield* persistLocalAgentRecordsEffect({ home: input.home, records });
-      return { agents, records, error: probe.left };
-    }
-
+    const probes = yield* Effect.forEach(targets, (target) =>
+      probeMcpCommandEffect({
+        home: input.home,
+        agentId: target.name,
+        timeoutMs: input.timeoutMs ?? DEFAULT_MCP_TIMEOUT_MS,
+      }).pipe(
+        Effect.either,
+        Effect.map((outcome) => ({ name: target.name, outcome })),
+      ),
+    );
+    const probesByAgent = new Map(
+      probes.map((probe) => [probe.name, probe.outcome] as const),
+    );
     const verifiedAt = nowIso();
-    const agents = before.map((agent) => targets.some((target) => target.name === agent.name)
-      ? {
+    const agents = before.map((agent) => {
+      const probe = probesByAgent.get(agent.name);
+      if (!probe) return agent;
+      if (probe._tag === 'Left') {
+        return {
           ...agent,
-          status: 'verified' as const,
-          verifiedAt,
-          message: `${agent.label} MCP connection is verified.`,
-          error: undefined,
-        }
-      : agent);
+          status: 'failed' as const,
+          message: probe.left.message,
+          error: probe.left,
+        };
+      }
+      return {
+        ...agent,
+        status: 'verified' as const,
+        verifiedAt,
+        message: `${agent.label} MCP connection is verified.`,
+        error: undefined,
+      };
+    });
     const records = toLocalAgentConfigRecords(agents, previous);
     yield* persistLocalAgentRecordsEffect({ home: input.home, records });
-    return { agents, records, handshake: probe.right };
+    const firstSuccess = probes.find((probe) => probe.outcome._tag === 'Right');
+    const firstFailure = probes.find((probe) => probe.outcome._tag === 'Left');
+    return {
+      agents,
+      records,
+      ...(firstSuccess?.outcome._tag === 'Right'
+        ? { handshake: firstSuccess.outcome.right }
+        : {}),
+      ...(firstFailure?.outcome._tag === 'Left'
+        ? { error: firstFailure.outcome.left }
+        : {}),
+    };
   });
 }
 

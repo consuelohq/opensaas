@@ -3,8 +3,15 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Effect } from 'effect';
 
-import manifestJson from '../../../manifests/tool.manifest.json';
+import manifestJson from '../../../manifests/generated/tool.manifest.json';
+import {
+  executeDeploymentFacade,
+  type DeploymentFacadeInput,
+} from '../../../tools/deployment-provider/facade';
+import { redactDeploymentTraceInput } from '../../../tools/deployment-provider/redaction';
 
 import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
@@ -12,7 +19,10 @@ import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToo
 import { logToolExecution } from './logger';
 import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
 import { getInputSchema } from './schemas';
+import { resolveBrowserConfig } from '../browser/config';
 import { executeCodeCall } from '../code-call/runtime';
+import { nodeResourceLockPath, withNodeResourceLock } from '../node-resource-lock';
+import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
 import type { CodeCallInput } from '../code-call/types';
 import { executeSubagent } from '../subagent/runtime';
 import type {
@@ -58,6 +68,7 @@ type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
 
+const runtimePackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const MAX_LOG_COMMAND_CHARS = 4000;
 
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
@@ -150,7 +161,12 @@ export async function executeTool<TData = unknown>(
 ): Promise<ToolResult<TData>> {
   const startedAt = (options.now || Date.now)();
   const traceId = createTraceId(options.randomUUID);
-  const cwd = resolveGitRoot(options.cwd || process.cwd());
+  // An MCP call supplies no cwd, and the server process runs from the immutable runtime release,
+  // which is not a repository. Falling straight through to process.cwd() left every repo-aware
+  // facade tool unable to find a git root. Prefer the workspace's configured project checkout.
+  const cwd = resolveGitRoot(
+    options.cwd || resolveActiveWorkspaceProjectCwd() || process.cwd(),
+  );
   const env = options.env || process.env;
   const runner = options.runner || defaultRunner;
   const requestId = typeof input.requestId === 'string' ? input.requestId : undefined;
@@ -169,7 +185,7 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, '', undefined, undefined, options.logMode);
+      logResult(entry, toolName, result, '', undefined, undefined, options.logMode, { input, env });
       return result as ToolResult<TData>;
     }
 
@@ -185,7 +201,7 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode, { input, env });
       return result as ToolResult<TData>;
     }
 
@@ -201,7 +217,7 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode, { input, env });
       return result as ToolResult<TData>;
     }
 
@@ -218,7 +234,11 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: normalizedInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
     if (entry.sessionRequired === true && !taskSessionResolution?.ok) {
@@ -233,7 +253,11 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: normalizedInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
     const scopedInput = taskSessionResolution?.ok ? {
@@ -253,13 +277,18 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: scopedInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
 
     const internalResult = await executeInternalTool<TData>(entry, scopedInput, {
       cwd,
       env,
+      rawInput: input,
       runner,
       startedAt,
       traceId,
@@ -280,7 +309,11 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: scopedInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
 
@@ -295,7 +328,13 @@ export async function executeTool<TData = unknown>(
     const facadeCmdForLog = formatFacadeCommandForLog(toolName, commandInput);
 
     const timeoutMs = getTimeoutMs(entry, commandInput);
-    const runResult = await runWithRetry(entry, plan, timeoutMs, runner);
+    const runResult = (toolName === 'browser' || toolName.startsWith('browser.'))
+      ? await withNodeResourceLock({
+        lockPath: nodeResourceLockPath(resolveBrowserConfig(env).profilePath),
+        operationId: `browser:${toolName}`,
+        waitTimeoutMs: timeoutMs,
+      }, () => runWithRetry(entry, plan, timeoutMs, runner))
+      : await runWithRetry(entry, plan, timeoutMs, runner);
     const cleanStderr = stripCommandEcho(runResult.stderr);
     if (runResult.timedOut) {
       const result = createToolResult({
@@ -310,7 +349,11 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
+        input,
+        resolvedInput: commandInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
 
@@ -328,7 +371,11 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
+        input,
+        resolvedInput: commandInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
 
@@ -342,7 +389,11 @@ export async function executeTool<TData = unknown>(
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
       };
       maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
-      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
+        input,
+        resolvedInput: commandInput,
+        env,
+      });
       return result;
     }
 
@@ -360,7 +411,11 @@ export async function executeTool<TData = unknown>(
       now: options.now,
     });
     maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
-    logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
+    logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
+      input,
+      resolvedInput: commandInput,
+      env,
+    });
     return result;
   } catch (error: unknown) {
     const message = getErrorMessage(error);
@@ -375,7 +430,7 @@ export async function executeTool<TData = unknown>(
       requestId,
       now: options.now,
     });
-    logResult(entry, toolName, result, entry?.underlying || '', undefined, undefined, options.logMode);
+    logResult(entry, toolName, result, entry?.underlying || '', undefined, undefined, options.logMode, { input, env });
     return result as ToolResult<TData>;
   }
 }
@@ -548,20 +603,24 @@ function compactReviewData(data: unknown): unknown {
   const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
   const testResults = asArray(data.testResults);
   const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  const documentationCheckRan = Object.prototype.hasOwnProperty.call(data, 'documentationOpportunities');
+  const documentationOpportunities = asArray(data.documentationOpportunities);
+  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (documentationCheckRan) checksRun.push('documentation_opportunities');
+  if (testResults.length > 0) checksRun.push('tests');
   return {
     schema: 'review.summary.v1',
     base: data.base,
     branch: data.branch,
     files: data.files,
     affectedProjects: data.affectedProjects,
-    checksRun: testResults.length > 0
-      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'tests']
-      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance'],
+    checksRun,
     summary: {
       yourIssues: yours.length,
       preExistingIssues: preExisting.length,
       failedTestSuites: failedSuites.length,
       blockingIssues: yours.length + failedSuites.length,
+      documentationOpportunities: documentationOpportunities.length,
     },
     mustFixTotal: yours.length,
     mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
@@ -574,6 +633,7 @@ function compactReviewData(data: unknown): unknown {
       preExisting: summarizeFacadeFindings(preExisting).byFile,
     },
     preExistingDigest: summarizeFacadeFindings(preExisting),
+    documentationOpportunities: documentationOpportunities.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
     testSummary: {
       totalSuites: testResults.length,
       passedSuites: testResults.length - failedSuites.length,
@@ -620,7 +680,7 @@ function compactFacadeData(toolName: string, data: unknown): unknown {
 }
 
 function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
-  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'office.check'];
+  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'artifacts.check'];
   const tddPhase = typeof input.tddPhase === 'string' ? input.tddPhase : '';
   if (!validationTools.includes(toolName) && !tddPhase) return;
   const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
@@ -688,12 +748,14 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
 
   return input;
 }
+
 async function executeInternalTool<TData>(
   entry: ToolManifestEntry,
   input: ToolInput,
   context: {
     cwd: string;
     env: NodeJS.ProcessEnv;
+    rawInput: ToolInput;
     runner: ToolRunner;
     startedAt: number;
     traceId: string;
@@ -704,23 +766,86 @@ async function executeInternalTool<TData>(
   const internal = entry.command.internal;
   if (!internal) return null;
 
+  try {
+
   if (internal === 'batch') {
     const steps = Array.isArray(input.steps) ? input.steps : [];
-    return runBatch(steps, context.options) as Promise<ToolResult<TData>>;
+    const result = await runBatch(steps, context.options, {
+      taskSession: typeof input.taskSession === 'string' ? input.taskSession : undefined,
+      branch: typeof input.branch === 'string' ? input.branch : undefined,
+      taskWorktree: typeof input.taskWorktree === 'string' ? input.taskWorktree : undefined,
+    }) as ToolResult<TData>;
+    logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
+      input: context.rawInput,
+      resolvedInput: input,
+      env: context.env,
+    });
+    return result;
   }
 
   if (internal === 'code.call') {
     const codeCallInput = typeof input.timeout === 'number'
       ? input
       : { ...input, timeout: entry.defaultTimeout };
-    return executeCodeCall(codeCallInput as CodeCallInput, {
+    const result = await executeCodeCall(codeCallInput as CodeCallInput, {
       cwd: context.cwd,
       env: context.env,
       now: context.options.now,
       randomUUID: context.options.randomUUID,
       traceId: context.traceId,
       requestId: context.requestId,
-    }) as Promise<ToolResult<TData>>;
+    }) as ToolResult<TData>;
+    logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
+      input: context.rawInput,
+      resolvedInput: codeCallInput,
+      env: context.env,
+    });
+    return result;
+  }
+
+  if (internal === 'deployment') {
+    const deploymentInput = {
+      ...input,
+      tool: entry.name,
+    } as DeploymentFacadeInput;
+    const outcome = await Effect.runPromise(Effect.either(executeDeploymentFacade(deploymentInput)));
+    const result = outcome._tag === 'Right'
+      ? createToolResult({
+        ok: true,
+        code: 'OK',
+        message: `${entry.name} completed`,
+        data: outcome.right,
+        durationMs: elapsedMs(context.startedAt, context.options.now),
+        traceId: context.traceId,
+        requestId: context.requestId,
+        now: context.options.now,
+      })
+      : createToolResult({
+        ok: false,
+        code: outcome.left.code,
+        message: outcome.left.message,
+        data: {
+          provider: outcome.left.provider,
+          operation: outcome.left.operation,
+          ...(outcome.left.diagnostics ? { diagnostics: outcome.left.diagnostics } : {}),
+          ...(outcome.left.approval ? { approval: outcome.left.approval } : {}),
+          ...(outcome.left.recovery ? { recovery: outcome.left.recovery } : {}),
+        },
+        stderr: '',
+        exitCode: 1,
+        durationMs: elapsedMs(context.startedAt, context.options.now),
+        traceId: context.traceId,
+        requestId: context.requestId,
+        now: context.options.now,
+      });
+    const traceInput = redactDeploymentTraceInput(entry.name, context.rawInput);
+    const resolvedTraceInput = redactDeploymentTraceInput(entry.name, input);
+    logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
+      input: traceInput,
+      resolvedInput: resolvedTraceInput,
+      env: context.env,
+    });
+    return result as ToolResult<TData>;
   }
 
   if (internal === 'subagent') {
@@ -743,7 +868,11 @@ async function executeInternalTool<TData>(
       traceId: context.traceId,
       requestId: context.requestId,
     });
-    logResult(entry, entry.name, result, entry.underlying, task?.branch, undefined, context.options.logMode);
+    logResult(entry, entry.name, result, entry.underlying, task?.branch, undefined, context.options.logMode, {
+      input: context.rawInput,
+      resolvedInput: input,
+      env: context.env,
+    });
     return result as ToolResult<TData>;
   }
 
@@ -767,7 +896,11 @@ async function executeInternalTool<TData>(
         requestId: context.requestId,
         now: context.options.now,
       });
-      logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
+      logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode, {
+        input: context.rawInput,
+        resolvedInput: input,
+        env: context.env,
+      });
       return result as ToolResult<TData>;
     }
 
@@ -799,7 +932,11 @@ async function executeInternalTool<TData>(
       traceId: context.traceId,
       requestId: context.requestId,
     });
-    logResult(entry, entry.name, result, formatCommandForLog(plan), resolution.branch, `workspace ${entry.name}`, context.options.logMode);
+    logResult(entry, entry.name, result, formatCommandForLog(plan), resolution.branch, `workspace ${entry.name}`, context.options.logMode, {
+      input: context.rawInput,
+      resolvedInput: { ...input, branch: resolution.branch },
+      env: context.env,
+    });
     return result as ToolResult<TData>;
   }
 
@@ -812,8 +949,22 @@ async function executeInternalTool<TData>(
     traceId: context.traceId,
     requestId: context.requestId,
   });
-  logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
+  logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode, {
+    input: context.rawInput,
+    resolvedInput: input,
+    env: context.env,
+  });
   return result as ToolResult<TData>;
+  } catch (error: unknown) {
+    if (error instanceof Error && !Object.hasOwn(error, 'consueloTool')) {
+      Object.defineProperty(error, 'consueloTool', {
+        value: entry.name,
+        enumerable: false,
+        configurable: true,
+      });
+    }
+    throw error;
+  }
 }
 
 
@@ -922,7 +1073,13 @@ function resolveBranchIfNeeded(
     candidates: options.candidates,
   });
 
-  if (branchMode === 'optional' && !resolution.ok && resolution.code === 'WORKTREE_NOT_FOUND') {
+  const hasExplicitRepoTarget = Boolean(explicitBranch);
+  if (
+    branchMode === 'optional'
+    && !hasExplicitRepoTarget
+    && !resolution.ok
+    && (resolution.code === 'WORKTREE_NOT_FOUND' || resolution.code === 'AMBIGUOUS_TASK_SELECTION')
+  ) {
     return { ok: true, branch: '', source: 'none' };
   }
 
@@ -958,7 +1115,7 @@ function buildCommandPlan(
   return {
     command: 'bun',
     args,
-    cwd: resolveWorkspaceCommandCwd(cwd, script, input),
+    cwd: entry.command.executionScope === 'runtime' ? runtimePackageRoot : resolveWorkspaceCommandCwd(cwd, script, input),
     env: {
       ...env,
       ...(branch ? { TASK_BRANCH: branch } : {}),
@@ -1140,13 +1297,39 @@ function logResult(
   branch?: string,
   facadeCommand?: string,
   logMode: ExecuteToolOptions["logMode"] = "all",
+  traceContext: {
+    input?: unknown;
+    resolvedInput?: unknown;
+    env?: NodeJS.ProcessEnv;
+  } = {},
 ): void {
-  if (logMode === "silent") return;
-  if (logMode === "errors" && result.ok) return;
+  const emit = logMode !== "silent" && !(logMode === "errors" && result.ok);
+  const resolvedInput = isRecord(traceContext.resolvedInput) ? traceContext.resolvedInput : {};
+  const rawInput = isRecord(traceContext.input) ? traceContext.input : {};
+  const taskSession = typeof resolvedInput.taskSession === 'string'
+    ? resolvedInput.taskSession
+    : typeof rawInput.taskSession === 'string'
+      ? rawInput.taskSession
+      : undefined;
+  const worktree = typeof resolvedInput.taskWorktree === 'string'
+    ? resolvedInput.taskWorktree
+    : typeof resolvedInput.worktree === 'string'
+      ? resolvedInput.worktree
+      : undefined;
+  const mcpTraceId = typeof resolvedInput.mcpTraceId === 'string'
+    ? resolvedInput.mcpTraceId
+    : typeof resolvedInput.parentTraceId === 'string'
+      ? resolvedInput.parentTraceId
+      : typeof rawInput.mcpTraceId === 'string'
+        ? rawInput.mcpTraceId
+        : typeof rawInput.parentTraceId === 'string'
+          ? rawInput.parentTraceId
+          : undefined;
+  const effectiveBranch = branch ?? (typeof resolvedInput.branch === 'string' ? resolvedInput.branch : undefined);
 
   logToolExecution({
     tool: entry?.name || toolName,
-    branch,
+    branch: effectiveBranch,
     command: facadeCommand || `workspace ${entry?.name || toolName}`,
     implementationCommand: implementationCommand || undefined,
     durationMs: result.durationMs,
@@ -1155,6 +1338,18 @@ function logResult(
     requestId: result.requestId,
     ok: result.ok,
     code: result.code,
+    taskSession,
+    worktree,
+    mcpTraceId,
+    input: traceContext.input,
+    resolvedInput: traceContext.resolvedInput,
+    result,
+    stderr: result.stderr,
+    inputTokens: result.inputTokens,
+    outputTokens: result.outputTokens,
+    totalTokens: result.totalTokens,
+    env: traceContext.env,
+    emit,
     capabilities: {
       readOnly: entry?.capabilities.readOnly ?? true,
       mutating: entry?.capabilities.mutating ?? false,

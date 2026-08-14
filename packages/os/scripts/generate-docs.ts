@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import manifestJson from '../manifests/tool.manifest.json';
+import manifestJson from '../manifests/generated/tool.manifest.json';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 import type { ToolManifestEntry } from './lib/facade/types';
 
@@ -116,7 +116,7 @@ function renderDocs(): string {
   const lines = [
     '# Consuelo OS typed tools',
     '',
-    'This file is the human-readable tool catalog for the Consuelo OS facade. It is generated from `packages/os/manifests/tool.manifest.json`, so tool additions and schema changes update this reference through the generator.',
+    'This file is the human-readable tool catalog for the Consuelo OS facade. It is generated from `packages/os/manifests/generated/tool.manifest.json`, so tool additions and schema changes update this reference through the generator.',
     '',
     'The workspace app exposes two MCP entrypoints:',
     '',
@@ -163,6 +163,7 @@ function renderDocs(): string {
     '',
     '`OK`, `VALIDATION_ERROR`, `AMBIGUOUS_TASK_SELECTION`, `WORKTREE_NOT_FOUND`, `COMMAND_FAILED`, `TIMEOUT`, `PARSE_ERROR`, `NOT_FOUND`, `TASK_SESSION_REQUIRED`, `TASK_SESSION_NOT_FOUND`, `DRY_RUN`.',
     '',
+    'Lifecycle actions also return CAPABILITY_NOT_SUPPORTED, WAIT_TIMEOUT, and IDEMPOTENCY_CONFLICT where applicable.',
     '## final rule',
     '',
     'The tool manifest is executable contract, not prose. If the docs and manifest disagree, regenerate this file from the manifest and trust the manifest-backed generator.',

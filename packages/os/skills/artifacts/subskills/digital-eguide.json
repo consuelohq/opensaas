@@ -1,0 +1,21 @@
+{
+  "id": "digital-eguide",
+  "title": "Digital E-guide",
+  "uses": [
+    "artifacts"
+  ],
+  "workflow": "digital-eguide",
+  "defaultTool": "artifacts.generateDigitalEguide",
+  "primaryOpenDesignSkill": "digital-eguide",
+  "templates": [
+    "research",
+    "spec",
+    "plan",
+    "reader-shell"
+  ],
+  "extraRules": [
+    "Choose the specific template from the user brief: research, spec, or plan.",
+    "Use the reader shell for polished long-form e-guide output.",
+    "Publish durable artifacts through artifacts.publish and verify the artifacts catalog entry."
+  ]
+}

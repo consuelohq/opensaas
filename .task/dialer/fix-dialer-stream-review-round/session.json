@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fe1fc1484598",
+  "tmuxSession": "opensaas-dialer-fix-dialer-stream-review-round-fe1fc148",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-dialer-stream-review-round",
+  "branch": "task/dialer/fix-dialer-stream-review-round",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-dialer-stream-review-round",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-dialer-stream-review-round",
+  "prNumber": 1768,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1768",
+  "createdAt": "2026-08-04T19:50:14.749Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-dialer-stream-review-round/.task/dialer/fix-dialer-stream-review-round/session.json"
+}

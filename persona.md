@@ -4,13 +4,13 @@
 
 This file teaches future agents how to help Ko build social media influence without needing the conversation that created this doctrine.
 
-Use it when drafting, editing, evaluating, or planning Ko's public posts, especially on X. The goal is not to make every post about OS. The goal is to make Ko a recognizable internet person whose way of seeing the world makes OS feel inevitable later.
+Use it when drafting, editing, evaluating, or planning Ko's public posts, especially on X. The goal is to make Ko a recognizable founder and thinker whose way of seeing history, power, business, technology, human behavior, and culture makes Consuelo understandable and credible later.
 
 ## Core promise
 
 Ko's social presence should make invisible mechanics visible.
 
-The product benefits when people follow Ko because he notices things before they have names: how people work, how agents change behavior, how tools create weird new habits, how the internet rewards certain formats, how ambition feels, how memory and time shape the way people build.
+The business benefits when people follow Ko because he notices things before they have names: how power moves, how institutions preserve incentives, how history echoes through business, how technology changes behavior, how ambition feels, how the internet rewards certain formats, and how memory and time shape the way people build.
 
 Persona first. Product second. The persona creates the reason to follow. The product becomes one proof point inside that larger worldview.
 
@@ -18,7 +18,9 @@ Persona first. Product second. The persona creates the reason to follow. The pro
 
 Do not reduce Ko to "founder of an agent workspace company."
 
-The better frame is someone experimenting with the future of work before it has a name.
+The internal direction is philosopher-CEO. "Philosopher king" can be useful shorthand inside the team, but it should never become a public title or costume. Ko earns that impression by connecting old patterns to current incentives, making clear judgments, and building a company from those judgments.
+
+The better frame is a CEO who thinks in history, power, technology, business, human behavior, and first principles. Agents and the future of work are one important subject inside that worldview.
 
 Ko should come across as:
 
@@ -26,13 +28,128 @@ Ko should come across as:
 - builder first
 - high agency
 - weirdly observant
+- historically literate
+- commercially grounded
+- politically aware without turning partisan identity into the product
+- willing to make judgments about power, incentives, institutions, and markets
 - technical when the thread earns it
 - hustler adjacent without becoming hustle bro
 - casual without sounding careless
 - ambitious without writing cringe founder content
-- someone who uses the tools enough to notice what other people miss
+- a CEO whose company provides evidence that the ideas are lived
+- someone who studies enough and builds enough to notice what other people miss
 
-"Operator" is useful internally, but it can sound too polished in public. "Hustler" has some of the motion but can smell wrong. Use the underlying behavior instead of forcing the noun. Show someone who tries things, notices hidden leverage, and reports back.
+"Operator" is useful internally, but it can sound too polished in public. "Hustler" has some of the motion but can smell wrong. "Philosopher king" sounds ridiculous when self-declared. Use the underlying behavior instead of forcing the noun. Show someone who studies patterns, makes decisions, tries things, notices hidden leverage, and reports back.
+
+## The center of gravity
+
+The profile should feel like one mind with several interests.
+
+Ko is the center. History, politics, philosophy, technology, business, human behavior, startups, agents, and Consuelo orbit the same way of seeing. The account should not feel like several unrelated content strategies stitched together.
+
+The connective tissue is usually one of these:
+
+- incentives
+- power
+- coordination
+- ambition
+- human nature
+- institutional memory
+- technology changing old behavior
+- history revealing a mechanism that still exists
+- business turning a belief into an operating system
+
+Agents are a strong lane because Ko is building with them. They should appear as evidence from one frontier, not as the definition of the person.
+
+## Profile portfolio
+
+Variation is part of the strategy. A healthy profile can move between these lanes without losing coherence:
+
+| Lane | Main job | Typical subjects |
+| --- | --- | --- |
+| philosophy and human behavior | broad reach and emotional recognition | time, ambition, comparison, love, mortality, memory, status, loneliness |
+| history, power, and business-relevant politics | intellectual depth and worldview | institutions, rulers, trade, regulation, war, state capacity, capital, incentives |
+| founder and CEO observations | trust in Ko's judgment | decisions, markets, hiring, customers, distribution, strategy, organizational behavior |
+| Consuelo and product | commercial conversion and proof | customer problems, product evidence, company lore, market thesis, results, demos |
+
+A useful starting mix is roughly:
+
+- 35 to 45 percent philosophy, human behavior, and broad observations
+- 20 to 30 percent history, power, politics through business, and technology in society
+- 15 to 25 percent founder and CEO thinking
+- 10 to 20 percent Consuelo, product proof, customer problems, and company narrative
+
+These are portfolio ranges, not a posting calendar. Adjust based on the live conversation and what Ko is actually thinking about.
+
+The feed should create a funnel without looking like a funnel:
+
+1. Broad human posts earn attention.
+2. History, power, and business posts establish depth.
+3. Founder posts show judgment in motion.
+4. Consuelo posts convert interest into trust, curiosity, and eventually business.
+
+The business posts should feel like consequences of Ko's worldview. Someone follows because of how he sees things, then understands why he built Consuelo.
+
+## History, politics, and power
+
+History should reveal mechanisms, not provide costumes for shallow analogies.
+
+Good historical posting can:
+
+- show how an old incentive survives under new language
+- explain why institutions keep behaving after their original reason disappears
+- connect logistics, trade, information, labor, or state capacity to modern business
+- compare decision structures across eras without pretending the eras are identical
+- make a current technology or market shift feel legible through a longer timeline
+
+Politics belongs when it helps explain business, institutions, incentives, regulation, technology, markets, labor, capital, war, trade, or state capacity. Avoid daily partisan scorekeeping. Ko should sound like someone studying what power does, not someone auditioning for a political tribe.
+
+Before making factual historical or political claims, verify the dates, people, laws, numbers, and chronology. A strong analogy with weak facts damages the whole persona.
+
+Useful political posture:
+
+- examine incentives before personalities
+- distinguish policy effects from partisan theater
+- notice which businesses a political decision enables or destroys
+- state uncertainty when the evidence is incomplete
+- avoid outrage that produces no durable idea
+
+## Business and bottom of funnel
+
+Consuelo needs enough presence on the profile for attention to become business. That does not require making every post a product post.
+
+Useful business post types:
+
+- a customer problem Ko understands unusually well
+- a product artifact that proves a larger claim
+- a founder decision and the tradeoff behind it
+- a market thesis that explains why Consuelo should exist
+- company lore that reveals taste, persistence, or judgment
+- a customer result or workflow change with concrete evidence
+- a disagreement with the current category that Consuelo resolves
+
+Every bottom-of-funnel post still needs a reason to travel. Product screenshots without a story, launch copy without tension, and feature lists without a human problem create a dead zone in the profile.
+
+## Profile texture and post quality
+
+Every post does not need to be a definitive worldview statement.
+
+Solid 6 or 7 out of 10 posts can be valuable when they:
+
+- make the profile more human
+- open the account to a broader audience
+- create rhythm between heavier history, business, or product posts
+- express a real thought cleanly
+- avoid contradicting the larger persona
+
+Profile texture is different from filler. Filler says something universally agreeable with no memorable image, mechanism, or voice. Texture gives the reader another dimension of Ko, even when the thought is simple.
+
+When improving a broad philosophical post, check four things:
+
+1. Is the metaphor literally clear enough to survive scrutiny?
+2. Can the explanation be compressed without losing the feeling?
+3. Does the ending add a fresh turn rather than a familiar motivational phrase?
+4. Is borrowed authority helping distribution, or covering for a thought that should stand on its own?
 
 ## New media doctrine
 
@@ -83,7 +200,7 @@ Examples of the old mechanic:
 - "this may be the only time we see each other and never again. i wish the the best"
 - "rosa parks has probably seen both shrek one and two"
 
-The new work is to use the same perception muscle in tech, startups, agents, ambition, internet culture, and social behavior.
+The new work is to use the same perception muscle in history, power, business, politics, technology, startups, agents, ambition, internet culture, and social behavior.
 
 ## Keep the old themes alive
 
@@ -135,6 +252,12 @@ Ko's social voice should look for compressed language that carries lived experie
 
 Possible compressed phrases for Ko's world:
 
+- historical lag
+- institutional memory
+- coordination is power
+- distribution is part of the product
+- business is organized belief
+- the incentive survived the institution
 - setup debt
 - agent hopping
 - same work, different agents
@@ -239,17 +362,20 @@ Avoid:
 
 Most posts should start with the actual thought, not an agreement phrase.
 
-## Product relationship
+## Relationship to Consuelo
 
-OS should benefit from the persona, but the persona should not be trapped inside OS.
+Consuelo should benefit from the persona, but the persona should not be trapped inside the company or any single product category.
 
 Use this internal mapping:
 
-- OS is the marketing name
+- Consuelo is the company and business
+- OS is the current product story and marketing name
 - workspace is the descriptive shape
 - MCP server is the mechanism
-- operator is the broad category direction
+- agent infrastructure is one market conversation
 - the persona is larger than all of them
+
+Business posts should appear often enough that a new follower can understand what Ko is building, who it helps, why the market matters, and why Ko has earned a point of view. The rest of the profile should make those posts more credible rather than making them feel like interruptions.
 
 A useful product-adjacent explanation:
 
@@ -311,6 +437,23 @@ For implementation threads:
 
 Start with the reader's language. Move to Ko's language when it helps the reader see the hidden mechanic.
 
+## Invisible mechanics for history, power, and business
+
+A strong Ko post can use an old or current event to expose a mechanism that still shapes markets and organizations.
+
+Examples:
+
+- history repeats incentives more often than events
+- institutions can outlive the problem they were built to solve
+- the people remembered as visionaries usually had a logistics system behind them
+- every regulation quietly creates a business model for someone
+- political power often becomes commercial advantage before the market names it
+- distribution changes what a society believes is possible
+- companies become small governments once enough people depend on them
+- technology moves faster than the language used to regulate it
+
+These examples need evidence before publication. The move is to reveal the durable mechanism under the event, then connect it to a decision, market, or human behavior people recognize now.
+
 ## Invisible mechanics for tech and startups
 
 A strong Ko post often names the hidden thing people are already living.
@@ -363,6 +506,10 @@ Do not quote someone just to agree. Do not start with validation. Start with Ko'
 
 Good quote post openings:
 
+- "people remember the ruler. businesses should study the logistics"
+- "this looks political on the surface. the incentive underneath it matters more"
+- "the historical part is interesting. the business mechanism is still alive"
+- "most people are arguing about the person. i keep looking at the institution they inherited"
 - "i wanted to try every new coding agent without rebuilding my setup every time"
 - "every new agent felt exciting for 10 minutes, then i hit the same annoying part"
 - "coding agents moving off the laptop is real, but the piece i keep coming back to is the workspace around them"
@@ -380,6 +527,10 @@ Use them for:
 - compressed thoughts
 - invisible mechanics
 - personal experiments
+- historical observations
+- power and institutional analysis
+- politics when it changes business incentives
+- founder and CEO judgment
 - broader startup or internet observations
 - product lore when the story is strong enough
 
@@ -395,6 +546,18 @@ Use it for solo building, being early, ambition, losing friends to work, working
 
 Future:
 Use it for workflows that feel wrong now but normal later. The strongest frame is often "i think this will feel obvious in 6 months."
+
+History:
+Use it to make a current mechanism easier to see. Focus on incentives, logistics, institutions, coordination, information, trade, labor, capital, and state capacity. Verify the facts before using the analogy.
+
+Power:
+Use it to study who can coordinate action, set defaults, control distribution, survive mistakes, or force other people to adapt. Power posts should reveal a mechanism instead of admiring domination.
+
+Politics:
+Use it when policy, regulation, war, trade, labor, capital, or state capacity changes business behavior. Avoid becoming a reaction account for daily partisan conflict.
+
+Business:
+Use it for markets, customers, distribution, pricing, strategy, organizational behavior, and founder decisions. The strongest business posts connect a specific observation to a broader law of human behavior.
 
 Death:
 Use carefully. It can be literal, existential, or work-related through dead chats, lost context, abandoned branches, and knowledge leaving a company. Do not make it cute when the feeling should be heavy.
@@ -425,6 +588,11 @@ A post is more than the words. It is the surface, the rhythm, the attached image
 
 Possible recurring formats:
 
+- "history lessons hiding inside business"
+- "things CEOs should notice"
+- "power looks like"
+- "human nature with a balance sheet"
+- "old incentives in new clothes"
 - "things i noticed using agents way too much"
 - "operator thoughts"
 - "things that sound fake until you work this way"
@@ -496,6 +664,10 @@ When a future agent is uncertain, ask what Ko is trying to make the reader feel.
 Avoid these failure modes:
 
 - turning every idea into OS marketing
+- treating agents as Ko's entire identity
+- using history as decorative analogy without checking facts
+- reacting to daily politics without a durable business or power insight
+- becoming predictable to one political tribe
 - turning every tweet into a framework
 - starting every reply with agreement
 - overusing product vocabulary when human language is clearer
@@ -510,9 +682,21 @@ Avoid these failure modes:
 
 ## Decision rules
 
-Use product-adjacent posting when the thread is about agents, coding, MCP, ChatGPT, Codex, Claude, Cursor, mobile coding, cloud vs local, setup, tools, traces, auth, or workspaces.
+Use broad philosophy and human behavior when the idea can travel through recognition, emotion, paradox, or a memorable image.
+
+Use history and power when an older pattern makes a current institution, market, technology, or decision easier to understand.
+
+Use politics when it materially changes incentives, regulation, trade, labor, capital, technology, markets, or state capacity. Verify factual claims before drafting the final post.
+
+Use founder and CEO posting when Ko has a decision, tradeoff, customer observation, market thesis, or organizational lesson that reveals judgment.
+
+Use Consuelo and product posting often enough to explain the business and convert attention. Lead with the customer problem, proof, tension, market change, or company story rather than a feature list.
+
+Use agent-specific posting when the thread is about agents, coding, MCP, ChatGPT, Codex, Claude, Cursor, mobile coding, cloud vs local, setup, tools, traces, auth, or workspaces.
 
 Use persona-first posting when the thought is about time, ambition, memory, loneliness, future, internet behavior, communication, power users, hustle, or how people work.
+
+Look at the recent profile before choosing the next post. Variation should correct an over-concentrated feed. Several agent posts in a row create a reason to publish history, philosophy, CEO judgment, or a human observation next. Several broad posts in a row create a reason to show the business.
 
 Use a reply when the room is already active and Ko can add a useful, specific line.
 
@@ -526,6 +710,6 @@ Ignore when the post is noisy, the audience is wrong, the fight benefits someone
 
 Ko's persona should make invisible mechanics visible.
 
-He is the guy experimenting with the future of work before it has a name.
+He should feel like a philosopher-CEO: historically literate, commercially grounded, politically aware, technically credible, and human enough to talk about life without turning every thought into business content.
 
-OS grows because people start following the way Ko sees the internet, work, agents, and ambition.
+Consuelo grows because people start following the way Ko sees history, power, business, technology, the internet, ambition, and human behavior. The company becomes proof that the worldview produces real decisions and real products.

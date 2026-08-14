@@ -12,7 +12,12 @@
     ]
   },
   "compilerOptions": {
-    "builder": "swc",
+    "builder": {
+      "type": "swc",
+      "options": {
+        "extensions": [".js", ".ts", ".tsx"]
+      }
+    },
     "typeCheck": false,
     "watchAssets": true,
     "assets": [

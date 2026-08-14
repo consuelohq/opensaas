@@ -1,54 +1,47 @@
 ---
 title: Railway
-description: Use existing Railway log and redeploy tools plus the official CLI for the remaining surface.
+description: Use Railway through the canonical provider-neutral deployment tools.
 status: preview
-verifiedAt: 2026-07-14
+verifiedAt: 2026-07-23
 evidence:
-  - source: packages/os/tooling/dev-tool-manifest.json
+  - source: packages/os/manifests/generated/tool.manifest.json
     tests:
       - packages/os/tests/tool-manifest.test.ts
-    runtime: '`railway.logs` and `railway.redeploy` were verified in the current tool manifest on 2026-07-14; a complete Railway provider family is not yet published.'
+      - packages/os/tools/deployment-provider/facade.test.ts
+    runtime: 'The current manifest publishes deployment.detect, deployment.context, deployment.list, deployment.status, deployment.logs, deployment.deploy, deployment.environment, and deployment.raw with provider: railway.'
 ---
 
-> **Native Consuelo tool: Partially available**  
-> **Available today: Yes — through `railway.logs`, `railway.redeploy`, and the official Railway CLI.**
+> **Native Consuelo tool: Available**  
+> **Use `deployment.*` with `provider: "railway"`.**
 
-Consuelo already exposes the two Railway operations used most often during incident response and routine delivery. Use the official CLI for project linking, status, services, variables, environments, and other operations until the native family is complete.
+Consuelo exposes Railway detection, context, listing, status, logs, deployment, environment metadata, and raw argv through one canonical deployment surface. Read operations are approval-free. Deploy, redeploy, promotion, environment mutation, and raw execution require explicit local approval.
 
 ## Ask your agent
 
 ```text
-Use railway.logs for read-only runtime or deployment logs.
-Use railway.redeploy only after I approve the exact project, service, and environment.
-For any missing operation, use the official Railway CLI locally, verify the linked project first,
-and implement a narrowly typed railway.* method rather than extending one generic deploy tool.
+Use deployment.logs with provider railway for bounded runtime or build logs.
+Use deployment.deploy with provider railway and action redeploy only after I approve the exact target.
+Use deployment.environment action list for variable names; never return environment values.
 ```
 
-## Available now
+## Available tools
 
 ```text
-railway.logs
-railway.redeploy
+deployment.detect
+deployment.context
+deployment.list
+deployment.status
+deployment.logs
+deployment.deploy
+deployment.environment
+deployment.raw
 ```
 
-## Use the underlying CLI
+Every call includes `provider: "railway"`. Use `tools.search` for natural-language discovery such as “show Railway deployment logs,” “check Railway deployment status,” or “redeploy the Railway service.”
 
-Install Railway CLI using the official guide, then authenticate and link the intended project. Before a write, inspect the active project, environment, and service with the CLI’s status and listing commands.
+## Approval boundary
 
-## Planned family
-
-```text
-railway.projects.list
-railway.services.list
-railway.status
-railway.logs
-railway.deploy
-railway.redeploy
-railway.variables.list
-railway.variables.set
-```
-
-Useful typed inputs include project, service, environment, deployment, line limit, follow, and approval. Variables, deploys, redeploys, removals, and service changes require approval.
+Reads do not require write approval. Deploy, redeploy, promote, environment set/delete, and raw argv require explicit local approval before the Railway CLI runs. Environment values are supplied through the provider adapter’s secret-safe input path and are never returned.
 
 ## Official documentation
 
