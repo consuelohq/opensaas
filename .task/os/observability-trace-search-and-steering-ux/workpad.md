@@ -43,7 +43,6 @@ started: 2026-08-14
 
 ## files changed
 
-- `packages/os/scripts/lib/trace-search-query.ts`
 - `packages/os/scripts/lib/trace-site-inspector/browser.ts`
 - `packages/os/scripts/lib/trace-site-inspector/pagination-browser.ts`
 - `packages/os/scripts/lib/trace-site-inspector/table-formatters.ts`
@@ -52,11 +51,14 @@ started: 2026-08-14
 - `packages/os/scripts/lib/trace-sites-gateway-read-layer.ts`
 - `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
 - `packages/os/scripts/os.ts`
-- `packages/os/tests/os-steering-tool-trace.test.ts`
-- `packages/os/tests/trace-search-query.test.ts`
+- `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
 - `packages/os/tests/trace-site-inspector-interactions.test.ts`
 - `packages/os/tests/trace-site-inspector-os-owned.test.ts`
 - `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+- `packages/os/scripts/lib/trace-search-query.ts`
+- `packages/os/tests/os-steering-tool-trace.test.ts`
+- `packages/os/tests/trace-search-query.test.ts`
+
 
 ## workspace-owned: files changed
 
