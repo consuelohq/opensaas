@@ -92,7 +92,10 @@ export type TraceVirtualListApi = {
   clearSelection: () => void;
   openFilters: () => void;
   closeFilters: () => void;
+  toggleFilters: () => void;
   filtersOpen: () => boolean;
+  setQuery: (query: string) => void;
+  query: () => string;
   diagnostics: () => TraceListDiagnostics | null;
 };
 
@@ -146,6 +149,10 @@ class TraceVirtualListController {
   private nextCursor: string | null;
   private lastRequestedCursor: string | null = null;
   private fetching = false;
+  private searchRows: TraceRecord[] | null = null;
+  private searchNextCursor: string | null = null;
+  private searchQuery = '';
+  private searchPending = false;
   private ownedMap = new Map<string, TraceRecord>();
   private rootKeys = new Set<string>();
   private firstFilteredPosition = 0;
@@ -202,6 +209,23 @@ class TraceVirtualListController {
     this.commitItems(true);
   }
 
+  setSearchQuery(query: string): void {
+    const normalized = query.trim().toLowerCase();
+    if (normalized === this.searchQuery && (this.searchRows !== null || this.searchPending || !normalized)) {
+      this.syncFilters();
+      return;
+    }
+    this.searchQuery = normalized;
+    this.searchRows = null;
+    this.searchNextCursor = null;
+    this.searchPending = false;
+    this.lastRequestedCursor = null;
+    this.fetching = false;
+    this.refreshItems();
+    this.commitItems(true);
+    if (normalized) this.requestInitialSearch(normalized);
+  }
+
   appendPage(rows: TraceRecord[], nextCursor: string | null): void {
     this.nextCursor = nextCursor;
     this.lastRequestedCursor = null;
@@ -212,6 +236,27 @@ class TraceVirtualListController {
   prependRows(rows: TraceRecord[]): void {
     const incoming = dedupeTraceRows(rows).filter((row) => !isBatchChild(row));
     if (!incoming.length) return;
+    if (this.searchRows !== null) {
+      this.rows = mergeTraceRows(this.rows, incoming, {
+        direction: 'prepend',
+        maxRows: MAX_RETAINED_ROWS,
+        selectedKey: currentSelectedRootKey(),
+      });
+      const matching = incoming
+        .filter(isDefaultTraceTableRowVisible)
+        .filter(matchesCurrentFilters);
+      if (matching.length) {
+        this.searchRows = mergeTraceRows(this.searchRows, matching, {
+          direction: 'prepend',
+          maxRows: MAX_RETAINED_ROWS,
+          selectedKey: currentSelectedRootKey(),
+        });
+      }
+      this.lastMutation = 'live-incremental';
+      this.refreshItems();
+      this.commitItems(false);
+      return;
+    }
     if (this.canIncrementallyPrepend(incoming)) {
       this.prependUniqueRows(incoming);
       return;
@@ -362,7 +407,8 @@ class TraceVirtualListController {
   }
 
   private refreshItems(): void {
-    this.visibleRows = this.rows.filter(isDefaultTraceTableRowVisible);
+    const sourceRows = this.searchRows ?? this.rows;
+    this.visibleRows = sourceRows.filter(isDefaultTraceTableRowVisible);
     this.filteredRows = this.visibleRows.filter(matchesCurrentFilters);
     this.firstFilteredPosition = 0;
     this.items = flattenTraceItems(this.filteredRows, 0);
@@ -538,20 +584,81 @@ class TraceVirtualListController {
       : position - this.firstFilteredPosition;
   }
 
+  private requestInitialSearch(query: string): void {
+    this.searchPending = true;
+    this.target.scroller.dataset.traceSearch = 'loading';
+    const event = new CustomEvent<TracePrefetchRequestDetail>(
+      'trace:prefetch-request',
+      {
+        cancelable: true,
+        detail: {
+          cursor: 'latest',
+          query,
+          rowCount: this.rows.length,
+          lastVirtualIndex: -1,
+          accept: (rows, nextCursor) => {
+            if (this.searchQuery !== query) return;
+            this.searchPending = false;
+            this.searchRows = mergeTraceRows([], rows, {
+              direction: 'append',
+              maxRows: MAX_RETAINED_ROWS,
+              selectedKey: currentSelectedRootKey(),
+            });
+            this.searchNextCursor = nextCursor;
+            this.lastRequestedCursor = null;
+            this.target.scroller.dataset.traceSearch = 'ready';
+            this.refreshItems();
+            this.commitItems(true);
+          },
+          fail: () => {
+            if (this.searchQuery !== query) return;
+            this.searchPending = false;
+            this.target.scroller.dataset.traceSearch = 'failed';
+          },
+        },
+      },
+    );
+    document.dispatchEvent(event);
+    queueMicrotask(() => {
+      if (this.searchQuery !== query || !this.searchPending) return;
+      if (!event.defaultPrevented) {
+        this.searchPending = false;
+        this.target.scroller.dataset.traceSearch = 'unhandled';
+      }
+    });
+  }
+
+  private appendSearchPage(rows: TraceRecord[], nextCursor: string | null): void {
+    this.searchNextCursor = nextCursor;
+    this.lastRequestedCursor = null;
+    this.fetching = false;
+    this.searchRows = mergeTraceRows(this.searchRows ?? [], rows, {
+      direction: 'history',
+      maxRows: MAX_RETAINED_ROWS,
+      selectedKey: currentSelectedRootKey(),
+    });
+    this.lastMutation = 'history';
+    this.refreshItems();
+    this.commitItems(false);
+  }
+
   private maybeRequestNextPage(lastVirtualIndex: number | null): void {
+    if (this.searchPending) return;
+    const searchActive = this.searchRows !== null;
+    const nextCursor = searchActive ? this.searchNextCursor : this.nextCursor;
     if (
-      this.nextCursor === this.lastRequestedCursor ||
+      nextCursor === this.lastRequestedCursor ||
       !shouldPrefetchTracePage({
         lastVirtualIndex,
         rowCount: this.filteredRows.length,
         threshold: PREFETCH_THRESHOLD,
-        nextCursor: this.nextCursor,
+        nextCursor,
         fetching: this.fetching,
       })
     )
       return;
 
-    const cursor = this.nextCursor;
+    const cursor = nextCursor;
     if (!cursor) return;
     this.lastRequestedCursor = cursor;
     this.fetching = true;
@@ -562,9 +669,13 @@ class TraceVirtualListController {
         cancelable: true,
         detail: {
           cursor,
+          ...(searchActive ? { query: this.searchQuery } : {}),
           rowCount: this.visibleRows.length,
           lastVirtualIndex: lastVirtualIndex ?? -1,
-          accept: (rows, nextCursor) => this.appendPage(rows, nextCursor),
+          accept: (rows, cursorAfterPage) =>
+            searchActive
+              ? this.appendSearchPage(rows, cursorAfterPage)
+              : this.appendPage(rows, cursorAfterPage),
           fail: () => {
             this.fetching = false;
             this.lastRequestedCursor = null;
@@ -1227,6 +1338,21 @@ export function installTraceVirtualList(): () => void {
     nextCursor?: string | null;
   } | null = null;
   let scheduled = false;
+  let searchTimer = 0;
+
+  const applyQuery = (query: string) => {
+    const normalized = query.trim().toLowerCase();
+    filters.query = normalized;
+    controller?.syncFilters();
+    window.clearTimeout(searchTimer);
+    if (!normalized) {
+      controller?.setSearchQuery('');
+      return;
+    }
+    searchTimer = window.setTimeout(() => {
+      controller?.setSearchQuery(normalized);
+    }, 140);
+  };
 
   const sync = () => {
     scheduled = false;
@@ -1306,8 +1432,7 @@ export function installTraceVirtualList(): () => void {
       return;
     }
     if (!target.matches('[data-search]')) return;
-    filters.query = target.value.trim().toLowerCase();
-    controller?.syncFilters();
+    applyQuery(target.value);
   });
 
   document.addEventListener(
@@ -1383,6 +1508,7 @@ export function installTraceVirtualList(): () => void {
         showOnlyFilterValue('statuses', status.dataset.filterStatus);
       if (target.closest('[data-clear-filters], [data-cockpit-page]')) {
         resetFilters();
+        applyQuery('');
         renderTraceFilterPanel();
       }
       if (target.closest('[data-trace-scroll-top]')) {
@@ -1434,7 +1560,19 @@ export function installTraceVirtualList(): () => void {
       filterPanelOpen = false;
       ensureTraceTableControls();
     },
+    toggleFilters: () => {
+      filterPanelOpen = !filterPanelOpen;
+      ensureTraceTableControls();
+      if (filterPanelOpen) renderTraceFilterPanel();
+    },
     filtersOpen: () => filterPanelOpen,
+    setQuery: (query) => {
+      for (const input of document.querySelectorAll<HTMLInputElement>('[data-search]')) {
+        if (input.value !== query) input.value = query;
+      }
+      applyQuery(query);
+    },
+    query: () => filters.query,
     diagnostics: () => controller?.diagnostics() ?? null,
   };
 
@@ -1442,6 +1580,7 @@ export function installTraceVirtualList(): () => void {
   scheduleSync();
   return () => {
     window.clearInterval(interval);
+    window.clearTimeout(searchTimer);
     observer.disconnect();
     document.removeEventListener('pointerover', handlePointerOver);
     document.removeEventListener('pointerout', handlePointerOut);

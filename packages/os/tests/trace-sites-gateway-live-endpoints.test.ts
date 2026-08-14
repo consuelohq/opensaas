@@ -238,6 +238,29 @@ describe('Trace Sites gateway live endpoints', () => {
     });
   });
 
+  it('forwards a full-history search query through the authenticated recent route', async () => {
+    let observedQuery = '';
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: {
+        resolveHealth() { return {}; },
+        readRecentEvents(input) { return { cursor: input.cursor, events: [] }; },
+        readCachedAggregate() { return { cursor: '000000000000', summary: null }; },
+        readHistoryPage(input) {
+          observedQuery = input.query ?? '';
+          return { rows: [], nextCursor: null };
+        },
+      },
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+
+    const response = await endpoints.handle(
+      request('/gateway/traces/recent?direction=older&cursor=latest&limit=100&sourceMode=local-networked&includeRawPayload=true&query=tool%3Afs.read+branch%3Afeature%2Fsearch'),
+    );
+
+    expect(response.status).toBe(200);
+    expect(observedQuery).toBe('tool:fs.read branch:feature/search');
+  });
+
   it('serves older rich trace pages through the authenticated recent route without changing the live cursor contract', async () => {
     const dbPath = join(tempDir, 'history-endpoint.db');
     await createHistoryFixtureDb(dbPath);
