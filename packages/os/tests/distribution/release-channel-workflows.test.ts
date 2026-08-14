@@ -42,7 +42,7 @@ function dependencyInstallSteps(workflow: string): WorkflowStep[] {
 }
 
 describe('Consuelo OS release-channel workflows', () => {
-  it('keeps pull requests validation-only and publishes dev only from main', () => {
+  it('keeps pull requests validation-only and publishes dev from main or explicit operator dispatch', () => {
     const workflow = read('.github/workflows/consuelo-os-runtime-publish.yaml');
     const parsed = parseWorkflow(
       '.github/workflows/consuelo-os-runtime-publish.yaml',
@@ -51,7 +51,7 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).toContain('push:');
     expect(workflow).toContain('- main');
     expect(workflow).not.toContain('pull_request:');
-    expect(workflow).not.toContain('workflow_dispatch:');
+    expect(workflow).toContain('workflow_dispatch:');
     expect(parsed.permissions).toEqual({ contents: 'read' });
     expect(parsed.jobs?.['distribution-gate']).toMatchObject({
       permissions: { contents: 'read' },

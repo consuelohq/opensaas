@@ -246,7 +246,25 @@ describe('OS device authority release contract', () => {
 
     expect(exitCode).toBe(0);
     expect(errors).toEqual([]);
-    expect(output.filter((line) => line.startsWith('plannedSnapshot='))).toHaveLength(5);
+    expect(output.filter((line) => line.startsWith('plannedSnapshot='))).toHaveLength(10);
+    for (const siteId of [
+      'launcher',
+      'artifacts',
+      'traces',
+      'diffs',
+      'docs',
+      'configuration',
+      'tools',
+      'nodes',
+      'environments',
+      'secrets',
+    ]) {
+      expect(output).toContainEqual(
+        expect.stringMatching(
+          new RegExp(`^plannedSnapshot=r2://consuelo-sites-snapshots/sites/workspace_testing/${siteId}/sha256-[a-f0-9]{16}/index\\.html$`),
+        ),
+      );
+    }
     expect(output).toContainEqual(
       expect.stringMatching(
         /^defaultSiteSnapshotKey=sites\/workspace_testing\/launcher\/sha256-[a-f0-9]{16}\/index\.html$/,
