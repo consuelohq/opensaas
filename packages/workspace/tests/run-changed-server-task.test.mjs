@@ -420,6 +420,61 @@ test('runMigrationGenerationCheck accepts a no-change TypeORM exit', () => {
   );
 });
 
+test('runMigrationGenerationCheck accepts and removes exact known migration drift', () => {
+  const removed = [];
+  const generatedFile = 'packages/twenty-server/123-core-migration-check.ts';
+  const migrationSource = `
+    export class CoreMigrationCheck123 {
+      public async up(queryRunner) {
+        await queryRunner.query(\`ALTER TABLE \"core\".\"agentMessage\" ALTER COLUMN \"content\" DROP NOT NULL\`);
+        await queryRunner.query(\`ALTER TABLE \"core\".\"workspace\" ADD \"known\" boolean\`);
+      }
+
+      public async down() {}
+    }
+  `;
+
+  runMigrationGenerationCheck(['packages/twenty-server/src/main.ts'], {
+    runCommand: () => ({ status: 0, stdout: 'generated', stderr: '' }),
+    listGeneratedFiles: () => [generatedFile],
+    readGeneratedFile: () => migrationSource,
+    migrationBaselineQueries: [
+      'ALTER TABLE \"core\".\"workspace\" ADD \"known\" boolean',
+      'ALTER TABLE \"core\".\"agentMessage\" ALTER COLUMN \"content\" DROP NOT NULL',
+    ],
+    removeGeneratedFile: (file) => removed.push(file),
+  });
+
+  assert.deepEqual(removed, [generatedFile]);
+});
+
+test('runMigrationGenerationCheck rejects changed drift beyond the baseline', () => {
+  const generatedFile = 'packages/twenty-server/123-core-migration-check.ts';
+  const migrationSource = `
+    export class CoreMigrationCheck123 {
+      public async up(queryRunner) {
+        await queryRunner.query(\`ALTER TABLE \"core\".\"agentMessage\" ALTER COLUMN \"content\" SET NOT NULL\`);
+      }
+
+      public async down() {}
+    }
+  `;
+
+  assert.throws(
+    () =>
+      runMigrationGenerationCheck(['packages/twenty-server/src/main.ts'], {
+        runCommand: () => ({ status: 0, stdout: 'generated', stderr: '' }),
+        listGeneratedFiles: () => [generatedFile],
+        readGeneratedFile: () => migrationSource,
+        migrationBaselineQueries: [
+          'ALTER TABLE \"core\".\"agentMessage\" ALTER COLUMN \"content\" DROP NOT NULL',
+        ],
+        removeGeneratedFile: () => {},
+      }),
+    /Unexpected migration files were generated/,
+  );
+});
+
 test('runMigrationGenerationCheck rejects and removes generated drift', () => {
   const removed = [];
 
@@ -430,6 +485,16 @@ test('runMigrationGenerationCheck rejects and removes generated drift', () => {
         listGeneratedFiles: () => [
           'packages/twenty-server/123-core-migration-check.ts',
         ],
+        readGeneratedFile: () => `
+          export class CoreMigrationCheck123 {
+            public async up(queryRunner) {
+              await queryRunner.query(\`ALTER TABLE \"core\".\"workspace\" ADD \"unexpected\" boolean\`);
+            }
+
+            public async down() {}
+          }
+        `,
+        migrationBaselineQueries: [],
         removeGeneratedFile: (file) => removed.push(file),
       }),
     /Unexpected migration files were generated/,
