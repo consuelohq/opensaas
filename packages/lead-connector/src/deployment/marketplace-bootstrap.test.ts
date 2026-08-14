@@ -62,12 +62,29 @@ describe('stable HighLevel Marketplace bootstrap', () => {
       join(packageRoot, 'scripts', 'build-embed.ts'),
       'utf8',
     );
+    const wrangler = readFileSync(join(packageRoot, 'wrangler.jsonc'), 'utf8');
+    const osWrangler = readFileSync(
+      join(
+        packageRoot,
+        '..',
+        'os',
+        'cloudflare',
+        'workspace-edge',
+        'wrangler.toml',
+      ),
+      'utf8',
+    );
     expect(build).toContain('marketplace-loader.html');
     expect(build).toContain('createLeadConnectorMarketplaceBootstrap');
-    expect(build).toContain(
-      'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev',
-    );
-    expect(build).not.toContain("assetOrigin: 'https://calls.consuelohq.com'");
+    expect(build).toContain("assetOrigin: 'https://calls.consuelohq.com'");
+    expect(wrangler).toContain('"pattern": "calls.consuelohq.com"');
+    expect(wrangler).toContain('"custom_domain": true');
+    expect(wrangler).toContain('"pattern": "calls.consuelohq.com/*"');
+    expect(wrangler).toContain('"zone_name": "consuelohq.com"');
+    expect(wrangler).toContain('"workers_dev": false');
+    expect(wrangler).toContain('"preview_urls": false');
+    expect(osWrangler).toContain('*.consuelohq.com/*');
+    expect(osWrangler).not.toContain('calls.consuelohq.com/*');
     expect(
       existsSync(
         join(packageRoot, 'src', 'deployment', 'marketplace-bootstrap.ts'),
