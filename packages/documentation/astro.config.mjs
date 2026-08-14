@@ -19,9 +19,12 @@ export default defineConfig({
       customCss: ['./src/styles/docs.css'],
       components: {
         Head: './src/components/Head.astro',
+        Header: './src/components/Header.astro',
         LanguageSelect: './src/components/translation/RuntimeLanguageSelect.astro',
         ThemeSelect: './src/components/ThemeSelect.astro',
         MobileMenuFooter: './src/components/MobileMenuFooter.astro',
+        MobileMenuToggle: './src/components/MobileMenuToggle.astro',
+        MobileTableOfContents: './src/components/MobileTableOfContents.astro',
         PageTitle: './src/components/PageTitle.astro',
         Sidebar: './src/components/Sidebar.astro',
         SiteTitle: './src/components/SiteTitle.astro',

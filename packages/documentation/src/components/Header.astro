@@ -1,0 +1,96 @@
+---
+import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
+import Search from 'virtual:starlight/components/Search';
+import SiteTitle from 'virtual:starlight/components/SiteTitle';
+import SocialIcons from 'virtual:starlight/components/SocialIcons';
+import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
+import BrowseMenu from './BrowseMenu.astro';
+---
+
+<div class="docs-header">
+  <div class="docs-header-brand">
+    <SiteTitle />
+    <BrowseMenu />
+  </div>
+
+  <div class="docs-header-search" data-docs-header-search>
+    <Search />
+  </div>
+
+  <div class="docs-header-right">
+    <div class="docs-header-social"><SocialIcons /></div>
+    <ThemeSelect />
+    <LanguageSelect />
+  </div>
+</div>
+
+<style>
+  @layer starlight.core {
+    .docs-header {
+      align-items: center;
+      display: flex;
+      gap: 1rem;
+      height: 100%;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .docs-header-brand {
+      align-items: center;
+      display: flex;
+      gap: 0.7rem;
+      min-width: 0;
+    }
+
+    .docs-header-search {
+      display: contents;
+    }
+
+    .docs-header-search :global(button[data-open-modal]) {
+      display: none !important;
+    }
+
+    .docs-header-right {
+      display: none;
+    }
+
+    @media (min-width: 72rem) {
+      .docs-header {
+        display: grid;
+        grid-template-columns: minmax(15rem, var(--sl-sidebar-width)) minmax(14rem, 1fr) auto;
+      }
+
+      .docs-header-search {
+        display: flex;
+        justify-content: center;
+        min-width: 0;
+      }
+
+      .docs-header-search :global(button[data-open-modal]) {
+        display: flex !important;
+      }
+
+      .docs-header-search :global(site-search) {
+        width: min(100%, 28rem);
+      }
+
+      .docs-header-right {
+        align-items: center;
+        display: flex;
+        gap: 0.9rem;
+      }
+
+      .docs-header-social {
+        align-items: center;
+        display: flex;
+      }
+
+      .docs-header-social::after {
+        border-inline-end: 1px solid var(--sl-color-hairline-light);
+        content: '';
+        height: 1.75rem;
+        margin-inline-start: 0.9rem;
+      }
+    }
+  }
+</style>

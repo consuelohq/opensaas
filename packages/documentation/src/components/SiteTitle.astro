@@ -4,7 +4,7 @@ const { siteTitleHref } = Astro.locals.starlightRoute;
 
 <a class="consuelo-site-title" href={siteTitleHref}>
   <img aria-hidden="true" alt="" height="28" src="/favicon.svg" width="28" />
-  <span translate="no">Consuelo OS</span>
+  <span class="consuelo-site-title-label" translate="no">Consuelo OS</span>
 </a>
 
 <style>
@@ -32,6 +32,12 @@ const { siteTitleHref } = Astro.locals.starlightRoute;
       flex: 0 0 auto;
       height: 1.75rem;
       width: 1.75rem;
+    }
+
+    @media (max-width: 49.999rem) {
+      .consuelo-site-title-label {
+        display: none;
+      }
     }
   }
 </style>
