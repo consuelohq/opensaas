@@ -70,6 +70,11 @@ describe('Postgres predictive model store contract', () => {
     );
     expect(statement?.text).toContain('PARTITION BY workspace_id, contact_id');
     expect(statement?.text).toContain('ORDER BY attempted_at, group_id, position');
+    expect(statement?.text).toContain('canonical_attempt_count');
+    expect(statement?.text).toContain('LEFT JOIN contact_attempt_ledger');
+    expect(statement?.text).toContain(
+      'GREATEST(COALESCE(attempts_total, canonical_attempt_count) - canonical_attempt_count, 0)',
+    );
     expect(statement?.text).toContain(
       "COUNT(*) FILTER (WHERE outcome_class = 'response')",
     );

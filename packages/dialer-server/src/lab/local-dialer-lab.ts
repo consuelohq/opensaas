@@ -8,7 +8,7 @@ import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
 
 import { createPostgresPredictiveModelStore } from '../learning/postgres-predictive-model-store';
 import { recordLeadConnectorAttemptTelemetry } from '../runtime/lead-connector-learning';
-import { rankPredictiveLeadConnectorTargets } from '../runtime/predictive-target-ranking';
+import { rankPredictiveTargets } from '../runtime/predictive-target-ranking';
 
 export type LabScaleName = 'smoke' | 'standard' | 'large';
 
@@ -377,9 +377,10 @@ const benchmarkRanking = async (
         iteration += 1
       ) {
         const measurement = await elapsedMilliseconds(() =>
-          rankPredictiveLeadConnectorTargets({
+          rankPredictiveTargets({
             database,
             workspaceId,
+            segmentId: 'lab-segment',
             targets,
             timezone: 'UTC',
             callableWindowEndHour: 20,
@@ -407,24 +408,18 @@ const benchmarkAggregation = async (
   iterations: number,
 ) => {
   try {
+    const store = createPostgresPredictiveModelStore(database);
     const samples: number[] = [];
     let groupCount = 0;
     for (let iteration = 0; iteration < iterations; iteration += 1) {
       const measurement = await elapsedMilliseconds(() =>
-        database.query<{ attempt_number: number }>(
-          `SELECT
-             attempt_number,
-             EXTRACT(HOUR FROM attempted_at AT TIME ZONE 'UTC')::int AS hour_of_day,
-             EXTRACT(DOW FROM attempted_at AT TIME ZONE 'UTC')::int AS day_of_week,
-             AVG(CASE WHEN outcome = 'answered' THEN 1.0 ELSE 0.0 END)::float AS answer_rate,
-             COUNT(*)::int AS sample_size
-           FROM consuelo_lead_connector_call_outcomes
-           WHERE workspace_id = $1
-           GROUP BY attempt_number, hour_of_day, day_of_week`,
-          [workspaceId],
-        ),
+        store.getHazardEstimates({
+          workspaceId,
+          segmentId: 'lab-segment',
+          attemptNumbers: [1, 2, 3, 4],
+        }),
       );
-      groupCount = measurement.value.rows.length;
+      groupCount = measurement.value.length;
       samples.push(measurement.durationMs);
     }
     return { groups: groupCount, latency: summarizeSamples(samples) };
@@ -629,6 +624,208 @@ export const validatePredictiveLearningScience = async (
   }
 };
 
+export type CanonicalRuntimeCutoverValidation = {
+  canonicalTopContactId: string | null;
+  canonicalPreferredAttempt: number;
+  compatibilityPreferredAttempt: number;
+  compatibilityConflictIgnored: boolean;
+  legacyBaselineAttemptNumbers: number[];
+};
+
+export const validateCanonicalRuntimeCutover = async (
+  database: LeadConnectorDatabase,
+  workspaceId: string,
+  baseTime: string,
+): Promise<CanonicalRuntimeCutoverValidation> => {
+  try {
+    await database.query(
+      'DELETE FROM dialer_learning_observations WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
+      'DELETE FROM consuelo_lead_connector_call_outcomes WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
+      'DELETE FROM contact_attempt_ledger WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
+      'DELETE FROM dialer_workspace_settings WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
+      `INSERT INTO dialer_workspace_settings (
+         workspace_id, avg_deal_value, avg_close_rate, cost_per_attempt
+       ) VALUES ($1, 100, 1, 0.03)`,
+      [workspaceId],
+    );
+    await database.query(
+      `INSERT INTO contact_attempt_ledger (
+         workspace_id, contact_id, attempts_total, last_attempt_at
+       ) VALUES
+         ($1, 'cutover-canonical-first', 0, NULL),
+         ($1, 'cutover-canonical-winner', 1, $2::timestamptz),
+         ($1, 'cutover-legacy-offset', 4, $2::timestamptz)`,
+      [workspaceId, baseTime],
+    );
+
+    await database.query(
+      `INSERT INTO dialer_learning_observations (
+         workspace_id, group_id, position, segment_id, contact_id,
+         attempted_at, response_at, observed_until_at, local_hour,
+         local_day_of_week, outcome_class, censor_reason
+       ) VALUES
+         ($1, 'cutover-offset-1', 1, 'legacy-offset-segment', 'cutover-legacy-offset',
+          $2::timestamptz + interval '2 hours', NULL,
+          $2::timestamptz + interval '2 hours 90 seconds', 14, 1,
+          'non_response', NULL),
+         ($1, 'cutover-offset-2', 1, 'legacy-offset-segment', 'cutover-legacy-offset',
+          $2::timestamptz + interval '3 hours',
+          $2::timestamptz + interval '3 hours 30 seconds',
+          $2::timestamptz + interval '3 hours 90 seconds', 15, 1,
+          'response', NULL)`,
+      [workspaceId, baseTime],
+    );
+
+    await database.query(
+      `INSERT INTO dialer_learning_observations (
+         workspace_id, group_id, position, segment_id, contact_id,
+         attempted_at, response_at, observed_until_at, local_hour,
+         local_day_of_week, outcome_class, censor_reason
+       )
+       SELECT
+         $1,
+         'cutover-canonical-a1-' || series::text,
+         1,
+         'runtime-cutover-segment',
+         'cutover-history-' || series::text,
+         $2::timestamptz + series * interval '1 second',
+         CASE WHEN series <= 2
+           THEN $2::timestamptz + series * interval '1 second' + interval '30 seconds'
+           ELSE NULL
+         END,
+         $2::timestamptz + series * interval '1 second' + interval '90 seconds',
+         12,
+         1,
+         CASE WHEN series <= 2 THEN 'response' ELSE 'non_response' END,
+         NULL
+       FROM generate_series(1, 20) AS series`,
+      [workspaceId, baseTime],
+    );
+    await database.query(
+      `INSERT INTO dialer_learning_observations (
+         workspace_id, group_id, position, segment_id, contact_id,
+         attempted_at, response_at, observed_until_at, local_hour,
+         local_day_of_week, outcome_class, censor_reason
+       )
+       SELECT
+         $1,
+         'cutover-canonical-a2-' || series::text,
+         1,
+         'runtime-cutover-segment',
+         'cutover-history-' || series::text,
+         $2::timestamptz + interval '1 hour' + series * interval '1 second',
+         CASE WHEN series <= 16
+           THEN $2::timestamptz + interval '1 hour' + series * interval '1 second' + interval '30 seconds'
+           ELSE NULL
+         END,
+         $2::timestamptz + interval '1 hour' + series * interval '1 second' + interval '90 seconds',
+         13,
+         1,
+         CASE WHEN series <= 16 THEN 'response' ELSE 'non_response' END,
+         NULL
+       FROM generate_series(1, 20) AS series`,
+      [workspaceId, baseTime],
+    );
+
+    await database.query(
+      `INSERT INTO consuelo_lead_connector_call_outcomes (
+         workspace_id, contact_id, attempted_at, attempt_number, outcome
+       )
+       SELECT
+         $1,
+         'cutover-compat-a1-' || series::text,
+         $2::timestamptz + series * interval '1 second',
+         1,
+         CASE WHEN series <= 18 THEN 'answered' ELSE 'no-answer' END
+       FROM generate_series(1, 20) AS series`,
+      [workspaceId, baseTime],
+    );
+    await database.query(
+      `INSERT INTO consuelo_lead_connector_call_outcomes (
+         workspace_id, contact_id, attempted_at, attempt_number, outcome
+       )
+       SELECT
+         $1,
+         'cutover-compat-a2-' || series::text,
+         $2::timestamptz + interval '1 hour' + series * interval '1 second',
+         2,
+         CASE WHEN series <= 2 THEN 'answered' ELSE 'no-answer' END
+       FROM generate_series(1, 20) AS series`,
+      [workspaceId, baseTime],
+    );
+
+    const store = createPostgresPredictiveModelStore(database);
+    const canonicalEstimates = await store.getAnswerProbabilities({
+      workspaceId,
+      segmentId: 'runtime-cutover-segment',
+    });
+    const legacyBaselineEstimates = await store.getAnswerProbabilities({
+      workspaceId,
+      segmentId: 'legacy-offset-segment',
+    });
+    const canonicalPreferredAttempt = [...canonicalEstimates].sort(
+      (left, right) => right.probability - left.probability,
+    )[0]?.attemptNumber ?? 0;
+    const compatibility = await database.query<{
+      attempt_number: number;
+      answer_rate: number | string;
+    }>(
+      `SELECT
+         attempt_number,
+         AVG(CASE WHEN outcome = 'answered' THEN 1.0 ELSE 0.0 END)::float AS answer_rate
+       FROM consuelo_lead_connector_call_outcomes
+       WHERE workspace_id = $1
+       GROUP BY attempt_number
+       ORDER BY answer_rate DESC, attempt_number ASC
+       LIMIT 1`,
+      [workspaceId],
+    );
+    const compatibilityPreferredAttempt = Number(
+      compatibility.rows[0]?.attempt_number ?? 0,
+    );
+    const ranked = await rankPredictiveTargets({
+      database,
+      workspaceId,
+      segmentId: 'runtime-cutover-segment',
+      targets: [
+        { contactId: 'cutover-canonical-first', phone: '+15550110001' },
+        { contactId: 'cutover-canonical-winner', phone: '+15550110002' },
+      ],
+      timezone: 'UTC',
+      callableWindowEndHour: 20,
+      now: new Date(baseTime),
+    });
+    const canonicalTopContactId = ranked[0]?.contactId ?? null;
+
+    return {
+      canonicalTopContactId,
+      canonicalPreferredAttempt,
+      compatibilityPreferredAttempt,
+      compatibilityConflictIgnored:
+        canonicalPreferredAttempt === 2 &&
+        compatibilityPreferredAttempt === 1 &&
+        canonicalTopContactId === 'cutover-canonical-winner',
+      legacyBaselineAttemptNumbers: legacyBaselineEstimates.map(
+        (estimate) => estimate.attemptNumber,
+      ),
+    };
+  } catch (cause: unknown) {
+    throw labFailure('canonical runtime cutover validation', cause);
+  }
+};
+
 const persistIngestRecords = (
   database: LeadConnectorDatabase,
   records: ParallelTelemetryRecord[],
@@ -710,6 +907,7 @@ export type LocalDialerBenchmarkResult = {
   aggregation: Awaited<ReturnType<typeof benchmarkAggregation>>;
   ingestion: Awaited<ReturnType<typeof benchmarkIngestion>>;
   scientificValidation: PredictiveScienceValidation;
+  runtimeCutover: CanonicalRuntimeCutoverValidation;
   redisCoordination: SampleSummary;
 };
 
@@ -752,6 +950,11 @@ export const runLocalDialerBenchmarks = async (options: {
       scientificValidation: await validatePredictiveLearningScience(
         options.database,
         `${options.workspaceId}-science`,
+        options.fixture.baseTime,
+      ),
+      runtimeCutover: await validateCanonicalRuntimeCutover(
+        options.database,
+        `${options.workspaceId}-cutover`,
         options.fixture.baseTime,
       ),
       redisCoordination: await benchmarkRedis(

@@ -58,6 +58,13 @@ describeIntegration('local dialer lab service integration', () => {
               compatibilityOutcomeRows: number;
             };
           };
+          runtimeCutover: {
+            canonicalTopContactId: string | null;
+            canonicalPreferredAttempt: number;
+            compatibilityPreferredAttempt: number;
+            compatibilityConflictIgnored: boolean;
+            legacyBaselineAttemptNumbers: number[];
+          };
           redisCoordination: { samples: number };
         };
         cleanup: {
@@ -106,6 +113,13 @@ describeIntegration('local dialer lab service integration', () => {
         canonicalRows: 1,
         ledgerAttempts: 1,
         compatibilityOutcomeRows: 1,
+      });
+      expect(result.benchmarks.runtimeCutover).toEqual({
+        canonicalTopContactId: 'cutover-canonical-winner',
+        canonicalPreferredAttempt: 2,
+        compatibilityPreferredAttempt: 1,
+        compatibilityConflictIgnored: true,
+        legacyBaselineAttemptNumbers: [3, 4],
       });
       expect(result.benchmarks.redisCoordination.samples).toBe(50);
       expect(result.cleanup).toEqual({

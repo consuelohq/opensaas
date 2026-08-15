@@ -61,7 +61,7 @@ import {
 import {
   recordLeadConnectorAttemptTelemetry,
 } from './lead-connector-learning';
-import { rankPredictiveLeadConnectorTargets } from './predictive-target-ranking';
+import { rankPredictiveTargets } from './predictive-target-ranking';
 
 import { normalizeAsyncError } from '../errors/normalize-async-error';
 
@@ -836,9 +836,10 @@ export const createRailwayDialerApplicationLayers = async (
           );
           const candidates = pending.length > 0 ? pending : fallback;
           const ranking = database
-            ? rankPredictiveLeadConnectorTargets({
+            ? rankPredictiveTargets({
                 database,
                 workspaceId,
+                segmentId: queueId,
                 targets: candidates,
                 timezone:
                   environment.DIALER_LOCAL_TIMEZONE ?? 'America/New_York',
