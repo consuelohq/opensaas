@@ -2,6 +2,9 @@
   "name": "consuelo-website",
   "type": "module",
   "version": "0.0.1",
+  "overrides": {
+    "fast-xml-parser": "5.10.1"
+  },
   "scripts": {
     "dev": "bun run generate:footer-art && astro dev",
     "start": "bun run generate:footer-art && astro dev",
