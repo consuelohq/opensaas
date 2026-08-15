@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/explore/explorebench-baseline-and-trace-report/workpad.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/context.js",
+    "packages/workspace/scripts/explore-bench.js",
+    "packages/workspace/scripts/lib/explore-bench.js",
+    "packages/workspace/scripts/lib/search/retriever.js",
+    "packages/workspace/scripts/lib/state/explore-state.js",
+    "packages/workspace/tests/explore-bench.test.js"
+  ],
+  "updatedAt": "2026-08-15T08:35:10.395Z"
+}
