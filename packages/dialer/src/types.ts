@@ -425,10 +425,17 @@ export type StoppingModelStore = {
   getAnswerProbabilities(
     segmentId: string,
   ): Promise<{ attemptNumber: number; probability: number }[]>;
-  getWorkspaceEconomics(workspaceId: string): Promise<{
-    valuePerConnection: number;
-    costPerAttempt: number;
-  }>;
+  getWorkspaceEconomics(workspaceId: string): Promise<WorkspaceDialerEconomics>;
+};
+
+export type WorkspaceDialerEconomics = {
+  valuePerConnection: number;
+  costPerAttempt: number;
+};
+
+export type AttemptAnswerProbability = {
+  attemptNumber: number;
+  probability: number;
 };
 
 export type WhittleIndexInput = {
@@ -485,4 +492,92 @@ export type TimingModelStore = {
     segmentId: string,
     attemptNumber: number,
   ): Promise<{ hour: number; dayOfWeek: number } | null>;
+};
+
+export type PredictiveModelQuery = {
+  workspaceId: string;
+  segmentId: string;
+};
+
+export type PredictiveHazardQuery = PredictiveModelQuery & {
+  attemptNumbers: number[];
+};
+
+export type PredictiveModelStore = {
+  getHazardEstimates(query: PredictiveHazardQuery): Promise<HazardEstimate[]>;
+  getAnswerProbabilities(
+    query: PredictiveModelQuery,
+  ): Promise<AttemptAnswerProbability[]>;
+  getWorkspaceEconomics(
+    workspaceId: string,
+  ): Promise<WorkspaceDialerEconomics>;
+};
+
+export type PredictiveSelectionCandidate = {
+  contactId: string;
+  position: number;
+  attemptsUsed: number;
+  lastAttemptAt: Date | null;
+};
+
+export type PredictiveSelectionInput = PredictiveModelQuery & {
+  localTimezone: string;
+  callableWindowEndHour: number;
+  evaluatedAt?: Date;
+  candidates: PredictiveSelectionCandidate[];
+};
+
+export type PredictiveHazardSource =
+  | 'exact_local_slot'
+  | 'attempt_fallback'
+  | 'missing';
+
+export type PredictiveRankedCandidate = {
+  contactId: string;
+  position: number;
+  nextAttemptNumber: number;
+  index: number;
+  components: WhittleIndexResult['components'];
+  hazardSource: PredictiveHazardSource;
+  staleDecayFactor: number;
+};
+
+export type PredictiveSuppressedCandidate = {
+  contactId: string;
+  position: number;
+  nextAttemptNumber: number;
+  reason: 'stopping_model';
+};
+
+export type PredictiveSelectionResult = {
+  ranked: PredictiveRankedCandidate[];
+  suppressed: PredictiveSuppressedCandidate[];
+};
+
+export type RetryDecisionReason =
+  | 'answered'
+  | 'max_attempts_reached'
+  | 'expected_value_below_attempt_cost'
+  | 'insufficient_stopping_data'
+  | 'positive_expected_value';
+
+export type RetryTimingSource =
+  | 'learned_hazard'
+  | 'insufficient_hazard_data'
+  | 'none';
+
+export type RetryOutcome = 'human_answered' | 'no_human_answer';
+
+export type RetryDecisionInput = PredictiveModelQuery & {
+  outcome: RetryOutcome;
+  attemptsUsed: number;
+  maxAttempts: number;
+};
+
+export type RetryDecisionResult = {
+  shouldRetry: boolean;
+  nextAttemptNumber: number | null;
+  reason: RetryDecisionReason;
+  preferredWindow: { hour: number; dayOfWeek: number } | null;
+  timingSource: RetryTimingSource;
 };

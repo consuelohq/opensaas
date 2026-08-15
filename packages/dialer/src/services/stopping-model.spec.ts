@@ -31,7 +31,7 @@ describe('StoppingModelService', () => {
     });
   });
 
-  it('should include zero probability for attempts without historical data', async () => {
+  it('should return no stopping threshold when an attempt has no historical data', async () => {
     const store: StoppingModelStore = {
       getAnswerProbabilities: jest
         .fn()
@@ -50,11 +50,6 @@ describe('StoppingModelService', () => {
       maxAttempts: 3,
     });
 
-    expect(threshold).toMatchObject({
-      attemptNumber: 2,
-      answerProbability: 0,
-      expectedValue: 0,
-      shouldStop: false,
-    });
+    expect(threshold).toBeNull();
   });
 });
