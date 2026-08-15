@@ -4,26 +4,13 @@
   "mode": "full",
   "branch": "task/os/stabilize-configuration-shell-and-redesign-tools",
   "base": "origin/main",
-  "headSha": "41da83c528e5f6a42de6786ca3333438ff741937",
-  "changeHash": "1a9ee96633ca94251afddbfaa9f2a6caf0361c89fcb50125af63fd74343be3bd",
+  "headSha": "b13804964bbd900a8518f4b5e4e983d815891ea4",
+  "changeHash": "4aaa659dc62f52c7f8897c21e0254cf05de82e5486c18644da0578d0984c6cee",
   "changedFiles": [
-    "packages/os/scripts/lib/observability-traces-site.ts",
-    "packages/os/scripts/lib/settings-site.ts",
-    "packages/os/scripts/lib/settings-snapshot.ts",
-    "packages/os/scripts/lib/sites.ts",
-    "packages/os/scripts/lib/workspace-chrome.ts",
-    "packages/os/tests/install-state.test.ts",
-    "packages/os/tests/launcher-local-customization.test.ts",
-    "packages/os/tests/launcher-nodes-materialization.test.ts",
-    "packages/os/tests/local-agent-connectivity.test.ts",
-    "packages/os/tests/observability-traces-site.test.ts",
-    "packages/os/tests/settings-site.test.ts",
-    "packages/os/tests/sites-cli.test.ts",
-    "packages/workspace/test-selection.registry.json",
-    "packages/workspace/test-selection.rules.json",
-    "packages/workspace/tests/test-selection.test.js"
+    "packages/workspace/scripts/os-release.ts",
+    "packages/workspace/tests/website-deploy.test.js"
   ],
-  "verifiedAt": "2026-08-15T05:51:07.626Z",
+  "verifiedAt": "2026-08-15T06:16:40.563Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -37,208 +24,60 @@
       "kind": "selection",
       "passed": true,
       "changedFiles": [
-        ".task/os/stabilize-configuration-shell-and-redesign-tools/current.json",
-        ".task/os/stabilize-configuration-shell-and-redesign-tools/session.json",
         ".task/os/stabilize-configuration-shell-and-redesign-tools/verify.json",
         ".task/os/stabilize-configuration-shell-and-redesign-tools/workpad.md",
-        ".task/tasks/os/stabilize-configuration-shell-and-redesign-tools.json",
-        "packages/os/scripts/lib/observability-traces-site.ts",
-        "packages/os/scripts/lib/settings-site.ts",
-        "packages/os/scripts/lib/settings-snapshot.ts",
-        "packages/os/scripts/lib/sites.ts",
-        "packages/os/scripts/lib/workspace-chrome.ts",
-        "packages/os/tests/install-state.test.ts",
-        "packages/os/tests/launcher-local-customization.test.ts",
-        "packages/os/tests/launcher-nodes-materialization.test.ts",
-        "packages/os/tests/local-agent-connectivity.test.ts",
-        "packages/os/tests/observability-traces-site.test.ts",
-        "packages/os/tests/settings-site.test.ts",
-        "packages/os/tests/sites-cli.test.ts",
-        "packages/workspace/test-selection.registry.json",
-        "packages/workspace/test-selection.rules.json",
-        "packages/workspace/tests/test-selection.test.js"
+        "packages/workspace/scripts/os-release.ts",
+        "packages/workspace/tests/website-deploy.test.js"
       ],
       "matchedRules": [
         {
-          "id": "workspace-test-selection",
-          "critical": true,
-          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
-          "matchedFiles": [
-            "packages/workspace/test-selection.registry.json",
-            "packages/workspace/test-selection.rules.json",
-            "packages/workspace/tests/test-selection.test.js"
-          ],
-          "origin": "explicit"
-        },
-        {
-          "id": "os-install-state-tool-inventory",
+          "id": "os-release-surface-freshness",
           "critical": true,
           "exclusive": true,
-          "reason": "Install-state tool inventory regressions must run the focused manifest/install contract without selecting unrelated package-wide OS tests.",
+          "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
           "matchedFiles": [
-            "packages/os/tests/install-state.test.ts"
-          ],
-          "origin": "explicit"
-        },
-        {
-          "id": "os-internal-workspace-shell",
-          "critical": true,
-          "exclusive": true,
-          "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Nodes across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid without falling back to the broad OS package suite.",
-          "matchedFiles": [
-            "packages/os/scripts/lib/observability-traces-site.ts",
-            "packages/os/scripts/lib/settings-site.ts",
-            "packages/os/scripts/lib/settings-snapshot.ts",
-            "packages/os/scripts/lib/sites.ts",
-            "packages/os/scripts/lib/workspace-chrome.ts",
-            "packages/os/tests/install-state.test.ts",
-            "packages/os/tests/launcher-local-customization.test.ts",
-            "packages/os/tests/launcher-nodes-materialization.test.ts",
-            "packages/os/tests/local-agent-connectivity.test.ts",
-            "packages/os/tests/observability-traces-site.test.ts",
-            "packages/os/tests/settings-site.test.ts",
-            "packages/os/tests/sites-cli.test.ts"
-          ],
-          "origin": "explicit"
-        },
-        {
-          "id": "os-managed-cloud-one-click-provisioning",
-          "critical": true,
-          "exclusive": true,
-          "reason": "One-click managed-cloud control-plane, launcher, provisioning-runner, enrollment, and Worker changes must prove their focused security and lifecycle contracts without selecting the historically red unrelated OS package suite.",
-          "matchedFiles": [
-            "packages/os/scripts/lib/settings-site.ts",
-            "packages/os/tests/settings-site.test.ts"
-          ],
-          "origin": "explicit"
-        },
-        {
-          "id": "server-ci-task-contract",
-          "critical": true,
-          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
-          "matchedFiles": [
-            "packages/workspace/test-selection.registry.json",
-            "packages/workspace/test-selection.rules.json"
+            "packages/workspace/scripts/os-release.ts",
+            "packages/workspace/tests/website-deploy.test.js"
           ],
           "origin": "explicit"
         }
       ],
       "selectedSuites": [
         {
-          "name": "workspace test selection tests",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/workspace/tests/test-selection.test.js"
-          ],
-          "ruleId": "workspace-test-selection",
-          "critical": true
-        },
-        {
-          "name": "OS install-state tool inventory contract",
+          "name": "OS release freshness contracts",
           "command": [
             "bun",
             "--cwd",
             "packages/os",
             "test",
-            "tests/install-state.test.ts"
-          ],
-          "ruleId": "os-install-state-tool-inventory",
-          "critical": true
-        },
-        {
-          "name": "OS internal workspace shell contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/settings-site.test.ts",
-            "tests/launcher-nodes-materialization.test.ts",
-            "tests/observability-traces-site.test.ts",
-            "tests/sites-cli.test.ts",
-            "tests/launcher-local-customization.test.ts",
-            "tests/install-state.test.ts",
-            "tests/local-agent-connectivity.test.ts"
-          ],
-          "ruleId": "os-internal-workspace-shell",
-          "critical": true
-        },
-        {
-          "name": "OS internal workspace shell syntax",
-          "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
-          ],
-          "ruleId": "os-internal-workspace-shell",
-          "critical": true
-        },
-        {
-          "name": "OS one-click managed cloud contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/managed-cloud-one-click-provisioning.test.ts",
-            "tests/managed-cloud-one-click-runner.test.ts",
-            "tests/launcher-nodes-control-plane.test.ts",
-            "tests/settings-site.test.ts",
-            "tests/cloudflare-worker-release-readiness.test.ts",
-            "tests/os-device-authority-architecture.test.ts",
             "tests/os-device-authority-release-contract.test.ts",
-            "tests/managed-cloud-node-enrollment.test.ts",
-            "tests/managed-cloud-node-enrollment-cli.test.ts",
-            "tests/platform-managed-cloud-node.test.ts",
-            "tests/managed-cloud-pricing.test.ts",
-            "tests/managed-cloud-node-instance-contract.test.ts",
-            "tests/managed-cloud-node-contract.test.ts"
+            "tests/distribution/release-channel-workflows.test.ts"
           ],
-          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "ruleId": "os-release-surface-freshness",
           "critical": true
         },
         {
-          "name": "OS device authority Worker contract",
+          "name": "Workspace production release contracts",
           "command": [
             "bun",
             "x",
             "vitest",
             "run",
-            "packages/os/tests/os-device-authority-worker.test.ts"
+            "packages/workspace/tests/website-deploy.test.js"
           ],
-          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "ruleId": "os-release-surface-freshness",
           "critical": true
         },
         {
-          "name": "changed server task selector tests",
-          "command": [
-            "node",
-            "--test",
-            "packages/workspace/tests/run-changed-server-task.test.mjs"
-          ],
-          "ruleId": "server-ci-task-contract",
-          "critical": true
-        },
-        {
-          "name": "GitHub workflow policy tests",
+          "name": "Workspace Edge release dry run",
           "command": [
             "bun",
-            "test",
-            "packages/workspace/tests/github-workflow-policy.test.js"
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
           ],
-          "ruleId": "server-ci-task-contract",
-          "critical": true
-        },
-        {
-          "name": "TypeORM CLI compatibility contract",
-          "command": [
-            "node",
-            "--test",
-            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
-          ],
-          "ruleId": "server-ci-task-contract",
+          "ruleId": "os-release-surface-freshness",
           "critical": true
         }
       ],
@@ -247,175 +86,59 @@
       "run": true,
       "runResults": [
         {
-          "name": "workspace test selection tests",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/workspace/tests/test-selection.test.js"
-          ],
-          "ruleId": "workspace-test-selection",
-          "critical": true,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 2433,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m37 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2137\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1053\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m37 passed\u001b[39m\u001b[22m\u001b[90m (37)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:50:37\n\u001b[2m   Duration \u001b[22m 2.21s\u001b[2m (transform 14ms, setup 0ms, import 21ms, tests 2.14s, environment 0ms)\u001b[22m\n\n"
-        },
-        {
-          "name": "OS install-state tool inventory contract",
+          "name": "OS release freshness contracts",
           "command": [
             "bun",
             "--cwd",
             "packages/os",
             "test",
-            "tests/install-state.test.ts"
-          ],
-          "ruleId": "os-install-state-tool-inventory",
-          "critical": true,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 11304,
-          "outputTail": "m\u001b[39m replaces an expired ChatGPT MCP credential during reprovisioning \u001b[33m 733\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports existing generated security assets as existing on reprovision \u001b[33m 720\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reuse the active workspace and node when reprovisioning without a new bootstrap \u001b[33m 668\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject a noninteractive update when the active workspace conflicts with installed state \u001b[33m 457\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m creates the approved local home shape and preserves existing config \u001b[33m 1012\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes approved node identity into flattened node config \u001b[33m 340\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes an OpenCode MCP config that exposes Consuelo tools \u001b[33m 424\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves credentials for previously configured agents during partial reconfiguration \u001b[33m 672\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces expired local-agent credentials during reprovisioning \u001b[33m 677\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes the canonical Artifacts site from persisted route-addressed artifacts \u001b[33m 552\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user skills while refreshing the installed registry \u001b[33m 344\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m drops unknown legacy skill selections without mapping them to another skill \u001b[33m 305\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m installs every full-manifest tool even when only one skill is selected \u001b[33m 303\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user tools while refreshing the installed registry \u001b[33m 341\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes only selected bundled skills on fresh install \u001b[33m 321\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses default selected bundled skills when no selectedSkills option is provided \u001b[33m 345\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m configures Codex natively without writing a legacy sidecar or claiming verification \u001b[33m 348\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports intent and task hook runtime modules in doctor checks \u001b[33m 358\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m25 passed\u001b[39m\u001b[22m\u001b[90m (25)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:50:40\n\u001b[2m   Duration \u001b[22m 11.15s\u001b[2m (transform 23ms, setup 0ms, import 30ms, tests 11.06s, environment 0ms)\u001b[22m\n\n$ vitest run tests/install-state.test.ts\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os/scripts/lib/managed-component-install.ts:316:17)\n      at provisionManagedComponentIndexes (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os/scripts/lib/managed-component-install.ts:480:20)\n      at provisionLocalOs (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os/scripts/lib/install-state.ts:1961:19)\n      at /private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n"
-        },
-        {
-          "name": "OS internal workspace shell contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/settings-site.test.ts",
-            "tests/launcher-nodes-materialization.test.ts",
-            "tests/observability-traces-site.test.ts",
-            "tests/sites-cli.test.ts",
-            "tests/launcher-local-customization.test.ts",
-            "tests/install-state.test.ts",
-            "tests/local-agent-connectivity.test.ts"
-          ],
-          "ruleId": "os-internal-workspace-shell",
-          "critical": true,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 12027,
-          "outputTail": "    \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reuse the active workspace and node when reprovisioning without a new bootstrap \u001b[33m 752\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject a noninteractive update when the active workspace conflicts with installed state \u001b[33m 528\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m creates the approved local home shape and preserves existing config \u001b[33m 1018\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes approved node identity into flattened node config \u001b[33m 337\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes an OpenCode MCP config that exposes Consuelo tools \u001b[33m 340\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves credentials for previously configured agents during partial reconfiguration \u001b[33m 678\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces expired local-agent credentials during reprovisioning \u001b[33m 676\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes the canonical Artifacts site from persisted route-addressed artifacts \u001b[33m 576\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user skills while refreshing the installed registry \u001b[33m 343\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m drops unknown legacy skill selections without mapping them to another skill \u001b[33m 379\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m installs every full-manifest tool even when only one skill is selected \u001b[33m 304\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user tools while refreshing the installed registry \u001b[33m 341\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes only selected bundled skills on fresh install \u001b[33m 311\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses default selected bundled skills when no selectedSkills option is provided \u001b[33m 339\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m configures Codex natively without writing a legacy sidecar or claiming verification \u001b[33m 343\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports intent and task hook runtime modules in doctor checks \u001b[33m 364\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m69 passed\u001b[39m\u001b[22m\u001b[90m (69)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:50:51\n\u001b[2m   Duration \u001b[22m 11.86s\u001b[2m (transform 1.12s, setup 0ms, import 2.61s, tests 20.87s, environment 0ms)\u001b[22m\n\n$ vitest run tests/settings-site.test.ts tests/launcher-nodes-materialization.test.ts tests/observability-traces-site.test.ts tests/sites-cli.test.ts tests/launcher-local-customization.test.ts tests/install-state.test.ts tests/local-agent-connectivity.test.ts\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os/scripts/lib/managed-component-install.ts:316:17)\n      at provisionManagedComponentIndexes (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os/scripts/lib/managed-component-install.ts:480:20)\n      at provisionLocalOs (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os/scripts/lib/install-state.ts:1961:19)\n      at /private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n"
-        },
-        {
-          "name": "OS internal workspace shell syntax",
-          "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
-          ],
-          "ruleId": "os-internal-workspace-shell",
-          "critical": true,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 1574,
-          "outputTail": "workspace script syntax checks passed\n"
-        },
-        {
-          "name": "OS one-click managed cloud contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/managed-cloud-one-click-provisioning.test.ts",
-            "tests/managed-cloud-one-click-runner.test.ts",
-            "tests/launcher-nodes-control-plane.test.ts",
-            "tests/settings-site.test.ts",
-            "tests/cloudflare-worker-release-readiness.test.ts",
-            "tests/os-device-authority-architecture.test.ts",
             "tests/os-device-authority-release-contract.test.ts",
-            "tests/managed-cloud-node-enrollment.test.ts",
-            "tests/managed-cloud-node-enrollment-cli.test.ts",
-            "tests/platform-managed-cloud-node.test.ts",
-            "tests/managed-cloud-pricing.test.ts",
-            "tests/managed-cloud-node-instance-contract.test.ts",
-            "tests/managed-cloud-node-contract.test.ts"
+            "tests/distribution/release-channel-workflows.test.ts"
           ],
-          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "ruleId": "os-release-surface-freshness",
           "critical": true,
           "status": "passed",
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 873,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-instance-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 33\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/platform-managed-cloud-node.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 51\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloudflare-worker-release-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 424\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m parses explicit home, onboarding, and status paths \u001b[33m 419\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 29\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 439\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 415\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 33\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 486\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 358\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 30\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 139\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m94 passed\u001b[39m\u001b[22m\u001b[90m (94)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:51:05\n\u001b[2m   Duration \u001b[22m 692ms\u001b[2m (transform 1.90s, setup 0ms, import 2.25s, tests 1.69s, environment 1ms)\u001b[22m\n\n$ vitest run tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/launcher-nodes-control-plane.test.ts tests/settings-site.test.ts tests/cloudflare-worker-release-readiness.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-enrollment-cli.test.ts tests/platform-managed-cloud-node.test.ts tests/managed-cloud-pricing.test.ts tests/managed-cloud-node-instance-contract.test.ts tests/managed-cloud-node-contract.test.ts\n"
+          "durationMs": 575,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/distribution/release-channel-workflows.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 23\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 346\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m21 passed\u001b[39m\u001b[22m\u001b[90m (21)\u001b[39m\n\u001b[2m   Start at \u001b[22m 02:16:38\n\u001b[2m   Duration \u001b[22m 428ms\u001b[2m (transform 166ms, setup 0ms, import 57ms, tests 368ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/os-device-authority-release-contract.test.ts tests/distribution/release-channel-workflows.test.ts\n"
         },
         {
-          "name": "OS device authority Worker contract",
+          "name": "Workspace production release contracts",
           "command": [
             "bun",
             "x",
             "vitest",
             "run",
-            "packages/os/tests/os-device-authority-worker.test.ts"
+            "packages/workspace/tests/website-deploy.test.js"
           ],
-          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "ruleId": "os-release-surface-freshness",
           "critical": true,
           "status": "passed",
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 625,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 67\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m31 passed\u001b[39m\u001b[22m\u001b[90m (31)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:51:06\n\u001b[2m   Duration \u001b[22m 393ms\u001b[2m (transform 225ms, setup 0ms, import 267ms, tests 67ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 513,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 223\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 02:16:39\n\u001b[2m   Duration \u001b[22m 289ms\u001b[2m (transform 8ms, setup 0ms, import 12ms, tests 223ms, environment 0ms)\u001b[22m\n\n"
         },
         {
-          "name": "changed server task selector tests",
-          "command": [
-            "node",
-            "--test",
-            "packages/workspace/tests/run-changed-server-task.test.mjs"
-          ],
-          "ruleId": "server-ci-task-contract",
-          "critical": true,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 69,
-          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.58525ms)\n✔ parseCliArguments selects GraphQL generation mode (0.051708ms)\n✔ parseCliArguments selects migration generation mode (0.055709ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.082583ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.061417ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.050375ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.174ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.759084ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.628875ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.086916ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.184042ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.3025ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.079625ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.079ms)\n✔ server lint configuration resolves the existing workspace rules project (1.484167ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.070584ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.126ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.068542ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.077375ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.152583ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.1065ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.095541ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 43.177834\n"
-        },
-        {
-          "name": "GitHub workflow policy tests",
+          "name": "Workspace Edge release dry run",
           "command": [
             "bun",
-            "test",
-            "packages/workspace/tests/github-workflow-policy.test.js"
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
           ],
-          "ruleId": "server-ci-task-contract",
+          "ruleId": "os-release-surface-freshness",
           "critical": true,
           "status": "passed",
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 149,
-          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.08ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [3.23ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.20ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.05ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.03ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [143.00ms]\n"
-        },
-        {
-          "name": "TypeORM CLI compatibility contract",
-          "command": [
-            "node",
-            "--test",
-            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
-          ],
-          "ruleId": "server-ci-task-contract",
-          "critical": true,
-          "status": "passed",
-          "exitCode": 0,
-          "signal": null,
-          "error": null,
-          "durationMs": 752,
-          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.302ms)\n✔ the configured TypeORM wrapper resolves from the installed package (691.206042ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 726.301291\n"
+          "durationMs": 545,
+          "outputTail": "release=consuelo-workspace-edge\n$ bun run --cwd packages/os cloudflare:workspace-edge:deploy:dry-run\n\n ⛅️ wrangler 4.114.0 (update available 4.123.0)\n───────────────────────────────────────────────\nTotal Upload: 179.39 KiB / gzip: 39.19 KiB\nYour Worker has access to the following bindings:\nBinding                                                                                                 Resource            \nenv.OS_DEVICE_AUTHORITY (OsDeviceGrantDurableObject, defined in consuelo-os-device-authority)           Durable Object      \nenv.WORKSPACE_ROUTE_REGISTRY (consuelo-workspace-route-registry)                                        D1 Database         \nenv.SITES_SNAPSHOTS (consuelo-sites-snapshots)                                                          R2 Bucket           \n\n--dry-run: exiting now.\nConsuelo Workspace Edge dry run complete\n$ bun packages/workspace/scripts/os-release-workspace-edge.ts --dry-run\n$ wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n"
         }
       ],
       "failedSuites": []
