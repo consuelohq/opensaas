@@ -486,10 +486,13 @@ CONSUELO_EMBEDDING_GATEWAY_URL=https://gateway.consuelohq.com/v1/os/semantic-emb
 CONSUELO_EMBEDDING_PROVIDER=openrouter CONSUELO_OPENROUTER_API_KEY=... bun run explore -- "query"
 ```
 
+Structured Explore output is compact by default so agents receive the ranked ownership/dependency packet without paying for scoring internals and the complete graph frontier. Compact results preserve result order, symbols/lines, rationale, evidence state, information value, and up to three typed dependency edges plus the full connection count. The rich payload is still written to Explore state/evidence. Use `--detail full` only when debugging ranking, graph, or scoring internals.
+
 ```bash
 bun run explore -- "how does the dialer queue work?"
 bun run explore -- "where is task metadata verified?" --budget 5
 bun run explore -- "recent workspace changes" --changed-only --json
+bun run explore -- "inspect ranking internals" --json --detail full
 bun run explore -- "refresh everything" --reindex
 ```
 

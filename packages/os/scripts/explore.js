@@ -2,6 +2,7 @@
 
 const { ensureIndex } = require('./lib/index/indexer');
 const { retrieve } = require('./lib/search/retriever');
+const { formatExploreOutput } = require('./lib/search/explore-output');
 const {
   appendEvidenceEvent,
   getReadFilesFromEvidence,
@@ -30,6 +31,7 @@ function printHelp() {
   writeStdout('  --budget <n>      max files to return (default: 10)');
   writeStdout('  --depth <n>       graph expansion depth (default: 2)');
   writeStdout('  --changed-only    restrict results to files changed in the current branch');
+  writeStdout('  --detail <mode>   structured output detail: compact (default) or full');
   writeStdout('  --reindex         force a full re-index before searching');
   writeStdout('  --json            output structured json');
   writeStdout('  --help            show this help');
@@ -40,6 +42,7 @@ function parseArgs(argv) {
     budget: 10,
     changedOnly: false,
     depth: 2,
+    detail: 'compact',
     json: false,
     questionParts: [],
     reindex: false,
@@ -57,6 +60,9 @@ function parseArgs(argv) {
         break;
       case '--changed-only':
         args.changedOnly = true;
+        break;
+      case '--detail':
+        args.detail = argv[++index];
         break;
       case '--reindex':
         args.reindex = true;
@@ -81,6 +87,10 @@ function parseArgs(argv) {
 
   if (!Number.isFinite(args.depth) || args.depth < 0) {
     throw new Error('--depth must be zero or greater');
+  }
+
+  if (!['compact', 'full'].includes(args.detail)) {
+    throw new Error('--detail must be compact or full');
   }
 
   args.question = args.questionParts.join(' ').trim();
@@ -295,7 +305,7 @@ async function main() {
   }, { requireMirror: true });
 
   if (args.json) {
-    writeStdout(JSON.stringify(payload, null, 2));
+    writeStdout(JSON.stringify(formatExploreOutput(payload, args.detail), null, 2));
   } else {
     printHuman(args, results, indexResult);
     writeStdout(`state: ${statePath}`);
