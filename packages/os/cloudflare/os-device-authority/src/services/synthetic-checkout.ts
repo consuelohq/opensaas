@@ -58,25 +58,49 @@ function allowedAccountIds(runtime: DeviceAuthorityRuntime): Set<string> {
   );
 }
 
-export function syntheticCheckoutAllowed(
+function allowedWorkspaceIds(runtime: DeviceAuthorityRuntime): Set<string> {
+  return new Set(
+    (runtime.stripeSyntheticWorkspaceIds ?? '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean),
+  );
+}
+
+export async function syntheticCheckoutAllowed(
   runtime: DeviceAuthorityRuntime,
   accountId: string,
-): boolean {
-  return Boolean(accountId && allowedAccountIds(runtime).has(accountId));
+): Promise<boolean> {
+  if (!accountId) return false;
+  if (allowedAccountIds(runtime).has(accountId)) return true;
+  const workspaceIds = allowedWorkspaceIds(runtime);
+  if (workspaceIds.size === 0) return false;
+  try {
+    const memberships = await runtime.store.listWorkspaceMemberships(accountId);
+    return memberships.some(
+      (membership) =>
+        membership.status === 'active' && workspaceIds.has(membership.workspaceId),
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function syntheticCheckoutConfigured(runtime: DeviceAuthorityRuntime): boolean {
   return Boolean(
     runtime.stripeSyntheticSecretKey?.trim() &&
       runtime.stripeSyntheticWebhookSecret?.trim() &&
-      allowedAccountIds(runtime).size > 0,
+      (allowedAccountIds(runtime).size > 0 || allowedWorkspaceIds(runtime).size > 0),
   );
 }
 
-function assertAllowed(runtime: DeviceAuthorityRuntime, accountId: string): void {
-  if (!syntheticCheckoutAllowed(runtime, accountId)) {
-    throw new SyntheticCheckoutError('SYNTHETIC_FORBIDDEN', 404, 'Not found.');
+async function assertAllowed(runtime: DeviceAuthorityRuntime, accountId: string): Promise<void> {
+  try {
+    if (await syntheticCheckoutAllowed(runtime, accountId)) return;
+  } catch {
+    // Synthetic authorization fails closed on any unexpected membership error.
   }
+  throw new SyntheticCheckoutError('SYNTHETIC_FORBIDDEN', 404, 'Not found.');
 }
 
 function stripeApiBase(runtime: DeviceAuthorityRuntime): string {
@@ -107,7 +131,12 @@ export async function startSyntheticStripeCheckout(input: {
   accountId: string;
   planId: string;
 }): Promise<{ sessionId: string; url: string; runId: string }> {
-  assertAllowed(input.runtime, input.accountId);
+  try {
+    await assertAllowed(input.runtime, input.accountId);
+  } catch (error: unknown) {
+    if (error instanceof SyntheticCheckoutError) throw error;
+    throw new SyntheticCheckoutError('SYNTHETIC_FORBIDDEN', 404, 'Not found.');
+  }
   const planId = safePlanId(input.planId);
   const quote = managedCloudQuoteForPlan(input.runtime, planId);
   const secret = syntheticSecret(input.runtime);
@@ -223,7 +252,7 @@ export async function readSyntheticCheckoutSession(input: {
   planId: string;
   runId: string;
 }> {
-  assertAllowed(input.runtime, input.accountId);
+  await assertAllowed(input.runtime, input.accountId);
   const sessionId = input.sessionId.trim();
   if (!/^cs_[A-Za-z0-9_]+$/.test(sessionId)) {
     throw new SyntheticCheckoutError('SYNTHETIC_INVALID', 400, 'Invalid checkout session.');

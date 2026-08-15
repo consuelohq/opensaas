@@ -44,6 +44,7 @@ export type CreateDeviceAuthorityHandlerInput = {
   stripeSyntheticSecretKey?: string;
   stripeSyntheticWebhookSecret?: string;
   stripeSyntheticAccountIds?: string;
+  stripeSyntheticWorkspaceIds?: string;
   checkoutObservability?: CheckoutObservability;
   operationalLogger?: DeviceAuthorityLogger;
   installControlPlaneRepository?: DeviceAuthorityRuntime['installControlPlaneRepository'];

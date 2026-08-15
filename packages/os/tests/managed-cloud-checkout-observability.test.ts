@@ -342,6 +342,44 @@ describe('synthetic checkout routes', () => {
     expect(stripeRequests[0]?.authorization).toBe('Bearer rk_test_synthetic');
   });
 
+  it('allows a legacy authority account through an active allowlisted workspace membership', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const token = 'was_internal_workspace_synthetic';
+    await store.putAuthoritySession({
+      tokenHash: await hash(token),
+      accountId: 'google:legacy-internal-user',
+      email: 'internal@example.com',
+      csrfToken: 'csrf_internal_workspace_synthetic',
+      issuedAt: nowMs,
+      expiresAt: nowMs + 86_400_000,
+    });
+    await store.putAccountWorkspace({
+      accountId: 'google:legacy-internal-user',
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+      updatedAt: nowMs,
+    });
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin: 'https://os.consuelohq.com',
+      now: () => nowMs,
+      managedCloudPricing: {
+        policy: pricingPolicy,
+        rateCards: { 'us-east1': rateCard },
+      },
+      stripeSyntheticSecretKey: 'rk_test_synthetic',
+      stripeSyntheticWebhookSecret: 'whsec_synthetic',
+      stripeSyntheticWorkspaceIds: 'workspace_internal',
+    });
+
+    const response = await handler(new Request('https://os.consuelohq.com/auth/synthetic/checkout', {
+      headers: { cookie: `__Host-consuelo_os_authority=${token}` },
+    }));
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('Internal synthetic lane');
+  });
+
   it('returns 404 for a valid authority session that is not allowlisted', async () => {
     const store = createMemoryDeviceGrantStore();
     const token = 'was_normal_account';
@@ -364,6 +402,7 @@ describe('synthetic checkout routes', () => {
       stripeSyntheticSecretKey: 'rk_test_synthetic',
       stripeSyntheticWebhookSecret: 'whsec_synthetic',
       stripeSyntheticAccountIds: 'user_internal_123',
+      stripeSyntheticWorkspaceIds: 'workspace_internal',
     });
     const response = await handler(new Request('https://os.consuelohq.com/auth/synthetic/checkout', {
       headers: { cookie: `__Host-consuelo_os_authority=${token}` },

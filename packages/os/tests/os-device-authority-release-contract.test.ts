@@ -8,6 +8,8 @@ type WorkerSecretMetadata = Array<{ name: string; type?: string }>;
 
 type ReadinessModule = {
   REQUIRED_DEVICE_AUTHORITY_WORKER_SECRETS: readonly string[];
+  OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_SECRETS: readonly string[];
+  OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_ALLOWLISTS: readonly string[];
   assertRequiredDeviceAuthorityWorkerSecrets: (secrets: WorkerSecretMetadata | string) => void;
 };
 
@@ -163,6 +165,7 @@ describe('OS device authority release contract', () => {
 
   it('should accept synthetic Stripe testing as either fully absent or fully configured', async () => {
     const {
+      OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_ALLOWLISTS,
       OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_SECRETS,
       assertRequiredDeviceAuthorityWorkerSecrets,
     } = await loadReadinessModule();
@@ -176,7 +179,10 @@ describe('OS device authority release contract', () => {
     expect(OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_SECRETS).toEqual([
       'OS_STRIPE_SYNTHETIC_SECRET_KEY',
       'OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET',
+    ]);
+    expect(OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_ALLOWLISTS).toEqual([
       'OS_STRIPE_SYNTHETIC_ACCOUNT_IDS',
+      'OS_STRIPE_SYNTHETIC_WORKSPACE_IDS',
     ]);
     expect(() => assertRequiredDeviceAuthorityWorkerSecrets(required)).not.toThrow();
     expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
@@ -184,6 +190,12 @@ describe('OS device authority release contract', () => {
       { name: 'OS_STRIPE_SYNTHETIC_SECRET_KEY', type: 'secret_text' },
       { name: 'OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET', type: 'secret_text' },
       { name: 'OS_STRIPE_SYNTHETIC_ACCOUNT_IDS', type: 'secret_text' },
+    ])).not.toThrow();
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
+      ...required,
+      { name: 'OS_STRIPE_SYNTHETIC_SECRET_KEY', type: 'secret_text' },
+      { name: 'OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET', type: 'secret_text' },
+      { name: 'OS_STRIPE_SYNTHETIC_WORKSPACE_IDS', type: 'secret_text' },
     ])).not.toThrow();
   });
 
@@ -200,7 +212,7 @@ describe('OS device authority release contract', () => {
       { name: 'OS_STRIPE_SYNTHETIC_SECRET_KEY', type: 'secret_text' },
       { name: 'OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET', type: 'secret_text' },
     ])).toThrowError(
-      'Device authority synthetic Stripe secrets must be configured together: OS_STRIPE_SYNTHETIC_SECRET_KEY, OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET, OS_STRIPE_SYNTHETIC_ACCOUNT_IDS',
+      'Device authority synthetic Stripe testing requires both Stripe secrets and at least one allowlist: OS_STRIPE_SYNTHETIC_ACCOUNT_IDS or OS_STRIPE_SYNTHETIC_WORKSPACE_IDS',
     );
   });
 
