@@ -540,6 +540,90 @@
           }
         },
         {
+          "name": "session.start",
+          "kind": "facade-tool",
+          "source": "task-lifecycle",
+          "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+          "category": "session lifecycle",
+          "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+          "core": true,
+          "definition": {
+            "name": "session.start",
+            "methodPath": [
+              "session",
+              "start"
+            ],
+            "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+            "category": "session lifecycle",
+            "underlying": "os session.start",
+            "capabilities": {
+              "readOnly": false,
+              "mutating": true,
+              "deterministic": false,
+              "safeToRetry": false
+            },
+            "defaultTimeout": 60000,
+            "inputSchema": "SessionStartInput",
+            "outputSchema": "RawOutput",
+            "command": {
+              "script": "session:start",
+              "branchMode": "none",
+              "arguments": [
+                {
+                  "source": "kind",
+                  "flag": "--kind",
+                  "kind": "value",
+                  "required": true
+                },
+                {
+                  "source": "path",
+                  "flag": "--path",
+                  "kind": "value"
+                },
+                {
+                  "source": "area",
+                  "flag": "--area",
+                  "kind": "value"
+                },
+                {
+                  "source": "stream",
+                  "flag": "--stream",
+                  "kind": "value"
+                },
+                {
+                  "source": "title",
+                  "flag": "--title",
+                  "kind": "value"
+                },
+                {
+                  "source": "workflow",
+                  "flag": "--workflow",
+                  "kind": "value"
+                },
+                {
+                  "source": "bodyFile",
+                  "flag": "--body-file",
+                  "kind": "value"
+                },
+                {
+                  "source": "startFrom",
+                  "flag": "--start-from",
+                  "kind": "value"
+                }
+              ],
+              "jsonFlag": "--json"
+            },
+            "exampleInput": {
+              "kind": "task",
+              "stream": "stream/workspace-agent",
+              "title": "example task",
+              "workflow": "task"
+            },
+            "sessionRequired": false,
+            "workflowRole": "task.start"
+          }
+        },
+        {
           "name": "stream.context",
           "kind": "facade-tool",
           "source": "stream",
@@ -841,7 +925,7 @@
           "source": "task-lifecycle",
           "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
           "category": "task lifecycle",
-          "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+          "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
           "core": true,
           "definition": {
             "name": "task.start",
@@ -849,7 +933,7 @@
               "task",
               "start"
             ],
-            "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+            "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
             "category": "task lifecycle",
             "underlying": "os task.start",
             "capabilities": {

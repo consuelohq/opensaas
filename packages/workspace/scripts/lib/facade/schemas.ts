@@ -291,6 +291,34 @@ export const FsTrashInput = z.object({
   path: z.string().min(1),
 });
 
+
+const SessionTaskStartInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  kind: z.literal('task'),
+  area: optionalString,
+  stream: optionalString,
+  title: optionalString,
+  workflow: z.enum(['task']).optional(),
+  bodyFile: optionalString,
+  startFrom: z.enum(['main', 'stream']).optional(),
+}).refine((input) => Boolean(input.area || input.stream), {
+  message: 'provide area or stream',
+  path: ['area'],
+});
+
+const SessionWorkStartInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  kind: z.literal('work'),
+  path: z.string().min(1),
+});
+
+export const SessionStartInput = z.union([
+  SessionTaskStartInput,
+  SessionWorkStartInput,
+]);
+
 export const TaskStartInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -1047,6 +1075,7 @@ export const schemaRegistry = {
   FsHttpInput,
   HttpInput: FsHttpInput,
   FsTrashInput,
+  SessionStartInput,
   TaskStartInput,
   TaskInitInput,
   TaskPushInput,

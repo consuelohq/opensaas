@@ -61,6 +61,11 @@ describe('session.start foundation', () => {
       methodPath: ['session', 'start'],
       inputSchema: 'SessionStartInput',
       sessionRequired: false,
+      workflowRole: 'task.start',
+      description: expect.stringMatching(/canonical/i),
+    });
+    expect(definitions.get('task.start')).toMatchObject({
+      description: expect.stringMatching(/compatibility alias/i),
     });
   });
 

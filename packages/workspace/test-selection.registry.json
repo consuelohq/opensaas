@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2640,
-    "mappedTestCount": 2555,
-    "unmappedTestCount": 85,
+    "testFileCount": 2642,
+    "mappedTestCount": 2556,
+    "unmappedTestCount": 86,
     "ruleCount": 61,
     "explicitRuleCount": 42,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 261,
+      "packages/os/tests": 262,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 63,
+      "packages/workspace/tests": 64,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 546,
+      "test": 548,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -724,6 +724,49 @@
       ],
       "critical": true,
       "reason": "Task routing and metadata changes must prove task-session behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "workspace-session-integration",
+      "source": [
+        "packages/os/tools/task-lifecycle/schema.ts",
+        "packages/os/hooks/task/**",
+        "packages/workspace/hooks/task/**",
+        "packages/os/skills/task/SKILL.md",
+        "packages/workspace/task.md",
+        "packages/workspace/senior-engineer.md",
+        "packages/os/steering/system_prompt.md",
+        "packages/workspace/scripts/session-start.ts",
+        "packages/workspace/tooling/tool-manifest.json",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/package.json",
+        "packages/os/tests/session-integration-guidance.test.ts",
+        "packages/os/tests/task-hook-workflow-contract.test.ts",
+        "packages/os/tests/task-hooks.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract.",
       "origin": "explicit"
     },
     {
@@ -1636,53 +1679,6 @@
       "critical": true,
       "exclusive": true,
       "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
-      "origin": "explicit"
-    },
-    {
-      "id": "os-internal-workspace-shell",
-      "source": [
-        "packages/os/scripts/lib/sites.ts",
-        "packages/os/scripts/lib/settings-site.ts",
-        "packages/os/scripts/lib/settings-snapshot.ts",
-        "packages/os/scripts/lib/settings-materialization.ts",
-        "packages/os/scripts/lib/workspace-chrome.ts",
-        "packages/os/scripts/lib/observability-traces-site.ts",
-        "packages/os/tests/settings-site.test.ts",
-        "packages/os/tests/launcher-nodes-materialization.test.ts",
-        "packages/os/tests/observability-traces-site.test.ts",
-        "packages/os/tests/sites-cli.test.ts",
-        "packages/os/tests/launcher-local-customization.test.ts",
-        "packages/os/tests/install-state.test.ts",
-        "packages/os/tests/local-agent-connectivity.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS internal workspace shell contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/settings-site.test.ts",
-            "tests/launcher-nodes-materialization.test.ts",
-            "tests/observability-traces-site.test.ts",
-            "tests/sites-cli.test.ts",
-            "tests/launcher-local-customization.test.ts",
-            "tests/install-state.test.ts",
-            "tests/local-agent-connectivity.test.ts"
-          ]
-        },
-        {
-          "name": "OS internal workspace shell syntax",
-          "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Nodes across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid without falling back to the broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -4741,6 +4737,11 @@
     },
     {
       "path": "packages/os/tests/senior-engineer-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/session-integration-guidance.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15680,6 +15681,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/session-start-compatibility.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/stream-lifecycle.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -15885,6 +15891,7 @@
     "packages/workspace/tests/review-documentation-opportunity.test.js",
     "packages/workspace/tests/review-generated-artifact-contract.test.js",
     "packages/workspace/tests/review-run-state.test.js",
+    "packages/workspace/tests/session-start-compatibility.test.ts",
     "packages/workspace/tests/stream-lifecycle.test.ts",
     "packages/workspace/tests/stream-sync-node-modules.test.js",
     "packages/workspace/tests/stream-workpads.test.js",

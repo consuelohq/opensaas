@@ -22,6 +22,8 @@ const SUBSCRIPTIONS = [
   { event: 'workflow.intent.task.detected', workflow: TASK_WORKFLOW_ID },
   { event: 'tool.preInvoke', workflow: TASK_WORKFLOW_ID, tool: 'stream.context' },
   { event: 'tool.postInvoke', workflow: TASK_WORKFLOW_ID, tool: 'stream.context' },
+  { event: 'tool.preInvoke', workflow: TASK_WORKFLOW_ID, tool: 'session.start' },
+  { event: 'tool.postInvoke', workflow: TASK_WORKFLOW_ID, tool: 'session.start' },
   { event: 'tool.preInvoke', workflow: TASK_WORKFLOW_ID, tool: 'task.start' },
   { event: 'tool.postInvoke', workflow: TASK_WORKFLOW_ID, tool: 'task.start' },
   { event: 'workflow.stage.ready', workflow: TASK_WORKFLOW_ID, stage: 'validation' },
@@ -32,8 +34,8 @@ const SUBSCRIPTIONS = [
 ];
 
 const DEFAULT_SKILL_ANCHORS = {
-  flow: 'stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish',
-  taskSession: 'For task-scoped work, task.start returns data.taskSession.',
+  flow: 'stream.context → session.start({ kind: \"task\" }) → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish',
+  taskSession: 'For task-scoped work, session.start({ kind: \"task\" }) returns data.taskSession. task.start remains a compatibility alias.',
   topLevelSession: 'Pass taskSession at the top level of every task-scoped workspace.call.',
   workpad: 'Every task must keep its task-local scoped workpad current enough for another agent to continue without chat history.',
   testFirst: 'Test-first contract requires a focused test or no-test waiver before implementation.',
@@ -58,11 +60,11 @@ function createTaskWorkflowHookRegistry(options = {}) {
     handle(event) {
       if (!isTaskWorkflowEvent(event)) return null;
 
-      if (event.event === 'tool.preInvoke' && event.tool === 'task.start') {
+      if (event.event === 'tool.preInvoke' && isTaskStartEvent(event)) {
         return handlePreTaskStart(event, resolver);
       }
 
-      if (event.event === 'tool.postInvoke' && event.tool === 'task.start') {
+      if (event.event === 'tool.postInvoke' && isTaskStartEvent(event)) {
         return handlePostTaskStart(event, resolver, anchors);
       }
 
@@ -118,6 +120,16 @@ function isTaskWorkflowEvent(event) {
   return Boolean(event && event.workflow === TASK_WORKFLOW_ID);
 }
 
+function isTaskStartEvent(event) {
+  if (!event) return false;
+  if (event.tool === 'task.start') return true;
+  if (event.tool !== 'session.start') return false;
+  const kind = event.input?.kind || event.state?.kind || event.state?.input?.kind;
+  if (event.event === 'tool.preInvoke') return kind === 'task';
+  const result = event.result || {};
+  return kind === 'task' || Boolean(result.taskSession || result.data?.taskSession);
+}
+
 function handlePreTaskStart(event, resolver) {
   const state = event.state || {};
   if (state.hasStreamContext === true) return null;
@@ -128,15 +140,15 @@ function handlePreTaskStart(event, resolver) {
     stage: 'stream-context',
     event: event.event,
     blockedAction: {
-      requestedTool: 'task.start',
+      requestedTool: event.tool,
       reason: 'Fresh stream context is required before starting a task when it has not already been gathered.',
     },
     requiredNextAction: resolver.action('stream.context', {
       input: { area },
     }),
     notes: [
-      'The task workflow is just-in-time: gather stream context first, then call task.start with an explicit startFrom value.',
-      'If fresh stream context is already present, task.start proceeds directly.',
+      'The task workflow is just-in-time: gather stream context first, then call session.start with kind=task and an explicit startFrom value.',
+      'task.start remains a compatibility alias for older callers.',
     ],
   };
 }
@@ -182,7 +194,7 @@ function handlePostTaskStart(event, resolver, anchors) {
     }),
     notes: [
       'Place taskSession at the top level of every task-scoped call.',
-      'task.start creates the task metadata and starter workpad; this required action appends the test-first contract instead of replacing the workpad.',
+      'session.start with kind=task creates the task metadata and starter workpad; task.start remains a compatibility alias.',
       'After the contract is recorded, use focused discovery and a red test/no-test waiver before production edits.',
     ],
   };

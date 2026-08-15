@@ -45,7 +45,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | sentry | 7 |
 | stream | 4 |
 | subagent | 1 |
-| task lifecycle | 13 |
+| task lifecycle | 14 |
 | tooling | 1 |
 | utilities | 34 |
 
@@ -3524,6 +3524,68 @@ await workspace.call({
 
 ## task lifecycle
 
+### workspace.session.start
+
+Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.
+
+| Field | Value |
+| --- | --- |
+| Category | task lifecycle |
+| Signature | `workspace.session.start(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace session.start` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "session.start",
+  "input": {
+    "kind": "task",
+    "area": "workspace-agents",
+    "title": "example task",
+    "workflow": "task"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ### workspace.task.call
 
 run a command inside a task worktree
@@ -4019,7 +4081,7 @@ merge task to stream and create or refresh the stream review PR
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.pr({ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.task.pr({ branch?: string; repo?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; ackWorkpadIncomplete?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace task.pr` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -4139,7 +4201,7 @@ push changed task files to the task branch through GitHub API
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.push({ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.task.push({ branch?: string; repo?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace task.push` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -4196,7 +4258,7 @@ await workspace.call({
 
 ### workspace.task.start
 
-Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.
+Compatibility alias for session.start({ kind: "task" }). Existing callers remain supported; new agents should prefer session.start for task creation.
 
 | Field | Value |
 | --- | --- |

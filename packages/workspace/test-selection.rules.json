@@ -81,6 +81,48 @@
       "reason": "Task routing and metadata changes must prove task-session behavior."
     },
     {
+      "id": "workspace-session-integration",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tools/task-lifecycle/schema.ts",
+        "packages/os/hooks/task/**",
+        "packages/workspace/hooks/task/**",
+        "packages/os/skills/task/SKILL.md",
+        "packages/workspace/task.md",
+        "packages/workspace/senior-engineer.md",
+        "packages/os/steering/system_prompt.md",
+        "packages/workspace/scripts/session-start.ts",
+        "packages/workspace/tooling/tool-manifest.json",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/package.json",
+        "packages/os/tests/session-integration-guidance.test.ts",
+        "packages/os/tests/task-hook-workflow-contract.test.ts",
+        "packages/os/tests/task-hooks.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts"
+          ]
+        }
+      ],
+      "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract."
+    },
+    {
       "id": "os-task-worktree-eviction",
       "critical": true,
       "exclusive": true,
@@ -968,52 +1010,6 @@
         }
       ],
       "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests."
-    },
-    {
-      "id": "os-internal-workspace-shell",
-      "critical": true,
-      "exclusive": true,
-      "source": [
-        "packages/os/scripts/lib/sites.ts",
-        "packages/os/scripts/lib/settings-site.ts",
-        "packages/os/scripts/lib/settings-snapshot.ts",
-        "packages/os/scripts/lib/settings-materialization.ts",
-        "packages/os/scripts/lib/workspace-chrome.ts",
-        "packages/os/scripts/lib/observability-traces-site.ts",
-        "packages/os/tests/settings-site.test.ts",
-        "packages/os/tests/launcher-nodes-materialization.test.ts",
-        "packages/os/tests/observability-traces-site.test.ts",
-        "packages/os/tests/sites-cli.test.ts",
-        "packages/os/tests/launcher-local-customization.test.ts",
-        "packages/os/tests/install-state.test.ts",
-        "packages/os/tests/local-agent-connectivity.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS internal workspace shell contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/settings-site.test.ts",
-            "tests/launcher-nodes-materialization.test.ts",
-            "tests/observability-traces-site.test.ts",
-            "tests/sites-cli.test.ts",
-            "tests/launcher-local-customization.test.ts",
-            "tests/install-state.test.ts",
-            "tests/local-agent-connectivity.test.ts"
-          ]
-        },
-        {
-          "name": "OS internal workspace shell syntax",
-          "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
-          ]
-        }
-      ],
-      "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Nodes across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid without falling back to the broad OS package suite."
     },
     {
       "id": "os-managed-cloud-one-click-provisioning",

@@ -149,6 +149,21 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).not.toContain('os-lifecycle-update-handoff');
   });
 
+  it('routes session integration changes to focused task/work compatibility tests', () => {
+    for (const changedFile of [
+      'packages/workspace/scripts/session-start.ts',
+      'packages/os/hooks/task/workflow.js',
+    ]) {
+      const result = run(['check', '--changed-file', changedFile, '--json']);
+      const data = json(result);
+      const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+      expect(matchedRuleIds).toContain('workspace-session-integration');
+      expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+        'workspace session integration contracts',
+      );
+    }
+  });
+
   it('routes work-session Code Call changes to focused authority tests', () => {
     const result = run([
       'check',
@@ -332,11 +347,12 @@ describe('test selection registry', () => {
 
     expect(matchedRuleIds).toContain('os-managed-cloud-one-click-provisioning');
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
-    expect(suiteNames).toContain('OS one-click managed cloud contracts');
-    expect(suiteNames.some((name) =>
-      name === 'OS one-click managed cloud syntax contracts'
-      || name === 'OS internal workspace shell syntax'
-    )).toBe(true);
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'OS one-click managed cloud contracts',
+        'OS one-click managed cloud syntax contracts',
+      ]),
+    );
   });
 
   it('uses focused managed-cloud checkout observability contracts instead of the broad OS package suite', () => {
@@ -928,42 +944,6 @@ describe('test selection registry', () => {
     expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
       'tests/finish-line-lifecycle-contract.test.ts',
       'tests/daemon-bun-path.test.ts',
-    ]));
-  });
-
-  it('routes internal workspace shell and root Sites changes through loud focused contracts', () => {
-    const data = json(run([
-      'check',
-      '--changed-file',
-      'packages/os/scripts/lib/sites.ts',
-      '--changed-file',
-      'packages/os/scripts/lib/settings-site.ts',
-      '--changed-file',
-      'packages/os/scripts/lib/workspace-chrome.ts',
-      '--changed-file',
-      'packages/os/scripts/lib/observability-traces-site.ts',
-      '--changed-file',
-      'packages/os/tests/launcher-nodes-materialization.test.ts',
-      '--json',
-    ]));
-
-    expect(data.matchedRules.map((rule) => rule.id)).toContain(
-      'os-internal-workspace-shell',
-    );
-    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
-      'auto:@consuelo/os:package-test',
-    );
-    const suite = data.selectedSuites.find(
-      (candidate) => candidate.ruleId === 'os-internal-workspace-shell'
-        && candidate.name === 'OS internal workspace shell contracts',
-    );
-    expect(suite?.critical).toBe(true);
-    expect(suite?.command).toEqual(expect.arrayContaining([
-      'tests/settings-site.test.ts',
-      'tests/launcher-nodes-materialization.test.ts',
-      'tests/observability-traces-site.test.ts',
-      'tests/sites-cli.test.ts',
-      'tests/launcher-local-customization.test.ts',
     ]));
   });
 
