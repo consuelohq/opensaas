@@ -578,6 +578,7 @@ async function main() {
       stream,
       taskBranch,
       worktreePath,
+      repoRoot,
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
     }, taskTmux.created);
@@ -598,6 +599,7 @@ async function main() {
       taskPrUrl: pullRequest.html_url,
       taskGraphitePrUrl: graphitePrUrl,
       worktreePath,
+      repoRoot,
       taskSession: taskSessionMeta.taskSession,
       tmuxSession: taskSessionMeta.tmuxSession,
       sessionPath: taskSessionMeta.sessionPath,

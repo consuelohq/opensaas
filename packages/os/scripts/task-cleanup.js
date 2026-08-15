@@ -21,6 +21,12 @@ const { resolveGitRoot } = require('./lib/paths');
 const { isStreamBranchName, isTaskBranchName } = require('./lib/validation');
 const { readTaskMeta } = require('./lib/task-meta');
 const { readTaskSessionMetadata, terminateTaskTmuxSession } = require('./lib/task-session');
+const { listDurableTaskSessionMetadata } = require('./lib/task-registry');
+const {
+  evictDurableTaskWorktree,
+  getTaskInactivityAgeMs,
+  inspectTaskWorktreeState,
+} = require('./lib/task-worktree-eviction');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -36,7 +42,7 @@ function printHelp() {
   writeStdout('options:');
   writeStdout('  --preview              preview removals without deleting anything');
   writeStdout('  --merged               remove local task branches already merged into their stream or main');
-  writeStdout('  --stale-days <n>       remove task worktrees older than n days');
+  writeStdout('  --stale-days <n>       safely evict durable task worktrees inactive for n days');
   writeStdout('  --force                pass --force when removing worktrees and branches');
   writeStdout('  --keep <branch>        keep a branch even if it matches cleanup rules (repeatable)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
@@ -195,6 +201,16 @@ function printResult(result, useJson) {
       writeStdout(`  - ${worktreePath}`);
     }
   }
+  if (result.evictedWorktrees.length > 0) {
+    writeStdout(result.preview ? 'worktrees to evict:' : 'evicted worktrees:');
+    for (const entry of result.evictedWorktrees) {
+      writeStdout(`  - ${entry.branch}: ${entry.path}${entry.recoveryRequired ? ' (recovery archive required)' : ''}`);
+    }
+  }
+  if (result.recoveryArchives.length > 0) {
+    writeStdout('recovery archives:');
+    for (const archivePath of result.recoveryArchives) writeStdout(`  - ${archivePath}`);
+  }
   if (result.removedBranches.length > 0) {
     writeStdout('removed branches:');
     for (const branch of result.removedBranches) {
@@ -255,12 +271,17 @@ async function main() {
   const result = {
     preview,
     removedWorktrees: [],
+    evictedWorktrees: [],
+    recoveryArchives: [],
     removedBranches: [],
     tmuxSessions: [],
     warnings: [],
     keptBranches: Array.from(keepBranches).sort(),
     skipped: [],
   };
+  const durableByBranch = new Map(
+    listDurableTaskSessionMetadata().map((metadata) => [metadata.taskBranch || metadata.branch, metadata]),
+  );
 
   for (const branch of localBranches) {
     if (!isTaskBranchName(branch)) {
@@ -273,9 +294,46 @@ async function main() {
 
     const worktree = getWorktreeForBranch(repoRoot, branch);
     const worktreePath = worktree && worktree.path;
+    const durable = durableByBranch.get(branch) || null;
 
     if (worktreePath && path.resolve(worktreePath) === path.resolve(currentWorktreePath)) {
       result.skipped.push({ branch, reason: 'current worktree' });
+      continue;
+    }
+
+    const staleOnly = args.staleDays !== undefined && !args.merged && !args.force;
+    if (staleOnly) {
+      if (!durable) {
+        result.skipped.push({ branch, reason: 'stale eviction requires durable task registry metadata' });
+        continue;
+      }
+      if (durable.status !== 'active') {
+        result.skipped.push({ branch, reason: `task session is ${durable.status}` });
+        continue;
+      }
+      if (!worktreePath || !fs.existsSync(worktreePath)) {
+        result.skipped.push({ branch, reason: 'task worktree is already absent' });
+        continue;
+      }
+      const inactiveDays = getTaskInactivityAgeMs(durable) / 86400000;
+      if (inactiveDays < args.staleDays) {
+        result.skipped.push({ branch, reason: `recent activity (${inactiveDays.toFixed(2)} days)` });
+        continue;
+      }
+      if (preview) {
+        const state = inspectTaskWorktreeState({ repoRoot, worktreePath, taskBranch: branch });
+        result.evictedWorktrees.push({
+          path: worktreePath,
+          branch,
+          taskSession: durable.taskSession,
+          preview: true,
+          recoveryRequired: state.needsRecovery,
+        });
+        continue;
+      }
+      const evicted = evictDurableTaskWorktree({ taskSession: durable.taskSession });
+      result.evictedWorktrees.push({ path: worktreePath, branch, taskSession: durable.taskSession });
+      if (evicted.recovery?.bundlePath) result.recoveryArchives.push(evicted.recovery.bundlePath);
       continue;
     }
 

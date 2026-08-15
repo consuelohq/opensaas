@@ -4,6 +4,7 @@ const path = require('path');
 const childProcess = require('child_process');
 const { getTaskSessionPath: getTaskSessionMetaPath, readTaskMeta } = require('./task-meta');
 const { readDurableTaskSessionMetadata, writeDurableTaskSessionMetadata } = require('./task-registry');
+const { restoreEvictedTaskWorktree } = require('./task-worktree-eviction');
 const { listWorktrees } = require('./git');
 
 const SESSION_FILENAME = 'session.json';
@@ -115,7 +116,7 @@ function ensureTmuxSession(tmuxSession, worktreePath, taskBranch) {
   return { created: true };
 }
 
-function buildTaskSessionMetadata({ area, stream, taskBranch, worktreePath, prNumber, prUrl }, tmuxCreated = false) {
+function buildTaskSessionMetadata({ area, stream, taskBranch, worktreePath, repoRoot, prNumber, prUrl }, tmuxCreated = false) {
   const taskSession = getTaskSessionHandle(taskBranch);
   const tmuxSession = getTmuxSessionName(area, taskBranch);
 
@@ -128,6 +129,7 @@ function buildTaskSessionMetadata({ area, stream, taskBranch, worktreePath, prNu
     branch: taskBranch,
     worktreePath,
     worktree: worktreePath,
+    ...(repoRoot ? { repoRoot } : {}),
     prNumber,
     prUrl,
     createdAt: new Date().toISOString(),
@@ -171,8 +173,19 @@ function validateDurableTaskSessionMetadata(taskSession, options = {}) {
   return { ...metadata, taskBranch, branch: taskBranch, worktreePath, worktree: worktreePath };
 }
 
-function recoverDurableTaskSession(taskSession) {
-  const metadata = validateDurableTaskSessionMetadata(taskSession);
+function recoverDurableTaskSession(taskSession, options = {}) {
+  let registered = readDurableTaskSessionMetadata(taskSession, options);
+  if (!registered) return null;
+  const registeredWorktreePath = registered.worktreePath || registered.worktree;
+  if (
+    registered.status === 'evicted'
+    || registered.status === 'evicting'
+    || !registeredWorktreePath
+    || !fs.existsSync(registeredWorktreePath)
+  ) {
+    registered = restoreEvictedTaskWorktree(taskSession, options);
+  }
+  const metadata = validateDurableTaskSessionMetadata(taskSession, options);
   if (!metadata) return null;
   const worktreePath = metadata.worktreePath || metadata.worktree;
   const taskBranch = metadata.taskBranch || metadata.branch;
@@ -190,7 +203,11 @@ function recoverDurableTaskSession(taskSession) {
     tmuxSession: tmux.tmuxSession,
     tmuxCreated: tmux.created,
   };
-  writeDurableTaskSessionMetadata(recovered);
+  writeDurableTaskSessionMetadata({
+    ...recovered,
+    status: 'active',
+    lastActiveAt: new Date().toISOString(),
+  }, options);
   return recovered;
 }
 

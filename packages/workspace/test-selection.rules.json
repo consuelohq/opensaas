@@ -54,9 +54,13 @@
         "packages/workspace/scripts/task-pr.js",
         "packages/workspace/scripts/task-finish.js",
         "packages/workspace/scripts/task-init.js",
+        "packages/workspace/scripts/task-cleanup.js",
+        "packages/workspace/scripts/lib/task-session.js",
         "packages/workspace/scripts/lib/task-selection*.js",
         "packages/workspace/scripts/lib/task-metadata*.js",
         "packages/workspace/scripts/lib/task-registry.js",
+        "packages/workspace/scripts/lib/task-worktree-eviction.js",
+        "packages/workspace/scripts/lib/task-worktree-gc.js",
         "packages/workspace/scripts/lib/paths.js"
       ],
       "tests": [
@@ -69,11 +73,54 @@
             "packages/workspace/tests/task-meta.test.ts",
             "packages/workspace/tests/task-init.test.js",
             "packages/workspace/tests/task-selection.test.js",
-            "packages/workspace/tests/durable-task-worktrees.test.ts"
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-worktree-eviction.test.ts"
           ]
         }
       ],
       "reason": "Task routing and metadata changes must prove task-session behavior."
+    },
+    {
+      "id": "os-task-worktree-eviction",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/task-start.js",
+        "packages/os/scripts/task-cleanup.js",
+        "packages/os/scripts/task-finish.js",
+        "packages/os/scripts/task-worktree-gc.js",
+        "packages/os/scripts/lib/task-registry.js",
+        "packages/os/scripts/lib/task-session.js",
+        "packages/os/scripts/lib/task-worktree-eviction.js",
+        "packages/os/scripts/lib/task-worktree-gc.js",
+        "packages/os/scripts/lib/task-worktree-gc-scheduler.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/server/supervisor.ts",
+        "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ]
+        },
+        {
+          "name": "task worktree eviction syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Durable task eviction, recovery archives, inactivity GC, supervisor scheduling, and facade recovery must prove reversible cleanup without selecting the unrelated package-wide OS baseline."
     },
     {
       "id": "workspace-test-selection",

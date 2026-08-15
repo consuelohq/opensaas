@@ -14,6 +14,11 @@ import {
   type WorkerSpec,
 } from '../lib/worker-pool';
 import { startWorkspaceNodeHeartbeatScheduler } from '../lib/workspace-node-heartbeat-scheduler';
+import {
+  DEFAULT_TASK_WORKTREE_GC_INTERVAL_MS,
+  startTaskWorktreeGcScheduler,
+  type TaskWorktreeGcScheduler,
+} from '../lib/task-worktree-gc-scheduler';
 import { sendWorkspaceNodeHeartbeatFromConfig } from '../workspace-node-heartbeat';
 
 const WORKER_READY_ATTEMPTS = 40;
@@ -217,6 +222,7 @@ if (import.meta.main) {
   const layout = resolveConsueloHomeLayout();
   const osRoot = path.resolve(import.meta.dir, '..', '..');
   const workerEntry = path.join(import.meta.dir, 'main.ts');
+  const taskWorktreeGcEntry = path.join(osRoot, 'scripts', 'task-worktree-gc.js');
   const snapshotPath = path.join(layout.nodeRunsDir, 'os-worker-pool.json');
   const orphanReclaimTimeoutMs = Number(
     process.env.CONSUELO_OS_ORPHAN_RECLAIM_TIMEOUT_MS
@@ -224,6 +230,13 @@ if (import.meta.main) {
   );
   if (!Number.isInteger(orphanReclaimTimeoutMs) || orphanReclaimTimeoutMs < 1) {
     throw new Error('CONSUELO_OS_ORPHAN_RECLAIM_TIMEOUT_MS must be a positive integer');
+  }
+  const taskWorktreeGcIntervalMs = Number(
+    process.env.CONSUELO_TASK_WORKTREE_GC_INTERVAL_MS
+      ?? DEFAULT_TASK_WORKTREE_GC_INTERVAL_MS,
+  );
+  if (!Number.isInteger(taskWorktreeGcIntervalMs) || taskWorktreeGcIntervalMs < 1) {
+    throw new Error('CONSUELO_TASK_WORKTREE_GC_INTERVAL_MS must be a positive integer');
   }
   mkdirSync(layout.nodeRunsDir, { recursive: true, mode: 0o700 });
   await reclaimOrphanedWorkers(snapshotPath, orphanReclaimTimeoutMs);
@@ -288,9 +301,36 @@ if (import.meta.main) {
       })
     : undefined;
 
+  let taskWorktreeGcScheduler: TaskWorktreeGcScheduler | undefined;
   try {
     await pool.start();
+    taskWorktreeGcScheduler = startTaskWorktreeGcScheduler({
+      intervalMs: taskWorktreeGcIntervalMs,
+      async run() {
+        try {
+          const subprocess = Bun.spawn([process.execPath, taskWorktreeGcEntry], {
+            cwd: osRoot,
+            env: { ...process.env },
+            stdin: 'ignore',
+            stdout: 'ignore',
+            stderr: 'inherit',
+          });
+          const exitCode = await subprocess.exited;
+          if (exitCode !== 0) {
+            throw new Error(`task worktree GC exited ${exitCode}`);
+          }
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : String(error);
+          throw new Error(`task worktree GC process failed: ${message}`, { cause: error });
+        }
+      },
+      onError(error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`[Consuelo OS] ${message}\n`);
+      },
+    });
   } catch (error: unknown) {
+    taskWorktreeGcScheduler?.stop();
     await pool.stop();
     heartbeatScheduler?.stop();
     await lifecycleEndpoint?.close();
@@ -321,6 +361,11 @@ if (import.meta.main) {
     closing = true;
     if (process.platform !== 'win32') process.off('SIGUSR2', requestRollingReload);
     let failure: unknown;
+    try {
+      taskWorktreeGcScheduler?.stop();
+    } catch (error: unknown) {
+      failure = error;
+    }
     try {
       await pool.stop();
     } catch (error: unknown) {
