@@ -3,11 +3,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
-import {
-  renderWorkspaceChromeBar,
-  workspaceChromeClientScript,
-  workspaceRouteSwitcherStyles,
-} from './workspace-chrome';
 
 const canonicalAssetDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -21,13 +16,9 @@ const productionHistoryTransport = `<script id="consuelo-trace-history-transport
 (()=>{const historyRoute='/gateway/traces/recent';const snapshotRoute='/trace-burn-intelligence/live-traces.json';const snapshotUrl=historyRoute+'?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true';const allowed=(url)=>url===snapshotRoute||url===historyRoute||url.startsWith(historyRoute+'?');window.__consueloTraceHistoryTransport={fetchJson(url){if(!allowed(url))return Promise.reject(new Error('Trace history route is not allowed.'));const requestUrl=url===snapshotRoute?snapshotUrl:url;return fetch(requestUrl,{cache:'no-store',credentials:'same-origin',headers:{accept:'application/json'}}).then(response=>response.json().then(payload=>{if(!response.ok||payload?.ok===false)throw new Error(payload?.error?.message||'Trace history request failed.');return url===snapshotRoute?(payload?.data??{rows:[],failures:[]}):payload;}));}};})();
 </script>`;
 
-const workspaceNavigation = `<script id="consuelo-trace-workspace-navigation">
-${workspaceChromeClientScript().replaceAll('</script', '<\/script')}
+const launcherNavigation = `<script id="consuelo-trace-launcher-navigation">
+(()=>{const close=document.querySelector('button[data-close-traces]');if(!close)return;close.addEventListener('click',()=>{location.assign('/');});})();
 </script>`;
-
-const workspaceRouteStyle = `<style id="consuelo-workspace-route-switcher">
-${workspaceRouteSwitcherStyles().replaceAll('</style', '<\/style')}
-</style>`;
 
 const nodeObservabilityStyle = `<style id="consuelo-trace-node-observability">
 #tbmLiveTraceModal .trxNode{min-width:0;display:flex;flex-direction:column;gap:2px;overflow:hidden}
@@ -386,15 +377,8 @@ export function buildObservabilityTracesSite(): string {
   html = replaceExactlyOnce(
     html,
     /<\/head>/i,
-    `${nodeObservabilityStyle}${workspaceRouteStyle}${privateWorkspaceSessionRecovery}</head>`,
+    `${nodeObservabilityStyle}${privateWorkspaceSessionRecovery}</head>`,
     'document head close',
-  );
-
-  html = replaceExactlyOnce(
-    html,
-    /<div class="trxChrome">\s*<div class="trxDots">[\s\S]*?<div class="trxChromeActions">[\s\S]*?<\/div>\s*<\/div>\s*<div class="trxBody">/i,
-    `${renderWorkspaceChromeBar('tracing', 'Tracing')} <div class="trxBody">`,
-    'workspace chrome',
   );
 
   html = replaceExactlyOnce(
@@ -441,7 +425,7 @@ export function buildObservabilityTracesSite(): string {
   html = replaceExactlyOnce(
     html,
     /<\/body>/i,
-    `${workspaceNavigation}</body>`,
+    `${launcherNavigation}</body>`,
     'document body close',
   );
 

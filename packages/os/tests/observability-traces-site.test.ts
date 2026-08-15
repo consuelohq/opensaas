@@ -40,13 +40,6 @@ describe('Observability Traces canonical Trace Burn surface', () => {
       '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Session</div><div>Node</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     );
     expect(html).toContain('consuelo-trace-node-observability');
-    expect(html).toContain('data-workspace-route-trigger');
-    expect(html).toContain('aria-label="Workspace routes"');
-    expect(html).toContain('aria-current="page" href="/tracing"');
-    expect(html).toContain('href="/nodes"');
-    expect(html).toContain('href="/tools"');
-    expect(html).toContain('href="/configuration"');
-    expect(html).toContain('href="/secrets"');
     expect(html).not.toContain('<div>Machine</div>');
 
     expect(html).not.toContain('Live tracing cockpit');

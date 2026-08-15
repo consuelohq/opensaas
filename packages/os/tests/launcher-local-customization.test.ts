@@ -21,8 +21,8 @@ afterEach(() => {
   rmSync(home, { recursive: true, force: true });
 });
 
-describe('workspace root isolation from legacy launcher customization', () => {
-  it('never lets legacy launcher extra sections replace the Nodes workspace root', () => {
+describe('launcher local customization', () => {
+  it('materializes extra sections from the durable global YAML overlay', () => {
     writeFileSync(
       join(home, 'consuelo.yaml'),
       [
@@ -46,14 +46,12 @@ describe('workspace root isolation from legacy launcher customization', () => {
     });
 
     const html = readFileSync(join(home, 'sites', 'index.html'), 'utf8');
-    expect(html).toContain('<title>Nodes - Consuelo OS</title>');
-    expect(html).toContain('data-workspace-shell');
-    expect(html).toContain('<h1>Nodes</h1>');
-    expect(html).not.toContain('<h2 class="section-title">Internal</h2>');
-    expect(html).not.toContain('href="https://internal.consuelohq.com/users"');
+    expect(html).toContain('<h2 class="section-title">Internal</h2>');
+    expect(html).toContain('href="https://internal.consuelohq.com/users"');
+    expect(html).toContain('Users &amp; installs');
   });
 
-  it('keeps the Nodes workspace root stable when no launcher overlay exists', () => {
+  it('keeps the stock launcher unchanged when no overlay exists', () => {
     writeFileSync(
       join(home, 'consuelo.yaml'),
       [
@@ -74,9 +72,8 @@ describe('workspace root isolation from legacy launcher customization', () => {
     });
 
     const html = readFileSync(join(home, 'sites', 'index.html'), 'utf8');
-    expect(html).toContain('<title>Nodes - Consuelo OS</title>');
-    expect(html).toContain('data-workspace-route-trigger');
-    expect(html).not.toContain('Welcome to Consuelo OS');
+    expect(html).toContain('<h2 class="section-title">Sites</h2>');
+    expect(html).toContain('<h2 class="section-title">Guides and Tips</h2>');
     expect(html).not.toContain('<h2 class="section-title">Internal</h2>');
     expect(html).not.toContain('https://internal.consuelohq.com/users');
   });
