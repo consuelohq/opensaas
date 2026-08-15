@@ -18,6 +18,7 @@ import { registerMigrate } from './commands/migrate.js';
 import { registerOs } from './commands/os.js';
 import { registerSkillCommands } from './commands/skills.js';
 import { registerUpdate } from './commands/update.js';
+import { registerLogin } from './commands/login.js';
 import { analyticsCommand } from './commands/analytics.js';
 import { statusCommand, registerStatus } from './commands/status.js';
 import { loadConfig } from './config.js';
@@ -126,6 +127,7 @@ registerStatus(program);
 registerOs(program);
 registerSkillCommands(program);
 registerUpdate(program);
+registerLogin(program);
 
 // twenty-sdk platform commands (auth, app, entity, function)
 try {
