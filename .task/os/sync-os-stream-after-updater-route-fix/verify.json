@@ -4,10 +4,10 @@
   "mode": "full",
   "branch": "task/os/sync-os-stream-after-updater-route-fix",
   "base": "origin/stream/os",
-  "headSha": "8a72fd91de1b5096245e23d3b8dffcd76c3c5a1d",
-  "changeHash": "1c33beec20256a032fa11cfe206aa5daa657eb6f3aeb7eff07286363aaa20a0a",
+  "headSha": "6d32824681b46e05870b5b47e6001ff2b3338b6e",
+  "changeHash": "ddd9a9cc96de0cd59dca4d44cc7ec9cc6a02388859cc3251d35db119e9eb9a57",
   "changedFiles": [],
-  "verifiedAt": "2026-08-15T08:38:17.289Z",
+  "verifiedAt": "2026-08-15T08:41:38.041Z",
   "review": {
     "skipped": false,
     "passed": true,

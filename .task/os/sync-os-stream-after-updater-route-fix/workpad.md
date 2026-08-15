@@ -37,6 +37,8 @@ started: 2026-08-15
 - 2026-08-15 08:37:20 `verify`: passed — OK
 - 2026-08-15 08:37:24 `verify`: passed — OK
 - 2026-08-15 08:38:17 `verify`: passed — OK
+- 2026-08-15 08:41:38 `verify`: passed — OK
+- 2026-08-15 08:41:38 `verify`: passed — OK
 
 ## key decisions
 
