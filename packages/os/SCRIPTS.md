@@ -470,7 +470,7 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### explore — repo exploration retrieval
 
-builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semantic-index/<repoHash>/`, then retrieves candidates through independent semantic and lexical/exact channels before graph expansion. Candidate channels are fused by reciprocal rank rather than treating incomparable raw scores as one scale; a conservative MMR pass reduces redundant same-role results while preserving complementary implementation/dependency/test context. Explicit path scopes such as `Within packages/os/scripts/lib/search, ...` are hard retrieval boundaries. Explore still writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; retrieval evidence is a prior, not proof.
+builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semantic-index/<repoHash>/`, then retrieves candidates through independent semantic and lexical/exact channels before graph expansion. Candidate channels are fused by reciprocal rank rather than treating incomparable raw scores as one scale; a conservative MMR pass reduces redundant same-role results while preserving complementary implementation/dependency/test context. Explicit path scopes such as `Within packages/os/scripts/lib/search, ...` are hard retrieval boundaries. Explore still writes an `explore.result` evidence event and initializes `.task/explore-state.json` dependency hypotheses. Rank support is fitted from the curated ExploreBench corpus with Jeffreys-smoothed rank bins and remains explicitly provisional until the independent benchmark corpus is large enough for calibration review. Retrieval narrows the investigation; it is not proof.
 
 Semantic retrieval uses Qwen3-Embedding-4B through the Consuelo hosted embedding gateway by default. If query embedding is temporarily unavailable, Explore continues with lexical/exact retrieval and graph expansion instead of failing the whole request. Graph-only candidates do not inherit a synthetic embedding score from their parent, so missing semantic evidence stays missing rather than being fabricated.
 
@@ -492,7 +492,7 @@ CONSUELO_EMBEDDING_GATEWAY_URL=https://gateway.consuelohq.com/v1/os/semantic-emb
 CONSUELO_EMBEDDING_PROVIDER=openrouter CONSUELO_OPENROUTER_API_KEY=... bun run explore -- "query"
 ```
 
-Structured Explore output is compact by default so agents receive the ranked ownership/dependency packet without paying for scoring internals and the complete graph frontier. Compact results preserve result order, symbols/lines, rationale, evidence state, information value, and up to three typed dependency edges plus the full connection count. The rich payload is still written to Explore state/evidence. Use `--detail full` only when debugging ranking, graph, or scoring internals.
+Structured Explore output is compact by default so agents receive the ranked ownership/dependency packet without paying for scoring internals and the complete graph frontier. Compact results preserve result order, symbols/lines, rationale, evidence state, provisional retrieval support, calibration status, and up to three typed dependency edges plus the full connection count. The rich payload is still written to Explore state/evidence. Use `--detail full` only when debugging ranking, graph, or scoring internals.
 
 ```bash
 bun run explore -- "how does the dialer queue work?"
@@ -533,7 +533,7 @@ Benchmark labels live in `packages/os/explore-bench/cases.v1.json`. Treat report
 
 ### decide-next — next action from evidence
 
-reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `$CONSUELO_HOME/cache/semantic-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
+reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `$CONSUELO_HOME/cache/semantic-index/`, updates dependency hypotheses from explicit relevance evidence, then recommends the next unread root/dependency from the strongest hypothesis. plain file reads record coverage only. test/verify/runtime outcomes affect readiness, not file relevance. it writes a `decision.taken` evidence event and recommends `exploit` only when the hypothesis has enough observed dependency coverage to choose an edit target.
 
 ```bash
 bun run decide-next
@@ -546,9 +546,9 @@ bun run decide-next -- --json
 
 ---
 
-### confidence-score — evidence confidence
+### confidence-score — investigation readiness
 
-scores the current path from evidence events: reads, posterior belief updates, connected files actually visited, verify/test/runtime results, and contradictions. Qwen candidates, graph expansion, and test existence are reported as starting state, not `evidence_for`; cold start confidence stays low because retrieval is only a prior.
+reports categorical investigation readiness from dependency-hypothesis coverage, explicit relevance labels, verify/test/runtime results, and contradictions. the tool name remains `confidenceScore` for compatibility, but its output is readiness, not a probability. plain reads increase coverage only. retrieval support is reported with its calibration status and never described as a posterior.
 
 ```bash
 bun run confidence-score
@@ -559,7 +559,7 @@ bun run confidence-score -- --json
 
 ### exploit — commit to an editing path
 
-selects the highest-confidence file from explore state, emits line ranges and context files, marks the state as exploiting, and writes a `decision.taken` evidence event.
+selects the strongest supported dependency-hypothesis root from explore state, emits line ranges and context files from that subgraph, marks the state as exploiting, and writes a `decision.taken` evidence event. an explicit `--target` still overrides the hypothesis root.
 
 ```bash
 bun run exploit

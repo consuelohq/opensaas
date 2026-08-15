@@ -12,7 +12,8 @@ const { formatExploreOutput } = require('../scripts/lib/search/explore-output.js
 type RichExploreResult = {
   path: string;
   score: number;
-  belief_prior: number;
+  retrieval_support: number;
+  calibration_status: string;
   symbol: string;
   chunk_type: string;
   file_outline: string;
@@ -25,7 +26,6 @@ type RichExploreResult = {
   package: string;
   changed_in_branch: boolean;
   evidence_state: string | null;
-  information_value: number;
   reason: string;
   preview: string;
   graph_connections: string[];
@@ -58,7 +58,8 @@ function richPayload(): RichExplorePayload {
     return {
       path,
       score: 0.92 - (index * 0.04),
-      belief_prior: 0.75 - (index * 0.03),
+      retrieval_support: index === 0 ? 0.8636 : 0.325,
+      calibration_status: 'provisional',
       symbol: `exampleSymbol${index}`,
       chunk_type: index % 2 === 0 ? 'function' : 'class',
       file_outline: Array.from({ length: 12 }, (_, outlineIndex) => `Symbol${index}_${outlineIndex}`).join(' '),
@@ -75,7 +76,6 @@ function richPayload(): RichExplorePayload {
       package: 'os',
       changed_in_branch: index === 0,
       evidence_state: index === 0 ? 'read' : null,
-      information_value: 0.82 - (index * 0.03),
       reason: `hybrid match: ${index % 2 === 0 ? 'function' : 'class'} exampleSymbol${index}`,
       preview: `export function exampleSymbol${index}() { ${'return dependencyAwareValue; '.repeat(18)} }`,
       graph_connections: graphConnections,
@@ -141,7 +141,8 @@ describe('Explore compact response contract', () => {
       lines: rich.results[0].lines,
       reason: rich.results[0].reason,
       evidence_state: rich.results[0].evidence_state,
-      information_value: rich.results[0].information_value,
+      retrieval_support: rich.results[0].retrieval_support,
+      calibration_status: 'provisional',
       has_test: true,
       changed_in_branch: true,
       is_implementation: true,
@@ -151,7 +152,7 @@ describe('Explore compact response contract', () => {
     expect(first.connections).toEqual(rich.results[0].typed_edges.slice(0, 3).map(({ path, type }) => ({ path, type })));
     expect(first.preview.length).toBeLessThanOrEqual(240);
 
-    for (const diagnosticField of ['typed_edges', 'score_parts', 'file_outline', 'file_size', 'chunk_count', 'last_modified', 'graph_connections', 'belief_prior', 'package']) {
+    for (const diagnosticField of ['typed_edges', 'score_parts', 'file_outline', 'file_size', 'chunk_count', 'last_modified', 'graph_connections', 'package']) {
       expect(first).not.toHaveProperty(diagnosticField);
     }
     expect(rich).toEqual(before);

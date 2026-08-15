@@ -9,10 +9,12 @@ const {
   readEvidenceLog,
 } = require('./lib/state/evidence-log');
 const {
-  buildBeliefsFromResults,
+  buildInvestigationHypotheses,
   readExploreState,
   writeExploreState,
 } = require('./lib/state/explore-state');
+const calibration = require('./lib/state/explore-calibration.v1.json');
+const { getRankSupport } = require('./lib/state/explore-hypothesis-model');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -110,15 +112,6 @@ function isTestPath(filePath) {
   return /\.(test|spec)\.[jt]sx?$/.test(filePath) || filePath.includes('__tests__');
 }
 
-function computeInformationValue(result, beliefs) {
-  const posterior = Math.max(0, Math.min(1,
-    beliefs[result.path]?.posterior ?? result.belief_prior ?? result.score ?? 0.45));
-  const uncertainty = 1 - Math.abs((2 * posterior) - 1);
-  const reachNorm = Math.min(1, (result.graph_connection_count || 0) / 10);
-  const testBonus = isTestPath(result.path) ? 1.5 : 1;
-  return Number((uncertainty * (1 + reachNorm) * testBonus).toFixed(4));
-}
-
 function buildEvidenceStateMap(repoRoot) {
   const stateMap = new Map();
   try {
@@ -141,17 +134,9 @@ function buildEvidenceStateMap(repoRoot) {
 }
 
 function toJsonResult(args, results, indexResult) {
-  const maxRawScore = Math.max(
-    ...results.map((result) => result.scoreParts?.rawScore || result.score || 0),
-    0,
-  );
-
   const evidenceState = buildEvidenceStateMap(indexResult.repoRoot);
 
-  const enrichedResults = results.map((result) => {
-    const beliefPrior = maxRawScore > 0
-      ? Number((0.30 + (0.45 * ((result.scoreParts?.rawScore || result.score || 0) / maxRawScore))).toFixed(4))
-      : Number(result.score.toFixed(4));
+  const enrichedResults = results.map((result, index) => {
 
     const typedEdges = (result.edges || []).map((edge) => ({
       path: edge.sourcePath === result.path ? edge.targetPath : edge.sourcePath,
@@ -162,7 +147,8 @@ function toJsonResult(args, results, indexResult) {
     const base = {
       path: result.path,
       score: Number(result.score.toFixed(4)),
-      belief_prior: beliefPrior,
+      retrieval_support: Number(getRankSupport(index + 1, calibration).toFixed(4)),
+      calibration_status: calibration.status,
       symbol: result.bestChunkName || null,
       chunk_type: result.bestChunkType || null,
       file_outline: result.implementationNames || null,
@@ -175,7 +161,6 @@ function toJsonResult(args, results, indexResult) {
       package: getPackage(result.path),
       changed_in_branch: Boolean(result.changedInBranch),
       evidence_state: evidenceState.get(result.path) || null,
-      information_value: null,
       reason: result.reason,
       preview: result.preview,
       graph_connections: Array.from(new Set(result.graphConnections || [])),
@@ -189,11 +174,6 @@ function toJsonResult(args, results, indexResult) {
 
     return base;
   });
-
-  const beliefs = buildBeliefsFromResults(enrichedResults, {});
-  for (const result of enrichedResults) {
-    result.information_value = computeInformationValue(result, beliefs);
-  }
 
   return {
     query: args.question,
@@ -267,14 +247,14 @@ async function main() {
   }
   const payload = toJsonResult(args, results, indexResult);
   const previousState = readExploreState(indexResult.repoRoot) || {};
-  const shouldPreserveBeliefs = previousState.query === args.question && previousState.belief_version === 2;
-  const beliefs = buildBeliefsFromResults(payload.results, shouldPreserveBeliefs ? previousState.beliefs : {});
+  const shouldPreserveHypotheses = previousState.query === args.question && previousState.hypothesis_version === 1;
+  const hypotheses = buildInvestigationHypotheses(payload.results, shouldPreserveHypotheses ? previousState.hypotheses : []);
 
   const statePath = writeExploreState(indexResult.repoRoot, {
     ...payload,
-    belief_version: 2,
-    beliefs,
-    belief_event_ids: shouldPreserveBeliefs ? previousState.belief_event_ids || [] : [],
+    hypothesis_version: 1,
+    hypotheses,
+    hypothesis_event_ids: shouldPreserveHypotheses ? previousState.hypothesis_event_ids || [] : [],
     branch: indexResult.branch,
     mode: 'exploring',
     worktree_id: indexResult.worktreeId,

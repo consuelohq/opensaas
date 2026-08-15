@@ -61,7 +61,7 @@ export const toolSchemas = [
       "methodPath": [
         "confidenceScore"
       ],
-      "description": "score confidence from evidence state",
+      "description": "report investigation readiness from hypothesis coverage and validation evidence",
       "category": "decision engine",
       "underlying": "workspace confidenceScore",
       "capabilities": {
@@ -137,7 +137,7 @@ export const toolSchemas = [
       "methodPath": [
         "decideNext"
       ],
-      "description": "recommend the next action from evidence state",
+      "description": "recommend the next evidence action from hypothesis support and readiness",
       "category": "decision engine",
       "underlying": "workspace decideNext",
       "capabilities": {
@@ -174,7 +174,7 @@ export const toolSchemas = [
       "methodPath": [
         "exploit"
       ],
-      "description": "select the highest-confidence editing target",
+      "description": "select the strongest supported dependency hypothesis as the editing target",
       "category": "decision engine",
       "underlying": "workspace exploit",
       "capabilities": {

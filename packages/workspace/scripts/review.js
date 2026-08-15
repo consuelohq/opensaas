@@ -251,7 +251,10 @@ function isLoggerFile(f) {
 }
 
 function isReviewSelfFile(f) {
-  return f === 'packages/workspace/scripts/review.js' || f === 'packages/workspace/scripts/ai-review.js';
+  return f === 'packages/workspace/scripts/review.js'
+    || f === 'packages/workspace/scripts/ai-review.js'
+    || f === 'packages/os/scripts/review.js'
+    || f === 'packages/os/scripts/ai-review.js';
 }
 
 function checkLogging(file, lines) {
