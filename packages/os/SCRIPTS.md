@@ -474,7 +474,11 @@ builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semant
 
 Semantic retrieval uses Qwen3-Embedding-4B through the Consuelo hosted embedding gateway by default. If query embedding is temporarily unavailable, Explore continues with lexical/exact retrieval and graph expansion instead of failing the whole request. Graph-only candidates do not inherit a synthetic embedding score from their parent, so missing semantic evidence stays missing rather than being fabricated.
 
-The default OS path does not require a user OpenRouter key or a local GGUF model. Raw chunks are sent only to the configured Consuelo embedding gateway for vector generation; vectors and graph/index state remain local in the repo-scoped semantic index DB. Offline users can opt into local embeddings explicitly:
+The default OS path does not require a user OpenRouter key or a local GGUF model. Consuelo currently provides the hosted embedding path as part of Explore. Raw chunks are sent only to the configured Consuelo embedding gateway for vector generation; vectors and graph/index state remain local in the repo-scoped semantic index DB. The shared provider credential stays in the Cloudflare worker and is never delivered to the client.
+
+`gateway.consuelohq.com/v1/os/semantic-embeddings` is a platform-global route, not a workspace hostname. It bypasses workspace routing and accepts only the fixed Qwen3-Embedding-4B contract used by Explore: POST only, at most 32 items, 4,000 characters per item, and 128,000 characters total. The worker cannot proxy chat/completion requests or arbitrary OpenRouter models. Cloudflare applies a 600 requests/minute pseudonymous-install ceiling plus a 1,200 requests/minute IP abuse ceiling before any provider request is made. Interactive installs reuse a private `ins_<uuid>` stored at `$CONSUELO_HOME/node/identity/install-id` when an installer-provided ID is not already available.
+
+Offline users can opt into local embeddings explicitly:
 
 ```bash
 CONSUELO_EMBEDDING_PROVIDER=local bun run explore -- "how does the dialer queue work?"
@@ -505,7 +509,7 @@ bad: sqlite-vec could not be loaded
  → use the root script, which sets Homebrew SQLite on DYLD_LIBRARY_PATH for macOS extension loading.
 
 bad: embedding gateway failed
- → hosted embedding generation is unavailable, over quota, or misconfigured. Explore continues on lexical/exact + graph retrieval for the current query; check CONSUELO_EMBEDDING_GATEWAY_URL or use CONSUELO_EMBEDDING_PROVIDER=local when semantic retrieval is required offline.
+ → hosted embedding generation is unavailable, rate-limited, or misconfigured. Explore continues on lexical/exact + graph retrieval for the current query; check the platform-global embedding gateway or use CONSUELO_EMBEDDING_PROVIDER=local when semantic retrieval is required offline. `WORKSPACE_HOSTNAME_NOT_FOUND` is never an expected response from the embedding route.
 
 bad: embedding model not found
  → local mode was explicitly selected and the expected model is missing under $CONSUELO_HOME/models/ or CONSUELO_EMBEDDING_MODEL_PATH.

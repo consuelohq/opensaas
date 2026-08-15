@@ -4091,6 +4091,7 @@
         "outputSchema": "RawOutput",
         "command": {
           "script": "explore",
+          "executionScope": "runtime",
           "branchMode": "none",
           "jsonFlag": "--json",
           "arguments": [
