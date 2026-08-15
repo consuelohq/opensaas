@@ -255,10 +255,16 @@ function createCapturedWorkspaceConnectorProvisioner(): CapturedWorkspaceConnect
 
 async function seedGoogleAccountWorkspace(
   store: ReturnType<typeof createMemoryDeviceGrantStore>,
-  input: { workspaceSlug: string; workspaceHost: string; homeNodeId?: string },
+  input: {
+    workspaceId?: string;
+    workspaceSlug: string;
+    workspaceHost: string;
+    homeNodeId?: string;
+  },
 ): Promise<void> {
   await store.putAccountWorkspace({
     accountId: 'google:google-sub-123',
+    ...(input.workspaceId ? { workspaceId: input.workspaceId } : {}),
     workspaceSlug: input.workspaceSlug,
     workspaceHost: input.workspaceHost,
     ...(input.homeNodeId ? { homeNodeId: input.homeNodeId } : {}),
@@ -669,8 +675,21 @@ describe('os device authority worker', () => {
     const store = createMemoryDeviceGrantStore();
     const clientId =
       'https://chatgpt.com/oauth/consuelo-test-client/client.json';
+    const workspaceSlug = 'dynamic-' + crypto.randomUUID().slice(0, 8);
+    const workspaceHost = workspaceSlug + '.consuelohq.com';
+    const workspaceId = `workspace_${workspaceSlug.replace(/-/g, '_')}`;
+    const resource = 'https://' + workspaceHost + '/mcp';
+    await seedGoogleAccountWorkspace(store, {
+      workspaceId,
+      workspaceSlug,
+      workspaceHost,
+    });
+    const installControlPlaneRepository = await createVerifiedCanonicalDirectory({
+      workspaceId,
+    });
     const handler = createOsDeviceAuthorityHandler({
       store,
+      installControlPlaneRepository,
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -697,10 +716,6 @@ describe('os device authority worker', () => {
     );
     const redirectUri =
       'https://chatgpt.com/connector/oauth/consuelo-test-client';
-    const workspaceSlug = 'dynamic-' + crypto.randomUUID().slice(0, 8);
-    const workspaceHost = workspaceSlug + '.consuelohq.com';
-    const resource = 'https://' + workspaceHost + '/mcp';
-    await seedGoogleAccountWorkspace(store, { workspaceSlug, workspaceHost });
 
     const authorize = await handler(
       new Request(
