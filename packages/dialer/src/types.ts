@@ -418,13 +418,15 @@ export type StoppingThreshold = {
   attemptNumber: number;
   answerProbability: number;
   expectedValue: number;
+  decisionProbability: number;
+  decisionExpectedValue: number;
   shouldStop: boolean;
 };
 
 export type StoppingModelStore = {
   getAnswerProbabilities(
     segmentId: string,
-  ): Promise<{ attemptNumber: number; probability: number }[]>;
+  ): Promise<AttemptAnswerProbability[]>;
   getWorkspaceEconomics(workspaceId: string): Promise<WorkspaceDialerEconomics>;
 };
 
@@ -433,9 +435,38 @@ export type WorkspaceDialerEconomics = {
   costPerAttempt: number;
 };
 
+export type BernoulliEstimate = {
+  successes: number;
+  trials: number;
+  probability: number;
+  lowerBound: number;
+  upperBound: number;
+};
+
 export type AttemptAnswerProbability = {
   attemptNumber: number;
   probability: number;
+  successes?: number;
+  trials?: number;
+  lowerBound?: number;
+  upperBound?: number;
+};
+
+export type PredictivePriorityInput = {
+  answerProbability: number;
+  answerProbabilityUpperBound?: number;
+  valuePerConnection: number;
+  costPerAttempt: number;
+};
+
+export type PredictivePriorityResult = {
+  score: number;
+  components: {
+    expectedReward: number;
+    optimisticReward: number;
+    uncertaintyBonus: number;
+    cost: number;
+  };
 };
 
 export type WhittleIndexInput = {
@@ -481,6 +512,10 @@ export type HazardEstimate = {
   attemptNumber: number;
   answerRate: number;
   sampleSize: number;
+  successes?: number;
+  trials?: number;
+  lowerBound?: number;
+  upperBound?: number;
 };
 
 export type TimingModelStore = {
@@ -522,7 +557,7 @@ export type PredictiveSelectionCandidate = {
 
 export type PredictiveSelectionInput = PredictiveModelQuery & {
   localTimezone: string;
-  callableWindowEndHour: number;
+  callableWindowEndHour?: number;
   evaluatedAt?: Date;
   candidates: PredictiveSelectionCandidate[];
 };
@@ -536,10 +571,9 @@ export type PredictiveRankedCandidate = {
   contactId: string;
   position: number;
   nextAttemptNumber: number;
-  index: number;
-  components: WhittleIndexResult['components'];
+  score: number;
+  components: PredictivePriorityResult['components'];
   hazardSource: PredictiveHazardSource;
-  staleDecayFactor: number;
 };
 
 export type PredictiveSuppressedCandidate = {

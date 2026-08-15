@@ -6,6 +6,7 @@ export const evaluateStoppingThreshold = (input: {
   segmentId: string;
   attemptNumber: number;
   answerProbability: number | undefined;
+  answerProbabilityUpperBound?: number;
   valuePerConnection: number;
   costPerAttempt: number;
 }): StoppingThreshold | null => {
@@ -14,15 +15,21 @@ export const evaluateStoppingThreshold = (input: {
   }
 
   const expectedValue = input.answerProbability * input.valuePerConnection;
+  const decisionProbability =
+    input.answerProbabilityUpperBound ?? input.answerProbability;
+  const decisionExpectedValue =
+    decisionProbability * input.valuePerConnection;
 
   return {
     segmentId: input.segmentId,
     attemptNumber: input.attemptNumber,
     answerProbability: input.answerProbability,
     expectedValue,
+    decisionProbability,
+    decisionExpectedValue,
     shouldStop:
       input.attemptNumber > MIN_ATTEMPTS_BEFORE_STOP &&
-      expectedValue < input.costPerAttempt,
+      decisionExpectedValue < input.costPerAttempt,
   };
 };
 
@@ -44,9 +51,12 @@ export class StoppingModelService {
       );
       const economics = await this.store.getWorkspaceEconomics(input.workspaceId);
 
-      const probabilityByAttempt = new Map<number, number>();
+      const probabilityByAttempt = new Map<
+        number,
+        (typeof answerProbabilities)[number]
+      >();
       for (const item of answerProbabilities) {
-        probabilityByAttempt.set(item.attemptNumber, item.probability);
+        probabilityByAttempt.set(item.attemptNumber, item);
       }
 
       const thresholds: StoppingThreshold[] = [];
@@ -56,10 +66,12 @@ export class StoppingModelService {
         attemptNumber <= input.maxAttempts;
         attemptNumber += 1
       ) {
+        const evidence = probabilityByAttempt.get(attemptNumber);
         const threshold = evaluateStoppingThreshold({
           segmentId: input.segmentId,
           attemptNumber,
-          answerProbability: probabilityByAttempt.get(attemptNumber),
+          answerProbability: evidence?.probability,
+          answerProbabilityUpperBound: evidence?.upperBound,
           valuePerConnection: economics.valuePerConnection,
           costPerAttempt: economics.costPerAttempt,
         });
@@ -87,15 +99,21 @@ export class StoppingModelService {
       );
       const economics = await this.store.getWorkspaceEconomics(input.workspaceId);
 
-      const probabilityByAttempt = new Map<number, number>();
+      const probabilityByAttempt = new Map<
+        number,
+        (typeof answerProbabilities)[number]
+      >();
       for (const item of answerProbabilities) {
-        probabilityByAttempt.set(item.attemptNumber, item.probability);
+        probabilityByAttempt.set(item.attemptNumber, item);
       }
+
+      const evidence = probabilityByAttempt.get(input.attemptNumber);
 
       return evaluateStoppingThreshold({
         segmentId: input.segmentId,
         attemptNumber: input.attemptNumber,
-        answerProbability: probabilityByAttempt.get(input.attemptNumber),
+        answerProbability: evidence?.probability,
+        answerProbabilityUpperBound: evidence?.upperBound,
         valuePerConnection: economics.valuePerConnection,
         costPerAttempt: economics.costPerAttempt,
       });

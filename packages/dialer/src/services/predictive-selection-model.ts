@@ -8,11 +8,8 @@ import type {
 } from '../types.js';
 
 import { rankHazardEstimates } from './call-timing-model.service.js';
+import { PredictivePriorityService } from './predictive-priority.service.js';
 import { evaluateStoppingThreshold } from './stopping-model.js';
-import { WhittleIndexService } from './whittle-index.service.js';
-
-const STALE_ATTEMPT_HOURS = 48;
-const STALE_DECAY_FACTOR = 0.8;
 
 const weekdayToNumber = (weekday: string) => {
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -44,12 +41,11 @@ const selectHazardEstimate = (params: {
   hourOfDay: number;
   dayOfWeek: number;
 }): { estimate: HazardEstimate | null; source: PredictiveHazardSource } => {
-  const attemptHazards = params.hazardEstimates
-    .filter(
-      (estimate) =>
-        estimate.segmentId === params.segmentId &&
-        estimate.attemptNumber === params.attemptNumber,
-    );
+  const attemptHazards = params.hazardEstimates.filter(
+    (estimate) =>
+      estimate.segmentId === params.segmentId &&
+      estimate.attemptNumber === params.attemptNumber,
+  );
   const exactLocalSlot = rankHazardEstimates(
     attemptHazards.filter(
       (estimate) =>
@@ -70,19 +66,8 @@ const selectHazardEstimate = (params: {
   return { estimate: null, source: 'missing' };
 };
 
-const staleDecayFactor = (lastAttemptAt: Date | null, evaluatedAt: Date) => {
-  if (!lastAttemptAt || Number.isNaN(lastAttemptAt.getTime())) {
-    return 1;
-  }
-
-  const hoursSinceLastAttempt =
-    (evaluatedAt.getTime() - lastAttemptAt.getTime()) / (60 * 60 * 1_000);
-
-  return hoursSinceLastAttempt > STALE_ATTEMPT_HOURS ? STALE_DECAY_FACTOR : 1;
-};
-
 export class PredictiveSelectionModel {
-  private readonly whittleIndexService = new WhittleIndexService();
+  private readonly priorityService = new PredictivePriorityService();
 
   constructor(private readonly store: PredictiveModelStore) {}
 
@@ -103,24 +88,21 @@ export class PredictiveSelectionModel {
           ),
         ),
       ];
-      const [hazardEstimates, answerProbabilities, economics] = await Promise.all([
-        this.store.getHazardEstimates({
-          workspaceId: input.workspaceId,
-          segmentId: input.segmentId,
-          attemptNumbers: nextAttemptNumbers,
-        }),
-        this.store.getAnswerProbabilities({
-          workspaceId: input.workspaceId,
-          segmentId: input.segmentId,
-        }),
-        this.store.getWorkspaceEconomics(input.workspaceId),
-      ]);
+      const [hazardEstimates, answerProbabilities, economics] =
+        await Promise.all([
+          this.store.getHazardEstimates({
+            workspaceId: input.workspaceId,
+            segmentId: input.segmentId,
+            attemptNumbers: nextAttemptNumbers,
+          }),
+          this.store.getAnswerProbabilities({
+            workspaceId: input.workspaceId,
+            segmentId: input.segmentId,
+          }),
+          this.store.getWorkspaceEconomics(input.workspaceId),
+        ]);
       const probabilityByAttempt = new Map(
-        answerProbabilities.map((item) => [item.attemptNumber, item.probability]),
-      );
-      const hoursRemainingInWindow = Math.max(
-        input.callableWindowEndHour - local.hour,
-        0,
+        answerProbabilities.map((item) => [item.attemptNumber, item]),
       );
       const ranked: PredictiveRankedCandidate[] = [];
       const suppressed: PredictiveSelectionResult['suppressed'] = [];
@@ -128,10 +110,12 @@ export class PredictiveSelectionModel {
       for (const candidate of input.candidates) {
         const nextAttemptNumber =
           Math.max(Math.trunc(candidate.attemptsUsed), 0) + 1;
+        const stoppingEvidence = probabilityByAttempt.get(nextAttemptNumber);
         const stoppingThreshold = evaluateStoppingThreshold({
           segmentId: input.segmentId,
           attemptNumber: nextAttemptNumber,
-          answerProbability: probabilityByAttempt.get(nextAttemptNumber),
+          answerProbability: stoppingEvidence?.probability,
+          answerProbabilityUpperBound: stoppingEvidence?.upperBound,
           valuePerConnection: economics.valuePerConnection,
           costPerAttempt: economics.costPerAttempt,
         });
@@ -153,29 +137,30 @@ export class PredictiveSelectionModel {
           hourOfDay: local.hour,
           dayOfWeek: local.dayOfWeek,
         });
-        const decayFactor = staleDecayFactor(candidate.lastAttemptAt, evaluatedAt);
-        const computed = this.whittleIndexService.computeIndex({
-          answerRate: Math.max(hazard.estimate?.answerRate ?? 0, 0) * decayFactor,
+        const answerProbability = hazard.estimate?.answerRate ?? 0;
+        const answerProbabilityUpperBound =
+          hazard.estimate?.upperBound ??
+          (hazard.estimate ? hazard.estimate.answerRate : 1);
+        const computed = this.priorityService.computePriority({
+          answerProbability,
+          answerProbabilityUpperBound,
           valuePerConnection: economics.valuePerConnection,
           costPerAttempt: economics.costPerAttempt,
-          hoursRemainingInWindow,
-          segmentSampleSize: Math.max(hazard.estimate?.sampleSize ?? 1, 1),
         });
 
         ranked.push({
           contactId: candidate.contactId,
           position: candidate.position,
           nextAttemptNumber,
-          index: computed.index,
+          score: computed.score,
           components: computed.components,
           hazardSource: hazard.source,
-          staleDecayFactor: decayFactor,
         });
       }
 
       ranked.sort((left, right) => {
-        if (right.index !== left.index) {
-          return right.index - left.index;
+        if (right.score !== left.score) {
+          return right.score - left.score;
         }
 
         return left.position - right.position;
@@ -183,7 +168,7 @@ export class PredictiveSelectionModel {
 
       return { ranked, suppressed };
     } catch (cause: unknown) {
-      throw new Error('Failed to rank predictive dialer candidates', { cause });
+      throw new Error('Failed to rank predictive candidates', { cause });
     }
   }
 }

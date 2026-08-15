@@ -187,7 +187,7 @@ describe('mature predictive selection contract', () => {
     ]);
   });
 
-  it('preserves stale decay, exploration, and FIFO tie behavior in Whittle ranking', async () => {
+  it('uses confidence-aware exploration and FIFO ties without an arbitrary stale penalty', async () => {
     const { store } = buildStore({
       getHazardEstimates: async () => [
         {
@@ -196,7 +196,9 @@ describe('mature predictive selection contract', () => {
           hourOfDay: 10,
           dayOfWeek: 2,
           answerRate: 0.2,
-          sampleSize: 10_000,
+          sampleSize: 100,
+          lowerBound: 0.133366933,
+          upperBound: 0.288829165,
         },
         {
           segmentId: 'all',
@@ -204,7 +206,9 @@ describe('mature predictive selection contract', () => {
           hourOfDay: 10,
           dayOfWeek: 2,
           answerRate: 0.2,
-          sampleSize: 1,
+          sampleSize: 5,
+          lowerBound: 0.036224109,
+          upperBound: 0.62446537,
         },
       ],
     });
@@ -239,11 +243,17 @@ describe('mature predictive selection contract', () => {
 
     expect(result.ranked.map((candidate) => candidate.contactId)).toEqual([
       'sparse-explore',
-      'dense-recent',
       'dense-stale',
+      'dense-recent',
     ]);
-    expect(result.ranked.find((candidate) => candidate.contactId === 'dense-stale'))
-      .toMatchObject({ staleDecayFactor: 0.8 });
+    const denseStale = result.ranked.find(
+      (candidate) => candidate.contactId === 'dense-stale',
+    );
+    const denseRecent = result.ranked.find(
+      (candidate) => candidate.contactId === 'dense-recent',
+    );
+    expect(denseStale?.score).toBeCloseTo(denseRecent?.score ?? Number.NaN, 12);
+    expect(denseStale && 'staleDecayFactor' in denseStale).toBe(false);
   });
 });
 

@@ -2,6 +2,8 @@ import type { WhittleIndexInput, WhittleIndexResult } from '../types.js';
 
 const DEFAULT_EXPLORATION_WEIGHT = 0.1;
 
+// Legacy compatibility heuristic used by the pre-D3 runtime path. This is not
+// a formal Whittle index derived from an indexable restless-bandit model.
 export class WhittleIndexService {
   computeIndex(input: WhittleIndexInput): WhittleIndexResult {
     const expectedReward = input.answerRate * input.valuePerConnection;

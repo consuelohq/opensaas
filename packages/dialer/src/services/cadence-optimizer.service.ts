@@ -1,5 +1,8 @@
 import type { AgeBucket, CadencePolicy, HazardEstimate } from '../types.js';
 
+import { estimateBernoulliWilson } from './binomial-estimate.js';
+import { rankHazardEstimates } from './call-timing-model.service.js';
+
 const HOURS_TO_FRESH_BUCKET = 48;
 const DEFAULT_MIN_SAMPLE_SIZE = 50;
 const MINUTES_PER_HOUR = 60;
@@ -31,7 +34,8 @@ export class CadenceOptimizerService {
   }): CadencePolicy {
     const minSampleSize = params.minSampleSize ?? DEFAULT_MIN_SAMPLE_SIZE;
     const totalSampleSize = params.hazardEstimates.reduce(
-      (accumulator, estimate) => accumulator + estimate.sampleSize,
+      (accumulator, estimate) =>
+        accumulator + (estimate.trials ?? estimate.sampleSize),
       0,
     );
 
@@ -55,7 +59,10 @@ export class CadenceOptimizerService {
     );
 
     const profitableAttempts = answerRateByAttempt
-      .filter((attemptEstimate) => attemptEstimate.answerRate > threshold)
+      .filter(
+        (attemptEstimate) =>
+          (attemptEstimate.upperBound ?? attemptEstimate.answerRate) > threshold,
+      )
       .map((attemptEstimate) => attemptEstimate.attemptNumber)
       .sort((left, right) => left - right);
 
@@ -118,29 +125,59 @@ export class CadenceOptimizerService {
   }
 
   private computeAnswerRateByAttempt(hazardEstimates: HazardEstimate[]) {
-    const grouped = new Map<
-      number,
-      { weightedRateTotal: number; sampleSizeTotal: number }
-    >();
+    const grouped = new Map<number, HazardEstimate[]>();
 
     for (const estimate of hazardEstimates) {
-      const current = grouped.get(estimate.attemptNumber) ?? {
-        weightedRateTotal: 0,
-        sampleSizeTotal: 0,
-      };
-
-      current.weightedRateTotal += estimate.answerRate * estimate.sampleSize;
-      current.sampleSizeTotal += estimate.sampleSize;
+      const current = grouped.get(estimate.attemptNumber) ?? [];
+      current.push(estimate);
       grouped.set(estimate.attemptNumber, current);
     }
 
-    return [...grouped.entries()].map(([attemptNumber, stats]) => ({
-      attemptNumber,
-      answerRate:
-        stats.sampleSizeTotal === 0
-          ? 0
-          : stats.weightedRateTotal / stats.sampleSizeTotal,
-    }));
+    return [...grouped.entries()].map(([attemptNumber, rows]) => {
+      const hasCompleteCounts = rows.every(
+        (row) =>
+          Number.isInteger(row.successes) &&
+          Number.isInteger(row.trials) &&
+          (row.successes ?? -1) >= 0 &&
+          (row.trials ?? -1) > 0 &&
+          (row.successes ?? 0) <= (row.trials ?? 0),
+      );
+
+      if (hasCompleteCounts) {
+        const successes = rows.reduce(
+          (total, row) => total + (row.successes ?? 0),
+          0,
+        );
+        const trials = rows.reduce(
+          (total, row) => total + (row.trials ?? 0),
+          0,
+        );
+        const estimate = estimateBernoulliWilson(successes, trials);
+        if (estimate) {
+          return {
+            attemptNumber,
+            answerRate: estimate.probability,
+            upperBound: estimate.upperBound,
+          };
+        }
+      }
+
+      const sampleSizeTotal = rows.reduce(
+        (total, row) => total + row.sampleSize,
+        0,
+      );
+      const weightedRateTotal = rows.reduce(
+        (total, row) => total + row.answerRate * row.sampleSize,
+        0,
+      );
+
+      return {
+        attemptNumber,
+        answerRate:
+          sampleSizeTotal === 0 ? 0 : weightedRateTotal / sampleSizeTotal,
+        upperBound: undefined,
+      };
+    });
   }
 
   private computeMinSpacingMinutes(params: {
@@ -163,20 +200,10 @@ export class CadenceOptimizerService {
         continue;
       }
 
-      const peak = attemptRows.reduce((best, estimate) => {
-        if (estimate.answerRate > best.answerRate) {
-          return estimate;
-        }
-
-        if (
-          estimate.answerRate === best.answerRate &&
-          estimate.sampleSize > best.sampleSize
-        ) {
-          return estimate;
-        }
-
-        return best;
-      });
+      const peak = rankHazardEstimates(attemptRows)[0];
+      if (!peak) {
+        continue;
+      }
 
       peakHours.push(peak.hourOfDay);
     }

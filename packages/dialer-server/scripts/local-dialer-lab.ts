@@ -319,10 +319,12 @@ const main = async () => {
     const fixtureCounts = await database.query<{
       ledger_count: string;
       outcome_count: string;
+      canonical_count: string;
     }>(
       `SELECT
          (SELECT COUNT(*) FROM contact_attempt_ledger WHERE workspace_id = $1)::text AS ledger_count,
-         (SELECT COUNT(*) FROM consuelo_lead_connector_call_outcomes WHERE workspace_id = $1)::text AS outcome_count`,
+         (SELECT COUNT(*) FROM consuelo_lead_connector_call_outcomes WHERE workspace_id = $1)::text AS outcome_count,
+         (SELECT COUNT(*) FROM dialer_learning_observations WHERE workspace_id = $1)::text AS canonical_count`,
       [LAB_WORKSPACE_ID],
     );
 
@@ -343,6 +345,9 @@ const main = async () => {
       persistedFixture: {
         candidateLedgerRows: Number(fixtureCounts.rows[0]?.ledger_count ?? 0),
         trainingOutcomeRows: Number(fixtureCounts.rows[0]?.outcome_count ?? 0),
+        canonicalObservationRows: Number(
+          fixtureCounts.rows[0]?.canonical_count ?? 0,
+        ),
       },
       benchmarks,
     };

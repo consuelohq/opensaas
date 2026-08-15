@@ -24,6 +24,8 @@ export { ParallelStrategyResolver } from './services/parallel-strategy-resolver.
 export { StoppingModelService } from './services/stopping-model.js';
 export { CallTimingModel } from './services/call-timing-model.service.js';
 export { WhittleIndexService } from './services/whittle-index.service.js';
+export { PredictivePriorityService } from './services/predictive-priority.service.js';
+export { estimateBernoulliWilson } from './services/binomial-estimate.js';
 export { PredictiveSelectionModel } from './services/predictive-selection-model.js';
 export { RetryDecisionModel } from './services/retry-decision-model.js';
 export { CadenceOptimizerService } from './services/cadence-optimizer.service.js';
@@ -78,6 +80,16 @@ export {
   isStaleDialingGroup,
 } from './domain/parallel-group.js';
 export { isHumanLikeAnswer } from './domain/parallel-profile.js';
+export {
+  classifyLearningObservation,
+  resolveLocalCalendarSlot,
+} from './domain/learning-observation.js';
+export type {
+  LearningCensorReason,
+  LearningObservationClassification,
+  LearningOutcomeClass,
+  LocalCalendarSlot,
+} from './domain/learning-observation.js';
 export {
   planProviderCallbackTransition,
   resolveWinnerClaim,
@@ -226,7 +238,10 @@ export type {
   CadencePolicy,
   AgeBucket,
   WorkspaceDialerEconomics,
+  BernoulliEstimate,
   AttemptAnswerProbability,
+  PredictivePriorityInput,
+  PredictivePriorityResult,
   PredictiveModelQuery,
   PredictiveHazardQuery,
   PredictiveModelStore,

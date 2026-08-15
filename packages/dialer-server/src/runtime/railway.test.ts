@@ -212,14 +212,27 @@ describe('LeadConnector dialer learning', () => {
 
     expect(recorded).toBe(true);
     expect(writes).toHaveLength(1);
+    expect(writes[0].text).toContain('INSERT INTO dialer_learning_observations');
+    expect(writes[0].text).toContain(
+      'ON CONFLICT (workspace_id, group_id, position) DO NOTHING',
+    );
     expect(writes[0].text).toContain('INSERT INTO contact_attempt_ledger');
     expect(writes[0].text).toContain(
       'INSERT INTO consuelo_lead_connector_call_outcomes',
     );
     expect(writes[0].values).toEqual([
       'workspace-1',
+      'pg-learning',
+      1,
+      'queue-1',
       'contact-winner',
       '2026-08-01T12:00:00.000Z',
+      '2026-08-01T12:00:05.000Z',
+      '2026-08-01T12:00:45.000Z',
+      12,
+      6,
+      'response',
+      null,
       'answered',
     ]);
   });
