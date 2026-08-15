@@ -1315,6 +1315,10 @@
       "status": "os-only-intentional",
       "reason": "OS-owned same-node worker supervisor state machine manages deterministic worker slots, readiness, crash replacement, and bounded draining with no workspace counterpart."
     },
+    "scripts/lib/workspace-chrome.ts": {
+      "status": "os-only-needs-review",
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
+    },
     "scripts/lib/workspace-cloudflare-d1-route-registry.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
