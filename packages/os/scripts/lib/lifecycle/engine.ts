@@ -331,6 +331,20 @@ export function createLifecycleEngine(
     }
   };
 
+  const reconcileAcceptedReleaseUserState = (releasePath: string): void => {
+    try {
+      if (dependencies.visibleUserRoot) {
+        reconcileManagedUserContentForRelease({
+          releasePath,
+          userRoot: dependencies.visibleUserRoot,
+        });
+      }
+      ensureNodeEncryptionKeyForHome(home);
+    } catch (_error: unknown) {
+      // Reported by the next doctor run rather than failing an accepted release.
+    }
+  };
+
   const activateAndAccept = async (input: {
     emit: ReturnType<typeof emitter>;
     operationId: string;
@@ -411,17 +425,7 @@ export function createLifecycleEngine(
       // behind the optional afterActivate hook, because nothing supplies that hook and it would
       // silently never run. Failures here must not fail the release: the runtime is already live
       // and usable without this content.
-      try {
-        if (dependencies.visibleUserRoot) {
-          reconcileManagedUserContentForRelease({
-            releasePath: input.nextReleasePath,
-            userRoot: dependencies.visibleUserRoot,
-          });
-        }
-        ensureNodeEncryptionKeyForHome(home);
-      } catch (_error: unknown) {
-        // Reported by the next doctor run rather than failing an accepted release.
-      }
+      reconcileAcceptedReleaseUserState(input.nextReleasePath);
       clearLifecycleActivationJournal(home);
     } catch (error: unknown) {
       if (dependencies.hooks?.onActivationFailure) {
@@ -562,6 +566,12 @@ export function createLifecycleEngine(
           message: 'public connector readiness reconciliation failed',
           phase: 'connector-readiness',
         });
+        const currentReleasePath = current.currentReleasePath;
+        if (currentReleasePath) {
+          yield* Effect.sync(() =>
+            reconcileAcceptedReleaseUserState(currentReleasePath),
+          );
+        }
         input.emit('complete', {
           changed: false,
           updateAvailable: false,
