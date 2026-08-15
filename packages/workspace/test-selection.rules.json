@@ -7,7 +7,9 @@
       "source": [
         "packages/workspace/scripts/lib/facade/**",
         "packages/workspace/tooling/tool-manifest.json",
-        "packages/workspace/src/generated/workspace.d.ts"
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/package.json"
       ],
       "tests": [
         {
@@ -19,9 +21,22 @@
             "--test-name-pattern",
             "validates input"
           ]
+        },
+        {
+          "name": "workspace facade manifest contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts"
+          ]
         }
       ],
-      "reason": "Workspace facade and manifest changes must prove typed tool input contracts."
+      "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+      "exclusive": true
     },
     {
       "id": "workspace-publish-gate",
@@ -79,6 +94,49 @@
         }
       ],
       "reason": "Task routing and metadata changes must prove task-session behavior."
+    },
+    {
+      "id": "workspace-session-integration",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tools/task-lifecycle/schema.ts",
+        "packages/os/hooks/task/**",
+        "packages/workspace/hooks/task/**",
+        "packages/os/skills/task/SKILL.md",
+        "packages/workspace/task.md",
+        "packages/workspace/senior-engineer.md",
+        "packages/os/steering/system_prompt.md",
+        "packages/workspace/scripts/session-start.ts",
+        "packages/os/tests/session-integration-guidance.test.ts",
+        "packages/os/tests/task-hook-workflow-contract.test.ts",
+        "packages/os/tests/task-hooks.test.ts",
+        "packages/os/scripts/session-start.ts",
+        "packages/os/scripts/lib/work-session.ts",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/tests/observability-traces-site.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts"
+          ]
+        }
+      ],
+      "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract."
     },
     {
       "id": "os-task-worktree-eviction",
@@ -167,7 +225,8 @@
         "packages/os/tests/tool-manifest.test.ts",
         "packages/os/tests/work-session-fs.test.ts",
         "packages/os/tools/filesystem/schema.ts",
-        "packages/os/workflows/generated/workflow-bundles.json"
+        "packages/os/workflows/generated/workflow-bundles.json",
+        "packages/os/scripts/lib/work-session-protection.ts"
       ],
       "tests": [
         {
@@ -214,7 +273,8 @@
         "packages/os/scripts/lib/mcp-gateway.ts",
         "packages/os/tests/generated-error-code-parity.test.ts",
         "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/work-session-code-call.test.ts"
+        "packages/os/tests/work-session-code-call.test.ts",
+        "packages/os/scripts/lib/work-session-protection.ts"
       ],
       "tests": [
         {

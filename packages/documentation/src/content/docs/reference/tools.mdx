@@ -2,7 +2,7 @@
 title: Tools
 description: Generated facade-tool metadata, typed invocation, and execution policy.
 status: preview
-verifiedAt: 2026-08-14
+verifiedAt: 2026-08-15
 evidence:
   - source: packages/os/manifests/schemas/tool-manifest.schema.json
     tests:
@@ -13,6 +13,11 @@ evidence:
     tests:
       - packages/os/tests/tools-search-v2.test.ts
     runtime: Tool discovery output was compared with current manifest metadata and schemas on 2026-07-13.
+  - source: packages/os/tools/task-lifecycle/schema.ts
+    tests:
+      - packages/os/tests/session-start-foundation.test.ts
+      - packages/workspace/tests/session-start-compatibility.test.ts
+    runtime: The canonical `session.start` task/work constructor and the `task.start` compatibility alias were exercised through both OS and workspace facade contracts on 2026-08-15.
   - source: packages/os/tools/security/schema.ts
     tests:
       - packages/os/tests/security-scan.test.ts

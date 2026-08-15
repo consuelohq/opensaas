@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -7,6 +6,7 @@ import {
   resolveConsueloHomeLayout,
 } from './consuelo-home';
 import { readWorkSession, type WorkSessionMetadata } from './work-session';
+import { canonicalExistingPath, findProtectedWorkSessionRoot } from './work-session-protection';
 
 export type WorkSessionFsScopeErrorCode =
   | 'WORK_SESSION_NOT_FOUND'
@@ -28,43 +28,6 @@ export type WorkSessionFsScope = {
   root: string;
   metadata: WorkSessionMetadata;
 };
-
-function canonicalExistingPath(candidate: string): string {
-  return fs.realpathSync(path.resolve(candidate));
-}
-
-function containsPath(root: string, candidate: string): boolean {
-  const relative = path.relative(root, candidate);
-  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
-}
-
-function pathsOverlap(first: string, second: string): boolean {
-  return containsPath(first, second) || containsPath(second, first);
-}
-
-function worktreeRoots(managedRepoRoot: string): string[] {
-  try {
-    const output = execFileSync('git', ['worktree', 'list', '--porcelain'], {
-      cwd: managedRepoRoot,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
-    return output
-      .split('\n')
-      .filter((line) => line.startsWith('worktree '))
-      .map((line) => line.slice('worktree '.length).trim())
-      .filter(Boolean)
-      .map((candidate) => {
-        try {
-          return canonicalExistingPath(candidate);
-        } catch {
-          return path.resolve(candidate);
-        }
-      });
-  } catch {
-    return [];
-  }
-}
 
 function resolveSessionHome(env: NodeJS.ProcessEnv): string | undefined {
   return env.CONSUELO_HOME
@@ -134,35 +97,22 @@ export function resolveWorkSessionFsScope(input: {
     );
   }
 
-  const consueloHome = fs.existsSync(layout.home)
-    ? canonicalExistingPath(layout.home)
-    : path.resolve(layout.home);
-  if (pathsOverlap(root, consueloHome)) {
+  const protectedRoot = findProtectedWorkSessionRoot({
+    root,
+    consueloHome: layout.home,
+    managedRepoRoot: input.managedRepoRoot,
+  });
+  if (protectedRoot?.kind === 'consuelo-home') {
     throw new WorkSessionFsScopeError(
       'PERMISSION_DENIED',
       'Work sessions cannot edit Consuelo-managed state. Use the typed Consuelo lifecycle/configuration tools instead.',
     );
   }
-
-  const managedRepoRoot = input.managedRepoRoot?.trim();
-  if (managedRepoRoot) {
-    let canonicalManagedRoot: string | null = null;
-    try {
-      canonicalManagedRoot = canonicalExistingPath(managedRepoRoot);
-    } catch {
-      canonicalManagedRoot = null;
-    }
-    if (canonicalManagedRoot) {
-      const protectedRoots = worktreeRoots(canonicalManagedRoot);
-      if (protectedRoots.length === 0) protectedRoots.push(canonicalManagedRoot);
-      const protectedRoot = protectedRoots.find((candidate) => pathsOverlap(root, candidate));
-      if (protectedRoot) {
-        throw new WorkSessionFsScopeError(
-          'PERMISSION_DENIED',
-          `Work sessions cannot edit the managed repository or its task worktrees (${protectedRoot}). Use taskSession for repository edits.`,
-        );
-      }
-    }
+  if (protectedRoot?.kind === 'managed-repository') {
+    throw new WorkSessionFsScopeError(
+      'PERMISSION_DENIED',
+      `Work sessions cannot edit the managed repository or its task worktrees (${protectedRoot.path}). Use a taskSession for repository edits.`,
+    );
   }
 
   return {

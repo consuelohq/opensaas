@@ -2,8 +2,8 @@
 
 import path from 'node:path';
 
-import { createWorkSession } from './lib/work-session';
-import { resolveActiveWorkspaceProjectCwd } from './lib/workspace-project-cwd';
+import { createWorkSession } from '../../os/scripts/lib/work-session';
+import { resolveActiveWorkspaceProjectCwd } from '../../os/scripts/lib/workspace-project-cwd';
 
 type SessionKind = 'task' | 'work';
 
@@ -43,14 +43,6 @@ export function parseArgs(argv: string[]): ParsedArgs {
   return parsed;
 }
 
-function writeResult(value: unknown, json: boolean): void {
-  if (json) {
-    process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
-    return;
-  }
-  process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
-}
-
 async function startTaskSession(args: ParsedArgs): Promise<void> {
   try {
     const taskStart = path.resolve(import.meta.dir, 'task-start.js');
@@ -61,9 +53,7 @@ async function startTaskSession(args: ParsedArgs): Promise<void> {
       env: process.env,
     });
     const exitCode = await child.exited;
-    if (exitCode !== 0) {
-      throw new Error(`task-start exited with code ${exitCode}`);
-    }
+    if (exitCode !== 0) throw new Error(`task-start exited with code ${exitCode}`);
   } catch (error: unknown) {
     throw new Error(
       `task session start failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -87,14 +77,15 @@ export async function main(): Promise<void> {
     path: args.path,
     managedRepoRoot: resolveActiveWorkspaceProjectCwd() ?? process.cwd(),
   });
-  writeResult({
+  const result = {
     sessionKind: 'work',
     workSession: metadata.workSession,
     ownerNodeId: metadata.ownerNodeId,
     path: metadata.path,
     createdAt: metadata.createdAt,
     updatedAt: metadata.updatedAt,
-  }, args.json);
+  };
+  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }
 
 if (import.meta.main) {

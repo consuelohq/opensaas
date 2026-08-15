@@ -6,6 +6,7 @@ import {
   loadNodeYamlConfig,
   resolveConsueloHomeLayout,
 } from './consuelo-home';
+import { findProtectedWorkSessionRoot } from './work-session-protection';
 
 const WORK_SESSION_PREFIX = 'wrk_';
 const WORK_SESSION_VERSION = 1 as const;
@@ -67,6 +68,7 @@ export function createWorkSession(input: {
   path: string;
   now?: () => Date;
   randomUUID?: () => string;
+  managedRepoRoot?: string;
 }): WorkSessionMetadata {
   const layout = resolveConsueloHomeLayout(input.home);
   const requestedPath = path.resolve(input.path);
@@ -78,6 +80,20 @@ export function createWorkSession(input: {
   }
   if (!fs.statSync(canonicalPath).isDirectory()) {
     throw new Error(`work session path must be a directory: ${canonicalPath}`);
+  }
+
+  const protectedRoot = findProtectedWorkSessionRoot({
+    root: canonicalPath,
+    consueloHome: layout.home,
+    managedRepoRoot: input.managedRepoRoot,
+  });
+  if (protectedRoot?.kind === 'consuelo-home') {
+    throw new Error('Work sessions cannot edit Consuelo-managed state. Use the typed Consuelo lifecycle/configuration tools instead.');
+  }
+  if (protectedRoot?.kind === 'managed-repository') {
+    throw new Error(
+      `Work sessions cannot edit the managed repository or its task worktrees (${protectedRoot.path}). Use a taskSession for repository edits.`,
+    );
   }
 
   const node = loadNodeYamlConfig(layout.nodeConfigPath);

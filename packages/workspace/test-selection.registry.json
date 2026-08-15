@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2640,
-    "mappedTestCount": 2555,
-    "unmappedTestCount": 85,
-    "ruleCount": 60,
-    "explicitRuleCount": 41,
+    "testFileCount": 2642,
+    "mappedTestCount": 2556,
+    "unmappedTestCount": 86,
+    "ruleCount": 61,
+    "explicitRuleCount": 42,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 261,
+      "packages/os/tests": 262,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 63,
+      "packages/workspace/tests": 64,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 546,
+      "test": 548,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -649,7 +649,9 @@
       "source": [
         "packages/workspace/scripts/lib/facade/**",
         "packages/workspace/tooling/tool-manifest.json",
-        "packages/workspace/src/generated/workspace.d.ts"
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/package.json"
       ],
       "tests": [
         {
@@ -661,9 +663,22 @@
             "--test-name-pattern",
             "validates input"
           ]
+        },
+        {
+          "name": "workspace facade manifest contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts"
+          ]
         }
       ],
       "critical": true,
+      "exclusive": true,
       "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
       "origin": "explicit"
     },
@@ -724,6 +739,50 @@
       ],
       "critical": true,
       "reason": "Task routing and metadata changes must prove task-session behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "workspace-session-integration",
+      "source": [
+        "packages/os/tools/task-lifecycle/schema.ts",
+        "packages/os/hooks/task/**",
+        "packages/workspace/hooks/task/**",
+        "packages/os/skills/task/SKILL.md",
+        "packages/workspace/task.md",
+        "packages/workspace/senior-engineer.md",
+        "packages/os/steering/system_prompt.md",
+        "packages/workspace/scripts/session-start.ts",
+        "packages/os/tests/session-integration-guidance.test.ts",
+        "packages/os/tests/task-hook-workflow-contract.test.ts",
+        "packages/os/tests/task-hooks.test.ts",
+        "packages/os/scripts/session-start.ts",
+        "packages/os/scripts/lib/work-session.ts",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/tests/observability-traces-site.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract.",
       "origin": "explicit"
     },
     {
@@ -813,7 +872,8 @@
         "packages/os/tests/tool-manifest.test.ts",
         "packages/os/tests/work-session-fs.test.ts",
         "packages/os/tools/filesystem/schema.ts",
-        "packages/os/workflows/generated/workflow-bundles.json"
+        "packages/os/workflows/generated/workflow-bundles.json",
+        "packages/os/scripts/lib/work-session-protection.ts"
       ],
       "tests": [
         {
@@ -861,7 +921,8 @@
         "packages/os/scripts/lib/mcp-gateway.ts",
         "packages/os/tests/generated-error-code-parity.test.ts",
         "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/work-session-code-call.test.ts"
+        "packages/os/tests/work-session-code-call.test.ts",
+        "packages/os/scripts/lib/work-session-protection.ts"
       ],
       "tests": [
         {
@@ -4694,6 +4755,11 @@
     },
     {
       "path": "packages/os/tests/senior-engineer-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/session-integration-guidance.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15633,6 +15699,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/session-start-compatibility.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/stream-lifecycle.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -15838,6 +15909,7 @@
     "packages/workspace/tests/review-documentation-opportunity.test.js",
     "packages/workspace/tests/review-generated-artifact-contract.test.js",
     "packages/workspace/tests/review-run-state.test.js",
+    "packages/workspace/tests/session-start-compatibility.test.ts",
     "packages/workspace/tests/stream-lifecycle.test.ts",
     "packages/workspace/tests/stream-sync-node-modules.test.js",
     "packages/workspace/tests/stream-workpads.test.js",

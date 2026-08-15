@@ -21,8 +21,10 @@ start → work → publish → clean up
 Canonical flow:
 
 ```text
-stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish
+stream.context → session.start({ kind: "task" }) → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish
 ```
+`session.start({ kind: "task" })` is the canonical constructor for repository tasks. `task.start` remains a compatibility alias for existing callers. Use `session.start({ kind: "work", path })` only for ordinary node-local filesystem work; a work session must never be used to edit the managed default repository or a registered task worktree.
+
 For non-trivial code changes, implementation must not begin until the scoped workpad contains a Test-first contract and either:
 
 a focused test has been written or updated and run red, or
@@ -47,7 +49,7 @@ await workspace.call({
 })
 ```
 
-For task-scoped work, `task.start` returns `data.taskSession`.
+For task-scoped work, `session.start({ kind: "task" })` returns `data.taskSession`.
 
 Treat that exact value as the task handle for the rest of the task:
 
@@ -131,8 +133,9 @@ Create one focused task branch:
 
 ```ts
 await workspace.call({
-  tool: "task.start",
+  tool: "session.start",
   input: {
+    kind: "task",
     area: "<area>",
     title: "<task title>",
     startFrom: "main",
@@ -176,7 +179,7 @@ For diffs, use the workspace/GitHub tool surface where available. Only fall back
 
 Task Session Handling — Canonical Task Context
 taskSession is the canonical handle for task-scoped work.
-When task.start returns:
+When session.start({ kind: "task" }) returns:
 const taskSession = result.data.taskSession
 Every task-scoped call must pass that value at the top level:
 await workspace.call({
@@ -243,7 +246,7 @@ await workspace.call({
   },
 })
 That should return VALIDATION_ERROR.
-If a task-scoped call returns TASK_SESSION_REQUIRED or TASK_SESSION_NOT_FOUND, first check that the exact taskSession returned by task.start was passed at the top level. Do not switch to branch-threading, root task metadata, code.call, code.call, or host shell fallback as the default recovery path.
+If a task-scoped call returns TASK_SESSION_REQUIRED or TASK_SESSION_NOT_FOUND, first check that the exact taskSession returned by session.start({ kind: "task" }) was passed at the top level. Do not switch to branch-threading, root task metadata, code.call, code.call, or host shell fallback as the default recovery path.
 Inside code.run and batch, pass taskSession on the outer workspace.call. Nested workspace.* calls inherit task context.
 
 
@@ -267,7 +270,7 @@ Example:
 
 Agents must update the workpad at these checkpoints:
 
-1. Immediately after `task.start`
+1. Immediately after `session.start({ kind: "task" })`
    - acceptance criteria
    - plan
    - initial assumptions
@@ -1999,7 +2002,7 @@ Completed tasks may leave scoped metadata on main, such as:
 
 Do not treat `staleTask` as active context. It is historical metadata.
 
-Continue using the explicit `taskSession` returned by `task.start`.
+Continue using the explicit `taskSession` returned by `session.start({ kind: "task" })`.
 
 Only repair metadata when it affects the active task session, the active task worktree, or the current publish/merge operation.
 

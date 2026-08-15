@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildObservabilityTracesClientScript,
   buildObservabilityTracesSite,
+  resolveObservabilitySessionValue,
 } from '../scripts/lib/observability-traces-site';
 
 const canonicalAssetDir = resolve(
@@ -49,6 +50,26 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).not.toContain('Recent errors');
     expect(html).not.toContain('class="kpis"');
     expect(html).not.toContain('class="hero"');
+  });
+
+  it('projects task branches and work filesystem paths into the same Session value', () => {
+    expect(resolveObservabilitySessionValue({
+      workPath: '/Users/ko/Developer/raycast-extension',
+      branch: 'task/workspace-agent/example',
+      taskSession: 'tsk_example',
+      workSession: 'wrk_example',
+    })).toBe('/Users/ko/Developer/raycast-extension');
+
+    expect(resolveObservabilitySessionValue({
+      branch: 'task/workspace-agent/example',
+      taskSession: 'tsk_example',
+    })).toBe('task/workspace-agent/example');
+
+    expect(resolveObservabilitySessionValue({
+      workSession: 'wrk_example',
+    })).toBe('wrk_example');
+
+    expect(resolveObservabilitySessionValue({})).toBe('no-branch');
   });
 
   it('keeps the existing branch filter shape but labels it as Sessions', () => {

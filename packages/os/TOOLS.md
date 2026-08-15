@@ -6666,7 +6666,7 @@ await workspace.call({
 
 ### workspace.session.start
 
-Start a Consuelo session. Use kind=task for repo work that needs a branch/worktree/PR, or kind=work for metadata-only work rooted at an existing directory.
+Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.
 
 | Field | Value |
 | --- | --- |
@@ -7578,7 +7578,7 @@ await workspace.call({
 
 ### workspace.task.start
 
-Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.
+Compatibility alias for session.start({ kind: "task" }). Existing callers remain supported; new agents should prefer session.start for task creation.
 
 | Field | Value |
 | --- | --- |
