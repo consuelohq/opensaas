@@ -131,6 +131,9 @@ export const startParallelSession = (
           status: 'dialing',
           contactId: input.contactIds?.[index],
           dialStartedAt,
+          predictiveDecisionId:
+            input.predictiveDecisionIds?.[index] ?? undefined,
+          decisionContext: input.decisionContexts?.[index] ?? undefined,
         };
         calls.push(call);
         yield* state.registerCall(groupId, call, ACTIVE_CALL_TTL_SECONDS);

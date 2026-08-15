@@ -4,7 +4,10 @@ import { readFile } from 'node:fs/promises';
 import type { CallableTarget } from '@consuelo/dialer';
 import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
 
-import { rankPredictiveTargets } from './predictive-target-ranking';
+import {
+  rankPredictiveTargets,
+  rankPredictiveTargetsWithDecision,
+} from './predictive-target-ranking';
 
 type QueryCall = {
   text: string;
@@ -21,6 +24,8 @@ const createCanonicalDatabase = (options?: {
   attemptRows?: Array<{
     contact_id: string;
     attempts_total: number;
+    attempts_today?: number;
+    attempts_this_week?: number;
     last_attempt_at: string | null;
   }>;
   probabilityRows?: Array<{
@@ -160,6 +165,175 @@ describe('canonical predictive target runtime cutover', () => {
     expect(
       canonicalCalls.every((call) => call.values[1] === 'queue-segment-1'),
     ).toBe(true);
+  });
+
+  it('captures immutable D4 candidate context while keeping D3 authoritative and deterministic', async () => {
+    const harness = createCanonicalDatabase({
+      attemptRows: [
+        {
+          contact_id: 'contact-a',
+          attempts_total: 1,
+          attempts_today: 1,
+          attempts_this_week: 2,
+          last_attempt_at: '2026-08-15T10:00:00.000Z',
+        },
+        {
+          contact_id: 'contact-b',
+          attempts_total: 0,
+          attempts_today: 0,
+          attempts_this_week: 0,
+          last_attempt_at: null,
+        },
+      ],
+      probabilityRows: [
+        { attempt_number: 1, successes: 20, trials: 100 },
+        { attempt_number: 2, successes: 70, trials: 100 },
+      ],
+      hazardRows: [
+        {
+          attempt_number: 1,
+          local_hour: 12,
+          local_day_of_week: 6,
+          successes: 20,
+          trials: 100,
+        },
+        {
+          attempt_number: 2,
+          local_hour: 12,
+          local_day_of_week: 6,
+          successes: 70,
+          trials: 100,
+        },
+      ],
+    });
+    const contextualTargets: CallableTarget[] = [
+      {
+        contactId: 'contact-a',
+        phone: '+15550100001',
+        sourceContext: {
+          opportunityId: 'opportunity-a',
+          pipelineId: 'pipeline-1',
+          stageId: 'stage-1',
+          opportunityStatus: 'open',
+          opportunityValue: 1_250,
+        },
+      },
+      {
+        contactId: 'contact-b',
+        phone: '+15550100002',
+      },
+    ];
+
+    const result = await rankPredictiveTargetsWithDecision({
+      database: harness.database,
+      workspaceId: 'workspace-1',
+      segmentId: 'queue-context',
+      targets: contextualTargets,
+      timezone: 'UTC',
+      callableWindowEndHour: 20,
+      preferLocalPresence: true,
+      now: new Date('2026-08-15T12:00:00.000Z'),
+    });
+
+    expect(result.rankedTargets.map((target) => target.contactId)).toEqual([
+      'contact-a',
+      'contact-b',
+    ]);
+    expect(result.decision).toEqual(
+      expect.objectContaining({
+        policyVersion: 'd3-canonical-v1',
+        modelVersion: 'd3-canonical-v1',
+        featureSchemaVersion: 2,
+        policyMode: 'deterministic',
+        selectionProbabilities: null,
+        workspaceId: 'workspace-1',
+        segmentId: 'queue-context',
+      }),
+    );
+    expect(result.rankedTargets[0]).toEqual(
+      expect.objectContaining({
+        predictiveDecisionId: result.decision.decisionId,
+        decisionContext: expect.objectContaining({
+          schemaVersion: 2,
+          timezone: 'UTC',
+          timezoneSource: 'workspace_fallback',
+          localHour: 12,
+          localDayOfWeek: 6,
+          attemptsUsed: 1,
+          attemptsToday: 1,
+          attemptsThisWeek: 2,
+          minutesSinceLastAttempt: 120,
+          localPresenceRequested: true,
+          source: expect.objectContaining({
+            opportunityId: 'opportunity-a',
+            opportunityValue: 1_250,
+          }),
+          d3: expect.objectContaining({
+            nextAttemptNumber: 2,
+            suppressed: false,
+          }),
+        }),
+      }),
+    );
+    const serializedContext = JSON.stringify(
+      result.rankedTargets[0]?.decisionContext,
+    );
+    expect(serializedContext).not.toContain('+15550100001');
+    expect(
+      harness.calls.some((call) =>
+        call.text.includes('INSERT INTO dialer_predictive_decisions'),
+      ),
+    ).toBe(true);
+  });
+
+  it('uses a sourced contact timezone for D4 context without changing the D3 workspace-time ranking', async () => {
+    const harness = createCanonicalDatabase({
+      attemptRows: [
+        {
+          contact_id: 'contact-a',
+          attempts_total: 0,
+          last_attempt_at: null,
+        },
+      ],
+      probabilityRows: [{ attempt_number: 1, successes: 60, trials: 100 }],
+      hazardRows: [
+        {
+          attempt_number: 1,
+          local_hour: 12,
+          local_day_of_week: 6,
+          successes: 60,
+          trials: 100,
+        },
+      ],
+    });
+
+    const result = await rankPredictiveTargetsWithDecision({
+      database: harness.database,
+      workspaceId: 'workspace-1',
+      segmentId: 'queue-timezone',
+      targets: [
+        {
+          contactId: 'contact-a',
+          phone: '+15550100001',
+          sourceContext: { contactTimezone: 'America/Los_Angeles' },
+        },
+      ],
+      timezone: 'UTC',
+      callableWindowEndHour: 20,
+      now: new Date('2026-08-15T12:00:00.000Z'),
+    });
+
+    expect(result.rankedTargets[0]?.decisionContext).toEqual(
+      expect.objectContaining({
+        timezone: 'America/Los_Angeles',
+        timezoneSource: 'contact',
+        localHour: 5,
+        localDayOfWeek: 6,
+      }),
+    );
+    expect(result.rankedTargets[0]?.decisionContext?.d3.answerProbability).toBe(
+      0.6,
+    );
   });
 
   it('applies canonical stopping suppression even when only one candidate remains', async () => {

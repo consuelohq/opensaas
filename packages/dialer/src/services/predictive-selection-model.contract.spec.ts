@@ -180,6 +180,8 @@ describe('mature predictive selection contract', () => {
         position: 1,
         nextAttemptNumber: 3,
         reason: 'stopping_model',
+        answerProbability: 0.0001,
+        answerProbabilityUpperBound: 0.0001,
       },
     ]);
     expect(result.ranked.map((candidate) => candidate.contactId)).toEqual([

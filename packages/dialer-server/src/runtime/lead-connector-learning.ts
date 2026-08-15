@@ -86,7 +86,10 @@ const RECORD_ATTEMPT_SQL = `
       local_hour,
       local_day_of_week,
       outcome_class,
-      censor_reason
+      censor_reason,
+      feature_schema_version,
+      decision_id,
+      decision_context
     )
     VALUES (
       $1,
@@ -100,7 +103,10 @@ const RECORD_ATTEMPT_SQL = `
       $9,
       $10,
       $11,
-      $12
+      $12,
+      $13,
+      $14,
+      $15::jsonb
     )
     ON CONFLICT (workspace_id, group_id, position) DO NOTHING
     RETURNING workspace_id, contact_id, attempted_at
@@ -125,7 +131,7 @@ const RECORD_ATTEMPT_SQL = `
       1,
       1,
       1,
-      jsonb_build_array($13::text),
+      jsonb_build_array($16::text),
       date_trunc('day', attempted_at),
       date_trunc('week', attempted_at),
       now()
@@ -149,7 +155,7 @@ const RECORD_ATTEMPT_SQL = `
           THEN 1
         ELSE contact_attempt_ledger.attempts_this_week + 1
       END,
-      outcomes = jsonb_build_array($13::text)
+      outcomes = jsonb_build_array($16::text)
         || contact_attempt_ledger.outcomes,
       day_window_start = GREATEST(
         contact_attempt_ledger.day_window_start,
@@ -169,7 +175,7 @@ const RECORD_ATTEMPT_SQL = `
     attempt_number,
     outcome
   )
-  SELECT $1, $5, $6::timestamptz, attempts_total, $13
+  SELECT $1, $5, $6::timestamptz, attempts_total, $16
   FROM updated_ledger
 `;
 
@@ -202,6 +208,17 @@ export const recordLeadConnectorAttemptTelemetry = async (
           call.answeredAt ??
           record.group.completedAt ??
           null;
+        const persistedDecisionContext = call.decisionContext
+          ? JSON.stringify({
+              ...call.decisionContext,
+              realized: {
+                profileId: record.group.profile.id,
+                fanout: record.group.profile.fanout,
+                staggerMs: record.group.profile.staggerMs,
+                parallelPosition: call.position,
+              },
+            })
+          : null;
 
         return database.query(RECORD_ATTEMPT_SQL, [
           record.group.workspaceId,
@@ -218,6 +235,9 @@ export const recordLeadConnectorAttemptTelemetry = async (
           localSlot.dayOfWeek,
           classification.outcomeClass,
           classification.censorReason,
+          call.decisionContext?.schemaVersion ?? null,
+          call.predictiveDecisionId ?? null,
+          persistedDecisionContext,
           outcomeForCall(record, call),
         ]);
       }),

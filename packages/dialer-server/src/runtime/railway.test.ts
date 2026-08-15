@@ -281,6 +281,9 @@ describe('LeadConnector dialer learning', () => {
       6,
       'response',
       null,
+      null,
+      null,
+      null,
       'answered',
     ]);
   });

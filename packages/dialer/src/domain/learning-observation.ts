@@ -20,6 +20,11 @@ export type LocalCalendarSlot = {
   dayOfWeek: number;
 };
 
+export type ResponseTimeObservation = LearningObservationClassification & {
+  durationMs: number;
+  eventObserved: boolean;
+};
+
 const DAY_OF_WEEK: Record<string, number> = {
   Sun: 0,
   Mon: 1,
@@ -101,5 +106,42 @@ export const classifyLearningObservation = (
   return {
     outcomeClass: 'censored',
     censorReason: 'ambiguous_termination',
+  };
+};
+
+export const buildResponseTimeObservation = (
+  attemptedAt: string | Date,
+  responseAt: string | Date | null,
+  observedUntilAt: string | Date | null,
+  classification: LearningObservationClassification,
+): ResponseTimeObservation => {
+  const attempted =
+    attemptedAt instanceof Date ? attemptedAt : new Date(attemptedAt);
+  if (Number.isNaN(attempted.getTime())) {
+    throw new RangeError('attemptedAt must be a valid date');
+  }
+
+  const endValue =
+    classification.outcomeClass === 'response' ? responseAt : observedUntilAt;
+  if (!endValue) {
+    throw new RangeError(
+      classification.outcomeClass === 'response'
+        ? 'response observations require responseAt'
+        : 'non-response and censored observations require observedUntilAt',
+    );
+  }
+  const end = endValue instanceof Date ? endValue : new Date(endValue);
+  if (Number.isNaN(end.getTime())) {
+    throw new RangeError('observation end must be a valid date');
+  }
+  const durationMs = end.getTime() - attempted.getTime();
+  if (durationMs < 0) {
+    throw new RangeError('observation end must not precede attemptedAt');
+  }
+
+  return {
+    durationMs,
+    eventObserved: classification.outcomeClass === 'response',
+    ...classification,
   };
 };

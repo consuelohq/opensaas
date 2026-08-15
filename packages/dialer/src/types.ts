@@ -317,6 +317,8 @@ export type ParallelCall = {
   dialStartedAt: string;
   answeredAt?: string;
   terminatedAt?: string;
+  predictiveDecisionId?: string;
+  decisionContext?: PredictiveDecisionContext;
 };
 
 export type ParallelCleanupAction = 'terminate-call' | 'unmute-winner';
@@ -361,6 +363,8 @@ export interface ParallelDialOptions {
   customerNumbers: string[];
   queueId: string;
   contactIds?: string[];
+  predictiveDecisionIds?: Array<string | null>;
+  decisionContexts?: Array<PredictiveDecisionContext | null>;
   userId: string;
   fromNumbers: string[];
   statusCallbackUrl: string;
@@ -567,6 +571,41 @@ export type PredictiveHazardSource =
   | 'attempt_fallback'
   | 'missing';
 
+export type PredictiveTimezoneSource = 'contact' | 'workspace_fallback';
+
+export type PredictiveSourceContext = {
+  opportunityId?: string;
+  pipelineId?: string;
+  stageId?: string;
+  opportunityStatus?: string | null;
+  opportunityValue?: number | null;
+  /** Only set when a provider supplies a trustworthy IANA timezone. */
+  contactTimezone?: string;
+};
+
+export type PredictiveDecisionContext = {
+  schemaVersion: 2;
+  capturedAt: string;
+  timezone: string;
+  timezoneSource: PredictiveTimezoneSource;
+  localHour: number;
+  localDayOfWeek: number;
+  attemptsUsed: number;
+  attemptsToday: number;
+  attemptsThisWeek: number;
+  minutesSinceLastAttempt: number | null;
+  localPresenceRequested: boolean;
+  source: PredictiveSourceContext;
+  d3: {
+    nextAttemptNumber: number;
+    answerProbability: number;
+    answerProbabilityUpperBound: number;
+    score: number | null;
+    hazardSource: PredictiveHazardSource | null;
+    suppressed: boolean;
+  };
+};
+
 export type PredictiveRankedCandidate = {
   contactId: string;
   position: number;
@@ -574,6 +613,8 @@ export type PredictiveRankedCandidate = {
   score: number;
   components: PredictivePriorityResult['components'];
   hazardSource: PredictiveHazardSource;
+  answerProbability: number;
+  answerProbabilityUpperBound: number;
 };
 
 export type PredictiveSuppressedCandidate = {
@@ -581,6 +622,8 @@ export type PredictiveSuppressedCandidate = {
   position: number;
   nextAttemptNumber: number;
   reason: 'stopping_model';
+  answerProbability: number;
+  answerProbabilityUpperBound: number;
 };
 
 export type PredictiveSelectionResult = {

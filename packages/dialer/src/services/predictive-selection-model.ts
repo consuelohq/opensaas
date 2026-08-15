@@ -126,6 +126,8 @@ export class PredictiveSelectionModel {
             position: candidate.position,
             nextAttemptNumber,
             reason: 'stopping_model',
+            answerProbability: stoppingThreshold.answerProbability,
+            answerProbabilityUpperBound: stoppingThreshold.decisionProbability,
           });
           continue;
         }
@@ -155,6 +157,8 @@ export class PredictiveSelectionModel {
           score: computed.score,
           components: computed.components,
           hazardSource: hazard.source,
+          answerProbability,
+          answerProbabilityUpperBound,
         });
       }
 
