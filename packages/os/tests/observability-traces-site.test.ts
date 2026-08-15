@@ -50,7 +50,9 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/secrets"');
-    expect(html).toContain('href="/docs"');
+    expect(html).toContain('href="https://docs.consuelohq.com/"');
+    expect(html).toContain('target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/"');
+    expect(html).toContain('.workspace-route-trigger > span:first-child');
     expect(html).toContain('>Connect</p>');
     expect(html).toContain('>Guides</p>');
     expect(html).toContain('--workspace-chrome-bg:');
