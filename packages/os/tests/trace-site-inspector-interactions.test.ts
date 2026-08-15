@@ -8,6 +8,7 @@ import {
   reduceInspectorState,
 } from '../scripts/lib/trace-site-inspector/inspector-state';
 import {
+  branchName,
   childTraceRecords,
   totalTokens,
 } from '../scripts/lib/trace-site-inspector/model';
@@ -38,6 +39,12 @@ describe('Trace Burn keyboard and row interaction contracts', () => {
   it('uses safe tool aliases instead of falling back to trace', () => {
     expect(formatTraceTableRow({ toolName: 'fs.read', traceId: 'trc_1' }).toolLabel).toBe('fs.read');
     expect(formatTraceTableRow({ facadeTool: 'github', traceId: 'trc_2' }).toolLabel).toBe('github');
+  });
+
+  it('should fall through empty work paths when choosing the session label', () => {
+    expect(branchName({ workPath: '', workSession: 'wrk_session_1' })).toBe('wrk_session_1');
+    expect(branchName({ workPath: '', branch: 'task/os/example', taskSession: 'tsk_1' })).toBe('task/os/example');
+    expect(branchName({ workPath: 'Raycast Extension', workSession: 'wrk_session_2' })).toBe('Raycast Extension');
   });
 
   it('uses persisted token counts first and estimates historical payload burn when counts are absent', () => {

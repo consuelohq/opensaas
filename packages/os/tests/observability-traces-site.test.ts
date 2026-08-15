@@ -37,7 +37,7 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('data-show-filters');
     expect(html).toContain('data-trace-count');
     expect(html).toContain(
-      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Node</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
+      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Session</div><div>Node</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     );
     expect(html).toContain('consuelo-trace-node-observability');
     expect(html).toContain('data-workspace-route-trigger');
@@ -56,6 +56,16 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).not.toContain('Recent errors');
     expect(html).not.toContain('class="kpis"');
     expect(html).not.toContain('class="hero"');
+  });
+
+  it('keeps the existing branch filter shape but labels it as Sessions', () => {
+    const source = readFileSync(
+      resolve(osTraceInspectorDir, 'virtual-list-browser.ts'),
+      'utf8',
+    );
+
+    expect(source).toContain("createFilterSection('branches', 'Sessions'");
+    expect(source).not.toContain("createFilterSection('branches', 'Branches'");
   });
 
   it('uses the exact v38 interaction assets with only same-origin gateway transport', () => {

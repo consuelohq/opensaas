@@ -144,7 +144,7 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         const cost = Number(first(row.cost, row.costUsd, row.totalCostUsd, row.total_cost_usd, 0) || 0);
         const status = String(first(row.status, row.success === false ? 'error' : 'success') || 'success');
         return Object.assign({}, row, {
-          branch: String(first(row.branch, row.gitBranch, row.taskSession, metadata.branch, 'no-branch') || 'no-branch'),
+          branch: String(first(row.workPath, row.branch, row.gitBranch, row.taskSession, row.workSession, metadata.workPath, metadata.branch, 'no-branch') || 'no-branch'),
           name: String(first(row.name, row.traceName, row.toolName, row.tool, 'unknown') || 'unknown'),
           code: String(first(row.code, row.kind, row.capability, '') || ''),
           status: status === 'ok' ? 'success' : status,
@@ -235,7 +235,7 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         if (!container) return;
         const branchButtons = countBy(state.rows, 'branch').slice(0, 10).map(([branch, count]) => '<button class="filter-chip" data-filter-branch="' + escapeHtml(branch) + '"><span>' + escapeHtml(branch) + '</span><b>' + count + '</b></button>').join('');
         const toolButtons = countBy(state.rows, 'tool').slice(0, 10).map(([tool, count]) => '<button class="filter-chip" data-filter-tool="' + escapeHtml(tool) + '"><span>' + escapeHtml(tool) + '</span><b>' + count + '</b></button>').join('');
-        container.innerHTML = '<p class="eyebrow">Branches / task sessions</p>' + branchButtons + '<p class="eyebrow tools-label">Tools</p>' + toolButtons;
+        container.innerHTML = '<p class="eyebrow">Sessions</p>' + branchButtons + '<p class="eyebrow tools-label">Tools</p>' + toolButtons;
       };
       const renderRows = () => {
         const body = root.querySelector('[data-trace-rows]');
@@ -400,7 +400,7 @@ export function buildObservabilityTracesSite(): string {
   html = replaceExactlyOnce(
     html,
     /<div class="trxHead"><div><\/div><div>Time<\/div><div>Tool<\/div><div>Latency<\/div><div>Tokens<\/div><div>Branch<\/div><div>Input<\/div><div>Output<\/div><div>Trace<\/div><div>Status<\/div><div>Cost<\/div><\/div>/i,
-    '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Node</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
+    '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Session</div><div>Node</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     'trace table header',
   );
 

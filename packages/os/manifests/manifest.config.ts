@@ -12,6 +12,7 @@ export const manifestConfig = {
       "memory",
       "explore",
       "github",
+      "session.start",
       "task.start",
       "review.run",
       "tools.search",

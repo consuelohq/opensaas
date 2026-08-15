@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2632,
-    "mappedTestCount": 2549,
-    "unmappedTestCount": 83,
-    "ruleCount": 58,
-    "explicitRuleCount": 39,
+    "testFileCount": 2640,
+    "mappedTestCount": 2555,
+    "unmappedTestCount": 85,
+    "ruleCount": 61,
+    "explicitRuleCount": 42,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 255,
+      "packages/os/tests": 261,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 61,
+      "packages/workspace/tests": 63,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 538,
+      "test": 546,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -698,8 +698,14 @@
         "packages/workspace/scripts/task-pr.js",
         "packages/workspace/scripts/task-finish.js",
         "packages/workspace/scripts/task-init.js",
+        "packages/workspace/scripts/task-cleanup.js",
+        "packages/workspace/scripts/lib/task-session.js",
         "packages/workspace/scripts/lib/task-selection*.js",
-        "packages/workspace/scripts/lib/task-metadata*.js"
+        "packages/workspace/scripts/lib/task-metadata*.js",
+        "packages/workspace/scripts/lib/task-registry.js",
+        "packages/workspace/scripts/lib/task-worktree-eviction.js",
+        "packages/workspace/scripts/lib/task-worktree-gc.js",
+        "packages/workspace/scripts/lib/paths.js"
       ],
       "tests": [
         {
@@ -710,12 +716,57 @@
             "packages/workspace/tests/task-session.test.js",
             "packages/workspace/tests/task-meta.test.ts",
             "packages/workspace/tests/task-init.test.js",
-            "packages/workspace/tests/task-selection.test.js"
+            "packages/workspace/tests/task-selection.test.js",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-worktree-eviction.test.ts"
           ]
         }
       ],
       "critical": true,
       "reason": "Task routing and metadata changes must prove task-session behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-task-worktree-eviction",
+      "source": [
+        "packages/os/scripts/task-start.js",
+        "packages/os/scripts/task-cleanup.js",
+        "packages/os/scripts/task-finish.js",
+        "packages/os/scripts/task-worktree-gc.js",
+        "packages/os/scripts/lib/task-registry.js",
+        "packages/os/scripts/lib/task-session.js",
+        "packages/os/scripts/lib/task-worktree-eviction.js",
+        "packages/os/scripts/lib/task-worktree-gc.js",
+        "packages/os/scripts/lib/task-worktree-gc-scheduler.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/server/supervisor.ts",
+        "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ]
+        },
+        {
+          "name": "task worktree eviction syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Durable task eviction, recovery archives, inactivity GC, supervisor scheduling, and facade recovery must prove reversible cleanup without selecting the unrelated package-wide OS baseline.",
       "origin": "explicit"
     },
     {
@@ -740,6 +791,103 @@
       ],
       "critical": true,
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-work-session-fs",
+      "source": [
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/generated/core.manifest.json",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/scripts/fs.js",
+        "packages/os/scripts/generate-docs.ts",
+        "packages/os/scripts/generate-types.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/facade/types.ts",
+        "packages/os/scripts/lib/fs/mutation-path.ts",
+        "packages/os/scripts/lib/work-session-fs.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/session-start-foundation.test.ts",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/work-session-fs.test.ts",
+        "packages/os/tools/filesystem/schema.ts",
+        "packages/os/workflows/generated/workflow-bundles.json"
+      ],
+      "tests": [
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ]
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write)"
+          ]
+        },
+        {
+          "name": "OS work-session filesystem syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-work-session-code-call",
+      "source": [
+        "packages/os/scripts/lib/code-call/**",
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/tests/generated-error-code-parity.test.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/work-session-code-call.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS work-session Code Call and MCP authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-code-call.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/generated-error-code-parity.test.ts",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ]
+        },
+        {
+          "name": "OS work-session Code Call syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -832,7 +980,12 @@
         "packages/os/tests/fixtures/trace-persistence-runtime.ts",
         "packages/os/scripts/lib/distribution/runtime-bundle.ts",
         "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
-        "packages/os/tests/trace-site-inspector-interactions.test.ts"
+        "packages/os/tests/trace-site-inspector-interactions.test.ts",
+        "packages/os/scripts/lib/facade/logger.ts",
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-search-query.ts",
+        "packages/os/tests/trace-persistence.test.ts",
+        "packages/os/tests/trace-search-query.test.ts"
       ],
       "tests": [
         {
@@ -860,6 +1013,19 @@
             "packages/os",
             "test",
             "tests/trace-sites-runtime-boundary.test.ts"
+          ]
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
           ]
         }
       ],
@@ -1139,7 +1305,6 @@
         "packages/os/scripts/lifecycle.ts",
         "packages/os/scripts/lib/facade/schemas.ts",
         "packages/os/scripts/lib/native-lifecycle-operation.ts",
-        "packages/os/src/generated/workspace.d.ts",
         "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
         "packages/os/tests/fixtures/tool-package-baseline.json",
         "packages/os/tests/cli-update-routing.test.ts",
@@ -3745,6 +3910,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/durable-task-worktrees.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/environment-control-plane.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3826,6 +3996,11 @@
     },
     {
       "path": "packages/os/tests/gcloud-managed-cloud-node.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/generated-error-code-parity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4570,6 +4745,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/session-start-foundation.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/settings-cli.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4725,6 +4905,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/task-worktree-gc-scheduler.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/tool-manifest.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4866,6 +5051,16 @@
     },
     {
       "path": "packages/os/tests/windows-platform.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/work-session-code-call.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/work-session-fs.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15370,6 +15565,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/durable-task-worktrees.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/email-package-removal.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -15565,6 +15765,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/task-worktree-eviction.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/test-selection.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -15662,6 +15867,7 @@
     "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
     "packages/workspace/tests/dialer-validation-runbook.test.ts",
     "packages/workspace/tests/docs-production-release.test.js",
+    "packages/workspace/tests/durable-task-worktrees.test.ts",
     "packages/workspace/tests/email-package-removal.test.ts",
     "packages/workspace/tests/embedding-config.test.js",
     "packages/workspace/tests/explore-ranker.test.js",
@@ -15696,6 +15902,7 @@
     "packages/workspace/tests/task-session.test.js",
     "packages/workspace/tests/task-workpad.test.js",
     "packages/workspace/tests/task-workpad.test.ts",
+    "packages/workspace/tests/task-worktree-eviction.test.ts",
     "packages/workspace/tests/tool-manifest.test.ts",
     "packages/workspace/tests/trace-home.test.ts",
     "packages/workspace/tests/trace-site-inspector.test.ts",

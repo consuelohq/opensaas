@@ -32,6 +32,7 @@ import type {
 const require = createRequire(import.meta.url);
 const { resolvePrRefNumber } = require('../pr-ref');
 const { syncTddEvidence, syncTestSelectionEvidence, syncValidationEvidence } = require('../task-workpad');
+const { recoverDurableTaskSession } = require('../task-session');
 
 export const manifestEntries = manifestJson as ToolManifestEntry[];
 
@@ -825,6 +826,14 @@ function addSessionCandidates(candidates: Array<{ path: string; warn: boolean }>
 }
 
 function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.ProcessEnv): TaskSessionMetadata | null {
+  try {
+    const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+    const durable = recoverDurableTaskSession(taskSession, home ? { home } : {});
+    if (durable && isTaskSessionMetadata(durable, taskSession)) return durable;
+  } catch (error: unknown) {
+    process.stderr.write(`warning: failed to recover durable task session ${taskSession}: ${getErrorMessage(error)}\n`);
+  }
+
   const candidates: Array<{ path: string; warn: boolean }> = [];
   addSessionCandidates(candidates, cwd, true);
 
