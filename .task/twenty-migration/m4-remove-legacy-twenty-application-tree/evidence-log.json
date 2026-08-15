@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/twenty-migration/m4-remove-legacy-twenty-application-tree",
+  "events": [
+    {
+      "id": "e33f9508-cf77-45b4-802f-17b488f816ed",
+      "occurred_at": "2026-08-15T20:22:32.784Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/code-call-snapshot.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/m4-remove-legacy-twenty-application-tree",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/m4-remove-legacy-twenty-application-tree"
+      }
+    },
+    {
+      "id": "f957cc1d-3ae0-42bf-a856-7842849fcce5",
+      "occurred_at": "2026-08-15T20:24:05.646Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/m4-remove-legacy-twenty-application-tree",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/m4-remove-legacy-twenty-application-tree"
+      }
+    },
+    {
+      "id": "7294f000-4cf4-4573-95d3-fb5a0cdb4922",
+      "occurred_at": "2026-08-15T20:25:47.906Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/twenty-migration/m4-remove-legacy-twenty-application-tree/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/m4-remove-legacy-twenty-application-tree",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/m4-remove-legacy-twenty-application-tree"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T20:25:47.968Z"
+}

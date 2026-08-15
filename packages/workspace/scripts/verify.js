@@ -12,6 +12,8 @@ const {
   writeVerifyStamp,
 } = require('./lib/verification');
 
+const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
+
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
 }
@@ -219,6 +221,7 @@ function readChangedFiles(repoRoot, base) {
       cwd: repoRoot,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: GIT_OUTPUT_MAX_BUFFER,
     });
 
     for (const entry of statusOutput.split('\0').filter(Boolean)) {

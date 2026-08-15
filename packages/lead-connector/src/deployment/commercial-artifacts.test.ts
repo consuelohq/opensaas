@@ -61,8 +61,6 @@ describe('commercial deployment artifacts', () => {
       'package.json',
       'eslint.config.mjs',
       'packages/os/scripts/artifacts-design.ts',
-      'packages/twenty-docker/twenty/Dockerfile',
-      'packages/twenty-docker/twenty/Dockerfile.worker',
     ];
 
     for (const path of candidates) {
