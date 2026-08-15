@@ -389,6 +389,45 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused MCP admission contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/server/routes/mcp.ts',
+      '--changed-file',
+      'packages/os/scripts/server/middleware/dangerous-material.ts',
+      '--changed-file',
+      'packages/os/scripts/server/logger.ts',
+      '--changed-file',
+      'packages/os/tests/mcp-gateway.test.ts',
+      '--changed-file',
+      'packages/documentation/src/content/docs/reference/mcp.mdx',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-admission-error-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS MCP admission contracts',
+      'OS dangerous material ingress contracts',
+      'OS MCP admission syntax contracts',
+    ]));
+    const ingressSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS dangerous material ingress contracts',
+    );
+    expect(ingressSuite?.command).toEqual([
+      'bun',
+      '--cwd',
+      'packages/os',
+      '../../node_modules/vitest/vitest.mjs',
+      'run',
+      'tests/dangerous-material-policy.test.ts',
+    ]);
+  });
+
   it('uses focused ChatGPT MCP OAuth contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

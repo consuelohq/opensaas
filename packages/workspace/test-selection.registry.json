@@ -5,8 +5,8 @@
     "testFileCount": 2630,
     "mappedTestCount": 2547,
     "unmappedTestCount": 83,
-    "ruleCount": 54,
-    "explicitRuleCount": 35,
+    "ruleCount": 55,
+    "explicitRuleCount": 36,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -1307,6 +1307,51 @@
       "critical": true,
       "exclusive": true,
       "reason": "Cloud-first Consuelo OS login, canonical signup, workspace trial, and provisioning handoff changes must prove the exact browser auth, managed-cloud, installer-lifecycle, launcher, Worker, and syntax contracts without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-mcp-admission-error-contract",
+      "source": [
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/scripts/server/middleware/dangerous-material.ts",
+        "packages/os/scripts/server/logger.ts",
+        "packages/os/scripts/lib/dangerous-material-policy.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/dangerous-material-policy.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS MCP admission contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ]
+        },
+        {
+          "name": "OS dangerous material ingress contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dangerous-material-policy.test.ts"
+          ]
+        },
+        {
+          "name": "OS MCP admission syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "MCP request admission and dangerous-material boundary changes must prove JSON-RPC transport/error behavior, fail-closed safety, authentication/gateway compatibility, and syntax without selecting the historically broad OS package suite.",
       "origin": "explicit"
     },
     {
