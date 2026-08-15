@@ -78,9 +78,14 @@ type WorkSessionResolution =
 const runtimePackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const MAX_LOG_COMMAND_CHARS = 4000;
 const WORK_SESSION_FS_TOOLS = new Set(['fs.write', 'fs.apply_patch', 'fs.trash']);
+const WORK_SESSION_AUTHORITY_TOOLS = new Set([...WORK_SESSION_FS_TOOLS, 'code.call']);
 
 function isWorkSessionFsTool(toolName: string): boolean {
   return WORK_SESSION_FS_TOOLS.has(toolName);
+}
+
+function supportsWorkSessionAuthority(toolName: string): boolean {
+  return WORK_SESSION_AUTHORITY_TOOLS.has(toolName);
 }
 
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
@@ -1086,7 +1091,7 @@ function resolveWorkSessionInput(
 ): WorkSessionResolution | null {
   const workSession = typeof input.workSession === 'string' ? input.workSession.trim() : '';
   if (!workSession) return null;
-  if (!isWorkSessionFsTool(toolName)) {
+  if (!supportsWorkSessionAuthority(toolName)) {
     return {
       ok: false,
       code: 'VALIDATION_ERROR',
@@ -1097,7 +1102,7 @@ function resolveWorkSessionInput(
     return {
       ok: false,
       code: 'VALIDATION_ERROR',
-      message: 'workSession filesystem calls cannot also select a task branch. Use taskSession for repository edits.',
+      message: 'workSession calls cannot also select a task branch. Use taskSession for repository edits.',
     };
   }
   try {

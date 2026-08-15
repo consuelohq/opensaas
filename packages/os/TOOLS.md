@@ -1345,12 +1345,12 @@ await workspace.call({
 
 ### workspace.code.call
 
-Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
+Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
 
 | Field | Value |
 | --- | --- |
 | Category | codemode |
-| Signature | `workspace.code.call({ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" &#124; "edit" &#124; "verify"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.code.call({ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" &#124; "edit" &#124; "verify"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os code.call` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 180000ms |
