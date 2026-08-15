@@ -121,7 +121,7 @@ const buildDecisionContext = (input: {
   preferLocalPresence: boolean;
   ranked?: PredictiveRankedCandidate;
   suppressed?: PredictiveSuppressedCandidate;
-}): PredictiveDecisionContext => {
+}): PredictiveDecisionContext | null => {
   const attemptsUsed = nonNegativeAttemptCount(input.attempt?.attempts_total);
   const lastAttemptAt = parseAttemptDate(input.attempt?.last_attempt_at);
   const local = resolveDecisionTimezone(
@@ -130,9 +130,7 @@ const buildDecisionContext = (input: {
     input.evaluatedAt,
   );
   const evidence = input.ranked ?? input.suppressed;
-  if (!evidence) {
-    throw new Error('D3 decision evidence is missing for candidate');
-  }
+  if (!evidence) return null;
 
   return {
     schemaVersion: D4_FEATURE_SCHEMA_VERSION,
@@ -244,7 +242,7 @@ export const rankPredictiveTargetsWithDecision = async ({
         ranked: rankedByPosition.get(position),
         suppressed: suppressedByPosition.get(position),
       });
-      contextByPosition.set(position, context);
+      if (context) contextByPosition.set(position, context);
     }
 
     const decisionId = randomUUID();
@@ -257,12 +255,19 @@ export const rankPredictiveTargetsWithDecision = async ({
       modelVersion: D3_MODEL_VERSION,
       featureSchemaVersion: D4_FEATURE_SCHEMA_VERSION,
       policyMode: 'deterministic',
-      eligible: targets.map((target, position) => ({
-        contactId: target.contactId,
-        position,
-        nextAttemptNumber: contextByPosition.get(position)!.d3.nextAttemptNumber,
-        decisionContext: contextByPosition.get(position),
-      })),
+      eligible: targets.map((target, position) => {
+        const decisionContext = contextByPosition.get(position);
+        return {
+          contactId: target.contactId,
+          position,
+          ...(decisionContext
+            ? {
+                nextAttemptNumber: decisionContext.d3.nextAttemptNumber,
+                decisionContext,
+              }
+            : {}),
+        };
+      }),
       ranked: selection.ranked.map((candidate) => ({
         contactId: candidate.contactId,
         position: candidate.position,
@@ -296,12 +301,16 @@ export const rankPredictiveTargetsWithDecision = async ({
     for (const candidate of selection.ranked) {
       const target = targets[candidate.position];
       const decisionContext = contextByPosition.get(candidate.position);
-      if (!target || !decisionContext) continue;
-      rankedTargets.push({
-        ...target,
-        predictiveDecisionId: decisionId,
-        decisionContext,
-      });
+      if (!target) continue;
+      rankedTargets.push(
+        decisionContext
+          ? {
+              ...target,
+              predictiveDecisionId: decisionId,
+              decisionContext,
+            }
+          : target,
+      );
     }
 
     return {

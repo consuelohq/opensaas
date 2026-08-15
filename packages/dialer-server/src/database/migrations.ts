@@ -12,6 +12,8 @@ export const DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID =
   '20260815_002_predictive_learning_observations';
 export const DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID =
   '20260815_003_contextual_predictive_science';
+export const DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID =
+  '20260815_004_contextual_predictive_science_hardening';
 
 const CREATE_MIGRATION_TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS consuelo_dialer_schema_migrations (
@@ -122,6 +124,37 @@ const CREATE_PREDICTIVE_DECISIONS_SCOPE_INDEX_SQL = `
     )
 `;
 
+const HARDEN_CONTEXTUAL_OBSERVATION_SCHEMA_SQL = `
+  DO $$
+  BEGIN
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'dialer_learning_feature_schema_version_check'
+    ) THEN
+      ALTER TABLE dialer_learning_observations
+        ADD CONSTRAINT dialer_learning_feature_schema_version_check
+        CHECK (feature_schema_version IS NULL OR feature_schema_version > 0)
+        NOT VALID;
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'dialer_learning_decision_context_schema_check'
+    ) THEN
+      ALTER TABLE dialer_learning_observations
+        ADD CONSTRAINT dialer_learning_decision_context_schema_check
+        CHECK (
+          decision_context IS NULL OR (
+            jsonb_typeof(decision_context) = 'object' AND
+            feature_schema_version IS NOT NULL AND
+            decision_context->>'schemaVersion' = feature_schema_version::text
+          )
+        )
+        NOT VALID;
+    END IF;
+  END $$;
+`;
+
 type Migration = {
   id: string;
   up: (database: LeadConnectorDatabase) => Promise<void>;
@@ -167,6 +200,18 @@ const migrations: readonly Migration[] = [
         await database.query(CREATE_PREDICTIVE_DECISIONS_SCOPE_INDEX_SQL);
       } catch (cause: unknown) {
         throw new Error('Failed to initialize contextual predictive science schema', {
+          cause,
+        });
+      }
+    },
+  },
+  {
+    id: DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
+    up: async (database) => {
+      try {
+        await database.query(HARDEN_CONTEXTUAL_OBSERVATION_SCHEMA_SQL);
+      } catch (cause: unknown) {
+        throw new Error('Failed to harden contextual predictive science schema', {
           cause,
         });
       }

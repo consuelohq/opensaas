@@ -76,6 +76,18 @@ export type RailwayRuntimeResources = {
   redis?: RailwayRedisClient;
 };
 
+export const selectSuccessfullyCreatedTargets = <
+  T extends { contactId: string },
+>(
+  targets: readonly T[],
+  createdCalls: readonly { contactId?: string | null; callSid: string }[],
+): T[] => {
+  const createdContactIds = new Set(
+    createdCalls.flatMap((call) => (call.contactId ? [call.contactId] : [])),
+  );
+  return targets.filter((target) => createdContactIds.has(target.contactId));
+};
+
 type PgPoolLike = {
   query: <T>(
     text: string,
@@ -914,18 +926,25 @@ export const createRailwayDialerApplicationLayers = async (
 
     const calls: DialerCallRepositoryService = {
       createMockCalls: ({ workspaceId, targets: selected, callerIds }) =>
-        Effect.promise(() =>
-          finalizeSelectedDecisionRecords(workspaceId, selected).then(() =>
-            selected.map((target, index) => ({
+        Effect.promise(async () => {
+          try {
+            const createdCalls = selected.map((target, index) => ({
               callSid: `mock_${randomUUID().replaceAll('-', '')}`,
               contactId: target.contactId,
               customerNumber: target.phone,
               callerId: callerIds[index],
-              status: 'mocked',
+              status: 'mocked' as const,
               position: index + 1,
-            })),
-          ),
-        ),
+            }));
+            await finalizeSelectedDecisionRecords(
+              workspaceId,
+              selectSuccessfullyCreatedTargets(selected, createdCalls),
+            );
+            return createdCalls;
+          } catch (cause: unknown) {
+            throw normalizeAsyncError(cause);
+          }
+        }),
     };
 
     const callRuntime: DialerCallRuntimeService = {
@@ -1089,15 +1108,22 @@ export const createRailwayDialerApplicationLayers = async (
               }
               acquired.push(callerId);
             }
-            yield* Effect.promise(() =>
-              finalizeSelectedDecisionRecords(input.workspaceId, input.targets),
-            );
             const result = yield* tryEffect('initiate-provider-calls', () =>
               dialer.parallel.initiateGroup(
                 buildProviderGroupOptions(input, runtime.publicUrl),
               ),
             );
             groupId = result.groupId;
+            const createdCalls = result.calls.map((call) => ({
+              callSid: call.callSid,
+              contactId: input.targets[call.position - 1]?.contactId ?? null,
+            }));
+            yield* Effect.promise(() =>
+              finalizeSelectedDecisionRecords(
+                input.workspaceId,
+                selectSuccessfullyCreatedTargets(input.targets, createdCalls),
+              ),
+            );
             for (const call of result.calls) {
               const transferred = yield* tryEffect(
                 'transfer-caller-id-lock',

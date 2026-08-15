@@ -178,12 +178,13 @@ export const populationStabilityIndex = (
   }
   const referenceCounts = binCounts(reference, edges);
   const comparisonCounts = binCounts(comparison, edges);
+  const binCount = referenceCounts.length;
+  const referenceDenominator = reference.length + PSI_EPSILON * binCount;
+  const comparisonDenominator = comparison.length + PSI_EPSILON * binCount;
   return referenceCounts.reduce((sum, count, index) => {
-    const referenceShare = Math.max(count / reference.length, PSI_EPSILON);
-    const comparisonShare = Math.max(
-      comparisonCounts[index]! / comparison.length,
-      PSI_EPSILON,
-    );
+    const referenceShare = (count + PSI_EPSILON) / referenceDenominator;
+    const comparisonShare =
+      (comparisonCounts[index]! + PSI_EPSILON) / comparisonDenominator;
     return (
       sum +
       (comparisonShare - referenceShare) *

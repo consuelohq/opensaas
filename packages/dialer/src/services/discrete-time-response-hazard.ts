@@ -39,7 +39,11 @@ const validateConfiguration = (
   if (!Number.isFinite(horizonMs) || horizonMs <= 0) {
     throw new RangeError('horizonMs must be positive and finite');
   }
-  const intervalCount = Math.ceil(horizonMs / intervalMs);
+  const intervalRatio = horizonMs / intervalMs;
+  if (!Number.isInteger(intervalRatio)) {
+    throw new RangeError('horizonMs must be an integer multiple of intervalMs');
+  }
+  const intervalCount = intervalRatio;
   if (intervalCount < 1) {
     throw new RangeError('hazard configuration must define at least one interval');
   }
@@ -66,6 +70,13 @@ export const expandDiscreteTimeObservation = (
       periods.push({ intervalIndex: index, eventObserved: false });
     }
     periods.push({ intervalIndex: eventInterval, eventObserved: true });
+    return periods;
+  }
+
+  if (observation.outcomeClass === 'non_response') {
+    for (let index = 0; index < intervalCount; index += 1) {
+      periods.push({ intervalIndex: index, eventObserved: false });
+    }
     return periods;
   }
 
@@ -115,6 +126,7 @@ export class DiscreteTimeResponseHazardModel {
     readonly intervalMs: number,
     readonly horizonMs: number,
     private readonly intervalCount: number,
+    private readonly supportedIntervals: readonly boolean[],
   ) {}
 
   static fit(
@@ -161,6 +173,13 @@ export class DiscreteTimeResponseHazardModel {
     const featureCount = rows[0]!.features.length;
     const weights = Array.from({ length: featureCount }, () => 0);
     const contextualFeatureCount = featureCount - intervalCount;
+    const supportedIntervals = Array.from({ length: intervalCount }, () => false);
+    for (const row of rows) {
+      const intervalOffset = row.features
+        .slice(contextualFeatureCount)
+        .findIndex((value) => value === 1);
+      if (intervalOffset >= 0) supportedIntervals[intervalOffset] = true;
+    }
 
     for (let iteration = 0; iteration < iterations; iteration += 1) {
       const gradient = Array.from({ length: featureCount }, () => 0);
@@ -175,10 +194,10 @@ export class DiscreteTimeResponseHazardModel {
       for (let index = 0; index < featureCount; index += 1) {
         // Shrink contextual effects. The interval-specific baseline hazard is
         // intentionally left unpenalized so time shape is not forced linear.
+        const dataDerivative = gradient[index]! / rows.length;
         const regularization =
           index < contextualFeatureCount ? l2Penalty * weights[index]! : 0;
-        weights[index] -=
-          learningRate * (gradient[index]! + regularization) / rows.length;
+        weights[index] -= learningRate * (dataDerivative + regularization);
       }
     }
 
@@ -187,17 +206,20 @@ export class DiscreteTimeResponseHazardModel {
       intervalMs,
       horizonMs,
       intervalCount,
+      supportedIntervals,
     );
   }
 
   predictIntervalHazards(context: PredictiveDecisionContext): number[] {
     return Array.from({ length: this.intervalCount }, (_value, intervalIndex) =>
-      sigmoid(
-        dot(
-          this.weights,
-          encodeHazardPeriod(context, intervalIndex, this.intervalCount),
-        ),
-      ),
+      this.supportedIntervals[intervalIndex]
+        ? sigmoid(
+            dot(
+              this.weights,
+              encodeHazardPeriod(context, intervalIndex, this.intervalCount),
+            ),
+          )
+        : 0,
     );
   }
 

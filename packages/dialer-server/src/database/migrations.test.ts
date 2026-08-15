@@ -5,6 +5,7 @@ import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
 import {
   DIALER_DATABASE_BASELINE_MIGRATION_ID,
   DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID,
+  DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
   DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
   migrateDialerDatabase,
 } from './migrations';
@@ -65,8 +66,20 @@ describe('dialer database migrations', () => {
         DIALER_DATABASE_BASELINE_MIGRATION_ID,
         DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
         DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID,
+        DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
       ]),
     );
+  });
+
+  it('hardens D4 snapshot version integrity without rewriting historical observations', async () => {
+    const harness = createDatabaseHarness();
+    await migrateDialerDatabase(harness.database);
+    const sql = harness.calls.map((call) => call.text).join('\n');
+
+    expect(sql).toContain('dialer_learning_feature_schema_version_check');
+    expect(sql).toContain('dialer_learning_decision_context_schema_check');
+    expect(sql).toContain("decision_context->>'schemaVersion'");
+    expect(sql).not.toMatch(/UPDATE\s+dialer_learning_observations\s+SET/i);
   });
 
   it('adds canonical learning observations without inventing a biased legacy backfill', async () => {
@@ -134,6 +147,6 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(3);
+    expect(migrationInserts).toHaveLength(4);
   });
 });

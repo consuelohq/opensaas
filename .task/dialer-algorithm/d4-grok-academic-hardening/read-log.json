@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/dialer-server/src/app.contract.test.ts",
+    "packages/dialer-server/src/database/migrations.test.ts",
+    "packages/dialer-server/src/database/migrations.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.ts",
+    "packages/dialer-server/src/learning/contextual-shadow-evaluation.test.ts",
+    "packages/dialer/src/index.ts",
+    "packages/dialer/src/services/predictive-evaluation.spec.ts"
+  ],
+  "updatedAt": "2026-08-15T07:10:48.413Z"
+}

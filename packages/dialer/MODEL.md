@@ -133,21 +133,31 @@ Critically, D4 contact-local context does **not** overwrite D3's canonical `loca
 
 ### Decision logging and policy support
 
-`dialer_predictive_decisions` separates the ranking decision from the action that was ultimately taken after caller-ID capacity and fanout are resolved. Each decision records:
+`dialer_predictive_decisions` separates the ranking decision from the action that was actually initiated after caller-ID capacity and fanout are resolved. Each decision records:
 
 - policy, model, and feature-schema versions;
 - the eligible candidate set and immutable D4 contexts;
 - D3 ranked and suppressed evidence;
-- the selected contact IDs when capacity selection is finalized;
+- the selected contact IDs only after mock/provider legs are successfully created; partial provider creation records only contacts with created legs;
 - policy mode and optional selection probabilities.
 
 The D3 policy is deterministic, so D4 records `policy_mode = deterministic` and `selection_probabilities = NULL`. A database constraint enforces that invariant. D4 deliberately does not manufacture 1/0 values and call them propensities. Therefore these logs do not by themselves justify inverse-propensity, doubly robust, or other off-policy evaluation claims. A future exploratory policy must log genuine stochastic action probabilities with adequate support/overlap before those estimators are valid.
 
 Decision-log persistence is auxiliary to D3 selection. If the D4 decision log is unavailable, the runtime emits an explicit diagnostic and preserves the D3 ranking. A canonical D3 model-store failure remains a separate condition and still fails open to FIFO through `dialer.predictive.fifo_fallback`.
 
+D4 context construction is also auxiliary. If a successfully ranked D3 candidate lacks D4 evidence because of an internal alignment defect, the runtime preserves the D3 result and omits D4 context for that candidate rather than converting the decision to FIFO. FIFO remains reserved for actual D3 model/store failure.
+
+Browser-supplied `targetContexts` are never authoritative scientific input. The public route strips them unless the server reconstructs context from an authorized provider preview. Direct-call authorization also removes client context. This prevents clients from spoofing timezone, opportunity value, or other research features.
+
 ### Contextual response challenger
 
-`ContextualResponseModel` is a shadow-only L2-regularized logistic response model. The first feature basis is deliberately small and reproducible:
+`ContextualResponseModel` is a shadow-only L2-regularized logistic response model. For observations `(x_i, y_i)` it minimizes the explicitly implemented objective
+
+`mean_i[-y_i log p_i - (1-y_i) log(1-p_i)] + (lambda / 2) * ||w_non_intercept||^2`
+
+with `p_i = sigmoid(w^T x_i)`. The intercept is not regularized. The L2 term is applied outside the sample-size normalization, so a fixed `lambda` has the same mathematical meaning when the same empirical distribution is replicated to a larger sample. The feature dimension is derived from the encoder at fit time and mismatched dimensions fail closed.
+
+The first feature basis is deliberately small and reproducible:
 
 - cyclic local hour and day-of-week terms;
 - lifetime, daily, and weekly attempt counts;
@@ -163,21 +173,26 @@ This challenger is an observational prediction model. Its coefficients are not t
 
 The Bernoulli challenger is fit only on canonical rows whose response outcome was actually observed. If censoring remains informative after conditioning on the recorded context, this complete-case response model can still be selection-biased. D4 does not claim independent censoring, inverse-probability-of-censoring correction, or causal identification.
 
-### Discrete-time response hazard challenger
+`attemptsToday` and `attemptsThisWeek` currently inherit the ledger's database/session calendar-window semantics. They are useful predictive covariates but should not be described as contact-local calendar counts until the ledger itself owns an explicit local-timezone definition.
 
-D4 also defines `DiscreteTimeResponseHazardModel` for the distinct event-time estimand `P(response by horizon | context)`. It converts each canonical response-time observation into person-period rows:
+### Discrete-time fixed-horizon response challenger
+
+D4 also defines `DiscreteTimeResponseHazardModel`. The historical class name contains "Hazard", but the hardened D4 estimand is more precisely a fixed-horizon attempt-response incidence model on a discrete logistic time grid. The target is whether a human response is observed in the half-open interval `[0, horizon)`, conditional on the recorded context and the stated censoring convention.
+
+It converts each canonical response-time observation into discrete period rows:
 
 - intervals fully observed before a response contribute observed no-event rows;
 - the interval containing an observed response contributes the event row;
-- intervals fully observed before right-censoring contribute no-event rows;
+- a terminal provider `non_response` is definitive evidence that the attempt cannot later produce a response, so it contributes no-event rows through the fixed horizon;
+- intervals fully observed before genuine right-censoring contribute no-event rows;
 - a partially observed censor interval contributes no synthetic failure label;
 - an observation that remains event-free through the configured horizon contributes all horizon intervals as no-event rows.
 
-The logistic hazard uses a separate unpenalized indicator for every discrete time interval, giving a non-parametric baseline hazard over the chosen grid, plus shared L2-regularized D4 contextual effects. Cumulative response-by-horizon probability is derived as `1 - product(1 - h_j)` over interval hazards.
+The grid requires `horizonMs` to be an integer multiple of `intervalMs`; unsupported intervals are not assigned the accidental `sigmoid(0)=0.5` default and instead contribute zero predicted interval probability. The model uses a separate unpenalized indicator for each supported interval plus shared L2-regularized contextual effects. As with the Bernoulli challenger, the contextual L2 penalty is applied to the mean-loss objective without an additional `1/n` shrinkage. The response-by-horizon prediction is `1 - product(1 - h_j)` over the fitted interval probabilities.
 
-The fixed-horizon shadow evaluator trains on earlier event-time observations, including correctly right-censored records. Holdout scoring includes only cases whose response-by-horizon outcome is actually observed: a response event is known, or the call remained observed through the horizon. A leg censored before the horizon is counted explicitly and excluded from Brier/log-loss scoring rather than treated as a non-response. D4 does not compare this fixed-horizon probability directly with D3's response estimate because they are different estimands.
+The fixed-horizon shadow evaluator trains on earlier observations, including correctly right-censored records. A terminal `non_response` is always an observed fixed-horizon `Y=0`, even when it ends before the horizon. A genuine leg censored before the horizon is counted explicitly and excluded from Brier/log-loss scoring rather than treated as a non-response. A response at exactly the horizon is outside the half-open `[0, horizon)` event window and therefore scores `Y=0`. D4 does not compare this fixed-horizon probability directly with D3's response estimate because they are different estimands.
 
-That fixed-horizon holdout score is descriptive complete-case evaluation. If early censoring is informative conditional on the recorded context, excluding early-censored holdout rows can bias the reported score. D4 does not claim IPCW-adjusted survival evaluation or independent censoring; those require a separately specified censoring model and validation.
+That fixed-horizon holdout score is descriptive complete-case evaluation over outcomes known by the horizon. Winner-induced or ambiguous early censoring can still be informative conditional on the recorded context, so excluding those rows can bias the reported score. D4 does not claim IPCW-adjusted survival evaluation, a competing-risks cumulative-incidence estimator, independent censoring, or causal identification. Those require separately specified assumptions and validation.
 
 ### Shadow evaluation and calibration
 
@@ -189,9 +204,15 @@ The contextual response evaluator uses chronological holdout rather than random 
 - population stability index over challenger prediction distributions as a drift diagnostic;
 - explicit insufficient-data status below the configured minimum sample size.
 
+The report also exposes unique contacts in training/holdout and their overlap. A chronological split can contain repeated contacts on both sides, so it measures next-attempt/out-of-time prediction under the observed stream; it is not automatically a new-contact generalization experiment. A contact-blocked split or purge gap is a future evaluation design, not something D4 silently claims today.
+
+`minSampleSize` and the training fraction are explicit research policy settings, not confidence guarantees. The report labels the minimum-sample rule as heuristic. Calibration reports how many fixed bins are empty rather than hiding sparse cells.
+
 D3 `hazardSource = missing` is not scored as a zero-probability control forecast. D3 intentionally treats missing evidence as absence of an estimate, so evaluating its internal zero placeholder as a substantive forecast would bias the comparison against the control.
 
-Population stability index is a monitoring heuristic, not a statistical test or a guarantee of stationarity. Calibration bins are descriptive. D4 does not claim that a single chronological split proves future generalization across campaign, season, caller-reputation, or workspace shifts.
+Population stability index is a monitoring heuristic, not a statistical test or a guarantee of stationarity. Empty PSI cells receive a small normalized pseudocount only for numerical stability. Calibration bins are descriptive. D4 does not claim that a single chronological split proves future generalization across campaign, season, caller-reputation, or workspace shifts.
+
+Malformed feature snapshots and observations are quarantined per row and reported. Rows whose non-null `decision_id` cannot be linked to a persisted decision are also excluded and counted. New writes are constrained so non-null decision-context JSON is an object whose embedded `schemaVersion` matches the positive `feature_schema_version` column. Existing historical rows are not backfilled or rewritten by this hardening migration.
 
 ### Candidate-specific economics
 
@@ -201,7 +222,7 @@ D4 keeps response prediction separate from candidate economics. Where an immutab
 
 `expectedNetValue(candidate) = predictedResponseProbability * valuePerConnection(candidate) - costPerAttempt`
 
-The shadow report also includes a value-weighted Brier diagnostic, mean predicted net value, and a response-weighted net-value proxy. The proxy uses the observed response indicator multiplied by expected value per connection; it is not realized booked revenue. These diagnostics are explicitly labeled `descriptive_not_causal`. They do not estimate incremental revenue caused by calling, and they are not an uplift model or a counterfactual policy-value estimate.
+The shadow report also includes a value-weighted Brier diagnostic, mean predicted net value, and `observedNetValueProxy`. The proxy uses the observed response indicator multiplied by expected value per connection; it is not realized booked revenue. If every candidate has zero economic weight, the value-weighted Brier is `NULL` rather than manufacturing a denominator. These diagnostics are explicitly labeled `descriptive_not_causal`. They do not estimate incremental revenue caused by calling, and they are not an uplift model or a counterfactual policy-value estimate.
 
 ### Promotion rule
 

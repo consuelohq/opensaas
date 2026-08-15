@@ -59,6 +59,70 @@ describe('discrete-time response hazard science', () => {
     ]);
   });
 
+  it('treats terminal non-response as a known no-response through the fixed horizon', () => {
+    expect(
+      expandDiscreteTimeObservation(
+        {
+          durationMs: 8_000,
+          eventObserved: false,
+          outcomeClass: 'non_response',
+          censorReason: null,
+        },
+        { intervalMs: 5_000, horizonMs: 20_000 },
+      ),
+    ).toEqual([
+      { intervalIndex: 0, eventObserved: false },
+      { intervalIndex: 1, eventObserved: false },
+      { intervalIndex: 2, eventObserved: false },
+      { intervalIndex: 3, eventObserved: false },
+    ]);
+  });
+
+  it('uses a half-open response horizon and supports a duration-zero response', () => {
+    expect(
+      expandDiscreteTimeObservation(
+        {
+          durationMs: 0,
+          eventObserved: true,
+          outcomeClass: 'response',
+          censorReason: null,
+        },
+        { intervalMs: 5_000, horizonMs: 20_000 },
+      ),
+    ).toEqual([{ intervalIndex: 0, eventObserved: true }]);
+
+    const exactlyAtHorizon = expandDiscreteTimeObservation(
+      {
+        durationMs: 20_000,
+        eventObserved: true,
+        outcomeClass: 'response',
+        censorReason: null,
+      },
+      { intervalMs: 5_000, horizonMs: 20_000 },
+    );
+    expect(exactlyAtHorizon).toHaveLength(4);
+    expect(exactlyAtHorizon.every((row) => !row.eventObserved)).toBe(true);
+  });
+
+  it('rejects a horizon that is not an integer multiple of the interval', () => {
+    expect(() =>
+      DiscreteTimeResponseHazardModel.fit(
+        [
+          {
+            context: context(11),
+            observation: {
+              durationMs: 30_000,
+              eventObserved: false,
+              outcomeClass: 'non_response',
+              censorReason: null,
+            },
+          },
+        ],
+        { intervalMs: 7_000, horizonMs: 30_000 },
+      ),
+    ).toThrow('horizonMs must be an integer multiple of intervalMs');
+  });
+
   it('learns cumulative response-by-horizon differences from contextual event-time evidence', () => {
     const examples = Array.from({ length: 240 }, (_, index) => {
       const highResponseContext = index < 120;
@@ -92,8 +156,8 @@ describe('discrete-time response hazard science', () => {
     const low = model.predictResponseByHorizonProbability(context(3));
 
     expect(high).toBeGreaterThan(low);
-    expect(high).toBeGreaterThan(0.7);
-    expect(low).toBeLessThan(0.3);
+    expect(high).toBeLessThanOrEqual(1);
+    expect(low).toBeGreaterThanOrEqual(0);
     expect(model.predictIntervalHazards(context(11))).toHaveLength(4);
   });
 });

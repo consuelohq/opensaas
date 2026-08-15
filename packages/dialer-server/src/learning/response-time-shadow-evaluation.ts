@@ -22,6 +22,8 @@ export type ResponseTimeShadowEvaluationDatabase = {
 };
 
 type ResponseTimeObservationRow = {
+  decision_id?: string | null;
+  decision_exists?: boolean;
   attempted_at: string | Date;
   response_at: string | Date | null;
   observed_until_at: string | Date | null;
@@ -105,7 +107,8 @@ const toResponseTimeExample = (
 const isOutcomeObservedByHorizon = (
   observation: ResponseTimeObservation,
   horizonMs: number,
-): boolean => observation.eventObserved || observation.durationMs >= horizonMs;
+): boolean =>
+  observation.outcomeClass !== 'censored' || observation.durationMs >= horizonMs;
 
 const respondedByHorizon = (
   observation: ResponseTimeObservation,
@@ -127,26 +130,54 @@ export const evaluateResponseTimeHazardShadow = async (
 
   const result = await database.query<ResponseTimeObservationRow>(
     `SELECT
-       attempted_at,
-       response_at,
-       observed_until_at,
-       outcome_class,
-       censor_reason,
-       decision_context
-     FROM dialer_learning_observations
-     WHERE workspace_id = $1
-       AND segment_id = $2
-       AND feature_schema_version = 2
-       AND decision_context IS NOT NULL
+       observation.decision_id,
+       (observation.decision_id IS NULL OR decision.decision_id IS NOT NULL) AS decision_exists,
+       observation.attempted_at,
+       observation.response_at,
+       observation.observed_until_at,
+       observation.outcome_class,
+       observation.censor_reason,
+       observation.decision_context
+     FROM dialer_learning_observations AS observation
+     LEFT JOIN dialer_predictive_decisions AS decision
+       ON decision.workspace_id = observation.workspace_id
+      AND decision.decision_id = observation.decision_id
+     WHERE observation.workspace_id = $1
+       AND observation.segment_id = $2
+       AND observation.feature_schema_version = 2
+       AND observation.decision_context IS NOT NULL
      ORDER BY attempted_at, group_id, position`,
     [options.workspaceId, options.segmentId],
   );
-  const examples = result.rows.map(toResponseTimeExample);
+  const examples: ResponseTimeShadowExample[] = [];
+  let invalidContextCount = 0;
+  let invalidObservationCount = 0;
+  let unlinkableDecisionCount = 0;
+  for (const row of result.rows) {
+    if (row.decision_id && row.decision_exists === false) {
+      unlinkableDecisionCount += 1;
+      continue;
+    }
+    try {
+      parsePredictiveDecisionContext(row.decision_context);
+    } catch (_cause: unknown) {
+      invalidContextCount += 1;
+      continue;
+    }
+    try {
+      examples.push(toResponseTimeExample(row));
+    } catch (_cause: unknown) {
+      invalidObservationCount += 1;
+    }
+  }
   if (examples.length < minSampleSize) {
     return {
       status: 'insufficient_data' as const,
       sampleSize: examples.length,
       requiredSampleSize: minSampleSize,
+      ...(invalidContextCount > 0 ? { invalidContextCount } : {}),
+      ...(invalidObservationCount > 0 ? { invalidObservationCount } : {}),
+      ...(unlinkableDecisionCount > 0 ? { unlinkableDecisionCount } : {}),
     };
   }
 
@@ -171,6 +202,9 @@ export const evaluateResponseTimeHazardShadow = async (
       trainingSampleSize: split.training.length,
       holdoutSampleSize: split.holdout.length,
       earlyCensoredHoldoutCount: split.holdout.length,
+      invalidContextCount,
+      invalidObservationCount,
+      unlinkableDecisionCount,
       intervalMs,
       horizonMs,
       estimand: 'response_by_horizon' as const,
@@ -190,6 +224,9 @@ export const evaluateResponseTimeHazardShadow = async (
     holdoutSampleSize: split.holdout.length,
     evaluableHoldoutSampleSize: evaluable.length,
     earlyCensoredHoldoutCount: split.holdout.length - evaluable.length,
+    invalidContextCount,
+    invalidObservationCount,
+    unlinkableDecisionCount,
     metrics: evaluateProbabilisticPredictions(predictions),
     calibration: buildCalibrationBins(predictions),
     predictionDriftPsi: populationStabilityIndex(
