@@ -13,7 +13,11 @@ import type {
   TraceSitesDashboardSummary,
 } from './trace-sites-gateway-contract';
 import { redactTraceJson, redactTraceText } from './redaction';
-import { ensureTraceDatabaseSchema } from './trace-database-schema';
+import {
+  ensureTraceDatabaseSchema,
+  openTraceDatabase,
+  type TraceDatabase,
+} from './trace-database-schema';
 import { compileTraceHistorySearch } from './trace-search-query';
 
 export type LocalTraceSitesReadBackendOptions = {
@@ -167,8 +171,7 @@ async function readNewerTracePage(
 ): Promise<TraceSitesGatewayHistoryPage> {
   if (!existsSync(dbPath)) return { rows: [], nextCursor: input.cursor };
 
-  const { Database } = await import('bun:sqlite');
-  const db = new Database(dbPath, { readonly: true });
+  const db = openTraceDatabase(dbPath, { create: false, readonly: true });
   try {
     const afterRowid = resolveHistoryAfterRowid(db, input.cursor);
     const pageSize = Math.max(1, Math.floor(input.limit));
@@ -198,8 +201,7 @@ async function readTraceHistoryPage(
 ): Promise<TraceSitesGatewayHistoryPage> {
   if (!existsSync(dbPath)) return { rows: [], nextCursor: null };
 
-  const { Database } = await import('bun:sqlite');
-  const db = new Database(dbPath, { readonly: true });
+  const db = openTraceDatabase(dbPath, { create: false, readonly: true });
   try {
     const beforeRowid = resolveHistoryBeforeRowid(db, input.cursor);
     if (beforeRowid <= 1) return { rows: [], nextCursor: null };
@@ -233,8 +235,7 @@ async function readRecentTraceEvents(
     return { cursor: input.cursor, events: [] };
   }
 
-  const { Database } = await import('bun:sqlite');
-  const db = new Database(dbPath, { readonly: true });
+  const db = openTraceDatabase(dbPath, { create: false, readonly: true });
   try {
     const afterRowid = cursorToRowid(input.cursor);
     const rows = db
@@ -430,7 +431,7 @@ function sanitizeLocalTraceText(value: string): string {
 }
 
 function resolveHistoryBeforeRowid(
-  db: import('bun:sqlite').Database,
+  db: TraceDatabase,
   cursor: string,
 ): number {
   const numeric = Number(cursor);
@@ -453,7 +454,7 @@ function resolveHistoryBeforeRowid(
 }
 
 function resolveHistoryAfterRowid(
-  db: import('bun:sqlite').Database,
+  db: TraceDatabase,
   cursor: string,
 ): number {
   const numeric = Number(cursor);
