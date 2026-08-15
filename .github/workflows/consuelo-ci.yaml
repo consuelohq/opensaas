@@ -84,6 +84,11 @@ jobs:
             grep -E "$1" /tmp/consuelo-changed-files.txt >/dev/null 2>&1
           }
 
+          has_consuelo_package_change() {
+            grep -E '^packages/' /tmp/consuelo-changed-files.txt \
+              | grep -Ev '^packages/(twenty-[^/]+|create-twenty-app)/' >/dev/null 2>&1
+          }
+
           write_output() {
             local name="$1"
             local value="$2"
@@ -100,6 +105,7 @@ jobs:
           if has_change '^\.github/'; then workflow_security=true; verify=true; fi
           if has_change '^(package\.json|yarn\.lock|\.yarnrc\.yml|nx\.json|tsconfig[^/]*\.json)$'; then dialer=true; verify=true; fi
           if has_change '^\.yarn/'; then dialer=true; verify=true; fi
+          if has_consuelo_package_change; then verify=true; fi
           if has_change '^packages/workspace/'; then workspace_contracts=true; verify=true; fi
           if has_change '^packages/os/'; then os_contracts=true; verify=true; fi
           if has_change '^packages/dialer/'; then dialer=true; verify=true; fi

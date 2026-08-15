@@ -1,9 +1,10 @@
-name: CI SDK
+name: Legacy Twenty / SDK
 
 on:
-  merge_group:
-
   pull_request:
+    paths:
+      - 'packages/twenty-sdk/**'
+      - '.github/workflows/ci-sdk.yaml'
 
 permissions:
   contents: read

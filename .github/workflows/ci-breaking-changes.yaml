@@ -1,10 +1,14 @@
-name: GraphQL and OpenAPI Breaking Changes Detection
+name: Legacy Twenty / API Breaking Changes
 
 on:
- pull_request:
+  pull_request:
     types: [opened, synchronize, edited]
     branches:
       - main
+    paths:
+      - 'packages/twenty-server/**'
+      - 'packages/twenty-shared/**'
+      - '.github/workflows/ci-breaking-changes.yaml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

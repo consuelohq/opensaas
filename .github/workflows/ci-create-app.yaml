@@ -1,11 +1,17 @@
-name: CI Create App
+name: Legacy Twenty / Create App
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'packages/create-twenty-app/**'
+      - '.github/workflows/ci-create-app.yaml'
 
   pull_request:
+    paths:
+      - 'packages/create-twenty-app/**'
+      - '.github/workflows/ci-create-app.yaml'
 
 permissions:
   contents: read
