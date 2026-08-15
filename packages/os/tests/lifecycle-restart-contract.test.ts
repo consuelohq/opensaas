@@ -35,6 +35,19 @@ describe('lifecycle restart parity', () => {
     expect(reload).toContain('wrong server');
   });
 
+  it('retries a transient primary macOS LaunchAgent bootstrap before failing the lifecycle restart', () => {
+    const reload = source('scripts/consuelo-reload.js');
+
+    expect(reload).toContain('PRIMARY_LAUNCH_AGENT_BOOTSTRAP_ATTEMPTS = 4');
+    expect(reload).toContain('PRIMARY_LAUNCH_AGENT_BOOTSTRAP_RETRY_SECONDS = 0.2');
+    expect(reload).toContain('for (let attempt = 1; attempt <= PRIMARY_LAUNCH_AGENT_BOOTSTRAP_ATTEMPTS; attempt += 1)');
+    expect(reload).toContain('/Bootstrap failed:\\s*5|Input\\/output error/i');
+    expect(reload).toContain('if (isLaunchdLoaded())');
+    expect(reload).toContain('if (attempt < PRIMARY_LAUNCH_AGENT_BOOTSTRAP_ATTEMPTS)');
+    expect(reload).toContain('sleep(PRIMARY_LAUNCH_AGENT_BOOTSTRAP_RETRY_SECONDS);');
+    expect(reload).toContain('primary launch agent bootstrap failed for ${LABEL}');
+  });
+
   it('preserves watchdog thresholding and restart-gap limiting', () => {
     const watchdog = source('scripts/workspace-watchdog.sh');
 
