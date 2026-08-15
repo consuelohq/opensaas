@@ -281,6 +281,38 @@
       --sl-content-inline-start: 0rem;
     }
 
+    .main-frame {
+      animation: none;
+    }
+
+    .content-panel {
+      padding-block: 1.5rem 2.5rem;
+    }
+
+    .sl-markdown-content .sl-heading-wrapper > h2 {
+      font-size: 1.5rem;
+      letter-spacing: -0.04em;
+      line-height: 2rem;
+      margin-top: 3rem;
+      word-spacing: 0;
+    }
+
+    .sl-markdown-content .sl-heading-wrapper > h3 {
+      font-size: 1.25rem;
+      letter-spacing: -0.025em;
+      line-height: 1.75rem;
+      margin-top: 2.25rem;
+      word-spacing: 0;
+    }
+
+    .main-frame:has(.docs-home-hero) .content-panel:first-child {
+      padding-top: 2rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .sl-container {
+      max-width: none;
+    }
+
     html[data-has-sidebar] .page > .header {
       padding-inline-end: calc(var(--sl-nav-pad-x) + 3rem);
     }
@@ -289,10 +321,26 @@
       padding-inline-start: 0;
     }
 
+    body::after {
+      background: color-mix(in srgb, var(--docs-paper) 62%, transparent);
+      content: '';
+      inset: var(--sl-nav-height) 0 0;
+      opacity: 0;
+      pointer-events: none;
+      position: fixed;
+      transition: opacity 300ms ease;
+      z-index: calc(var(--sl-z-index-menu) - 1);
+    }
+
+    body[data-mobile-menu-expanded]::after {
+      opacity: 1;
+    }
+
     html[data-has-sidebar] .sidebar-pane {
       background: var(--docs-paper);
       border-left: 0;
-      border-right: 1px solid var(--docs-line);
+      border-right: 0;
+      box-shadow: 0 18px 55px color-mix(in srgb, #000 34%, transparent);
       height: calc(100vh - var(--sl-nav-height));
       inset-block: var(--sl-nav-height) 0;
       left: 0;
@@ -302,14 +350,14 @@
       position: fixed;
       transform: none;
       visibility: hidden;
-      width: 100vw;
+      width: min(75vw, 25rem);
       z-index: var(--sl-z-index-menu);
     }
 
     html[data-has-sidebar] .sidebar-content {
       background: var(--docs-paper);
       min-height: 100%;
-      padding: 1rem var(--sl-sidebar-pad-x) max(1rem, env(safe-area-inset-bottom));
+      padding: 0.5rem 0.5rem max(1rem, env(safe-area-inset-bottom));
     }
 
     body[data-mobile-menu-expanded] .sidebar-pane {
@@ -318,9 +366,18 @@
     }
   }
 
-  @media (min-width: 50rem) and (max-width: 71.999rem) {
-    html[data-has-sidebar] .sidebar-pane {
-      width: 50vw;
+  @media (max-width: 35rem) {
+    .sl-markdown-content .sl-heading-wrapper > h2 {
+      font-size: 1.375rem;
+      letter-spacing: -0.025em;
+      line-height: 1.75rem;
+      margin-top: 2.75rem;
+    }
+
+    .sl-markdown-content .sl-heading-wrapper > h3 {
+      font-size: 1.125rem;
+      line-height: 1.625rem;
+      margin-top: 2rem;
     }
   }
 
@@ -466,7 +523,7 @@
 
   @media (max-width: 50rem) {
     :root {
-      --sl-content-pad-x: 1.25rem;
+      --sl-content-pad-x: 1.5rem;
     }
   }
 

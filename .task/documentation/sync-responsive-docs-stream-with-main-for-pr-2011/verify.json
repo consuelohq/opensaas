@@ -1,0 +1,66 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011",
+  "base": "origin/main",
+  "headSha": "93692600d7c1c28f86f441503b1d1e7fbd60a978",
+  "changeHash": "87722901a52f48536e8d965682204ef17a8560e7484b0f232452038f23968ae5",
+  "changedFiles": [
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/DocsMenuTrigger.astro",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/components/Sidebar.astro",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/src/styles/docs.css",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-08-15T04:08:29.466Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011/current.json",
+        ".task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011/session.json",
+        ".task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011/workpad.md",
+        ".task/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad/current.json",
+        ".task/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad/session.json",
+        ".task/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad/verify.json",
+        ".task/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad/workpad.md",
+        ".task/tasks/documentation/sync-responsive-docs-stream-with-main-for-pr-2011.json",
+        ".task/tasks/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad.json",
+        "packages/documentation/scripts/test-foundation-browser.mjs",
+        "packages/documentation/src/components/DocsMenuTrigger.astro",
+        "packages/documentation/src/components/PageTitle.astro",
+        "packages/documentation/src/components/Sidebar.astro",
+        "packages/documentation/src/lib/docs-navigation.ts",
+        "packages/documentation/src/styles/docs.css",
+        "packages/documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

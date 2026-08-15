@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 2012,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2012",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2012",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2012/sync-responsive-docs-stream-with-main-for-pr-2011",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2012",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2012/sync-responsive-docs-stream-with-main-for-pr-2011",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-responsive-docs-stream-with-main-for-pr-2011",
+  "taskSession": "tsk_ccf471d7c742",
+  "tmuxSession": "opensaas-documentation-sync-responsive-docs-stream-with-main-for-pr-201-ccf471d7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-responsive-docs-stream-with-main-for-pr-2011/.task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011/session.json",
+  "createdAt": "2026-08-15T04:06:18.589Z"
+}
