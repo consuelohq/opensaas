@@ -167,6 +167,15 @@ describe('lifecycle restart parity', () => {
     );
   });
 
+  it('publishes a fresh Caddy gateway reconciliation migration with every runtime release', () => {
+    const workflow = source('../../.github/workflows/consuelo-os-runtime-publish.yaml');
+
+    expect(workflow).toContain(
+      '--migration "release-${{ needs.plan.outputs.version }}-reconcile-caddy-gateway:scripts/migrations/reconcile-caddy-worker-pool.ts"',
+    );
+    expect(workflow.match(/reconcile-caddy-gateway:scripts\/migrations\/reconcile-caddy-worker-pool\.ts/g)).toHaveLength(1);
+  });
+
   it('fails macOS lifecycle preflight when recognized legacy root supervision remains', async () => {
     const calls: Array<{ command: string; args: string[] }> = [];
     const controller = createReloadServiceController({

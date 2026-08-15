@@ -924,6 +924,10 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/scripts/lib/platforms/linux.ts',
       '--changed-file',
+      'packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts',
+      '--changed-file',
+      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      '--changed-file',
       'packages/os/tests/lifecycle-restart-contract.test.ts',
       '--changed-file',
       'packages/os/tests/linux-platform.test.ts',
@@ -947,6 +951,7 @@ describe('test selection registry', () => {
     );
     expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
       'packages/os/tests/lifecycle-restart-contract.test.ts',
+      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
       'packages/os/tests/linux-platform.test.ts',
     ]));
   });
