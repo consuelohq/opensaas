@@ -148,6 +148,7 @@ export function isSettingsGatewayRoute(pathname: string): boolean {
   return (
     pathname === '/gateway/configuration/snapshot'
     || pathname === '/gateway/configuration/overlay'
+    || pathname === '/gateway/configuration/source-control'
     || pathname === '/gateway/settings/snapshot'
     || pathname === '/gateway/settings/overlay'
   );

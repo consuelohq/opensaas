@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/native/windows-service/Program.cs",
+    "packages/os/scripts/lib/windows-platform.ts",
+    "packages/os/scripts/testing/windows-platform-acceptance.ps1",
+    "packages/os/tests/windows-platform.test.ts"
+  ],
+  "updatedAt": "2026-08-12T04:08:41.710Z"
+}

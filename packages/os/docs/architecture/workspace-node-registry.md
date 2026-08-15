@@ -30,7 +30,7 @@ A reconnect is accepted only when the presented node ID is bound to the same pub
 
 ## Presence
 
-Nodes send the exact JSON heartbeat body signed with their registered Ed25519 key in `x-consuelo-node-signature`. The body contains `workspaceId`, `nodeId`, `timestamp`, `nonce`, `connectorStatus`, and `capabilities`.
+Nodes send the exact JSON heartbeat body signed with their registered Ed25519 key in `x-consuelo-node-signature`. The body contains `workspaceId`, `nodeId`, `timestamp`, `nonce`, `connectorStatus`, `capabilities`, and an optional canonical `agents` array. Current installers re-inspect local agent configuration on each one-shot heartbeat run and report only identifiers whose MCP connection is verified. Older heartbeat clients may omit `agents`, which preserves the prior reported set; an explicit empty array clears it.
 
 The normal installer persists the node signing material only in the private generated-security directory, writes a one-shot heartbeat client into the installed OS package, and creates a user LaunchAgent with `RunAtLoad` plus a 30-second `StartInterval`. The standard daemon installer/uninstaller owns that generated LaunchAgent alongside the node's cloudflared connector. The signing key is never embedded in the plist, command line, URL, response, or log output.
 
@@ -74,7 +74,7 @@ All management operations require an OAuth bearer token with `workspace:read` an
 - `POST /workspace/nodes/:nodeId/revoke`
 - `POST /workspace/nodes/heartbeat` (signed node identity rather than user OAuth)
 
-The list response is safe for product UI consumption. It omits public-key JWKs, tunnel origins, local service paths, credentials, and tokens.
+The list response is safe for product UI consumption. It includes only canonical agent identifiers alongside existing safe node metadata and omits public-key JWKs, tunnel origins, local service paths, configuration contents, credentials, and tokens. The public `GET /workspace/agents` projection is derived from the same node records and heartbeat TTL, returning `online`, `stale`, `offline`, or `never_reported`. The legacy bootstrap-token write remains a compatibility path for older installers but does not fabricate heartbeat freshness.
 
 Worker 07 can use the compact top-level fields directly:
 

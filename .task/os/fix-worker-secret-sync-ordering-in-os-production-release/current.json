@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-worker-secret-sync-ordering-in-os-production-release",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1945,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1945",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1945",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1945/fix-worker-secret-sync-ordering-in-os-production-release",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1945",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1945/fix-worker-secret-sync-ordering-in-os-production-release",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-worker-secret-sync-ordering-in-os-production-release",
+  "taskSession": "tsk_817266cdc187",
+  "tmuxSession": "opensaas-os-fix-worker-secret-sync-ordering-in-os-production-817266cd",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-worker-secret-sync-ordering-in-os-production-release/.task/os/fix-worker-secret-sync-ordering-in-os-production-release/session.json",
+  "createdAt": "2026-08-14T07:19:58.694Z"
+}

@@ -2,6 +2,7 @@
 
 import {
   createWorkspaceNodeClient,
+  formatWorkspaceNodeCommandResult,
   parseWorkspaceNodeCommand,
   WORKSPACE_NODES_USAGE,
 } from './lib/workspace-node-client';
@@ -31,7 +32,7 @@ async function main(): Promise<void> {
     accessToken,
   });
   const result = await client.execute(command);
-  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+  process.stdout.write(`${formatWorkspaceNodeCommandResult(command, result)}\n`);
 }
 
 main().catch((error: unknown) => {

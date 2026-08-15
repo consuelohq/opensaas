@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-web/repair-google-sign-in-launcher-redirect",
+  "events": [
+    {
+      "id": "42578933-92da-454c-ac40-d51339f65ed0",
+      "occurred_at": "2026-07-28T04:04:55.189Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/cloudflare-worker-deployment-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-web/repair-google-sign-in-launcher-redirect",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-web/repair-google-sign-in-launcher-redirect"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-28T04:04:55.249Z"
+}

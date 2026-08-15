@@ -168,6 +168,7 @@ describe('native lifecycle client', () => {
             channel: 'dev',
             connectorId: 'connector_home',
             capabilities: ['local-runtime', 'darwin'],
+            agents: ['codex', 'opencode'],
             createdAt: '2026-07-20T12:00:00.000Z',
             lastSeenAt: '2026-07-26T19:59:45.000Z',
             presence: 'online',
@@ -182,6 +183,7 @@ describe('native lifecycle client', () => {
       role: 'home',
       presence: 'online',
       capabilities: ['local-runtime', 'darwin'],
+      agents: ['codex', 'opencode'],
     });
     expect(healthySnapshot.install).toBeUndefined();
   });

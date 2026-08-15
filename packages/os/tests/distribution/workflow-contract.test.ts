@@ -6,6 +6,9 @@ import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 
 type DistributionWorkflow = {
+  on: {
+    workflow_call?: unknown;
+  };
   jobs: {
     'native-runtime': {
       strategy: {
@@ -42,6 +45,7 @@ describe('OS distribution environment workflow', () => {
       await readFile(workflowPath, 'utf8'),
     ) as DistributionWorkflow;
 
+    expect(workflow.on).toHaveProperty('workflow_call');
     expect(workflow.jobs['oci-clean-host']['runs-on']).toBe('ubuntu-24.04');
     expect(
       workflow.jobs['oci-clean-host'].steps.some((step) =>

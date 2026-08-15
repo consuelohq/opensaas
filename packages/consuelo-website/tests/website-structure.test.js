@@ -88,6 +88,11 @@ describe('Consuelo website structure', () => {
         '../components/site/SiteFooter.astro',
         '../data/contact-content',
       ],
+      'src/pages/support.astro': [
+        '../layouts/MarketingLayout.astro',
+        '../components/site/SiteHeader.astro',
+        '../components/site/SiteFooter.astro',
+      ],
       'src/pages/mercury.astro': [
         '../layouts/MarketingLayout.astro',
         '../components/site/SiteHeader.astro',
@@ -112,6 +117,20 @@ describe('Consuelo website structure', () => {
       expect(source, route).not.toContain('LaunchHeader');
       expect(source, route).not.toContain('LaunchFooter');
     }
+  });
+
+  test('should publish a stable support route for Marketplace and download flows', () => {
+    expectFile('src/pages/support.astro');
+    const support = readSource('src/pages/support.astro');
+    expect(support).toContain('title="Support"');
+    expect(support).toContain('support@consuelohq.com');
+    expect(support).toContain('https://docs.consuelohq.com');
+    expect(support).toContain('href="/contact"');
+    expect(support).not.toContain('404');
+
+    const redirects = readSource('public/_redirects');
+    expect(redirects).toContain('/support /support/index.html 200');
+    expect(redirects).toContain('/support/ /support/index.html 200');
   });
 
   test('should expose the Hermes-style pricing route without wiring it into shared navigation', async () => {
@@ -500,6 +519,25 @@ describe('Consuelo website structure', () => {
     expect(layout).toContain('var(--site-color-ink)');
     expect(layout).toContain('var(--site-font-mono)');
     expect(layout).toContain('var(--site-color-line)');
+  });
+
+  test('should keep the observability traces route owned by the website design system', () => {
+    const route = readSource('src/pages/os/observability/traces.astro');
+    const builderPath = 'packages/os/scripts/lib/observability-traces-site.ts';
+
+    expect(existsSync(join(repoRoot, builderPath)), builderPath).toBe(true);
+    expect(route).toContain("../../../layouts/MarketingLayout.astro");
+    expect(route).toContain(
+      'buildObservabilityTracesClientScript',
+    );
+    expect(route).toContain('<MarketingLayout');
+    expect(route).toContain('class="site-container');
+    expect(route).toContain('class="site-card');
+    expect(route).toContain('var(--site-');
+    expect(route).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(route).not.toContain('buildObservabilityTracesSite()');
+    expect(route).not.toContain('<Fragment set:html={tracesPage} />');
+    expect(route).not.toMatch(/#[0-9a-f]{3,8}\b/i);
   });
 
   test('should keep the design operator contract on office headless defaults', () => {

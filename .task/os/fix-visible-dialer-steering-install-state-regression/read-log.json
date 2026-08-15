@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/fix-visible-dialer-steering-install-state-regression/workpad.md",
+    "packages/os/scripts/lib/visible-dialer-steering.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/managed-components.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-08-05T21:13:40.305Z"
+}

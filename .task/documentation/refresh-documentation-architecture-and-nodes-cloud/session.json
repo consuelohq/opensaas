@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0ba3e0e7716b",
+  "tmuxSession": "opensaas-documentation-refresh-documentation-architecture-and-nodes-clo-0ba3e0e7",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/refresh-documentation-architecture-and-nodes-cloud",
+  "branch": "task/documentation/refresh-documentation-architecture-and-nodes-cloud",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refresh-documentation-architecture-and-nodes-cloud",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refresh-documentation-architecture-and-nodes-cloud",
+  "prNumber": 1897,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1897",
+  "createdAt": "2026-08-12T18:58:54.078Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refresh-documentation-architecture-and-nodes-cloud/.task/documentation/refresh-documentation-architecture-and-nodes-cloud/session.json"
+}

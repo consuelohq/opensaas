@@ -1,4 +1,8 @@
-import type { RuntimeBundleManifest } from '../distribution/runtime-bundle';
+import type {
+  RuntimeBundleManifest,
+  RuntimeRecoveryCapability,
+} from '../distribution/runtime-bundle';
+import type { SignedChannelManifest } from '../distribution/release-channels';
 
 export const lifecycleReleaseChannels = ['stable', 'beta', 'canary', 'dev', 'nightly'] as const;
 export type LifecycleReleaseChannel = (typeof lifecycleReleaseChannels)[number];
@@ -32,7 +36,6 @@ export type LifecycleInstallState = {
 };
 
 export type ReleaseManifestPayload = {
-  schemaVersion: 1;
   channel: LifecycleReleaseChannel;
   version: string;
   bundleId: string;
@@ -40,16 +43,11 @@ export type ReleaseManifestPayload = {
   bundleUrl: string;
   releaseFingerprint: string;
   publishedAt: string;
+  sourceCommit: string;
+  capabilities: RuntimeRecoveryCapability[];
 };
 
-export type SignedReleaseManifest = {
-  payload: ReleaseManifestPayload;
-  signature: {
-    algorithm: 'ed25519';
-    keyId: string;
-    value: string;
-  };
-};
+export type SignedReleaseManifest = SignedChannelManifest;
 
 export type ReleaseSource = {
   fetchManifest(channel: LifecycleReleaseChannel): Promise<SignedReleaseManifest>;
@@ -82,6 +80,8 @@ export type LifecycleProgressPhase =
   | 'activate'
   | 'service-restart'
   | 'health'
+  | 'connector-readiness'
+  | 'connectivity'
   | 'repair-scan'
   | 'rollback'
   | 'retention'
@@ -130,6 +130,10 @@ export type LifecycleServiceController = {
 
 export type LifecycleHealthAcceptance = {
   accept(input?: { bundleId?: string; version?: string }): Promise<boolean>;
+};
+
+export type LifecycleConnectorReadiness = {
+  accept(): Promise<boolean>;
 };
 
 export type LifecycleRuntimeMaterializer = {

@@ -20,6 +20,9 @@ export type ErrorCode =
   | 'MALFORMED_OUTPUT'
   | 'INVALID_INPUT'
   | 'UNSUPPORTED_CAPABILITY'
+  | 'CAPABILITY_NOT_SUPPORTED'
+  | 'WAIT_TIMEOUT'
+  | 'IDEMPOTENCY_CONFLICT'
   | 'APPROVAL_REQUIRED'
   | 'CANCELLED';
 
@@ -40,6 +43,7 @@ export type ToolResult<TData = unknown> = {
   exitCode: number;
   durationMs: number;
   traceId: string;
+  parentTraceId?: string;
   requestId?: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -60,9 +64,11 @@ export type CommandArgument = {
 
 export type BranchMode = 'none' | 'optional' | 'required';
 export type BranchArgumentStyle = 'flag' | 'prefix';
+export type CommandExecutionScope = 'runtime' | 'workspace';
 
 export type ToolCommand = {
   script: string;
+  executionScope?: CommandExecutionScope;
   subcommand?: string;
   branchMode?: BranchMode;
   branchArgumentStyle?: BranchArgumentStyle;
@@ -135,6 +141,12 @@ export type ExecuteToolOptions = {
   now?: () => number;
   randomUUID?: () => string;
   logMode?: LogMode;
+};
+
+export type BatchExecutionContext = {
+  taskSession?: string;
+  branch?: string;
+  taskWorktree?: string;
 };
 
 export type BatchStep = {

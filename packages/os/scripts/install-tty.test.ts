@@ -1,9 +1,13 @@
 import { describe, expect, test } from 'bun:test';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const bootstrap = readFileSync(new URL('./bootstrap.sh', import.meta.url), 'utf8');
+const bootstrap = readFileSync(
+  new URL('./bootstrap.sh', import.meta.url),
+  'utf8',
+);
 const install = readFileSync(new URL('./install.ts', import.meta.url), 'utf8');
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const packageOsDir = join(scriptDir, '..');
@@ -11,6 +15,9 @@ const isTruthyEnv = (value: string | undefined): boolean =>
   value === '1' || value?.toLowerCase() === 'true';
 const shouldRunDarwinPtyTest =
   process.platform === 'darwin' &&
+  process.stdin.isTTY === true &&
+  process.stdout.isTTY === true &&
+  process.stderr.isTTY === true &&
   !isTruthyEnv(process.env.CI) &&
   !isTruthyEnv(process.env.GITHUB_ACTIONS) &&
   !isTruthyEnv(process.env.CONSUELO_OS_SKIP_DARWIN_PTY_TEST);
@@ -27,57 +34,68 @@ describe('hosted Clack install TTY wiring', () => {
   test('bootstrap has an explicit helper for running Clack against the controlling terminal', () => {
     expect(bootstrap).toContain('run_install_with_tty()');
     expect(bootstrap).toContain('< /dev/tty');
-    expect(bootstrap).not.toContain('./scripts/install.ts --home "$os_home" < /dev/tty > /dev/tty');
-    expect(bootstrap).not.toContain('./scripts/install.ts --check-tty < /dev/tty > /dev/tty');
+    expect(bootstrap).not.toContain(
+      './scripts/install.ts --home "$os_home" < /dev/tty > /dev/tty',
+    );
+    expect(bootstrap).not.toContain(
+      './scripts/install.ts --check-tty < /dev/tty > /dev/tty',
+    );
     expect(bootstrap).not.toContain('2> /dev/tty');
   });
 
   test('interactive hosted onboarding runs Clack under a pseudo-terminal', () => {
     expect(bootstrap).toContain('run_install_with_tty "$os_dir" "$os_home"');
     expect(bootstrap).toContain('run_install_with_script_pty');
-    expect(bootstrap).toContain('script -q /dev/null');
+    expect(bootstrap).toContain('local script_output="/dev/null"');
+    expect(bootstrap).toContain('script -q "$script_output"');
     expect(bootstrap).toContain('./scripts/install.ts --home "$os_home"');
-    expect(bootstrap).not.toContain('./scripts/install.ts --home "$os_home" < /dev/tty > /dev/tty');
-    expect(bootstrap).not.toContain('./scripts/install.ts --check-tty < /dev/tty > /dev/tty');
-  });
-
-  darwinTest('check-tty succeeds under the hosted script pseudo-terminal', async () => {
-    const processResult = Bun.spawn(
-      [
-        'script',
-        '-q',
-        '/dev/null',
-        process.execPath,
-        '--cwd',
-        packageOsDir,
-        './scripts/install.ts',
-        '--check-tty',
-      ],
-      {
-        stdout: 'pipe',
-        stderr: 'pipe',
-        env: {
-          ...process.env,
-          TERM: process.env.TERM ?? 'xterm-256color',
-        },
-      },
+    expect(bootstrap).not.toContain(
+      './scripts/install.ts --home "$os_home" < /dev/tty > /dev/tty',
     );
-    const [stdout, stderr, exitCode] = await Promise.all([
-      new Response(processResult.stdout).text(),
-      new Response(processResult.stderr).text(),
-      processResult.exited,
-    ]);
-
-    expect(stderr).toBe('');
-    expect(exitCode).toBe(0);
-    const diagnosticsMatch = stdout.match(/\{[\s\S]*\}/);
-    expect(diagnosticsMatch).not.toBeNull();
-    const diagnostics = JSON.parse(diagnosticsMatch?.[0] ?? '{}') as TtyDiagnostics;
-    expect(diagnostics.stdinIsTTY).toBe(true);
-    expect(diagnostics.stdoutIsTTY).toBe(true);
-    expect(diagnostics.stderrIsTTY).toBe(true);
-    expect(diagnostics.canSetRawMode).toBe(true);
+    expect(bootstrap).not.toContain(
+      './scripts/install.ts --check-tty < /dev/tty > /dev/tty',
+    );
   });
+
+  darwinTest(
+    'check-tty succeeds under the hosted script pseudo-terminal',
+    async () => {
+      const processResult = spawnSync(
+        'script',
+        [
+          '-q',
+          '/dev/null',
+          process.execPath,
+          '--cwd',
+          packageOsDir,
+          './scripts/install.ts',
+          '--check-tty',
+        ],
+        {
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            TERM: process.env.TERM ?? 'xterm-256color',
+          },
+        },
+      );
+      const stdout = processResult.stdout;
+      const stderr = processResult.stderr;
+      const exitCode = processResult.status;
+
+      expect(stderr).toBe('');
+      expect(exitCode).toBe(0);
+      const diagnosticsMatch = stdout.match(/\{[\s\S]*\}/);
+      expect(diagnosticsMatch).not.toBeNull();
+      const diagnostics = JSON.parse(
+        diagnosticsMatch?.[0] ?? '{}',
+      ) as TtyDiagnostics;
+      expect(diagnostics.stdinIsTTY).toBe(true);
+      expect(diagnostics.stdoutIsTTY).toBe(true);
+      expect(diagnostics.stderrIsTTY).toBe(true);
+      expect(diagnostics.canSetRawMode).toBe(true);
+    },
+  );
 
   test('non-interactive automation path still bypasses prompts with --yes', () => {
     expect(bootstrap).toContain('./scripts/install.ts --yes --json --home');
@@ -94,7 +112,9 @@ describe('install.ts Clack prompt preflight', () => {
   test('install.ts accepts a --check-tty diagnostic command', () => {
     expect(install).toContain('checkTty');
     expect(install).toContain("arg === '--check-tty'");
-    expect(install).toContain('--check-tty          print safe terminal diagnostics');
+    expect(install).toContain(
+      '--check-tty          print safe terminal diagnostics',
+    );
   });
 
   test('TTY diagnostic is safe and limited to terminal facts', () => {

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_012082c0f4a6",
+  "tmuxSession": "opensaas-os-prevent-release-deployment-status-self-dependenc-012082c0",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/prevent-release-deployment-status-self-dependency",
+  "branch": "task/os/prevent-release-deployment-status-self-dependency",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-prevent-release-deployment-status-self-dependency",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-prevent-release-deployment-status-self-dependency",
+  "prNumber": 1732,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1732",
+  "createdAt": "2026-07-29T09:17:58.720Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-prevent-release-deployment-status-self-dependency/.task/os/prevent-release-deployment-status-self-dependency/session.json"
+}

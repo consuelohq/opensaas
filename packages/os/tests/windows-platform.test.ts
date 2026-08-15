@@ -4,7 +4,10 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { runtimeLinkTypeForPlatform } from '../scripts/lib/lifecycle/runtime-links';
-import { runtimeReleaseDirectoryName } from '../scripts/lib/lifecycle/runtime-release-path';
+import {
+  runtimeBundleIdFromDirectoryName,
+  runtimeReleaseDirectoryName,
+} from '../scripts/lib/lifecycle/runtime-release-path';
 import {
   assertSupportedWindowsHost,
   createWindowsServiceController,
@@ -107,14 +110,24 @@ describe('Windows platform preflight and paths', () => {
     expect(runtimeLinkTypeForPlatform('linux')).toBe('dir');
   });
 
-  it('maps digest identities to Windows-safe release directories without changing bundle identity', () => {
+  it('maps digest identities to PATH-safe release directories on every platform without changing bundle identity', () => {
     const bundleId = `sha256:${'a'.repeat(64)}`;
+    const directoryName = `sha256-${'a'.repeat(64)}`;
 
-    expect(runtimeReleaseDirectoryName(bundleId, 'win32')).toBe(
-      `sha256-${'a'.repeat(64)}`,
+    expect(runtimeReleaseDirectoryName(bundleId, 'win32')).toBe(directoryName);
+    expect(runtimeReleaseDirectoryName(bundleId, 'darwin')).toBe(directoryName);
+    expect(runtimeReleaseDirectoryName(bundleId, 'linux')).toBe(directoryName);
+    expect(runtimeBundleIdFromDirectoryName(directoryName, 'win32')).toBe(
+      bundleId,
     );
-    expect(runtimeReleaseDirectoryName(bundleId, 'darwin')).toBe(bundleId);
-    expect(runtimeReleaseDirectoryName(bundleId, 'linux')).toBe(bundleId);
+    expect(runtimeBundleIdFromDirectoryName(directoryName, 'darwin')).toBe(
+      bundleId,
+    );
+    expect(runtimeBundleIdFromDirectoryName(directoryName, 'linux')).toBe(
+      bundleId,
+    );
+    expect(runtimeBundleIdFromDirectoryName(bundleId, 'darwin')).toBe(bundleId);
+    expect(runtimeBundleIdFromDirectoryName(bundleId, 'linux')).toBe(bundleId);
   });
 });
 
@@ -173,6 +186,14 @@ describe('Windows Service Control Manager adapter', () => {
           stderr: '',
         };
       }
+      if (command === 'sc.exe' && args[0] === 'showsid') {
+        return {
+          exitCode: 0,
+          stdout:
+            'SERVICE SID IS: S-1-5-80-100-200-300-400-500',
+          stderr: '',
+        };
+      }
       return { exitCode: 0, stdout: '', stderr: '' };
     };
     const controller = createWindowsServiceController({
@@ -197,7 +218,7 @@ describe('Windows Service Control Manager adapter', () => {
       bunExecutable,
       consueloHome: home,
       runtimeCurrent: `${home}\\runtime\\current`,
-      entrypoint: 'scripts/server/main.ts',
+      entrypoint: 'scripts/server/supervisor.ts',
     });
     expect(JSON.stringify(config)).not.toMatch(
       /token|secret|password|credential/i,
@@ -212,7 +233,11 @@ describe('Windows Service Control Manager adapter', () => {
     expect(rendered).not.toContain('NT AUTHORITY\\LocalService');
     expect(rendered).toContain('sc.exe sidtype ConsueloOS restricted');
     expect(rendered).toContain('sc.exe failure ConsueloOS');
+    expect(rendered).toContain('sc.exe showsid ConsueloOS');
     expect(rendered).toContain('sc.exe sdset ConsueloOS');
+    expect(rendered).toContain(
+      '(A;;CCLCSWRPWPDTLOCRRC;;;S-1-5-80-100-200-300-400-500)',
+    );
     expect(rendered).toContain('icacls.exe');
     expect(rendered).toContain('*S-1-5-21-1000:(OI)(CI)F');
     expect(rendered).toContain('*S-1-5-18:(OI)(CI)F');
@@ -291,6 +316,13 @@ describe('Windows Service Control Manager adapter', () => {
             stderr: '',
           };
         }
+        if (command === 'sc.exe' && args[0] === 'showsid') {
+          return {
+            exitCode: 0,
+            stdout: 'SERVICE SID IS: S-1-5-80-100-200-300-400-500',
+            stderr: '',
+          };
+        }
         return { exitCode: 0, stdout: '', stderr: '' };
       },
       serviceHostExecutable,
@@ -335,6 +367,13 @@ describe('Windows Service Control Manager adapter', () => {
           return {
             exitCode: 0,
             stdout: 'SERVICE_START_NAME : NT SERVICE\\ConsueloOS',
+            stderr: '',
+          };
+        }
+        if (command === 'sc.exe' && args[0] === 'showsid') {
+          return {
+            exitCode: 0,
+            stdout: 'SERVICE SID IS: S-1-5-80-100-200-300-400-500',
             stderr: '',
           };
         }
@@ -575,6 +614,10 @@ describe('Windows native service and workflow source contracts', () => {
     );
 
     expect(service).toContain('ServiceBase');
+    expect(service).toContain('JOB_OBJECT_LIMIT_BREAKAWAY_OK');
+    expect(service).toContain('CREATE_BREAKAWAY_FROM_JOB');
+    expect(service).toContain('--launch-lifecycle');
+    expect(service).toContain('Path.Combine(settings.RuntimeCurrent, "scripts", "native-lifecycle-operation.ts")');
     expect(service).toContain('JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE');
     expect(service).toContain('UseShellExecute = false');
     expect(service).toContain('CreateNoWindow = true');
@@ -621,6 +664,17 @@ describe('Windows native service and workflow source contracts', () => {
       ),
       'utf8',
     );
+    const nativeTestSelector = readFileSync(
+      resolve(
+        osRoot,
+        '..',
+        'workspace',
+        'scripts',
+        'ci',
+        'run-changed-os-native-tests.mjs',
+      ),
+      'utf8',
+    );
 
     expect(workflow).toContain('runner: windows-2025');
     expect(workflow).toContain('debian-linux-platform:');
@@ -639,14 +693,49 @@ describe('Windows native service and workflow source contracts', () => {
       'Remove Windows service build intermediates',
     );
     const distributionContracts = workflow.indexOf(
-      'Run distribution harness contracts',
+      'Run selected native distribution contracts',
     );
     expect(cleanup).toBeGreaterThan(nativeAcceptance);
     expect(cleanup).toBeLessThan(distributionContracts);
     expect(workflow).toContain(
-      'bun x vitest run tests/distribution --testTimeout 15000',
+      'node packages/workspace/scripts/ci/run-changed-os-native-tests.mjs',
     );
+    expect(nativeTestSelector).toContain("'tests/distribution'");
+    expect(nativeTestSelector).toContain("'15000'");
     expect(workflow).toContain('packages/os/native/windows-service/bin');
     expect(workflow).toContain('packages/os/native/windows-service/obj');
+  });
+
+  it('keeps Windows heartbeats inside the SCM-managed runtime', () => {
+    const installState = readFileSync(
+      resolve(osRoot, 'scripts', 'lib', 'install-state.ts'),
+      'utf8',
+    );
+    const serverMain = readFileSync(
+      resolve(osRoot, 'scripts', 'server', 'main.ts'),
+      'utf8',
+    );
+
+    expect(installState).toContain("else if (input.platform === 'darwin')");
+    expect(serverMain).toContain("process.platform === 'win32'");
+    expect(serverMain).toContain('startWorkspaceNodeHeartbeatScheduler');
+    expect(serverMain).toContain('workspace-node-heartbeat.json');
+  });
+});
+
+
+describe('Windows native acceptance harness', () => {
+  it('materializes the same supervisor entrypoint that the Windows service config launches', () => {
+    const acceptance = readFileSync(
+      resolve(osRoot, 'scripts/testing/windows-platform-acceptance.ps1'),
+      'utf8',
+    );
+
+    expect(acceptance).toContain(
+      "Join-Path $release 'scripts\\server\\supervisor.ts'",
+    );
+    expect(acceptance).not.toContain(
+      "Join-Path $release 'scripts\\server\\main.ts'",
+    );
   });
 });

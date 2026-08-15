@@ -1,6 +1,7 @@
 import { Database } from 'bun:sqlite';
-import { mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { chmodSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 
 import { executeTool } from '../../scripts/lib/facade/executor';
 import type { CommandPlan } from '../../scripts/lib/facade/types';
@@ -8,16 +9,20 @@ import { createGatewaySecurityConfig } from '../../scripts/lib/security-gateway'
 import { parseSubagentTraceEvents } from '../../scripts/lib/subagent/runtime';
 import { createLocalTraceSitesReadBackend } from '../../scripts/lib/trace-sites-local-read-backend';
 import {
+  queueGatewayAuthenticationTraceSafely,
+  recordGatewayAuthenticationTraceSafely,
   recordSubagentTraceEventsSafely,
   recordToolTraceSafely,
   resolveCanonicalTraceDbPath,
 } from '../../scripts/lib/trace-persistence';
+import { withTraceRoutingContext } from '../../scripts/lib/trace-routing-context';
 import { authorizeConsueloOAuthMcpRequest } from '../../scripts/server/services/oauth-introspection';
 
 type TraceRow = Record<string, unknown>;
 
 const TRACE_ROWS_SQL = [
   'SELECT trace_id, mcp_trace_id, source, tool, task_session, branch, worktree,',
+  'requested_node_id, resolved_node_id, resolved_node_name, default_node_id, route_source,',
   'status, ok, code, exit_code, duration_ms, input_json,',
   'resolved_input_json, result_json, stderr,',
   'input_tokens, output_tokens, total_tokens',
@@ -83,9 +88,15 @@ function stableFacadeOptions() {
 async function run(): Promise<unknown> {
   try {
     if (scenario === 'facade') {
-    const result = await executeTool('task.current', {
+    const result = await withTraceRoutingContext({
+      requestedNodeId: 'node_cloud',
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      defaultNodeId: 'node_home',
+      routeSource: 'explicit',
+    }, () => executeTool('task.current', {
       apiKey: 'sk_test_secret_value_1234567890',
-    }, stableFacadeOptions());
+    }, stableFacadeOptions()));
     const backend = createLocalTraceSitesReadBackend({
       dbPath: resolveCanonicalTraceDbPath(),
     });
@@ -97,7 +108,15 @@ async function run(): Promise<unknown> {
       cursor: '000000000000',
       limit: 10,
     });
-      return { result, rows: traceRows(), recent };
+    const history = await backend.readHistoryPage?.({
+      workspaceId: 'workspace_trace_test',
+      workspaceHost: 'trace-test.consuelohq.com',
+      site: 'trace',
+      sourceMode: 'local-networked',
+      cursor: 'latest',
+      limit: 10,
+    });
+      return { result, rows: traceRows(), recent, history };
     }
 
     if (scenario === 'migration') {
@@ -125,6 +144,12 @@ async function run(): Promise<unknown> {
       inputTokens: 12,
       outputTokens: 34,
       totalTokens: 46,
+      routing: {
+        resolvedNodeId: 'node_migrated',
+        resolvedNodeName: 'Migrated Node',
+        defaultNodeId: 'node_migrated',
+        routeSource: 'default',
+      },
     });
       return { recorded, rows: traceRows() };
     }
@@ -146,11 +171,7 @@ async function run(): Promise<unknown> {
 
     if (scenario === 'fail-open') {
       process.env.CONSUELO_TRACE_DB = home;
-      const result = await executeTool('context', {
-      operation: 'search',
-      keyword: 'fail open',
-      limit: 1,
-    }, stableFacadeOptions());
+      const result = await executeTool('task.current', {}, stableFacadeOptions());
       return { result };
     }
 
@@ -189,6 +210,48 @@ async function run(): Promise<unknown> {
       return { events, recorded, rows: traceRows() };
     }
 
+    if (scenario === 'durable-subagent') {
+      const binDir = join(home, 'bin');
+      mkdirSync(binDir, { recursive: true });
+      const codex = join(binDir, 'codex');
+      writeFileSync(codex, [
+        '#!/bin/sh',
+        'if [ "$1" = "exec" ] && [ "$2" = "--help" ]; then',
+        '  printf "%s\\n" "Usage: codex exec [OPTIONS] [PROMPT]" "instructions are read from stdin" "--cd <DIR>" "--sandbox <SANDBOX_MODE>" "--json" "-m, --model <MODEL>" "-c, --config <key=value>"',
+        '  exit 0',
+        'fi',
+        'cat >/dev/null',
+        'printf "%s\\n" \'{"type":"item.completed","item":{"id":"item_trace","type":"mcp_tool_call","server":"consuelo","tool":"call","arguments":{"tool":"fs.read","input":{"path":"README.md"}},"result":{"ok":true,"code":"OK"}}}\'',
+        `printf "%s\\n" '{"type":"item.completed","item":{"id":"item_padding","type":"agent_message","text":"${'x'.repeat(9_000)}"}}'`,
+        'printf "%s\\n" \'{"type":"item.completed","item":{"id":"item_message","type":"agent_message","text":"durable trace complete"}}\'',
+        'printf "%s\\n" \'{"type":"turn.completed","usage":{"input_tokens":21,"output_tokens":8,"reasoning_output_tokens":3}}\'',
+      ].join('\n'));
+      chmodSync(codex, 0o700);
+      const handoffRoot = join(tmpdir(), 'opensaas-handoffs');
+      mkdirSync(handoffRoot, { recursive: true });
+      const instructionPath = join(handoffRoot, `trace-durable-${process.pid}.md`);
+      writeFileSync(instructionPath, 'Return a durable trace message.');
+      process.env.WORKSPACE_SUBAGENT_CODEX_BIN = codex;
+      try {
+        const result = await executeTool('subagent', {
+          provider: 'codex',
+          action: 'run',
+          policy: 'read',
+          instructionPath,
+          requestId: 'req_durable_trace_persistence',
+        }, stableFacadeOptions());
+        const firstRows = traceRows().filter((row) => row.source === 'subagent');
+        const status = await executeTool('subagent', {
+          action: 'status',
+          runId: (result.data as { runId?: string } | undefined)?.runId,
+        }, stableFacadeOptions());
+        const secondRows = traceRows().filter((row) => row.source === 'subagent');
+        return { result, status, firstRows, secondRows };
+      } finally {
+        rmSync(instructionPath, { force: true });
+      }
+    }
+
     if (scenario === 'auth') {
       const config = createGatewaySecurityConfig({
       home,
@@ -214,6 +277,38 @@ async function run(): Promise<unknown> {
         body: response ? await response.json() : null,
         rows: traceRows(),
       };
+    }
+
+    if (scenario === 'auth-principal-queued') {
+      const dbPath = resolveCanonicalTraceDbPath();
+      for (const principalKey of ['prn_first', 'prn_second']) {
+        queueGatewayAuthenticationTraceSafely({
+          workspaceId: 'workspace_trace_auth',
+          route: '/mcp',
+          requiredScope: 'mcp:read',
+          authMode: 'oauth',
+          principalKey,
+        });
+      }
+      const immediateDbExists = existsSync(dbPath);
+      await Bun.sleep(25);
+      return { immediateDbExists, rows: traceRows() };
+    }
+
+    if (scenario === 'auth-principal') {
+      const recorded = recordGatewayAuthenticationTraceSafely({
+        workspaceId: 'workspace_trace_auth',
+        route: '/mcp',
+        requiredScope: 'mcp:read',
+        authMode: 'oauth',
+        principalKey: 'prn_0123456789abcdef0123456789abcdef',
+        requestedNodeId: 'node_cloud',
+        resolvedNodeId: 'node_cloud',
+        resolvedNodeName: 'Cloud Node',
+        defaultNodeId: 'node_home',
+        routeSource: 'explicit',
+      });
+      return { recorded, rows: traceRows() };
     }
 
     throw new Error(`unknown scenario: ${scenario}`);

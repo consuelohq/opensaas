@@ -75,6 +75,7 @@ export type ManagedComponentSource = {
   id: string;
   kind: ManagedComponentKind;
   sourcePath: string;
+  localPath?: string;
   content: ComponentTree;
 };
 
@@ -83,6 +84,7 @@ export type ManagedComponentLocal = {
   kind: ManagedComponentKind;
   localPath: string;
   content: ComponentTree;
+  obstruction?: 'file' | 'symlink' | 'other';
 };
 
 export type ManagedComponentPlanItem = {
@@ -466,16 +468,36 @@ export function buildManagedComponentUpdateState(
     if (!record) {
       if (upstream) {
         const upstreamRef = putContent(content, upstream.content);
+        const localRef = local ? putContent(content, local.content) : undefined;
+        const matchesUpstream = localRef === upstreamRef;
         items.push(basePlanItem({
           id: upstream.id,
           kind: upstream.kind,
           ownership: 'bundled-managed',
-          action: 'install',
+          action: local
+            ? matchesUpstream
+              ? 'no-change'
+              : 'conflict'
+            : 'install',
           sourceBundle: input.sourceBundle,
           sourcePath: upstream.sourcePath,
+          localPath: local?.localPath ?? upstream.localPath,
+          ...(matchesUpstream
+            ? {
+                baseHash: upstreamRef,
+                baseContentRef: upstreamRef,
+              }
+            : {}),
+          ...(localRef
+            ? {
+                localHash: localRef,
+                localContentRef: localRef,
+              }
+            : {}),
           upstreamHash: upstreamRef,
           upstreamContentRef: upstreamRef,
-          resolutionState: 'clean',
+          requiresReview: Boolean(local && !matchesUpstream),
+          resolutionState: local && !matchesUpstream ? 'conflict' : 'clean',
         }));
       } else if (local) {
         const localRef = putContent(content, local.content);
@@ -494,6 +516,33 @@ export function buildManagedComponentUpdateState(
       continue;
     }
 
+    if (local?.obstruction && record.ownership === 'bundled-managed') {
+      const localRef = putContent(content, local.content);
+      const upstreamRef = upstream
+        ? putContent(content, upstream.content)
+        : undefined;
+      items.push(basePlanItem({
+        id: record.id,
+        kind: record.kind,
+        ownership: 'bundled-managed',
+        action: upstream ? 'conflict' : 'remove-upstream',
+        sourceBundle: input.sourceBundle,
+        sourcePath: upstream?.sourcePath ?? record.sourcePath,
+        localPath: local.localPath,
+        baseHash: record.baseHash,
+        baseContentRef: record.baseContentRef,
+        localHash: localRef,
+        localContentRef: localRef,
+        upstreamHash: upstreamRef,
+        upstreamContentRef: upstreamRef,
+        requiresReview: true,
+        resolutionState: upstream
+          ? 'conflict'
+          : 'upstream-removed-local-preserved',
+      }));
+      continue;
+    }
+
     if (record.ownership === 'detached') {
       items.push(basePlanItem({
         id: record.id,
@@ -502,7 +551,7 @@ export function buildManagedComponentUpdateState(
         action: 'detach',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream?.sourcePath ?? record.sourcePath,
-        localPath: local?.localPath ?? record.localPath,
+        localPath: local?.localPath ?? record.localPath ?? upstream?.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: local ? putContent(content, local.content) : record.localHash,
@@ -524,7 +573,7 @@ export function buildManagedComponentUpdateState(
         action: 'preserve-custom',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream?.sourcePath ?? record.sourcePath,
-        localPath: custom?.localPath ?? local?.localPath ?? record.localPath,
+        localPath: custom?.localPath ?? local?.localPath ?? record.localPath ?? upstream?.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: localRef,
@@ -571,7 +620,7 @@ export function buildManagedComponentUpdateState(
         action: localModified ? 'preserve-custom' : 'no-change',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream.sourcePath,
-        localPath: local?.localPath ?? record.localPath,
+        localPath: local?.localPath ?? record.localPath ?? upstream.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: localRef,
@@ -591,7 +640,7 @@ export function buildManagedComponentUpdateState(
         action: 'update-clean',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream.sourcePath,
-        localPath: local?.localPath ?? record.localPath,
+        localPath: local?.localPath ?? record.localPath ?? upstream.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: localRef,
@@ -613,7 +662,7 @@ export function buildManagedComponentUpdateState(
         action: 'merge-clean',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream.sourcePath,
-        localPath: local?.localPath ?? record.localPath,
+        localPath: local?.localPath ?? record.localPath ?? upstream.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: localRef,
@@ -632,7 +681,7 @@ export function buildManagedComponentUpdateState(
         action: 'conflict',
         sourceBundle: input.sourceBundle,
         sourcePath: upstream.sourcePath,
-        localPath: local?.localPath ?? record.localPath,
+        localPath: local?.localPath ?? record.localPath ?? upstream.localPath,
         baseHash: record.baseHash,
         baseContentRef: record.baseContentRef,
         localHash: localRef,
@@ -847,14 +896,56 @@ function readFilesystemTree(root: string, relativePath: string): ComponentTree {
 export function snapshotManagedComponentLocalOverrides(
   userRoot: string,
   provenance: ManagedComponentProvenance[],
+  upstream: ManagedComponentSource[] = [],
 ): ManagedComponentLocal[] {
-  return provenance
-    .filter((record) => record.ownership !== 'custom' && Boolean(record.localPath))
-    .map((record) => ({
-      id: record.id,
-      kind: record.kind,
-      localPath: record.localPath!,
-      content: readFilesystemTree(userRoot, record.localPath!),
+  const candidates = new Map<string, {
+    id: string;
+    kind: ManagedComponentKind;
+    localPath: string;
+    obstruction?: ManagedComponentLocal['obstruction'];
+  }>();
+  const addCandidate = (
+    id: string,
+    kind: ManagedComponentKind,
+    localPath: string,
+  ): void => {
+    const target = resolveInside(userRoot, localPath);
+    if (!pathExists(target)) return;
+    const stats = lstatSync(target);
+    const obstruction = stats.isSymbolicLink()
+      ? 'symlink' as const
+      : stats.isDirectory()
+        ? undefined
+        : stats.isFile()
+          ? 'file' as const
+          : 'other' as const;
+    candidates.set(componentKey(kind, id), {
+      id,
+      kind,
+      localPath,
+      ...(obstruction ? { obstruction } : {}),
+    });
+  };
+  for (const record of provenance) {
+    if (record.ownership === 'custom' || !record.localPath) continue;
+    addCandidate(record.id, record.kind, record.localPath);
+  }
+  for (const source of upstream) {
+    if (!source.localPath) continue;
+    addCandidate(source.id, source.kind, source.localPath);
+  }
+  return [...candidates.values()]
+    .map((candidate) => ({
+      ...candidate,
+      content: candidate.obstruction
+        ? {
+            'local-entry.json': `${JSON.stringify({
+              schemaVersion: 1,
+              kind: 'consuelo-managed-component-local-obstruction',
+              obstruction: candidate.obstruction,
+            }, null, 2)}\n`,
+          }
+        : readFilesystemTree(userRoot, candidate.localPath),
     }))
     .sort(compareKeys);
 }
@@ -867,6 +958,9 @@ function upstreamSourcesFromState(state: ManagedComponentState): ManagedComponen
       id: item.id,
       kind: item.kind,
       sourcePath: item.sourcePath ?? provenanceByKey.get(item.key)?.sourcePath ?? '',
+      ...(item.localPath ?? provenanceByKey.get(item.key)?.localPath
+        ? { localPath: item.localPath ?? provenanceByKey.get(item.key)?.localPath }
+        : {}),
       content: requireContent(state.content, item.upstreamContentRef, `upstream for ${item.key}`),
     }))
     .sort(compareKeys);
@@ -1028,6 +1122,12 @@ export function applySafeManagedComponentItems(input: { home: string; userRoot: 
 
     const existing = findProvenance(state, item.key);
     if (item.action === 'remove-upstream') {
+      if (item.localPath) {
+        assertCurrentLocalMatches(input.userRoot, item);
+        const target = resolveInside(input.userRoot, item.localPath);
+        assertNoSymlinkPath(input.userRoot, target);
+        rmSync(target, { recursive: true, force: true });
+      }
       state.provenance = state.provenance.filter((record) => componentKey(record.kind, record.id) !== item.key);
       applied.push(item.key);
       continue;
@@ -1052,6 +1152,19 @@ export function applySafeManagedComponentItems(input: { home: string; userRoot: 
 
     const upstreamRef = item.upstreamContentRef ?? item.upstreamHash;
     if (!upstreamRef) throw new Error(`upstream content reference is missing: ${item.key}`);
+    if (item.action === 'install' && item.localPath) {
+      const target = resolveInside(input.userRoot, item.localPath);
+      if (pathExists(target)) {
+        skipped.push(item.key);
+        continue;
+      }
+      writeTree(
+        input.userRoot,
+        item.localPath,
+        requireContent(state.content, upstreamRef, 'upstream'),
+        true,
+      );
+    }
     if (item.action === 'update-clean' && item.localPath) {
       assertCurrentLocalMatches(input.userRoot, item);
       writeTree(input.userRoot, item.localPath, requireContent(state.content, upstreamRef, 'upstream'));

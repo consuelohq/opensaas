@@ -1,0 +1,17 @@
+{
+  "files": [
+    ".task/os-foundation-two/provider-control-plane-audit-round-1-independent-rerun/workpad.md",
+    "packages/os/package.json",
+    "packages/os/plans/consuelo-os-foundation/reviews/final/23b-report.md",
+    "packages/os/plans/consuelo-os-foundation/workers/11-cloudflare-provider.md",
+    "packages/os/plans/consuelo-os-foundation/workers/23b-provider-control-plane-audit.md",
+    "packages/os/plans/consuelo-os-foundation/workers/26-tool-package-layout.md",
+    "packages/os/plans/consuelo-os-foundation/workers/validate-plan.ts",
+    "packages/os/scripts/build-runtime-bundle.ts",
+    "packages/os/tools/deployment-provider/facade.ts",
+    "packages/os/tools/deployment-provider/service.ts",
+    "packages/os/tools/deployment-provider/testing.ts",
+    "packages/os/tools/railway/service.ts"
+  ],
+  "updatedAt": "2026-07-28T01:54:05.798Z"
+}

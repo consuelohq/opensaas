@@ -1,44 +1,59 @@
-export const REQUIRED_DEVICE_AUTHORITY_WORKER_SECRETS = [
-  'CLOUDFLARE_API_TOKEN',
+import {
+  assertRequiredCloudflareWorkerSecrets,
+  configuredCloudflareWorkerSecretNames,
+  CLOUDFLARE_WORKER_RELEASE_CONFIGS,
+} from './cloudflare-worker-release-readiness';
+
+export const REQUIRED_DEVICE_AUTHORITY_WORKER_SECRETS =
+  CLOUDFLARE_WORKER_RELEASE_CONFIGS['os-device-authority'].requiredSecrets;
+
+export const OPTIONAL_DEVICE_AUTHORITY_STRIPE_SECRETS = [
+  'OS_STRIPE_SECRET_KEY',
+  'OS_STRIPE_WEBHOOK_SECRET',
 ] as const;
 
-type WorkerSecretMetadata = {
-  name?: unknown;
-};
+export const OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_SECRETS = [
+  'OS_STRIPE_SYNTHETIC_SECRET_KEY',
+  'OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET',
+] as const;
 
-function parseWorkerSecretMetadata(input: unknown): WorkerSecretMetadata[] {
-  let value = input;
-  if (typeof input === 'string') {
-    try {
-      value = JSON.parse(input) as unknown;
-    } catch {
-      throw new Error('Device authority secret list response was not valid JSON');
-    }
-  }
-
-  if (Array.isArray(value)) return value as WorkerSecretMetadata[];
-  if (
-    value &&
-    typeof value === 'object' &&
-    Array.isArray((value as { secrets?: unknown }).secrets)
-  ) {
-    return (value as { secrets: WorkerSecretMetadata[] }).secrets;
-  }
-  throw new Error('Device authority secret list response was not an array');
-}
+export const OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_ALLOWLISTS = [
+  'OS_STRIPE_SYNTHETIC_ACCOUNT_IDS',
+  'OS_STRIPE_SYNTHETIC_WORKSPACE_IDS',
+] as const;
 
 export function assertRequiredDeviceAuthorityWorkerSecrets(input: unknown): void {
-  const configured = new Set(
-    parseWorkerSecretMetadata(input)
-      .map((secret) => typeof secret.name === 'string' ? secret.name.trim() : '')
-      .filter(Boolean),
+  assertRequiredCloudflareWorkerSecrets('os-device-authority', input);
+  const configured = configuredCloudflareWorkerSecretNames(
+    'os-device-authority',
+    input,
   );
-
-  for (const requiredSecret of REQUIRED_DEVICE_AUTHORITY_WORKER_SECRETS) {
-    if (!configured.has(requiredSecret)) {
-      throw new Error(
-        `Device authority secret ${requiredSecret} is not configured`,
-      );
-    }
+  const stripeConfigured = OPTIONAL_DEVICE_AUTHORITY_STRIPE_SECRETS.filter(
+    (secret) => configured.has(secret),
+  );
+  if (
+    stripeConfigured.length !== 0 &&
+    stripeConfigured.length !== OPTIONAL_DEVICE_AUTHORITY_STRIPE_SECRETS.length
+  ) {
+    throw new Error(
+      'Device authority Stripe billing secrets must be configured together: ' +
+        OPTIONAL_DEVICE_AUTHORITY_STRIPE_SECRETS.join(', '),
+    );
+  }
+  const syntheticStripeConfigured = OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_SECRETS.filter(
+    (secret) => configured.has(secret),
+  );
+  const syntheticStripeAllowlists = OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_ALLOWLISTS.filter(
+    (secret) => configured.has(secret),
+  );
+  if (
+    (syntheticStripeConfigured.length !== 0 || syntheticStripeAllowlists.length !== 0) &&
+    (syntheticStripeConfigured.length !== OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_SECRETS.length ||
+      syntheticStripeAllowlists.length === 0)
+  ) {
+    throw new Error(
+      'Device authority synthetic Stripe testing requires both Stripe secrets and at least one allowlist: ' +
+        OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_ALLOWLISTS.join(' or '),
+    );
   }
 }

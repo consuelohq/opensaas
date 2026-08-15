@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Effect } from 'effect';
 
 import manifestJson from '../../../manifests/generated/tool.manifest.json';
@@ -18,7 +19,10 @@ import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToo
 import { logToolExecution } from './logger';
 import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
 import { getInputSchema } from './schemas';
+import { resolveBrowserConfig } from '../browser/config';
 import { executeCodeCall } from '../code-call/runtime';
+import { nodeResourceLockPath, withNodeResourceLock } from '../node-resource-lock';
+import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
 import type { CodeCallInput } from '../code-call/types';
 import { executeSubagent } from '../subagent/runtime';
 import type {
@@ -64,6 +68,7 @@ type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
 
+const runtimePackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const MAX_LOG_COMMAND_CHARS = 4000;
 
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
@@ -156,7 +161,12 @@ export async function executeTool<TData = unknown>(
 ): Promise<ToolResult<TData>> {
   const startedAt = (options.now || Date.now)();
   const traceId = createTraceId(options.randomUUID);
-  const cwd = resolveGitRoot(options.cwd || process.cwd());
+  // An MCP call supplies no cwd, and the server process runs from the immutable runtime release,
+  // which is not a repository. Falling straight through to process.cwd() left every repo-aware
+  // facade tool unable to find a git root. Prefer the workspace's configured project checkout.
+  const cwd = resolveGitRoot(
+    options.cwd || resolveActiveWorkspaceProjectCwd() || process.cwd(),
+  );
   const env = options.env || process.env;
   const runner = options.runner || defaultRunner;
   const requestId = typeof input.requestId === 'string' ? input.requestId : undefined;
@@ -318,7 +328,13 @@ export async function executeTool<TData = unknown>(
     const facadeCmdForLog = formatFacadeCommandForLog(toolName, commandInput);
 
     const timeoutMs = getTimeoutMs(entry, commandInput);
-    const runResult = await runWithRetry(entry, plan, timeoutMs, runner);
+    const runResult = (toolName === 'browser' || toolName.startsWith('browser.'))
+      ? await withNodeResourceLock({
+        lockPath: nodeResourceLockPath(resolveBrowserConfig(env).profilePath),
+        operationId: `browser:${toolName}`,
+        waitTimeoutMs: timeoutMs,
+      }, () => runWithRetry(entry, plan, timeoutMs, runner))
+      : await runWithRetry(entry, plan, timeoutMs, runner);
     const cleanStderr = stripCommandEcho(runResult.stderr);
     if (runResult.timedOut) {
       const result = createToolResult({
@@ -587,20 +603,24 @@ function compactReviewData(data: unknown): unknown {
   const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
   const testResults = asArray(data.testResults);
   const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  const documentationCheckRan = Object.prototype.hasOwnProperty.call(data, 'documentationOpportunities');
+  const documentationOpportunities = asArray(data.documentationOpportunities);
+  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (documentationCheckRan) checksRun.push('documentation_opportunities');
+  if (testResults.length > 0) checksRun.push('tests');
   return {
     schema: 'review.summary.v1',
     base: data.base,
     branch: data.branch,
     files: data.files,
     affectedProjects: data.affectedProjects,
-    checksRun: testResults.length > 0
-      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'tests']
-      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance'],
+    checksRun,
     summary: {
       yourIssues: yours.length,
       preExistingIssues: preExisting.length,
       failedTestSuites: failedSuites.length,
       blockingIssues: yours.length + failedSuites.length,
+      documentationOpportunities: documentationOpportunities.length,
     },
     mustFixTotal: yours.length,
     mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
@@ -613,6 +633,7 @@ function compactReviewData(data: unknown): unknown {
       preExisting: summarizeFacadeFindings(preExisting).byFile,
     },
     preExistingDigest: summarizeFacadeFindings(preExisting),
+    documentationOpportunities: documentationOpportunities.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
     testSummary: {
       totalSuites: testResults.length,
       passedSuites: testResults.length - failedSuites.length,
@@ -749,7 +770,11 @@ async function executeInternalTool<TData>(
 
   if (internal === 'batch') {
     const steps = Array.isArray(input.steps) ? input.steps : [];
-    const result = await runBatch(steps, context.options) as ToolResult<TData>;
+    const result = await runBatch(steps, context.options, {
+      taskSession: typeof input.taskSession === 'string' ? input.taskSession : undefined,
+      branch: typeof input.branch === 'string' ? input.branch : undefined,
+      taskWorktree: typeof input.taskWorktree === 'string' ? input.taskWorktree : undefined,
+    }) as ToolResult<TData>;
     logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
       input: context.rawInput,
       resolvedInput: input,
@@ -828,11 +853,19 @@ async function executeInternalTool<TData>(
   }
 
   if (internal === 'task.current') {
+    const scopedBranch = typeof input.branch === 'string' ? input.branch : undefined;
+    const scopedWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : undefined;
+    const scopedTask = scopedBranch && scopedWorktree ? {
+      branch: scopedBranch,
+      area: getAreaFromBranch(scopedBranch) || 'unknown',
+      worktree: scopedWorktree,
+    } : null;
     const task = getCurrentTask({
+      explicitBranch: scopedBranch,
       cwd: context.cwd,
       env: context.env,
-      currentTask: context.options.currentTask,
-      candidates: context.options.candidates,
+      currentTask: scopedTask ?? context.options.currentTask,
+      candidates: scopedTask ? [scopedTask] : context.options.candidates,
     });
     const result = createToolResult({
       ok: true,
@@ -1048,7 +1081,13 @@ function resolveBranchIfNeeded(
     candidates: options.candidates,
   });
 
-  if (branchMode === 'optional' && !resolution.ok && resolution.code === 'WORKTREE_NOT_FOUND') {
+  const hasExplicitRepoTarget = Boolean(explicitBranch);
+  if (
+    branchMode === 'optional'
+    && !hasExplicitRepoTarget
+    && !resolution.ok
+    && (resolution.code === 'WORKTREE_NOT_FOUND' || resolution.code === 'AMBIGUOUS_TASK_SELECTION')
+  ) {
     return { ok: true, branch: '', source: 'none' };
   }
 
@@ -1084,7 +1123,7 @@ function buildCommandPlan(
   return {
     command: 'bun',
     args,
-    cwd: resolveWorkspaceCommandCwd(cwd, script, input),
+    cwd: entry.command.executionScope === 'runtime' ? runtimePackageRoot : resolveWorkspaceCommandCwd(cwd, script, input),
     env: {
       ...env,
       ...(branch ? { TASK_BRANCH: branch } : {}),
@@ -1241,6 +1280,7 @@ function resolveGitRoot(cwd: string): string {
 function resolveWorkspaceCommandCwd(cwd: string, script: string, input?: ToolInput): string {
   if ((script === 'code-run' || script === 'code-call') && typeof input?.taskWorktree === 'string') return input.taskWorktree;
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
+  if (typeof input?.taskWorktree === 'string') return input.taskWorktree;
   return resolveControllerRoot(cwd) || cwd;
 }
 
@@ -1289,7 +1329,11 @@ function logResult(
     ? resolvedInput.mcpTraceId
     : typeof resolvedInput.parentTraceId === 'string'
       ? resolvedInput.parentTraceId
-      : undefined;
+      : typeof rawInput.mcpTraceId === 'string'
+        ? rawInput.mcpTraceId
+        : typeof rawInput.parentTraceId === 'string'
+          ? rawInput.parentTraceId
+          : undefined;
   const effectiveBranch = branch ?? (typeof resolvedInput.branch === 'string' ? resolvedInput.branch : undefined);
 
   logToolExecution({

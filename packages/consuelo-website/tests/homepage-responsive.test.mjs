@@ -8,26 +8,39 @@ const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const readSource = (path) => readFile(join(packageRoot, path), 'utf8');
 
 describe('Consuelo OS homepage presentation', () => {
-  test('should keep the mobile hero compact with one full-width sign-in action', async () => {
-    const hero = await readSource('src/components/home/HomeHero.astro');
+  test('should present the new rotating-assistant hero without a post-paint type fitter', async () => {
+    const [hero, homeContent] = await Promise.all([
+      readSource('src/components/home/HomeHero.astro'),
+      readSource('src/data/home-content.ts'),
+    ]);
 
     expect(hero).not.toContain('DOWNLOAD LOCALLY');
-    expect(hero).toContain('width: min(100%, 31rem);');
-    expect(hero).toContain('min-height: calc(100svh - 4rem);');
-    expect(hero.match(/<span data-hero-line>/g)).toHaveLength(3);
-  });
-
-  test('should keep three authored hero lines stable without a post-paint fitter', async () => {
-    const hero = await readSource('src/components/home/HomeHero.astro');
-
+    expect(hero).toContain('homeHeroRotatingAssistant');
+    expect(hero).toContain('data-assistant-name={primaryAssistant}');
+    expect(hero).toContain('data-assistant-name={secondaryAssistant}');
+    expect(hero).toContain('data-active-assistant={primaryAssistant}');
+    expect(homeContent).toContain("prefix: 'Make'");
+    expect(homeContent).toContain("suffix: 'your digital worker'");
+    expect(homeContent).toContain("assistants: ['ChatGPT', 'Claude']");
+    expect(homeContent).toContain(
+      'AI is coming to the workspace, with smarter search, faster drafting and summarization and intelligent organization',
+    );
+    expect(hero).not.toContain('OPEN SOURCE');
+    expect(hero).not.toContain('MIT LICENSE');
+    expect(hero).toContain("import gsap from 'gsap'");
     expect(hero).not.toContain('@chenglou/pretext');
     expect(hero).not.toContain('new ResizeObserver');
     expect(hero).not.toContain('document.fonts.ready');
-    expect(hero).not.toContain("heading.style.setProperty('--hero-title-size'");
-    expect(hero).toContain('font-size: clamp(2.15rem, 9.25vw, 6.25rem);');
-    expect(hero).toContain('.os-hero h1 > span {');
-    expect(hero).toContain('display: block;');
-    expect(hero).not.toContain('.os-hero h1 > span:nth-child(2)::after');
+    expect(hero).not.toContain("style.setProperty('--hero-heading-size'");
+    expect(hero).toContain('font-size: clamp(');
+    expect(hero).toContain("window.matchMedia(REDUCED_MOTION_QUERY)");
+    // Motion contract + lifecycle review fixes
+    expect(hero).toContain('HERO_NAME_OFFSET_PX = 32');
+    expect(hero).not.toContain('yPercent');
+    expect(hero).toContain('IntersectionObserver');
+    expect(hero).toContain("addEventListener('change', handleReducedMotionChange)");
+    expect(hero).toContain("addEventListener('pageshow', handlePageShow)");
+    expect(hero).toContain('event.persisted');
   });
 
   test('should preload the Latin variable fonts used by the landing page', async () => {
@@ -76,7 +89,7 @@ describe('Consuelo OS homepage presentation', () => {
     expect(footer).toContain('font-size: clamp(3.1rem, 14.7vw, 3.8rem);');
     expect(footer).toContain('data-cloud-word-line>CONSUELO</span>');
     expect(footer).toContain('data-cloud-word-line>CLOUD</span>');
-    expect(footer).toContain('/generated/holding-world-editorial.png');
+    expect(footer).toContain('/generated/holding-world-editorial.png?v=20260810-line-art-v2');
     expect(footer).not.toContain('filter: brightness(0) invert(1)');
     expect(footer).toContain('KEEP THE SAME WORKSPACE AND LET CONSUELO');
     expect(footer).toContain('RUN THE HOME NODE FOR YOU');
@@ -103,7 +116,8 @@ describe('Consuelo OS homepage presentation', () => {
     expect(gitignore).toContain('public/generated/');
     expect(generator).toContain("public/generated/holding-world-editorial.png");
     expect(generator).toContain("public/generated/consuelo-footer-badge.png");
-    expect(generator).toContain('bodyUnderlayMask');
+    expect(generator).not.toContain('bodyUnderlayMask');
+    expect(generator).toContain('holding-world-auto-fill-exclusion-mask.svg');
   });
 
   test('should use a refresh-visible preview notice without persistent storage', async () => {

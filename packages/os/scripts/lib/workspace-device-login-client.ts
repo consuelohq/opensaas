@@ -9,6 +9,11 @@ import {
   type WorkspaceDeviceAuthorizationPollResult,
   type WorkspaceDeviceAuthorizationSession,
 } from './workspace-device-authorization';
+import {
+  INSTALL_ID_HEADER,
+  type InstallErrorCode,
+  type InstallId,
+} from './install-telemetry-contract';
 import type { AgentName } from './local-agent-connectivity';
 
 export type DeviceLoginFetchResponse = {
@@ -30,27 +35,36 @@ export type WorkspaceDeviceKeyPair = {
 
 export type DeviceCodeRequestResult =
   | { status: 'started'; session: WorkspaceDeviceAuthorizationSession; deviceKeyPair: WorkspaceDeviceKeyPair }
-  | { status: 'unavailable'; message: string };
+  | { status: 'unavailable'; message: string; telemetryErrorCode: InstallErrorCode };
 
 export type DeviceAccessTokenPollResult =
   | WorkspaceDeviceAuthorizationPollResult
   | { status: 'workspace_required'; intervalSeconds: number; message?: string }
-  | { status: 'unavailable'; message: string };
+  | { status: 'unavailable'; message: string; telemetryErrorCode: InstallErrorCode };
 
 export type RequestWorkspaceDeviceCodeInput = {
+  installId?: InstallId;
   clientId: string;
   scope: string[];
+  workspaceId?: string;
   workspaceName?: string;
   workspaceSlug?: string;
   workspaceHost?: string;
   nodeId?: string;
   nodeName?: string;
+  /**
+   * Declares that this enrolment re-registers an existing node id under a new device key, which is
+   * what reinstalling a machine produces. Registration still rejects a thumbprint mismatch without
+   * it, so this expresses intent rather than granting anything.
+   */
+  nodeIdentityReplacement?: boolean;
   deviceKeyPair?: WorkspaceDeviceKeyPair;
   fetchImpl?: DeviceLoginFetch;
   now?: string;
 };
 
 export type PollWorkspaceDeviceAccessTokenInput = {
+  installId?: InstallId;
   clientId: string;
   deviceCode: string;
   intervalSeconds: number;
@@ -60,6 +74,7 @@ export type PollWorkspaceDeviceAccessTokenInput = {
 };
 
 export type SelectWorkspaceForDeviceLoginInput = {
+  installId?: InstallId;
   clientId: string;
   deviceCode: string;
   intervalSeconds?: number;
@@ -72,6 +87,7 @@ export type SelectWorkspaceForDeviceLoginInput = {
 };
 
 export type SyncWorkspaceAgentStatusInput = {
+  installId?: InstallId;
   connectorBootstrapToken: string;
   agentNames: AgentName[];
   fetchImpl?: DeviceLoginFetch;
@@ -79,7 +95,7 @@ export type SyncWorkspaceAgentStatusInput = {
 
 export type SyncWorkspaceAgentStatusResult =
   | { status: 'synced'; connectedAgentCount: number }
-  | { status: 'unavailable'; message: string };
+  | { status: 'unavailable'; message: string; telemetryErrorCode: InstallErrorCode };
 
 const DEVICE_KEY_ALGORITHM = 'Ed25519';
 
@@ -119,8 +135,15 @@ function numberField(record: Record<string, unknown>, key: string, fallback: num
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }
 
-function unavailable(message: string): { status: 'unavailable'; message: string } {
-  return { status: 'unavailable', message };
+function unavailable(
+  message: string,
+  telemetryErrorCode: InstallErrorCode,
+): { status: 'unavailable'; message: string; telemetryErrorCode: InstallErrorCode } {
+  return { status: 'unavailable', message, telemetryErrorCode };
+}
+
+function installCorrelationHeader(installId: InstallId | undefined): Record<string, string> {
+  return installId ? { [INSTALL_ID_HEADER]: installId } : {};
 }
 
 function errorWithMessage(json: Record<string, unknown>, error: string): string {
@@ -206,8 +229,26 @@ async function createDeviceProof(input: {
 }
 
 async function readJson(fetchImpl: DeviceLoginFetch, url: string, init: RequestInit): Promise<Record<string, unknown>> {
-  const response = await fetchImpl(url, init);
-  const json = asRecord(await response.json());
+  let response: Response;
+  try {
+    response = await fetchImpl(url, init);
+  } catch (error: unknown) {
+    // The URL can carry a device code, so report the failure without echoing the request.
+    throw new Error(
+      `device login endpoint is unreachable: ${error instanceof Error ? error.message : 'network error'}`,
+    );
+  }
+
+  let json: Record<string, unknown>;
+  try {
+    json = asRecord(await response.json());
+  } catch (_error: unknown) {
+    // A non-JSON body is usually an edge error page. Surface the status rather than the body,
+    // which is untrusted and may be large.
+    throw new Error(
+      `device login endpoint returned a non-JSON response (HTTP ${response.status})`,
+    );
+  }
 
   if (!response.ok && !json.error) {
     throw new Error(`device login endpoint returned HTTP ${response.status}`);
@@ -226,11 +267,17 @@ export async function requestWorkspaceDeviceCode(
     device_public_key_jwk: deviceKeyPair.publicKeyJwk,
     device_key_algorithm: deviceKeyPair.algorithm,
   });
+  if (input.workspaceId) body.set('workspace_id', input.workspaceId);
   if (input.workspaceName) body.set('workspace_name', input.workspaceName);
   if (input.workspaceSlug) body.set('workspace_slug', input.workspaceSlug);
   if (input.workspaceHost) body.set('workspace_host', input.workspaceHost);
   if (input.nodeId) body.set('node_id', input.nodeId);
   if (input.nodeName) body.set('node_name', input.nodeName);
+  // Declared only when re-enrolling an existing node id whose device key changed, which is what a
+  // reinstall produces. Registration still fails closed without it.
+  if (input.nodeIdentityReplacement) {
+    body.set('node_identity_replacement', 'true');
+  }
 
   try {
     const json = await readJson(input.fetchImpl ?? defaultFetch, CONSUELO_DEVICE_CODE_URL, {
@@ -238,13 +285,14 @@ export async function requestWorkspaceDeviceCode(
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
+        ...installCorrelationHeader(input.installId),
       },
       body,
     });
 
     const error = stringField(json, 'error');
     if (error) {
-      return unavailable(errorWithMessage(json, error));
+      return unavailable(errorWithMessage(json, error), 'DEVICE_CODE_REQUEST_FAILED');
     }
 
     const deviceCode = stringField(json, 'device_code', 'deviceCode');
@@ -255,7 +303,10 @@ export async function requestWorkspaceDeviceCode(
       `${verificationUri}?user_code=${encodeURIComponent((userCode ?? '').replaceAll('-', ''))}`;
 
     if (!deviceCode || !userCode) {
-      return unavailable('device code response was missing required fields');
+      return unavailable(
+        'device code response was missing required fields',
+        'DEVICE_CODE_REQUEST_FAILED',
+      );
     }
 
     return {
@@ -271,11 +322,15 @@ export async function requestWorkspaceDeviceCode(
       },
     };
   } catch (error: unknown) {
-    return unavailable(error instanceof Error ? error.message : String(error));
+    return unavailable(
+      error instanceof Error ? error.message : String(error),
+      'DEVICE_CODE_REQUEST_FAILED',
+    );
   }
 }
 
 function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDeviceAuthorizationPollResult | undefined {
+  const userId = stringField(json, 'user_id', 'userId');
   const workspaceId = stringField(json, 'workspace_id', 'workspaceId');
   const workspaceSlug = stringField(json, 'workspace_slug', 'workspaceSlug');
   const workspaceHost = stringField(json, 'workspace_host', 'workspaceHost');
@@ -285,6 +340,7 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
   const nodeRole = stringField(json, 'node_role', 'nodeRole');
   const nodeStatus = stringField(json, 'node_status', 'nodeStatus');
   const connectorBootstrapToken = stringField(json, 'connector_bootstrap_token', 'connectorBootstrapToken');
+  const edgeRequestSigningSecret = stringField(json, 'edge_request_signing_secret', 'edgeRequestSigningSecret');
   const connectorBootstrapExpiresAt = stringField(json, 'connector_bootstrap_expires_at', 'connectorBootstrapExpiresAt');
   const cloudflareTunnelToken = stringField(json, 'cloudflare_tunnel_token', 'cloudflareTunnelToken');
 
@@ -294,10 +350,12 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
 
   return {
     status: 'approved',
+    ...(userId && !userId.startsWith('google:') ? { userId } : {}),
     workspaceId,
     workspaceSlug,
     workspaceHost,
     connectorId,
+    ...(edgeRequestSigningSecret ? { edgeRequestSigningSecret } : {}),
     ...(nodeId ? { nodeId } : {}),
     ...(nodeName ? { nodeName } : {}),
     ...(nodeRole === 'home' || nodeRole === 'member' ? { nodeRole } : {}),
@@ -310,20 +368,29 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
 export async function pollWorkspaceDeviceAccessToken(
   input: PollWorkspaceDeviceAccessTokenInput,
 ): Promise<DeviceAccessTokenPollResult> {
+  let body: URLSearchParams;
   try {
-    const body = new URLSearchParams({
+    body = new URLSearchParams({
       client_id: input.clientId,
       device_code: input.deviceCode,
       grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
     });
 
     if (input.deviceKeyPair) {
-      const proof = await createDeviceProof({
-        clientId: input.clientId,
-        deviceCode: input.deviceCode,
-        deviceKeyPair: input.deviceKeyPair,
-        devicePublicKeyThumbprint: input.devicePublicKeyThumbprint,
-      });
+      let proof: Awaited<ReturnType<typeof createDeviceProof>>;
+      try {
+        proof = await createDeviceProof({
+          clientId: input.clientId,
+          deviceCode: input.deviceCode,
+          deviceKeyPair: input.deviceKeyPair,
+          devicePublicKeyThumbprint: input.devicePublicKeyThumbprint,
+        });
+      } catch (error: unknown) {
+        return unavailable(
+          error instanceof Error ? error.message : String(error),
+          'DEVICE_AUTH_PROOF_FAILED',
+        );
+      }
       body.set('device_public_key_proof_payload', proof.payload);
       body.set('device_public_key_proof', proof.proof);
     }
@@ -333,6 +400,7 @@ export async function pollWorkspaceDeviceAccessToken(
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
+        ...installCorrelationHeader(input.installId),
       },
       body,
     });
@@ -352,30 +420,52 @@ export async function pollWorkspaceDeviceAccessToken(
       };
     }
     if (error === 'access_denied') {
-      return { status: 'denied', errorCode: 'DEVICE_CODE_DENIED' };
+      return {
+        status: 'denied',
+        errorCode: 'DEVICE_CODE_DENIED',
+        telemetryErrorCode: 'DEVICE_AUTH_DENIED',
+      };
     }
     if (error === 'expired_token') {
-      return { status: 'expired', errorCode: 'DEVICE_CODE_EXPIRED' };
+      return {
+        status: 'expired',
+        errorCode: 'DEVICE_CODE_EXPIRED',
+        telemetryErrorCode: 'DEVICE_AUTH_EXPIRED',
+      };
     }
     if (error) {
-      return unavailable(errorWithMessage(json, error));
+      return unavailable(errorWithMessage(json, error), 'DEVICE_AUTH_POLL_FAILED');
     }
 
-    return approvedDeviceGrantFromJson(json) ?? unavailable('approved device response was missing workspace bootstrap fields');
+    return approvedDeviceGrantFromJson(json) ?? unavailable(
+      'approved device response was missing workspace bootstrap fields',
+      'DEVICE_AUTH_POLL_FAILED',
+    );
   } catch (error: unknown) {
-    return unavailable(error instanceof Error ? error.message : String(error));
+    return unavailable(
+      error instanceof Error ? error.message : String(error),
+      'DEVICE_AUTH_UNAVAILABLE',
+    );
   }
 }
 export async function selectWorkspaceForDeviceLogin(
   input: SelectWorkspaceForDeviceLoginInput,
 ): Promise<DeviceAccessTokenPollResult> {
+  let proof: Awaited<ReturnType<typeof createDeviceProof>>;
   try {
-    const proof = await createDeviceProof({
+    proof = await createDeviceProof({
       clientId: input.clientId,
       deviceCode: input.deviceCode,
       deviceKeyPair: input.deviceKeyPair,
       devicePublicKeyThumbprint: input.devicePublicKeyThumbprint,
     });
+  } catch (error: unknown) {
+    return unavailable(
+      error instanceof Error ? error.message : String(error),
+      'DEVICE_AUTH_PROOF_FAILED',
+    );
+  }
+  try {
     const body = new URLSearchParams({
       client_id: input.clientId,
       device_code: input.deviceCode,
@@ -391,6 +481,7 @@ export async function selectWorkspaceForDeviceLogin(
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
+        ...installCorrelationHeader(input.installId),
       },
       body,
     });
@@ -399,13 +490,38 @@ export async function selectWorkspaceForDeviceLogin(
     if (error === 'workspace_required') {
       return { status: 'workspace_required', intervalSeconds: numberField(json, 'interval', input.intervalSeconds ?? 5), message: stringField(json, 'message') };
     }
-    if (error === 'access_denied') return { status: 'denied', errorCode: 'DEVICE_CODE_DENIED' };
-    if (error === 'expired_token') return { status: 'expired', errorCode: 'DEVICE_CODE_EXPIRED' };
-    if (error) return unavailable(errorWithMessage(json, error));
+    if (error === 'access_denied') {
+      return {
+        status: 'denied',
+        errorCode: 'DEVICE_CODE_DENIED',
+        telemetryErrorCode: 'DEVICE_AUTH_DENIED',
+      };
+    }
+    if (error === 'expired_token') {
+      return {
+        status: 'expired',
+        errorCode: 'DEVICE_CODE_EXPIRED',
+        telemetryErrorCode: 'DEVICE_AUTH_EXPIRED',
+      };
+    }
+    if (error) {
+      return unavailable(
+        errorWithMessage(json, error),
+        error === 'workspace_route_setup_failed'
+          ? 'WORKSPACE_ROUTE_SETUP_FAILED'
+          : 'WORKSPACE_SELECTION_FAILED',
+      );
+    }
 
-    return approvedDeviceGrantFromJson(json) ?? unavailable('approved workspace selection response was missing workspace bootstrap fields');
+    return approvedDeviceGrantFromJson(json) ?? unavailable(
+      'approved workspace selection response was missing workspace bootstrap fields',
+      'WORKSPACE_SELECTION_FAILED',
+    );
   } catch (error: unknown) {
-    return unavailable(error instanceof Error ? error.message : String(error));
+    return unavailable(
+      error instanceof Error ? error.message : String(error),
+      'WORKSPACE_SELECTION_FAILED',
+    );
   }
 }
 
@@ -414,7 +530,10 @@ export async function syncWorkspaceAgentStatus(
 ): Promise<SyncWorkspaceAgentStatusResult> {
   const connectorBootstrapToken = input.connectorBootstrapToken.trim();
   if (!connectorBootstrapToken) {
-    return unavailable('connector bootstrap credential is required');
+    return unavailable(
+      'connector bootstrap credential is required',
+      'AGENT_STATUS_SYNC_FAILED',
+    );
   }
   const agentNames = [...new Set(input.agentNames)].sort();
 
@@ -427,6 +546,7 @@ export async function syncWorkspaceAgentStatus(
           Accept: 'application/json',
           Authorization: `Bearer ${connectorBootstrapToken}`,
           'Content-Type': 'application/json',
+          ...installCorrelationHeader(input.installId),
         },
         body: JSON.stringify({ agents: agentNames }),
       },
@@ -439,14 +559,20 @@ export async function syncWorkspaceAgentStatus(
         stringField(error, 'code') ??
         stringField(body, 'error') ??
         `HTTP ${response.status}`;
-      return unavailable(message);
+      return unavailable(message, 'AGENT_STATUS_SYNC_FAILED');
     }
     const connectedAgentCount = body.connectedAgentCount;
     if (typeof connectedAgentCount !== 'number' || !Number.isInteger(connectedAgentCount)) {
-      return unavailable('agent status response was missing connectedAgentCount');
+      return unavailable(
+        'agent status response was missing connectedAgentCount',
+        'AGENT_STATUS_SYNC_FAILED',
+      );
     }
     return { status: 'synced', connectedAgentCount };
   } catch (error: unknown) {
-    return unavailable(error instanceof Error ? error.message : String(error));
+    return unavailable(
+      error instanceof Error ? error.message : String(error),
+      'AGENT_STATUS_SYNC_FAILED',
+    );
   }
 }

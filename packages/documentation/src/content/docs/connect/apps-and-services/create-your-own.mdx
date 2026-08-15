@@ -1,0 +1,47 @@
+---
+title: Bring your own
+description: Turn an official CLI or API into a small, typed Consuelo tool without waiting for a native integration.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'Current manifest requirements and provider-specific tool patterns were inspected on 2026-07-14.'
+---
+
+> **Native Consuelo tool: Depends on the service**  
+> **Available today: Often — when the provider has a supported CLI or API.**
+
+A missing native wrapper does not require an untyped credential-bearing script. Ask your agent to prove the official provider path, then add the smallest typed tool that makes the workflow repeatable.
+
+## Ask your agent
+
+```text
+Read the provider's official CLI or API documentation.
+Identify the exact account, project, scopes, and read operation needed.
+Keep credentials on the local node and detect only whether they are available.
+Verify one bounded read before writing code.
+Create a provider-specific typed tool with structured input, output, and errors.
+Add focused tests and separate reads from writes.
+Require approval for external, destructive, administrative, billing, permission, or deployment actions.
+Update this public page from planned to available only after the tool and tests ship.
+```
+
+## Build the contract in this order
+
+1. Define the user action and provider account boundary.
+2. Choose the official CLI, SDK, or REST API.
+3. Define credential names and minimum scopes.
+4. Add a read-only health or identity check.
+5. Define typed methods and flags.
+6. Map provider failures into structured errors.
+7. Add approval metadata to mutations.
+8. Test success, missing credentials, wrong account, permission denial, rate limiting, and provider errors.
+9. Update the docs with the shipped method names and verification output.
+
+## Do not create a generic deployment or connector tool
+
+Prefer `cloudflare.*`, `railway.*`, `vercel.*`, and other provider families. Provider-specific names make permissions, retries, errors, and documentation easier to understand.
+
+Use [Create a skill](/build/skills/create-a-skill/) for reusable workflow guidance and [How tools work](/build/tools/how-tools-work/) for the runtime contract.

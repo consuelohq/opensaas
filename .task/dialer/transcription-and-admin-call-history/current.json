@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/transcription-and-admin-call-history",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1764,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1764",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1764",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1764/transcription-and-admin-call-history",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1764",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1764/transcription-and-admin-call-history",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-transcription-and-admin-call-history",
+  "taskSession": "tsk_5bbc3874fa21",
+  "tmuxSession": "opensaas-dialer-transcription-and-admin-call-history-5bbc3874",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-transcription-and-admin-call-history/.task/dialer/transcription-and-admin-call-history/session.json",
+  "createdAt": "2026-08-04T17:05:16.709Z"
+}

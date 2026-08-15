@@ -1,0 +1,19 @@
+{
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/repair-google-sign-in-launcher-redirect",
+  "baseBranch": "stream/os-web",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1704,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1704",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1704",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1704/repair-google-sign-in-launcher-redirect",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1704",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1704/repair-google-sign-in-launcher-redirect",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-repair-google-sign-in-launcher-redirect",
+  "taskSession": "tsk_66379677ff9c",
+  "tmuxSession": "opensaas-os-web-repair-google-sign-in-launcher-redirect-66379677",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-repair-google-sign-in-launcher-redirect/.task/os-web/repair-google-sign-in-launcher-redirect/session.json",
+  "createdAt": "2026-07-28T03:59:02.653Z"
+}

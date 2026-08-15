@@ -1,0 +1,23 @@
+---
+title: Steering
+description: Control the workspace and project instructions every agent starts from.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/steering/system_prompt.md
+    tests:
+      - packages/os/tests/task-hook-workflow-contract.test.ts
+    runtime: The current steering bootstrap contract was inspected on 2026-08-11.
+---
+
+**Steering** is the durable instruction layer that tells agents how this workspace operates. It establishes the operating rules and the core tool surface before an agent starts doing task work.
+
+Agents call `get_steering` once at the beginning of a conversation. After bootstrap, they should use targeted reads for the project or package they are changing instead of repeatedly reloading the full steering surface.
+
+## Steering layers
+
+- [How steering works](/build/steering/how-steering-works/) explains the bootstrap and resolution model.
+- [Workspace steering](/build/steering/workspace-steering/) covers rules shared across the workspace.
+- [Project steering](/build/steering/project-steering/) covers rules that apply to a narrower project or package.
+
+Steering is different from memory: steering says **how to work**; memory carries **what happened and what needs to continue**.

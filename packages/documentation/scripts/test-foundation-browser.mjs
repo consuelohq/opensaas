@@ -3,6 +3,7 @@ import {
   startDocumentationServer,
   stopDocumentationServer,
 } from './lib/documentation-browser-test.mjs';
+import { readFileSync } from 'node:fs';
 
 const port = 4327;
 const origin = `http://127.0.0.1:${port}`;
@@ -32,25 +33,99 @@ try {
 
   await page.goto(origin, { waitUntil: 'networkidle' });
   if ((await page.locator('main h1#_top').count()) !== 1) throw new Error('Homepage must render one page title');
-  const globalLinks = page.locator('#starlight__sidebar a.global-section-link');
+  const siteTitle = page.locator('.consuelo-site-title');
+  const siteTitleText = (await siteTitle.textContent())?.replace(/\s+/g, '') ?? '';
+  if (siteTitleText !== '/Docs') throw new Error(`Header brand must read / Docs, found ${siteTitleText}`);
+  if ((await siteTitle.getAttribute('href')) !== '/') throw new Error('Header Docs brand must link to the documentation home');
+  const siteTitleLogo = siteTitle.locator('img');
+  if ((await siteTitleLogo.getAttribute('src')) !== '/favicon.svg') throw new Error('Header brand must use the docs favicon');
+  const mainFrameAnimation = await page.locator('.main-frame').evaluate((element) => getComputedStyle(element).animationName);
+  if (mainFrameAnimation !== 'docs-page-in') throw new Error(`Main frame entrance animation is ${mainFrameAnimation}`);
+  const globalLinks = page.locator('#starlight__sidebar .global-sidebar-desktop a.global-section-link');
   const globalCount = await globalLinks.count();
-  if (globalCount !== 7) throw new Error(`Expected 7 direct global section links, found ${globalCount}`);
-  if ((await page.locator('#starlight__sidebar details').count()) !== 0) throw new Error('Global sidebar must not render dropdown groups');
-  const startGlobalLink = page.locator('#starlight__sidebar').getByRole('link', { name: 'Start', exact: true });
+  if (globalCount !== 11) throw new Error(`Expected 11 direct desktop global section links, found ${globalCount}`);
+  if (await page.locator('#starlight__sidebar .global-sidebar-mobile').isVisible()) throw new Error('Mobile accordion navigation must be hidden on desktop');
+  const startGlobalLink = page.locator('#starlight__sidebar .global-sidebar-desktop').getByRole('link', { name: 'Start', exact: true });
   if ((await startGlobalLink.getAttribute('href')) !== '/start/') throw new Error('Start must link directly to its overview');
+  const nodesGlobalLink = page.locator('#starlight__sidebar .global-sidebar-desktop').getByRole('link', { name: 'Nodes', exact: true });
+  if ((await nodesGlobalLink.getAttribute('href')) !== '/nodes/') throw new Error('Nodes must link directly to its overview');
+  const globalLinkRest = await startGlobalLink.evaluate((element) => ({
+    backgroundColor: getComputedStyle(element).backgroundColor,
+    color: getComputedStyle(element).color,
+  }));
+  await startGlobalLink.hover();
+  const globalLinkHover = await startGlobalLink.evaluate((element) => ({
+    backgroundColor: getComputedStyle(element).backgroundColor,
+    color: getComputedStyle(element).color,
+  }));
+  if (globalLinkHover.backgroundColor === 'rgba(0, 0, 0, 0)') throw new Error('Global sidebar hover must add a subtle neutral surface');
+  if (globalLinkHover.color === globalLinkRest.color) throw new Error('Global sidebar hover must brighten the text');
+
+  const assertPointerFocusIsQuiet = async (locator, label) => {
+    try {
+      await locator.dispatchEvent('pointerdown', { pointerType: 'mouse' });
+      await locator.focus();
+      const focusStyle = await locator.evaluate((element) => ({
+        boxShadow: getComputedStyle(element).boxShadow,
+        outlineStyle: getComputedStyle(element).outlineStyle,
+        outlineWidth: getComputedStyle(element).outlineWidth,
+      }));
+      if (focusStyle.boxShadow !== 'none') throw new Error(`${label} pointer focus has a box shadow: ${focusStyle.boxShadow}`);
+      if (focusStyle.outlineStyle !== 'none' && focusStyle.outlineWidth !== '0px') throw new Error(`${label} pointer focus has an outline: ${JSON.stringify(focusStyle)}`);
+    } catch (error) {
+      throw new Error(`${label} pointer-focus verification failed`, { cause: error });
+    }
+  };
+  const header = page.getByRole('banner');
+  if ((await header.getByLabel('Translate this page').count()) !== 0) throw new Error('Translate selector must not be visible');
+  for (const label of ['Use system appearance', 'Use light appearance', 'Use dark appearance']) {
+    await assertPointerFocusIsQuiet(header.getByRole('button', { name: label }), `${label} button`);
+  }
+  const lightThemeButton = header.getByRole('button', { name: 'Use light appearance' });
+  const darkThemeButton = header.getByRole('button', { name: 'Use dark appearance' });
+  const autoThemeButton = header.getByRole('button', { name: 'Use system appearance' });
+  await lightThemeButton.click();
+  if ((await page.locator('html').getAttribute('data-theme')) !== 'light') throw new Error('Light display toggle did not set the light theme');
+  if ((await page.evaluate(() => localStorage.getItem('starlight-theme'))) !== 'light') throw new Error('Light display preference was not persisted');
+  const lightPaper = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--docs-paper').trim());
+  if (lightPaper !== '#faf7f2') throw new Error(`Light docs paper is ${lightPaper}, not the launcher cream`);
+  await darkThemeButton.click();
+  if ((await page.locator('html').getAttribute('data-theme')) !== 'dark') throw new Error('Dark display toggle did not set the dark theme');
+  const darkPaper = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--docs-paper').trim());
+  if (darkPaper !== '#0f0f0d') throw new Error(`Dark docs paper is ${darkPaper}, not the launcher brown-black`);
+  await autoThemeButton.click();
+  if ((await page.evaluate(() => localStorage.getItem('starlight-theme'))) !== null) throw new Error('System display toggle must clear the explicit theme preference');
+  if ((await autoThemeButton.getAttribute('aria-pressed')) !== 'true') throw new Error('System display toggle did not become selected');
+  const searchButton = page.getByRole('button', { name: /Search/ }).first();
+  await assertPointerFocusIsQuiet(searchButton, 'Search button');
+
+  await page.keyboard.press('Tab');
+  await startGlobalLink.focus();
+  const keyboardFocusStyle = await startGlobalLink.evaluate((element) => ({
+    outlineStyle: getComputedStyle(element).outlineStyle,
+    outlineWidth: getComputedStyle(element).outlineWidth,
+  }));
+  if (keyboardFocusStyle.outlineStyle === 'none' || keyboardFocusStyle.outlineWidth === '0px') {
+    throw new Error(`Keyboard focus indicator is missing: ${JSON.stringify(keyboardFocusStyle)}`);
+  }
   await startGlobalLink.click();
   await page.waitForURL(`${origin}/start/`);
   if (!(await page.getByRole('link', { name: 'All documentation' }).isVisible())) throw new Error('Missing All documentation link');
-  const localGroups = page.locator('#starlight__sidebar details');
+  const localGroups = page.locator('#starlight__sidebar .section-sidebar details');
   if ((await localGroups.count()) !== 1) throw new Error('Section sidebar must show one group');
   if (!(await localGroups.first().evaluate((element) => element.open))) throw new Error('Section sidebar must start expanded');
+  const activeStartStyle = await page.locator('#starlight__sidebar .section-sidebar a[aria-current="page"]').evaluate((element) => ({
+    backgroundColor: getComputedStyle(element).backgroundColor,
+    boxShadow: getComputedStyle(element).boxShadow,
+  }));
+  if (activeStartStyle.boxShadow !== 'none') throw new Error(`Active sidebar item still has an accent bar: ${activeStartStyle.boxShadow}`);
+  if (activeStartStyle.backgroundColor === 'rgba(0, 0, 0, 0)') throw new Error('Active sidebar item must keep a neutral gray background');
 
   const startRoutes = [
     ['Overview', '/start/'],
     ['Install Consuelo OS', '/start/install-consuelo-os/'],
     ['Create a workspace', '/start/create-a-workspace/'],
     ['Connect your first agent', '/start/connect-your-first-agent/'],
-    ['Local and Consuelo Cloud', '/start/local-and-consuelo-cloud/'],
     ['Core concepts', '/start/core-concepts/'],
   ];
   const sectionNavigation = page.locator('#starlight__sidebar');
@@ -64,6 +139,20 @@ try {
     if (!markdown.ok) throw new Error(`${label} Markdown returned ${markdown.status}`);
   }
 
+  const nodeRoutes = [
+    ['Overview', '/nodes/'],
+    ['Local nodes', '/nodes/local/'],
+    ['Cloud nodes', '/nodes/cloud/'],
+    ['Routing work', '/nodes/routing/'],
+  ];
+  for (const [label, href] of nodeRoutes) {
+    const response = await fetch(`${origin}${href}`);
+    if (!response.ok) throw new Error(`Nodes: ${label} returned ${response.status}`);
+    const markdownHref = href === '/nodes/' ? '/nodes.md' : `${href.slice(0, -1)}.md`;
+    const markdown = await fetch(`${origin}${markdownHref}`);
+    if (!markdown.ok) throw new Error(`Nodes: ${label} Markdown returned ${markdown.status}`);
+  }
+
   await page.goto(`${origin}/start/connect-your-first-agent/`, { waitUntil: 'networkidle' });
   if (!(await page.getByRole('heading', { name: 'Connect your first agent', level: 1 }).isVisible())) throw new Error('First-agent guide did not render');
   if (!(await page.getByRole('heading', { name: 'What “verified” means', level: 2 }).isVisible())) throw new Error('First-agent verification guidance is missing');
@@ -74,10 +163,11 @@ try {
   await startCard.hover();
   const cardHover = await startCard.evaluate((element) => {
     const style = getComputedStyle(element);
-    return { borderWidth: style.borderTopWidth, boxShadow: style.boxShadow };
+    return { borderWidth: style.borderTopWidth, borderColor: style.borderTopColor, boxShadow: style.boxShadow };
   });
-  if (cardHover.borderWidth !== '2px') throw new Error(`Start card hover border is ${cardHover.borderWidth}`);
+  if (cardHover.borderWidth !== '1px') throw new Error(`Start card hover border is ${cardHover.borderWidth}`);
   if (cardHover.boxShadow !== 'none') throw new Error(`Start card hover has a doubled outline: ${cardHover.boxShadow}`);
+  await assertPointerFocusIsQuiet(startCard, 'Start card');
   await page.goto(`${origin}/start/`, { waitUntil: 'networkidle' });
 
   const markdownResponse = await fetch(`${origin}/start.md`);
@@ -87,10 +177,30 @@ try {
   if (legacyMarkdown.status !== 308) throw new Error(`Legacy Markdown returned ${legacyMarkdown.status}`);
   if (legacyMarkdown.headers.get('location') !== '/reference/configuration.md') throw new Error('Legacy Markdown redirect points to the wrong route');
   if (await page.locator('.page-actions-menu').isVisible()) throw new Error('Page actions menu is visible before opening details');
-  await page.getByRole('button', { name: 'Copy page', exact: true }).first().click();
+  const copyActions = page.locator('.page-actions');
+  const copyButton = page.getByRole('button', { name: 'Copy page', exact: true }).first();
+  const moreActionsButton = page.getByLabel('More page actions');
+  const [copyBox, moreBox] = await Promise.all([copyButton.boundingBox(), moreActionsButton.boundingBox()]);
+  if (!copyBox || !moreBox) throw new Error('Could not measure Copy page split control');
+  if (Math.abs(copyBox.y - moreBox.y) > 1 || Math.abs(copyBox.height - moreBox.height) > 1) {
+    throw new Error(`Copy page split control is vertically misaligned: ${JSON.stringify({ copyBox, moreBox })}`);
+  }
+  if (Math.abs(copyBox.x + copyBox.width - moreBox.x) > 1) {
+    throw new Error(`Copy page split segments do not meet cleanly: ${JSON.stringify({ copyBox, moreBox })}`);
+  }
+  const normalCopyBackground = await copyButton.evaluate((element) => getComputedStyle(element).backgroundColor);
+  await copyButton.click();
   await page.waitForTimeout(100);
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   if (copied !== expectedMarkdown) throw new Error('Copy page did not use canonical Markdown output');
+  if ((await copyActions.getAttribute('data-copy-state')) !== 'success') throw new Error('Copy page did not enter success state');
+  if (!(await copyActions.locator('.page-action-success-icon').isVisible())) throw new Error('Copy success check icon is not visible');
+  if (await copyActions.locator('.page-action-chevron').isVisible()) throw new Error('Copy success did not replace the down arrow');
+  const successCopyBackground = await copyButton.evaluate((element) => getComputedStyle(element).backgroundColor);
+  if (successCopyBackground === normalCopyBackground) throw new Error('Copy success did not change the button color');
+  await page.waitForTimeout(1800);
+  if (await copyActions.getAttribute('data-copy-state')) throw new Error('Copy success state did not reset');
+  if (!(await copyActions.locator('.page-action-chevron').isVisible())) throw new Error('Copy down arrow did not return after success');
 
   await page.getByLabel('More page actions').click();
   const actionMenu = page.locator('.page-actions-menu');
@@ -126,9 +236,18 @@ try {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`${origin}/build/tools/how-tools-work/`, { waitUntil: 'networkidle' });
   const breadcrumbs = page.getByRole('navigation', { name: 'Breadcrumb' });
-  for (const label of ['Build with OS', 'Tools', 'How tools work']) {
+  for (const label of ['Tools', 'How tools work']) {
     if (!(await breadcrumbs.getByText(label, { exact: true }).isVisible())) throw new Error(`Missing breadcrumb: ${label}`);
   }
+  if ((await breadcrumbs.getByText('Build with OS', { exact: true }).count()) !== 0) throw new Error('Build with OS must not remain in promoted breadcrumbs');
+
+  const toolManifest = JSON.parse(readFileSync(new URL('../../os/manifests/generated/tool.manifest.json', import.meta.url), 'utf8'));
+  const expectedToolNames = toolManifest.tools.map((tool) => tool.name).filter(Boolean).sort((left, right) => left.localeCompare(right));
+  await page.goto(`${origin}/tools/tool-list/`, { waitUntil: 'networkidle' });
+  const toolTocLabels = (await page.locator('starlight-toc a').allTextContents()).map((label) => label.trim());
+  const missingToolTocEntries = expectedToolNames.filter((name) => !toolTocLabels.includes(name));
+  if (missingToolTocEntries.length !== 0) throw new Error(`Tool List TOC is missing ${missingToolTocEntries.length} tools: ${missingToolTocEntries.slice(0, 5).join(', ')}`);
+  await page.goto(`${origin}/build/tools/how-tools-work/`, { waitUntil: 'networkidle' });
   const siteFooter = page.locator('[data-docs-site-footer]');
   if ((await siteFooter.count()) !== 1) throw new Error('Missing dedicated site footer');
   const siteFooterPlacement = await siteFooter.evaluate((element) => ({
@@ -156,7 +275,7 @@ try {
   if (shellStyles.nestedGuideWidth !== '0px') throw new Error(`Nested sidebar guide remains ${shellStyles.nestedGuideWidth}`);
 
   const registry = page.locator('.docs-registry-grid');
-  if ((await registry.locator('.docs-registry-column').count()) !== 7) throw new Error('Footer registry must contain seven sections');
+  if ((await registry.locator('.docs-registry-column').count()) !== 11) throw new Error('Footer registry must contain eleven sections');
   const desktopColumns = await registry.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
   if (desktopColumns !== 7) throw new Error(`Footer registry must use seven desktop columns, found ${desktopColumns}`);
   const lastHeadingY = await page.locator('#tools-skills-and-scripts').evaluate(
@@ -190,32 +309,366 @@ try {
 
   const viewportChecks = [];
   for (const viewport of [
-    { name: 'tablet', width: 900, height: 900 },
+    { name: 'tablet', width: 820, height: 1180 },
     { name: 'mobile', width: 390, height: 844 },
   ]) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
-    await page.goto(`${origin}/start/`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/start/install-consuelo-os/`, { waitUntil: 'networkidle' });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     if (overflow > 1) throw new Error(`${viewport.name} layout overflows by ${overflow}px`);
-    if (!(await page.getByRole('button', { name: 'Copy page', exact: true }).first().isVisible())) throw new Error(`Copy page is hidden on ${viewport.name}`);
-    if ((await page.locator('main h1#_top').count()) !== 1) throw new Error(`Missing page title on ${viewport.name}`);
-
-    if (viewport.name === 'mobile') {
-      const mobileFooterIsNested = await page.locator('[data-docs-site-footer]').evaluate(
-        (element) => element.parentElement?.hasAttribute('data-docs-site-footer-home') ?? false,
-      );
-      if (!mobileFooterIsNested) throw new Error('Mobile site footer must remain inside the page footer');
-      const mobileColumns = await page.locator('.docs-registry-grid').evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
-      if (mobileColumns !== 2) throw new Error(`Footer registry must use two mobile columns, found ${mobileColumns}`);
-      const menuButton = page.locator('button[aria-controls="starlight__sidebar"]');
-      await menuButton.click();
-      if (!(await page.getByRole('link', { name: 'All documentation' }).isVisible())) throw new Error('Section navigation is unavailable on mobile');
-      await page.keyboard.press('Escape');
+    const chromeBorders = await page.evaluate(() => {
+      const header = document.querySelector('.page > header');
+      const contentDivider = document.querySelector('.content-panel + .content-panel');
+      return {
+        headerBottom: header ? getComputedStyle(header).borderBottomWidth : null,
+        contentTop: contentDivider ? getComputedStyle(contentDivider).borderTopWidth : null,
+      };
+    });
+    if (chromeBorders.headerBottom !== '0px' || chromeBorders.contentTop !== '0px') {
+      throw new Error(`Top page dividers remain on ${viewport.name}: ${JSON.stringify(chromeBorders)}`);
     }
+    const responsiveCopyButton = page.getByRole('button', { name: 'Copy page', exact: true }).first();
+    const responsiveMoreButton = page.getByLabel('More page actions');
+    if (!(await responsiveCopyButton.isVisible())) throw new Error(`Copy page is hidden on ${viewport.name}`);
+    if ((await page.locator('main h1#_top').count()) !== 1) throw new Error(`Missing page title on ${viewport.name}`);
+    const [responsiveCopyBox, responsiveMoreBox] = await Promise.all([responsiveCopyButton.boundingBox(), responsiveMoreButton.boundingBox()]);
+    if (!responsiveCopyBox || !responsiveMoreBox) throw new Error(`Could not measure Copy page on ${viewport.name}`);
+    if (Math.abs(responsiveCopyBox.y - responsiveMoreBox.y) > 1 || Math.abs(responsiveCopyBox.height - responsiveMoreBox.height) > 1) {
+      throw new Error(`Copy page split control is misaligned on ${viewport.name}: ${JSON.stringify({ responsiveCopyBox, responsiveMoreBox })}`);
+    }
+    const responsiveType = await page.evaluate(() => {
+      const h1 = document.querySelector('main h1#_top');
+      const h2 = [...document.querySelectorAll('.sl-markdown-content h2')].find((element) => element.textContent?.trim() === 'Requirements');
+      const paragraph = document.querySelector('.sl-markdown-content p');
+      const mainFrame = document.querySelector('.main-frame');
+      const pick = (element) => element ? {
+        fontSize: parseFloat(getComputedStyle(element).fontSize),
+        lineHeight: parseFloat(getComputedStyle(element).lineHeight),
+        letterSpacing: getComputedStyle(element).letterSpacing,
+        wordSpacing: getComputedStyle(element).wordSpacing,
+      } : null;
+      return { h1: pick(h1), h2: pick(h2), paragraph: pick(paragraph), animationName: mainFrame ? getComputedStyle(mainFrame).animationName : null };
+    });
+    const expectedH1 = viewport.name === 'mobile' ? { size: 30, line: 36 } : { size: 40, line: 48 };
+    const expectedH2 = viewport.name === 'mobile' ? { size: 22, line: 28 } : { size: 24, line: 32 };
+    if (!responsiveType.h1 || Math.abs(responsiveType.h1.fontSize - expectedH1.size) > 0.6 || Math.abs(responsiveType.h1.lineHeight - expectedH1.line) > 0.8) {
+      throw new Error(`${viewport.name} article H1 misses responsive target: ${JSON.stringify(responsiveType.h1)}`);
+    }
+    if (!responsiveType.h2 || Math.abs(responsiveType.h2.fontSize - expectedH2.size) > 0.6 || Math.abs(responsiveType.h2.lineHeight - expectedH2.line) > 0.8) {
+      throw new Error(`${viewport.name} article H2 misses responsive target: ${JSON.stringify(responsiveType.h2)}`);
+    }
+    if (!responsiveType.paragraph || Math.abs(responsiveType.paragraph.fontSize - 16) > 0.4 || Math.abs(responsiveType.paragraph.lineHeight - 27.2) > 0.8) {
+      throw new Error(`${viewport.name} body copy drifted from the approved 16/27.2 measure: ${JSON.stringify(responsiveType.paragraph)}`);
+    }
+    if (responsiveType.animationName !== 'none') throw new Error(`${viewport.name} still animates the whole page: ${responsiveType.animationName}`);
+    if (Math.abs(responsiveCopyBox.height - 36) > 1.5) throw new Error(`${viewport.name} Copy page control is not compact: ${JSON.stringify(responsiveCopyBox)}`);
+
+    if ((await page.locator('#starlight__mobile-toc').count()) !== 0) throw new Error(`Legacy mobile TOC row is still rendered on ${viewport.name}`);
+    const tocTrigger = page.getByRole('button', { name: 'On this page', exact: true });
+    if (!(await tocTrigger.isVisible())) throw new Error(`On this page trigger is hidden on ${viewport.name}`);
+    const tocTriggerBox = await tocTrigger.boundingBox();
+    if (!tocTriggerBox || Math.abs(tocTriggerBox.y - responsiveCopyBox.y) > 2 || Math.abs(tocTriggerBox.height - responsiveCopyBox.height) > 2) {
+      throw new Error(`On this page is not aligned with Copy page on ${viewport.name}: ${JSON.stringify({ responsiveCopyBox, tocTriggerBox })}`);
+    }
+    await tocTrigger.click();
+    const tocSheet = page.locator('[data-docs-mobile-toc-sheet]');
+    await tocSheet.waitFor({ state: 'visible' });
+    if ((await page.locator('body').getAttribute('data-docs-toc-open')) === null) throw new Error(`TOC sheet did not lock scroll on ${viewport.name}`);
+    const tocPanel = page.locator('[data-docs-mobile-toc-panel]');
+    const tocPanelBox = await tocPanel.boundingBox();
+    if (!tocPanelBox || Math.abs(tocPanelBox.x) > 2 || Math.abs(tocPanelBox.width - viewport.width) > 3) {
+      throw new Error(`TOC sheet is not full-width on ${viewport.name}: ${JSON.stringify(tocPanelBox)}`);
+    }
+    await page.keyboard.press('Escape');
+    await tocSheet.waitFor({ state: 'hidden' });
+
+    const docsHomeLink = page.getByRole('link', { name: 'Docs', exact: true });
+    if (!(await docsHomeLink.isVisible()) || (await docsHomeLink.getAttribute('href')) !== '/') throw new Error(`/ Docs home link is wrong on ${viewport.name}`);
+
+    const footerIsNested = await page.locator('[data-docs-site-footer]').evaluate(
+      (element) => element.parentElement?.hasAttribute('data-docs-site-footer-home') ?? false,
+    );
+    if (!footerIsNested) throw new Error(`${viewport.name} site footer must remain inside the page footer`);
+    const mobileColumns = await page.locator('.docs-registry-grid').evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
+    if (mobileColumns !== 2) throw new Error(`Footer registry must use two ${viewport.name} columns, found ${mobileColumns}`);
+
+    const buildTrigger = page.getByRole('button', { name: 'Open build menu' });
+    if (!(await buildTrigger.isVisible())) throw new Error(`Build trigger is hidden on ${viewport.name}`);
+    const buildTriggerPaths = await buildTrigger.locator('path').count();
+    if (buildTriggerPaths !== 2) throw new Error(`Build trigger must use a two-line hamburger on ${viewport.name}, found ${buildTriggerPaths} paths`);
+    await buildTrigger.click();
+    const browseOverlay = page.locator('[data-docs-browse-overlay]');
+    await browseOverlay.waitFor({ state: 'visible' });
+    const browseBox = await browseOverlay.boundingBox();
+    if (!browseBox || Math.abs(browseBox.x) > 1 || Math.abs(browseBox.y) > 1 || Math.abs(browseBox.width - viewport.width) > 2 || Math.abs(browseBox.height - viewport.height) > 2) {
+      throw new Error(`Browse overlay is not full-screen on ${viewport.name}: ${JSON.stringify(browseBox)}`);
+    }
+    if ((await page.getByText('Ask AI', { exact: true }).count()) !== 0) throw new Error('Browse overlay must not include Ask AI');
+    const browseGroups = browseOverlay.locator('[data-docs-browse-group]');
+    if ((await browseGroups.count()) !== 2) throw new Error(`Browse must expose Build and Learn groups on ${viewport.name}`);
+    if (await browseGroups.evaluateAll((groups) => groups.some((group) => group.open))) {
+      throw new Error(`Browse groups must start collapsed on ${viewport.name}`);
+    }
+    const browseChrome = await browseOverlay.evaluate((overlay) => {
+      const header = overlay.querySelector('.docs-browse-header');
+      const group = overlay.querySelector('.docs-browse-group');
+      const summary = overlay.querySelector('.docs-browse-group summary');
+      const gettingStarted = overlay.querySelector('.getting-started-link');
+      const action = overlay.querySelector('.docs-browse-actions a');
+      if (!header || !group || !summary || !gettingStarted || !action) return null;
+      const summaryStyle = getComputedStyle(summary);
+      const actionStyle = getComputedStyle(action);
+      return {
+        headerBorder: getComputedStyle(header).borderBottomWidth,
+        groupBorder: getComputedStyle(group).borderBottomWidth,
+        summaryFontSize: parseFloat(summaryStyle.fontSize),
+        summaryLineHeight: parseFloat(summaryStyle.lineHeight),
+        gettingStartedFontSize: parseFloat(getComputedStyle(gettingStarted).fontSize),
+        actionHeight: action.getBoundingClientRect().height,
+        actionFontSize: parseFloat(actionStyle.fontSize),
+        actionRadius: parseFloat(actionStyle.borderRadius),
+      };
+    });
+    if (!browseChrome) throw new Error(`Could not measure Browse chrome on ${viewport.name}`);
+    if (browseChrome.headerBorder !== '0px' || browseChrome.groupBorder !== '0px') {
+      throw new Error(`Browse dividers remain on ${viewport.name}: ${JSON.stringify(browseChrome)}`);
+    }
+    if (Math.abs(browseChrome.summaryFontSize - 16) > 0.4 || Math.abs(browseChrome.summaryLineHeight - 24) > 0.8) {
+      throw new Error(`Browse section labels are still oversized on ${viewport.name}: ${JSON.stringify(browseChrome)}`);
+    }
+    if (Math.abs(browseChrome.gettingStartedFontSize - 16) > 0.4) {
+      throw new Error(`Browse Getting started label is still oversized on ${viewport.name}: ${JSON.stringify(browseChrome)}`);
+    }
+    if (Math.abs(browseChrome.actionHeight - 36) > 1.5 || Math.abs(browseChrome.actionFontSize - 14) > 0.4 || Math.abs(browseChrome.actionRadius - 6) > 0.6) {
+      throw new Error(`Browse auth actions are not compact on ${viewport.name}: ${JSON.stringify(browseChrome)}`);
+    }
+    await browseGroups.filter({ has: page.getByText('Learn', { exact: true }) }).first().locator('summary').click();
+    const browseLinks = {
+      Changelog: 'https://consuelohq.com/changelog',
+      Blog: 'https://consuelohq.com/blog',
+      Community: 'https://discord.gg/87YtkVUBvc',
+      Templates: '/build/skills/bundled/',
+      'Getting started': 'https://os.consuelohq.com/',
+      'Sign up': 'https://os.consuelohq.com/',
+      'Log in': 'https://os.consuelohq.com/',
+    };
+    for (const [label, href] of Object.entries(browseLinks)) {
+      const link = browseOverlay.getByRole('link', { name: label, exact: true });
+      if ((await link.getAttribute('href')) !== href) throw new Error(`${label} browse link points to ${(await link.getAttribute('href'))}`);
+    }
+    for (const label of ['Changelog', 'Blog', 'Community']) {
+      if ((await browseOverlay.getByRole('link', { name: label, exact: true }).getAttribute('target')) !== '_blank') throw new Error(`${label} must open outside docs`);
+    }
+    await page.keyboard.press('Escape');
+    await browseOverlay.waitFor({ state: 'hidden' });
+
+    const menuButton = page.getByRole('button', { name: 'Open docs menu' });
+    const menuStyle = await menuButton.evaluate((element) => ({
+      backgroundColor: getComputedStyle(element).backgroundColor,
+      borderWidth: getComputedStyle(element).borderTopWidth,
+      boxShadow: getComputedStyle(element).boxShadow,
+    }));
+    if (menuStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' || menuStyle.borderWidth !== '0px' || menuStyle.boxShadow !== 'none') {
+      throw new Error(`Menu button still has boxed chrome on ${viewport.name}: ${JSON.stringify(menuStyle)}`);
+    }
+    await menuButton.click();
+    const responsiveSidebarPane = page.locator('#starlight__sidebar');
+    await responsiveSidebarPane.waitFor({ state: 'visible' });
+    await page.waitForTimeout(450);
+    if ((await page.getByRole('link', { name: 'All documentation' }).count()) !== 0) throw new Error(`Section-only navigation leaked into the ${viewport.name} drawer`);
+    const articleGlobalSidebar = responsiveSidebarPane.locator('.global-sidebar-mobile');
+    if (!(await articleGlobalSidebar.isVisible())) throw new Error(`Global documentation tree is missing from the ${viewport.name} article drawer`);
+    const articleGlobalLabels = (await articleGlobalSidebar.locator(':scope > ul > li > details > summary').allTextContents()).map((label) => label.trim());
+    const expectedArticleGlobalLabels = ['Start', 'Connect', 'Nodes', 'Tools', 'Sites', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference'];
+    if (JSON.stringify(articleGlobalLabels) !== JSON.stringify(expectedArticleGlobalLabels)) {
+      throw new Error(`${viewport.name} article drawer changed global navigation: ${JSON.stringify(articleGlobalLabels)}`);
+    }
+    const currentStartDetails = articleGlobalSidebar.locator(':scope > ul > li > details').filter({ has: page.locator('summary', { hasText: 'Start' }) }).first();
+    if (!(await currentStartDetails.evaluate((element) => element.open))) throw new Error(`Current Start section is not auto-expanded in the ${viewport.name} drawer`);
+    const currentInstall = currentStartDetails.getByRole('link', { name: 'Install Consuelo OS', exact: true });
+    if (!(await currentInstall.isVisible()) || (await currentInstall.getAttribute('aria-current')) !== 'page') {
+      throw new Error(`Current article is not highlighted in the ${viewport.name} global drawer`);
+    }
+    const sidebarSearch = responsiveSidebarPane.getByRole('button', { name: 'Search Docs', exact: true });
+    if (!(await sidebarSearch.isVisible())) throw new Error(`Search Docs box is missing from ${viewport.name} sidebar`);
+    const sidebarBox = await responsiveSidebarPane.boundingBox();
+    const expectedSidebarWidth = Math.min(viewport.width * 0.75, 400);
+    if (!sidebarBox || Math.abs(sidebarBox.x) > 2 || Math.abs(sidebarBox.width - expectedSidebarWidth) > 3) {
+      throw new Error(`${viewport.name} sidebar width is wrong: ${JSON.stringify({ sidebarBox, expectedSidebarWidth })}`);
+    }
+    const sidebarSurface = await responsiveSidebarPane.evaluate((element) => ({
+      boxShadow: getComputedStyle(element).boxShadow,
+      borderRightWidth: getComputedStyle(element).borderRightWidth,
+    }));
+    if (sidebarSurface.boxShadow === 'none' || sidebarSurface.borderRightWidth !== '0px') {
+      throw new Error(`${viewport.name} drawer is missing the elevated neutral surface: ${JSON.stringify(sidebarSurface)}`);
+    }
+    await sidebarSearch.click();
+    const searchDialog = page.locator('site-search dialog');
+    await searchDialog.waitFor({ state: 'visible' });
+    await page.keyboard.press('Escape');
+    await searchDialog.waitFor({ state: 'hidden' });
+    await responsiveSidebarPane.waitFor({ state: 'hidden' });
+
+    await page.goto(origin, { waitUntil: 'networkidle' });
+    for (const label of ['Get started', 'Connect an agent', 'Browse tools']) {
+      if (!(await page.getByRole('link', { name: label, exact: true }).isVisible())) throw new Error(`Home CTA ${label} is hidden on ${viewport.name}`);
+    }
+    if ((await page.getByText('Consuelo OS documentation', { exact: true }).count()) !== 0) {
+      throw new Error(`Legacy home kicker is still visible on ${viewport.name}`);
+    }
+    const homeHeading = page.getByRole('heading', { level: 1, name: 'Digital workers built on Consuelo', exact: true });
+    if (!(await homeHeading.isVisible())) throw new Error(`New home hero heading is missing on ${viewport.name}`);
+    const homeResponsiveStyle = await homeHeading.evaluate((element) => ({
+      fontSize: parseFloat(getComputedStyle(element).fontSize),
+      lineHeight: parseFloat(getComputedStyle(element).lineHeight),
+      letterSpacing: getComputedStyle(element).letterSpacing,
+    }));
+    const expectedHomeTitle = viewport.name === 'mobile' ? { size: 44.8, line: 52 } : { size: 48, line: 56 };
+    if (Math.abs(homeResponsiveStyle.fontSize - expectedHomeTitle.size) > 0.8 || Math.abs(homeResponsiveStyle.lineHeight - expectedHomeTitle.line) > 1) {
+      throw new Error(`${viewport.name} home title misses Vercel-derived responsive scale: ${JSON.stringify(homeResponsiveStyle)}`);
+    }
+    const homeContainerBox = await page.locator('.docs-home-hero').evaluate((element) => { const rect = element.closest('.sl-container')?.getBoundingClientRect(); return rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height } : null; });
+    const expectedHomeWidth = viewport.width - (viewport.name === 'mobile' ? 48 : 49.2);
+    if (!homeContainerBox || Math.abs(homeContainerBox.width - expectedHomeWidth) > 3) {
+      throw new Error(`${viewport.name} home canvas is still artificially narrow: ${JSON.stringify({ homeContainerBox, expectedHomeWidth })}`);
+    }
+    const homeActionStyle = await page.getByRole('link', { name: 'Get started', exact: true }).evaluate((element) => ({
+      height: element.getBoundingClientRect().height,
+      fontSize: parseFloat(getComputedStyle(element).fontSize),
+      fontWeight: getComputedStyle(element).fontWeight,
+      borderRadius: parseFloat(getComputedStyle(element).borderRadius),
+    }));
+    if (Math.abs(homeActionStyle.height - 40) > 1.5 || Math.abs(homeActionStyle.fontSize - 14) > 0.4 || homeActionStyle.fontWeight !== '500' || Math.abs(homeActionStyle.borderRadius - 6) > 0.6) {
+      throw new Error(`${viewport.name} home CTA is not the compact neutral responsive treatment: ${JSON.stringify(homeActionStyle)}`);
+    }
+    const homeTitleLines = homeHeading.locator('.docs-home-title-line');
+    const homeTitleTexts = (await homeTitleLines.allTextContents()).map((value) => value.trim());
+    if (JSON.stringify(homeTitleTexts) !== JSON.stringify(['Digital workers', 'built on Consuelo'])) {
+      throw new Error(`Home hero line composition is wrong on ${viewport.name}: ${JSON.stringify(homeTitleTexts)}`);
+    }
+    const homeTitleGeometry = await homeTitleLines.evaluateAll((elements) => elements.map((element) => ({
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      top: element.getBoundingClientRect().top,
+      height: element.getBoundingClientRect().height,
+    })));
+    if (homeTitleGeometry.length !== 2 || homeTitleGeometry.some((line) => line.scrollWidth - line.clientWidth > 1)) {
+      throw new Error(`Home hero title overflows on ${viewport.name}: ${JSON.stringify(homeTitleGeometry)}`);
+    }
+    if (homeTitleGeometry[1].top <= homeTitleGeometry[0].top + homeTitleGeometry[0].height - 2) {
+      throw new Error(`Home hero title is not rendered as two lines on ${viewport.name}: ${JSON.stringify(homeTitleGeometry)}`);
+    }
+    if (viewport.name === 'mobile') {
+      const [getStartedBox, connectBox, browseBox] = await Promise.all([
+        page.getByRole('link', { name: 'Get started', exact: true }).boundingBox(),
+        page.getByRole('link', { name: 'Connect an agent', exact: true }).boundingBox(),
+        page.getByRole('link', { name: 'Browse tools', exact: true }).boundingBox(),
+      ]);
+      if (!getStartedBox || !connectBox || !browseBox) throw new Error('Could not measure mobile home CTAs');
+      if (Math.abs(getStartedBox.y - connectBox.y) > 2 || browseBox.y <= getStartedBox.y + getStartedBox.height + 2) {
+        throw new Error(`Mobile home CTAs do not wrap like the intended compact Vercel layout: ${JSON.stringify({ getStartedBox, connectBox, browseBox })}`);
+      }
+      if (getStartedBox.width > viewport.width * 0.6) {
+        throw new Error(`Mobile primary CTA is still effectively full-width: ${JSON.stringify(getStartedBox)}`);
+      }
+    }
+    const installCommand = page.locator('[data-home-install-command]:visible');
+    const installOverflow = await installCommand.evaluate((element) => element.scrollWidth - element.clientWidth);
+    if (installOverflow > 1) throw new Error(`Home install command overflows by ${installOverflow}px on ${viewport.name}`);
+    const installCopy = page.locator('[data-home-install-copy]:visible');
+    const installCopyStyle = await installCopy.evaluate((element) => ({
+      borderWidth: getComputedStyle(element).borderTopWidth,
+      backgroundColor: getComputedStyle(element).backgroundColor,
+    }));
+    if (installCopyStyle.borderWidth !== '0px' || installCopyStyle.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+      throw new Error(`Home install copy button has boxed chrome on ${viewport.name}: ${JSON.stringify(installCopyStyle)}`);
+    }
+    await installCopy.click();
+    const copiedInstallCommand = await page.evaluate(() => navigator.clipboard.readText());
+    if (!copiedInstallCommand.includes('https://install.consuelohq.com/os')) {
+      throw new Error(`Home install copy button copied the wrong text on ${viewport.name}: ${copiedInstallCommand}`);
+    }
+    const globalMenuButton = page.getByRole('button', { name: 'Open docs menu' });
+    await globalMenuButton.click();
+    await page.waitForTimeout(450);
+    const mobileSidebar = page.locator('#starlight__sidebar .global-sidebar-mobile');
+    if (!(await mobileSidebar.isVisible())) throw new Error(`${viewport.name} accordion navigation is not visible`);
+    const mobileGlobalLabels = (await mobileSidebar.locator(':scope > ul > li > details > summary').allTextContents()).map((label) => label.trim());
+    const expectedGlobalLabels = ['Start', 'Connect', 'Nodes', 'Tools', 'Sites', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference'];
+    if (JSON.stringify(mobileGlobalLabels) !== JSON.stringify(expectedGlobalLabels)) {
+      throw new Error(`${viewport.name} global navigation order is wrong: ${JSON.stringify(mobileGlobalLabels)}`);
+    }
+    const startDetails = mobileSidebar.locator(':scope > ul > li > details').filter({ has: page.locator('summary', { hasText: 'Start' }) }).first();
+    const urlBeforeToggle = page.url();
+    await startDetails.locator(':scope > summary').click();
+    if (page.url() !== urlBeforeToggle) throw new Error(`Tapping a ${viewport.name} top-level section navigated instead of toggling`);
+    if (!(await startDetails.evaluate((element) => element.open))) throw new Error(`Tapping Start did not expand the ${viewport.name} section`);
+    if (!(await startDetails.getByRole('link', { name: 'Overview', exact: true }).isVisible())) throw new Error(`Expanded Start section does not reveal its overview link on ${viewport.name}`);
+
+    const mobilePreferences = page.locator('[data-docs-mobile-preferences]');
+    const githubLink = mobilePreferences.getByRole('link', { name: 'GitHub' });
+    const mobileThemeToggle = mobilePreferences.locator('[data-docs-theme-toggle]');
+    if (!(await githubLink.isVisible()) || !(await mobileThemeToggle.isVisible())) throw new Error(`GitHub and display controls must both be visible in the ${viewport.name} footer`);
+    const [githubBox, themeBox] = await Promise.all([githubLink.boundingBox(), mobileThemeToggle.boundingBox()]);
+    if (!githubBox || !themeBox) throw new Error(`Could not measure the ${viewport.name} footer controls`);
+    if (Math.abs((githubBox.y + githubBox.height / 2) - (themeBox.y + themeBox.height / 2)) > 8) throw new Error(`GitHub and display controls are not aligned on ${viewport.name}`);
+    if (themeBox.x <= githubBox.x) throw new Error(`Display control must sit to the right of GitHub on ${viewport.name}`);
+    if ((await mobilePreferences.locator('select').count()) !== 0) throw new Error(`${viewport.name} footer must not contain language or theme dropdowns`);
+    await page.keyboard.press('Escape');
+    await page.locator('#starlight__sidebar').waitFor({ state: 'hidden' });
     viewportChecks.push({ name: viewport.name, overflow });
   }
 
-  process.stdout.write(`${JSON.stringify({ ok: true, globalLinks: globalCount, markdownBytes: expectedMarkdown.length, paragraphWidth, viewportChecks }, null, 2)}\n`);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(`${origin}/nodes/`, { waitUntil: 'networkidle' });
+  const headingAnchor = page.locator('.sl-markdown-content .sl-anchor-link').first();
+  if ((await headingAnchor.count()) > 0) {
+    const headingAnchorDisplay = await headingAnchor.evaluate((element) => getComputedStyle(element).display);
+    if (headingAnchorDisplay !== 'none') throw new Error(`Section heading chain link is still visible: ${headingAnchorDisplay}`);
+  }
+
+  const translationContext = await browser.newContext({ locale: 'es-ES' });
+  const translationPage = await translationContext.newPage();
+  let translationRequestUrl = null;
+  let translationRequestCount = 0;
+  await translationPage.route('**/api/docs/translate?*', async (route) => {
+    try {
+      translationRequestCount += 1;
+      translationRequestUrl = new URL(route.request().url());
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          cached: false,
+          provider: 'google',
+          sourceLanguage: 'en',
+          targetLanguage: 'es',
+          route: '/start/',
+          contentHash: 'browser-test',
+          cacheKey: 'browser-test:es',
+          title: 'Inicio',
+          description: null,
+          segments: ['Contenido traducido de prueba.'],
+        }),
+      });
+    } catch (error) {
+      throw new Error('Failed to stub automatic translation', { cause: error });
+    }
+  });
+  await translationPage.goto(`${origin}/start/`, { waitUntil: 'networkidle' });
+  await translationPage.locator('[data-docs-runtime-translation-panel]').waitFor({ state: 'visible' });
+  if (!translationRequestUrl || translationRequestUrl.searchParams.get('lang') !== 'es') throw new Error(`Browser locale did not request Spanish translation: ${translationRequestUrl}`);
+  if (translationRequestCount !== 1) throw new Error(`Automatic translation made ${translationRequestCount} requests for one page load`);
+  if ((await translationPage.locator('html').getAttribute('lang')) !== 'es') throw new Error('Translated page did not update the document language');
+  if ((await translationPage.locator('html').getAttribute('data-docs-translation-state')) !== 'ready') throw new Error('Automatic translation did not reach the ready state');
+  if (!(await translationPage.getByText('Contenido traducido de prueba.', { exact: true }).isVisible())) throw new Error('Automatic translation payload was not rendered');
+  if ((await translationPage.getByLabel('Translate this page').count()) !== 0) throw new Error('Automatic translation must not expose a translate selector');
+  if ((await translationPage.getByRole('button', { name: /Show English|Dismiss/ }).count()) !== 0) throw new Error('Automatic translation must not expose a manual clear button');
+  await translationContext.close();
+
+  process.stdout.write(`${JSON.stringify({ ok: true, globalLinks: globalCount, markdownBytes: expectedMarkdown.length, paragraphWidth, viewportChecks, automaticTranslation: 'es' }, null, 2)}\n`);
 } finally {
   await browser?.close();
   await stopDocumentationServer(server);

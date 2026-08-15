@@ -2,9 +2,9 @@
 title: Tools
 description: Generated facade-tool metadata, typed invocation, and execution policy.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-14
 evidence:
-  - source: packages/os/tooling/tool-manifest.schema.json
+  - source: packages/os/manifests/schemas/tool-manifest.schema.json
     tests:
       - packages/os/tests/tool-manifest.test.ts
       - packages/os/tests/facade/facade.test.ts
@@ -13,6 +13,21 @@ evidence:
     tests:
       - packages/os/tests/tools-search-v2.test.ts
     runtime: Tool discovery output was compared with current manifest metadata and schemas on 2026-07-13.
+  - source: packages/os/tools/security/schema.ts
+    tests:
+      - packages/os/tests/security-scan.test.ts
+      - packages/os/tools/security/handler.test.ts
+    runtime: A repository security scan completed with Bun audit, OSV-Scanner, Trivy, and Semgrep on 2026-08-14; normalized findings and scanner status were returned without publishing native secret-match output.
+  - source: packages/os/tools/monitor/schema.ts
+    tests:
+      - packages/os/tests/monitor-errors.test.ts
+      - packages/os/tools/monitor/handler.test.ts
+    runtime: The canonical Consuelo trace database was analyzed on 2026-08-14 and grouped failures were classified against current tool contracts.
+  - source: packages/os/tools/daily-schedules/schema.ts
+    tests:
+      - packages/os/tests/daily-schedules.test.ts
+      - packages/os/tools/daily-schedules/handler.test.ts
+    runtime: A private Daily Schedules artifact was published, listed in the artifact archive, and checked at desktop and mobile sizes on 2026-08-14.
 ---
 
 A facade tool is a typed operation exposed through the workspace tool facade. The generated full manifest marks these entries with `kind: "facade-tool"`.
@@ -90,6 +105,26 @@ Agent clients call the facade with a tool name and typed input. Task-scoped oper
 ```
 
 The facade validates input before executing the backing command. It returns a `ToolResult`, not unstructured terminal prose.
+
+## Maintenance and observability examples
+
+The full manifest can expose higher-level maintenance operations in addition to file and task primitives:
+
+| Tool | Behavior |
+| --- | --- |
+| `security.scan` | Runs a defensive scan of the current Git repository with the configured Bun audit, OSV-Scanner, Trivy, and Semgrep binaries. It returns normalized findings, scanner status, local evidence paths, cross-scanner groups, and new/persistent/resolved deltas. It does not accept a remote host target. |
+| `monitor.errors` | Reads the last 24 hours of the canonical Consuelo tool-trace database and compares failures with the current tool contract. Expected policy enforcement and caller-input errors remain distinct from drift, transient failures, external failures, and defect candidates. |
+| `dailySchedules.publish` | Explicitly publishes a dated security scan or maintenance workpad into the private artifact archive and refreshes the Daily Schedules index. Existing entries use artifact version concurrency rather than an unconditional overwrite. |
+
+`security.scan` and `monitor.errors` are read surfaces. Publishing a durable Daily Schedules entry is a separate mutating operation so callers can inspect evidence without creating an artifact as a hidden side effect.
+
+## Node and task routing
+
+When a workspace has more than one node, the OS routing layer can resolve a facade call from task ownership, an explicit node target, or the workspace default. Task-scoped operations continue to put `taskSession` at the call envelope's top level.
+
+Do not assume that changing the default node moves an active task. A successful `task.start` binds that session to the node that started it; follow-up calls carrying the session keep using that owner until the task affinity is successfully released.
+
+See [Routing work](/nodes/routing/) for user-facing behavior and [Result and error formats](/reference/result-and-error-formats/#node-routing-errors) for mismatch and offline failures.
 
 ## Discovery
 

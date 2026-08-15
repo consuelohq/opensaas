@@ -1,4 +1,11 @@
 import { resolveToolScope } from './security-gateway';
+import {
+  LEGACY_MCP_PROTOCOL_VERSION,
+  MODERN_MCP_PROTOCOL_VERSION,
+  modernMcpRoutingFromBody,
+  stampModernMcpResult,
+} from './mcp-protocol';
+import { normalizeMcpNodeId } from './mcp-node-routing';
 
 type JsonObject = Record<string, unknown>;
 type JsonRpcId = string | number | null;
@@ -35,6 +42,7 @@ type McpGatewayHandlerInput = {
 };
 
 const MCP_READ_METHODS = new Set([
+  'server/discover',
   'initialize',
   'notifications/initialized',
   'ping',
@@ -62,7 +70,7 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
   {
     name: 'call',
     title: 'Call an OS tool',
-    description: 'Run one typed Consuelo OS tool through the authenticated facade described by get_steering.',
+    description: 'Run one typed Consuelo OS tool through the authenticated facade described by get_steering. To target a specific workspace node, pass top-level nodeId from routing.availableNodes; node names are routing targets, not tools.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -80,6 +88,12 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
           type: 'string',
           minLength: 1,
           description: 'Required task session for task-scoped tools.',
+        },
+        nodeId: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 160,
+          description: 'Optional top-level workspace node target from get_steering routing.availableNodes. Omit to use the workspace default node.',
         },
         timeout: {
           type: 'integer',
@@ -143,7 +157,7 @@ function hasOnlyKeys(value: JsonObject, keys: readonly string[]): boolean {
 
 function parseFacadeCall(params: unknown): FacadeCall | null {
   const args = toolArgumentsFromParams(params);
-  if (!args || !hasOnlyKeys(args, ['tool', 'input', 'taskSession', 'timeout'])) return null;
+  if (!args || !hasOnlyKeys(args, ['tool', 'input', 'taskSession', 'nodeId', 'timeout'])) return null;
 
   const tool = typeof args.tool === 'string' ? args.tool.trim() : '';
   if (!tool) return null;
@@ -158,6 +172,8 @@ function parseFacadeCall(params: unknown): FacadeCall | null {
   ) {
     return null;
   }
+
+  if (normalizeMcpNodeId(args.nodeId) === null) return null;
 
   const timeout = args.timeout;
   if (
@@ -312,28 +328,48 @@ export async function handleMcpGatewayJsonRpc(
   const request = parseJsonRpcRequest(body);
   if (!request) return jsonRpcError(null, -32600, 'Invalid JSON-RPC request.');
 
+  if (request.method === 'server/discover') {
+    return jsonRpcResult(request.id, stampModernMcpResult({
+      supportedVersions: [
+        MODERN_MCP_PROTOCOL_VERSION,
+        LEGACY_MCP_PROTOCOL_VERSION,
+      ],
+      capabilities: {
+        tools: { listChanged: false },
+        prompts: {},
+        resources: {},
+      },
+    }));
+  }
+
   if (request.method === 'initialize') {
     return jsonRpcResult(request.id, {
-      protocolVersion: '2024-11-05',
+      protocolVersion: LEGACY_MCP_PROTOCOL_VERSION,
       serverInfo: { name: 'consuelo-os-gateway', version: '1.0.0' },
       capabilities: { tools: { listChanged: false }, prompts: {}, resources: {} },
     });
   }
 
+  const result = (value: JsonObject): JsonObject =>
+    jsonRpcResult(
+      request.id,
+      modernMcpRoutingFromBody(body) ? stampModernMcpResult(value) : value,
+    );
+
   if (request.method === 'notifications/initialized' || request.method === 'ping') {
-    return jsonRpcResult(request.id, {});
+    return result({});
   }
 
   if (request.method === 'tools/list') {
-    return jsonRpcResult(request.id, { tools: MCP_TOOL_DESCRIPTORS });
+    return result({ tools: MCP_TOOL_DESCRIPTORS });
   }
 
   if (request.method === 'prompts/list') {
-    return jsonRpcResult(request.id, { prompts: [] });
+    return result({ prompts: [] });
   }
 
   if (request.method === 'resources/list') {
-    return jsonRpcResult(request.id, { resources: [] });
+    return result({ resources: [] });
   }
 
   if (request.method !== 'tools/call') {
@@ -343,7 +379,7 @@ export async function handleMcpGatewayJsonRpc(
   const publicToolName = publicToolNameFromParams(request.params);
   if (publicToolName === 'get_steering' && isEmptyToolArguments(request.params)) {
     const steering = await input.getSteering();
-    return jsonRpcResult(request.id, {
+    return result({
       content: [{ type: 'text', text: steering }],
       isError: false,
     });
@@ -354,7 +390,7 @@ export async function handleMcpGatewayJsonRpc(
     if (!call) return jsonRpcError(request.id, -32602, 'Invalid call arguments.');
 
     const output = await input.executeFacadeTool(call.tool, facadeToolInput(call));
-    return jsonRpcResult(request.id, {
+    return result({
       content: [{ type: 'text', text: outputText(output) }],
       isError: outputIsError(output),
     });

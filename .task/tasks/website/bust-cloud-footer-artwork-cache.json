@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/bust-cloud-footer-artwork-cache",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1802,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1802",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1802",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1802/bust-cloud-footer-artwork-cache",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1802",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1802/bust-cloud-footer-artwork-cache",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-bust-cloud-footer-artwork-cache",
+  "taskSession": "tsk_14ff8fcb51b7",
+  "tmuxSession": "opensaas-website-bust-cloud-footer-artwork-cache-14ff8fcb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-bust-cloud-footer-artwork-cache/.task/website/bust-cloud-footer-artwork-cache/session.json",
+  "createdAt": "2026-08-10T01:12:46.997Z"
+}

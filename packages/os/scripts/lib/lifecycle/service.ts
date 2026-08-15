@@ -1,10 +1,21 @@
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 import type {
   LifecycleHealthAcceptance,
   LifecycleServiceController,
 } from './types';
+const LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT = 'retire-legacy-system-daemons.sh';
+const MAC_GATEWAY_SERVICE_LABELS = new Set([
+  'com.consuelo.caddy',
+  'com.consuelo.portless.system',
+  'com.consuelo.watchdog',
+  'com.consuelo.availability',
+]);
+const MAC_GATEWAY_SERVICE_PREFIXES = [
+  'com.consuelo.os.cloudflared.',
+  'com.consuelo.os.node-heartbeat.',
+];
 
 export type LifecycleProcessResult = {
   exitCode: number;
@@ -47,27 +58,128 @@ function commandFailure(result: LifecycleProcessResult, fallback: string): Error
   return new Error(result.stderr.trim() || result.stdout.trim() || fallback);
 }
 
+function installedMacGatewayLaunchAgents(environment?: NodeJS.ProcessEnv): Array<{
+  label: string;
+  plistPath: string;
+}> {
+  const userHome = environment?.HOME?.trim();
+  if (!userHome) return [];
+  const launchAgentDir = join(userHome, 'Library', 'LaunchAgents');
+  if (!existsSync(launchAgentDir)) return [];
+  return readdirSync(launchAgentDir)
+    .filter((name) => name.endsWith('.plist'))
+    .map((name) => ({
+      label: name.slice(0, -'.plist'.length),
+      plistPath: join(launchAgentDir, name),
+    }))
+    .filter(({ label }) =>
+      MAC_GATEWAY_SERVICE_LABELS.has(label)
+      || MAC_GATEWAY_SERVICE_PREFIXES.some((prefix) => label.startsWith(prefix)),
+    )
+    .sort((left, right) => left.label.localeCompare(right.label));
+}
 export function createReloadServiceController(input: {
   osRoot: string;
+  activeRuntimeRoot?: string;
+  home?: string;
+  nodeHome?: string;
+  runtimeExecutable?: string;
   run?: LifecycleProcessRunner;
   platform?: NodeJS.Platform;
+  environment?: NodeJS.ProcessEnv;
+  userId?: number;
 }): LifecycleServiceController {
-  const reloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
+  const bootstrapReloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
+  const activeRuntimeRoot = input.activeRuntimeRoot ?? input.osRoot;
+  const activeReloadScript = resolve(activeRuntimeRoot, 'scripts', 'consuelo-reload.js');
+  const caddyReconcileScript = resolve(
+    activeRuntimeRoot,
+    'scripts',
+    'migrations',
+    'reconcile-caddy-worker-pool.ts',
+  );
+  const lifecycleHome = input.home ?? (input.nodeHome ? resolve(input.nodeHome, '..') : undefined);
+  const runtimeExecutable = input.runtimeExecutable ?? process.execPath;
+  const legacySystemDaemonRetirementScript = resolve(input.osRoot, 'scripts', LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT);
   const uninstallScript = resolve(input.osRoot, 'scripts', 'uninstall-system-daemons.sh');
   const run = input.run ?? defaultRunner;
   const platform = input.platform ?? process.platform;
+  const reconcileCaddy = async (): Promise<void> => {
+    if (platform !== 'darwin' || !lifecycleHome) return;
+    try {
+      const result = await run(
+        runtimeExecutable,
+        [caddyReconcileScript, lifecycleHome],
+        input.environment ?? process.env,
+      );
+      if (result.exitCode !== 0) {
+        throw commandFailure(result, `Caddy reconciliation exited ${result.exitCode}`);
+      }
+    } catch (error: unknown) {
+      throw new Error(
+        `activated runtime Caddy reconciliation failed: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
+  };
   return {
     async preflight() {
-      if (!existsSync(reloadScript)) {
-        throw new Error(`canonical reload adapter is missing: ${reloadScript}`);
+      if (!existsSync(bootstrapReloadScript)) {
+        throw new Error(`canonical reload adapter is missing: ${bootstrapReloadScript}`);
       }
+      if (platform === 'darwin') {
+        if (!existsSync(legacySystemDaemonRetirementScript)) {
+          throw new Error(`legacy system-daemon retirement adapter is missing: ${legacySystemDaemonRetirementScript}`);
+        }
+        const legacy = await run('bash', [legacySystemDaemonRetirementScript, '--check']);
+        if (legacy.exitCode === 2) {
+          throw new Error('Legacy root Consuelo LaunchDaemons are still installed. Retire them once with: ' + `sudo bash '${legacySystemDaemonRetirementScript}' --apply` + ', then rerun the lifecycle command.');
+        }
+        if (legacy.exitCode !== 0) {
+          throw commandFailure(legacy, `legacy system-daemon check exited ${legacy.exitCode}`);
+        }
+      }
+      if (existsSync(caddyReconcileScript)) await reconcileCaddy();
     },
     async restart(options = {}) {
       try {
+        await reconcileCaddy();
         const command = options.waitForCompletion ? 'restart-now' : 'restart';
-        const result = await run(process.execPath, [reloadScript, command]);
+        const result = await run(runtimeExecutable, [activeReloadScript, command]);
         if (result.exitCode !== 0) {
           throw commandFailure(result, `reload adapter exited ${result.exitCode}`);
+        }
+        if (platform === 'darwin' && options.waitForCompletion) {
+          const userId = input.userId ?? process.getuid?.();
+          if (userId === undefined) {
+            throw new Error('cannot resolve the user id for gateway restart');
+          }
+          const domain = 'gui/' + String(userId);
+          for (const gateway of installedMacGatewayLaunchAgents(input.environment)) {
+            await run('launchctl', ['bootout', domain + '/' + gateway.label]);
+            const bootstrap = await run('launchctl', [
+              'bootstrap',
+              domain,
+              gateway.plistPath,
+            ]);
+            if (bootstrap.exitCode !== 0) {
+              throw commandFailure(
+                bootstrap,
+                'gateway bootstrap exited ' + String(bootstrap.exitCode) + ': ' + gateway.label,
+              );
+            }
+            const kickstart = await run('launchctl', [
+              'kickstart',
+              '-k',
+              domain + '/' + gateway.label,
+            ]);
+            if (kickstart.exitCode !== 0) {
+              throw commandFailure(
+                kickstart,
+                'gateway restart exited ' + String(kickstart.exitCode) + ': ' + gateway.label,
+              );
+            }
+          }
         }
       } catch (error: unknown) {
         throw new Error(

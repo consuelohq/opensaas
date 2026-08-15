@@ -14,7 +14,9 @@ import { dirname, join, relative, resolve } from 'node:path';
 
 import {
   inspectRuntimeBundleArchive,
+  missingRequiredRuntimeRecoveryCapabilities,
   verifyRuntimeBundleArchive,
+  type RuntimeRecoveryCapability,
   type RuntimeBundleManifest,
 } from '../distribution/runtime-bundle';
 import { lifecycleError } from './errors';
@@ -96,13 +98,15 @@ function canonicalize(value: unknown): unknown {
   return value;
 }
 
-export function canonicalReleaseManifestPayload(
-  payload: ReleaseManifestPayload,
-): string {
+export function canonicalReleaseManifestPayload(payload: unknown): string {
   return JSON.stringify(canonicalize(payload));
 }
 
-function assertReleaseManifestPayload(payload: ReleaseManifestPayload): void {
+function resolveReleaseManifestPayload(
+  manifest: SignedReleaseManifest,
+  target: { platform?: string; architecture?: string },
+): ReleaseManifestPayload {
+  const payload = manifest.payload;
   if (payload.schemaVersion !== 1) {
     throw lifecycleError(
       'MANIFEST_INVALID',
@@ -115,13 +119,18 @@ function assertReleaseManifestPayload(payload: ReleaseManifestPayload): void {
       `unsupported release channel: ${String(payload.channel)}`,
     );
   }
+  if (payload.kind !== 'consuelo-os-channel-manifest') {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      `unsupported release manifest kind: ${String(payload.kind)}`,
+    );
+  }
   for (const [name, value] of Object.entries({
     version: payload.version,
     bundleId: payload.bundleId,
-    bundleDigest: payload.bundleDigest,
-    bundleUrl: payload.bundleUrl,
     releaseFingerprint: payload.releaseFingerprint,
-    publishedAt: payload.publishedAt,
+    promotedAt: payload.promotedAt,
+    sourceCommit: payload.sourceCommit,
   })) {
     if (typeof value !== 'string' || value.trim().length === 0) {
       throw lifecycleError(
@@ -130,36 +139,135 @@ function assertReleaseManifestPayload(payload: ReleaseManifestPayload): void {
       );
     }
   }
-  if (!payload.bundleDigest.startsWith('sha256:')) {
+  if (!Number.isFinite(Date.parse(payload.promotedAt))) {
     throw lifecycleError(
       'MANIFEST_INVALID',
-      'release manifest bundleDigest must use sha256',
+      'release manifest promotedAt must be an ISO timestamp',
     );
   }
-  if (!Number.isFinite(Date.parse(payload.publishedAt))) {
+  if (!Array.isArray(payload.platforms)) {
     throw lifecycleError(
       'MANIFEST_INVALID',
-      'release manifest publishedAt must be an ISO timestamp',
+      'release manifest platforms must be an array',
     );
   }
+  const platformFields = [
+    'platform',
+    'architecture',
+    'bundleId',
+    'archiveDigest',
+    'cloudflareObjectKey',
+  ] as const;
+  for (const [index, candidate] of payload.platforms.entries()) {
+    const candidateValue = candidate as unknown;
+    if (
+      typeof candidateValue !== 'object' ||
+      candidateValue === null ||
+      Array.isArray(candidateValue)
+    ) {
+      throw lifecycleError(
+        'MANIFEST_INVALID',
+        `release manifest platform ${index} must be an object`,
+      );
+    }
+    const candidateRecord = candidateValue as Record<string, unknown>;
+    for (const field of platformFields) {
+      if (
+        typeof candidateRecord[field] !== 'string' ||
+        candidateRecord[field].trim().length === 0
+      ) {
+        throw lifecycleError(
+          'MANIFEST_INVALID',
+          `release manifest platform ${index} ${field} is required`,
+        );
+      }
+    }
+  }
+  const platform = target.platform ?? process.platform;
+  const architecture = target.architecture ?? process.arch;
+  const selected = payload.platforms.find(
+    (candidate) =>
+      candidate.platform === platform &&
+      candidate.architecture === architecture,
+  );
+  if (!selected) {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      `release manifest does not publish ${platform}-${architecture}`,
+    );
+  }
+  if (!/^sha256:[a-f0-9]{64}$/.test(selected.bundleId)) {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      'release manifest bundleId must use sha256',
+    );
+  }
+  if (!/^sha256:[a-f0-9]{64}$/.test(selected.archiveDigest)) {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      'release manifest archiveDigest must use sha256',
+    );
+  }
+  const capabilities = Array.isArray(selected.capabilities)
+    ? selected.capabilities.filter(
+        (capability): capability is RuntimeRecoveryCapability =>
+          typeof capability === 'string',
+      )
+    : [];
+  const missingCapabilities = missingRequiredRuntimeRecoveryCapabilities(capabilities);
+  if (missingCapabilities.length > 0) {
+    throw lifecycleError(
+      'RUNTIME_CAPABILITY_MISMATCH',
+      `signed release is missing required runtime recovery capability ${missingCapabilities[0]}`,
+    );
+  }
+  const releaseObjectPattern = new RegExp(
+    `^bundles/${selected.bundleId}/[A-Za-z0-9._+-]+\\.tar\\.gz(?:\\.sig)?$`,
+  );
+  if (!releaseObjectPattern.test(selected.cloudflareObjectKey)) {
+    throw lifecycleError(
+      'MANIFEST_INVALID',
+      'release manifest cloudflareObjectKey must match the immutable release object shape',
+    );
+  }
+  return {
+    channel: payload.channel,
+    version: payload.version,
+    bundleId: selected.bundleId,
+    bundleDigest: selected.archiveDigest,
+    bundleUrl: selected.cloudflareObjectKey,
+    releaseFingerprint: payload.releaseFingerprint,
+    publishedAt: payload.promotedAt,
+    sourceCommit: payload.sourceCommit,
+    capabilities,
+  };
 }
 
 export function verifySignedReleaseManifest(
   manifest: SignedReleaseManifest,
   trustedKeys: Record<string, string>,
+  target: { platform?: string; architecture?: string } = {},
 ): ReleaseManifestPayload {
-  assertReleaseManifestPayload(manifest.payload);
-  if (manifest.signature?.algorithm !== 'ed25519') {
-    throw lifecycleError(
-      'MANIFEST_SIGNATURE_INVALID',
-      'release manifest must use ed25519',
-    );
-  }
-  const publicKey = trustedKeys[manifest.signature.keyId];
-  if (!publicKey) {
+  if (!manifest.signature?.keyId || !trustedKeys[manifest.signature.keyId]) {
     throw lifecycleError(
       'MANIFEST_SIGNATURE_INVALID',
       `release manifest signing key is not trusted: ${manifest.signature.keyId}`,
+    );
+  }
+  if (manifest.signature.algorithm !== 'ed25519') {
+    throw lifecycleError(
+      'MANIFEST_SIGNATURE_INVALID',
+      `unsupported release manifest signature algorithm: ${String(manifest.signature.algorithm)}`,
+    );
+  }
+  let publicKey: ReturnType<typeof createPublicKey>;
+  try {
+    publicKey = createPublicKey(trustedKeys[manifest.signature.keyId]);
+  } catch (error: unknown) {
+    throw lifecycleError(
+      'MANIFEST_SIGNATURE_INVALID',
+      `trusted release key ${manifest.signature.keyId} is not usable`,
+      { cause: error },
     );
   }
   let accepted = false;
@@ -167,17 +275,11 @@ export function verifySignedReleaseManifest(
     accepted = verify(
       null,
       Buffer.from(canonicalReleaseManifestPayload(manifest.payload)),
-      createPublicKey(publicKey),
-      Buffer.from(manifest.signature.value, 'base64url'),
+      publicKey,
+      Buffer.from(manifest.signature.signature, 'base64url'),
     );
-  } catch (error: unknown) {
-    throw lifecycleError(
-      'MANIFEST_SIGNATURE_INVALID',
-      'release manifest signature could not be verified',
-      {
-        cause: error,
-      },
-    );
+  } catch {
+    accepted = false;
   }
   if (!accepted) {
     throw lifecycleError(
@@ -185,7 +287,7 @@ export function verifySignedReleaseManifest(
       'release manifest signature is invalid',
     );
   }
-  return manifest.payload;
+  return resolveReleaseManifestPayload(manifest, target);
 }
 
 export function sha256Digest(bytes: Uint8Array): string {
@@ -258,11 +360,33 @@ export function verifyDownloadedRuntimeBundle(
   if (
     manifest.bundleId !== release.bundleId ||
     manifest.version !== release.version ||
-    manifest.releaseFingerprint !== release.releaseFingerprint
+    manifest.releaseFingerprint !== release.releaseFingerprint ||
+    manifest.sourceCommit !== release.sourceCommit
   ) {
     throw lifecycleError(
       'BUNDLE_VERIFY_FAILED',
       'runtime bundle identity does not match signed release manifest',
+    );
+  }
+  const manifestCapabilities = manifest.capabilities ?? [];
+  const missingCapabilities = missingRequiredRuntimeRecoveryCapabilities(
+    manifestCapabilities,
+  );
+  if (missingCapabilities.length > 0) {
+    throw lifecycleError(
+      'RUNTIME_CAPABILITY_MISMATCH',
+      `runtime bundle is missing required recovery capability ${missingCapabilities[0]}`,
+    );
+  }
+  if (
+    manifestCapabilities.length !== release.capabilities.length ||
+    manifestCapabilities.some(
+      (capability, index) => capability !== release.capabilities[index],
+    )
+  ) {
+    throw lifecycleError(
+      'RUNTIME_CAPABILITY_MISMATCH',
+      'runtime bundle recovery capabilities do not match signed release manifest',
     );
   }
   const expectedPlatform = target.platform ?? process.platform;
@@ -467,25 +591,53 @@ export function activateRuntimeRelease(input: {
 export function createHttpReleaseSource(input: {
   baseUrl: string;
   fetchImpl?: typeof fetch;
+  authorizationProvider?: () => Promise<string>;
 }): ReleaseSource {
   const fetchImpl = input.fetchImpl ?? fetch;
   const baseUrl = input.baseUrl.replace(/\/$/, '');
+  const parsedBaseUrl = new URL(baseUrl);
+  const releaseBucket = parsedBaseUrl.pathname.split('/').filter(Boolean)[0];
+  if (
+    input.authorizationProvider &&
+    (parsedBaseUrl.protocol !== 'https:' ||
+      parsedBaseUrl.hostname !== 'storage.googleapis.com' ||
+      !releaseBucket)
+  ) {
+    throw lifecycleError(
+      'RELEASE_SOURCE_INVALID',
+      'metadata authorization requires a bucket-scoped Google Cloud Storage release origin',
+    );
+  }
+  const authorizedPrefix = parsedBaseUrl.origin + '/' + releaseBucket + '/';
+  const fetchRelease = async (url: string): Promise<Response> => {
+    const requestUrl = new URL(url);
+    if (input.authorizationProvider && !requestUrl.toString().startsWith(authorizedPrefix)) {
+      throw lifecycleError(
+        'RELEASE_SOURCE_INVALID',
+        'refusing to send metadata authorization outside the configured release bucket',
+      );
+    }
+    const authorization = input.authorizationProvider
+      ? await input.authorizationProvider()
+      : undefined;
+    return fetchImpl(url, {
+      ...(authorization
+        ? { headers: { authorization } }
+        : {}),
+    });
+  };
   return {
     async fetchManifest(channel: LifecycleReleaseChannel) {
       try {
-        const response = await fetchImpl(`${baseUrl}/channels/${channel}.json`);
+        const response = await fetchRelease(
+          `${baseUrl}/channels/${channel}.json`,
+        );
         if (!response.ok) {
           throw new Error(
             `release manifest request failed with HTTP ${response.status}`,
           );
         }
         const manifest = (await response.json()) as SignedReleaseManifest;
-        if (manifest.payload?.bundleUrl) {
-          manifest.payload.bundleUrl = new URL(
-            manifest.payload.bundleUrl,
-            `${baseUrl}/`,
-          ).toString();
-        }
         return manifest;
       } catch (error: unknown) {
         throw new Error(
@@ -496,7 +648,9 @@ export function createHttpReleaseSource(input: {
     },
     async fetchBundle(url: string) {
       try {
-        const response = await fetchImpl(url);
+        const response = await fetchRelease(
+          new URL(url, `${baseUrl}/`).toString(),
+        );
         if (!response.ok) {
           throw new Error(
             `runtime bundle request failed with HTTP ${response.status}`,
@@ -512,3 +666,68 @@ export function createHttpReleaseSource(input: {
     },
   };
 }
+
+export const createGcpMetadataReleaseAuthorization = (input: {
+  fetchImpl?: typeof fetch;
+  now?: () => number;
+  metadataUrl?: string;
+} = {}): (() => Promise<string>) => {
+  const fetchImpl = input.fetchImpl ?? fetch;
+  const now = input.now ?? Date.now;
+  const metadataUrl =
+    input.metadataUrl ??
+    'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token';
+  let cached:
+    | {
+        authorization: string;
+        refreshAfter: number;
+      }
+    | undefined;
+
+  return async (): Promise<string> => {
+    if (cached && now() < cached.refreshAfter) return cached.authorization;
+    let response: Response;
+    try {
+      response = await fetchImpl(metadataUrl, {
+        headers: { 'metadata-flavor': 'Google' },
+      });
+    } catch (error: unknown) {
+      throw new Error(
+        `failed to fetch GCP metadata token: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        { cause: error },
+      );
+    }
+    if (!response.ok) {
+      throw new Error(
+        `GCP metadata token request failed with HTTP ${response.status}`,
+      );
+    }
+    const payload = (await response.json()) as Record<string, unknown>;
+    const accessToken =
+      typeof payload.access_token === 'string'
+        ? payload.access_token.trim()
+        : '';
+    const tokenType =
+      typeof payload.token_type === 'string'
+        ? payload.token_type.trim()
+        : '';
+    const expiresIn =
+      typeof payload.expires_in === 'number' ? payload.expires_in : Number.NaN;
+    if (
+      !accessToken ||
+      tokenType.toLowerCase() !== 'bearer' ||
+      !Number.isFinite(expiresIn) ||
+      expiresIn <= 0
+    ) {
+      throw new Error('malformed metadata token response');
+    }
+    const authorization = `${tokenType} ${accessToken}`;
+    cached = {
+      authorization,
+      refreshAfter: now() + Math.max(1, expiresIn - 60) * 1_000,
+    };
+    return authorization;
+  };
+};

@@ -91,16 +91,16 @@ describe('local OS Hono server architecture', () => {
     expect(mainSource).toContain('fetch: app.fetch');
   });
 
-  it('should point every supported process entrypoint at server/main.ts', () => {
+  it('should point managed process entrypoints at the supervisor and keep worker smoke direct', () => {
     const packageJson = JSON.parse(source('package.json')) as {
       scripts: Record<string, string>;
     };
-    expect(packageJson.scripts['server:run']).toBe('bun ./scripts/server/main.ts');
+    expect(packageJson.scripts['server:run']).toBe('bun ./scripts/server/supervisor.ts');
     expect(packageJson.scripts['smoke:server']).toBe('bun ./scripts/server/main.ts');
 
     const daemon = source('scripts/start-consuelo-daemon.sh');
     expect(daemon).toContain(
-      'exec "$bun_bin" "$root_dir/scripts/server/main.ts"',
+      'exec "$bun_bin" "$root_dir/scripts/server/supervisor.ts"',
     );
     expect(daemon).not.toContain('scripts/server.ts');
     expect(existsSync(resolve(osRoot, 'scripts/start-brain-daemon.sh'))).toBe(false);
@@ -113,10 +113,10 @@ describe('local OS Hono server architecture', () => {
       "path.join(WORKSPACE_DIR, 'scripts', 'consuelo-reload.js')",
     );
     expect(source('scripts/consuelo-reload.js')).toContain(
-      'packages/os/scripts/server/main.ts|scripts/server/main.ts',
+      'packages/os/scripts/server/supervisor.ts|scripts/server/supervisor.ts|packages/os/scripts/server/main.ts|scripts/server/main.ts',
     );
     expect(source('Dockerfile')).toContain(
-      'CMD ["bun", "./scripts/server/main.ts"]',
+      'CMD ["bun", "./scripts/server/supervisor.ts"]',
     );
   });
 
@@ -130,6 +130,7 @@ describe('local OS Hono server architecture', () => {
     );
     expect(LOCAL_OS_ROUTE_POLICIES).toEqual([
       { method: 'ANY', path: '/health', trust: 'public' },
+      { method: 'GET', path: '/ready', trust: 'public' },
       { method: 'GET', path: '/artifacts', trust: 'public' },
       { method: 'GET', path: '/artifacts/*', trust: 'public' },
       { method: 'GET', path: '/gateway/artifacts', trust: 'signed' },
@@ -149,6 +150,7 @@ describe('local OS Hono server architecture', () => {
       { method: 'GET', path: '/gateway/environments/snapshot', trust: 'signed' },
       { method: 'POST', path: '/gateway/environments/upsert', trust: 'signed' },
       { method: 'POST', path: '/gateway/environments/delete', trust: 'signed' },
+      { method: 'GET', path: '/gateway/secrets/bindings', trust: 'signed' },
       { method: 'ANY', path: '/mcp', trust: 'signed-or-oauth' },
       { method: 'GET', path: '/get_steering', trust: 'signed' },
       { method: 'POST', path: '/get_steering', trust: 'signed' },
@@ -160,6 +162,7 @@ describe('local OS Hono server architecture', () => {
   it.each([
     { name: 'health GET', method: 'GET', path: '/health', status: 200 },
     { name: 'health POST', method: 'POST', path: '/health', status: 200 },
+    { name: 'worker readiness', method: 'GET', path: '/ready', status: 200 },
     { name: 'trace read route', method: 'GET', path: '/gateway/traces/recent', status: 401, code: 'AUTH_CONFIG_REQUIRED' },
     { name: 'trace HEAD fallback', method: 'HEAD', path: '/gateway/traces/recent', status: 404, code: 'NOT_FOUND' },
     { name: 'trace write fallback', method: 'POST', path: '/gateway/traces/recent', status: 404, code: 'NOT_FOUND' },

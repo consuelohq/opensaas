@@ -8,6 +8,7 @@ const jestConfig = {
   clearMocks: true,
   displayName: 'twenty-server',
   rootDir: './',
+  resolver: './jest.dialer-source-resolver.cjs',
   testEnvironment: 'node',
   setupFilesAfterEnv: ['./setupTests.ts'],
   transformIgnorePatterns: ['/node_modules/'],
@@ -45,6 +46,7 @@ const jestConfig = {
   moduleNameMapper: {
     '^src/(.*)': '<rootDir>/src/$1',
     '^test/(.*)': '<rootDir>/test/$1',
+    '^@consuelo/dialer$': '<rootDir>/../dialer/src/index.ts',
   },
   moduleFileExtensions: ['js', 'jsx', 'json', 'ts', 'tsx'],
   modulePathIgnorePatterns: ['<rootDir>/dist'],

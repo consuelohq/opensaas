@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9cbe4b3ae1b2",
+  "tmuxSession": "opensaas-os-fix-windows-runtime-bundle-generated-artifact-ex-9cbe4b3a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-windows-runtime-bundle-generated-artifact-exclusion",
+  "branch": "task/os/fix-windows-runtime-bundle-generated-artifact-exclusion",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-windows-runtime-bundle-generated-artifact-exclusion",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-windows-runtime-bundle-generated-artifact-exclusion",
+  "prNumber": 1724,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1724",
+  "createdAt": "2026-07-29T07:36:45.071Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-windows-runtime-bundle-generated-artifact-exclusion/.task/os/fix-windows-runtime-bundle-generated-artifact-exclusion/session.json"
+}

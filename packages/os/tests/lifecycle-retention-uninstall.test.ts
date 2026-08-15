@@ -18,8 +18,12 @@ import { join, resolve } from 'node:path';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildRuntimeBundle } from '../scripts/lib/distribution/runtime-bundle';
+import { canonicalReleaseJson } from '../scripts/lib/distribution/release-channels';
 import {
-  canonicalReleaseManifestPayload,
+  runtimeBundleIdFromDirectoryName,
+  runtimeReleaseDirectoryName,
+} from '../scripts/lib/lifecycle/runtime-release-path';
+import {
   createLifecycleEngine,
   createReloadServiceController,
   materializeRuntimeBundleDownload,
@@ -43,7 +47,9 @@ const requiredRuntimePaths = [
   'bun.lock',
   'scripts/os.ts',
   'scripts/native-lifecycle-operation.ts',
+  'scripts/retire-legacy-system-daemons.sh',
   'scripts/server/main.ts',
+  'scripts/server/supervisor.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
@@ -52,8 +58,8 @@ const requiredRuntimePaths = [
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
   'steering/system_prompt.md',
-  'steering/decision.md',
   'streams/tools/AGENTS.md',
+  'streams/dialer/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',
 ];
@@ -69,6 +75,14 @@ let bundle100: BuiltBundle;
 let bundle110: BuiltBundle;
 let bundle120: BuiltBundle;
 let bundle130: BuiltBundle;
+
+function runtimeReleaseDirectoryFor(bundle: BuiltBundle): string {
+  return runtimeReleaseDirectoryName(bundle.manifest.bundleId);
+}
+
+function runtimeReleaseTargetFor(bundle: BuiltBundle): string {
+  return `releases/${runtimeReleaseDirectoryFor(bundle)}`;
+}
 
 beforeAll(async () => {
   const pair = generateKeyPairSync('ed25519');
@@ -102,23 +116,45 @@ afterEach(() => {
 });
 
 function signedManifest(bundle: BuiltBundle): SignedReleaseManifest {
-  const payload: ReleaseManifestPayload = {
-    schemaVersion: 1,
+  const resolved: ReleaseManifestPayload = {
     channel: 'dev',
     version: bundle.manifest.version,
     bundleId: bundle.manifest.bundleId,
     bundleDigest: bundle.archiveDigest,
-    bundleUrl: `memory://${bundle.manifest.bundleId}`,
+    bundleUrl: `bundles/${bundle.manifest.bundleId}/runtime.tar.gz`,
     releaseFingerprint: bundle.manifest.releaseFingerprint,
     publishedAt: '2026-07-23T00:00:00.000Z',
+    sourceCommit: bundle.manifest.sourceCommit,
+  };
+  const payload = {
+    bundleId: resolved.bundleId,
+    channel: 'dev' as const,
+    evidence: [{ kind: 'test', reference: 'lifecycle-retention' }],
+    kind: 'consuelo-os-channel-manifest' as const,
+    platforms: [{
+      architecture: bundle.manifest.architecture,
+      archiveDigest: resolved.bundleDigest,
+      bundleId: resolved.bundleId,
+      cloudflareObjectKey: resolved.bundleUrl,
+      githubAssetName: `consuelo-os-runtime-${resolved.version}.tar.gz`,
+      platform: bundle.manifest.platform,
+    }],
+    promotedAt: resolved.publishedAt,
+    releaseFingerprint: resolved.releaseFingerprint,
+    revision: 1,
+    schemaVersion: 1,
+    sourceChannel: null,
+    sourceCommit: resolved.sourceCommit,
+    version: resolved.version,
   };
   return {
     payload,
     signature: {
       algorithm: 'ed25519',
       keyId: releaseKeyId,
-      value: sign(null, Buffer.from(canonicalReleaseManifestPayload(payload)), privateKey)
+      signature: sign(null, Buffer.from(canonicalReleaseJson(payload)), privateKey)
         .toString('base64url'),
+      signedAt: '2026-07-23T00:00:01.000Z',
     },
   };
 }
@@ -245,11 +281,15 @@ function stageBundle(bundle: BuiltBundle, operationId: string): string {
 }
 
 function currentBundleId(): string {
-  return readlinkSync(join(tempHome, 'runtime', 'current')).split('/').at(-1) ?? '';
+  const directoryName =
+    readlinkSync(join(tempHome, 'runtime', 'current')).split('/').at(-1) ?? '';
+  return runtimeBundleIdFromDirectoryName(directoryName);
 }
 
 function releaseNames(): string[] {
-  return readdirSync(join(tempHome, 'runtime', 'releases')).sort();
+  return readdirSync(join(tempHome, 'runtime', 'releases'))
+    .map((directoryName) => runtimeBundleIdFromDirectoryName(directoryName))
+    .sort();
 }
 
 describe('lifecycle rollback and retention', () => {
@@ -274,7 +314,7 @@ describe('lifecycle rollback and retention', () => {
     });
     expect(currentBundleId()).toBe(bundle100.manifest.bundleId);
     expect(readlinkSync(join(tempHome, 'runtime', 'previous')))
-      .toBe(`releases/${bundle110.manifest.bundleId}`);
+      .toBe(runtimeReleaseTargetFor(bundle110));
     expect(update.serviceOperations.slice(-2)).toEqual(['restart', 'health']);
   });
 
@@ -309,8 +349,8 @@ describe('lifecycle rollback and retention', () => {
     const previousPath = stageBundle(bundle100, 'stage-previous');
     const candidatePath = stageBundle(bundle110, 'stage-candidate');
     mkdirSync(join(tempHome, 'runtime'), { recursive: true });
-    symlinkSync(`releases/${bundle110.manifest.bundleId}`, join(tempHome, 'runtime', 'current'));
-    symlinkSync(`releases/${bundle100.manifest.bundleId}`, join(tempHome, 'runtime', 'previous'));
+    symlinkSync(runtimeReleaseTargetFor(bundle110), join(tempHome, 'runtime', 'current'));
+    symlinkSync(runtimeReleaseTargetFor(bundle100), join(tempHome, 'runtime', 'previous'));
     writeLifecycleActivationJournal({
       home: tempHome,
       operationId: 'interrupted-update',
@@ -330,8 +370,8 @@ describe('lifecycle rollback and retention', () => {
     const previousPath = stageBundle(bundle100, 'stage-missing-candidate-previous');
     const candidatePath = stageBundle(bundle110, 'stage-missing-candidate');
     mkdirSync(join(tempHome, 'runtime'), { recursive: true });
-    symlinkSync(`releases/${bundle110.manifest.bundleId}`, join(tempHome, 'runtime', 'current'));
-    symlinkSync(`releases/${bundle100.manifest.bundleId}`, join(tempHome, 'runtime', 'previous'));
+    symlinkSync(runtimeReleaseTargetFor(bundle110), join(tempHome, 'runtime', 'current'));
+    symlinkSync(runtimeReleaseTargetFor(bundle100), join(tempHome, 'runtime', 'previous'));
     writeLifecycleActivationJournal({
       home: tempHome,
       operationId: 'interrupted-missing-candidate',
@@ -353,8 +393,8 @@ describe('lifecycle rollback and retention', () => {
     const previousPath = stageBundle(bundle100, 'stage-corrupt-candidate-previous');
     const candidatePath = stageBundle(bundle110, 'stage-corrupt-candidate');
     mkdirSync(join(tempHome, 'runtime'), { recursive: true });
-    symlinkSync(`releases/${bundle110.manifest.bundleId}`, join(tempHome, 'runtime', 'current'));
-    symlinkSync(`releases/${bundle100.manifest.bundleId}`, join(tempHome, 'runtime', 'previous'));
+    symlinkSync(runtimeReleaseTargetFor(bundle110), join(tempHome, 'runtime', 'current'));
+    symlinkSync(runtimeReleaseTargetFor(bundle100), join(tempHome, 'runtime', 'previous'));
     writeLifecycleActivationJournal({
       home: tempHome,
       operationId: 'interrupted-corrupt-candidate',
@@ -376,8 +416,8 @@ describe('lifecycle rollback and retention', () => {
     const paths = [bundle100, bundle110, bundle120, bundle130].map((bundle, index) =>
       stageBundle(bundle, `stage-${index}`));
     mkdirSync(join(tempHome, 'runtime'), { recursive: true });
-    symlinkSync(`releases/${bundle130.manifest.bundleId}`, join(tempHome, 'runtime', 'current'));
-    symlinkSync(`releases/${bundle120.manifest.bundleId}`, join(tempHome, 'runtime', 'previous'));
+    symlinkSync(runtimeReleaseTargetFor(bundle130), join(tempHome, 'runtime', 'current'));
+    symlinkSync(runtimeReleaseTargetFor(bundle120), join(tempHome, 'runtime', 'previous'));
     writeLifecycleRetentionState({
       home: tempHome,
       pinnedBundleIds: [bundle100.manifest.bundleId],

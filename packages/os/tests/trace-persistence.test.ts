@@ -15,6 +15,11 @@ type TraceRow = {
   task_session: string | null;
   branch: string | null;
   worktree: string | null;
+  requested_node_id: string | null;
+  resolved_node_id: string | null;
+  resolved_node_name: string | null;
+  default_node_id: string | null;
+  route_source: string | null;
   status: string;
   ok: number;
   code: string | null;
@@ -34,8 +39,12 @@ type ScenarioResult = {
   codeCall?: Record<string, unknown>;
   batch?: Record<string, unknown>;
   rows?: TraceRow[];
+  firstRows?: TraceRow[];
+  secondRows?: TraceRow[];
   recent?: { events?: Array<Record<string, unknown>> };
+  history?: { rows?: Array<Record<string, unknown>> };
   recorded?: boolean;
+  immediateDbExists?: boolean;
   events?: Array<Record<string, unknown>>;
   status?: number;
   body?: Record<string, unknown>;
@@ -110,6 +119,11 @@ describe('canonical OS trace persistence', () => {
       ok: 1,
       code: 'OK',
       exit_code: 0,
+      requested_node_id: 'node_cloud',
+      resolved_node_id: 'node_cloud',
+      resolved_node_name: 'Cloud Node',
+      default_node_id: 'node_home',
+      route_source: 'explicit',
     });
     expect(rows[0].input_json).toContain('[REDACTED_SECRET]');
     expect(rows[0].input_json).not.toContain('sk_test_secret_value_1234567890');
@@ -127,6 +141,15 @@ describe('canonical OS trace persistence', () => {
         success: true,
       }),
     ]);
+    expect(output.history?.rows).toEqual([
+      expect.objectContaining({
+        traceId: result.traceId,
+        nodeId: 'node_cloud',
+        nodeName: 'Cloud Node',
+        defaultNodeId: 'node_home',
+        routeSource: 'explicit',
+      }),
+    ]);
   });
 
   it('migrates an existing tool_traces table and preserves correlation and token fields', () => {
@@ -141,6 +164,10 @@ describe('canonical OS trace persistence', () => {
         input_tokens: 12,
         output_tokens: 34,
         total_tokens: 46,
+        resolved_node_id: 'node_migrated',
+        resolved_node_name: 'Migrated Node',
+        default_node_id: 'node_migrated',
+        route_source: 'default',
       }),
     ]);
   });
@@ -196,6 +223,34 @@ describe('canonical OS trace persistence', () => {
     });
   });
 
+  it('persists durable Codex child events once under the originating trace across later attachments', () => {
+    const output = runScenario('durable-subagent');
+    const result = output.result ?? {};
+    const firstRows = output.firstRows ?? [];
+    const secondRows = output.secondRows ?? [];
+
+    expect(result).toMatchObject({ ok: true, code: 'OK' });
+    expect(firstRows.length).toBeGreaterThanOrEqual(2);
+    expect(firstRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        mcp_trace_id: result.traceId,
+        source: 'subagent',
+        tool: 'codex.fs.read',
+      }),
+      expect.objectContaining({
+        mcp_trace_id: result.traceId,
+        source: 'subagent',
+        tool: 'codex.turn.completed',
+      }),
+    ]));
+    expect(secondRows).toHaveLength(firstRows.length);
+    const eventKeys = (rows: typeof firstRows) => rows
+      .map((row) => `${row.mcp_trace_id}:${row.source}:${row.tool}`)
+      .sort();
+    expect(eventKeys(secondRows)).toEqual(eventKeys(firstRows));
+    expect(new Set(secondRows.map((row) => row.mcp_trace_id))).toEqual(new Set([result.traceId as string]));
+  });
+
   it('records MISSING_SCOPE without persisting the bearer token', () => {
     const output = runScenario('auth');
     expect(output.status).toBe(403);
@@ -216,6 +271,51 @@ describe('canonical OS trace persistence', () => {
       requiredScope: 'tool:mac.process:read',
       route: '/mcp',
     });
+  });
+
+  it('should batch authentication traces after the request path returns', () => {
+    const output = runScenario('auth-principal-queued');
+
+    expect(output.immediateDbExists).toBe(false);
+    expect(output.rows).toHaveLength(2);
+    expect(output.rows?.map((row) => row.tool)).toEqual([
+      'authentication.mcp',
+      'authentication.mcp',
+    ]);
+  });
+
+  it('should record a safe principal correlation key when authentication succeeds without raw identity material', () => {
+    const output = runScenario('auth-principal');
+    expect(output.recorded).toBe(true);
+    expect(output.rows).toHaveLength(1);
+    expect(output.rows?.[0]).toMatchObject({
+      source: 'gateway',
+      tool: 'authentication.mcp',
+      status: 'ok',
+      ok: 1,
+    });
+    const input = JSON.parse(output.rows?.[0]?.input_json ?? '{}') as Record<string, unknown>;
+    expect(input).toMatchObject({
+      workspaceId: 'workspace_trace_auth',
+      route: '/mcp',
+      requiredScope: 'mcp:read',
+      authMode: 'oauth',
+      principalKey: 'prn_0123456789abcdef0123456789abcdef',
+      requestedNodeId: 'node_cloud',
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      defaultNodeId: 'node_home',
+      routeSource: 'explicit',
+    });
+    expect(output.rows?.[0]).toMatchObject({
+      requested_node_id: 'node_cloud',
+      resolved_node_id: 'node_cloud',
+      resolved_node_name: 'Cloud Node',
+      default_node_id: 'node_home',
+      route_source: 'explicit',
+    });
+    expect(JSON.stringify(input)).not.toContain('google:');
+    expect(JSON.stringify(input)).not.toContain('chatgpt.com');
   });
 
   it('exports the canonical trace path for the installed daemon', () => {

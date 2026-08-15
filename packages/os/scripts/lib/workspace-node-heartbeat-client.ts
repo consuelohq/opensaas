@@ -1,5 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
+import type { AgentName } from './local-agent-connectivity';
+import {
+  parseWorkspaceNodeSnapshot,
+  type WorkspaceNodeSnapshot,
+} from './workspace-node-snapshot-cache';
+
 import {
   createDevicePublicKeyProof,
   type WorkspaceDeviceKeyPair,
@@ -15,20 +21,60 @@ export type WorkspaceNodeHeartbeatConfig = {
   capabilities: string[];
   publicKeyJwk: string;
   signingKeyJwk: string;
+  /**
+   * Public half of the node's credential-encryption key.
+   *
+   * Published so a setup surface can seal a credential to this node without the control plane
+   * being able to open it. Without this the remote ceremony requires hand-carrying the key file
+   * between machines, which is not a product. Optional because a node installed before the key
+   * existed has none until its next release activation.
+   */
+  encryptionPublicKeyJwk?: string;
 };
 
 export type WorkspaceNodeHeartbeatResult = {
   nodeId: string;
   presence: 'online' | 'stale' | 'offline';
+  routeReady: boolean;
+  connectorId?: string;
+  edgeRequestSigningSecret?: string;
+  workspace?: WorkspaceNodeSnapshot;
 };
 
 export type WorkspaceNodeHeartbeatClient = {
   send: () => Promise<WorkspaceNodeHeartbeatResult>;
 };
 
+const KNOWN_AGENT_NAMES = new Set<AgentName>([
+  'claude',
+  'codex',
+  'cursor',
+  'factory',
+  'gemini',
+  'opencode',
+  'pi',
+]);
+
+function normalizeAgentNames(
+  value: readonly AgentName[] | undefined,
+): AgentName[] | undefined {
+  if (value === undefined) return undefined;
+  const names: AgentName[] = [];
+  for (const candidate of value) {
+    if (!KNOWN_AGENT_NAMES.has(candidate)) {
+      throw new Error(
+        'workspace node heartbeat agents must contain only known agent identifiers',
+      );
+    }
+    names.push(candidate);
+  }
+  return [...new Set(names)].sort();
+}
+
 function requiredString(value: string, label: string): string {
   const normalized = value.trim();
-  if (!normalized) throw new Error(`workspace node heartbeat ${label} is required`);
+  if (!normalized)
+    throw new Error(`workspace node heartbeat ${label} is required`);
   return normalized;
 }
 
@@ -43,13 +89,26 @@ function normalizeAuthorityOrigin(value: string): string {
 function normalizeConfig(
   config: WorkspaceNodeHeartbeatConfig,
 ): WorkspaceNodeHeartbeatConfig {
-  const capabilities = [...new Set(config.capabilities)]
-    .map((value) => value.trim())
-    .filter(Boolean)
-    .slice(0, 32)
-    .sort();
+  const capabilities = [
+    ...new Set(
+      config.capabilities.map((value) => value.trim()).filter(Boolean),
+    ),
+  ].sort();
+  if (capabilities.length > 32) {
+    throw new Error(
+      'workspace node heartbeat capabilities may contain at most 32 unique values',
+    );
+  }
   JSON.parse(requiredString(config.publicKeyJwk, 'public key'));
   JSON.parse(requiredString(config.signingKeyJwk, 'signing key'));
+  if (
+    config.connectorStatus !== 'connected' &&
+    config.connectorStatus !== 'disconnected'
+  ) {
+    throw new Error(
+      'workspace node heartbeat connector status must be connected or disconnected',
+    );
+  }
   return {
     authorityOrigin: normalizeAuthorityOrigin(config.authorityOrigin),
     workspaceId: requiredString(config.workspaceId, 'workspace ID'),
@@ -58,34 +117,67 @@ function normalizeConfig(
     capabilities,
     publicKeyJwk: config.publicKeyJwk,
     signingKeyJwk: config.signingKeyJwk,
+    ...(typeof config.encryptionPublicKeyJwk === 'string' &&
+    config.encryptionPublicKeyJwk.trim() !== ''
+      ? { encryptionPublicKeyJwk: config.encryptionPublicKeyJwk.trim() }
+      : {}),
   };
 }
 
 function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    throw new Error('workspace node heartbeat returned an invalid JSON response');
+    throw new Error(
+      'workspace node heartbeat returned an invalid JSON response',
+    );
   }
   const nodeId = (payload as { nodeId?: unknown }).nodeId;
   const presence = (payload as { presence?: unknown }).presence;
+  const routeReady = (payload as { routeReady?: unknown }).routeReady === true;
+  const connectorId = (payload as { connectorId?: unknown }).connectorId;
+  const edgeRequestSigningSecret = (
+    payload as { edgeRequestSigningSecret?: unknown }
+  ).edgeRequestSigningSecret;
+  const rawWorkspace = (payload as { workspace?: unknown }).workspace;
   if (
     typeof nodeId !== 'string' ||
     !['online', 'stale', 'offline'].includes(String(presence))
   ) {
-    throw new Error('workspace node heartbeat returned an invalid JSON response');
+    throw new Error(
+      'workspace node heartbeat returned an invalid JSON response',
+    );
+  }
+  const hasConnector = typeof connectorId === 'string' && connectorId.trim() !== '';
+  const hasSecret =
+    typeof edgeRequestSigningSecret === 'string' &&
+    edgeRequestSigningSecret.trim() !== '';
+  if (hasConnector !== hasSecret) {
+    throw new Error('workspace node heartbeat returned incomplete edge authentication metadata');
   }
   return {
     nodeId,
     presence: presence as WorkspaceNodeHeartbeatResult['presence'],
+    routeReady,
+    ...(hasConnector && hasSecret
+      ? {
+          connectorId: connectorId.trim(),
+          edgeRequestSigningSecret: edgeRequestSigningSecret.trim(),
+        }
+      : {}),
+    ...(rawWorkspace === undefined
+      ? {}
+      : { workspace: parseWorkspaceNodeSnapshot(rawWorkspace) }),
   };
 }
 
 export function createWorkspaceNodeHeartbeatClient(input: {
   config: WorkspaceNodeHeartbeatConfig;
+  agents?: readonly AgentName[];
   fetchImpl?: typeof fetch;
   now?: () => number;
   createNonce?: () => string;
 }): WorkspaceNodeHeartbeatClient {
   const config = normalizeConfig(input.config);
+  const agents = normalizeAgentNames(input.agents);
   const fetchImpl = input.fetchImpl ?? globalThis.fetch;
   const now = input.now ?? Date.now;
   const createNonce = input.createNonce ?? randomUUID;
@@ -104,6 +196,11 @@ export function createWorkspaceNodeHeartbeatClient(input: {
         nonce: requiredString(createNonce(), 'nonce'),
         connectorStatus: config.connectorStatus,
         capabilities: config.capabilities,
+        // Inside the signed payload, so the authority can trust the key it is asked to publish.
+        ...(config.encryptionPublicKeyJwk
+          ? { encryptionPublicKeyJwk: config.encryptionPublicKeyJwk }
+          : {}),
+        ...(agents === undefined ? {} : { agents }),
       });
       const signature = createDevicePublicKeyProof({ deviceKeyPair, payload });
       let response: Response;
@@ -140,7 +237,11 @@ export function createWorkspaceNodeHeartbeatClient(input: {
           cause: error,
         });
       }
-      return safeHeartbeatResult(body);
+      const result = safeHeartbeatResult(body);
+      if (result.nodeId !== config.nodeId) {
+        throw new Error('workspace node heartbeat returned a different node identity');
+      }
+      return result;
     },
   };
 }

@@ -35,6 +35,10 @@ load_env_file() {
 
 load_env_file "$env_file"
 
+unset WORKSPACE_MCP_TOKEN
+unset INTERNAL_CONSUELO_API_KEY
+unset CLOUDFLARE_API_TOKEN
+
 export HOME="${WORKSPACE_DAEMON_HOME:-${HOME:-/Users/$(id -un)}}"
 export USER="${WORKSPACE_DAEMON_USER:-${USER:-$(id -un)}}"
 export PATH="${WORKSPACE_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
@@ -58,4 +62,38 @@ case ":$PATH:" in
   *) export PATH="$bun_dir:$PATH" ;;
 esac
 
-exec "$bun_bin" "$root_dir/scripts/server/main.ts"
+run_with_timeout() {
+  local timeout_seconds="$1"
+  shift
+
+  "$@" &
+  local command_pid=$!
+  (
+    sleep "$timeout_seconds"
+    kill -TERM "$command_pid" 2>/dev/null || true
+  ) &
+  local watchdog_pid=$!
+  local command_status=0
+  if wait "$command_pid"; then
+    command_status=0
+  else
+    command_status=$?
+  fi
+  kill "$watchdog_pid" 2>/dev/null || true
+  wait "$watchdog_pid" 2>/dev/null || true
+  return "$command_status"
+}
+
+sites_refresh_timeout="${WORKSPACE_DAEMON_SITES_REFRESH_TIMEOUT_SECONDS:-15}"
+case "$sites_refresh_timeout" in
+  ''|*[!0-9]*) sites_refresh_timeout=15 ;;
+esac
+if [ "$sites_refresh_timeout" -lt 1 ]; then
+  sites_refresh_timeout=15
+fi
+
+if ! run_with_timeout "$sites_refresh_timeout" "$bun_bin" "$root_dir/scripts/os.ts" sites refresh --json >/dev/null; then
+  echo "managed Sites refresh failed; continuing daemon startup" >&2
+fi
+
+exec "$bun_bin" "$root_dir/scripts/server/supervisor.ts"

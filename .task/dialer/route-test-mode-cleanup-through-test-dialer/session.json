@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b7fa580f291a",
+  "tmuxSession": "opensaas-dialer-route-test-mode-cleanup-through-test-dialer-b7fa580f",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/route-test-mode-cleanup-through-test-dialer",
+  "branch": "task/dialer/route-test-mode-cleanup-through-test-dialer",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-route-test-mode-cleanup-through-test-dialer",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-route-test-mode-cleanup-through-test-dialer",
+  "prNumber": 1769,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1769",
+  "createdAt": "2026-08-04T20:05:36.656Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-route-test-mode-cleanup-through-test-dialer/.task/dialer/route-test-mode-cleanup-through-test-dialer/session.json"
+}

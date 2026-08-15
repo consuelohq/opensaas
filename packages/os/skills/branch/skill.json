@@ -1,0 +1,28 @@
+{
+  "name": "branch",
+  "title": "Branch",
+  "description": "Turn large phases, epics, migrations, or planning sessions into a dependency graph of compact work IDs so focused chats and agents can manage context, execute safe sequential and parallel lanes, and rejoin through one required finalization node.",
+  "trigger": "Invoke proactively when a phase, epic, migration, or long planning session is too large for one safe task or PR, needs context or memory management across focused chats, contains meaningful dependencies, or can benefit from parallel agents or branched chats. Also invoke when Ko asks to decompose or branch a project, decide what can run in parallel, freeze a Branch Graph, use a branched chat, or execute an approved short work ID such as 'D0 approved, go' or a legacy 'Branch N approved, go'. Do not invoke for ordinary Git branch commands or a single already-scoped repo task.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/branch/SKILL.md"
+  },
+  "permission": "guidance",
+  "requiresApproval": false,
+  "subskills": [],
+  "capabilities": [
+    "planning",
+    "repo",
+    "architecture",
+    "branch-decomposition",
+    "parallel-work",
+    "dependency-graph",
+    "workstream-fanout"
+  ],
+  "tools": [
+    "os.get_steering",
+    "os.call"
+  ],
+  "status": "active"
+}

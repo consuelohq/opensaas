@@ -12,6 +12,8 @@ const TRACE_SAFE_STRING_KEYS = new Set([
   'mcp_trace_id',
   'requestId',
   'request_id',
+  'recordId',
+  'principalKey',
   'taskSession',
   'task_session',
   'branch',
@@ -58,20 +60,29 @@ function redactUrlQuery(value) {
   }
 }
 
-export function redactText(value) {
+function redactHighConfidenceText(value) {
   let text = redactUrlQuery(String(value));
   text = text.replace(/Bearer\s+[A-Za-z0-9._~+/=-]{8,}/gi, `Bearer ${REDACTED_SECRET}`);
   text = text.replace(/\b(sk|pk|rk|xox[baprs]|gh[pousr])_[A-Za-z0-9_=-]{12,}\b/g, REDACTED_SECRET);
-  text = text.replace(/\b[A-Za-z0-9+/=_-]{40,}\b/g, (match) => {
-    if (match.startsWith('trc_')) return match;
-    return REDACTED_SECRET;
-  });
   text = text.replace(/(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}\b/g, (match) => {
     const digits = match.replace(/\D/g, '');
     if (digits.length < 10 || digits.length > 15) return match;
     return `[REDACTED_PHONE:${digits.slice(-4)}]`;
   });
   return text;
+}
+
+export function redactText(value) {
+  let text = redactHighConfidenceText(value);
+  text = text.replace(/\b[A-Za-z0-9+/=_-]{40,}\b/g, (match) => {
+    if (match.startsWith('trc_')) return match;
+    return REDACTED_SECRET;
+  });
+  return text;
+}
+
+export function redactTraceText(value) {
+  return redactHighConfidenceText(value);
 }
 
 function redactValueInternal(value, key, seen) {
@@ -126,7 +137,7 @@ function redactTraceValueInternal(value, key, seen) {
     };
   }
 
-  if (typeof value === 'string') return redactText(value);
+  if (typeof value === 'string') return redactTraceText(value);
   if (typeof value === 'bigint') return value.toString();
   if (value === null || value === undefined) return value;
   if (typeof value !== 'object') return value;
@@ -141,12 +152,12 @@ function redactTraceValueInternal(value, key, seen) {
   if (value instanceof Error) {
     return {
       name: value.name,
-      message: redactText(value.message),
+      message: redactTraceText(value.message),
     };
   }
 
   if (!isPlainObject(value)) {
-    return redactText(String(value));
+    return redactTraceText(String(value));
   }
 
   const output = {};

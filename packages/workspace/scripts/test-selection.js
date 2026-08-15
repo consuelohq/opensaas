@@ -162,12 +162,13 @@ function normalizeRule(rule, source = 'explicit') {
     source: rule.source || [],
     tests: rule.tests || [],
     critical: Boolean(rule.critical),
+    ...(rule.exclusive ? { exclusive: true } : {}),
     reason: rule.reason || '',
     origin: source,
   };
 }
 
-function createAutoRules(tests, projects, packageScripts) {
+function createAutoRules(tests, projects, packageScripts, explicitRules = []) {
   const testsByGroup = new Map();
   for (const test of tests) {
     const groups = new Set([test.group, ...groupCandidatesFor(test.path)]);
@@ -191,12 +192,13 @@ function createAutoRules(tests, projects, packageScripts) {
   for (const pkg of packageScripts) {
     if (!pkg.scripts.test) continue;
     if (pkg.root === 'packages/workspace') continue;
+    if (explicitRules.some((rule) => rule.source.includes(`${pkg.root}/**`))) continue;
     if (rules.some((rule) => rule.source.includes(`${pkg.root}/**`))) continue;
     if (!testsByGroup.has(pkg.root)) continue;
     rules.push(normalizeRule({
       id: `auto:${pkg.name}:package-test`,
       source: [`${pkg.root}/**`],
-      tests: [{ name: `${pkg.name} package test`, command: ['bun', '--cwd', pkg.root, 'run', 'test'] }],
+      tests: [{ name: `${pkg.name} package test`, command: ['bun', 'run', '--cwd', pkg.root, 'test'] }],
       critical: false,
       reason: `Auto-discovered package test script for ${pkg.root}.`,
     }, 'auto'));
@@ -215,7 +217,7 @@ function buildRegistry(root) {
   const projects = discoverProjects(root);
   const packageScripts = discoverPackageScripts(root);
   const explicitRules = loadRules(root);
-  const autoRules = createAutoRules(tests, projects, packageScripts);
+  const autoRules = createAutoRules(tests, projects, packageScripts, explicitRules);
   const rules = [...explicitRules, ...autoRules];
   const mappedTests = new Set();
   for (const test of tests) {
@@ -257,11 +259,16 @@ function changedFiles(root, args) {
   if (explicit.length) return explicit;
   const base = valueFor(args, 'base') || 'origin/main';
   const committed = spawnSync('git', ['diff', '--name-only', `${base}...HEAD`], { cwd: root, encoding: 'utf8' });
-  const working = spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' });
-  const staged = spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' });
-  const untracked = spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' });
   const files = new Set();
-  for (const result of [committed, working, staged, untracked]) {
+  const results = [committed];
+  if (!args['committed-only']) {
+    results.push(
+      spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' }),
+      spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' }),
+      spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }),
+    );
+  }
+  for (const result of results) {
     if (result.status !== 0) continue;
     for (const line of result.stdout.split(/\r?\n/)) if (line.trim()) files.add(line.trim());
   }
@@ -282,17 +289,55 @@ function docsOnly(files) {
 }
 
 function sourceCodeFiles(files) {
-  return files.filter((file) => /\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml)$/i.test(file) && !file.startsWith('.task/'));
+  return files.filter((file) => /\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|sh|bash|zsh)$/i.test(file) && !file.startsWith('.task/'));
 }
 
 function select(registry, files) {
+  const matches = registry.rules
+    .map((rule) => ({
+      rule,
+      matchedFiles: files.filter((file) =>
+        rule.source.some((pattern) => matchesPattern(file, pattern)),
+      ),
+    }))
+    .filter((entry) => entry.matchedFiles.length > 0);
+  const explicitCriticalFiles = new Set(
+    matches
+      .filter(
+        ({ rule }) => rule.origin === 'explicit' && rule.critical === true,
+      )
+      .flatMap(({ matchedFiles }) => matchedFiles),
+  );
   const matchedRules = [];
   const suites = [];
   const seen = new Set();
-  for (const rule of registry.rules) {
-    const matchedFiles = files.filter((file) => rule.source.some((pattern) => matchesPattern(file, pattern)));
+  const exclusivelyOwnedFiles = new Set(
+    matches
+      .filter(({ rule }) => rule.exclusive === true)
+      .flatMap(({ matchedFiles }) => matchedFiles),
+  );
+
+  for (const { rule, matchedFiles: rawMatchedFiles } of matches) {
+    const matchedFiles = rule.exclusive
+      ? rawMatchedFiles
+      : rawMatchedFiles.filter((file) => !exclusivelyOwnedFiles.has(file));
     if (matchedFiles.length === 0) continue;
-    matchedRules.push({ id: rule.id, critical: rule.critical, reason: rule.reason, matchedFiles, origin: rule.origin });
+    matchedRules.push({
+      id: rule.id,
+      critical: rule.critical,
+      ...(rule.exclusive ? { exclusive: true } : {}),
+      reason: rule.reason,
+      matchedFiles,
+      origin: rule.origin,
+    });
+    const autoPackageCodeFiles =
+      rule.origin === 'auto' && rule.id.endsWith(':package-test')
+        ? sourceCodeFiles(matchedFiles)
+        : [];
+    const fullyCoveredByExplicitCriticalRule =
+      autoPackageCodeFiles.length > 0 &&
+      autoPackageCodeFiles.every((file) => explicitCriticalFiles.has(file));
+    if (fullyCoveredByExplicitCriticalRule) continue;
     for (const test of rule.tests) {
       const key = commandKey(test.command);
       if (seen.has(key)) continue;
@@ -324,7 +369,7 @@ function testSuiteTimeoutMs() {
   return Number.isFinite(value) && value > 0 ? value : 300000;
 }
 
-function runSuites(root, suites) {
+function runSuites(root, suites, base) {
   const results = [];
   for (const suite of suites) {
     const started = Date.now();
@@ -333,6 +378,7 @@ function runSuites(root, suites) {
       encoding: 'utf8',
       maxBuffer: 1024 * 1024 * 8,
       timeout: testSuiteTimeoutMs(),
+      env: { ...process.env, NX_BASE: base, BASE_REF: base },
     });
     const timedOut = result.error && result.error.code === 'ETIMEDOUT';
     const signaled = Boolean(result.signal);
@@ -360,7 +406,7 @@ function parseArgs(argv) {
     const raw = rest[i];
     if (!raw.startsWith('--')) { args._.push(raw); continue; }
     const [key, inline] = raw.slice(2).split('=', 2);
-    if (['json', 'run', 'no-run'].includes(key)) args[key] = true;
+    if (['json', 'run', 'no-run', 'committed-only'].includes(key)) args[key] = true;
     else {
       const value = inline !== undefined ? inline : rest[++i];
       if (args[key] === undefined) args[key] = value;
@@ -460,10 +506,11 @@ function main() {
     print({ ...payload, jsonPath, markdownPath, latestJsonPath: path.join(outDir, 'latest.json'), latestMarkdownPath: path.join(outDir, 'latest.md') }, args.json);
     return;
   }
+  const base = valueFor(args, 'base') || 'origin/main';
   const files = changedFiles(root, args);
   const selected = select(registry, files);
   const run = args.run && !args['no-run'];
-  const runResults = run ? runSuites(root, selected.selectedSuites) : [];
+  const runResults = run ? runSuites(root, selected.selectedSuites, base) : [];
   const failedSuites = runResults.filter((result) => result.status !== 'passed');
   const passed = selected.level !== 'fail' && failedSuites.length === 0;
   const result = { kind: 'selection', passed, ...selected, run, runResults, failedSuites };

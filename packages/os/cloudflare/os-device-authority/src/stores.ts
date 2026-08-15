@@ -2,6 +2,7 @@ import type {
   AccountWorkspace,
   AuthoritySession,
   Grant,
+  ManagedCloudCheckout,
   McpOAuthAccessToken,
   McpOAuthCode,
   McpOAuthRefreshToken,
@@ -11,21 +12,148 @@ import type {
   StorageLike,
   Store,
   WorkspaceNode,
+  WorkspaceTaskAffinity,
   WorkspaceAgentStatus,
   WebOAuthState,
   WorkspaceBrowserSession,
+  WorkspaceCloudTrial,
   WorkspaceLoginHandoff,
   WorkspaceMembership,
 } from './types';
+import {
+  managedCloudProvisioningTerminal,
+  type ManagedCloudProvisioningJob,
+} from '../../../scripts/lib/managed-cloud-provisioning';
 import { cleanCode } from './utils';
 
 const cloneWorkspaceNode = (node: WorkspaceNode): WorkspaceNode => ({
   ...node,
   ...(node.capabilities ? { capabilities: [...node.capabilities] } : {}),
+  ...(node.agents ? { agents: [...node.agents] } : {}),
 });
+
+const isWorkspaceNode = (value: unknown): value is WorkspaceNode =>
+  Boolean(value) &&
+  typeof value === 'object' &&
+  !Array.isArray(value) &&
+  typeof (value as { accountId?: unknown }).accountId === 'string' &&
+  typeof (value as { nodeId?: unknown }).nodeId === 'string' &&
+  typeof (value as { workspaceHost?: unknown }).workspaceHost === 'string';
+
+const workspaceTaskAffinityKey = (input: {
+  accountId: string;
+  workspaceHost: string;
+  taskSession: string;
+}): string =>
+  `wta:${input.accountId}:${encodeURIComponent(input.workspaceHost)}:${encodeURIComponent(input.taskSession)}`;
+
+const managedCloudProvisioningJobKey = (jobId: string): string => `mcpj:${jobId}`;
+const managedCloudProvisioningIdempotencyKey = (job: Pick<ManagedCloudProvisioningJob, 'accountId' | 'workspaceHost' | 'idempotencyKey'>): string =>
+  `mcpji:${job.accountId}:${encodeURIComponent(job.workspaceHost)}:${encodeURIComponent(job.idempotencyKey)}`;
+const managedCloudProvisioningActiveKey = (job: Pick<ManagedCloudProvisioningJob, 'accountId' | 'workspaceHost'>): string =>
+  `mcpja:${job.accountId}:${encodeURIComponent(job.workspaceHost)}`;
+const managedCloudProvisioningNodeKey = (nodeId: string): string => `mcpjn:${encodeURIComponent(nodeId)}`;
+const MANAGED_CLOUD_PROVISIONING_QUEUE_KEY = 'mcpjq';
+const cloneManagedCloudProvisioningJob = (job: ManagedCloudProvisioningJob): ManagedCloudProvisioningJob => ({ ...job });
+
+export const WORKSPACE_TASK_AFFINITY_TTL_MS = 7 * 24 * 60 * 60_000;
+
+const workspaceTaskAffinityExpiresAt = (affinity: WorkspaceTaskAffinity): number =>
+  affinity.expiresAt ?? affinity.updatedAt + WORKSPACE_TASK_AFFINITY_TTL_MS;
+
+const cloneWorkspaceTaskAffinity = (affinity: WorkspaceTaskAffinity): WorkspaceTaskAffinity => ({
+  ...affinity,
+  expiresAt: workspaceTaskAffinityExpiresAt(affinity),
+});
+
+const workspaceTaskAffinityOwnerIndexKey = (input: {
+  accountId: string;
+  ownerNodeId: string;
+}): string => `wtan:${input.accountId}:${encodeURIComponent(input.ownerNodeId)}`;
+
+async function indexWorkspaceTaskAffinityOwner(
+  storage: StorageLike,
+  affinity: WorkspaceTaskAffinity,
+  affinityKey: string,
+): Promise<void> {
+  try {
+    const indexKey = workspaceTaskAffinityOwnerIndexKey(affinity);
+    const keys = (await storage.get<string[]>(indexKey)) ?? [];
+    if (!keys.includes(affinityKey)) {
+      await storage.put(indexKey, [...keys, affinityKey]);
+    }
+  } catch {
+    throw new Error('workspace task affinity owner index write failed');
+  }
+}
+
+async function removeWorkspaceTaskAffinityRecord(
+  storage: StorageLike,
+  affinityKey: string,
+  affinity: WorkspaceTaskAffinity,
+): Promise<void> {
+  try {
+    await storage.delete(affinityKey);
+    const indexKey = workspaceTaskAffinityOwnerIndexKey(affinity);
+    const keys = (await storage.get<string[]>(indexKey)) ?? [];
+    const remaining = keys.filter((key) => key !== affinityKey);
+    if (remaining.length > 0) await storage.put(indexKey, remaining);
+    else await storage.delete(indexKey);
+  } catch {
+    throw new Error('workspace task affinity record delete failed');
+  }
+}
+
+async function removeWorkspaceTaskAffinitiesForNode(
+  storage: StorageLike,
+  accountId: string,
+  ownerNodeId: string,
+): Promise<void> {
+  try {
+    const indexKey = workspaceTaskAffinityOwnerIndexKey({ accountId, ownerNodeId });
+    const indexedKeys = (await storage.get<string[]>(indexKey)) ?? [];
+    for (const affinityKey of indexedKeys) await storage.delete(affinityKey);
+    await storage.delete(indexKey);
+
+    if (!storage.list) return;
+    const legacy = await storage.list<WorkspaceTaskAffinity>({
+      prefix: `wta:${accountId}:`,
+    });
+    for (const [affinityKey, affinity] of legacy) {
+      if (affinity.ownerNodeId === ownerNodeId) await storage.delete(affinityKey);
+    }
+  } catch {
+    throw new Error('workspace task affinity owner cleanup failed');
+  }
+}
+
+export const WORKSPACE_NODE_NONCE_LIMIT = 256;
+
+type WorkspaceNodeNonceClaim = {
+  nonce: string;
+  expiresAt: number;
+};
 
 export class DurableStore implements Store {
   constructor(private storage: StorageLike) {}
+
+  private async legacyWorkspaceNodes(prefix = 'wn:'): Promise<WorkspaceNode[]> {
+    if (!this.storage.list) return [];
+    const entries = await this.storage.list<unknown>({ prefix });
+    return [...entries.entries()]
+      .filter(([key, value]) => {
+        if (!isWorkspaceNode(value)) return false;
+        return key === `wn:${value.accountId}:${value.nodeId}`;
+      })
+      .map(([, value]) => cloneWorkspaceNode(value as WorkspaceNode));
+  }
+
+  private async backfillWorkspaceNodeIndexes(
+    nodes: WorkspaceNode[],
+  ): Promise<WorkspaceNode[]> {
+    for (const node of nodes) await this.putWorkspaceNode(node);
+    return nodes.map(cloneWorkspaceNode);
+  }
   async put(g: Grant) {
     try {
       await this.storage.put(`d:${g.hash}`, g);
@@ -172,9 +300,7 @@ export class DurableStore implements Store {
   }
   async byMcpOAuthRefreshToken(tokenHash: string) {
     try {
-      return await this.storage.get<McpOAuthRefreshToken>(
-        `mrt:${tokenHash}`,
-      );
+      return await this.storage.get<McpOAuthRefreshToken>(`mrt:${tokenHash}`);
     } catch {
       throw new Error('mcp oauth refresh token read failed');
     }
@@ -198,6 +324,63 @@ export class DurableStore implements Store {
       return await this.storage.get<AccountWorkspace>(`aw:${accountId}`);
     } catch {
       throw new Error('account workspace read failed');
+    }
+  }
+  async createWorkspaceCloudTrial(trial: WorkspaceCloudTrial) {
+    const create = async (storage: StorageLike) => {
+      const key = `wct:${trial.workspaceId}`;
+      const existing = await storage.get<WorkspaceCloudTrial>(key);
+      if (existing) return { ...existing };
+      await storage.put(key, trial);
+      return { ...trial };
+    };
+    try {
+      return this.storage.transaction
+        ? await this.storage.transaction((transaction) => create(transaction))
+        : await create(this.storage);
+    } catch {
+      throw new Error('workspace cloud trial create failed');
+    }
+  }
+  async byWorkspaceCloudTrial(workspaceId: string) {
+    try {
+      const trial = await this.storage.get<WorkspaceCloudTrial>(
+        `wct:${workspaceId}`,
+      );
+      return trial ? { ...trial } : undefined;
+    } catch {
+      throw new Error('workspace cloud trial read failed');
+    }
+  }
+  async putManagedCloudCheckout(checkout: ManagedCloudCheckout) {
+    const put = async (storage: StorageLike) => {
+      await storage.put(`mcc:${checkout.checkoutId}`, checkout);
+      await storage.put(`mcca:${checkout.accountId}`, checkout.checkoutId);
+    };
+    try {
+      if (this.storage.transaction) {
+        await this.storage.transaction((transaction) => put(transaction));
+      } else {
+        await put(this.storage);
+      }
+    } catch {
+      throw new Error('managed cloud checkout write failed');
+    }
+  }
+  async byManagedCloudCheckout(checkoutId: string) {
+    try {
+      const checkout = await this.storage.get<ManagedCloudCheckout>(`mcc:${checkoutId}`);
+      return checkout ? { ...checkout } : undefined;
+    } catch {
+      throw new Error('managed cloud checkout read failed');
+    }
+  }
+  async byAccountManagedCloudCheckout(accountId: string) {
+    try {
+      const checkoutId = await this.storage.get<string>(`mcca:${accountId}`);
+      return checkoutId ? await this.byManagedCloudCheckout(checkoutId) : undefined;
+    } catch {
+      throw new Error('managed cloud checkout account read failed');
     }
   }
   async putWorkspaceMembership(membership: WorkspaceMembership) {
@@ -227,22 +410,25 @@ export class DurableStore implements Store {
           ),
         );
         return memberships.filter(
-          (membership): membership is WorkspaceMembership => Boolean(membership),
+          (membership): membership is WorkspaceMembership =>
+            Boolean(membership),
         );
       }
       const workspace = await this.byAccountWorkspace(accountId);
       if (!workspace) return [];
-      return [{
-        accountId,
-        workspaceId:
-          workspace.workspaceId ??
-          `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
-        workspaceSlug: workspace.workspaceSlug,
-        workspaceHost: workspace.workspaceHost,
-        status: 'active' as const,
-        createdAt: workspace.updatedAt,
-        updatedAt: workspace.updatedAt,
-      }];
+      return [
+        {
+          accountId,
+          workspaceId:
+            workspace.workspaceId ??
+            `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
+          workspaceSlug: workspace.workspaceSlug,
+          workspaceHost: workspace.workspaceHost,
+          status: 'active' as const,
+          createdAt: workspace.updatedAt,
+          updatedAt: workspace.updatedAt,
+        },
+      ];
     } catch {
       throw new Error('workspace membership list failed');
     }
@@ -329,24 +515,132 @@ export class DurableStore implements Store {
   }
   async putWorkspaceNode(node: WorkspaceNode) {
     try {
-      const boundAccountId = await this.storage.get<string>(`wni:${node.nodeId}`);
+      const boundAccountId = await this.storage.get<string>(
+        `wni:${node.nodeId}`,
+      );
       if (boundAccountId && boundAccountId !== node.accountId) {
-        throw new Error('workspace node ID is already bound to another account');
+        throw new Error(
+          'workspace node ID is already bound to another account',
+        );
       }
       const nodeIds =
         (await this.storage.get<string[]>(`wnl:${node.accountId}`)) ?? [];
+      const hostNodeIds =
+        (await this.storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [];
       await this.storage.put(
         `wn:${node.accountId}:${node.nodeId}`,
         cloneWorkspaceNode(node),
       );
       await this.storage.put(`wni:${node.nodeId}`, node.accountId);
       if (!nodeIds.includes(node.nodeId)) {
-        await this.storage.put(`wnl:${node.accountId}`, [...nodeIds, node.nodeId]);
+        await this.storage.put(`wnl:${node.accountId}`, [
+          ...nodeIds,
+          node.nodeId,
+        ]);
+      }
+      if (!hostNodeIds.includes(node.nodeId)) {
+        await this.storage.put(`wnh:${node.workspaceHost}`, [
+          ...hostNodeIds,
+          node.nodeId,
+        ]);
       }
     } catch {
       throw new Error('workspace node write failed');
     }
   }
+  async delWorkspaceNode(accountId: string, nodeId: string) {
+    const remove = async (storage: StorageLike) => {
+      const boundAccountId = await storage.get<string>(`wni:${nodeId}`);
+      if (boundAccountId && boundAccountId !== accountId) {
+        throw new Error('workspace node ID is bound to another account');
+      }
+      const node = await storage.get<WorkspaceNode>(
+        `wn:${accountId}:${nodeId}`,
+      );
+      const nodeIds = (await storage.get<string[]>(`wnl:${accountId}`)) ?? [];
+      const hostNodeIds = node
+        ? ((await storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [])
+        : [];
+      await storage.delete(`wn:${accountId}:${nodeId}`);
+      if (boundAccountId === accountId) {
+        await storage.delete(`wni:${nodeId}`);
+      }
+      await storage.put(
+        `wnl:${accountId}`,
+        nodeIds.filter((candidate) => candidate !== nodeId),
+      );
+      if (node) {
+        await storage.put(
+          `wnh:${node.workspaceHost}`,
+          hostNodeIds.filter((candidate) => candidate !== nodeId),
+        );
+      }
+      await removeWorkspaceTaskAffinitiesForNode(storage, accountId, nodeId);
+    };
+    try {
+      if (this.storage.transaction) {
+        await this.storage.transaction((transaction) => remove(transaction));
+      } else {
+        await remove(this.storage);
+      }
+    } catch {
+      throw new Error('workspace node delete failed');
+    }
+  }
+  async delWorkspaceNodeIfMatch(input: {
+    accountId: string;
+    nodeId: string;
+    updatedAt: number;
+    devicePublicKeyThumbprint: string;
+  }): Promise<boolean> {
+    try {
+      let deleted = false;
+      const remove = async (storage: StorageLike) => {
+        try {
+          const node = await storage.get<WorkspaceNode>(
+            `wn:${input.accountId}:${input.nodeId}`,
+          );
+          if (
+            !node ||
+            node.updatedAt !== input.updatedAt ||
+            node.devicePublicKeyThumbprint !== input.devicePublicKeyThumbprint
+          )
+            return;
+          const nodeIds =
+            (await storage.get<string[]>(`wnl:${input.accountId}`)) ?? [];
+          const hostNodeIds =
+            (await storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [];
+          await storage.delete(`wn:${input.accountId}:${input.nodeId}`);
+          await storage.delete(`wni:${input.nodeId}`);
+          await storage.put(
+            `wnl:${input.accountId}`,
+            nodeIds.filter((candidate) => candidate !== input.nodeId),
+          );
+          await storage.put(
+            `wnh:${node.workspaceHost}`,
+            hostNodeIds.filter((candidate) => candidate !== input.nodeId),
+          );
+          await removeWorkspaceTaskAffinitiesForNode(
+            storage,
+            input.accountId,
+            input.nodeId,
+          );
+          deleted = true;
+        } catch {
+          throw new Error('workspace node conditional delete failed');
+        }
+      };
+      if (this.storage.transaction) {
+        await this.storage.transaction((transaction) => remove(transaction));
+      } else {
+        await remove(this.storage);
+      }
+      return deleted;
+    } catch {
+      throw new Error('workspace node conditional delete failed');
+    }
+  }
+
   async byWorkspaceNode(accountId: string, nodeId: string) {
     try {
       const node = await this.storage.get<WorkspaceNode>(
@@ -360,15 +654,33 @@ export class DurableStore implements Store {
   async byWorkspaceNodeId(nodeId: string) {
     try {
       const accountId = await this.storage.get<string>(`wni:${nodeId}`);
-      return accountId ? await this.byWorkspaceNode(accountId, nodeId) : undefined;
+      const indexed = accountId
+        ? await this.byWorkspaceNode(accountId, nodeId)
+        : undefined;
+      if (indexed) return indexed;
+      const matches = (await this.legacyWorkspaceNodes()).filter(
+        (node) => node.nodeId === nodeId,
+      );
+      if (matches.length === 0) return undefined;
+      if (matches.length > 1) {
+        throw new Error('workspace node ID is bound to multiple accounts');
+      }
+      await this.backfillWorkspaceNodeIndexes(matches);
+      return cloneWorkspaceNode(matches[0]);
     } catch {
       throw new Error('workspace node identity read failed');
     }
   }
   async listWorkspaceNodes(accountId: string) {
     try {
-      const nodeIds =
-        (await this.storage.get<string[]>(`wnl:${accountId}`)) ?? [];
+      const indexedNodeIds = await this.storage.get<string[]>(
+        `wnl:${accountId}`,
+      );
+      if (indexedNodeIds === undefined) {
+        const legacyNodes = await this.legacyWorkspaceNodes(`wn:${accountId}:`);
+        return this.backfillWorkspaceNodeIndexes(legacyNodes);
+      }
+      const nodeIds = indexedNodeIds;
       const nodes = await Promise.all(
         nodeIds.map((nodeId) => this.byWorkspaceNode(accountId, nodeId)),
       );
@@ -377,18 +689,157 @@ export class DurableStore implements Store {
       throw new Error('workspace node list failed');
     }
   }
+  async listWorkspaceNodesByHost(workspaceHost: string) {
+    try {
+      const indexedNodeIds = await this.storage.get<string[]>(
+        `wnh:${workspaceHost}`,
+      );
+      if (indexedNodeIds === undefined) {
+        const legacyNodes = (await this.legacyWorkspaceNodes()).filter(
+          (node) => node.workspaceHost === workspaceHost,
+        );
+        return this.backfillWorkspaceNodeIndexes(legacyNodes);
+      }
+      const nodeIds = indexedNodeIds;
+      const nodes = await Promise.all(
+        nodeIds.map((nodeId) => this.byWorkspaceNodeId(nodeId)),
+      );
+      return nodes.filter(
+        (node): node is WorkspaceNode =>
+          Boolean(node) && node?.workspaceHost === workspaceHost,
+      );
+    } catch {
+      throw new Error('workspace node host list failed');
+    }
+  }
+  async listAllWorkspaceNodes() {
+    try {
+      return await this.legacyWorkspaceNodes();
+    } catch {
+      throw new Error('workspace node global list failed');
+    }
+  }
+  async byWorkspaceTaskAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    taskSession: string;
+    nowMs?: number;
+  }) {
+    try {
+      const key = workspaceTaskAffinityKey(input);
+      const affinity = await this.storage.get<WorkspaceTaskAffinity>(key);
+      if (!affinity) return undefined;
+      if (
+        input.nowMs !== undefined &&
+        workspaceTaskAffinityExpiresAt(affinity) <= input.nowMs
+      ) {
+        await removeWorkspaceTaskAffinityRecord(this.storage, key, affinity);
+        return undefined;
+      }
+      return cloneWorkspaceTaskAffinity(affinity);
+    } catch {
+      throw new Error('workspace task affinity read failed');
+    }
+  }
+
+  async claimWorkspaceTaskAffinity(affinity: WorkspaceTaskAffinity) {
+    const claim = async (storage: StorageLike) => {
+      try {
+        const key = workspaceTaskAffinityKey(affinity);
+        const candidate = cloneWorkspaceTaskAffinity(affinity);
+        let existing = await storage.get<WorkspaceTaskAffinity>(key);
+        if (
+          existing &&
+          workspaceTaskAffinityExpiresAt(existing) <= candidate.updatedAt
+        ) {
+          await removeWorkspaceTaskAffinityRecord(storage, key, existing);
+          existing = undefined;
+        }
+        if (existing) {
+          if (existing.ownerNodeId !== candidate.ownerNodeId) {
+            return {
+              status: 'conflict' as const,
+              affinity: cloneWorkspaceTaskAffinity(existing),
+            };
+          }
+          const refreshed = cloneWorkspaceTaskAffinity({
+            ...existing,
+            ...(candidate.workspaceId ? { workspaceId: candidate.workspaceId } : {}),
+            updatedAt: Math.max(existing.updatedAt, candidate.updatedAt),
+            expiresAt: candidate.expiresAt,
+          });
+          await storage.put(key, refreshed);
+          await indexWorkspaceTaskAffinityOwner(storage, refreshed, key);
+          return { status: 'existing' as const, affinity: refreshed };
+        }
+        await storage.put(key, candidate);
+        await indexWorkspaceTaskAffinityOwner(storage, candidate, key);
+        return { status: 'created' as const, affinity: candidate };
+      } catch {
+        throw new Error('workspace task affinity claim transaction failed');
+      }
+    };
+    try {
+      return this.storage.transaction
+        ? await this.storage.transaction((transaction) => claim(transaction))
+        : await claim(this.storage);
+    } catch {
+      throw new Error('workspace task affinity claim failed');
+    }
+  }
+
+  async releaseWorkspaceTaskAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    taskSession: string;
+    ownerNodeId: string;
+  }) {
+    const release = async (storage: StorageLike) => {
+      const key = workspaceTaskAffinityKey(input);
+      const existing = await storage.get<WorkspaceTaskAffinity>(key);
+      if (!existing || existing.ownerNodeId !== input.ownerNodeId) return false;
+      await removeWorkspaceTaskAffinityRecord(storage, key, existing);
+      return true;
+    };
+    try {
+      return this.storage.transaction
+        ? await this.storage.transaction((transaction) => release(transaction))
+        : await release(this.storage);
+    } catch {
+      throw new Error('workspace task affinity release failed');
+    }
+  }
+
   async claimWorkspaceNodeNonce(
     nodeId: string,
     nonce: string,
     expiresAt: number,
     nowMs: number,
   ) {
-    try {
+    const claim = async (storage: StorageLike): Promise<boolean> => {
       const key = `wnn:${nodeId}:${nonce}`;
-      const existing = await this.storage.get<number>(key);
+      const existing = await storage.get<number>(key);
       if (existing && existing > nowMs) return false;
-      await this.storage.put(key, expiresAt);
+      const indexKey = `wnnl:${nodeId}`;
+      const indexed =
+        (await storage.get<WorkspaceNodeNonceClaim[]>(indexKey)) ?? [];
+      const active: WorkspaceNodeNonceClaim[] = [];
+      for (const entry of indexed) {
+        if (entry.expiresAt <= nowMs) {
+          await storage.delete(`wnn:${nodeId}:${entry.nonce}`);
+        } else if (entry.nonce !== nonce) {
+          active.push(entry);
+        }
+      }
+      if (active.length >= WORKSPACE_NODE_NONCE_LIMIT) return false;
+      await storage.put(key, expiresAt);
+      await storage.put(indexKey, [...active, { nonce, expiresAt }]);
       return true;
+    };
+    try {
+      return this.storage.transaction
+        ? await this.storage.transaction((transaction) => claim(transaction))
+        : await claim(this.storage);
     } catch {
       throw new Error('workspace node nonce write failed');
     }
@@ -402,7 +853,9 @@ export class DurableStore implements Store {
   }
   async byNodeBootstrapCredential(tokenHash: string) {
     try {
-      return await this.storage.get<NodeBootstrapCredential>(`nbc:${tokenHash}`);
+      return await this.storage.get<NodeBootstrapCredential>(
+        `nbc:${tokenHash}`,
+      );
     } catch {
       throw new Error('node bootstrap credential read failed');
     }
@@ -414,6 +867,120 @@ export class DurableStore implements Store {
       throw new Error('node bootstrap credential delete failed');
     }
   }
+  async createManagedCloudProvisioningJob(job: ManagedCloudProvisioningJob) {
+    const create = async (storage: StorageLike) => {
+      const idempotencyKey = managedCloudProvisioningIdempotencyKey(job);
+      const existingJobId = await storage.get<string>(idempotencyKey);
+      if (existingJobId) {
+        const existing = await storage.get<ManagedCloudProvisioningJob>(managedCloudProvisioningJobKey(existingJobId));
+        if (existing) return { status: 'idempotent' as const, job: cloneManagedCloudProvisioningJob(existing) };
+      }
+      const activeKey = managedCloudProvisioningActiveKey(job);
+      const activeJobId = await storage.get<string>(activeKey);
+      if (activeJobId) {
+        const active = await storage.get<ManagedCloudProvisioningJob>(managedCloudProvisioningJobKey(activeJobId));
+        if (active && !managedCloudProvisioningTerminal(active.status)) {
+          return { status: 'active-conflict' as const, job: cloneManagedCloudProvisioningJob(active) };
+        }
+      }
+      await storage.put(managedCloudProvisioningJobKey(job.jobId), job);
+      await storage.put(idempotencyKey, job.jobId);
+      await storage.put(activeKey, job.jobId);
+      await storage.put(managedCloudProvisioningNodeKey(job.nodeId), job.jobId);
+      const queue = (await storage.get<string[]>(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY)) ?? [];
+      if (!queue.includes(job.jobId)) await storage.put(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY, [...queue, job.jobId]);
+      return { status: 'created' as const, job: cloneManagedCloudProvisioningJob(job) };
+    };
+    try {
+      return this.storage.transaction ? await this.storage.transaction((tx) => create(tx)) : await create(this.storage);
+    } catch { throw new Error('managed cloud provisioning job create failed'); }
+  }
+  async byManagedCloudProvisioningJob(jobId: string) {
+    try {
+      const job = await this.storage.get<ManagedCloudProvisioningJob>(managedCloudProvisioningJobKey(jobId));
+      return job ? cloneManagedCloudProvisioningJob(job) : undefined;
+    } catch { throw new Error('managed cloud provisioning job read failed'); }
+  }
+  async claimNextManagedCloudProvisioningJob(input: { leaseId: string; nowMs: number; leaseExpiresAt: number; enrollmentNonce: string; enrollmentExpiresAt: number }) {
+    const claim = async (storage: StorageLike) => {
+      const queue = (await storage.get<string[]>(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY)) ?? [];
+      for (const jobId of queue) {
+        const key = managedCloudProvisioningJobKey(jobId);
+        const job = await storage.get<ManagedCloudProvisioningJob>(key);
+        if (!job || managedCloudProvisioningTerminal(job.status) || job.status === 'booting' || job.status === 'connecting') continue;
+        const leaseActive = job.leaseExpiresAt !== undefined && job.leaseExpiresAt > input.nowMs;
+        if (leaseActive && job.leaseId) continue;
+        const updated: ManagedCloudProvisioningJob = {
+          ...job, status: 'provisioning', leaseId: input.leaseId, leaseExpiresAt: input.leaseExpiresAt,
+          enrollmentNonce: job.enrollmentNonce ?? input.enrollmentNonce,
+          enrollmentExpiresAt: job.enrollmentExpiresAt && job.enrollmentExpiresAt > input.nowMs ? job.enrollmentExpiresAt : input.enrollmentExpiresAt,
+          updatedAt: input.nowMs,
+        };
+        await storage.put(key, updated);
+        return { status: 'claimed' as const, job: cloneManagedCloudProvisioningJob(updated) };
+      }
+      return { status: 'empty' as const };
+    };
+    try { return this.storage.transaction ? await this.storage.transaction((tx) => claim(tx)) : await claim(this.storage); }
+    catch { throw new Error('managed cloud provisioning job claim failed'); }
+  }
+  async updateManagedCloudProvisioningJob(input: { jobId: string; leaseId?: string; status: import('../../../scripts/lib/managed-cloud-provisioning').ManagedCloudProvisioningStatus; nowMs: number; errorCode?: string; errorMessage?: string }) {
+    const update = async (storage: StorageLike) => {
+      const key = managedCloudProvisioningJobKey(input.jobId);
+      const job = await storage.get<ManagedCloudProvisioningJob>(key);
+      if (!job) return undefined;
+      if (input.leaseId && (job.leaseId !== input.leaseId || (job.leaseExpiresAt ?? 0) < input.nowMs)) return undefined;
+      const updated: ManagedCloudProvisioningJob = { ...job, status: input.status, updatedAt: input.nowMs,
+        ...(input.errorCode ? { errorCode: input.errorCode } : {}),
+        ...(input.errorMessage ? { errorMessage: input.errorMessage } : {}),
+        ...(input.status === 'ready' ? { readyAt: input.nowMs } : {}),
+      };
+      if (input.status === 'booting' || managedCloudProvisioningTerminal(input.status)) { delete updated.leaseId; delete updated.leaseExpiresAt; }
+      await storage.put(key, updated);
+      if (managedCloudProvisioningTerminal(input.status)) {
+        const activeKey = managedCloudProvisioningActiveKey(job);
+        if ((await storage.get<string>(activeKey)) === job.jobId) await storage.delete(activeKey);
+        const queue = ((await storage.get<string[]>(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY)) ?? []).filter((id) => id !== job.jobId);
+        await storage.put(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY, queue);
+      }
+      return cloneManagedCloudProvisioningJob(updated);
+    };
+    try { return this.storage.transaction ? await this.storage.transaction((tx) => update(tx)) : await update(this.storage); }
+    catch { throw new Error('managed cloud provisioning job update failed'); }
+  }
+  async consumeManagedCloudProvisioningEnrollment(input: { jobId: string; nowMs: number }) {
+    const consume = async (storage: StorageLike) => {
+      const key = managedCloudProvisioningJobKey(input.jobId);
+      const job = await storage.get<ManagedCloudProvisioningJob>(key);
+      if (!job || !job.enrollmentNonce || !job.enrollmentExpiresAt || job.enrollmentExpiresAt < input.nowMs || job.enrollmentConsumedAt) return undefined;
+      if (job.status !== 'provisioning' && job.status !== 'booting') return undefined;
+      const updated: ManagedCloudProvisioningJob = { ...job, status: 'connecting', enrollmentConsumedAt: input.nowMs, updatedAt: input.nowMs };
+      delete updated.leaseId; delete updated.leaseExpiresAt;
+      await storage.put(key, updated);
+      return cloneManagedCloudProvisioningJob(updated);
+    };
+    try { return this.storage.transaction ? await this.storage.transaction((tx) => consume(tx)) : await consume(this.storage); }
+    catch { throw new Error('managed cloud provisioning enrollment consume failed'); }
+  }
+  async markManagedCloudProvisioningReadyByNode(input: { nodeId: string; nowMs: number }) {
+    const mark = async (storage: StorageLike) => {
+      const jobId = await storage.get<string>(managedCloudProvisioningNodeKey(input.nodeId));
+      if (!jobId) return undefined;
+      const key = managedCloudProvisioningJobKey(jobId);
+      const job = await storage.get<ManagedCloudProvisioningJob>(key);
+      if (!job || managedCloudProvisioningTerminal(job.status)) return job ? cloneManagedCloudProvisioningJob(job) : undefined;
+      const updated: ManagedCloudProvisioningJob = { ...job, status: 'ready', readyAt: input.nowMs, updatedAt: input.nowMs };
+      delete updated.leaseId; delete updated.leaseExpiresAt;
+      await storage.put(key, updated);
+      const activeKey = managedCloudProvisioningActiveKey(job);
+      if ((await storage.get<string>(activeKey)) === job.jobId) await storage.delete(activeKey);
+      const queue = ((await storage.get<string[]>(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY)) ?? []).filter((id) => id !== job.jobId);
+      await storage.put(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY, queue);
+      return cloneManagedCloudProvisioningJob(updated);
+    };
+    try { return this.storage.transaction ? await this.storage.transaction((tx) => mark(tx)) : await mark(this.storage); }
+    catch { throw new Error('managed cloud provisioning ready update failed'); }
+  }
   async putWorkspaceAgentStatus(status: WorkspaceAgentStatus) {
     try {
       await this.storage.put(`was:${status.workspaceHost}`, status);
@@ -423,7 +990,9 @@ export class DurableStore implements Store {
   }
   async byWorkspaceAgentStatus(workspaceHost: string) {
     try {
-      return await this.storage.get<WorkspaceAgentStatus>(`was:${workspaceHost}`);
+      return await this.storage.get<WorkspaceAgentStatus>(
+        `was:${workspaceHost}`,
+      );
     } catch {
       throw new Error('workspace agent status read failed');
     }
@@ -439,16 +1008,28 @@ export function createMemoryDeviceGrantStore(): Store {
   const mcpTokens = new Map<string, McpOAuthAccessToken>();
   const mcpRefreshTokens = new Map<string, McpOAuthRefreshToken>();
   const accountWorkspaces = new Map<string, AccountWorkspace>();
+  const workspaceCloudTrials = new Map<string, WorkspaceCloudTrial>();
+  const managedCloudCheckouts = new Map<string, ManagedCloudCheckout>();
+  const managedCloudCheckoutAccounts = new Map<string, string>();
   const workspaceMemberships = new Map<string, WorkspaceMembership>();
   const authoritySessions = new Map<string, AuthoritySession>();
   const workspaceLoginHandoffs = new Map<string, WorkspaceLoginHandoff>();
   const workspaceBrowserSessions = new Map<string, WorkspaceBrowserSession>();
   const workspaceNodes = new Map<string, WorkspaceNode>();
+  const workspaceTaskAffinities = new Map<string, WorkspaceTaskAffinity>();
   const workspaceNodeAccounts = new Map<string, string>();
   const workspaceNodeNonces = new Map<string, number>();
   const nodeBootstrapCredentials = new Map<string, NodeBootstrapCredential>();
   const workspaceAgentStatuses = new Map<string, WorkspaceAgentStatus>();
-  const cloneWorkspaceAgentStatus = (status: WorkspaceAgentStatus): WorkspaceAgentStatus => ({
+  const managedCloudProvisioningJobs = new Map<string, ManagedCloudProvisioningJob>();
+  const managedCloudProvisioningIdempotency = new Map<string, string>();
+  const managedCloudProvisioningActive = new Map<string, string>();
+  const managedCloudProvisioningNode = new Map<string, string>();
+  const managedCloudProvisioningQueue: string[] = [];
+
+  const cloneWorkspaceAgentStatus = (
+    status: WorkspaceAgentStatus,
+  ): WorkspaceAgentStatus => ({
     ...status,
     nodes: Object.fromEntries(
       Object.entries(status.nodes).map(([nodeId, node]) => [
@@ -556,6 +1137,30 @@ export function createMemoryDeviceGrantStore(): Store {
       const workspace = accountWorkspaces.get(accountId);
       return Promise.resolve(workspace ? { ...workspace } : undefined);
     },
+    createWorkspaceCloudTrial(trial) {
+      const existing = workspaceCloudTrials.get(trial.workspaceId);
+      if (existing) return Promise.resolve({ ...existing });
+      workspaceCloudTrials.set(trial.workspaceId, { ...trial });
+      return Promise.resolve({ ...trial });
+    },
+    byWorkspaceCloudTrial(workspaceId) {
+      const trial = workspaceCloudTrials.get(workspaceId);
+      return Promise.resolve(trial ? { ...trial } : undefined);
+    },
+    putManagedCloudCheckout(checkout) {
+      managedCloudCheckouts.set(checkout.checkoutId, { ...checkout });
+      managedCloudCheckoutAccounts.set(checkout.accountId, checkout.checkoutId);
+      return Promise.resolve();
+    },
+    byManagedCloudCheckout(checkoutId) {
+      const checkout = managedCloudCheckouts.get(checkoutId);
+      return Promise.resolve(checkout ? { ...checkout } : undefined);
+    },
+    byAccountManagedCloudCheckout(accountId) {
+      const checkoutId = managedCloudCheckoutAccounts.get(accountId);
+      const checkout = checkoutId ? managedCloudCheckouts.get(checkoutId) : undefined;
+      return Promise.resolve(checkout ? { ...checkout } : undefined);
+    },
     putWorkspaceMembership(membership) {
       workspaceMemberships.set(
         `${membership.accountId}:${membership.workspaceId}`,
@@ -569,17 +1174,23 @@ export function createMemoryDeviceGrantStore(): Store {
         .map((membership) => ({ ...membership }));
       if (explicit.length > 0) return Promise.resolve(explicit);
       const workspace = accountWorkspaces.get(accountId);
-      return Promise.resolve(workspace ? [{
-        accountId,
-        workspaceId:
-          workspace.workspaceId ??
-          `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
-        workspaceSlug: workspace.workspaceSlug,
-        workspaceHost: workspace.workspaceHost,
-        status: 'active' as const,
-        createdAt: workspace.updatedAt,
-        updatedAt: workspace.updatedAt,
-      }] : []);
+      return Promise.resolve(
+        workspace
+          ? [
+              {
+                accountId,
+                workspaceId:
+                  workspace.workspaceId ??
+                  `workspace_${workspace.workspaceSlug.replace(/-/g, '_')}`,
+                workspaceSlug: workspace.workspaceSlug,
+                workspaceHost: workspace.workspaceHost,
+                status: 'active' as const,
+                createdAt: workspace.updatedAt,
+                updatedAt: workspace.updatedAt,
+              },
+            ]
+          : [],
+      );
     },
     putAuthoritySession(session) {
       authoritySessions.set(session.tokenHash, { ...session });
@@ -635,6 +1246,43 @@ export function createMemoryDeviceGrantStore(): Store {
       );
       return Promise.resolve();
     },
+    delWorkspaceNode(accountId, nodeId) {
+      const boundAccountId = workspaceNodeAccounts.get(nodeId);
+      if (boundAccountId && boundAccountId !== accountId) {
+        return Promise.reject(
+          new Error('workspace node ID is bound to another account'),
+        );
+      }
+      workspaceNodes.delete(`${accountId}:${nodeId}`);
+      if (boundAccountId === accountId) workspaceNodeAccounts.delete(nodeId);
+      for (const [key, affinity] of workspaceTaskAffinities) {
+        if (affinity.accountId === accountId && affinity.ownerNodeId === nodeId) {
+          workspaceTaskAffinities.delete(key);
+        }
+      }
+      return Promise.resolve();
+    },
+    delWorkspaceNodeIfMatch(input) {
+      const key = `${input.accountId}:${input.nodeId}`;
+      const node = workspaceNodes.get(key);
+      if (
+        !node ||
+        node.updatedAt !== input.updatedAt ||
+        node.devicePublicKeyThumbprint !== input.devicePublicKeyThumbprint
+      )
+        return Promise.resolve(false);
+      workspaceNodes.delete(key);
+      if (workspaceNodeAccounts.get(input.nodeId) === input.accountId) {
+        workspaceNodeAccounts.delete(input.nodeId);
+      }
+      for (const [affinityKey, affinity] of workspaceTaskAffinities) {
+        if (affinity.accountId === input.accountId && affinity.ownerNodeId === input.nodeId) {
+          workspaceTaskAffinities.delete(affinityKey);
+        }
+      }
+      return Promise.resolve(true);
+    },
+
     byWorkspaceNode(accountId, nodeId) {
       const node = workspaceNodes.get(`${accountId}:${nodeId}`);
       return Promise.resolve(node ? cloneWorkspaceNode(node) : undefined);
@@ -653,10 +1301,82 @@ export function createMemoryDeviceGrantStore(): Store {
           .map(cloneWorkspaceNode),
       );
     },
+    listWorkspaceNodesByHost(workspaceHost) {
+      return Promise.resolve(
+        [...workspaceNodes.values()]
+          .filter((node) => node.workspaceHost === workspaceHost)
+          .map(cloneWorkspaceNode),
+      );
+    },
+    listAllWorkspaceNodes() {
+      return Promise.resolve(
+        [...workspaceNodes.values()].map(cloneWorkspaceNode),
+      );
+    },
+    byWorkspaceTaskAffinity(input) {
+      const key = workspaceTaskAffinityKey(input);
+      const affinity = workspaceTaskAffinities.get(key);
+      if (!affinity) return Promise.resolve(undefined);
+      if (
+        input.nowMs !== undefined &&
+        workspaceTaskAffinityExpiresAt(affinity) <= input.nowMs
+      ) {
+        workspaceTaskAffinities.delete(key);
+        return Promise.resolve(undefined);
+      }
+      return Promise.resolve(cloneWorkspaceTaskAffinity(affinity));
+    },
+    claimWorkspaceTaskAffinity(affinity) {
+      const key = workspaceTaskAffinityKey(affinity);
+      const candidate = cloneWorkspaceTaskAffinity(affinity);
+      let existing = workspaceTaskAffinities.get(key);
+      if (
+        existing &&
+        workspaceTaskAffinityExpiresAt(existing) <= candidate.updatedAt
+      ) {
+        workspaceTaskAffinities.delete(key);
+        existing = undefined;
+      }
+      if (existing) {
+        if (existing.ownerNodeId !== candidate.ownerNodeId) {
+          return Promise.resolve({
+            status: 'conflict' as const,
+            affinity: cloneWorkspaceTaskAffinity(existing),
+          });
+        }
+        const refreshed = cloneWorkspaceTaskAffinity({
+          ...existing,
+          ...(candidate.workspaceId ? { workspaceId: candidate.workspaceId } : {}),
+          updatedAt: Math.max(existing.updatedAt, candidate.updatedAt),
+          expiresAt: candidate.expiresAt,
+        });
+        workspaceTaskAffinities.set(key, refreshed);
+        return Promise.resolve({ status: 'existing' as const, affinity: refreshed });
+      }
+      workspaceTaskAffinities.set(key, candidate);
+      return Promise.resolve({ status: 'created' as const, affinity: candidate });
+    },
+    releaseWorkspaceTaskAffinity(input) {
+      const key = workspaceTaskAffinityKey(input);
+      const existing = workspaceTaskAffinities.get(key);
+      if (!existing || existing.ownerNodeId !== input.ownerNodeId) return Promise.resolve(false);
+      workspaceTaskAffinities.delete(key);
+      return Promise.resolve(true);
+    },
     claimWorkspaceNodeNonce(nodeId, nonce, expiresAt, nowMs) {
       const key = `${nodeId}:${nonce}`;
       const existing = workspaceNodeNonces.get(key);
       if (existing && existing > nowMs) return Promise.resolve(false);
+      for (const [storedKey, storedExpiry] of workspaceNodeNonces) {
+        if (storedExpiry <= nowMs) workspaceNodeNonces.delete(storedKey);
+      }
+      const nodePrefix = `${nodeId}:`;
+      const activeClaims = [...workspaceNodeNonces.keys()].filter((storedKey) =>
+        storedKey.startsWith(nodePrefix),
+      ).length;
+      if (activeClaims >= WORKSPACE_NODE_NONCE_LIMIT) {
+        return Promise.resolve(false);
+      }
       workspaceNodeNonces.set(key, expiresAt);
       return Promise.resolve(true);
     },
@@ -672,13 +1392,38 @@ export function createMemoryDeviceGrantStore(): Store {
       nodeBootstrapCredentials.delete(tokenHash);
       return Promise.resolve();
     },
+    createManagedCloudProvisioningJob(job) {
+      const idemKey = managedCloudProvisioningIdempotencyKey(job);
+      const existingId = managedCloudProvisioningIdempotency.get(idemKey);
+      if (existingId) { const existing = managedCloudProvisioningJobs.get(existingId); if (existing) return Promise.resolve({ status: 'idempotent' as const, job: cloneManagedCloudProvisioningJob(existing) }); }
+      const activeKey = managedCloudProvisioningActiveKey(job);
+      const activeId = managedCloudProvisioningActive.get(activeKey);
+      if (activeId) { const active = managedCloudProvisioningJobs.get(activeId); if (active && !managedCloudProvisioningTerminal(active.status)) return Promise.resolve({ status: 'active-conflict' as const, job: cloneManagedCloudProvisioningJob(active) }); }
+      managedCloudProvisioningJobs.set(job.jobId, cloneManagedCloudProvisioningJob(job));
+      managedCloudProvisioningIdempotency.set(idemKey, job.jobId); managedCloudProvisioningActive.set(activeKey, job.jobId); managedCloudProvisioningNode.set(job.nodeId, job.jobId);
+      if (!managedCloudProvisioningQueue.includes(job.jobId)) managedCloudProvisioningQueue.push(job.jobId);
+      return Promise.resolve({ status: 'created' as const, job: cloneManagedCloudProvisioningJob(job) });
+    },
+    byManagedCloudProvisioningJob(jobId) { const job = managedCloudProvisioningJobs.get(jobId); return Promise.resolve(job ? cloneManagedCloudProvisioningJob(job) : undefined); },
+    claimNextManagedCloudProvisioningJob(input) {
+      for (const jobId of managedCloudProvisioningQueue) { const job = managedCloudProvisioningJobs.get(jobId); if (!job || managedCloudProvisioningTerminal(job.status) || job.status === 'booting' || job.status === 'connecting') continue; if (job.leaseId && (job.leaseExpiresAt ?? 0) > input.nowMs) continue; const updated = { ...job, status: 'provisioning' as const, leaseId: input.leaseId, leaseExpiresAt: input.leaseExpiresAt, enrollmentNonce: job.enrollmentNonce ?? input.enrollmentNonce, enrollmentExpiresAt: job.enrollmentExpiresAt && job.enrollmentExpiresAt > input.nowMs ? job.enrollmentExpiresAt : input.enrollmentExpiresAt, updatedAt: input.nowMs }; managedCloudProvisioningJobs.set(jobId, updated); return Promise.resolve({ status: 'claimed' as const, job: cloneManagedCloudProvisioningJob(updated) }); }
+      return Promise.resolve({ status: 'empty' as const });
+    },
+    updateManagedCloudProvisioningJob(input) { const job = managedCloudProvisioningJobs.get(input.jobId); if (!job || (input.leaseId && (job.leaseId !== input.leaseId || (job.leaseExpiresAt ?? 0) < input.nowMs))) return Promise.resolve(undefined); const updated: ManagedCloudProvisioningJob = { ...job, status: input.status, updatedAt: input.nowMs, ...(input.errorCode ? { errorCode: input.errorCode } : {}), ...(input.errorMessage ? { errorMessage: input.errorMessage } : {}), ...(input.status === 'ready' ? { readyAt: input.nowMs } : {}) }; if (input.status === 'booting' || managedCloudProvisioningTerminal(input.status)) { delete updated.leaseId; delete updated.leaseExpiresAt; } if (managedCloudProvisioningTerminal(input.status)) { managedCloudProvisioningActive.delete(managedCloudProvisioningActiveKey(job)); const i=managedCloudProvisioningQueue.indexOf(job.jobId); if(i>=0) managedCloudProvisioningQueue.splice(i,1); } managedCloudProvisioningJobs.set(job.jobId, updated); return Promise.resolve(cloneManagedCloudProvisioningJob(updated)); },
+    consumeManagedCloudProvisioningEnrollment(input) { const job=managedCloudProvisioningJobs.get(input.jobId); if(!job || !job.enrollmentNonce || !job.enrollmentExpiresAt || job.enrollmentExpiresAt < input.nowMs || job.enrollmentConsumedAt || (job.status !== 'provisioning' && job.status !== 'booting')) return Promise.resolve(undefined); const updated: ManagedCloudProvisioningJob={...job,status:'connecting',enrollmentConsumedAt:input.nowMs,updatedAt:input.nowMs}; delete updated.leaseId; delete updated.leaseExpiresAt; managedCloudProvisioningJobs.set(job.jobId,updated); return Promise.resolve(cloneManagedCloudProvisioningJob(updated)); },
+    markManagedCloudProvisioningReadyByNode(input) { const jobId=managedCloudProvisioningNode.get(input.nodeId); const job=jobId?managedCloudProvisioningJobs.get(jobId):undefined; if(!job) return Promise.resolve(undefined); if(managedCloudProvisioningTerminal(job.status)) return Promise.resolve(cloneManagedCloudProvisioningJob(job)); const updated: ManagedCloudProvisioningJob={...job,status:'ready',readyAt:input.nowMs,updatedAt:input.nowMs}; delete updated.leaseId; delete updated.leaseExpiresAt; managedCloudProvisioningJobs.set(job.jobId,updated); managedCloudProvisioningActive.delete(managedCloudProvisioningActiveKey(job)); const i=managedCloudProvisioningQueue.indexOf(job.jobId); if(i>=0) managedCloudProvisioningQueue.splice(i,1); return Promise.resolve(cloneManagedCloudProvisioningJob(updated)); },
     putWorkspaceAgentStatus(status) {
-      workspaceAgentStatuses.set(status.workspaceHost, cloneWorkspaceAgentStatus(status));
+      workspaceAgentStatuses.set(
+        status.workspaceHost,
+        cloneWorkspaceAgentStatus(status),
+      );
       return Promise.resolve();
     },
     byWorkspaceAgentStatus(workspaceHost) {
       const status = workspaceAgentStatuses.get(workspaceHost);
-      return Promise.resolve(status ? cloneWorkspaceAgentStatus(status) : undefined);
+      return Promise.resolve(
+        status ? cloneWorkspaceAgentStatus(status) : undefined,
+      );
     },
   };
 }

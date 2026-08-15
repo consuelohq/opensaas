@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-remaining-stream-os-review-comments",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1895,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1895",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1895",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1895/fix-remaining-stream-os-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1895",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1895/fix-remaining-stream-os-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-remaining-stream-os-review-comments",
+  "taskSession": "tsk_05be898e565c",
+  "tmuxSession": "opensaas-os-fix-remaining-stream-os-review-comments-05be898e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-remaining-stream-os-review-comments/.task/os/fix-remaining-stream-os-review-comments/session.json",
+  "createdAt": "2026-08-12T18:01:52.545Z"
+}

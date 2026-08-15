@@ -1,6 +1,6 @@
 ---
 title: Connect
-description: Connect agents, nodes, apps, and services to one Consuelo workspace.
+description: Connect agents and applications to one Consuelo workspace.
 status: preview
 verifiedAt: 2026-07-14
 evidence:
@@ -11,21 +11,22 @@ evidence:
     runtime: Local agent configuration, managed node enrollment, and the current provider-tool manifest were verified from focused source and tests on 2026-07-14.
 ---
 
-Consuelo OS separates three kinds of connection:
+Consuelo OS separates the things that **call** your workspace from the external systems those calls can **use**:
 
 - **Agents** are the applications that call OS tools.
-- **Nodes** are the computers that run the local OS runtime for a workspace.
-- **Apps and services** are the external systems those tools can work with.
+- **Applications** are the external systems those tools can work with.
 
-That distinction matters. Connecting Claude Code does not grant access to Gmail, and adding a provider credential does not register another computer as a node.
+That distinction matters. Connecting Claude Code does not grant access to Gmail, and adding a provider credential does not decide which computer runs the work.
+
+Where Consuelo runs is its own top-level concern. Use [Nodes](/nodes/) for local computers, managed cloud nodes, presence, default-node selection, and routing.
 
 ## Choose what you are connecting
 
 | You want to… | Go to |
 | --- | --- |
 | Use the workspace from ChatGPT or a local coding agent | [Agents](/connect/agents/chatgpt/) |
-| Understand which computer runs the work | [Nodes](/connect/nodes/how-nodes-work/) |
-| Work with Google Workspace, GitHub, deployment platforms, CRMs, data systems, or other providers | [Apps and services](/connect/apps-and-services/) |
+| Work with Google Workspace, GitHub, deployment platforms, CRMs, data systems, or other providers | [Applications](/connect/apps-and-services/) |
+| Choose which local or cloud node runs the work | [Nodes](/nodes/) |
 
 ## Current support at a glance
 
@@ -33,7 +34,6 @@ That distinction matters. Connecting Claude Code does not grant access to Gmail,
 
 - ChatGPT through the workspace HTTPS MCP endpoint;
 - Codex, Claude Code, Cursor, OpenCode, Factory Droid, and Gemini CLI through local MCP stdio;
-- managed home and member nodes created by workspace authorization;
 - GitHub, Linear, read-only Sentry investigation, outbound Slack posts, and part of the Railway workflow.
 
 **Available today through an official CLI or API**
@@ -46,4 +46,4 @@ The service pages separate **native Consuelo support** from **what you can use t
 
 ## Start with one agent
 
-Install OS and connect one local agent first: [Connect your first agent](/start/connect-your-first-agent/). Return here to add nodes and give that agent access to the services where your work already lives.
+Install OS and connect one local agent first: [Connect your first agent](/start/connect-your-first-agent/). Return here to give that agent access to the services where your work already lives. Use [Nodes](/nodes/) when you want to add another runtime or change where calls execute.

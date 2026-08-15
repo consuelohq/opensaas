@@ -1,6 +1,7 @@
 import { rmSync } from 'node:fs';
 
 import { Effect } from 'effect';
+import { missingRequiredRuntimeRecoveryCapabilities } from '../distribution/runtime-bundle';
 
 import {
   loadLifecyclePreferences,
@@ -10,6 +11,10 @@ import {
 import { createLifecycleProgressEmitter } from './diagnostics';
 import { asLifecycleError, lifecycleError } from './errors';
 import { acquireLifecycleLock } from './lock';
+import {
+  ensureNodeEncryptionKeyForHome,
+  reconcileManagedUserContentForRelease,
+} from '../managed-user-content-release';
 import { noOpLifecycleMigrationRunner } from './migrations';
 import { noOpLifecycleRuntimeMaterializer } from './runtime';
 import { resolveLifecyclePaths } from './paths';
@@ -24,6 +29,7 @@ import {
 import {
   clearLifecycleActivationJournal,
   pruneLifecycleReleases,
+  readLifecycleActivationJournal,
   readLifecycleReleaseReference,
   recoverInterruptedLifecycleActivation,
   writeLifecycleActivationJournal,
@@ -36,6 +42,7 @@ import {
 import { removeLifecycleManagedContent } from './uninstall';
 import type {
   LifecycleEngine,
+  LifecycleConnectorReadiness,
   LifecycleHealthAcceptance,
   LifecycleHooks,
   LifecycleMigrationRunner,
@@ -51,11 +58,23 @@ import type {
 } from './types';
 
 export type LifecycleEngineDependencies = {
+  /**
+   * Visible ~/Consuelo root for managed user content.
+   *
+   * Deliberately required from the caller rather than defaulted from os.homedir(). Defaulting made
+   * the engine write into the developer's real home whenever a test constructed it without
+   * isolating HOME. Callers that omit it skip user-content reconciliation entirely.
+   */
+  visibleUserRoot?: string;
   home?: string;
   releaseSource: ReleaseSource;
-  trustedReleaseKeys: Record<string, string>;
+  trustedReleaseKeys:
+    | Record<string, string>
+    | (() => Record<string, string>);
   service: LifecycleServiceController;
   health: LifecycleHealthAcceptance;
+  connectorReadiness?: LifecycleConnectorReadiness;
+  connectivity?: LifecycleHealthAcceptance;
   migration?: LifecycleMigrationRunner;
   runtime?: LifecycleRuntimeMaterializer;
   hooks?: LifecycleHooks;
@@ -87,7 +106,8 @@ function tryPromise<T>(input: {
 }): Effect.Effect<T, ReturnType<typeof asLifecycleError>> {
   return Effect.tryPromise({
     try: input.try,
-    catch: (error) => asLifecycleError(error, input.code, input.message, input.phase),
+    catch: (error) =>
+      asLifecycleError(error, input.code, input.message, input.phase),
   });
 }
 
@@ -113,7 +133,10 @@ export function createLifecycleEngine(
   const fetchVerifiedRelease = (
     channel: LifecycleReleaseChannel,
     emit: ReturnType<typeof emitter>,
-  ): Effect.Effect<ReleaseManifestPayload, ReturnType<typeof asLifecycleError>> =>
+  ): Effect.Effect<
+    ReleaseManifestPayload,
+    ReturnType<typeof asLifecycleError>
+  > =>
     Effect.gen(function* () {
       emit('manifest-fetch', { channel });
       const signed = yield* tryPromise({
@@ -124,20 +147,29 @@ export function createLifecycleEngine(
       });
       emit('manifest-verify', { channel, keyId: signed.signature?.keyId });
       const verified = yield* Effect.try({
-        try: () => verifySignedReleaseManifest(signed, dependencies.trustedReleaseKeys),
-        catch: (error) => asLifecycleError(
-          error,
-          'MANIFEST_SIGNATURE_INVALID',
-          'release manifest verification failed',
-          'manifest-verify',
-        ),
+        try: () => {
+          const trustedReleaseKeys =
+            typeof dependencies.trustedReleaseKeys === 'function'
+              ? dependencies.trustedReleaseKeys()
+              : dependencies.trustedReleaseKeys;
+          return verifySignedReleaseManifest(signed, trustedReleaseKeys);
+        },
+        catch: (error) =>
+          asLifecycleError(
+            error,
+            'MANIFEST_SIGNATURE_INVALID',
+            'release manifest verification failed',
+            'manifest-verify',
+          ),
       });
       if (verified.channel !== channel) {
-        return yield* Effect.fail(lifecycleError(
-          'MANIFEST_INVALID',
-          `release manifest channel ${verified.channel} does not match requested channel ${channel}`,
-          { phase: 'manifest-verify' },
-        ));
+        return yield* Effect.fail(
+          lifecycleError(
+            'MANIFEST_INVALID',
+            `release manifest channel ${verified.channel} does not match requested channel ${channel}`,
+            { phase: 'manifest-verify' },
+          ),
+        );
       }
       return verified;
     });
@@ -157,9 +189,35 @@ export function createLifecycleEngine(
         }),
         (release) => {
           emit('lock', { recoveredStaleLock: release.recoveredStaleLock });
-          return Effect.sync(() => recoverInterruptedLifecycleActivation(home)).pipe(
-            Effect.flatMap(() => use()),
-          );
+          return tryPromise({
+            try: async () => {
+              const journal = readLifecycleActivationJournal(home);
+              if (!journal) return;
+              let candidateAccepted = false;
+              try {
+                const current = readLifecycleReleaseReference(home, 'current');
+                if (current?.path === journal.nextReleasePath) {
+                  const candidate = verifyInstalledRuntimeRelease(
+                    journal.nextReleasePath,
+                  );
+                  candidateAccepted = await dependencies.health.accept({
+                    bundleId: candidate.bundleId,
+                    version: candidate.version,
+                  });
+                }
+              } catch {
+                candidateAccepted = false;
+              }
+              if (candidateAccepted) {
+                clearLifecycleActivationJournal(home);
+                return;
+              }
+              recoverInterruptedLifecycleActivation(home);
+            },
+            code: 'ROLLBACK_FAILED',
+            message: 'failed to recover interrupted lifecycle activation',
+            phase: 'recovery',
+          }).pipe(Effect.flatMap(() => use()));
         },
         (release) => Effect.promise(() => release()),
       ),
@@ -186,18 +244,63 @@ export function createLifecycleEngine(
         'health',
       );
     }
-    if (healthy) return;
-    if (dependencies.hooks?.onHealthFailure) {
-      await dependencies.hooks.onHealthFailure({ home, ...hooksInput });
+    if (!healthy) {
+      if (dependencies.hooks?.onHealthFailure) {
+        await dependencies.hooks.onHealthFailure({ home, ...hooksInput });
+      }
+      throw lifecycleError('HEALTH_REJECTED', 'runtime health was not accepted', {
+        phase: 'health',
+      });
     }
-    throw lifecycleError('HEALTH_REJECTED', 'runtime health was not accepted', {
-      phase: 'health',
+    if (!dependencies.connectivity) return;
+    let connected = false;
+    let diagnostic = 'not-verified';
+    try {
+      connected = await dependencies.connectivity.accept(expected);
+      diagnostic = connected ? 'verified' : 'not-verified';
+    } catch {
+      diagnostic = 'check-failed';
+    }
+    emit('connectivity', {
+      ...expected,
+      advisory: true,
+      connected,
+      diagnostic,
     });
+  };
+
+  const acceptConnectorReadiness = async (
+    emit: ReturnType<typeof emitter>,
+  ): Promise<void> => {
+    if (!dependencies.connectorReadiness) return;
+    emit('connector-readiness');
+    let ready = false;
+    try {
+      ready = await dependencies.connectorReadiness.accept();
+    } catch (error: unknown) {
+      throw asLifecycleError(
+        error,
+        'CONNECTOR_READINESS_FAILED',
+        'public connector readiness acceptance failed',
+        'connector-readiness',
+      );
+    }
+    if (!ready) {
+      throw lifecycleError(
+        'CONNECTOR_READINESS_FAILED',
+        'public connector routing was not accepted after local health',
+        { phase: 'connector-readiness' },
+      );
+    }
   };
 
   const pruneAfterCommit = (
     emit: ReturnType<typeof emitter>,
-    options: { automatic?: boolean; rollback?: boolean; emitSuccess?: boolean } = {},
+    options: {
+      automatic?: boolean;
+      rollback?: boolean;
+      emitSuccess?: boolean;
+    } = {},
   ): ReturnType<typeof pruneLifecycleReleases> => {
     try {
       const result = pruneLifecycleReleases({ home, now: now() });
@@ -287,14 +390,38 @@ export function createLifecycleEngine(
           'service-restart',
         );
       }
-      await acceptHealth(input.emit, {
-        operationId: input.operationId,
-        previousReleasePath: input.previousReleasePath,
-        nextReleasePath: input.nextReleasePath,
-      }, {
-        bundleId: input.manifest.bundleId,
-        version: input.manifest.version,
-      });
+      await acceptHealth(
+        input.emit,
+        {
+          operationId: input.operationId,
+          previousReleasePath: input.previousReleasePath,
+          nextReleasePath: input.nextReleasePath,
+        },
+        {
+          bundleId: input.manifest.bundleId,
+          version: input.manifest.version,
+        },
+      );
+      await acceptConnectorReadiness(input.emit);
+      // Reconcile visible user content only once the release is health-accepted.
+      //
+      // Doing this straight after activation wrote the catalog, skills index, and example from a
+      // candidate release that a failed health check would then roll back, leaving user-visible
+      // content describing a runtime the node is no longer running. It deliberately does not sit
+      // behind the optional afterActivate hook, because nothing supplies that hook and it would
+      // silently never run. Failures here must not fail the release: the runtime is already live
+      // and usable without this content.
+      try {
+        if (dependencies.visibleUserRoot) {
+          reconcileManagedUserContentForRelease({
+            releasePath: input.nextReleasePath,
+            userRoot: dependencies.visibleUserRoot,
+          });
+        }
+        ensureNodeEncryptionKeyForHome(home);
+      } catch (_error: unknown) {
+        // Reported by the next doctor run rather than failing an accepted release.
+      }
       clearLifecycleActivationJournal(home);
     } catch (error: unknown) {
       if (dependencies.hooks?.onActivationFailure) {
@@ -309,7 +436,9 @@ export function createLifecycleEngine(
       if (!activated) throw error;
       try {
         if (input.previousReleasePath) {
-          const previousManifest = verifyInstalledRuntimeRelease(input.previousReleasePath);
+          const previousManifest = verifyInstalledRuntimeRelease(
+            input.previousReleasePath,
+          );
           activateRuntimeRelease({
             home,
             releasePath: input.previousReleasePath,
@@ -320,14 +449,22 @@ export function createLifecycleEngine(
             expectedBundleId: previousManifest.bundleId,
             waitForCompletion: true,
           });
-          input.emit('rollback', { bundleId: previousManifest.bundleId, automatic: true });
-          await acceptHealth(input.emit, {
-            operationId: `${input.operationId}-rollback`,
-            nextReleasePath: input.previousReleasePath,
-          }, {
+          input.emit('rollback', {
             bundleId: previousManifest.bundleId,
-            version: previousManifest.version,
+            automatic: true,
           });
+          await acceptHealth(
+            input.emit,
+            {
+              operationId: `${input.operationId}-rollback`,
+              nextReleasePath: input.previousReleasePath,
+            },
+            {
+              bundleId: previousManifest.bundleId,
+              version: previousManifest.version,
+            },
+          );
+          await acceptConnectorReadiness(input.emit);
           clearLifecycleActivationJournal(home);
           pruneAfterCommit(input.emit, { automatic: true, emitSuccess: true });
         } else {
@@ -357,153 +494,212 @@ export function createLifecycleEngine(
   }): Promise<LifecycleOperationResult> => {
     const operationId = input.operationId ?? nextOperationId();
     const program = Effect.gen(function* () {
-        const current = input.existingState ?? (yield* Effect.promise(() => inspectLifecycleInstallState(home)));
-        const release = yield* fetchVerifiedRelease(input.channel, input.emit);
-        if (input.expectedVersion && release.version !== input.expectedVersion) {
-          yield* Effect.fail(
-            lifecycleError(
-              'MANIFEST_INVALID',
-              `resolved release version ${release.version} does not match expected ${input.expectedVersion}`,
-              { phase: 'manifest-verify' },
-            ),
-          );
-        }
-        const updateAvailable = current.currentBundleId !== release.bundleId;
+      const current =
+        input.existingState ??
+        (yield* Effect.promise(() => inspectLifecycleInstallState(home)));
+      const release = yield* fetchVerifiedRelease(input.channel, input.emit);
+      if (input.expectedVersion && release.version !== input.expectedVersion) {
+        yield* Effect.fail(
+          lifecycleError(
+            'MANIFEST_INVALID',
+            `resolved release version ${release.version} does not match expected ${input.expectedVersion}`,
+            { phase: 'manifest-verify' },
+          ),
+        );
+      }
+      const updateAvailable = current.currentBundleId !== release.bundleId;
 
-        if (input.check) {
-          input.emit('complete', {
-            changed: false,
-            updateAvailable,
-            version: release.version,
-          });
-          return {
-            operation: input.operation,
-            changed: false,
-            updateAvailable,
-            version: release.version,
-            bundleId: release.bundleId,
-          } satisfies LifecycleOperationResult;
-        }
-
-        if (!updateAvailable && current.kind === 'valid') {
-          input.emit('complete', {
-            changed: false,
-            updateAvailable: false,
-            version: release.version,
-          });
-          return {
-            operation: input.operation,
-            changed: false,
-            updateAvailable: false,
-            version: release.version,
-            bundleId: release.bundleId,
-          } satisfies LifecycleOperationResult;
-        }
-
-        input.emit('bundle-download', { version: release.version, bundleId: release.bundleId });
-        const bytes = yield* tryPromise({
-          try: () => dependencies.releaseSource.fetchBundle(release.bundleUrl),
-          code: 'BUNDLE_DOWNLOAD_FAILED',
-          message: 'failed to download runtime bundle',
-          phase: 'bundle-download',
+      if (input.check) {
+        input.emit('complete', {
+          changed: false,
+          updateAvailable,
+          version: release.version,
         });
-        const archivePath = yield* Effect.try({
-          try: () => materializeRuntimeBundleDownload({ home, operationId, bytes }),
-          catch: (error) => asLifecycleError(
+        return {
+          operation: input.operation,
+          changed: false,
+          updateAvailable,
+          version: release.version,
+          bundleId: release.bundleId,
+        } satisfies LifecycleOperationResult;
+      }
+
+      if (!updateAvailable && current.kind === 'valid') {
+        if (input.operation === 'install' || input.operation === 'update') {
+          yield* tryPromise({
+            try: () => dependencies.service.preflight(),
+            code: 'SERVICE_PREFLIGHT_FAILED',
+            message: 'Consuelo service preflight failed',
+            phase: 'service-preflight',
+          });
+          input.emit('service-restart', { reconcile: true });
+          yield* tryPromise({
+            try: () =>
+              dependencies.service.restart({
+                operationId,
+                expectedBundleId: release.bundleId,
+                waitForCompletion: true,
+              }),
+            code: 'SERVICE_RESTART_FAILED',
+            message: 'failed to reconcile Consuelo services',
+            phase: 'service-restart',
+          });
+          yield* tryPromise({
+            try: () =>
+              acceptHealth(
+                input.emit,
+                { operationId, nextReleasePath: current.currentReleasePath },
+                { bundleId: release.bundleId, version: release.version },
+              ),
+            code: 'HEALTH_REJECTED',
+            message: 'Consuelo service health reconciliation failed',
+            phase: 'health-check',
+          });
+        }
+        yield* tryPromise({
+          try: () => acceptConnectorReadiness(input.emit),
+          code: 'CONNECTOR_READINESS_FAILED',
+          message: 'public connector readiness reconciliation failed',
+          phase: 'connector-readiness',
+        });
+        input.emit('complete', {
+          changed: false,
+          updateAvailable: false,
+          version: release.version,
+        });
+        return {
+          operation: input.operation,
+          changed: false,
+          updateAvailable: false,
+          version: release.version,
+          bundleId: release.bundleId,
+        } satisfies LifecycleOperationResult;
+      }
+
+      input.emit('bundle-download', {
+        version: release.version,
+        bundleId: release.bundleId,
+      });
+      const bytes = yield* tryPromise({
+        try: () => dependencies.releaseSource.fetchBundle(release.bundleUrl),
+        code: 'BUNDLE_DOWNLOAD_FAILED',
+        message: 'failed to download runtime bundle',
+        phase: 'bundle-download',
+      });
+      const archivePath = yield* Effect.try({
+        try: () =>
+          materializeRuntimeBundleDownload({ home, operationId, bytes }),
+        catch: (error) =>
+          asLifecycleError(
             error,
             'STAGING_FAILED',
             'failed to materialize downloaded runtime bundle',
             'bundle-download',
           ),
-        });
-        input.emit('bundle-verify', { bundleId: release.bundleId });
-        const manifest = yield* Effect.try({
-          try: () => verifyDownloadedRuntimeBundle(bytes, release),
-          catch: (error) => asLifecycleError(
+      });
+      input.emit('bundle-verify', { bundleId: release.bundleId });
+      const manifest = yield* Effect.try({
+        try: () => verifyDownloadedRuntimeBundle(bytes, release),
+        catch: (error) =>
+          asLifecycleError(
             error,
             'BUNDLE_VERIFY_FAILED',
             'downloaded runtime bundle verification failed',
             'bundle-verify',
           ),
-        }).pipe(
-          Effect.tapError(() => Effect.sync(() => cleanupRuntimeBundleStaging({ home, operationId }))),
-        );
+      }).pipe(
+        Effect.tapError(() =>
+          Effect.sync(() => cleanupRuntimeBundleStaging({ home, operationId })),
+        ),
+      );
 
-        if (dependencies.hooks?.beforeStage) {
-          yield* tryPromise({
-            try: () => dependencies.hooks!.beforeStage!({ home, operationId }),
-            code: 'STAGING_FAILED',
-            message: 'runtime staging precondition failed',
-            phase: 'stage',
-          });
-        }
-        input.emit('stage', { bundleId: manifest.bundleId });
-        const staged = yield* Effect.try({
-          try: () => stageVerifiedRuntimeBundle({
+      if (dependencies.hooks?.beforeStage) {
+        yield* tryPromise({
+          try: () => dependencies.hooks!.beforeStage!({ home, operationId }),
+          code: 'STAGING_FAILED',
+          message: 'runtime staging precondition failed',
+          phase: 'stage',
+        });
+      }
+      input.emit('stage', { bundleId: manifest.bundleId });
+      const staged = yield* Effect.try({
+        try: () =>
+          stageVerifiedRuntimeBundle({
             home,
             operationId,
             archivePath,
             manifest,
           }),
-          catch: (error) => asLifecycleError(
+        catch: (error) =>
+          asLifecycleError(
             error,
             'STAGING_FAILED',
             'failed to stage runtime bundle',
             'stage',
           ),
-        });
+      });
 
-        input.emit('preflight', { dependencyMaterialization: true });
-        yield* tryPromise({
-          try: () => runtime.materialize({ home, releasePath: staged.releasePath, manifest }),
-          code: 'PREFLIGHT_FAILED',
-          message: 'runtime dependency materialization failed',
-          phase: 'preflight',
-        });
-        yield* tryPromise({
-          try: () => dependencies.service.preflight(),
-          code: 'PREFLIGHT_FAILED',
-          message: 'platform preflight failed',
-          phase: 'preflight',
-        });
+      input.emit('preflight', { dependencyMaterialization: true });
+      yield* tryPromise({
+        try: () =>
+          runtime.materialize({
+            home,
+            releasePath: staged.releasePath,
+            manifest,
+          }),
+        code: 'PREFLIGHT_FAILED',
+        message: 'runtime dependency materialization failed',
+        phase: 'preflight',
+      });
+      yield* tryPromise({
+        try: () => dependencies.service.preflight(),
+        code: 'PREFLIGHT_FAILED',
+        message: 'platform preflight failed',
+        phase: 'preflight',
+      });
 
-        input.emit('migrate', { migrations: manifest.migrations.map((entry) => entry.id) });
-        yield* tryPromise({
-          try: () => migration.run({ home, releasePath: staged.releasePath, manifest }),
-          code: 'MIGRATION_FAILED',
-          message: 'runtime migration failed',
-          phase: 'migrate',
-        });
+      input.emit('migrate', {
+        migrations: manifest.migrations.map((entry) => entry.id),
+      });
+      yield* tryPromise({
+        try: () =>
+          migration.run({ home, releasePath: staged.releasePath, manifest }),
+        code: 'MIGRATION_FAILED',
+        message: 'runtime migration failed',
+        phase: 'migrate',
+      });
 
-        const previousReleasePath = current.currentReleasePath;
-        yield* tryPromise({
-          try: () => activateAndAccept({
+      const previousReleasePath = current.currentReleasePath;
+      yield* tryPromise({
+        try: () =>
+          activateAndAccept({
             emit: input.emit,
             operationId,
             previousReleasePath,
             nextReleasePath: staged.releasePath,
             manifest,
           }),
-          code: 'ACTIVATION_FAILED',
-          message: 'runtime activation transaction failed',
-          phase: 'activate',
-        });
+        code: 'ACTIVATION_FAILED',
+        message: 'runtime activation transaction failed',
+        phase: 'activate',
+      });
 
-        const retention = yield* Effect.sync(() => pruneAfterCommit(input.emit));
-        input.emit('complete', {
-          changed: true,
-          version: manifest.version,
-          bundleId: manifest.bundleId,
-          removedBundleIds: retention.removedBundleIds,
-        });
-        return {
-          operation: input.operation,
-          changed: true,
-          updateAvailable: false,
-          version: manifest.version,
-          bundleId: manifest.bundleId,
-        } satisfies LifecycleOperationResult;
+      const retention = yield* Effect.sync(() => pruneAfterCommit(input.emit));
+      input.emit('complete', {
+        changed: true,
+        version: manifest.version,
+        bundleId: manifest.bundleId,
+        removedBundleIds: retention.removedBundleIds,
+      });
+      return {
+        operation: input.operation,
+        changed: true,
+        updateAvailable: false,
+        version: manifest.version,
+        bundleId: manifest.bundleId,
+      } satisfies LifecycleOperationResult;
     });
+    if (input.check) return runEffect(program);
     return input.lockHeld
       ? runEffect(program)
       : exclusive(operationId, input.emit, () => program);
@@ -534,7 +730,19 @@ export function createLifecycleEngine(
 
     async install(input = {}) {
       const emit = emitter('install');
-      const initialState = await inspectLifecycleInstallState(home);
+      let initialState: Awaited<
+        ReturnType<typeof inspectLifecycleInstallState>
+      >;
+      try {
+        initialState = await inspectLifecycleInstallState(home);
+      } catch (error: unknown) {
+        throw asLifecycleError(
+          error,
+          'INSTALL_STATE_INVALID',
+          'failed to inspect lifecycle install state',
+          'inspect',
+        );
+      }
       emit('inspect', { installState: initialState.kind });
       if (!initialState.onboardingRequired) {
         const preferences = loadLifecyclePreferences(home, now());
@@ -547,7 +755,6 @@ export function createLifecycleEngine(
         return applyRelease({
           operation: 'install',
           channel: input.channel ?? preferences.channel,
-          existingState: initialState,
           emit,
         });
       }
@@ -558,38 +765,46 @@ export function createLifecycleEngine(
         );
       }
       const operationId = nextOperationId();
-      return exclusive(operationId, emit, () => Effect.tryPromise({
-        try: async () => {
-          emit('onboarding');
-          try {
-            await dependencies.onboarding!();
-          } catch (error: unknown) {
-            throw asLifecycleError(
+      return exclusive(operationId, emit, () =>
+        Effect.tryPromise({
+          try: async () => {
+            emit('onboarding');
+            try {
+              await dependencies.onboarding!();
+            } catch (error: unknown) {
+              throw asLifecycleError(
+                error,
+                'ONBOARDING_FAILED',
+                'first-install onboarding failed',
+                'onboarding',
+              );
+            }
+            const state = await inspectLifecycleInstallState(home);
+            if (state.kind === 'legacy') {
+              throw lifecycleError(
+                'INSTALL_STATE_INVALID',
+                'legacy install must be migrated before runtime activation',
+              );
+            }
+            const preferences = loadLifecyclePreferences(home, now());
+            return applyRelease({
+              operation: 'install',
+              channel: input.channel ?? preferences.channel,
+              existingState: state,
+              emit,
+              operationId,
+              lockHeld: true,
+            });
+          },
+          catch: (error) =>
+            asLifecycleError(
               error,
-              'ONBOARDING_FAILED',
+              'INSTALL_STATE_INVALID',
               'first-install onboarding failed',
               'onboarding',
-            );
-          }
-          const state = await inspectLifecycleInstallState(home);
-          if (state.kind === 'legacy') {
-            throw lifecycleError(
-              'INSTALL_STATE_INVALID',
-              'legacy install must be migrated before runtime activation',
-            );
-          }
-          const preferences = loadLifecyclePreferences(home, now());
-          return applyRelease({
-            operation: 'install',
-            channel: input.channel ?? preferences.channel,
-            existingState: state,
-            emit,
-            operationId,
-            lockHeld: true,
-          });
-        },
-        catch: (error) => error,
-      }));
+            ),
+        }),
+      );
     },
 
     async update(input = {}) {
@@ -615,11 +830,15 @@ export function createLifecycleEngine(
           channel: input.channel ?? preferences.channel,
           check: input.check,
           expectedVersion: input.expectedVersion,
-          existingState: state,
+          ...(input.check ? { existingState: state } : {}),
           emit,
         });
       } catch (error: unknown) {
-        throw asLifecycleError(error, 'INSTALL_STATE_INVALID', 'lifecycle update failed');
+        throw asLifecycleError(
+          error,
+          'INSTALL_STATE_INVALID',
+          'lifecycle update failed',
+        );
       }
     },
 
@@ -628,21 +847,52 @@ export function createLifecycleEngine(
       const state = await inspectLifecycleInstallState(home);
       emit('inspect', { installState: state.kind });
       if (state.kind === 'no-install' || state.kind === 'legacy') {
-        throw lifecycleError('INSTALL_STATE_INVALID', 'restart requires an installed Consuelo OS');
+        throw lifecycleError(
+          'INSTALL_STATE_INVALID',
+          'restart requires an installed Consuelo OS',
+        );
       }
-      emit('service-restart', { replySafe: true });
+      const operationId = nextOperationId();
+      emit('service-preflight', { reconcile: true });
       try {
-        await dependencies.service.restart();
+        await dependencies.service.preflight();
+      } catch (error: unknown) {
+        throw asLifecycleError(
+          error,
+          'SERVICE_PREFLIGHT_FAILED',
+          'Consuelo service preflight failed',
+          'service-preflight',
+        );
+      }
+      emit('service-restart', { waitForCompletion: true });
+      try {
+        await dependencies.service.restart({
+          operationId,
+          expectedBundleId: state.kind === 'valid' ? state.currentBundleId : undefined,
+          waitForCompletion: true,
+        });
       } catch (error: unknown) {
         throw asLifecycleError(
           error,
           'SERVICE_RESTART_FAILED',
-          'failed to schedule Consuelo service restart',
+          'failed to restart Consuelo services',
           'service-restart',
         );
       }
-      emit('complete', { changed: true, scheduled: true });
-      return { operation: 'restart', changed: true, detail: { scheduled: true } };
+      await acceptHealth(
+        emit,
+        { operationId, nextReleasePath: state.kind === 'valid' ? state.currentReleasePath : undefined },
+        state.kind === 'valid'
+          ? { bundleId: state.currentBundleId, version: state.currentVersion }
+          : undefined,
+      );
+      await acceptConnectorReadiness(emit);
+      emit('complete', { changed: true, scheduled: false, localHealthy: true, connectorReady: true });
+      return {
+        operation: 'restart',
+        changed: true,
+        detail: { scheduled: false, localHealthy: true, connectorReady: true },
+      };
     },
 
     async repair() {
@@ -664,18 +914,33 @@ export function createLifecycleEngine(
               { phase: 'inspect' },
             );
           }
+          const missingCapabilities = missingRequiredRuntimeRecoveryCapabilities(
+            state.manifest.capabilities,
+          );
+          if (missingCapabilities.length > 0) {
+            throw lifecycleError(
+              'RUNTIME_CAPABILITY_MISMATCH',
+              `installed runtime is missing recovery capability ${missingCapabilities[0]}; update is required before repair`,
+              { phase: 'repair-scan' },
+            );
+          }
           const operationId = nextOperationId();
           return await exclusive(operationId, emit, () =>
             Effect.gen(function* () {
-              emit('preflight', { dependencyMaterialization: true, repair: true });
+              emit('preflight', {
+                dependencyMaterialization: true,
+                repair: true,
+              });
               yield* tryPromise({
-                try: () => runtime.materialize({
-                  home,
-                  releasePath: state.currentReleasePath!,
-                  manifest: state.manifest!,
-                }),
+                try: () =>
+                  runtime.materialize({
+                    home,
+                    releasePath: state.currentReleasePath!,
+                    manifest: state.manifest!,
+                  }),
                 code: 'PREFLIGHT_FAILED',
-                message: 'runtime dependency materialization failed during repair',
+                message:
+                  'runtime dependency materialization failed during repair',
                 phase: 'preflight',
               });
               yield* tryPromise({
@@ -686,37 +951,50 @@ export function createLifecycleEngine(
               });
               emit('migrate', { repair: true });
               yield* tryPromise({
-                try: () => migration.run({
-                  home,
-                  releasePath: state.currentReleasePath!,
-                  manifest: state.manifest!,
-                }),
+                try: () =>
+                  migration.run({
+                    home,
+                    releasePath: state.currentReleasePath!,
+                    manifest: state.manifest!,
+                  }),
                 code: 'MIGRATION_FAILED',
                 message: 'runtime migration verification failed during repair',
                 phase: 'migrate',
               });
               emit('service-restart', { repair: true });
               yield* tryPromise({
-                try: () => dependencies.service.restart({
-                  operationId,
-                  expectedBundleId: state.currentBundleId,
-                  waitForCompletion: true,
-                }),
+                try: () =>
+                  dependencies.service.restart({
+                    operationId,
+                    expectedBundleId: state.currentBundleId,
+                    waitForCompletion: true,
+                  }),
                 code: 'SERVICE_RESTART_FAILED',
                 message: 'failed to restart Consuelo services after repair',
                 phase: 'service-restart',
               });
               yield* tryPromise({
-                try: () => acceptHealth(emit, {
-                  operationId,
-                  nextReleasePath: state.currentReleasePath,
-                }, {
-                  bundleId: state.currentBundleId,
-                  version: state.currentVersion,
-                }),
+                try: () =>
+                  acceptHealth(
+                    emit,
+                    {
+                      operationId,
+                      nextReleasePath: state.currentReleasePath,
+                    },
+                    {
+                      bundleId: state.currentBundleId,
+                      version: state.currentVersion,
+                    },
+                  ),
                 code: 'HEALTH_REJECTED',
                 message: 'repaired runtime health acceptance failed',
                 phase: 'health',
+              });
+              yield* tryPromise({
+                try: () => acceptConnectorReadiness(emit),
+                code: 'CONNECTOR_READINESS_FAILED',
+                message: 'repaired runtime public connector readiness failed',
+                phase: 'connector-readiness',
               });
               emit('complete', {
                 changed: true,
@@ -727,7 +1005,7 @@ export function createLifecycleEngine(
                 changed: true,
                 version: state.currentVersion,
                 bundleId: state.currentBundleId,
-                detail: { repaired: ['dependencies', 'migrations', 'service'] },
+                detail: { repaired: ['dependencies', 'migrations', 'service', 'connector'] },
               } satisfies LifecycleOperationResult;
             }),
           );
@@ -740,7 +1018,6 @@ export function createLifecycleEngine(
           const updated = await applyRelease({
             operation: 'update',
             channel: preferences.channel,
-            existingState: state,
             emit,
           });
           return { ...updated, operation: 'repair' };
@@ -749,15 +1026,20 @@ export function createLifecycleEngine(
         const operationId = nextOperationId();
         return await exclusive(operationId, emit, () =>
           Effect.gen(function* () {
-            emit('preflight', { dependencyMaterialization: true, repair: true });
+            emit('preflight', {
+              dependencyMaterialization: true,
+              repair: true,
+            });
             yield* tryPromise({
-              try: () => runtime.materialize({
-                home,
-                releasePath: retained.path,
-                manifest: retained.manifest,
-              }),
+              try: () =>
+                runtime.materialize({
+                  home,
+                  releasePath: retained.path,
+                  manifest: retained.manifest,
+                }),
               code: 'PREFLIGHT_FAILED',
-              message: 'runtime dependency materialization failed during repair',
+              message:
+                'runtime dependency materialization failed during repair',
               phase: 'preflight',
             });
             yield* tryPromise({
@@ -767,13 +1049,14 @@ export function createLifecycleEngine(
               phase: 'preflight',
             });
             yield* tryPromise({
-              try: () => activateAndAccept({
-                emit,
-                operationId,
-                previousReleasePath: state.currentReleasePath,
-                nextReleasePath: retained.path,
-                manifest: retained.manifest,
-              }),
+              try: () =>
+                activateAndAccept({
+                  emit,
+                  operationId,
+                  previousReleasePath: state.currentReleasePath,
+                  nextReleasePath: retained.path,
+                  manifest: retained.manifest,
+                }),
               code: 'REPAIR_FAILED',
               message: 'failed to reactivate retained runtime release',
               phase: 'activate',
@@ -792,7 +1075,11 @@ export function createLifecycleEngine(
           }),
         );
       } catch (error: unknown) {
-        throw asLifecycleError(error, 'REPAIR_FAILED', 'lifecycle repair failed');
+        throw asLifecycleError(
+          error,
+          'REPAIR_FAILED',
+          'lifecycle repair failed',
+        );
       }
     },
 
@@ -800,61 +1087,93 @@ export function createLifecycleEngine(
       const emit = emitter('rollback');
       const operationId = nextOperationId();
       try {
-        return await exclusive(operationId, emit, () => Effect.tryPromise({
-          try: async () => {
-            try {
-              const state = await inspectLifecycleInstallState(home);
-              emit('inspect', { installState: state.kind });
-              if (state.kind !== 'valid' || !state.currentReleasePath) {
-                throw lifecycleError('ROLLBACK_FAILED', 'rollback requires a valid active runtime release');
-              }
-              const previous = readLifecycleReleaseReference(home, 'previous', { required: true })!;
-              if (previous.path === state.currentReleasePath) {
-                throw lifecycleError('ROLLBACK_FAILED', 'previous runtime release is identical to current');
-              }
-              if (input.dryRun) {
-                emit('complete', { changed: false, dryRun: true, bundleId: previous.manifest.bundleId });
+        return await exclusive(operationId, emit, () =>
+          Effect.tryPromise({
+            try: async () => {
+              try {
+                const state = await inspectLifecycleInstallState(home);
+                emit('inspect', { installState: state.kind });
+                if (state.kind !== 'valid' || !state.currentReleasePath) {
+                  throw lifecycleError(
+                    'ROLLBACK_FAILED',
+                    'rollback requires a valid active runtime release',
+                  );
+                }
+                const previous = readLifecycleReleaseReference(
+                  home,
+                  'previous',
+                  { required: true },
+                )!;
+                if (previous.path === state.currentReleasePath) {
+                  throw lifecycleError(
+                    'ROLLBACK_FAILED',
+                    'previous runtime release is identical to current',
+                  );
+                }
+                if (input.dryRun) {
+                  emit('complete', {
+                    changed: false,
+                    dryRun: true,
+                    bundleId: previous.manifest.bundleId,
+                  });
+                  return {
+                    operation: 'rollback',
+                    changed: false,
+                    version: previous.manifest.version,
+                    bundleId: previous.manifest.bundleId,
+                    detail: { dryRun: true },
+                  } satisfies LifecycleOperationResult;
+                }
+                emit('rollback', {
+                  fromBundleId: state.currentBundleId,
+                  toBundleId: previous.manifest.bundleId,
+                  automatic: false,
+                });
+                await activateAndAccept({
+                  emit,
+                  operationId,
+                  previousReleasePath: state.currentReleasePath,
+                  nextReleasePath: previous.path,
+                  manifest: previous.manifest,
+                });
+                const retention = pruneAfterCommit(emit, {
+                  rollback: true,
+                  emitSuccess: true,
+                });
+                emit('complete', {
+                  changed: true,
+                  bundleId: previous.manifest.bundleId,
+                  removedBundleIds: retention.removedBundleIds,
+                });
                 return {
                   operation: 'rollback',
-                  changed: false,
+                  changed: true,
                   version: previous.manifest.version,
                   bundleId: previous.manifest.bundleId,
-                  detail: { dryRun: true },
+                  detail: { removedBundleIds: retention.removedBundleIds },
                 } satisfies LifecycleOperationResult;
+              } catch (error: unknown) {
+                throw asLifecycleError(
+                  error,
+                  'ROLLBACK_FAILED',
+                  'lifecycle rollback failed',
+                );
               }
-              emit('rollback', {
-                fromBundleId: state.currentBundleId,
-                toBundleId: previous.manifest.bundleId,
-                automatic: false,
-              });
-              await activateAndAccept({
-                emit,
-                operationId,
-                previousReleasePath: state.currentReleasePath,
-                nextReleasePath: previous.path,
-                manifest: previous.manifest,
-              });
-              const retention = pruneAfterCommit(emit, { rollback: true, emitSuccess: true });
-              emit('complete', {
-                changed: true,
-                bundleId: previous.manifest.bundleId,
-                removedBundleIds: retention.removedBundleIds,
-              });
-              return {
-                operation: 'rollback',
-                changed: true,
-                version: previous.manifest.version,
-                bundleId: previous.manifest.bundleId,
-                detail: { removedBundleIds: retention.removedBundleIds },
-              } satisfies LifecycleOperationResult;
-            } catch (error: unknown) {
-              throw asLifecycleError(error, 'ROLLBACK_FAILED', 'lifecycle rollback failed');
-            }
-          },
-          catch: (error) => asLifecycleError(error, 'ROLLBACK_FAILED', 'lifecycle rollback failed'),
-        }));
+            },
+            catch: (error) =>
+              asLifecycleError(
+                error,
+                'ROLLBACK_FAILED',
+                'lifecycle rollback failed',
+              ),
+          }),
+        );
       } catch (error: unknown) {
-        throw asLifecycleError(error, 'ROLLBACK_FAILED', 'lifecycle rollback failed');
+        throw asLifecycleError(
+          error,
+          'ROLLBACK_FAILED',
+          'lifecycle rollback failed',
+        );
       }
     },
 
@@ -862,58 +1181,83 @@ export function createLifecycleEngine(
       const emit = emitter('uninstall');
       const operationId = nextOperationId();
       try {
-        return await exclusive(operationId, emit, () => Effect.tryPromise({
-          try: async () => {
-            try {
-              const state = await inspectLifecycleInstallState(home);
-              emit('inspect', { installState: state.kind });
-              if (!dependencies.service.uninstall) {
-                throw lifecycleError('UNINSTALL_FAILED', 'platform service uninstall adapter is unavailable');
-              }
-              emit('uninstall', {
-                dryRun: input.dryRun ?? false,
-                removeNode: input.removeNode ?? false,
-                removeUserContent: input.removeUserContent ?? false,
-              });
-              await dependencies.service.uninstall({ dryRun: input.dryRun, home });
-              const plan = removeLifecycleManagedContent(home, {
-                dryRun: true,
-                removeNode: input.removeNode,
-                removeUserContent: input.removeUserContent,
-              });
-              const changed = !(input.dryRun ?? false) && plan.removedPaths.length > 0;
-              emit('complete', { changed, dryRun: input.dryRun ?? false });
-              if (!(input.dryRun ?? false)) {
-                removeLifecycleManagedContent(home, {
-                  removeNode: input.removeNode,
-                  removeUserContent: input.removeUserContent,
-                });
-              }
-              return {
-                operation: 'uninstall',
-                changed,
-                detail: {
+        return await exclusive(operationId, emit, () =>
+          Effect.tryPromise({
+            try: async () => {
+              try {
+                const state = await inspectLifecycleInstallState(home);
+                emit('inspect', { installState: state.kind });
+                if (!dependencies.service.uninstall) {
+                  throw lifecycleError(
+                    'UNINSTALL_FAILED',
+                    'platform service uninstall adapter is unavailable',
+                  );
+                }
+                emit('uninstall', {
                   dryRun: input.dryRun ?? false,
                   removeNode: input.removeNode ?? false,
                   removeUserContent: input.removeUserContent ?? false,
-                  removedPaths: plan.removedPaths,
-                },
-              } satisfies LifecycleOperationResult;
-            } catch (error: unknown) {
-              throw asLifecycleError(error, 'UNINSTALL_FAILED', 'lifecycle uninstall failed');
-            }
-          },
-          catch: (error) => asLifecycleError(error, 'UNINSTALL_FAILED', 'lifecycle uninstall failed'),
-        }));
+                });
+                await dependencies.service.uninstall({
+                  dryRun: input.dryRun,
+                  home,
+                });
+                const plan = removeLifecycleManagedContent(home, {
+                  dryRun: true,
+                  removeNode: input.removeNode,
+                  removeUserContent: input.removeUserContent,
+                });
+                const changed =
+                  !(input.dryRun ?? false) && plan.removedPaths.length > 0;
+                emit('complete', { changed, dryRun: input.dryRun ?? false });
+                if (!(input.dryRun ?? false)) {
+                  removeLifecycleManagedContent(home, {
+                    removeNode: input.removeNode,
+                    removeUserContent: input.removeUserContent,
+                  });
+                }
+                return {
+                  operation: 'uninstall',
+                  changed,
+                  detail: {
+                    dryRun: input.dryRun ?? false,
+                    removeNode: input.removeNode ?? false,
+                    removeUserContent: input.removeUserContent ?? false,
+                    removedPaths: plan.removedPaths,
+                  },
+                } satisfies LifecycleOperationResult;
+              } catch (error: unknown) {
+                throw asLifecycleError(
+                  error,
+                  'UNINSTALL_FAILED',
+                  'lifecycle uninstall failed',
+                );
+              }
+            },
+            catch: (error) =>
+              asLifecycleError(
+                error,
+                'UNINSTALL_FAILED',
+                'lifecycle uninstall failed',
+              ),
+          }),
+        );
       } catch (error: unknown) {
-        throw asLifecycleError(error, 'UNINSTALL_FAILED', 'lifecycle uninstall failed');
+        throw asLifecycleError(
+          error,
+          'UNINSTALL_FAILED',
+          'lifecycle uninstall failed',
+        );
       }
     },
 
     async devReset(input = {}) {
       const preferences = loadLifecyclePreferences(home, now());
       if (!input.yes) {
-        throw lifecycleError('RESET_NOT_ALLOWED', 'development reset requires explicit --yes confirmation');
+        throw lifecycleError(
+          'RESET_NOT_ALLOWED',
+          'development reset requires explicit --yes confirmation',
+        );
       }
       if (!['dev', 'nightly'].includes(preferences.channel)) {
         throw lifecycleError(
@@ -924,46 +1268,68 @@ export function createLifecycleEngine(
       const emit = emitter('reset');
       const operationId = nextOperationId();
       try {
-        return await exclusive(operationId, emit, () => Effect.tryPromise({
-          try: async () => {
-            try {
-              emit('inspect', { channel: preferences.channel });
-              if (!dependencies.service.uninstall) {
-                throw lifecycleError('UNINSTALL_FAILED', 'platform service uninstall adapter is unavailable');
-              }
-              emit('reset', { dryRun: input.dryRun ?? false });
-              await dependencies.service.uninstall({ dryRun: input.dryRun, home });
-              const plan = removeLifecycleManagedContent(home, {
-                dryRun: true,
-                removeNode: true,
-                removeUserContent: true,
-                removeConfig: true,
-              });
-              const changed = !(input.dryRun ?? false) && plan.removedPaths.length > 0;
-              emit('complete', { changed, dryRun: input.dryRun ?? false });
-              if (!(input.dryRun ?? false)) {
-                removeLifecycleManagedContent(home, {
+        return await exclusive(operationId, emit, () =>
+          Effect.tryPromise({
+            try: async () => {
+              try {
+                emit('inspect', { channel: preferences.channel });
+                if (!dependencies.service.uninstall) {
+                  throw lifecycleError(
+                    'UNINSTALL_FAILED',
+                    'platform service uninstall adapter is unavailable',
+                  );
+                }
+                emit('reset', { dryRun: input.dryRun ?? false });
+                await dependencies.service.uninstall({
+                  dryRun: input.dryRun,
+                  home,
+                });
+                const plan = removeLifecycleManagedContent(home, {
+                  dryRun: true,
                   removeNode: true,
                   removeUserContent: true,
                   removeConfig: true,
                 });
+                const changed =
+                  !(input.dryRun ?? false) && plan.removedPaths.length > 0;
+                emit('complete', { changed, dryRun: input.dryRun ?? false });
+                if (!(input.dryRun ?? false)) {
+                  removeLifecycleManagedContent(home, {
+                    removeNode: true,
+                    removeUserContent: true,
+                    removeConfig: true,
+                  });
+                }
+                return {
+                  operation: 'reset',
+                  changed,
+                  detail: {
+                    dryRun: input.dryRun ?? false,
+                    removedPaths: plan.removedPaths,
+                  },
+                } satisfies LifecycleOperationResult;
+              } catch (error: unknown) {
+                throw asLifecycleError(
+                  error,
+                  'UNINSTALL_FAILED',
+                  'development reset failed',
+                );
               }
-              return {
-                operation: 'reset',
-                changed,
-                detail: {
-                  dryRun: input.dryRun ?? false,
-                  removedPaths: plan.removedPaths,
-                },
-              } satisfies LifecycleOperationResult;
-            } catch (error: unknown) {
-              throw asLifecycleError(error, 'UNINSTALL_FAILED', 'development reset failed');
-            }
-          },
-          catch: (error) => asLifecycleError(error, 'UNINSTALL_FAILED', 'development reset failed'),
-        }));
+            },
+            catch: (error) =>
+              asLifecycleError(
+                error,
+                'UNINSTALL_FAILED',
+                'development reset failed',
+              ),
+          }),
+        );
       } catch (error: unknown) {
-        throw asLifecycleError(error, 'UNINSTALL_FAILED', 'development reset failed');
+        throw asLifecycleError(
+          error,
+          'UNINSTALL_FAILED',
+          'development reset failed',
+        );
       }
     },
 
@@ -977,7 +1343,11 @@ export function createLifecycleEngine(
     },
 
     async setUpdateNotifications(preference: LifecycleNotificationPreference) {
-      const preferences = setLifecycleNotificationPreference(home, preference, now());
+      const preferences = setLifecycleNotificationPreference(
+        home,
+        preference,
+        now(),
+      );
       return {
         operation: 'notifications',
         changed: true,

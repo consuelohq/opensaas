@@ -14,6 +14,15 @@ import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
 export const RUNTIME_BUNDLE_SCHEMA_VERSION = 1 as const;
 export const RUNTIME_BUNDLE_POLICY_VERSION = 1 as const;
 export const RUNTIME_BUNDLE_MANIFEST_PATH = 'runtime-bundle.manifest.json';
+export const REQUIRED_RUNTIME_RECOVERY_CAPABILITIES = [
+  'caddy-worker-pool',
+  'canonical-watchdog',
+  'public-connector-readiness',
+  'stateless-mcp-2026',
+  'supervised-worker-pool',
+] as const;
+export type RuntimeRecoveryCapability =
+  (typeof REQUIRED_RUNTIME_RECOVERY_CAPABILITIES)[number];
 export const RUNTIME_BUNDLE_BUILDER_ENTRYPOINT =
   'scripts/build-runtime-bundle.ts';
 export const RUNTIME_BUNDLE_INTEGRATION_SCRIPT_KEYS = {
@@ -57,6 +66,7 @@ export type RuntimeBundleMigration = {
 export type RuntimeBundleManifest = {
   architecture: string;
   bundleId: string;
+  capabilities?: RuntimeRecoveryCapability[];
   files: RuntimeBundleFile[];
   kind: 'consuelo-runtime-bundle';
   migrations: RuntimeBundleMigration[];
@@ -80,6 +90,53 @@ export type RuntimeBundleManifest = {
   version: string;
 };
 
+const RUNTIME_RECOVERY_CAPABILITY_FILES: Readonly<
+  Record<RuntimeRecoveryCapability, readonly string[]>
+> = {
+  'stateless-mcp-2026': [
+    'scripts/lib/mcp-protocol.ts',
+    'scripts/lib/mcp-gateway.ts',
+    'scripts/server/routes/mcp.ts',
+  ],
+  'supervised-worker-pool': [
+    'scripts/server/supervisor.ts',
+    'scripts/lib/worker-pool.ts',
+  ],
+  'caddy-worker-pool': [
+    'scripts/lib/security-gateway.ts',
+    'scripts/consuelo-reload.js',
+  ],
+  'canonical-watchdog': [
+    'scripts/workspace-watchdog.sh',
+    'scripts/consuelo-reload.js',
+  ],
+  'public-connector-readiness': [
+    'scripts/lib/lifecycle/connector-readiness.ts',
+    'scripts/workspace-node-heartbeat.ts',
+    'scripts/lib/workspace-node-heartbeat-client.ts',
+  ],
+};
+
+export function runtimeRecoveryCapabilitiesForFiles(
+  files: Pick<RuntimeBundleFile, 'path'>[],
+): RuntimeRecoveryCapability[] {
+  const paths = new Set(files.map((file) => file.path));
+  return REQUIRED_RUNTIME_RECOVERY_CAPABILITIES.filter((capability) =>
+    RUNTIME_RECOVERY_CAPABILITY_FILES[capability].every((filePath) =>
+      paths.has(filePath),
+    ),
+  );
+}
+
+export function missingRequiredRuntimeRecoveryCapabilities(
+  capabilities: readonly string[] | undefined,
+): RuntimeRecoveryCapability[] {
+  const available = new Set(capabilities ?? []);
+  return REQUIRED_RUNTIME_RECOVERY_CAPABILITIES.filter(
+    (capability) => !available.has(capability),
+  );
+}
+
 export type RuntimeBundleBuildOptions = {
   architecture: string;
   authoritativeToolManifestPaths?: string[];
@@ -90,12 +147,19 @@ export type RuntimeBundleBuildOptions = {
   platform: string;
   sourceCommit: string;
   sourceRoot: string;
+  vendoredSources?: RuntimeBundleVendoredSource[];
   version: string;
+};
+
+export type RuntimeBundleVendoredSource = {
+  path: string;
+  sourcePath: string;
 };
 
 export type RuntimeBundleFingerprintOptions = {
   includePaths?: string[];
   sourceRoot: string;
+  vendoredSources?: RuntimeBundleVendoredSource[];
 };
 
 export type RuntimeBundleArchiveEntry = {
@@ -117,17 +181,20 @@ const REQUIRED_RUNTIME_INPUTS = [
   'bun.lock',
   'scripts/os.ts',
   'scripts/native-lifecycle-operation.ts',
+  'scripts/retire-legacy-system-daemons.sh',
   'scripts/server/main.ts',
+  'scripts/server/supervisor.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
   'scripts/lib/managed-component-install.ts',
+  'scripts/lib/subagent/runner.ts',
   'manifests/generated/tool.manifest.json',
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
   'steering/system_prompt.md',
-  'steering/decision.md',
   'streams/tools/AGENTS.md',
+  'streams/dialer/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',
 ] as const;
@@ -135,6 +202,8 @@ const REQUIRED_RUNTIME_INPUTS = [
 const DEFAULT_DISCOVERY_PATHS = [
   'package.json',
   'bun.lock',
+  'assets/consuelo-mark.png',
+  'assets/vendor/observability-traces-v38',
   'scripts',
   'src',
   'tools',
@@ -173,6 +242,7 @@ const PLATFORM_ADAPTER_FILES = new Set([
   'scripts/bootstrap.sh',
   'scripts/generate-system-daemons.sh',
   'scripts/install-system-daemons.sh',
+  'scripts/retire-legacy-system-daemons.sh',
   'scripts/install.ts',
   'scripts/windows-platform.ts',
   'scripts/lib/windows-platform.ts',
@@ -201,6 +271,7 @@ const CUSTOMER_PROVIDER_FILES = new Set([
   'tools/deployment-provider/facade.ts',
   'tools/deployment-provider/process.ts',
   'tools/deployment-provider/redaction.ts',
+  'tools/deployment-provider/schema.ts',
   'tools/deployment-provider/service.ts',
   'tools/deployment-provider/types.ts',
   'tools/deployment-provider/vercel.ts',
@@ -247,6 +318,9 @@ const EXCLUDED_ROLES = new Set<RuntimeBundleContentRole>([
   'source-only',
   'test-only',
 ]);
+
+const WINDOWS_SERVICE_HOST_PATH =
+  'native/windows-service/bin/Release/Consuelo.Windows.Service.exe';
 
 const TEXT_EXTENSIONS = new Set([
   '.cjs',
@@ -309,6 +383,10 @@ export function classifyRuntimeBundlePath(
     return 'test-only';
   }
   if (CUSTOMER_PROVIDER_FILES.has(filePath)) return 'customer-provider';
+  if (filePath === 'steering/decision.md') return 'source-only';
+  if (filePath === 'scripts/lib/distribution/runtime-bundle.ts') {
+    return 'runtime';
+  }
   if (
     filePath.startsWith('scripts/lib/distribution/') ||
     filePath === 'manifests/manifest.config.ts' ||
@@ -323,6 +401,10 @@ export function classifyRuntimeBundlePath(
     return 'source-only';
   }
   if (filePath === 'package.json' || filePath === 'bun.lock') return 'runtime';
+  if (filePath === 'assets/consuelo-mark.png') return 'runtime';
+  if (filePath.startsWith('assets/vendor/observability-traces-v38/')) {
+    return 'managed-site-template';
+  }
   if (filePath.startsWith('skills/')) return 'managed-skill';
   if (/^tools\/[^/]+\/[^/]+\.ts$/.test(filePath)) return 'managed-tool';
   if (
@@ -336,6 +418,15 @@ export function classifyRuntimeBundlePath(
     return 'runtime';
   if (filePath.startsWith('hooks/')) return 'runtime';
   if (filePath.startsWith('native/macos/.build/')) return 'source-only';
+  if (filePath.startsWith('native/windows-service/obj/')) {
+    return 'source-only';
+  }
+  if (
+    filePath.startsWith('native/windows-service/bin/') &&
+    filePath !== WINDOWS_SERVICE_HOST_PATH
+  ) {
+    return 'source-only';
+  }
   if (
     filePath.startsWith('native/windows-service/') ||
     filePath.startsWith('native/macos/')
@@ -510,17 +601,49 @@ type CollectedRuntimeFiles = {
   files: Array<RuntimeBundleFile & { bytes: Buffer }>;
 };
 
+function resolveVendoredSources(
+  sourceRoot: string,
+  sources: RuntimeBundleVendoredSource[] = [],
+): Map<string, string> {
+  const resolvedSources = new Map<string, string>();
+  for (const source of sources) {
+    const archivePath = normalizeRelativePath(source.path);
+    if (resolvedSources.has(archivePath)) {
+      throw new Error(`duplicate vendored runtime path: ${archivePath}`);
+    }
+    const sourcePath = resolve(sourceRoot, source.sourcePath);
+    if (!existsSync(sourcePath)) {
+      throw new Error(
+        `vendored runtime source is missing: ${source.sourcePath}`,
+      );
+    }
+    const stat = lstatSync(sourcePath);
+    if (stat.isSymbolicLink() || !stat.isFile()) {
+      throw new Error(
+        `vendored runtime source must be a regular file: ${source.sourcePath}`,
+      );
+    }
+    resolvedSources.set(archivePath, sourcePath);
+  }
+  return resolvedSources;
+}
+
 function collectRuntimeFiles(
   input: RuntimeBundleFingerprintOptions,
 ): CollectedRuntimeFiles {
   const sourceRoot = resolve(input.sourceRoot);
   assertRequiredInputs(sourceRoot);
+  const vendoredSources = resolveVendoredSources(
+    sourceRoot,
+    input.vendoredSources,
+  );
 
   const requestedPaths = input.includePaths
     ? [...new Set(input.includePaths.map(normalizeRelativePath))]
     : DEFAULT_DISCOVERY_PATHS.flatMap((candidate) =>
         listFilesRecursively(sourceRoot, candidate),
       );
+  requestedPaths.push(...vendoredSources.keys());
   const paths = [...new Set(requestedPaths)].sort();
   const excludedCounts = {
     'operator-only': 0,
@@ -547,7 +670,7 @@ function collectRuntimeFiles(
       continue;
     }
 
-    const absolutePath = join(sourceRoot, filePath);
+    const absolutePath = vendoredSources.get(filePath) ?? join(sourceRoot, filePath);
     if (!existsSync(absolutePath)) {
       throw new Error(`runtime-bundle input is missing: ${filePath}`);
     }
@@ -866,6 +989,20 @@ function assertManifestShape(manifest: RuntimeBundleManifest): void {
     throw new Error('runtime bundle manifest files must be an array');
   if (!Array.isArray(manifest.migrations))
     throw new Error('runtime bundle manifest migrations must be an array');
+  if (manifest.capabilities !== undefined) {
+    if (!Array.isArray(manifest.capabilities)) {
+      throw new Error('runtime bundle manifest capabilities must be an array');
+    }
+    const allowed = new Set<string>(REQUIRED_RUNTIME_RECOVERY_CAPABILITIES);
+    const sorted = [...manifest.capabilities].sort();
+    if (
+      manifest.capabilities.some((capability) => !allowed.has(capability)) ||
+      new Set(manifest.capabilities).size !== manifest.capabilities.length ||
+      sorted.some((capability, index) => capability !== manifest.capabilities![index])
+    ) {
+      throw new Error('runtime bundle manifest capabilities are invalid');
+    }
+  }
   assertSemver(manifest.version, 'runtime-bundle version');
   assertSemver(manifest.minimumUpdaterVersion, 'minimum updater version');
 }
@@ -956,11 +1093,16 @@ export async function buildRuntimeBundle(
   const collected = collectRuntimeFiles({
     sourceRoot,
     ...(options.includePaths ? { includePaths: options.includePaths } : {}),
+    ...(options.vendoredSources
+      ? { vendoredSources: options.vendoredSources }
+      : {}),
   });
   const files = collected.files.map(({ bytes: _bytes, ...file }) => file);
   const releaseFingerprint = releaseFingerprintForFiles(files);
+  const capabilities = runtimeRecoveryCapabilitiesForFiles(files);
   const manifestWithoutBundleId: Omit<RuntimeBundleManifest, 'bundleId'> = {
     architecture: options.architecture,
+    capabilities,
     files,
     kind: 'consuelo-runtime-bundle',
     migrations: normalizeMigrations(options.migrations),
@@ -984,6 +1126,7 @@ export async function buildRuntimeBundle(
         'kind',
         'platform',
         'architecture',
+        'capabilities',
         'sourceCommit',
         'version',
         'releaseFingerprint',

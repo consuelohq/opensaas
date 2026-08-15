@@ -5,6 +5,7 @@ import { basename, join } from 'node:path';
 
 import {
   canonicalReleaseJson,
+  createEmptyReleaseState,
   redactReleaseAuditValue,
   type PlatformBundlePublication,
   type ReleaseArtifactPaths,
@@ -46,12 +47,24 @@ export type ReleaseProviderExecutionInput = {
   sourceCommit: string;
 };
 
-export type ReleaseProviderBackend = {
-  createDeployment(input: {
+export type ReleaseDeploymentIdentity = {
+  authority: 'signed-r2-channel-manifest';
+  bundleId: string;
+  environment: string;
+  manifestDigest: string;
+  platforms: Array<{
+    architecture: string;
+    archiveDigest: string;
     bundleId: string;
-    environment: string;
-    sourceCommit: string;
-  }): Promise<void>;
+    platform: string;
+  }>;
+  releaseFingerprint: string;
+  sourceCommit: string;
+  version: string;
+};
+
+export type ReleaseProviderBackend = {
+  createDeployment(input: ReleaseDeploymentIdentity): Promise<void>;
   createGithubRelease(input: {
     prerelease: boolean;
     tag: string;
@@ -64,11 +77,7 @@ export type ReleaseProviderBackend = {
     sourceCommit: string;
     tag: string;
   }): Promise<void>;
-  deploymentExists(input: {
-    bundleId: string;
-    environment: string;
-    sourceCommit: string;
-  }): Promise<boolean>;
+  deploymentExists(input: ReleaseDeploymentIdentity): Promise<boolean>;
   getGithubAssetDigest(tag: string, name: string): Promise<string | null>;
   getGithubRelease(tag: string): Promise<{ prerelease: boolean } | null>;
   getProtectedRefSha(channel: Exclude<ReleaseChannel, 'dev'>): Promise<string | null>;
@@ -129,6 +138,47 @@ function sourceRelease(
   const release = mutation.state.releases[bundleId];
   if (!release) throw new Error(`release provider cannot resolve immutable release ${bundleId}`);
   return release;
+}
+
+function deploymentIdentity(
+  mutation: ReleaseMutationResult,
+  bundleId: string,
+  environment: string,
+): ReleaseDeploymentIdentity {
+  const release = sourceRelease(mutation, bundleId);
+  const manifest = Object.entries(mutation.state.channels).find(
+    ([channel, candidate]) =>
+      environment === `consuelo-os-${channel}` &&
+      candidate?.payload.bundleId === bundleId,
+  )?.[1];
+  if (!manifest) {
+    throw new Error(
+      'release provider cannot resolve signed manifest for ' + bundleId,
+    );
+  }
+  return {
+    authority: 'signed-r2-channel-manifest',
+    bundleId,
+    environment,
+    manifestDigest: 'sha256:' + createHash('sha256')
+      .update(canonicalReleaseJson(manifest))
+      .digest('hex'),
+    platforms: release.bundles
+      .map((bundle) => ({
+        architecture: bundle.architecture,
+        archiveDigest: bundle.archiveDigest,
+        bundleId: bundle.bundleId,
+        platform: bundle.platform,
+      }))
+      .sort((left, right) =>
+        (left.platform + '-' + left.architecture).localeCompare(
+          right.platform + '-' + right.architecture,
+        ),
+      ),
+    releaseFingerprint: release.releaseFingerprint,
+    sourceCommit: release.sourceCommit,
+    version: release.version,
+  };
 }
 
 function bundlePublication(
@@ -466,23 +516,30 @@ export function createReleaseProviderCommandBackend(
 
   return {
     createDeployment(input) {
+      const identity = canonicalReleaseJson(input);
+      const identityDigest = createHash('sha256').update(identity).digest('hex');
       return runRequired(command(
         'gh',
-        `create GitHub Deployment ${input.environment}`,
+        'create GitHub Deployment ' + input.environment,
         'api',
         '-X',
         'POST',
-        `repos/${config.githubRepository}/deployments`,
+        'repos/' + config.githubRepository + '/deployments',
         '-f',
-        `ref=${input.sourceCommit}`,
+        'ref=' + input.sourceCommit,
         '-f',
-        `environment=${input.environment}`,
+        'environment=' + input.environment,
         '-F',
         'auto_merge=false',
+        // The workflow gates this job first; inheriting contexts here includes this running job.
         '-F',
         'required_contexts[]',
         '-f',
-        `payload[bundleId]=${input.bundleId}`,
+        'payload[authority]=' + input.authority,
+        '-f',
+        'payload[releaseIdentity]=' + identity,
+        '-f',
+        'payload[identityDigest]=sha256:' + identityDigest,
       )).then(() => undefined);
     },
     createGithubRelease(input) {
@@ -529,19 +586,30 @@ export function createReleaseProviderCommandBackend(
       )).then(() => undefined);
     },
     async deploymentExists(input) {
-      const deployments = await runJson<Array<{ payload?: { bundleId?: string } }>>(command(
+      const deployments = await runJson<Array<{
+        payload?: { releaseIdentity?: unknown };
+      }>>(command(
         'gh',
-        `read GitHub Deployments for ${input.environment}`,
+        'read GitHub Deployments for ' + input.environment,
         'api',
         '-X',
         'GET',
-        `repos/${config.githubRepository}/deployments`,
+        'repos/' + config.githubRepository + '/deployments',
         '-f',
-        `environment=${input.environment}`,
+        'environment=' + input.environment,
         '-f',
-        `ref=${input.sourceCommit}`,
+        'ref=' + input.sourceCommit,
       ));
-      return Boolean(deployments?.some((deployment) => deployment.payload?.bundleId === input.bundleId));
+      const expected = canonicalReleaseJson(input);
+      return Boolean(deployments?.some((deployment) => {
+        const encoded = deployment.payload?.releaseIdentity;
+        if (typeof encoded !== 'string') return false;
+        try {
+          return canonicalReleaseJson(JSON.parse(encoded)) === expected;
+        } catch {
+          return false;
+        }
+      }));
     },
     async getGithubAssetDigest(tag, name) {
       const release = await runJson<{ assets?: Array<{ digest?: string | null; name: string }> }>(command(
@@ -746,6 +814,22 @@ function ensureImmutableDigest(
   return write();
 }
 
+function allocationReservationState(
+  remoteState: ReleaseState | null,
+  targetState: ReleaseState,
+): ReleaseState {
+  const reserved = structuredClone(remoteState ?? createEmptyReleaseState());
+  for (const [key, version] of Object.entries(targetState.allocations)) {
+    const current = reserved.allocations[key];
+    if (current !== undefined && current !== version) {
+      throw new Error(
+        'release allocation ' + key + ' is already reserved as ' + current,
+      );
+    }
+    reserved.allocations[key] = version;
+  }
+  return reserved;
+}
 function assertRemoteStateRevision(
   remoteState: ReleaseState | null,
   targetState: ReleaseState,
@@ -781,6 +865,34 @@ export async function executeReleaseProviderMutation(
   const root = mkdtempSync(join(tmpdir(), 'consuelo-release-provider-'));
   try {
     const files = materializeMutationFiles(input.mutation, root);
+    const reservationState = allocationReservationState(
+      remoteState,
+      input.mutation.state,
+    );
+    let authoritativeState = remoteState ?? createEmptyReleaseState();
+    if (
+      canonicalReleaseJson(reservationState) !==
+      canonicalReleaseJson(authoritativeState)
+    ) {
+      const latestBeforeReservation = await backend.getReleaseState();
+      if (
+        canonicalReleaseJson(latestBeforeReservation) !==
+        canonicalReleaseJson(remoteState)
+      ) {
+        throw new Error(
+          'remote release state changed before allocation reservation',
+        );
+      }
+      const reservationPath = join(root, 'release-allocation-reservation.json');
+      writeFileSync(
+        reservationPath,
+        JSON.stringify(reservationState, null, 2) + '\n',
+        { mode: 0o600 },
+      );
+      await backend.putR2Object('state/release-state.json', reservationPath);
+      authoritativeState = reservationState;
+    }
+
     for (const operation of input.mutation.operations) {
       switch (operation.kind) {
         case 'create-immutable-tag': {
@@ -852,11 +964,11 @@ export async function executeReleaseProviderMutation(
           break;
         }
         case 'create-github-deployment': {
-          const deployment = {
-            bundleId: operation.bundleId,
-            environment: operation.environment,
-            sourceCommit: input.sourceCommit,
-          };
+          const deployment = deploymentIdentity(
+            input.mutation,
+            operation.bundleId,
+            operation.environment,
+          );
           if (!await backend.deploymentExists(deployment)) {
             await backend.createDeployment(deployment);
           }
@@ -912,7 +1024,10 @@ export async function executeReleaseProviderMutation(
     }
 
     const latestRemoteState = await backend.getReleaseState();
-    if (canonicalReleaseJson(latestRemoteState) !== canonicalReleaseJson(remoteState)) {
+    if (
+      canonicalReleaseJson(latestRemoteState) !==
+      canonicalReleaseJson(authoritativeState)
+    ) {
       throw new Error('remote release state changed during provider mutation');
     }
     await backend.putR2Object('state/release-state.json', files.statePath);

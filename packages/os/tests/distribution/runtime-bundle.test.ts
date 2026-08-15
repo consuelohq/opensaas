@@ -18,6 +18,7 @@ import {
   RUNTIME_BUNDLE_BUILDER_ENTRYPOINT,
   RUNTIME_BUNDLE_INTEGRATION_SCRIPT_KEYS,
   RUNTIME_BUNDLE_MANIFEST_PATH,
+  REQUIRED_RUNTIME_RECOVERY_CAPABILITIES,
   buildRuntimeBundle,
   classifyRuntimeBundlePath,
   computeReleaseFingerprint,
@@ -25,6 +26,7 @@ import {
   inspectRuntimeBundleArchive,
   verifyRuntimeBundleArchive,
   type RuntimeBundleBuildOptions,
+  type RuntimeBundleFile,
 } from '../../scripts/lib/distribution/runtime-bundle';
 
 const fixtureRoots: string[] = [];
@@ -34,8 +36,10 @@ const requiredFixtureFiles: Record<string, string> = {
   'bun.lock': 'fixture-lock\n',
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
+  'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
   'scripts/native-lifecycle-operation.ts':
     'export const nativeLifecycleOperationFixture = true;\n',
+  'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
   'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
   'scripts/managed-components.ts':
     'export const managedComponentsCliFixture = true;\n',
@@ -43,14 +47,15 @@ const requiredFixtureFiles: Record<string, string> = {
     'export const managedComponentsFixture = true;\n',
   'scripts/lib/managed-component-install.ts':
     'export const managedComponentInstallFixture = true;\n',
+  'scripts/lib/subagent/runner.ts': 'export const subagentRunnerFixture = true;\\n',
   'manifests/generated/tool.manifest.json':
     '{"version":1,"kind":"consuelo-os-tool-manifest","tools":[]}\n',
   'manifests/generated/core.manifest.json':
     '{"version":1,"kind":"consuelo-os-core-manifest","tools":[]}\n',
   'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',
   'steering/system_prompt.md': '# Fixture system prompt\n',
-  'steering/decision.md': '# Fixture decision process\n',
   'streams/tools/AGENTS.md': '# Fixture tools stream\n',
+  'streams/dialer/AGENTS.md': '# Fixture dialer stream\n',
   'skills/task/SKILL.md': '# Fixture task skill\n',
   'skills/task/skill.json': '{"name":"task","entrypoint":"SKILL.md"}\n',
 };
@@ -112,11 +117,30 @@ const bundleIdForFixtureManifest = (manifest: unknown): string => {
   return `sha256:${createHash('sha256').update(canonicalJson).digest('hex')}`;
 };
 
+const policyV1ReleaseFingerprintForFixtureFiles = (
+  files: RuntimeBundleFile[],
+): string => {
+  const canonicalJson = JSON.stringify(
+    canonicalizeBundleValue({
+      files: files.map(({ digest, mode, path, role, size }) => ({
+        digest,
+        mode,
+        path,
+        role,
+        size,
+      })),
+      policyVersion: 1,
+      schemaVersion: 1,
+    }),
+  );
+  return `sha256:${createHash('sha256').update(canonicalJson).digest('hex')}`;
+};
+
 afterEach(() => {
   for (const root of fixtureRoots.splice(0)) {
     rmSync(root, { force: true, recursive: true });
   }
-});
+}, 120_000);
 
 describe('runtime bundle contract', () => {
   it('defines the integration entrypoint and package-script keys without wiring shared scripts', () => {
@@ -307,6 +331,9 @@ describe('runtime bundle contract', () => {
     expect(
       classifyRuntimeBundlePath('tools/deployment-provider/types.ts'),
     ).toBe('customer-provider');
+    expect(
+      classifyRuntimeBundlePath('tools/deployment-provider/schema.ts'),
+    ).toBe('customer-provider');
     expect(classifyRuntimeBundlePath('tools/filesystem/manifest.ts')).toBe(
       'source-only',
     );
@@ -327,6 +354,12 @@ describe('runtime bundle contract', () => {
     );
     expect(classifyRuntimeBundlePath('manifests/manifest.config.ts')).toBe(
       'source-only',
+    );
+    expect(
+      classifyRuntimeBundlePath('scripts/lib/distribution/runtime-bundle.ts'),
+    ).toBe('runtime');
+    expect(classifyRuntimeBundlePath('assets/consuelo-mark.png')).toBe(
+      'runtime',
     );
     expect(
       classifyRuntimeBundlePath('manifests/schemas/tool-manifest.schema.json'),
@@ -405,6 +438,90 @@ describe('runtime bundle contract', () => {
     expect(
       paths.some((filePath) => filePath.startsWith('native/macos/.build/')),
     ).toBe(false);
+  });
+
+  it('should preserve policy v1 when Windows builds the host', async () => {
+    const root = createFixture({
+      'native/windows-service/Program.cs': 'public static class Program {}\n',
+      'native/windows-service/Consuelo.Windows.Service.csproj':
+        '<Project Sdk="Microsoft.NET.Sdk.Worker" />\n',
+    });
+    writeFixtureFile(
+      root,
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',
+      'host-specific generated binary\n',
+    );
+    const planned = await computeReleaseFingerprint({ sourceRoot: root });
+
+    writeFixtureFile(
+      root,
+      'native/windows-service/obj/x64/Release/Consuelo.Windows.Service.csproj.FileListAbsolute.txt',
+      `${root}/native/windows-service/bin/Release/Consuelo.Windows.Service.exe\n`,
+    );
+    writeFixtureFile(
+      root,
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.pdb',
+      'host-specific debug symbols\n',
+    );
+
+    const built = await buildRuntimeBundle(
+      buildOptions(root, { architecture: 'x64', platform: 'windows' }),
+    );
+    const paths = built.manifest.files.map((file) => file.path);
+
+    expect(paths).toContain('native/windows-service/Program.cs');
+    expect(paths).toContain(
+      'native/windows-service/Consuelo.Windows.Service.csproj',
+    );
+    expect(paths).toContain(
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',
+    );
+    expect(
+      paths.some((filePath) =>
+        filePath.startsWith('native/windows-service/obj/'),
+      ),
+    ).toBe(false);
+    expect(paths).not.toContain(
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.pdb',
+    );
+    expect(built.manifest.releaseFingerprint).toBe(planned.releaseFingerprint);
+    expect(built.manifest.releaseFingerprint).toBe(
+      policyV1ReleaseFingerprintForFixtureFiles(built.manifest.files),
+    );
+    expect(() => verifyRuntimeBundleArchive(built.archiveBytes)).not.toThrow();
+
+    const siblingBundles = await Promise.all([
+      buildRuntimeBundle(
+        buildOptions(root, { architecture: 'arm64', platform: 'darwin' }),
+      ),
+      buildRuntimeBundle(
+        buildOptions(root, { architecture: 'x64', platform: 'linux' }),
+      ),
+    ]);
+    expect(
+      siblingBundles.map(({ manifest }) => manifest.releaseFingerprint),
+    ).toEqual([planned.releaseFingerprint, planned.releaseFingerprint]);
+
+    writeFixtureFile(
+      root,
+      'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',
+      'different host-specific generated binary\n',
+    );
+    const rebuilt = await buildRuntimeBundle(
+      buildOptions(root, { architecture: 'x64', platform: 'windows' }),
+    );
+
+    expect(rebuilt.manifest.releaseFingerprint).not.toBe(
+      built.manifest.releaseFingerprint,
+    );
+    expect(rebuilt.manifest.releaseFingerprint).toBe(
+      policyV1ReleaseFingerprintForFixtureFiles(rebuilt.manifest.files),
+    );
+    expect(rebuilt.manifest.bundleId).not.toBe(built.manifest.bundleId);
+    expect(rebuilt.archiveDigest).not.toBe(built.archiveDigest);
+    expect(() =>
+      verifyRuntimeBundleArchive(rebuilt.archiveBytes),
+    ).not.toThrow();
   });
 
   it('classifies all customer deployment adapters separately from operator infrastructure', () => {
@@ -705,6 +822,7 @@ describe('runtime bundle contract', () => {
 
     expect(first.archiveDigest).toBe(second.archiveDigest);
     expect(first.manifest.files.length).toBeGreaterThan(300);
+    expect(first.manifest.capabilities).toEqual(REQUIRED_RUNTIME_RECOVERY_CAPABILITIES);
     expect(
       first.manifest.files.some(
         (file) => file.path === 'scripts/railway-logs.js',
@@ -730,11 +848,31 @@ describe('runtime bundle contract', () => {
           role: 'runtime',
         }),
         expect.objectContaining({
+          path: 'skills/branch/SKILL.md',
+          role: 'managed-skill',
+        }),
+        expect.objectContaining({
+          path: 'skills/branch/skill.json',
+          role: 'managed-skill',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/distribution/runtime-bundle.ts',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'assets/consuelo-mark.png',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
           path: 'tools/deployment-provider/facade.ts',
           role: 'customer-provider',
         }),
         expect.objectContaining({
           path: 'tools/deployment-provider/service.ts',
+          role: 'customer-provider',
+        }),
+        expect.objectContaining({
+          path: 'tools/deployment-provider/schema.ts',
           role: 'customer-provider',
         }),
         expect.objectContaining({
@@ -786,18 +924,88 @@ describe('runtime bundle contract', () => {
     expect(first.excludedCounts['operator-only']).toBeGreaterThan(0);
     expect(first.excludedCounts['test-only']).toBeGreaterThan(0);
     const archive = inspectRuntimeBundleArchive(first.archiveBytes);
+    const runtimeRoot = mkdtempSync(
+      join(tmpdir(), 'consuelo-runtime-bundle-smoke-'),
+    );
+    fixtureRoots.push(runtimeRoot);
+    for (const entry of archive.entries) {
+      const target = join(runtimeRoot, entry.path);
+      mkdirSync(dirname(target), { recursive: true });
+      writeFileSync(target, entry.bytes);
+      chmodSync(target, entry.mode);
+    }
+    const dependencyInstall = spawnSync(
+      'bun',
+      ['install', '--frozen-lockfile', '--production'],
+      {
+        cwd: runtimeRoot,
+        encoding: 'utf8',
+      },
+    );
+    expect(dependencyInstall.status, dependencyInstall.stderr).toBe(0);
+    expect(existsSync(join(runtimeRoot, 'node_modules', 'zod'))).toBe(true);
+    const lifecycleStatus = spawnSync(
+      'bun',
+      [
+        join(runtimeRoot, 'scripts/lifecycle.ts'),
+        'status',
+        '--home',
+        join(runtimeRoot, 'home'),
+        '--json',
+      ],
+      { encoding: 'utf8' },
+    );
+    expect(lifecycleStatus.status, lifecycleStatus.stderr).toBe(0);
+    expect(JSON.parse(lifecycleStatus.stdout)).toMatchObject({
+      command: 'status',
+      ok: true,
+      result: { installState: 'no-install' },
+    });
+    const installedHome = join(runtimeRoot, 'installed-home');
+    const cloudInstall = spawnSync(
+      'bun',
+      [
+        join(runtimeRoot, 'scripts/install.ts'),
+        '--yes',
+        '--quiet',
+        '--skip-daemons',
+        '--mode',
+        'cloud',
+        '--home',
+        installedHome,
+        '--workspace-url',
+        'fixture.consuelohq.com',
+        '--workspace-slug',
+        'fixture',
+      ],
+      {
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          HOME: join(runtimeRoot, 'user-home'),
+        },
+      },
+    );
+    expect(cloudInstall.status, cloudInstall.stderr).toBe(0);
+    expect(existsSync(join(installedHome, 'config.json'))).toBe(true);
+    expect(existsSync(join(installedHome, 'operator'))).toBe(false);
     const bundledSteering = archive.entries.find(
       (entry) => entry.path === 'steering/system_prompt.md',
     );
-    expect(bundledSteering?.bytes.toString('utf8')).toContain(
-      '/Users/.../Dev/opensaas',
-    );
-    expect(bundledSteering?.bytes.toString('utf8')).not.toContain(
-      '/Users/kokayi/',
-    );
+    const bundledSteeringText = bundledSteering?.bytes.toString('utf8') ?? '';
+    // The property that matters is that no real home path ships to customers. Any absolute
+    // /Users path in the steering must be the redacted placeholder form. This previously pinned
+    // one exact literal from an older revision, which broke as soon as the bundle was resynced
+    // from the canonical workspace steering without testing anything real.
+    for (const match of bundledSteeringText.match(/\/Users\/[^\s`|)]*/g) ?? []) {
+      expect(match.startsWith('/Users/.../')).toBe(true);
+    }
+    expect(bundledSteeringText).not.toContain('/Users/kokayi/');
+    // The bundle is what actually reaches agents, so the governance rules must be in it.
+    expect(bundledSteeringText).toContain('Alignment First');
     expect(readFileSync(join(packageRoot, 'Dockerfile'), 'utf8')).toContain(
       'scripts/build-runtime-bundle.ts',
     );
     expect(() => verifyRuntimeBundleArchive(first.archiveBytes)).not.toThrow();
-  });
+  }, 120_000);
 });

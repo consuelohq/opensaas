@@ -66,7 +66,7 @@ describe('OS device authority connector provisioning', () => {
       CLOUDFLARE_API_TOKEN: 'api_token_123',
       OS_DEVICE_AUTH_BASE_DOMAIN: 'consuelohq.com',
       OS_DEVICE_AUTH_CLOUDFLARE_API_BASE_URL: 'https://api.cloudflare.test/client/v4',
-      OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL: 'http://127.0.0.1:46321',
+      OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL: 'http://127.0.0.1:46320',
     } satisfies Env;
     const provision = createWorkspaceConnectorProvisionerFromEnv(env, fetchImpl);
 
@@ -83,14 +83,17 @@ describe('OS device authority connector provisioning', () => {
       cloudflareTunnelToken: 'tunnel_token_123',
       tunnelOriginUrl:
         'https://c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
-      localServiceUrl: 'http://127.0.0.1:46321',
+      localServiceUrl: 'http://127.0.0.1:46320',
     });
     expect(calls[3]?.body).toEqual({
       config: {
         ingress: [
           {
             hostname: 'c-ad94b888d3062f30e27d571fdeb3d6f4.consuelohq.com',
-            service: 'http://127.0.0.1:46321',
+            service: 'http://127.0.0.1:46320',
+            originRequest: {
+              httpHostHeader: 'testing45-78.consuelohq.com',
+            },
           },
           { service: 'http_status:404' },
         ],

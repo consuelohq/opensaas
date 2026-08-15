@@ -27,7 +27,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 
 | Category | Tools |
 | --- | ---: |
-| artifacts | 21 |
+| artifacts | 22 |
 | codemode | 2 |
 | composed | 3 |
 | decision engine | 6 |
@@ -37,11 +37,14 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | git | 1 |
 | github | 2 |
 | http | 1 |
+| lifecycle | 2 |
 | linear | 8 |
 | mac | 8 |
 | media | 25 |
 | memory | 1 |
+| observability | 1 |
 | review | 4 |
+| security | 1 |
 | sentry | 7 |
 | stream | 4 |
 | subagent | 1 |
@@ -1238,6 +1241,66 @@ show vendored Open Design metadata and runtime requirements
 await workspace.call({
   "tool": "artifacts.upstreamStatus",
   "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.dailySchedules.publish
+
+publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index
+
+| Field | Value |
+| --- | --- |
+| Category | artifacts |
+| Signature | `workspace.dailySchedules.publish({ kind: "security-scan" &#124; "security-workpad" &#124; "self-healing-workpad"; sourceFile?: string; content?: string; format?: "auto" &#124; "json" &#124; "markdown" &#124; "text"; date?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `Consuelo durable artifact catalog` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "dailySchedules.publish",
+  "input": {
+    "kind": "security-workpad",
+    "sourceFile": "/tmp/security-workpad.md"
+  }
 });
 ```
 
@@ -2576,7 +2639,7 @@ read bounded text or supported media from files with pagination, MIME metadata, 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.read(({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } &#124; { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })) => Promise<ToolResult<({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } &#124; { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } &#124; { type: "media"; path: string; mime: "image/png" &#124; "image/jpeg" &#124; "image/gif" &#124; "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) &#124; { type: "error"; code: string; path?: string; message: string } &#124; { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } &#124; { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } &#124; { type: "media"; path: string; mime: "image/png" &#124; "image/jpeg" &#124; "image/gif" &#124; "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } &#124; { path: string; ok: false; error: { type: "error"; code: string; path?: string; message: string } }> }>>` |
+| Signature | `workspace.fs.read(({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; full?: boolean; branch?: string; requestId?: string; taskSession?: string } &#124; { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number; full?: boolean }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; full?: never; branch?: string; requestId?: string; taskSession?: string })) => Promise<ToolResult<({ type: "text-full"; path: string; mime: string; encoding: "utf8"; sizeBytes: number; lines: number; content: string } &#124; { type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } &#124; { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } &#124; { type: "media"; path: string; mime: "image/png" &#124; "image/jpeg" &#124; "image/gif" &#124; "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) &#124; { type: "error"; code: string; path?: string; message: string } &#124; { results: Array<{ path: string; ok: true; page: ({ type: "text-full"; path: string; mime: string; encoding: "utf8"; sizeBytes: number; lines: number; content: string } &#124; { type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } &#124; { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } &#124; { type: "media"; path: string; mime: "image/png" &#124; "image/jpeg" &#124; "image/gif" &#124; "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } &#124; { path: string; ok: false; error: { type: "error"; code: string; path?: string; message: string } }> }>>` |
 | Runtime | `workspace fs read, or task:fs read when a branch is resolved` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 30000ms |
@@ -3145,6 +3208,124 @@ await workspace.call({
   "input": {
     "method": "get",
     "url": "https://example.com"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## lifecycle
+
+### workspace.lifecycle.status
+
+check Consuelo OS lifecycle and runtime status, including the latest durable update operation
+
+| Field | Value |
+| --- | --- |
+| Category | lifecycle |
+| Signature | `workspace.lifecycle.status({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace lifecycle.status` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "lifecycle.status",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.lifecycle.update
+
+update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater
+
+| Field | Value |
+| --- | --- |
+| Category | lifecycle |
+| Signature | `workspace.lifecycle.update({ channel?: "stable" &#124; "beta" &#124; "canary" &#124; "dev" &#124; "nightly"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace lifecycle.update` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "lifecycle.update",
+  "input": {
+    "channel": "stable"
   }
 });
 ```
@@ -5701,6 +5882,65 @@ await workspace.call({
 }
 ```
 
+## observability
+
+### workspace.monitor.errors
+
+analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates
+
+| Field | Value |
+| --- | --- |
+| Category | observability |
+| Signature | `workspace.monitor.errors({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `Consuelo canonical OS trace database and current OS tool contracts` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "monitor.errors",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## review
 
 ### workspace.aiReview
@@ -5904,6 +6144,65 @@ await workspace.call({
     "noStamp": true,
     "dryRun": true
   }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## security
+
+### workspace.security.scan
+
+run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths
+
+| Field | Value |
+| --- | --- |
+| Category | security |
+| Signature | `workspace.security.scan({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `Consuelo defensive repository security scanners` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 900000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "security.scan",
+  "input": {}
 });
 ```
 
@@ -6604,12 +6903,12 @@ await workspace.call({
 
 ### workspace.subagent
 
-run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.
+run or start a subagent from an instruction handoff. Write the handoff to OS tmp first under the canonical opensaas-handoffs root; model and reasoning selection are provider-specific and surfaced explicitly. Edit self-bootstrap may call task.start first, or an existing taskSession may be supplied. task.push publishes only the task branch. task.pr merges to the stream and must not be called when the handoff says stop after push. status/wait/logs attach to an existing run and never spawn; cancel targets runId. requestId makes retries idempotent. Provider capability limitations are returned explicitly and never silently weakened. Return one compact trace-style summary with traceId, files read, files edited, tools called, and token usage.
 
 | Field | Value |
 | --- | --- |
 | Category | subagent |
-| Signature | `workspace.subagent({ provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; bundle?: "core" &#124; "media"; policy?: "read" &#124; "edit"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; outputFormat?: "text" &#124; "json"; workspaceOnly?: boolean &#124; "preferred" &#124; "strict"; requestId?: string }) => Promise<ToolResult<{ provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; bundle: "core" &#124; "media"; outputFormat: "text" &#124; "json"; mode: "work"; policy: "read" &#124; "edit"; status: "completed" &#124; "failed" &#124; "not_configured" &#124; "not_supported" &#124; "timed_out"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary?: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" &#124; "strict" &#124; false; rawShellUsed: boolean } }>>` |
+| Signature | `workspace.subagent({ action?: "run" &#124; "start" &#124; "status" &#124; "wait" &#124; "logs" &#124; "cancel"; provider?: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; reasoningEffort?: "minimal" &#124; "low" &#124; "medium" &#124; "high" &#124; "xhigh"; bundle?: "core" &#124; "media"; policy?: "read" &#124; "edit"; instructionPath?: string; cwd?: string; runId?: string; waitMs?: number; taskSession?: string; timeoutMs?: number; outputFormat?: "text" &#124; "json"; workspaceOnly?: boolean &#124; "preferred" &#124; "strict"; requestId?: string }) => Promise<ToolResult<{ action?: "run" &#124; "start" &#124; "status" &#124; "wait" &#124; "logs" &#124; "cancel"; runId?: string; requestId?: string; provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; reasoningEffort?: "minimal" &#124; "low" &#124; "medium" &#124; "high" &#124; "xhigh"; bundle: "core" &#124; "media"; outputFormat: "text" &#124; "json"; mode: "work"; policy: "read" &#124; "edit"; status: "starting" &#124; "running" &#124; "completed" &#124; "failed" &#124; "cancelled" &#124; "completion_unknown" &#124; "not_configured" &#124; "not_supported" &#124; "timed_out"; capabilities?: { modelSelection: boolean; reasoningEffort: boolean; strictWorkspaceOnly: boolean; edit: boolean; detachedExecution: boolean }; unsupportedCapabilities?: string[]; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary?: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" &#124; "strict" &#124; false; rawShellUsed: boolean } }>>` |
 | Runtime | `workspace subagent` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -6620,10 +6919,13 @@ run a subagent with a tmp instruction file. use only when the user asks for suba
 await workspace.call({
   "tool": "subagent",
   "input": {
-    "provider": "grok",
-    "bundle": "media",
-    "policy": "read",
-    "instructionPath": "/tmp/ko-social.md",
+    "action": "start",
+    "provider": "codex",
+    "model": "gpt-5.6-luna",
+    "reasoningEffort": "xhigh",
+    "policy": "edit",
+    "instructionPath": "/tmp/opensaas-handoffs/repair.md",
+    "requestId": "req_repair_once",
     "outputFormat": "json"
   }
 });
@@ -6643,6 +6945,7 @@ await workspace.call({
   "exitCode": 0,
   "durationMs": 12,
   "traceId": "trc_abc123def456",
+  "requestId": "req_repair_once",
   "apiVersion": "1.0.0"
 }
 ```
@@ -6661,6 +6964,7 @@ await workspace.call({
   "exitCode": 1,
   "durationMs": 12,
   "traceId": "trc_abc123def456",
+  "requestId": "req_repair_once",
   "apiVersion": "1.0.0"
 }
 ```
@@ -7032,7 +7336,7 @@ merge task to stream and create or refresh the stream review PR
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.pr({ branch?: string; pr?: string &#124; number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.task.pr({ branch?: string; repo?: string; pr?: string &#124; number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; ackWorkpadIncomplete?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace task.pr` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -7152,7 +7456,7 @@ push changed task files to the task branch through GitHub API
 | Field | Value |
 | --- | --- |
 | Category | task lifecycle |
-| Signature | `workspace.task.push({ branch?: string; pr?: string &#124; number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.task.push({ branch?: string; repo?: string; pr?: string &#124; number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace task.push` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -7330,13 +7634,13 @@ await workspace.call({
 
 ### workspace.tools.search
 
-search workspace tools by intent and return ranked usage guidance
+search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback
 
 | Field | Value |
 | --- | --- |
 | Category | tooling |
-| Signature | `workspace.tools.search({ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: "high" &#124; "medium" &#124; "low"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record<string, number>; description?: string; capabilities: Record<string, unknown>; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; docs?: { heading: string; snippet: string; source: string }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string &#124; Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }>>` |
-| Runtime | `workspace tools.search` |
+| Signature | `workspace.tools.search({ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; detail?: "compact" &#124; "full"; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; confidence: "high" &#124; "medium" &#124; "low"; ambiguous: boolean; retrievalMode: "exact" &#124; "deterministic" &#124; "semantic-fallback" &#124; "abstain"; recommended?: string; matches: Array<{ name: string; category?: string; description?: string; capabilities: { readOnly: boolean; mutating: boolean }; inputSignature?: string; sessionRequired?: boolean }>; diagnostics?: Record<string, unknown> }>>` |
+| Runtime | `Consuelo OS tools.search` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 30000ms |
 
@@ -9325,6 +9629,7 @@ Every result includes `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `du
 
 `OK`, `VALIDATION_ERROR`, `AMBIGUOUS_TASK_SELECTION`, `WORKTREE_NOT_FOUND`, `COMMAND_FAILED`, `TIMEOUT`, `PARSE_ERROR`, `NOT_FOUND`, `TASK_SESSION_REQUIRED`, `TASK_SESSION_NOT_FOUND`, `DRY_RUN`.
 
+Lifecycle actions also return CAPABILITY_NOT_SUPPORTED, WAIT_TIMEOUT, and IDEMPOTENCY_CONFLICT where applicable.
 ## final rule
 
 The tool manifest is executable contract, not prose. If the docs and manifest disagree, regenerate this file from the manifest and trust the manifest-backed generator.

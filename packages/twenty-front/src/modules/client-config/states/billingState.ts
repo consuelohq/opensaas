@@ -1,4 +1,4 @@
-import { type Billing } from '~/generated-metadata/graphql';
+import { type Billing } from '@/client-config/types/ClientConfig';
 import { createState } from '@/ui/utilities/state/utils/createState';
 
 export const billingState = createState<Billing | null>({

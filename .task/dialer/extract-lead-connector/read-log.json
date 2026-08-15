@@ -1,0 +1,10 @@
+{
+  "files": [
+    "package.json",
+    "packages/api/jest.config.mjs",
+    "packages/api/src/routes/ghl.ts",
+    "packages/dialer-server/tsconfig.json",
+    "packages/lead-connector/src/application.contract.test.ts"
+  ],
+  "updatedAt": "2026-07-24T01:11:32.035Z"
+}
