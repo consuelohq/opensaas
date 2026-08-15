@@ -894,6 +894,36 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused native menu node discovery contracts instead of the broad OS package suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/native-lifecycle-endpoint.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/operator-token-store.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/workspace-node-heartbeat-client.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-native-menu-node-discovery',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual(
+      expect.arrayContaining([
+        'OS native lifecycle node discovery contracts',
+        'OS node heartbeat script contracts',
+        'OS operator login contracts',
+        'OS node heartbeat client contracts',
+        'OS workspace node routing contracts',
+        'OS native menu node discovery syntax contracts',
+      ]),
+    );
+  });
+
   it('runs focused Consuelo OS contracts with Bun, OS cwd, and root Vitest', () => {
     const registry = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'packages/workspace/test-selection.registry.json'), 'utf8'));
     const rules = new Map(registry.rules.map((rule) => [rule.id, rule]));
