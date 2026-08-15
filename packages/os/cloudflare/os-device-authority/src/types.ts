@@ -135,6 +135,25 @@ export type WorkspaceTaskAffinityClaim = {
   affinity: WorkspaceTaskAffinity;
 };
 
+export type WorkspaceSessionKind = 'task' | 'work';
+
+export type WorkspaceSessionAffinity = {
+  accountId: string;
+  workspaceId?: string;
+  workspaceHost: string;
+  sessionKind: WorkspaceSessionKind;
+  sessionId: string;
+  ownerNodeId: string;
+  createdAt: number;
+  updatedAt: number;
+  expiresAt?: number;
+};
+
+export type WorkspaceSessionAffinityClaim = {
+  status: 'created' | 'existing' | 'conflict';
+  affinity: WorkspaceSessionAffinity;
+};
+
 export type WorkspaceAgentName =
   | 'codex'
   | 'cursor'
@@ -433,6 +452,23 @@ export type Store = {
     accountId: string;
     workspaceHost: string;
     taskSession: string;
+    ownerNodeId: string;
+  }): Promise<boolean>;
+  byWorkspaceSessionAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    sessionKind: WorkspaceSessionKind;
+    sessionId: string;
+    nowMs?: number;
+  }): Promise<WorkspaceSessionAffinity | undefined>;
+  claimWorkspaceSessionAffinity(
+    affinity: WorkspaceSessionAffinity,
+  ): Promise<WorkspaceSessionAffinityClaim>;
+  releaseWorkspaceSessionAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    sessionKind: WorkspaceSessionKind;
+    sessionId: string;
     ownerNodeId: string;
   }): Promise<boolean>;
   putNodeBootstrapCredential(

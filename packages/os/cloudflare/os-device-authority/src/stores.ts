@@ -12,6 +12,8 @@ import type {
   StorageLike,
   Store,
   WorkspaceNode,
+  WorkspaceSessionAffinity,
+  WorkspaceSessionKind,
   WorkspaceTaskAffinity,
   WorkspaceAgentStatus,
   WebOAuthState,
@@ -57,6 +59,7 @@ const MANAGED_CLOUD_PROVISIONING_QUEUE_KEY = 'mcpjq';
 const cloneManagedCloudProvisioningJob = (job: ManagedCloudProvisioningJob): ManagedCloudProvisioningJob => ({ ...job });
 
 export const WORKSPACE_TASK_AFFINITY_TTL_MS = 7 * 24 * 60 * 60_000;
+export const WORKSPACE_SESSION_AFFINITY_TTL_MS = WORKSPACE_TASK_AFFINITY_TTL_MS;
 
 const workspaceTaskAffinityExpiresAt = (affinity: WorkspaceTaskAffinity): number =>
   affinity.expiresAt ?? affinity.updatedAt + WORKSPACE_TASK_AFFINITY_TTL_MS;
@@ -64,6 +67,33 @@ const workspaceTaskAffinityExpiresAt = (affinity: WorkspaceTaskAffinity): number
 const cloneWorkspaceTaskAffinity = (affinity: WorkspaceTaskAffinity): WorkspaceTaskAffinity => ({
   ...affinity,
   expiresAt: workspaceTaskAffinityExpiresAt(affinity),
+});
+
+const workspaceTaskAffinityAsSession = (
+  affinity: WorkspaceTaskAffinity,
+): WorkspaceSessionAffinity => ({
+  accountId: affinity.accountId,
+  ...(affinity.workspaceId ? { workspaceId: affinity.workspaceId } : {}),
+  workspaceHost: affinity.workspaceHost,
+  sessionKind: 'task',
+  sessionId: affinity.taskSession,
+  ownerNodeId: affinity.ownerNodeId,
+  createdAt: affinity.createdAt,
+  updatedAt: affinity.updatedAt,
+  expiresAt: workspaceTaskAffinityExpiresAt(affinity),
+});
+
+const workspaceSessionAffinityAsTask = (
+  affinity: WorkspaceSessionAffinity,
+): WorkspaceTaskAffinity => ({
+  accountId: affinity.accountId,
+  ...(affinity.workspaceId ? { workspaceId: affinity.workspaceId } : {}),
+  workspaceHost: affinity.workspaceHost,
+  taskSession: affinity.sessionId,
+  ownerNodeId: affinity.ownerNodeId,
+  createdAt: affinity.createdAt,
+  updatedAt: affinity.updatedAt,
+  expiresAt: workspaceSessionAffinityExpiresAt(affinity),
 });
 
 const workspaceTaskAffinityOwnerIndexKey = (input: {
@@ -124,6 +154,75 @@ async function removeWorkspaceTaskAffinitiesForNode(
     }
   } catch {
     throw new Error('workspace task affinity owner cleanup failed');
+  }
+}
+
+const workspaceSessionAffinityKey = (input: {
+  accountId: string;
+  workspaceHost: string;
+  sessionKind: WorkspaceSessionKind;
+  sessionId: string;
+}): string =>
+  `wsa:${input.accountId}:${encodeURIComponent(input.workspaceHost)}:${input.sessionKind}:${encodeURIComponent(input.sessionId)}`;
+
+const workspaceSessionAffinityOwnerIndexKey = (input: {
+  accountId: string;
+  ownerNodeId: string;
+}): string => `wsan:${input.accountId}:${encodeURIComponent(input.ownerNodeId)}`;
+
+const workspaceSessionAffinityExpiresAt = (affinity: WorkspaceSessionAffinity): number =>
+  affinity.expiresAt ?? affinity.updatedAt + WORKSPACE_SESSION_AFFINITY_TTL_MS;
+
+const cloneWorkspaceSessionAffinity = (
+  affinity: WorkspaceSessionAffinity,
+): WorkspaceSessionAffinity => ({
+  ...affinity,
+  expiresAt: workspaceSessionAffinityExpiresAt(affinity),
+});
+
+async function indexWorkspaceSessionAffinityOwner(
+  storage: StorageLike,
+  affinity: WorkspaceSessionAffinity,
+  affinityKey: string,
+): Promise<void> {
+  const indexKey = workspaceSessionAffinityOwnerIndexKey(affinity);
+  const keys = (await storage.get<string[]>(indexKey)) ?? [];
+  if (!keys.includes(affinityKey)) await storage.put(indexKey, [...keys, affinityKey]);
+}
+
+async function removeWorkspaceSessionAffinityRecord(
+  storage: StorageLike,
+  affinityKey: string,
+  affinity: WorkspaceSessionAffinity,
+): Promise<void> {
+  await storage.delete(affinityKey);
+  const indexKey = workspaceSessionAffinityOwnerIndexKey(affinity);
+  const keys = (await storage.get<string[]>(indexKey)) ?? [];
+  const remaining = keys.filter((key) => key !== affinityKey);
+  if (remaining.length > 0) await storage.put(indexKey, remaining);
+  else await storage.delete(indexKey);
+}
+
+async function removeWorkspaceSessionAffinitiesForNode(
+  storage: StorageLike,
+  accountId: string,
+  ownerNodeId: string,
+): Promise<void> {
+  try {
+    const indexKey = workspaceSessionAffinityOwnerIndexKey({ accountId, ownerNodeId });
+    const indexedKeys = (await storage.get<string[]>(indexKey)) ?? [];
+    for (const affinityKey of indexedKeys) await storage.delete(affinityKey);
+    await storage.delete(indexKey);
+
+    if (!storage.list) return;
+    const records = await storage.list<WorkspaceSessionAffinity>({
+      prefix: `wsa:${accountId}:`,
+    });
+    for (const [affinityKey, affinity] of records) {
+      if (affinity.ownerNodeId === ownerNodeId) await storage.delete(affinityKey);
+    }
+  } catch {
+    throw new Error('workspace session affinity owner cleanup failed');
   }
 }
 
@@ -550,32 +649,37 @@ export class DurableStore implements Store {
   }
   async delWorkspaceNode(accountId: string, nodeId: string) {
     const remove = async (storage: StorageLike) => {
-      const boundAccountId = await storage.get<string>(`wni:${nodeId}`);
-      if (boundAccountId && boundAccountId !== accountId) {
-        throw new Error('workspace node ID is bound to another account');
-      }
-      const node = await storage.get<WorkspaceNode>(
-        `wn:${accountId}:${nodeId}`,
-      );
-      const nodeIds = (await storage.get<string[]>(`wnl:${accountId}`)) ?? [];
-      const hostNodeIds = node
-        ? ((await storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [])
-        : [];
-      await storage.delete(`wn:${accountId}:${nodeId}`);
-      if (boundAccountId === accountId) {
-        await storage.delete(`wni:${nodeId}`);
-      }
-      await storage.put(
-        `wnl:${accountId}`,
-        nodeIds.filter((candidate) => candidate !== nodeId),
-      );
-      if (node) {
-        await storage.put(
-          `wnh:${node.workspaceHost}`,
-          hostNodeIds.filter((candidate) => candidate !== nodeId),
+      try {
+        const boundAccountId = await storage.get<string>(`wni:${nodeId}`);
+        if (boundAccountId && boundAccountId !== accountId) {
+          throw new Error('workspace node ID is bound to another account');
+        }
+        const node = await storage.get<WorkspaceNode>(
+          `wn:${accountId}:${nodeId}`,
         );
+        const nodeIds = (await storage.get<string[]>(`wnl:${accountId}`)) ?? [];
+        const hostNodeIds = node
+          ? ((await storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [])
+          : [];
+        await storage.delete(`wn:${accountId}:${nodeId}`);
+        if (boundAccountId === accountId) {
+          await storage.delete(`wni:${nodeId}`);
+        }
+        await storage.put(
+          `wnl:${accountId}`,
+          nodeIds.filter((candidate) => candidate !== nodeId),
+        );
+        if (node) {
+          await storage.put(
+            `wnh:${node.workspaceHost}`,
+            hostNodeIds.filter((candidate) => candidate !== nodeId),
+          );
+        }
+        await removeWorkspaceTaskAffinitiesForNode(storage, accountId, nodeId);
+        await removeWorkspaceSessionAffinitiesForNode(storage, accountId, nodeId);
+      } catch {
+        throw new Error('workspace node delete transaction failed');
       }
-      await removeWorkspaceTaskAffinitiesForNode(storage, accountId, nodeId);
     };
     try {
       if (this.storage.transaction) {
@@ -621,6 +725,11 @@ export class DurableStore implements Store {
             hostNodeIds.filter((candidate) => candidate !== input.nodeId),
           );
           await removeWorkspaceTaskAffinitiesForNode(
+            storage,
+            input.accountId,
+            input.nodeId,
+          );
+          await removeWorkspaceSessionAffinitiesForNode(
             storage,
             input.accountId,
             input.nodeId,
@@ -807,6 +916,125 @@ export class DurableStore implements Store {
         : await release(this.storage);
     } catch {
       throw new Error('workspace task affinity release failed');
+    }
+  }
+
+  async byWorkspaceSessionAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    sessionKind: WorkspaceSessionKind;
+    sessionId: string;
+    nowMs?: number;
+  }) {
+    if (input.sessionKind === 'task') {
+      const affinity = await this.byWorkspaceTaskAffinity({
+        accountId: input.accountId,
+        workspaceHost: input.workspaceHost,
+        taskSession: input.sessionId,
+        ...(input.nowMs !== undefined ? { nowMs: input.nowMs } : {}),
+      });
+      return affinity ? workspaceTaskAffinityAsSession(affinity) : undefined;
+    }
+    try {
+      const key = workspaceSessionAffinityKey(input);
+      const affinity = await this.storage.get<WorkspaceSessionAffinity>(key);
+      if (!affinity) return undefined;
+      if (
+        input.nowMs !== undefined
+        && workspaceSessionAffinityExpiresAt(affinity) <= input.nowMs
+      ) {
+        await removeWorkspaceSessionAffinityRecord(this.storage, key, affinity);
+        return undefined;
+      }
+      return cloneWorkspaceSessionAffinity(affinity);
+    } catch {
+      throw new Error('workspace session affinity read failed');
+    }
+  }
+
+  async claimWorkspaceSessionAffinity(affinity: WorkspaceSessionAffinity) {
+    if (affinity.sessionKind === 'task') {
+      const claim = await this.claimWorkspaceTaskAffinity(
+        workspaceSessionAffinityAsTask(affinity),
+      );
+      return {
+        status: claim.status,
+        affinity: workspaceTaskAffinityAsSession(claim.affinity),
+      };
+    }
+    const claim = async (storage: StorageLike) => {
+      try {
+        const key = workspaceSessionAffinityKey(affinity);
+        const candidate = cloneWorkspaceSessionAffinity(affinity);
+        let existing = await storage.get<WorkspaceSessionAffinity>(key);
+        if (
+          existing
+          && workspaceSessionAffinityExpiresAt(existing) <= candidate.updatedAt
+        ) {
+          await removeWorkspaceSessionAffinityRecord(storage, key, existing);
+          existing = undefined;
+        }
+        if (existing) {
+          if (existing.ownerNodeId !== candidate.ownerNodeId) {
+            return {
+              status: 'conflict' as const,
+              affinity: cloneWorkspaceSessionAffinity(existing),
+            };
+          }
+          const refreshed = cloneWorkspaceSessionAffinity({
+            ...existing,
+            ...(candidate.workspaceId ? { workspaceId: candidate.workspaceId } : {}),
+            updatedAt: Math.max(existing.updatedAt, candidate.updatedAt),
+            expiresAt: candidate.expiresAt,
+          });
+          await storage.put(key, refreshed);
+          await indexWorkspaceSessionAffinityOwner(storage, refreshed, key);
+          return { status: 'existing' as const, affinity: refreshed };
+        }
+        await storage.put(key, candidate);
+        await indexWorkspaceSessionAffinityOwner(storage, candidate, key);
+        return { status: 'created' as const, affinity: candidate };
+      } catch {
+        throw new Error('workspace session affinity claim transaction failed');
+      }
+    };
+    try {
+      return this.storage.transaction
+        ? await this.storage.transaction((transaction) => claim(transaction))
+        : await claim(this.storage);
+    } catch {
+      throw new Error('workspace session affinity claim failed');
+    }
+  }
+
+  async releaseWorkspaceSessionAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    sessionKind: WorkspaceSessionKind;
+    sessionId: string;
+    ownerNodeId: string;
+  }) {
+    if (input.sessionKind === 'task') {
+      return this.releaseWorkspaceTaskAffinity({
+        accountId: input.accountId,
+        workspaceHost: input.workspaceHost,
+        taskSession: input.sessionId,
+        ownerNodeId: input.ownerNodeId,
+      });
+    }
+    const release = async (storage: StorageLike) => {
+      const key = workspaceSessionAffinityKey(input);
+      const existing = await storage.get<WorkspaceSessionAffinity>(key);
+      if (!existing || existing.ownerNodeId !== input.ownerNodeId) return false;
+      await removeWorkspaceSessionAffinityRecord(storage, key, existing);
+      return true;
+    };
+    try {
+      return this.storage.transaction
+        ? await this.storage.transaction((transaction) => release(transaction))
+        : await release(this.storage);
+    } catch {
+      throw new Error('workspace session affinity release failed');
     }
   }
 
@@ -1017,6 +1245,7 @@ export function createMemoryDeviceGrantStore(): Store {
   const workspaceBrowserSessions = new Map<string, WorkspaceBrowserSession>();
   const workspaceNodes = new Map<string, WorkspaceNode>();
   const workspaceTaskAffinities = new Map<string, WorkspaceTaskAffinity>();
+  const workspaceSessionAffinities = new Map<string, WorkspaceSessionAffinity>();
   const workspaceNodeAccounts = new Map<string, string>();
   const workspaceNodeNonces = new Map<string, number>();
   const nodeBootstrapCredentials = new Map<string, NodeBootstrapCredential>();
@@ -1260,6 +1489,11 @@ export function createMemoryDeviceGrantStore(): Store {
           workspaceTaskAffinities.delete(key);
         }
       }
+      for (const [key, affinity] of workspaceSessionAffinities) {
+        if (affinity.accountId === accountId && affinity.ownerNodeId === nodeId) {
+          workspaceSessionAffinities.delete(key);
+        }
+      }
       return Promise.resolve();
     },
     delWorkspaceNodeIfMatch(input) {
@@ -1278,6 +1512,11 @@ export function createMemoryDeviceGrantStore(): Store {
       for (const [affinityKey, affinity] of workspaceTaskAffinities) {
         if (affinity.accountId === input.accountId && affinity.ownerNodeId === input.nodeId) {
           workspaceTaskAffinities.delete(affinityKey);
+        }
+      }
+      for (const [affinityKey, affinity] of workspaceSessionAffinities) {
+        if (affinity.accountId === input.accountId && affinity.ownerNodeId === input.nodeId) {
+          workspaceSessionAffinities.delete(affinityKey);
         }
       }
       return Promise.resolve(true);
@@ -1361,6 +1600,121 @@ export function createMemoryDeviceGrantStore(): Store {
       const existing = workspaceTaskAffinities.get(key);
       if (!existing || existing.ownerNodeId !== input.ownerNodeId) return Promise.resolve(false);
       workspaceTaskAffinities.delete(key);
+      return Promise.resolve(true);
+    },
+    byWorkspaceSessionAffinity(input) {
+      if (input.sessionKind === 'task') {
+        const key = workspaceTaskAffinityKey({
+          accountId: input.accountId,
+          workspaceHost: input.workspaceHost,
+          taskSession: input.sessionId,
+        });
+        const affinity = workspaceTaskAffinities.get(key);
+        if (!affinity) return Promise.resolve(undefined);
+        if (
+          input.nowMs !== undefined
+          && workspaceTaskAffinityExpiresAt(affinity) <= input.nowMs
+        ) {
+          workspaceTaskAffinities.delete(key);
+          return Promise.resolve(undefined);
+        }
+        return Promise.resolve(workspaceTaskAffinityAsSession(affinity));
+      }
+      const key = workspaceSessionAffinityKey(input);
+      const affinity = workspaceSessionAffinities.get(key);
+      if (!affinity) return Promise.resolve(undefined);
+      if (
+        input.nowMs !== undefined
+        && workspaceSessionAffinityExpiresAt(affinity) <= input.nowMs
+      ) {
+        workspaceSessionAffinities.delete(key);
+        return Promise.resolve(undefined);
+      }
+      return Promise.resolve(cloneWorkspaceSessionAffinity(affinity));
+    },
+    claimWorkspaceSessionAffinity(affinity) {
+      if (affinity.sessionKind === 'task') {
+        const taskAffinity = workspaceSessionAffinityAsTask(affinity);
+        const key = workspaceTaskAffinityKey(taskAffinity);
+        const candidate = cloneWorkspaceTaskAffinity(taskAffinity);
+        let existing = workspaceTaskAffinities.get(key);
+        if (
+          existing
+          && workspaceTaskAffinityExpiresAt(existing) <= candidate.updatedAt
+        ) {
+          workspaceTaskAffinities.delete(key);
+          existing = undefined;
+        }
+        if (existing) {
+          if (existing.ownerNodeId !== candidate.ownerNodeId) {
+            return Promise.resolve({
+              status: 'conflict' as const,
+              affinity: workspaceTaskAffinityAsSession(existing),
+            });
+          }
+          const refreshed = cloneWorkspaceTaskAffinity({
+            ...existing,
+            ...(candidate.workspaceId ? { workspaceId: candidate.workspaceId } : {}),
+            updatedAt: Math.max(existing.updatedAt, candidate.updatedAt),
+            expiresAt: candidate.expiresAt,
+          });
+          workspaceTaskAffinities.set(key, refreshed);
+          return Promise.resolve({
+            status: 'existing' as const,
+            affinity: workspaceTaskAffinityAsSession(refreshed),
+          });
+        }
+        workspaceTaskAffinities.set(key, candidate);
+        return Promise.resolve({
+          status: 'created' as const,
+          affinity: workspaceTaskAffinityAsSession(candidate),
+        });
+      }
+      const key = workspaceSessionAffinityKey(affinity);
+      const candidate = cloneWorkspaceSessionAffinity(affinity);
+      let existing = workspaceSessionAffinities.get(key);
+      if (
+        existing
+        && workspaceSessionAffinityExpiresAt(existing) <= candidate.updatedAt
+      ) {
+        workspaceSessionAffinities.delete(key);
+        existing = undefined;
+      }
+      if (existing) {
+        if (existing.ownerNodeId !== candidate.ownerNodeId) {
+          return Promise.resolve({
+            status: 'conflict' as const,
+            affinity: cloneWorkspaceSessionAffinity(existing),
+          });
+        }
+        const refreshed = cloneWorkspaceSessionAffinity({
+          ...existing,
+          ...(candidate.workspaceId ? { workspaceId: candidate.workspaceId } : {}),
+          updatedAt: Math.max(existing.updatedAt, candidate.updatedAt),
+          expiresAt: candidate.expiresAt,
+        });
+        workspaceSessionAffinities.set(key, refreshed);
+        return Promise.resolve({ status: 'existing' as const, affinity: refreshed });
+      }
+      workspaceSessionAffinities.set(key, candidate);
+      return Promise.resolve({ status: 'created' as const, affinity: candidate });
+    },
+    releaseWorkspaceSessionAffinity(input) {
+      if (input.sessionKind === 'task') {
+        const key = workspaceTaskAffinityKey({
+          accountId: input.accountId,
+          workspaceHost: input.workspaceHost,
+          taskSession: input.sessionId,
+        });
+        const existing = workspaceTaskAffinities.get(key);
+        if (!existing || existing.ownerNodeId !== input.ownerNodeId) return Promise.resolve(false);
+        workspaceTaskAffinities.delete(key);
+        return Promise.resolve(true);
+      }
+      const key = workspaceSessionAffinityKey(input);
+      const existing = workspaceSessionAffinities.get(key);
+      if (!existing || existing.ownerNodeId !== input.ownerNodeId) return Promise.resolve(false);
+      workspaceSessionAffinities.delete(key);
       return Promise.resolve(true);
     },
     claimWorkspaceNodeNonce(nodeId, nonce, expiresAt, nowMs) {

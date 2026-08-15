@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_af861d1df7d1",
+  "tmuxSession": "opensaas-workspace-agent-session-start-foundation-af861d1d",
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/session-start-foundation",
+  "branch": "task/workspace-agent/session-start-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-start-foundation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-start-foundation",
+  "prNumber": 1984,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1984",
+  "createdAt": "2026-08-15T01:30:57.747Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-start-foundation/.task/workspace-agent/session-start-foundation/session.json"
+}
