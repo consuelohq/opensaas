@@ -1,0 +1,461 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-15T10:50:49.420Z",
+  "durationMs": 25382,
+  "benchmark": {
+    "caseCount": 10,
+    "evaluatedCaseCount": 10,
+    "unlabeledCaseCount": 0,
+    "metrics": {
+      "recallAtK": {
+        "1": 0.3,
+        "3": 0.491666666667,
+        "5": 0.55,
+        "10": 0.675
+      },
+      "requiredRecallAtK": {
+        "1": 0.333333333333,
+        "3": 0.55,
+        "5": 0.6,
+        "10": 0.716666666667
+      },
+      "mrr": 0.95,
+      "ndcgAtK": {
+        "1": 0.728571428571,
+        "3": 0.621705568371,
+        "5": 0.626294948118,
+        "10": 0.674138268613
+      }
+    },
+    "caseResults": [
+      {
+        "id": "explore-ranking",
+        "reciprocalRank": 1,
+        "recallAtK": {
+          "1": 0.3333333333333333,
+          "3": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "10": 0.3333333333333333
+        },
+        "requiredRecallAtK": {
+          "1": 0.3333333333333333,
+          "3": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "10": 0.3333333333333333
+        },
+        "ndcgAtK": {
+          "1": 1,
+          "3": 0.541942129480027,
+          "5": 0.541942129480027,
+          "10": 0.541942129480027
+        },
+        "topPaths": [
+          "packages/os/scripts/lib/search/retriever.js",
+          "packages/os/SCRIPTS.md",
+          "packages/os/scripts/lib/graphql-client.ts",
+          "packages/os/scripts/lib/index/graph-builder.js",
+          "packages/os/decision.md",
+          "packages/os/scripts/lib/state/explore-state.js",
+          "packages/os/docs/install-control-plane.md",
+          "packages/os/dev-steering.md",
+          "packages/dialer-server/src/runtime/predictive-target-ranking.ts",
+          "packages/workspace/scripts/explore-bench.js"
+        ],
+        "requiredPaths": [
+          "packages/os/scripts/lib/search/ranker.js",
+          "packages/os/scripts/lib/search/retriever.js",
+          "packages/os/scripts/explore.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/lib/search/ranker.js",
+          "packages/os/scripts/explore.js"
+        ]
+      },
+      {
+        "id": "explore-beliefs",
+        "reciprocalRank": 1,
+        "recallAtK": {
+          "1": 0.25,
+          "3": 0.5,
+          "5": 0.5,
+          "10": 0.75
+        },
+        "requiredRecallAtK": {
+          "1": 0.3333333333333333,
+          "3": 0.6666666666666666,
+          "5": 0.6666666666666666,
+          "10": 1
+        },
+        "ndcgAtK": {
+          "1": 1,
+          "3": 0.688482449852666,
+          "5": 0.6258764478439752,
+          "10": 0.8013660245103043
+        },
+        "topPaths": [
+          "packages/os/scripts/lib/state/explore-state.js",
+          "packages/os/scripts/explore.js",
+          "packages/os/cloudflare/os-device-authority/src/stores.ts",
+          "packages/os/scripts/lib/operator-token-store.ts",
+          "packages/os/scripts/lib/index/store.js",
+          "packages/os/scripts/lib/state/evidence-log.js",
+          "packages/os/scripts/lib/node-sealed-credential-store.ts",
+          "packages/os/scripts/lib/trace-store.ts",
+          "packages/os/docs/security-tightening-evidence.md",
+          "packages/cli/src/commands/update.ts"
+        ],
+        "requiredPaths": [
+          "packages/os/scripts/lib/state/explore-state.js",
+          "packages/os/scripts/lib/state/evidence-log.js",
+          "packages/os/scripts/explore.js"
+        ],
+        "missingRequiredPaths": []
+      },
+      {
+        "id": "task-start",
+        "reciprocalRank": 0.5,
+        "recallAtK": {
+          "1": 0,
+          "3": 0.25,
+          "5": 0.25,
+          "10": 0.25
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0.5,
+          "5": 0.5,
+          "10": 0.5
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0.42495889834839423,
+          "5": 0.4080493576589734,
+          "10": 0.4080493576589734
+        },
+        "topPaths": [
+          "packages/os/tests/task-start-output.test.ts",
+          "packages/os/scripts/task-start.js",
+          "packages/os/scripts/lib/task-start-output.js",
+          "packages/workspace/scripts/task-start.js",
+          "packages/os/skills/senior-engineer/SKILL.md",
+          "packages/os/TASK-WORKFLOW.md",
+          "packages/os/tests/fixtures/skills/senior-engineer-workspace.SKILL.md",
+          "packages/os/scripts/task-init.js",
+          "packages/os/scripts/lib/streams/create-runtime.ts",
+          "packages/os/scripts/task-prs.js"
+        ],
+        "requiredPaths": [
+          "packages/os/scripts/task-start.js",
+          "packages/os/scripts/lib/task-meta.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/lib/task-meta.js"
+        ]
+      },
+      {
+        "id": "task-push",
+        "reciprocalRank": 1,
+        "recallAtK": {
+          "1": 0.3333333333333333,
+          "3": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "10": 0.6666666666666666
+        },
+        "requiredRecallAtK": {
+          "1": 0.3333333333333333,
+          "3": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "10": 0.6666666666666666
+        },
+        "ndcgAtK": {
+          "1": 1,
+          "3": 0.6735439182299785,
+          "5": 0.6735439182299785,
+          "10": 0.7697644779771182
+        },
+        "topPaths": [
+          "packages/os/scripts/task-push.js",
+          "packages/os/tests/task-push-local-sync.test.ts",
+          "packages/workspace/scripts/task-push.js",
+          "packages/workspace/tests/task-push-session.test.ts",
+          "packages/os/tests/native-google-device-approval.test.ts",
+          "packages/workspace/tests/task-push-local-sync.test.ts",
+          "packages/os/scripts/lib/verification.js",
+          "packages/os/TASK-WORKFLOW.md",
+          "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+          "packages/os/scripts/lib/daily-schedules-publisher.ts"
+        ],
+        "requiredPaths": [
+          "packages/os/scripts/task-push.js",
+          "packages/os/scripts/lib/verification.js",
+          "packages/os/scripts/lib/task-selection.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/lib/task-selection.js"
+        ]
+      },
+      {
+        "id": "stream-sync",
+        "reciprocalRank": 1,
+        "recallAtK": {
+          "1": 0.3333333333333333,
+          "3": 0.6666666666666666,
+          "5": 0.6666666666666666,
+          "10": 0.6666666666666666
+        },
+        "requiredRecallAtK": {
+          "1": 0.5,
+          "3": 1,
+          "5": 1,
+          "10": 1
+        },
+        "ndcgAtK": {
+          "1": 0.42857142857142855,
+          "3": 0.6254336383564085,
+          "5": 0.6254336383564085,
+          "10": 0.6254336383564085
+        },
+        "topPaths": [
+          "packages/os/scripts/lib/task-meta.js",
+          "packages/os/scripts/task-meta-smoke.js",
+          "packages/os/scripts/stream-sync.js",
+          "packages/workspace/scripts/lib/task-meta.js",
+          "packages/workspace/scripts/task-meta-smoke.js",
+          "packages/workspace/scripts/stream-sync.js",
+          "packages/os/scripts/task-pr.js",
+          "packages/os/skills/task/SKILL.md",
+          "packages/os/SCRIPTS.md",
+          "packages/os/scripts/lib/facade/branch-resolver.ts"
+        ],
+        "requiredPaths": [
+          "packages/os/scripts/stream-sync.js",
+          "packages/os/scripts/lib/task-meta.js"
+        ],
+        "missingRequiredPaths": []
+      },
+      {
+        "id": "strict-review",
+        "reciprocalRank": 1,
+        "recallAtK": {
+          "1": 0.3333333333333333,
+          "3": 0.3333333333333333,
+          "5": 0.6666666666666666,
+          "10": 0.6666666666666666
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0.5,
+          "10": 0.5
+        },
+        "ndcgAtK": {
+          "1": 0.42857142857142855,
+          "3": 0.28866167924141933,
+          "5": 0.4003312601969992,
+          "10": 0.4003312601969992
+        },
+        "topPaths": [
+          "packages/os/scripts/lib/nx-projects.js",
+          "packages/os/scripts/lib/security-scan.ts",
+          "packages/os/scripts/ai-review.js",
+          "packages/os/scripts/test-selection.js",
+          "packages/os/scripts/lib/review-run-state.js",
+          "packages/os/scripts/lib/trace-site-inspector/inspector-state.ts",
+          "packages/os/skills/debugger/SKILL.md",
+          "packages/os/tests/github-pr-reviews.test.ts",
+          "packages/os/scripts/lib/lifecycle/state.ts",
+          "packages/os/tests/skill-selection-cli.test.ts"
+        ],
+        "requiredPaths": [
+          "packages/os/scripts/review.js",
+          "packages/os/scripts/lib/review-run-state.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/review.js"
+        ]
+      },
+      {
+        "id": "code-call",
+        "reciprocalRank": 1,
+        "recallAtK": {
+          "1": 0.25,
+          "3": 0.5,
+          "5": 0.75,
+          "10": 0.75
+        },
+        "requiredRecallAtK": {
+          "1": 0.3333333333333333,
+          "3": 0.6666666666666666,
+          "5": 0.6666666666666666,
+          "10": 0.6666666666666666
+        },
+        "ndcgAtK": {
+          "1": 0.42857142857142855,
+          "3": 0.5741883268371216,
+          "5": 0.5879280860506778,
+          "10": 0.5879280860506778
+        },
+        "topPaths": [
+          "packages/os/scripts/code-call.ts",
+          "packages/os/scripts/lib/code-call/service.ts",
+          "packages/os/scripts/lib/code-call/errors.ts",
+          "packages/os/scripts/lib/code-call/source.ts",
+          "packages/os/scripts/lib/code-call/runtimes.ts",
+          "packages/os/scripts/lib/code-call/schema.ts",
+          "packages/os/scripts/lib/code-call/types.ts",
+          "packages/os/tests/code-call.test.ts",
+          "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+          "packages/os/scripts/consuelo-reload.js"
+        ],
+        "requiredPaths": [
+          "packages/os/scripts/code-call.ts",
+          "packages/os/scripts/lib/code-call/runtime.ts",
+          "packages/os/scripts/lib/code-call/service.ts"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/lib/code-call/runtime.ts"
+        ]
+      },
+      {
+        "id": "trace-search",
+        "reciprocalRank": 1,
+        "recallAtK": {
+          "1": 0.3333333333333333,
+          "3": 0.3333333333333333,
+          "5": 0.3333333333333333,
+          "10": 1
+        },
+        "requiredRecallAtK": {
+          "1": 0.5,
+          "3": 0.5,
+          "5": 0.5,
+          "10": 1
+        },
+        "ndcgAtK": {
+          "1": 1,
+          "3": 0.5874203951744313,
+          "5": 0.5874203951744313,
+          "10": 0.7941434637031483
+        },
+        "topPaths": [
+          "packages/os/scripts/lib/trace-search-query.ts",
+          "packages/os/scripts/lib/trace-database-schema.ts",
+          "packages/twenty-server/src/engine/core-modules/search/utils/__tests__/format-search-terms.spec.ts",
+          "packages/twenty-server/src/engine/core-modules/search/utils/format-search-terms.ts",
+          "packages/os/tests/os-steering-tool-trace.test.ts",
+          "packages/os/tests/trace-search-query.test.ts",
+          "packages/os/scripts/lib/local-agent-connectivity.ts",
+          "packages/os/scripts/lib/search/retriever.js",
+          "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+          "packages/os/scripts/lib/trace-site.ts"
+        ],
+        "requiredPaths": [
+          "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+          "packages/os/scripts/lib/trace-search-query.ts"
+        ],
+        "missingRequiredPaths": []
+      },
+      {
+        "id": "tool-manifest",
+        "reciprocalRank": 1,
+        "recallAtK": {
+          "1": 0.3333333333333333,
+          "3": 0.6666666666666666,
+          "5": 0.6666666666666666,
+          "10": 0.6666666666666666
+        },
+        "requiredRecallAtK": {
+          "1": 0.5,
+          "3": 0.5,
+          "5": 0.5,
+          "10": 0.5
+        },
+        "ndcgAtK": {
+          "1": 1,
+          "3": 0.8124242481930318,
+          "5": 0.8124242481930318,
+          "10": 0.8124242481930318
+        },
+        "topPaths": [
+          "packages/os/scripts/generate-tool-manifest.ts",
+          "packages/os/tests/tool-manifest.test.ts",
+          "packages/os/scripts/lib/manifest-overlay.ts",
+          "packages/os/scripts/artifact-validate.ts",
+          "packages/os/scripts/generate-skills-registry.ts",
+          "packages/os/scripts/lib/manifest.ts",
+          "packages/os/manifests/manifest.config.ts",
+          "packages/workspace/scripts/generate-tool-manifest.ts",
+          "packages/twenty-server/src/engine/core-modules/file-storage/drivers/validated-storage.driver.ts",
+          ".agent/linear-mcp/src/validation.ts"
+        ],
+        "requiredPaths": [
+          "packages/os/scripts/generate-tool-manifest.ts",
+          "packages/os/manifests/generated/tool.manifest.json"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/manifests/generated/tool.manifest.json"
+        ]
+      },
+      {
+        "id": "explicit-search-scope",
+        "reciprocalRank": 1,
+        "recallAtK": {
+          "1": 0.5,
+          "3": 1,
+          "5": 1,
+          "10": 1
+        },
+        "requiredRecallAtK": {
+          "1": 0.5,
+          "3": 1,
+          "5": 1,
+          "10": 1
+        },
+        "ndcgAtK": {
+          "1": 1,
+          "3": 1,
+          "5": 1,
+          "10": 1
+        },
+        "topPaths": [
+          "packages/os/scripts/lib/search/retriever.js",
+          "packages/os/scripts/lib/search/ranker.js"
+        ],
+        "requiredPaths": [
+          "packages/os/scripts/lib/search/retriever.js",
+          "packages/os/scripts/lib/search/ranker.js"
+        ],
+        "missingRequiredPaths": []
+      }
+    ]
+  },
+  "metadata": {
+    "retrievalSurface": "packages/os",
+    "commit": "4ca0a2a084ec423f1c56c7ae5ecc60a6860ab160",
+    "caseFile": "packages/os/explore-bench/cases.v1.json",
+    "budget": 10,
+    "depth": 2,
+    "indexMode": "frozen",
+    "index": {
+      "totalFiles": 16673,
+      "totalChunks": 86910,
+      "lastIndexed": "2026-08-15T10:34:59.334Z"
+    },
+    "queryVectorSource": "single-run temporary legacy OpenRouter Qwen3-Embedding-4B 2560d oracle; OS gateway returned WORKSPACE_HOSTNAME_NOT_FOUND",
+    "queryVectorHashes": {
+      "explore-ranking": "3c4a3db96d2e2b3b6bde367d2e1ea539ddf453ba950b99ddbca79be6d907017b",
+      "explore-beliefs": "c21077c952430e7c14342e7ab47e261fc4af6716d7e21d4ccdd7032139c47591",
+      "task-start": "1c192ce16c51dd1ea85f5d11fcd1858ec0ba3195ed4935408f1d49d83d4ab630",
+      "task-push": "b729fcb535d44965f89600cd23d004aec449000c76b9c2ebf93d62823f9274fa",
+      "stream-sync": "d94ea1b167882dc08735b60f6bb498c8898f02ec23deedb8119bbdf5eebc3b11",
+      "strict-review": "2d678e63408599b3ec6a3ebe3bd4dd51e451de660fd0d1f657452e0f28325d9a",
+      "code-call": "dacc3042fe97a4d964cfc8d0bc271670e7deb5dde6ddeaef38587c0c206b7be8",
+      "trace-search": "e0a23c8987b327cccad6cf6e16e8924c6763dce9f19da5135b4883a3c15e73ac",
+      "tool-manifest": "a232939bd26329b800ae12558b7c4e728fe49d805de85cd087217975d7f46145",
+      "explicit-search-scope": "3d7421a83fbdc9ce0e69fd7006a90f9c719d12f01a7cf91d59390a2b7d3f5f31"
+    },
+    "comparisonRunId": "26f002f0707216e4",
+    "variant": "challenger",
+    "retrieverSha256": "888845558a2be7e31e112c1e8296bcd4e2bd2a1a4b2e503a096af193b79a8355"
+  }
+}
