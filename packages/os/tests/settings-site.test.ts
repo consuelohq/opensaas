@@ -36,7 +36,7 @@ describe('configuration site', () => {
 
     expect(snapshot.skills).toEqual([]);
     expect(snapshot.runBooks.length).toBeGreaterThan(0);
-    expect(html).toContain('<title>Home - Consuelo OS</title>');
+    expect(html).toContain('<title>Overview - Consuelo OS</title>');
     expect(html).toContain('data-workspace-shell');
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).toContain('aria-label="Workspace routes"');
@@ -48,7 +48,9 @@ describe('configuration site', () => {
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/secrets"');
-    expect(html).toContain('href="/docs"');
+    expect(html).toContain('>Overview</span><small>Workspace health and operating context.</small>');
+    expect(html).toContain('href="https://docs.consuelohq.com/"');
+    expect(html).toContain('target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/"');
     expect(html).toContain('>Artifacts</span><small>Browse agent work and generated outputs.</small>');
     expect(html).toContain('>Code</span><small>Review code diffs and changes.</small>');
     expect(html).toContain('data-route-group="Connect"');
@@ -71,6 +73,10 @@ describe('configuration site', () => {
     expect(html).toContain('--workspace-chrome-bg:');
     expect(html).toContain('--workspace-menu-bg:');
     expect(html).toContain('@media (prefers-color-scheme: dark)');
+    expect(html).toContain('font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;');
+    expect(html).toContain('.workspace-route-trigger > span:first-child');
+    expect(html).toContain('text-overflow: ellipsis;');
+    expect(html).toContain('min-width: 0;');
     expect(html).toContain('left: 50vw;');
     expect(html).toContain('transform: translateX(-50%);');
     expect(html).not.toContain('aria-label="Configuration sidebar"');
@@ -83,6 +89,27 @@ describe('configuration site', () => {
     expect(html).toContain('id="overview-readiness-plot"');
     expect(html).toContain('aria-label="Workspace readiness by operating area"');
     expect(html).toContain('renderOverviewReadiness');
+    expect(html).toContain('data-overview-heatmap');
+    expect(html).toContain('role="grid"');
+    expect(html).toContain('id="overview-heatmap-tooltip"');
+    expect(html).toContain("const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v1'");
+    expect(html).toContain('const OVERVIEW_HEATMAP_TTL_MS = 30000');
+    expect(html).toContain('const OVERVIEW_HEATMAP_REFRESH_MS = 30000');
+    expect(html).toContain('/gateway/traces/recent?direction=older&cursor=latest&limit=100');
+    expect(html).toContain('includeRawPayload=false');
+    expect(html).toContain('const OVERVIEW_HEATMAP_MAX_PAGES = 24');
+    expect(html).toContain('data.nextCursor');
+    expect(html).toContain("credentials: 'same-origin'");
+    expect(html).toContain("cache: 'no-store'");
+    expect(html).toContain('sessionStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY');
+    expect(html).toContain('tabindex="0"');
+    expect(html).toContain("matchMedia('(prefers-reduced-motion: reduce)')");
+    expect(html).toContain('globalThis.gsap');
+    expect(html).toContain('--heat-cell-5:');
+    expect(html).toContain('--heat-tooltip-bg:');
+    expect(html).toContain('Calls');
+    expect(html).toContain('Tokens');
+    expect(html).toContain('Cost');
     expect(html).toContain('id="source-control-form"');
     expect(html).toContain('id="source-control-repository-list"');
     expect(html).toContain('/gateway/configuration/source-control');

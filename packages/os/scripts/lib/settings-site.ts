@@ -1,3 +1,7 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { nodesClientScript, nodesSiteStyles, renderNodesContent } from './nodes-site';
 import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
 import {
@@ -6,6 +10,15 @@ import {
   workspaceRouteSwitcherStyles,
   type WorkspaceSurfaceId,
 } from './workspace-chrome';
+
+const overviewAssetDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../assets/vendor/observability-traces-v38',
+);
+const OVERVIEW_HEATMAP_GSAP = fs.readFileSync(
+  path.join(overviewAssetDir, 'gsap.js'),
+  'utf8',
+).replaceAll('</script>', '<\\/script>');
 
 export type ConfigurationPageId =
   | 'configuration'
@@ -19,8 +32,8 @@ const PAGE_COPY: Record<ConfigurationPageId, {
   description: string;
 }> = {
   configuration: {
-    title: 'Home',
-    description: 'See what is connected to your workspace and what agents can use here.',
+    title: 'Overview',
+    description: 'See live workspace activity, operating readiness, and the agent surfaces available here.',
   },
   tools: {
     title: 'Tools',
@@ -63,6 +76,16 @@ function configurationStyles(): string {
       --site-color-line-strong: rgba(28, 26, 23, 0.28);
       --site-color-panel: rgba(28, 26, 23, 0.035);
       --site-color-canvas: #e9e4dc;
+      --heat-cell-0: rgba(41, 37, 31, 0.045);
+      --heat-cell-1: rgba(164, 66, 37, 0.12);
+      --heat-cell-2: rgba(164, 66, 37, 0.20);
+      --heat-cell-3: rgba(164, 66, 37, 0.31);
+      --heat-cell-4: rgba(164, 66, 37, 0.44);
+      --heat-cell-5: rgba(164, 66, 37, 0.64);
+      --heat-highlight: #a44225;
+      --heat-tooltip-bg: rgba(255, 255, 248, 0.97);
+      --heat-tooltip-border: rgba(41, 37, 31, 0.16);
+      --heat-tooltip-shadow: 0 18px 55px rgba(49, 37, 24, 0.18);
       --site-font-body: 'displayFont', 'displayFont Fallback', 'Times New Roman', serif;
       --site-font-mono: 'monoFont', 'monoFont Fallback', 'Courier New', monospace;
       background: var(--site-color-paper);
@@ -81,6 +104,16 @@ function configurationStyles(): string {
         --site-color-line-strong: rgba(255, 247, 235, 0.28);
         --site-color-panel: rgba(255, 247, 235, 0.055);
         --site-color-canvas: #0d0d0c;
+        --heat-cell-0: #f1e7d50e;
+        --heat-cell-1: #f1e7d51a;
+        --heat-cell-2: #f1e7d529;
+        --heat-cell-3: #f1e7d53d;
+        --heat-cell-4: #f1e7d557;
+        --heat-cell-5: #c5a46d7a;
+        --heat-highlight: #c5a46d;
+        --heat-tooltip-bg: rgba(25, 24, 20, 0.96);
+        --heat-tooltip-border: rgba(241, 231, 213, 0.16);
+        --heat-tooltip-shadow: 0 18px 55px rgba(0, 0, 0, 0.44);
       }
     }
     * { box-sizing: border-box; }
@@ -187,6 +220,31 @@ function configurationStyles(): string {
     .inventory-toggle input:focus-visible { outline: 2px solid var(--site-color-accent); outline-offset: 2px; }
     .inventory-empty { padding: 28px 0; color: var(--site-color-muted); }
     .overview-surface { display: grid; gap: 30px; max-width: 1240px; }
+    .overview-heatmap-panel { position: relative; display: grid; gap: 20px; min-width: 0; padding: 2px 0 28px; border-bottom: 1px solid var(--site-color-line); }
+    .overview-heatmap-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: end; }
+    .overview-heatmap-copy { display: grid; gap: 7px; }
+    .overview-heatmap-copy h2 { max-width: 780px; font-size: clamp(29px, 4vw, 48px); line-height: 1.01; letter-spacing: -.035em; }
+    .overview-heatmap-copy p:not(.identity) { color: var(--site-color-muted); line-height: 1.45; }
+    .overview-heatmap-summary { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px 18px; color: var(--site-color-muted); font: 11px/1.25 var(--site-font-mono); font-variant-numeric: tabular-nums; }
+    .overview-heatmap-summary b { color: var(--site-color-ink); font-weight: 600; }
+    .overview-heatmap-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: thin; padding-bottom: 4px; }
+    .overview-heatmap-frame { min-width: 760px; display: grid; gap: 7px; }
+    .overview-heatmap-hours, .overview-heatmap-row { display: grid; grid-template-columns: 42px repeat(24, minmax(18px, 1fr)); gap: 3px; align-items: center; }
+    .overview-heatmap-hours { color: var(--site-color-muted); font: 9px/1 var(--site-font-mono); }
+    .overview-heatmap-hours span:not(:first-child) { text-align: center; }
+    .overview-heatmap-day { color: var(--site-color-muted); font: 10px/1 var(--site-font-mono); }
+    .overview-heat-cell { min-width: 0; min-height: 28px; border: 0; border-radius: 4px; background: var(--heat-cell-0); cursor: default; transition: box-shadow 160ms ease, transform 160ms ease; }
+    .overview-heat-cell[data-level="1"] { background: var(--heat-cell-1); }
+    .overview-heat-cell[data-level="2"] { background: var(--heat-cell-2); }
+    .overview-heat-cell[data-level="3"] { background: var(--heat-cell-3); }
+    .overview-heat-cell[data-level="4"] { background: var(--heat-cell-4); }
+    .overview-heat-cell[data-level="5"] { background: var(--heat-cell-5); }
+    .overview-heat-cell:hover, .overview-heat-cell:focus-visible { outline: none; transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--heat-highlight), 0 5px 13px color-mix(in srgb, var(--heat-highlight) 16%, transparent); }
+    .overview-heatmap-tooltip { position: fixed; z-index: 160; width: min(260px, calc(100vw - 24px)); padding: 12px 13px; border: 1px solid var(--heat-tooltip-border); border-radius: 9px; background: var(--heat-tooltip-bg); box-shadow: var(--heat-tooltip-shadow); backdrop-filter: blur(15px); pointer-events: none; }
+    .overview-heatmap-tooltip time { display: block; margin-bottom: 9px; color: var(--heat-highlight); font: 600 11px/1.25 var(--site-font-mono); }
+    .overview-heatmap-tooltip dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .overview-heatmap-tooltip dt { color: var(--site-color-muted); font: 9px/1 var(--site-font-mono); text-transform: uppercase; letter-spacing: .06em; }
+    .overview-heatmap-tooltip dd { margin-top: 4px; color: var(--site-color-ink); font: 600 12px/1.1 var(--site-font-mono); font-variant-numeric: tabular-nums; }
     .overview-lede { display: grid; grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr); gap: 42px; align-items: start; border-bottom: 1px solid var(--site-color-line); padding-bottom: 26px; }
     .overview-finding { display: grid; gap: 8px; }
     .overview-finding h2 { font-size: clamp(26px, 3vw, 40px); line-height: 1.03; font-weight: 500; letter-spacing: -.025em; max-width: 650px; }
@@ -215,6 +273,11 @@ function configurationStyles(): string {
       .inventory-toggle { grid-column: 3; }
     }
     @media (max-width: 620px) {
+      .overview-heatmap-head { grid-template-columns: 1fr; gap: 11px; }
+      .overview-heatmap-summary { justify-content: flex-start; }
+      .overview-heatmap-frame { min-width: 620px; }
+      .overview-heatmap-hours, .overview-heatmap-row { grid-template-columns: 34px repeat(24, minmax(14px, 1fr)); gap: 2px; }
+      .overview-heat-cell { min-height: 20px; }
       .readiness-row { grid-template-columns: 88px minmax(90px, 1fr) 70px; }
       .overview-context { grid-template-columns: 1fr; gap: 12px; }
       .availability-row { grid-template-columns: 72px minmax(90px, 1fr) 68px; }
@@ -292,6 +355,9 @@ function configurationStyles(): string {
       .plan-grid { grid-template-columns: 1fr; }
       .node-meta { grid-template-columns: 1fr; }
     }
+    @media (prefers-reduced-motion: reduce) {
+      .overview-heat-cell { transition: none; }
+    }
   ` + workspaceRouteSwitcherStyles() + nodesSiteStyles();
 }
 
@@ -315,6 +381,184 @@ function configurationClientScript(): string {
     const pill = (status) => '<span class="status-pill ' + statusClass(status) + '">' + escapeHtml(String(status || 'unknown').replaceAll('_', ' ')) + '</span>';
     const emptyRow = (columns, message) => '<tr><td colspan="' + columns + '" class="empty">' + escapeHtml(message) + '</td></tr>';
     const detail = (label, value, code = false) => '<div><dt>' + escapeHtml(label) + '</dt><dd>' + (code ? '<code>' + escapeHtml(value) + '</code>' : escapeHtml(value)) + '</dd></div>';
+
+    const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v1';
+    const OVERVIEW_HEATMAP_TTL_MS = 30000;
+    const OVERVIEW_HEATMAP_REFRESH_MS = 30000;
+    const OVERVIEW_HEATMAP_URL = '/gateway/traces/recent?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
+    const OVERVIEW_HEATMAP_MAX_PAGES = 24;
+    const heatCompact = (value) => new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value || 0));
+    const heatCost = (value) => '$' + Number(value || 0).toFixed(Number(value || 0) >= 1 ? 2 : 4);
+    const heatTimestamp = (row) => row && (row.startTime || row.startedAt || row.started_at || row.time || row.ts || row.timestamp || row.createdAt || row.created_at);
+    const heatTokens = (row) => Number(row?.tokens ?? row?.totalTokens ?? row?.total_tokens ?? (Number(row?.inputTokens ?? row?.input_tokens ?? 0) + Number(row?.outputTokens ?? row?.output_tokens ?? 0)));
+    const heatCostValue = (row) => Number(row?.cost ?? row?.costUsd ?? row?.totalCostUsd ?? row?.total_cost_usd ?? 0);
+    const heatDayKey = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+    const heatDayLabel = (date) => new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date);
+    const heatDateLabel = (date) => new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(date);
+
+    function aggregateOverviewHeatmap(rows) {
+      const now = new Date();
+      const days = [];
+      for (let offset = 6; offset >= 0; offset -= 1) {
+        const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+        days.push({ key: heatDayKey(date), label: heatDayLabel(date), dateLabel: heatDateLabel(date) });
+      }
+      const allowed = new Set(days.map((day) => day.key));
+      const buckets = {};
+      for (const day of days) {
+        for (let hour = 0; hour < 24; hour += 1) buckets[day.key + ':' + String(hour)] = { calls: 0, tokens: 0, cost: 0 };
+      }
+      let calls = 0;
+      let tokens = 0;
+      let cost = 0;
+      for (const row of Array.isArray(rows) ? rows : []) {
+        const stamp = heatTimestamp(row);
+        const date = new Date(String(stamp || ''));
+        if (Number.isNaN(date.getTime())) continue;
+        const dayKey = heatDayKey(date);
+        if (!allowed.has(dayKey)) continue;
+        const key = dayKey + ':' + String(date.getHours());
+        const bucket = buckets[key];
+        if (!bucket) continue;
+        const rowTokens = heatTokens(row);
+        const rowCost = heatCostValue(row);
+        bucket.calls += 1;
+        bucket.tokens += rowTokens;
+        bucket.cost += rowCost;
+        calls += 1;
+        tokens += rowTokens;
+        cost += rowCost;
+      }
+      const maxCalls = Math.max(0, ...Object.values(buckets).map((bucket) => Number(bucket.calls || 0)));
+      return { days, buckets, totals: { calls, tokens, cost }, maxCalls };
+    }
+
+    function overviewHeatLevel(calls, maxCalls) {
+      if (!calls || !maxCalls) return 0;
+      const ratio = calls / maxCalls;
+      if (ratio >= 0.8) return 5;
+      if (ratio >= 0.55) return 4;
+      if (ratio >= 0.32) return 3;
+      if (ratio >= 0.14) return 2;
+      return 1;
+    }
+
+    function hideOverviewHeatTooltip() {
+      const tooltip = byId('overview-heatmap-tooltip');
+      if (tooltip) tooltip.hidden = true;
+    }
+
+    function showOverviewHeatTooltip(cell) {
+      const tooltip = byId('overview-heatmap-tooltip');
+      if (!(tooltip instanceof HTMLElement) || !(cell instanceof HTMLElement)) return;
+      setText('overview-heatmap-tooltip-time', cell.dataset.time || '');
+      setText('overview-heatmap-tooltip-calls', heatCompact(cell.dataset.calls));
+      setText('overview-heatmap-tooltip-tokens', heatCompact(cell.dataset.tokens));
+      setText('overview-heatmap-tooltip-cost', heatCost(cell.dataset.cost));
+      tooltip.hidden = false;
+      const rect = cell.getBoundingClientRect();
+      window.requestAnimationFrame(() => {
+        const left = Math.max(12, Math.min(window.innerWidth - tooltip.offsetWidth - 12, rect.left + rect.width / 2 - tooltip.offsetWidth / 2));
+        const preferredTop = rect.top - tooltip.offsetHeight - 10;
+        const top = preferredTop >= 12 ? preferredTop : Math.min(window.innerHeight - tooltip.offsetHeight - 12, rect.bottom + 10);
+        tooltip.style.left = Math.round(left) + 'px';
+        tooltip.style.top = Math.round(top) + 'px';
+      });
+    }
+
+    function animateOverviewHeatmap(cells) {
+      const reduceMotion = globalThis.matchMedia && globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const gsap = globalThis.gsap;
+      if (reduceMotion || !gsap || typeof gsap.fromTo !== 'function') return;
+      gsap.fromTo(cells, { opacity: 0.22, scale: 0.88 }, { opacity: 1, scale: 1, duration: 0.28, stagger: 0.006, ease: 'power2.out', clearProps: 'opacity,transform' });
+    }
+
+    function renderOverviewHeatmap(aggregate) {
+      const grid = byId('overview-heatmap-grid');
+      if (!grid || !aggregate || !Array.isArray(aggregate.days)) return;
+      const rows = aggregate.days.map((day) => {
+        const cells = [];
+        for (let hour = 0; hour < 24; hour += 1) {
+          const bucket = aggregate.buckets?.[day.key + ':' + String(hour)] || { calls: 0, tokens: 0, cost: 0 };
+          const level = overviewHeatLevel(bucket.calls, aggregate.maxCalls);
+          const hourLabel = String(hour).padStart(2, '0') + ':00';
+          const aria = day.dateLabel + ' ' + hourLabel + ', ' + String(bucket.calls) + ' calls, ' + heatCompact(bucket.tokens) + ' tokens, ' + heatCost(bucket.cost);
+          cells.push('<div class="overview-heat-cell" role="gridcell" tabindex="0" data-level="' + String(level) + '" data-time="' + escapeHtml(day.dateLabel + ' · ' + hourLabel) + '" data-calls="' + String(bucket.calls) + '" data-tokens="' + String(bucket.tokens) + '" data-cost="' + String(bucket.cost) + '" aria-label="' + escapeHtml(aria) + '"></div>');
+        }
+        return '<div class="overview-heatmap-row" role="row"><span class="overview-heatmap-day" role="rowheader">' + escapeHtml(day.label) + '</span>' + cells.join('') + '</div>';
+      }).join('');
+      grid.innerHTML = rows;
+      const totals = aggregate.totals || { calls: 0, tokens: 0, cost: 0 };
+      setText('overview-heatmap-calls', heatCompact(totals.calls));
+      setText('overview-heatmap-tokens', heatCompact(totals.tokens));
+      setText('overview-heatmap-cost', heatCost(totals.cost));
+      setText('overview-heatmap-title', totals.calls > 0 ? 'Activity concentrates into a readable weekly rhythm' : 'Live trace activity will appear here');
+      grid.setAttribute('aria-label', 'Trace activity by local hour for the last seven days. ' + String(totals.calls) + ' calls, ' + heatCompact(totals.tokens) + ' tokens, ' + heatCost(totals.cost) + '.');
+      const cells = Array.from(grid.querySelectorAll('.overview-heat-cell'));
+      cells.forEach((cell) => {
+        cell.addEventListener('pointerenter', () => showOverviewHeatTooltip(cell));
+        cell.addEventListener('pointerleave', hideOverviewHeatTooltip);
+        cell.addEventListener('focus', () => showOverviewHeatTooltip(cell));
+        cell.addEventListener('blur', hideOverviewHeatTooltip);
+      });
+      animateOverviewHeatmap(cells);
+    }
+
+    function readOverviewHeatmapCache() {
+      try {
+        const raw = sessionStorage.getItem(OVERVIEW_HEATMAP_CACHE_KEY);
+        const cached = raw ? JSON.parse(raw) : null;
+        if (!cached || Date.now() - Number(cached.savedAt || 0) > OVERVIEW_HEATMAP_TTL_MS) return null;
+        return cached.aggregate || null;
+      } catch {
+        return null;
+      }
+    }
+
+    async function readOverviewHeatmapRows() {
+      const rows = [];
+      let cursor = 'latest';
+      const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
+      for (let page = 0; page < OVERVIEW_HEATMAP_MAX_PAGES; page += 1) {
+        const requestUrl = OVERVIEW_HEATMAP_URL.replace('cursor=latest', 'cursor=' + encodeURIComponent(cursor));
+        const response = await fetch(requestUrl, { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' });
+        if (!response.ok) throw new Error('trace heatmap returned ' + response.status);
+        const payload = await response.json();
+        if (!payload || payload.ok === false) throw new Error('trace heatmap payload unavailable');
+        const data = payload.data || payload;
+        const pageRows = Array.isArray(data.rows) ? data.rows : [];
+        rows.push(...pageRows);
+        const oldest = pageRows.reduce((value, row) => {
+          const time = new Date(String(heatTimestamp(row) || '')).getTime();
+          return Number.isFinite(time) ? Math.min(value, time) : value;
+        }, Number.POSITIVE_INFINITY);
+        if (!data.nextCursor || pageRows.length === 0 || oldest <= cutoff) break;
+        cursor = String(data.nextCursor);
+      }
+      return rows;
+    }
+
+    async function refreshOverviewHeatmap() {
+      if (!byId('overview-heatmap-grid')) return;
+      try {
+        const rows = await readOverviewHeatmapRows();
+        const aggregate = aggregateOverviewHeatmap(rows);
+        renderOverviewHeatmap(aggregate);
+        try { sessionStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), aggregate })); } catch {}
+      } catch {
+        const grid = byId('overview-heatmap-grid');
+        if (grid && !grid.children.length) grid.setAttribute('aria-label', 'Live trace activity is temporarily unavailable.');
+      }
+    }
+
+    function initOverviewHeatmap() {
+      if (!byId('overview-heatmap-grid')) return;
+      const cached = readOverviewHeatmapCache();
+      if (cached) renderOverviewHeatmap(cached);
+      void refreshOverviewHeatmap();
+      window.setInterval(() => { if (!document.hidden) void refreshOverviewHeatmap(); }, OVERVIEW_HEATMAP_REFRESH_MS);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshOverviewHeatmap(); });
+    }
 
     let currentSourceControl = { configured: false, defaultRepositoryId: null, repositories: [] };
 
@@ -727,6 +971,7 @@ function configurationClientScript(): string {
       renderToolInventory();
     });
 
+    initOverviewHeatmap();
     void loadConfiguration();
     void loadSourceControl();
   `;
@@ -921,8 +1166,39 @@ function environmentClientScript(): string {
 }
 
 function renderOverviewPanels(): string {
+  const heatmapHours = Array.from({ length: 24 }, (_, hour) =>
+    hour % 3 === 0 || hour === 23 ? `<span>${String(hour).padStart(2, '0')}</span>` : '<span></span>',
+  ).join('');
   return `
-        <section class="overview-surface" id="overview" aria-labelledby="overview-readiness-title">
+        <section class="overview-surface" id="overview" aria-labelledby="overview-heatmap-title">
+          <section class="overview-heatmap-panel" data-overview-heatmap aria-labelledby="overview-heatmap-title">
+            <div class="overview-heatmap-head">
+              <div class="overview-heatmap-copy">
+                <p class="identity">Last seven days</p>
+                <h2 id="overview-heatmap-title">Live trace activity will appear here</h2>
+                <p>Calls, tokens, and cost by local hour. Hover or focus any cell for details; the heatmap refreshes from the signed trace gateway.</p>
+              </div>
+              <div class="overview-heatmap-summary" aria-live="polite">
+                <span>Calls <b id="overview-heatmap-calls">0</b></span>
+                <span>Tokens <b id="overview-heatmap-tokens">0</b></span>
+                <span>Cost <b id="overview-heatmap-cost">$0.0000</b></span>
+              </div>
+            </div>
+            <div class="overview-heatmap-scroll" tabindex="0" aria-label="Scrollable trace activity heatmap">
+              <div class="overview-heatmap-frame">
+                <div class="overview-heatmap-hours" aria-hidden="true"><span></span>${heatmapHours}</div>
+                <div id="overview-heatmap-grid" role="grid" aria-label="Trace activity by local hour for the last seven days."></div>
+              </div>
+            </div>
+            <aside id="overview-heatmap-tooltip" class="overview-heatmap-tooltip" hidden>
+              <time id="overview-heatmap-tooltip-time"></time>
+              <dl>
+                <div><dt>Calls</dt><dd id="overview-heatmap-tooltip-calls">0</dd></div>
+                <div><dt>Tokens</dt><dd id="overview-heatmap-tooltip-tokens">0</dd></div>
+                <div><dt>Cost</dt><dd id="overview-heatmap-tooltip-cost">$0.0000</dd></div>
+              </dl>
+            </aside>
+          </section>
           <div class="overview-lede">
             <div class="overview-finding">
               <p class="identity">Workspace readiness</p>
@@ -934,9 +1210,9 @@ function renderOverviewPanels(): string {
           <div class="overview-context">
             <div class="overview-context-copy">
               <h2>One workspace, directly readable</h2>
-              <p>Home shows the operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
+              <p>Overview shows live activity and operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
             </div>
-            <a class="overview-context-link" href="/docs">Open Documentation →</a>
+            <a class="overview-context-link" target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/">Open Documentation →</a>
           </div>
         </section>
         <section class="panel-section" id="configuration">
@@ -1147,6 +1423,9 @@ export function renderConfigurationSite(page: ConfigurationPageId = 'configurati
       : page === 'environments'
         ? environmentClientScript()
         : secretsClientScript();
+  const overviewHeatmapGsap = page === 'configuration'
+    ? `<script id="overview-heatmap-gsap">${OVERVIEW_HEATMAP_GSAP}</script>`
+    : '';
 
   return `<!doctype html>
 <html lang="en">
@@ -1169,6 +1448,7 @@ export function renderConfigurationSite(page: ConfigurationPageId = 'configurati
       </main>
     </div>
   </div>
+  ${overviewHeatmapGsap}
   <script>${PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT}\n${workspaceChromeClientScript()}\n${clientScript}</script>
 </body>
 </html>`;

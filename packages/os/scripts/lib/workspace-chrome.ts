@@ -20,7 +20,7 @@ type WorkspaceRoute = {
 const WORKSPACE_ROUTES: WorkspaceRoute[] = [
   {
     id: 'overview',
-    label: 'Home',
+    label: 'Overview',
     href: '/configuration',
     group: null,
     description: 'Workspace health and operating context.',
@@ -86,9 +86,10 @@ const WORKSPACE_ROUTES: WorkspaceRoute[] = [
   {
     id: 'documentation',
     label: 'Documentation',
-    href: '/docs',
+    href: 'https://docs.consuelohq.com/',
     group: 'Guides',
     description: 'Guides, setup, and operating references.',
+    external: true,
   },
 ];
 
@@ -135,10 +136,10 @@ export function renderWorkspaceChromeBar(
   const menuShortcut = traceCompat ? '' : ' data-workspace-menu-shortcut';
   const fullscreenControl = traceCompat ? '' : ' data-workspace-fullscreen';
   const overviewRoute = WORKSPACE_ROUTES.find((route) => route.id === 'overview');
-  if (!overviewRoute) throw new Error('Workspace Home route is required.');
+  if (!overviewRoute) throw new Error('Workspace Overview route is required.');
   return `<div class="trxChrome" data-workspace-chrome>
     <div class="trxDots" aria-label="Window controls">
-      <button class="trxDot red" type="button" data-window-control="close" data-close-traces data-workspace-home aria-label="Go to Home"></button>
+      <button class="trxDot red" type="button" data-window-control="close" data-close-traces data-workspace-home aria-label="Go to Overview"></button>
       <button class="trxDot yellow" type="button" data-window-control="sidebar"${menuShortcut} aria-label="${traceCompat ? 'Toggle trace sidebar' : 'Open workspace routes'}"></button>
       <button class="trxDot green" type="button" data-window-control="fullscreen"${fullscreenControl} aria-label="Toggle fullscreen"></button>
     </div>
@@ -201,7 +202,8 @@ export function workspaceRouteSwitcherStyles(): string {
     ::view-transition-old(workspace-body), ::view-transition-new(workspace-body) { animation-duration: 140ms; animation-timing-function: ease-out; }
     @media (prefers-reduced-motion: reduce) { ::view-transition-group(*) { animation-duration: 0.01ms !important; } }
     .workspace-route-control { position: relative; z-index: 90; min-width: 0; }
-    .workspace-route-trigger { appearance: none; border: 0; background: transparent; color: inherit; font: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 30px; padding: 2px 9px; border-radius: 7px; cursor: pointer; }
+    .workspace-route-trigger { appearance: none; border: 0; background: transparent; color: inherit; font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .01em; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; max-width: min(220px, calc(100vw - 190px)); min-height: 30px; padding: 2px 9px; border-radius: 7px; cursor: pointer; }
+    .workspace-route-trigger > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .workspace-route-trigger:hover, .workspace-route-trigger[aria-expanded="true"] { background: var(--workspace-menu-hover); }
     .workspace-route-trigger:focus-visible { outline: none; background: var(--workspace-menu-current); color: var(--workspace-menu-accent); box-shadow: inset 0 -2px 0 var(--workspace-menu-accent); }
     .workspace-route-chevron { font-size: 12px; transform: translateY(-1px); }
@@ -214,7 +216,7 @@ export function workspaceRouteSwitcherStyles(): string {
     .workspace-route-option { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 9px 8px; border-radius: 8px; color: var(--workspace-menu-ink); text-decoration: none; }
     .workspace-route-option:hover, .workspace-route-option:focus-visible { background: var(--workspace-menu-hover); color: var(--workspace-menu-ink); outline: none; }
     .workspace-route-option[aria-current="page"] { color: var(--workspace-menu-accent); background: var(--workspace-menu-current); }
-    .workspace-route-option span { font: 13px/1.25 Georgia, "Times New Roman", serif; }
+    .workspace-route-option span { min-width: 0; overflow-wrap: anywhere; font: 13px/1.25 Georgia, "Times New Roman", serif; }
     .workspace-route-option small { color: var(--workspace-menu-muted); font: 10px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
     .workspace-route-group[data-route-group="Connect"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
     .workspace-route-group[data-route-group="Connect"] > p { grid-column: 1 / -1; }
@@ -222,7 +224,9 @@ export function workspaceRouteSwitcherStyles(): string {
     .workspace-route-card span { font-size: 15px; }
     @media (max-width: 560px) {
       .workspace-route-menu { position: fixed; top: 52px; left: 50vw; right: auto; transform: translateX(-50%); width: min(360px, calc(100vw - 24px)); max-height: calc(100dvh - 64px); }
-      .workspace-route-option { grid-template-columns: 70px minmax(0, 1fr); }
+      .workspace-route-trigger { max-width: min(170px, calc(100vw - 150px)); }
+      .workspace-route-option { grid-template-columns: minmax(78px, 96px) minmax(0, 1fr); }
+      .workspace-route-option span { font-size: clamp(11px, 3.2vw, 13px); }
     }
   `;
 }
