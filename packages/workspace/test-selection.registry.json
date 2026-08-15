@@ -2,11 +2,11 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2630,
-    "mappedTestCount": 2547,
+    "testFileCount": 2632,
+    "mappedTestCount": 2549,
     "unmappedTestCount": 83,
-    "ruleCount": 56,
-    "explicitRuleCount": 37,
+    "ruleCount": 57,
+    "explicitRuleCount": 38,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -234,6 +234,7 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
+      "packages/dialer-server/src/lab": 2,
       "packages/dialer/src/application": 2,
       "packages/dialer/src/domain": 2,
       "packages/diff-cockpit/tests": 2,
@@ -634,12 +635,12 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 537,
+      "test": 538,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
-      "e2e": 1,
-      "integration": 1
+      "integration": 2,
+      "e2e": 1
     }
   },
   "rules": [
@@ -1092,6 +1093,40 @@
       ],
       "critical": true,
       "reason": "Lifecycle daemon/reload changes must prove inherited-secret scrub, activated-runtime managed Sites refresh, Bun path resolution, and fail-open startup without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-gateway-security-caddy-handoff",
+      "source": [
+        "packages/os/scripts/lib/security-gateway.ts",
+        "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+        "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+        "packages/os/tests/security-gateway.test.ts",
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS gateway security and Caddy contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/security-gateway.test.ts",
+            "tests/caddy-worker-pool-reconciliation.test.ts"
+          ]
+        },
+        {
+          "name": "OS gateway security syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Gateway security and Caddy handoff changes must prove signed Workspace Edge headers survive local proxying, gateway authorization remains fail-closed, worker-pool reconciliation is idempotent, and syntax stays valid without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -2912,6 +2947,16 @@
     {
       "path": "packages/dialer-server/src/embed-boundary.test.ts",
       "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+      "group": "packages/dialer-server/src/lab",
       "kind": "test"
     },
     {

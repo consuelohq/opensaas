@@ -20,7 +20,24 @@ started: 2026-08-15
 
 ## files changed
 
-- none yet
+- `packages/os/cloudflare/os-device-authority/src/app.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/health.ts`
+- `packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts`
+- `packages/os/cloudflare/os-device-authority/src/security/route-policies.ts`
+- `packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts`
+- `packages/os/cloudflare/os-device-authority/src/types.ts`
+- `packages/os/cloudflare/os-device-authority/src/worker.ts`
+- `packages/os/scripts/lib/device-authority-release-readiness.ts`
+- `packages/os/tests/os-device-authority-architecture.test.ts`
+- `packages/os/tests/os-device-authority-release-contract.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
+- `packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts`
+- `packages/os/tests/managed-cloud-checkout-observability.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -34,6 +51,8 @@ started: 2026-08-15
 
 - 2026-08-15 04:57:01 `review.run`: passed — OK
 - 2026-08-15 04:57:24 `verify`: passed — OK
+- 2026-08-15 05:04:07 `review.run`: passed — OK
+- 2026-08-15 05:04:28 `verify`: passed — OK
 
 ## key decisions
 
@@ -104,6 +123,7 @@ no-test waiver: not applicable; this crosses auth, Stripe, webhook, telemetry, a
 
 ## workspace-owned: files read
 
+- `packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts`
 - `packages/os/tests/cloud-first-web-onboarding.test.ts`
 - `packages/os/tests/managed-cloud-checkout-observability.test.ts`
 - `packages/os/tests/os-device-authority-architecture.test.ts`
@@ -113,5 +133,3 @@ no-test waiver: not applicable; this crosses auth, Stripe, webhook, telemetry, a
 - `packages/os/tests/os-web-auth-contract.test.ts`
 - `packages/os/tests/security-scan.test.ts`
 - `packages/workspace/test-selection.rules.json`
-
-- 2026-08-15 04:57:36 apply-patch: `.task/os/restore-synthetic-checkout-onto-current-production-device-authority/workpad.md`
