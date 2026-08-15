@@ -77,6 +77,7 @@ function renderDts(): string {
     '  | "TIMEOUT"',
     '  | "PARSE_ERROR"',
     '  | "NOT_FOUND"',
+    '  | "WORK_SESSION_NOT_FOUND"',
     '  | "DRY_RUN";',
     '',
     'export type ToolResult<TData = unknown> = {',
