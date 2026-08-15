@@ -15,6 +15,8 @@ describe('trace history redaction boundary', () => {
       task_session: 'tsk_safe_session',
       branch: 'task/os-web/safe-traces',
       worktree: '/Users/kokayi/Dev/private-worktree',
+      work_session: 'wrk_safe_session',
+      work_path: '/Users/kokayi/Developer/raycast-extensions/private-extension',
       status: 'error',
       ok: 0,
       code: 'COMMAND_FAILED',
@@ -51,6 +53,8 @@ describe('trace history redaction boundary', () => {
     expect(row.branch).toBe('task/os-web/safe-traces');
     expect(row.traceId).toBe('trc_safe_identity');
     expect(row.worktree).toBe('/Users/[user]/Dev/private-worktree');
+    expect(row.workSession).toBe('wrk_safe_session');
+    expect(row.workPath).toBe('/Users/[user]/Developer/raycast-extensions/private-extension');
     expect(row.rawInputJson).toContain('tsk_safe_session');
     expect(row.rawInputJson).toContain('/gateway/traces/recent');
     expect(row.rawInputJson).toContain('trace:read');

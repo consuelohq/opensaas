@@ -242,7 +242,12 @@
         "packages/os/tests/fixtures/trace-persistence-runtime.ts",
         "packages/os/scripts/lib/distribution/runtime-bundle.ts",
         "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
-        "packages/os/tests/trace-site-inspector-interactions.test.ts"
+        "packages/os/tests/trace-site-inspector-interactions.test.ts",
+        "packages/os/scripts/lib/facade/logger.ts",
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-search-query.ts",
+        "packages/os/tests/trace-persistence.test.ts",
+        "packages/os/tests/trace-search-query.test.ts"
       ],
       "tests": [
         {
@@ -270,6 +275,19 @@
             "packages/os",
             "test",
             "tests/trace-sites-runtime-boundary.test.ts"
+          ]
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
           ]
         }
       ],
