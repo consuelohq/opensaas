@@ -119,6 +119,7 @@ describe('documentation navigation', () => {
       { label: 'Tools', href: '/tools/' },
       { label: 'Sites', href: '/sites/' },
       { label: 'Skills', href: '/skills/' },
+      { label: 'Workflows', href: '/workflows/' },
       { label: 'Steering', href: '/steering/' },
       { label: 'Memory', href: '/memory/' },
       { label: 'Observe', href: '/observe/' },
@@ -143,12 +144,16 @@ describe('documentation navigation', () => {
       { label: 'Skills', href: '/skills/' },
       { label: 'How skills work', href: '/build/skills/how-skills-work/', current: true },
     ]);
+    expect(getBreadcrumbs('/workflows/branch-graph/')).toEqual([
+      { label: 'Workflows', href: '/workflows/' },
+      { label: 'Branch Graph', href: '/workflows/branch-graph/', current: true },
+    ]);
     expect(getBreadcrumbs('/sites/publish/')).toEqual([
       { label: 'Sites', href: '/sites/' },
       { label: 'Publish', href: '/sites/publish/', current: true },
     ]);
 
-    expect(footerSections).toHaveLength(11);
+    expect(footerSections).toHaveLength(12);
     expect(footerSections.find((section) => section.label === 'Start')?.links).toContainEqual({
       label: 'Install Consuelo OS',
       href: '/start/install-consuelo-os/',
@@ -188,10 +193,10 @@ describe('documentation navigation', () => {
 describe('foundation source contract', () => {
   const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
-  test('declares the eleven approved top-level areas and Starlight overrides', () => {
+  test('declares the twelve approved top-level areas and Starlight overrides', () => {
     const config = read('astro.config.mjs');
     const navigation = read('src/lib/docs-navigation.ts');
-    for (const label of ['Start', 'Connect', 'Nodes', 'Tools', 'Sites', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference']) {
+    for (const label of ['Start', 'Connect', 'Nodes', 'Tools', 'Sites', 'Skills', 'Workflows', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference']) {
       expect(navigation).toContain(`label: '${label}'`);
     }
     expect(navigation).not.toContain("label: 'Build with OS'");
@@ -207,7 +212,7 @@ describe('foundation source contract', () => {
   });
 
   test('scaffolds every top-level route', () => {
-    for (const route of ['start', 'connect', 'nodes', 'tools', 'sites', 'skills', 'steering', 'memory', 'observe', 'secure', 'reference']) {
+    for (const route of ['start', 'connect', 'nodes', 'tools', 'sites', 'skills', 'workflows', 'steering', 'memory', 'observe', 'secure', 'reference']) {
       expect(existsSync(new URL(`../src/content/docs/${route}/index.mdx`, import.meta.url))).toBe(true);
     }
   });

@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2629,
-    "mappedTestCount": 2546,
+    "testFileCount": 2632,
+    "mappedTestCount": 2549,
     "unmappedTestCount": 83,
-    "ruleCount": 55,
-    "explicitRuleCount": 36,
+    "ruleCount": 56,
+    "explicitRuleCount": 37,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 254,
+      "packages/os/tests": 255,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 61,
       "packages/twenty-sdk/src/cli": 51,
@@ -234,6 +234,7 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
+      "packages/dialer-server/src/lab": 2,
       "packages/dialer/src/application": 2,
       "packages/dialer/src/domain": 2,
       "packages/diff-cockpit/tests": 2,
@@ -634,12 +635,12 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 536,
+      "test": 538,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
-      "e2e": 1,
-      "integration": 1
+      "integration": 2,
+      "e2e": 1
     }
   },
   "rules": [
@@ -1697,6 +1698,41 @@
       "critical": true,
       "exclusive": true,
       "reason": "Removal of the obsolete metering package from the deployed artifact manifest must retain the canonical Artifacts boundary without selecting unrelated OS suites.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-bundled-skill-contract",
+      "source": [
+        "packages/os/skills/**",
+        "packages/os/tests/branch-skill.test.ts",
+        "packages/os/tests/cli-skill-routing.test.ts",
+        "packages/os/tests/onboarding-skills.test.ts",
+        "packages/os/tests/senior-engineer-skill.test.ts",
+        "packages/os/tests/skill-migration.test.ts",
+        "packages/os/tests/skill-selection-cli.test.ts",
+        "packages/os/tests/skills-registry.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS bundled skill contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--",
+            "tests/branch-skill.test.ts",
+            "tests/cli-skill-routing.test.ts",
+            "tests/onboarding-skills.test.ts",
+            "tests/skill-selection-cli.test.ts",
+            "tests/skills-registry.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Bundled skill instructions, metadata, registry output, and skill-routing contracts must run the focused skill lifecycle suite without selecting unrelated historically red package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -2873,6 +2909,16 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/lead-connector-boundary.test.ts",
       "group": "packages/dialer-server/src",
       "kind": "test"
@@ -3344,6 +3390,11 @@
     },
     {
       "path": "packages/os/tests/bootstrap-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/branch-skill.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
