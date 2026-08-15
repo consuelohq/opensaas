@@ -2,17 +2,15 @@ import { BadRequestException, Logger } from '@nestjs/common';
 
 import { randomUUID } from 'node:crypto';
 
-import { Effect, Layer } from 'effect';
+import { Effect } from 'effect';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import {
-  DialerCallRepository,
-  DialerCallRuntime,
-  DialerTargetRepository,
   DialerInfrastructureError,
   DialerRequestError,
   type DialerApplicationError,
   type DialerCallRepositoryService,
   type DialerCallRuntimeService,
+  type DialerCallStartPorts,
   type DialerTargetRepositoryService,
   Dialer,
   type ParallelDialProfile,
@@ -116,7 +114,7 @@ export class TwentyDialerCallStartInfrastructure {
     private readonly legacyDialerService: LegacyDialerService,
   ) {}
 
-  createApplicationLayer() {
+  createPorts(): DialerCallStartPorts {
     const targets: DialerTargetRepositoryService = {
       resolveInputQueueId: (input) =>
         this.tryEffect('resolve-input-queue', () =>
@@ -198,11 +196,7 @@ export class TwentyDialerCallStartInfrastructure {
         ),
     };
 
-    return Layer.mergeAll(
-      Layer.succeed(DialerTargetRepository, targets),
-      Layer.succeed(DialerCallRepository, calls),
-      Layer.succeed(DialerCallRuntime, runtime),
-    );
+    return { targets, calls, runtime };
   }
 
   private tryEffect<A>(

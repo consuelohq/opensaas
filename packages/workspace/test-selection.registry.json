@@ -2,11 +2,11 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2630,
-    "mappedTestCount": 2547,
+    "testFileCount": 2632,
+    "mappedTestCount": 2549,
     "unmappedTestCount": 83,
-    "ruleCount": 55,
-    "explicitRuleCount": 36,
+    "ruleCount": 56,
+    "explicitRuleCount": 37,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -25,10 +25,10 @@
       "packages/twenty-server/test/integration/graphql/suites/inputs-validation/create-validation": 23,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/twenty-front/src/modules/billing/hooks": 21,
+      "packages/dialer-server/src": 20,
       "packages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/validator-utils": 20,
       "packages/twenty-server/test/integration/constants": 20,
       "packages/twenty-server/test/integration/graphql/suites/inputs-validation/filter-validation": 20,
-      "packages/dialer-server/src": 19,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/graphWidgetBarChart/utils": 18,
       "packages/twenty-front/src/modules/workflow/workflow-variables/utils": 17,
       "packages/twenty-server/src/modules/dashboard/chart-data/utils": 17,
@@ -186,6 +186,7 @@
       "packages/twenty-server/test/integration/metadata/suites/field-metadata/relation": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/providers": 3,
       "packages/dialer-server/src/call-operations": 3,
+      "packages/dialer/src/application": 3,
       "packages/os/scripts": 3,
       "packages/twenty-front/src/modules/action-menu/utils": 3,
       "packages/twenty-front/src/modules/activities/calendar/utils": 3,
@@ -234,7 +235,6 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
-      "packages/dialer/src/application": 2,
       "packages/dialer/src/domain": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
@@ -634,7 +634,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 537,
+      "test": 539,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -1866,6 +1866,29 @@
       "origin": "explicit"
     },
     {
+      "id": "twenty-migration-call-start-orchestration",
+      "source": [
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts"
+      ],
+      "tests": [
+        {
+          "name": "Twenty call-start compatibility contracts",
+          "command": [
+            "bash",
+            "-lc",
+            "cd packages/twenty-server && NODE_ENV=test npx --no-install jest --config jest.config.mjs src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts --runInBand"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "M1 call-start extraction must prove the compatibility service and architecture boundary without scheduling the unrelated full Twenty server suite.",
+      "origin": "explicit"
+    },
+    {
       "id": "twenty-server-project",
       "source": [
         "packages/twenty-server/**",
@@ -2860,6 +2883,11 @@
       "kind": "integration"
     },
     {
+      "path": "packages/dialer-server/src/m1-twenty-orchestration.contract.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/release/production-release.test.ts",
       "group": "packages/dialer-server/src/release",
       "kind": "test"
@@ -2918,6 +2946,11 @@
       "path": "packages/dialer/src/application/adapter-application.spec.ts",
       "group": "packages/dialer/src/application",
       "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/application/dialer-call-start-application.test.ts",
+      "group": "packages/dialer/src/application",
+      "kind": "test"
     },
     {
       "path": "packages/dialer/src/application/parallel-application.spec.ts",

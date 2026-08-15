@@ -616,6 +616,28 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused M1 call-start compatibility contracts instead of the full Twenty server suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts',
+      '--changed-file',
+      'packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('twenty-migration-call-start-orchestration');
+    expect(matchedRuleIds).not.toContain('twenty-server-project');
+    expect(matchedRuleIds).not.toContain('auto:twenty-server:test');
+    expect(data.selectedSuites).toHaveLength(1);
+    expect(data.selectedSuites[0]).toMatchObject({
+      name: 'Twenty call-start compatibility contracts',
+      ruleId: 'twenty-migration-call-start-orchestration',
+    });
+  });
+
   it('selects the Hono dialer-server suite for standalone server changes', () => {
     const result = run([
       'check',
