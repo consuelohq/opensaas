@@ -62,6 +62,7 @@ function configurationStyles(): string {
       --site-color-line: rgba(28, 26, 23, 0.14);
       --site-color-line-strong: rgba(28, 26, 23, 0.28);
       --site-color-panel: rgba(28, 26, 23, 0.035);
+      --site-color-canvas: #e9e4dc;
       --site-font-body: 'displayFont', 'displayFont Fallback', 'Times New Roman', serif;
       --site-font-mono: 'monoFont', 'monoFont Fallback', 'Courier New', monospace;
       background: var(--site-color-paper);
@@ -79,11 +80,12 @@ function configurationStyles(): string {
         --site-color-line: rgba(255, 247, 235, 0.14);
         --site-color-line-strong: rgba(255, 247, 235, 0.28);
         --site-color-panel: rgba(255, 247, 235, 0.055);
+        --site-color-canvas: #0d0d0c;
       }
     }
     * { box-sizing: border-box; }
-    html { background: #0d0d0c; }
-    body { margin: 0; min-height: 100vh; padding: 14px; background: #0d0d0c; color: var(--site-color-ink); }
+    html { background: var(--site-color-canvas); }
+    body { margin: 0; min-height: 100vh; padding: 14px; background: var(--site-color-canvas); color: var(--site-color-ink); }
     .workspace-window { width: min(1880px, calc(100vw - 28px)); min-height: calc(100vh - 28px); margin: 0 auto; overflow: clip; border: 1px solid rgba(241, 231, 213, 0.16); border-radius: 18px; background: var(--site-color-paper); box-shadow: 0 34px 110px rgba(0, 0, 0, 0.42); display: grid; grid-template-rows: 42px minmax(0, 1fr); }
     .trxChrome { position: relative; z-index: 70; display: grid; grid-template-columns: minmax(84px, 1fr) auto minmax(84px, 1fr); align-items: center; height: 42px; padding: 0 14px; border-bottom: 1px solid rgba(241, 231, 213, 0.10); background: #151411; color: #d8d0c1; view-transition-name: workspace-chrome; }
     .trxDots { display: flex; align-items: center; gap: 8px; justify-self: start; }
@@ -98,7 +100,7 @@ function configurationStyles(): string {
     @view-transition { navigation: auto; }
     ::view-transition-old(workspace-chrome), ::view-transition-new(workspace-chrome) { animation-duration: 90ms; }
     ::view-transition-old(workspace-body), ::view-transition-new(workspace-body) { animation-duration: 140ms; animation-timing-function: ease-out; }
-    @media (prefers-reduced-motion: reduce) { ::view-transition-group(*) { animation-duration: 0.01ms !important; } }
+    @media (prefers-reduced-motion: reduce) { ::view-transition-group(*) { animation-duration: 0.01ms !important; } .readiness-fill { transition: none !important; } }
     .identity, .status-pill, code, h3 { font-family: var(--site-font-mono); }
     .identity { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
     .nav { display: grid; gap: 8px; }
@@ -184,9 +186,27 @@ function configurationStyles(): string {
     .inventory-toggle input:checked::after { transform: translateX(13px); background: var(--site-color-secondary); }
     .inventory-toggle input:focus-visible { outline: 2px solid var(--site-color-accent); outline-offset: 2px; }
     .inventory-empty { padding: 28px 0; color: var(--site-color-muted); }
+    .overview-surface { display: grid; gap: 30px; max-width: 1240px; }
+    .overview-lede { display: grid; grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr); gap: 42px; align-items: start; border-bottom: 1px solid var(--site-color-line); padding-bottom: 26px; }
+    .overview-finding { display: grid; gap: 8px; }
+    .overview-finding h2 { font-size: clamp(26px, 3vw, 40px); line-height: 1.03; font-weight: 500; letter-spacing: -.025em; max-width: 650px; }
+    .overview-finding p:not(.identity) { color: var(--site-color-muted); max-width: 600px; line-height: 1.45; }
+    .readiness-plot { display: grid; gap: 14px; min-width: 0; padding-top: 2px; }
+    .readiness-row { display: grid; grid-template-columns: 112px minmax(170px, 1fr) 84px; gap: 12px; align-items: center; }
+    .readiness-label, .readiness-value { font-family: var(--site-font-mono); font-size: 11px; }
+    .readiness-label { color: var(--site-color-ink); }
+    .readiness-value { color: var(--site-color-muted); text-align: right; font-variant-numeric: tabular-nums; }
+    .readiness-track { height: 6px; background: color-mix(in srgb, var(--site-color-muted) 16%, transparent); overflow: hidden; }
+    .readiness-fill { display: block; height: 100%; background: var(--site-color-muted); transform-origin: left center; transition: width 240ms ease-out; }
+    .readiness-row[data-complete="true"] .readiness-fill { background: var(--site-color-secondary); }
+    .overview-context { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: start; padding-bottom: 22px; border-bottom: 1px solid var(--site-color-line); }
+    .overview-context-copy { display: grid; gap: 8px; }
+    .overview-context-copy p { color: var(--site-color-muted); max-width: 720px; line-height: 1.45; }
+    .overview-context-link { color: var(--site-color-ink); font-family: var(--site-font-mono); font-size: 11px; white-space: nowrap; }
     .overview-tool-link { display: flex; align-items: baseline; justify-content: space-between; gap: 22px; max-width: 1080px; border-top: 1px solid var(--site-color-line); border-bottom: 1px solid var(--site-color-line); padding: 18px 0; }
     .overview-tool-link a { color: var(--site-color-ink); font-family: var(--site-font-mono); font-size: 11px; }
     @media (max-width: 980px) {
+      .overview-lede { grid-template-columns: 1fr; gap: 22px; }
       .tools-lede { grid-template-columns: 1fr; gap: 22px; }
       .tool-controls { grid-template-columns: 1fr; }
       .filter-cluster { width: 100%; overflow-x: auto; }
@@ -195,6 +215,8 @@ function configurationStyles(): string {
       .inventory-toggle { grid-column: 3; }
     }
     @media (max-width: 620px) {
+      .readiness-row { grid-template-columns: 88px minmax(90px, 1fr) 70px; }
+      .overview-context { grid-template-columns: 1fr; gap: 12px; }
       .availability-row { grid-template-columns: 72px minmax(90px, 1fr) 68px; }
       .inventory-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; padding: 13px 0; }
       .inventory-kind { grid-column: 1; }
@@ -544,6 +566,43 @@ function configurationClientScript(): string {
         : String(enabled) + ' of ' + String(items.length) + ' agent surfaces are enabled');
     }
 
+    function renderOverviewReadiness(snapshot, items) {
+      const plot = byId('overview-readiness-plot');
+      if (!plot) return;
+      const cloud = (Array.isArray(snapshot.cloudConnectors) ? snapshot.cloudConnectors : []).filter((connector) => connector.placeholder !== true);
+      const local = Array.isArray(snapshot.localAgents) ? snapshot.localAgents : [];
+      const capabilities = Array.isArray(snapshot.capabilities) ? snapshot.capabilities : [];
+      const connectedCloud = cloud.filter((connector) => String(connector.status || '').toLowerCase() === 'connected').length;
+      const connectedLocal = local.filter((agent) => agent.detected === true || ['connected', 'verified'].includes(String(agent.status || '').toLowerCase())).length;
+      const groups = [
+        { label: 'Connections', ready: connectedCloud + connectedLocal, total: cloud.length + local.length },
+        { label: 'Capabilities', ready: capabilities.filter((capability) => String(capability.status || '').toLowerCase() === 'connected').length, total: capabilities.length },
+        { label: 'Agent surfaces', ready: items.filter((item) => item.enabled).length, total: items.length },
+      ];
+      plot.innerHTML = groups.map((group) => {
+        const percent = group.total ? Math.round((group.ready / group.total) * 100) : 0;
+        return '<div class="readiness-row" data-complete="' + String(group.total > 0 && group.ready === group.total) + '">' +
+          '<span class="readiness-label">' + escapeHtml(group.label) + '</span>' +
+          '<span class="readiness-track" aria-hidden="true"><span class="readiness-fill" style="width:' + String(percent) + '%"></span></span>' +
+          '<span class="readiness-value">' + String(group.ready) + ' / ' + String(group.total) + '</span>' +
+        '</div>';
+      }).join('');
+      const ready = groups.reduce((sum, group) => sum + group.ready, 0);
+      const total = groups.reduce((sum, group) => sum + group.total, 0);
+      const biggestGap = groups
+        .map((group) => ({ ...group, missing: group.total - group.ready }))
+        .sort((left, right) => right.missing - left.missing)[0];
+      setText('overview-readiness-title', total > 0 && ready === total
+        ? 'Every workspace check is ready'
+        : total > 0
+          ? String(ready) + ' of ' + String(total) + ' workspace checks are ready'
+          : 'Workspace readiness is waiting for data');
+      setText('overview-readiness-copy', biggestGap && biggestGap.missing > 0
+        ? 'The largest readiness gap is ' + biggestGap.label.toLowerCase() + ': ' + String(biggestGap.ready) + ' of ' + String(biggestGap.total) + ' ready.'
+        : 'Connections, capabilities, and agent surfaces are compared side by side against the current workspace state.');
+      plot.setAttribute('aria-label', 'Workspace readiness by operating area: ' + groups.map((group) => group.label + ' ' + String(group.ready) + ' of ' + String(group.total)).join('; '));
+    }
+
     function inventoryToggle(item) {
       if (!item.configurable) {
         return '<span class="inventory-toggle"><span>Managed locally</span></span>';
@@ -620,6 +679,7 @@ function configurationClientScript(): string {
       setHtml('local-agent-rows', local.length ? local.map((agent) => '<tr><td>' + escapeHtml(agent.label) + '</td><td>' + escapeHtml(agent.kind) + '</td><td>' + pill(agent.status) + '</td><td>' + escapeHtml(agent.detected ? 'Detected' : 'Not detected') + '</td><td>' + escapeHtml(agent.message || 'Connection not verified.') + '</td></tr>').join('') : emptyRow(5, 'No local agents detected on this node.'));
 
       toolInventoryItems = inventoryItems(snapshot);
+      renderOverviewReadiness(snapshot, toolInventoryItems);
       renderInventoryCategories(toolInventoryItems);
       renderAvailabilityPlot(toolInventoryItems);
       renderToolInventory();
@@ -862,8 +922,25 @@ function environmentClientScript(): string {
 
 function renderOverviewPanels(): string {
   return `
+        <section class="overview-surface" id="overview" aria-labelledby="overview-readiness-title">
+          <div class="overview-lede">
+            <div class="overview-finding">
+              <p class="identity">Workspace readiness</p>
+              <h2 id="overview-readiness-title">Checking the workspace…</h2>
+              <p id="overview-readiness-copy">Comparing live connections, node capabilities, and the agent surfaces available in this workspace.</p>
+            </div>
+            <div id="overview-readiness-plot" class="readiness-plot" role="img" aria-label="Workspace readiness by operating area"></div>
+          </div>
+          <div class="overview-context">
+            <div class="overview-context-copy">
+              <h2>One workspace, directly readable</h2>
+              <p>Overview shows the operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
+            </div>
+            <a class="overview-context-link" href="/docs">Open Documentation →</a>
+          </div>
+        </section>
         <section class="panel-section" id="configuration">
-          <header class="panel-header"><h2>Configuration</h2><p>Workspace and node configuration loaded through the signed gateway.</p></header>
+          <header class="panel-header"><h2>Operating context</h2><p>Workspace and node configuration loaded through the signed gateway.</p></header>
           <dl class="detail-grid" id="configuration-details"></dl>
           <p id="toggle-status" class="muted">Changes are authorized and written through /gateway/configuration/overlay.</p>
         </section>

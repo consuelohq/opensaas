@@ -40,17 +40,51 @@ describe('configuration site', () => {
     expect(html).toContain('data-workspace-shell');
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).toContain('aria-label="Workspace routes"');
-    expect(html).toContain('href="/tracing"');
+    expect(html).toContain('class="workspace-route-option workspace-route-primary"');
     expect(html).toContain('href="/configuration"');
+    expect(html).toContain('aria-current="page" href="/configuration"');
+    expect(html).toContain('href="/tracing"');
+    expect(html).toContain('href="/artifacts"');
+    expect(html).toContain('href="/diffs"');
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/secrets"');
+    expect(html).toContain('href="/docs"');
+    expect(html).toContain('>Home</span><small>Workspace health and operating context.</small>');
+    expect(html).toContain('>Artifacts</span><small>Browse agent work and generated outputs.</small>');
+    expect(html).toContain('>Code</span><small>Review code diffs and changes.</small>');
+    expect(html).toContain('data-route-group="Connect"');
+    expect(html).toContain('href="https://chatgpt.com/plugins#settings/Connectors?create-connector=true&amp;redirectAfter=%2Fplugins"');
+    expect(html).toContain('href="https://claude.ai/customize/connectors"');
+    expect(html.indexOf('workspace-route-primary')).toBeLessThan(html.indexOf('>Observe</p>'));
+    expect(html.indexOf('>Observe</p>')).toBeLessThan(html.indexOf('>Configure</p>'));
+    expect(html.indexOf('>Configure</p>')).toBeLessThan(html.indexOf('>Connect</p>'));
+    expect(html.indexOf('>Connect</p>')).toBeLessThan(html.indexOf('>Guides</p>'));
+    expect(html.indexOf('href="/artifacts"')).toBeLessThan(html.indexOf('>Configure</p>'));
+    expect(html.indexOf('href="/diffs"')).toBeLessThan(html.indexOf('>Configure</p>'));
+    expect(html).toContain("warmRoute('/configuration')");
+    expect(html).toContain('data-workspace-prefetch');
+    expect(html).toContain('includeRawPayload=false');
+    expect(html).toContain('sessionStorage.setItem(TRACE_PREFETCH_KEY');
+    expect(html).toContain('const TRACE_PREFETCH_TTL_MS = 20000');
+    expect(html).toContain('Number(cached.savedAt || 0) === savedAt');
+    expect(html).not.toContain('.workspace-route-trigger:focus-visible { outline: 1px solid');
+    expect(html).toContain('box-shadow: inset 0 -2px 0 var(--workspace-menu-accent)');
+    expect(html).toContain('--workspace-chrome-bg:');
+    expect(html).toContain('--workspace-menu-bg:');
+    expect(html).toContain('@media (prefers-color-scheme: dark)');
+    expect(html).toContain('left: 50vw;');
+    expect(html).toContain('transform: translateX(-50%);');
     expect(html).not.toContain('aria-label="Configuration sidebar"');
     expect(html).toContain('/gateway/configuration/snapshot');
     expect(html).toContain('Loading workspace configuration');
     expect(html).toContain('Configuration unavailable');
     expect(html).toContain('/gateway/configuration/overlay');
     expect(html).toContain('Source control');
+    expect(html).toContain('id="overview-readiness-title"');
+    expect(html).toContain('id="overview-readiness-plot"');
+    expect(html).toContain('aria-label="Workspace readiness by operating area"');
+    expect(html).toContain('renderOverviewReadiness');
     expect(html).toContain('id="source-control-form"');
     expect(html).toContain('id="source-control-repository-list"');
     expect(html).toContain('/gateway/configuration/source-control');
@@ -129,6 +163,9 @@ describe('configuration site', () => {
     expect(nodesHtml).toContain('<h1>Nodes</h1>');
     expect(nodesHtml).toContain('aria-current="page" href="/nodes"');
     expect(nodesHtml).toContain('id="node-list"');
+    expect(nodesHtml).toContain('id="node-search"');
+    expect(nodesHtml).toContain('id="node-rows"');
+    expect(nodesHtml).toContain('aria-label="Workspace nodes"');
     expect(nodesHtml).toContain('id="add-node-dialog"');
     expect(nodesHtml).toContain('Create cloud node');
     expect(nodesHtml).toContain('Always available');
@@ -141,6 +178,9 @@ describe('configuration site', () => {
     expect(nodesHtml).toContain('/gateway/nodes/snapshot');
     expect(nodesHtml).toContain('/gateway/nodes/default');
     expect(nodesHtml).toContain('/gateway/nodes/pricing');
+    expect(nodesHtml).toContain('data-plan-price=');
+    expect(nodesHtml).not.toContain('Price available soon');
+    expect(nodesHtml).not.toContain('Always available. One flat monthly price.');
     expect(nodesHtml).toContain('Make default');
     expect(nodesHtml).not.toContain('Provisioning coming soon');
     expect(nodesHtml).toContain('/gateway/nodes/provision');
@@ -336,43 +376,5 @@ describe('configuration site', () => {
       enabled: true,
     });
     expect(snapshot.skills.find((skill) => skill.name === 'sites')).toBeUndefined();
-  });
-});
-
-
-describe('workspace Home, Connect, and compact Nodes surface', () => {
-  it('labels the overview surface Home and exposes direct connector destinations before Guides', () => {
-    const html = renderConfigurationSite('configuration');
-
-    expect(html).toContain('<title>Home - Consuelo OS</title>');
-    expect(html).toContain('<h1>Home</h1>');
-    expect(html).not.toContain('<h1>Overview</h1>');
-    expect(html).toContain('data-route-group="Connect"');
-    expect(html).toContain('data-route-group="Guides"');
-    expect(html).toContain('>ChatGPT<');
-    expect(html).toContain('>Claude<');
-    expect(html).toContain('href="https://chatgpt.com/plugins#settings/Connectors?create-connector=true&amp;redirectAfter=%2Fplugins"');
-    expect(html).toContain('href="https://claude.ai/customize/connectors"');
-    expect(html).toContain('href="/docs"');
-    expect(html.indexOf('data-route-group="Connect"')).toBeLessThan(
-      html.indexOf('data-route-group="Guides"'),
-    );
-  });
-
-  it('renders Nodes as a compact searchable inventory and never promises missing prices', () => {
-    const html = renderConfigurationSite('nodes' as never);
-
-    expect(html).toContain('id="node-search"');
-    expect(html).toContain('id="node-rows"');
-    expect(html).toContain('aria-label="Workspace nodes"');
-    expect(html).toContain('+ Add node');
-    expect(html).toContain('id="add-node-dialog"');
-    expect(html).toContain('data-plan-price=');
-    expect(html).not.toContain('Price available soon');
-    expect(html).not.toContain('Always available. One flat monthly price.');
-    expect(html).not.toContain('e2-medium');
-    expect(html).not.toContain('machineType');
-    expect(html).not.toContain('providerCost');
-    expect(html).not.toContain('targetGrossMargin');
   });
 });

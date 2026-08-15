@@ -120,6 +120,19 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).not.toMatch(/\bBearer\s+[A-Za-z0-9._~+/=-]{12,}/i);
   });
 
+  it('consumes a short-lived prefetched trace preview before the live refresh without persisting it', () => {
+    const clientScript = buildObservabilityTracesClientScript();
+    const html = buildObservabilityTracesSite();
+
+    expect(clientScript).toContain("const TRACE_PREFETCH_KEY = 'consuelo:tracing-prefetch:v1'");
+    expect(clientScript).toContain('sessionStorage.getItem(TRACE_PREFETCH_KEY)');
+    expect(clientScript).toContain('sessionStorage.removeItem(TRACE_PREFETCH_KEY)');
+    expect(clientScript).toContain('Date.now() - Number(cached.savedAt || 0)');
+    expect(clientScript).toContain('const prefetchedFeed = readPrefetchedTraceFeed()');
+    expect(clientScript).toContain('let state = createState(prefetchedFeed || fallbackFeed)');
+    expect(html).not.toContain('trace-seed-data">{"savedAt"');
+  });
+
   it('owns the maintained Trace Burn browser source in OS with no deprecated workspace dependency', () => {
     const sourceFiles = [
       'model.ts',

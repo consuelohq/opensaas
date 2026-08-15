@@ -20,15 +20,39 @@ started: 2026-08-15
 
 ## files changed
 
+- `packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts`
+- `packages/os/cloudflare/os-device-authority/src/worker.ts`
 - `packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts`
 - `packages/os/scripts/lib/managed-cloud-public-pricing.ts`
 - `packages/os/scripts/lib/nodes-site.ts`
+- `packages/os/scripts/lib/settings-site.ts`
+- `packages/os/scripts/lib/workspace-chrome.ts`
+- `packages/os/tests/local-agent-connectivity.test.ts`
+- `packages/os/tests/managed-cloud-public-pricing.test.ts`
+- `packages/os/tests/os-device-authority-release-contract.test.ts`
+- `packages/os/tests/settings-site.test.ts`
+- `packages/workspace/scripts/os-release-device-auth.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## workspace-owned: files changed
 
+- `packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts`
+- `packages/os/cloudflare/os-device-authority/src/worker.ts`
 - `packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts`
 - `packages/os/scripts/lib/managed-cloud-public-pricing.ts`
 - `packages/os/scripts/lib/nodes-site.ts`
+- `packages/os/scripts/lib/settings-site.ts`
+- `packages/os/scripts/lib/workspace-chrome.ts`
+- `packages/os/tests/local-agent-connectivity.test.ts`
+- `packages/os/tests/managed-cloud-public-pricing.test.ts`
+- `packages/os/tests/os-device-authority-release-contract.test.ts`
+- `packages/os/tests/settings-site.test.ts`
+- `packages/workspace/scripts/os-release-device-auth.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## workspace-owned: activity log
 
@@ -39,12 +63,18 @@ started: 2026-08-15
 - 2026-08-15 07:55:37 fs.write: `packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts`
 - 2026-08-15 08:01:16 fs.write: `.task/os/home-connect-and-nodes-pricing/workpad.md`
 - 2026-08-15 08:06:17 fs.write: `.task/os/home-connect-and-nodes-pricing/workpad.md`
+- 2026-08-15 08:10:00 fs.write: `.task/os/home-connect-and-nodes-pricing/workpad.md`
+- 2026-08-15 08:20:10 fs.write: `.task/os/home-connect-and-nodes-pricing/workpad.md`
+- 2026-08-15 08:26:18 fs.write: `.task/os/home-connect-and-nodes-pricing/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-08-15 08:03:57 `verify`: failed — COMMAND_FAILED
 - 2026-08-15 08:05:07 `verify`: failed — COMMAND_FAILED
 - 2026-08-15 08:06:08 `verify`: passed — OK
+- 2026-08-15 08:21:38 `verify`: failed — COMMAND_FAILED
+- 2026-08-15 08:24:51 `verify`: failed — COMMAND_FAILED
+- 2026-08-15 08:25:58 `verify`: failed — COMMAND_FAILED
 
 ## key decisions
 
@@ -84,14 +114,19 @@ bun run task:finish
 - `packages/os/scripts/lib/managed-cloud-pricing.ts`
 - `packages/os/scripts/lib/managed-cloud-public-pricing.ts`
 - `packages/os/scripts/lib/nodes-site.ts`
+- `packages/os/scripts/lib/observability-traces-site.ts`
 - `packages/os/scripts/lib/settings-site.ts`
 - `packages/os/scripts/lib/workspace-chrome.ts`
+- `packages/os/scripts/lib/workspace-edge-route-seed.ts`
 - `packages/os/tests/launcher-nodes-control-plane.test.ts`
+- `packages/os/tests/launcher-nodes-materialization.test.ts`
 - `packages/os/tests/managed-cloud-checkout-observability.test.ts`
 - `packages/os/tests/managed-cloud-pricing.test.ts`
+- `packages/os/tests/observability-traces-site.test.ts`
 - `packages/os/tests/os-device-authority-release-contract.test.ts`
 - `packages/os/tests/settings-site.test.ts`
 - `packages/workspace/scripts/os-release-device-auth.ts`
+- `packages/workspace/senior-engineer.md`
 - `packages/workspace/tests/test-selection.test.js`
 
 ## Test-first contract
@@ -160,3 +195,32 @@ TDD RED (UI): `bun --cwd packages/os test tests/settings-site.test.ts` failed ex
 - Final formal verifier: `trc_877c409f2f5c` — review 0 findings, DB guard 0 risks/findings, all selected suites passed, `publishValid: true`.
 
 - 2026-08-15 08:06:17 append: `.task/os/home-connect-and-nodes-pricing/workpad.md`
+
+## Follow-up: route preload + Work/Code navigation polish
+
+Test-first contract:
+- Behavior under test: the shared workspace route menu exposes the existing `/artifacts` and `/diffs` surfaces in the first (Observe) section, eagerly warms Home (`/configuration`), intent-prefetches other same-origin workspace pages, and primes a short-lived, non-raw recent-trace preview so Tracing can paint rows before its normal live refresh finishes.
+- UI polish: keep the orange active/focus treatment, but remove the square focus outline around the route trigger; use a borderless rounded/background + underline-style focus treatment instead.
+- Existing local pattern: `workspace-chrome.ts` owns shared route chrome/client behavior; `observability-traces-site.ts` owns the tracing client and must keep trace data out of the static snapshot.
+- Changed tests: extend `settings-site.test.ts` for Artifacts/Code routes, Home/menu prefetch behavior, trace prefetch intent, and focus styling; extend `observability-traces-site.test.ts` for one-shot short-lived prefetched trace consumption.
+- Focused RED command: `bun --cwd packages/os test tests/settings-site.test.ts tests/observability-traces-site.test.ts`.
+- Expected RED: current menu has no `/artifacts` or `/diffs`, no route/trace prefetch code, and tracing always starts from an empty feed; trigger focus still uses the 1px outline.
+- Privacy boundary: any trace prefetch must request `includeRawPayload=false`, stay in `sessionStorage` only briefly, be size-bounded, and be removed when Tracing consumes it. Static HTML must remain trace-free.
+
+- 2026-08-15 08:10:00 append: `.task/os/home-connect-and-nodes-pricing/workpad.md`
+
+Follow-up TDD evidence:
+- RED `trc_d471391b4fdf`: new Artifacts/Code menu + trace preview contracts failed because the shared chrome had no route prefetch/trace preview and Tracing always started empty.
+- Route integrity RED `trc_bbffe011a639`: caught an intervening Home link pointing at `/` even though `/` is intentionally the durable Nodes root. Locked Home back to `/configuration` and kept Nodes at `/`.
+- GREEN `trc_9de9a5bfb1e2`: 18/18 focused settings + Trace Burn surface tests pass. Home is primary + eagerly prefetched, Observe now includes Artifacts (`/artifacts`) and Code (`/diffs`), same-origin menu routes prefetch on intent/open, Tracing consumes a bounded one-shot non-raw preview before its live refresh, and the orange trigger focus uses an inset underline/background instead of a square outline.
+
+- 2026-08-15 08:20:10 append: `.task/os/home-connect-and-nodes-pricing/workpad.md`
+
+## Follow-up publish validation
+
+- Route/trace preload + menu polish GREEN: `trc_f984393850ae` (18/18 focused tests).
+- Wider shell/navigation coverage GREEN: `trc_7f9e3d07f221` (29/29) and syntax `trc_e28472b71229`.
+- Reconciled release-managed site refresh and durable Nodes root after the full gate exposed concurrent contract drift: `trc_45c77978b1e3` (release 14/14), `trc_9ceb83994ea1` (local agents 14/14), syntax `trc_01b4d9d72dd9`.
+- Full verification stamp is publish-valid: `.task/os/home-connect-and-nodes-pricing/verify.json`, verified 2026-08-15T08:25:24Z. All 11 selected suites passed; review has 0 findings; DB guard has 0 findings and one expected database-script warning for the route-registry refresh helper.
+
+- 2026-08-15 08:26:18 append: `.task/os/home-connect-and-nodes-pricing/workpad.md`

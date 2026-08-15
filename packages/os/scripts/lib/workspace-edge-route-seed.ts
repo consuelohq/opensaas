@@ -772,3 +772,78 @@ export const createWorkspaceEdgeRouteSeedSql = (
 
   return statements.join('\n\n');
 };
+
+export type WorkspaceReleaseManagedSiteRefreshInput = {
+  versionId: string;
+  snapshotWorkspaceId: string;
+  siteContentHashes: Partial<Record<WorkspaceSiteSnapshotId, string>>;
+};
+
+/**
+ * Refreshes only the release-owned workspace shells in existing route records.
+ *
+ * User/workspace-owned surfaces (Artifacts, Docs, Diffs) and connector/node
+ * routing are intentionally left untouched. The release snapshots are shared
+ * immutable shells published under snapshotWorkspaceId.
+ */
+export const createWorkspaceReleaseManagedSiteRefreshSql = (
+  input: WorkspaceReleaseManagedSiteRefreshInput,
+): string => {
+  const versionId = trimmedValue(input?.versionId);
+  const snapshotWorkspaceId = trimmedValue(input?.snapshotWorkspaceId);
+  if (!versionId) {
+    throw new Error('workspace release site refresh requires a versionId');
+  }
+  if (!snapshotWorkspaceId) {
+    throw new Error('workspace release site refresh requires a snapshotWorkspaceId');
+  }
+
+  const routeCases = WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS.map((siteId) => {
+    const contentHash = normalizedContentHash(input.siteContentHashes?.[siteId]);
+    if (!contentHash) {
+      throw new Error(
+        `workspace release site refresh requires a content hash for ${siteId}`,
+      );
+    }
+    const manifestKey = `sites/${snapshotWorkspaceId}/${siteId}/${versionId}/index.html`;
+    return [
+      `WHEN json_extract(route.value, '$.target.kind') = 'site-snapshot'`,
+      `AND json_extract(route.value, '$.target.siteId') = ${sqlText(siteId)}`,
+      `THEN json_set(route.value,`,
+      `  '$.target.versionId', ${sqlText(versionId)},`,
+      `  '$.target.manifestKey', ${sqlText(manifestKey)},`,
+      `  '$.target.contentHash', ${sqlText(contentHash)}`,
+      `)`,
+    ].join('\n');
+  }).join('\n');
+
+  const refreshedRoutes = [
+    `(SELECT json_group_array(json(CASE`,
+    routeCases,
+    `ELSE route.value`,
+    `END))`,
+    `FROM json_each(workspace_route_registry.record_json, '$.routes') AS route)`,
+  ].join('\n');
+  const launcherManifestKey =
+    `sites/${snapshotWorkspaceId}/launcher/${versionId}/index.html`;
+
+  return [
+    `UPDATE workspace_route_registry`,
+    `SET record_json = json_set(`,
+    `  record_json,`,
+    `  '$.routes', json(${refreshedRoutes}),`,
+    `  '$.updatedAt', datetime('now')`,
+    `),`,
+    `target_origin_url = ${sqlText(`r2://consuelo-sites-snapshots/${launcherManifestKey}`)},`,
+    `updated_at = datetime('now')`,
+    `WHERE revoked_at IS NULL`,
+    `AND json_valid(record_json)`,
+    `AND EXISTS (`,
+    `  SELECT 1`,
+    `  FROM json_each(workspace_route_registry.record_json, '$.routes') AS release_route`,
+    `  WHERE json_extract(release_route.value, '$.target.kind') = 'site-snapshot'`,
+    `  AND json_extract(release_route.value, '$.target.siteId') = 'launcher'`,
+    `);`,
+  ].join('\n');
+};
+

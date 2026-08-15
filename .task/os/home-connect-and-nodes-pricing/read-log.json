@@ -1,13 +1,9 @@
 {
   "files": [
-    ".task/os/home-connect-and-nodes-pricing/workpad.md",
-    "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts",
-    "packages/os/cloudflare/os-device-authority/src/worker.ts",
-    "packages/os/cloudflare/os-device-authority/wrangler.toml",
-    "packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts",
-    "packages/os/scripts/lib/settings-site.ts",
-    "packages/workspace/scripts/os-release-device-auth.ts",
-    "packages/workspace/tests/test-selection.test.js"
+    ".task/os/home-connect-and-nodes-pricing/verify.json",
+    "packages/os/scripts/lib/workspace-chrome.ts",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/tests/launcher-nodes-materialization.test.ts"
   ],
-  "updatedAt": "2026-08-15T08:04:10.372Z"
+  "updatedAt": "2026-08-15T08:26:05.433Z"
 }
