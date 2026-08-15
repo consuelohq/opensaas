@@ -128,7 +128,7 @@ async function handleGoogleOAuthRequest(
       const mcpOAuthState = stateValue
         ? await input.store.byMcpOAuthState(stateValue)
         : undefined;
-      if (authCode && mcpOAuthState) {
+      if (mcpOAuthState) {
         return await finishMcpOAuthGoogleCallback({
           request,
           runtime,
@@ -144,9 +144,9 @@ async function handleGoogleOAuthRequest(
       const webOAuthState = stateValue
         ? await input.store.byWebOAuthState(stateValue)
         : undefined;
-      if (authCode && webOAuthState) {
+      if (webOAuthState) {
         await input.store.delWebOAuthState(stateValue);
-        if (now() >= webOAuthState.expiresAt) {
+        if (now() >= webOAuthState.expiresAt || !authCode) {
           return json({ error: 'invalid_login' }, { status: 400 });
         }
         try {
@@ -186,7 +186,7 @@ async function handleGoogleOAuthRequest(
         }
       }
       const oauthState = await input.store.byOAuthState(stateValue);
-      if (!stateValue || !authCode || !oauthState)
+      if (!stateValue || !oauthState)
         return text(
           page({
             code: '',
@@ -195,6 +195,17 @@ async function handleGoogleOAuthRequest(
           }),
           { status: 400 },
         );
+      if (!authCode) {
+        await input.store.delOAuthState(stateValue);
+        return text(
+          page({
+            code: oauthState.userCode,
+            origin,
+            error: 'Google approval was not completed. Restart the installer.',
+          }),
+          { status: 400 },
+        );
+      }
       if (now() >= oauthState.expiresAt)
         return text(
           page({

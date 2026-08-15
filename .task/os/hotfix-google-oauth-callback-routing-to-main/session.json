@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2e6a0a4a4243",
+  "tmuxSession": "opensaas-os-hotfix-google-oauth-callback-routing-to-main-2e6a0a4a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/hotfix-google-oauth-callback-routing-to-main",
+  "branch": "task/os/hotfix-google-oauth-callback-routing-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-google-oauth-callback-routing-to-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-google-oauth-callback-routing-to-main",
+  "prNumber": 1983,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1983",
+  "createdAt": "2026-08-15T01:29:23.619Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-google-oauth-callback-routing-to-main/.task/os/hotfix-google-oauth-callback-routing-to-main/session.json"
+}
