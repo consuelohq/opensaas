@@ -1,5 +1,9 @@
+const fs = require('fs');
+const path = require('path');
 const { listWorktrees } = require('./git');
 const { readValidTaskMetaForWorktree } = require('./task-meta');
+const { listDurableTaskSessionMetadata } = require('./task-registry');
+const { recoverDurableTaskSession } = require('./task-session');
 const { resolvePrRefNumber } = require('./pr-ref');
 
 function parseTaskSelectorPrefix(rawArgs) {
@@ -98,13 +102,31 @@ function selectTaskFromCandidates(tasks, selector = {}) {
   return result.task;
 }
 
+function normalizeComparablePath(filePath) {
+  const resolved = path.resolve(filePath);
+  try { return fs.realpathSync.native(resolved); } catch { return resolved; }
+}
+
+function registryMatchesWorktree(metadata, worktree) {
+  if (!metadata || !worktree) return false;
+  const branch = metadata.taskBranch || metadata.branch;
+  const registeredPath = metadata.worktreePath || metadata.worktree;
+  if (!branch || branch !== worktree.branch || !registeredPath) return false;
+  return normalizeComparablePath(registeredPath) === normalizeComparablePath(worktree.path);
+}
+
 function findActiveTaskCandidates(repoRoot) {
   const worktrees = listWorktrees(repoRoot);
+  const registry = listDurableTaskSessionMetadata();
   const tasks = [];
 
   for (const worktree of worktrees) {
-    const meta = readValidTaskMetaForWorktree(worktree.path, worktree.branch);
-    if (!meta) continue;
+    const localMeta = readValidTaskMetaForWorktree(worktree.path, worktree.branch);
+    const durableMeta = registry.find((metadata) => registryMatchesWorktree(metadata, worktree)) || null;
+    if (!localMeta && !durableMeta) continue;
+    const meta = localMeta && durableMeta
+      ? { ...durableMeta, ...localMeta, taskSession: durableMeta.taskSession || localMeta.taskSession }
+      : localMeta || durableMeta;
     tasks.push({ worktreePath: worktree.path, meta, branch: worktree.branch });
   }
 
@@ -112,7 +134,21 @@ function findActiveTaskCandidates(repoRoot) {
 }
 
 function findActiveTaskResult(repoRoot, selector = {}) {
-  return selectTaskFromCandidatesResult(findActiveTaskCandidates(repoRoot), selector);
+  const result = selectTaskFromCandidatesResult(findActiveTaskCandidates(repoRoot), selector);
+  if (!result.task || !selector.taskSession) return result;
+  try {
+    const recovered = recoverDurableTaskSession(selector.taskSession);
+    if (recovered) {
+      result.task.meta = { ...result.task.meta, ...recovered };
+      result.task.worktreePath = recovered.worktreePath || result.task.worktreePath;
+    }
+    return result;
+  } catch (error) {
+    return {
+      task: null,
+      error: `task session recovery failed for ${selector.taskSession}: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
 }
 
 function findActiveTask(repoRoot, selector = {}) {

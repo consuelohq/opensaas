@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
+const { readDurableTaskSessionMetadata, writeDurableTaskSessionMetadata } = require('./task-registry');
 
 const SESSION_FILENAME = 'session.json';
 
@@ -146,7 +147,39 @@ function writeTaskSessionMetadata(input, tmuxCreated = false) {
   const sessionPath = getTaskSessionPath(input.worktreePath);
   fs.mkdirSync(path.dirname(sessionPath), { recursive: true });
   fs.writeFileSync(sessionPath, JSON.stringify(metadata, null, 2) + '\n', 'utf8');
+  writeDurableTaskSessionMetadata(metadata);
   return metadata;
+}
+
+function recoverDurableTaskSession(taskSession) {
+  const metadata = readDurableTaskSessionMetadata(taskSession);
+  if (!metadata) return null;
+  const worktreePath = metadata.worktreePath || metadata.worktree;
+  const taskBranch = metadata.taskBranch || metadata.branch;
+  const area = metadata.area || getTaskArea(taskBranch);
+  if (!worktreePath || !fs.existsSync(worktreePath) || !fs.statSync(worktreePath).isDirectory()) {
+    throw new Error(`registered task worktree is unavailable: ${worktreePath || '(missing)'}`);
+  }
+  const git = childProcess.spawnSync('git', ['-C', worktreePath, 'branch', '--show-current'], { encoding: 'utf8' });
+  const currentBranch = git.status === 0 ? String(git.stdout || '').trim() : '';
+  if (!currentBranch || currentBranch !== taskBranch) {
+    throw new Error(`registered task worktree branch mismatch: expected ${taskBranch}, found ${currentBranch || '(unavailable)'}`);
+  }
+  if (!area) throw new Error(`cannot resolve area for task branch ${taskBranch}`);
+  const tmux = ensureTaskTmuxSession({ area, taskBranch, worktreePath });
+  const recovered = {
+    ...metadata,
+    area,
+    taskBranch,
+    branch: taskBranch,
+    worktreePath,
+    worktree: worktreePath,
+    taskSession,
+    tmuxSession: tmux.tmuxSession,
+    tmuxCreated: tmux.created,
+  };
+  writeDurableTaskSessionMetadata(recovered);
+  return recovered;
 }
 
 function createTaskSessionMetadata(input) {
@@ -365,6 +398,7 @@ module.exports = {
   getTmuxSessionStatus,
   isTmuxAvailable,
   readTaskSessionMetadata,
+  recoverDurableTaskSession,
   resolveTaskTmuxSession,
   terminateTaskTmuxSession,
   tmuxSessionExists,

@@ -55,7 +55,9 @@
         "packages/workspace/scripts/task-finish.js",
         "packages/workspace/scripts/task-init.js",
         "packages/workspace/scripts/lib/task-selection*.js",
-        "packages/workspace/scripts/lib/task-metadata*.js"
+        "packages/workspace/scripts/lib/task-metadata*.js",
+        "packages/workspace/scripts/lib/task-registry.js",
+        "packages/workspace/scripts/lib/paths.js"
       ],
       "tests": [
         {
@@ -66,7 +68,8 @@
             "packages/workspace/tests/task-session.test.js",
             "packages/workspace/tests/task-meta.test.ts",
             "packages/workspace/tests/task-init.test.js",
-            "packages/workspace/tests/task-selection.test.js"
+            "packages/workspace/tests/task-selection.test.js",
+            "packages/workspace/tests/durable-task-worktrees.test.ts"
           ]
         }
       ],

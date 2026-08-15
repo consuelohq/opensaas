@@ -83,6 +83,10 @@ function getWorktreeRoot(override) {
   return override || process.env.WORKSPACE_WORKTREE_ROOT || process.env.OPENSAAS_WORKTREE_ROOT || DEFAULT_WORKTREE_ROOT;
 }
 
+function getTaskWorktreeRoot(override) {
+  return override || process.env.WORKSPACE_WORKTREE_ROOT || process.env.OPENSAAS_WORKTREE_ROOT || path.join(getConsueloHome(), 'node', 'tasks', 'worktrees');
+}
+
 function toWorktreeDirectoryName(branch) {
   return branch.replace(/\//g, '-');
 }
@@ -94,7 +98,9 @@ function getPackageRoot() {
 module.exports = {
   DEFAULT_MAIN_BRANCH,
   DEFAULT_REPO,
+  getConsueloHome,
   getPackageRoot,
+  getTaskWorktreeRoot,
   getWorktreeRoot,
   resolveDefaultRepo,
   resolveGitRoot,

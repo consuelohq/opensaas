@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2631,
-    "mappedTestCount": 2548,
-    "unmappedTestCount": 83,
+    "testFileCount": 2633,
+    "mappedTestCount": 2549,
+    "unmappedTestCount": 84,
     "ruleCount": 55,
     "explicitRuleCount": 36,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 256,
+      "packages/os/tests": 257,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 61,
+      "packages/workspace/tests": 62,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -634,7 +634,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 538,
+      "test": 540,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -698,7 +698,9 @@
         "packages/workspace/scripts/task-finish.js",
         "packages/workspace/scripts/task-init.js",
         "packages/workspace/scripts/lib/task-selection*.js",
-        "packages/workspace/scripts/lib/task-metadata*.js"
+        "packages/workspace/scripts/lib/task-metadata*.js",
+        "packages/workspace/scripts/lib/task-registry.js",
+        "packages/workspace/scripts/lib/paths.js"
       ],
       "tests": [
         {
@@ -709,7 +711,8 @@
             "packages/workspace/tests/task-session.test.js",
             "packages/workspace/tests/task-meta.test.ts",
             "packages/workspace/tests/task-init.test.js",
-            "packages/workspace/tests/task-selection.test.js"
+            "packages/workspace/tests/task-selection.test.js",
+            "packages/workspace/tests/durable-task-worktrees.test.ts"
           ]
         }
       ],
@@ -3618,6 +3621,11 @@
     },
     {
       "path": "packages/os/tests/doctor-redaction.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/durable-task-worktrees.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15252,6 +15260,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/durable-task-worktrees.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/email-package-removal.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -15544,6 +15557,7 @@
     "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
     "packages/workspace/tests/dialer-validation-runbook.test.ts",
     "packages/workspace/tests/docs-production-release.test.js",
+    "packages/workspace/tests/durable-task-worktrees.test.ts",
     "packages/workspace/tests/email-package-removal.test.ts",
     "packages/workspace/tests/embedding-config.test.js",
     "packages/workspace/tests/explore-ranker.test.js",
