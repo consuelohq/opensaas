@@ -404,6 +404,45 @@ try {
       throw new Error(`Browse overlay is not full-screen on ${viewport.name}: ${JSON.stringify(browseBox)}`);
     }
     if ((await page.getByText('Ask AI', { exact: true }).count()) !== 0) throw new Error('Browse overlay must not include Ask AI');
+    const browseGroups = browseOverlay.locator('[data-docs-browse-group]');
+    if ((await browseGroups.count()) !== 2) throw new Error(`Browse must expose Build and Learn groups on ${viewport.name}`);
+    if (await browseGroups.evaluateAll((groups) => groups.some((group) => group.open))) {
+      throw new Error(`Browse groups must start collapsed on ${viewport.name}`);
+    }
+    const browseChrome = await browseOverlay.evaluate((overlay) => {
+      const header = overlay.querySelector('.docs-browse-header');
+      const group = overlay.querySelector('.docs-browse-group');
+      const summary = overlay.querySelector('.docs-browse-group summary');
+      const gettingStarted = overlay.querySelector('.getting-started-link');
+      const action = overlay.querySelector('.docs-browse-actions a');
+      if (!header || !group || !summary || !gettingStarted || !action) return null;
+      const summaryStyle = getComputedStyle(summary);
+      const actionStyle = getComputedStyle(action);
+      return {
+        headerBorder: getComputedStyle(header).borderBottomWidth,
+        groupBorder: getComputedStyle(group).borderBottomWidth,
+        summaryFontSize: parseFloat(summaryStyle.fontSize),
+        summaryLineHeight: parseFloat(summaryStyle.lineHeight),
+        gettingStartedFontSize: parseFloat(getComputedStyle(gettingStarted).fontSize),
+        actionHeight: action.getBoundingClientRect().height,
+        actionFontSize: parseFloat(actionStyle.fontSize),
+        actionRadius: parseFloat(actionStyle.borderRadius),
+      };
+    });
+    if (!browseChrome) throw new Error(`Could not measure Browse chrome on ${viewport.name}`);
+    if (browseChrome.headerBorder !== '0px' || browseChrome.groupBorder !== '0px') {
+      throw new Error(`Browse dividers remain on ${viewport.name}: ${JSON.stringify(browseChrome)}`);
+    }
+    if (Math.abs(browseChrome.summaryFontSize - 16) > 0.4 || Math.abs(browseChrome.summaryLineHeight - 24) > 0.8) {
+      throw new Error(`Browse section labels are still oversized on ${viewport.name}: ${JSON.stringify(browseChrome)}`);
+    }
+    if (Math.abs(browseChrome.gettingStartedFontSize - 16) > 0.4) {
+      throw new Error(`Browse Getting started label is still oversized on ${viewport.name}: ${JSON.stringify(browseChrome)}`);
+    }
+    if (Math.abs(browseChrome.actionHeight - 36) > 1.5 || Math.abs(browseChrome.actionFontSize - 14) > 0.4 || Math.abs(browseChrome.actionRadius - 6) > 0.6) {
+      throw new Error(`Browse auth actions are not compact on ${viewport.name}: ${JSON.stringify(browseChrome)}`);
+    }
+    await browseGroups.filter({ has: page.getByText('Learn', { exact: true }) }).first().locator('summary').click();
     const browseLinks = {
       Changelog: 'https://consuelohq.com/changelog',
       Blog: 'https://consuelohq.com/blog',
