@@ -607,7 +607,7 @@ async function handleWebAuthRequest(
   if (url.pathname === '/auth/synthetic/checkout') {
     if (request.method !== 'GET') return methodNotAllowed('GET');
     const session = await authoritySession(request, runtime);
-    if (!session || !syntheticCheckoutAllowed(runtime, session.accountId)) {
+    if (!session || !(await syntheticCheckoutAllowed(runtime, session.accountId))) {
       return new Response('Not found\n', { status: 404 });
     }
     await runtime.checkoutObservability?.observe({
@@ -630,7 +630,7 @@ async function handleWebAuthRequest(
       return json({ error: 'csrf_failed' }, { status: 403 });
     }
     const session = await authoritySession(request, runtime);
-    if (!session || !syntheticCheckoutAllowed(runtime, session.accountId)) {
+    if (!session || !(await syntheticCheckoutAllowed(runtime, session.accountId))) {
       return new Response('Not found\n', { status: 404 });
     }
     const body = await params(request);
@@ -672,7 +672,7 @@ async function handleWebAuthRequest(
   if (url.pathname === '/auth/synthetic/checkout/result') {
     if (request.method !== 'GET') return methodNotAllowed('GET');
     const session = await authoritySession(request, runtime);
-    if (!session || !syntheticCheckoutAllowed(runtime, session.accountId)) {
+    if (!session || !(await syntheticCheckoutAllowed(runtime, session.accountId))) {
       return new Response('Not found\n', { status: 404 });
     }
     try {

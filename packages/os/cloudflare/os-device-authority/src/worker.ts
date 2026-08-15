@@ -73,6 +73,7 @@ export class OsDeviceGrantDurableObject {
       stripeSyntheticSecretKey: env.OS_STRIPE_SYNTHETIC_SECRET_KEY,
       stripeSyntheticWebhookSecret: env.OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET,
       stripeSyntheticAccountIds: env.OS_STRIPE_SYNTHETIC_ACCOUNT_IDS,
+      stripeSyntheticWorkspaceIds: env.OS_STRIPE_SYNTHETIC_WORKSPACE_IDS,
       checkoutObservability:
         env.POSTHOG_API_KEY?.trim() || env.SENTRY_DSN?.trim()
           ? createCheckoutObservability({

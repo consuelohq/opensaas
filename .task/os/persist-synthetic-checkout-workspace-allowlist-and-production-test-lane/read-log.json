@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts",
+    "packages/os/cloudflare/os-device-authority/src/stores.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/tests/managed-cloud-checkout-observability.test.ts",
+    "packages/os/tests/os-device-authority-release-contract.test.ts"
+  ],
+  "updatedAt": "2026-08-15T04:24:43.413Z"
+}

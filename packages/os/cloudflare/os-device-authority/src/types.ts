@@ -521,6 +521,7 @@ export type Env = {
   OS_STRIPE_SYNTHETIC_SECRET_KEY?: string;
   OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET?: string;
   OS_STRIPE_SYNTHETIC_ACCOUNT_IDS?: string;
+  OS_STRIPE_SYNTHETIC_WORKSPACE_IDS?: string;
   OS_DEVICE_AUTH_LOGGER?: DeviceAuthorityLogger;
   INSTALL_DIAGNOSTICS?: InstallDiagnosticR2Bucket;
   OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS?: string;
@@ -598,6 +599,7 @@ export type DeviceAuthorityRuntime = {
   stripeSyntheticSecretKey?: string;
   stripeSyntheticWebhookSecret?: string;
   stripeSyntheticAccountIds?: string;
+  stripeSyntheticWorkspaceIds?: string;
   checkoutObservability?: CheckoutObservability;
   operationalLogger?: DeviceAuthorityLogger;
   installControlPlaneRepository?: InstallControlPlaneRepository;
