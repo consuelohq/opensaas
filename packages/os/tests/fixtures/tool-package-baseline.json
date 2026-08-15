@@ -1,4 +1,5 @@
 {
+  "version": 1,
   "definitions": [
     {
       "name": "aiReview",
@@ -2172,6 +2173,37 @@
       "defaultTimeout": 180000,
       "inputSchema": "CodeCallInput",
       "outputSchema": "CodeCallOutput",
+      "search": {
+        "keywords": [
+          "structured",
+          "multi",
+          "summarize",
+          "summary",
+          "packet",
+          "bounded",
+          "transform",
+          "transformation",
+          "rewrite",
+          "codemod",
+          "codegen",
+          "generate",
+          "python",
+          "bun",
+          "bash",
+          "test",
+          "tests",
+          "typecheck",
+          "syntax",
+          "cli",
+          "reproduction",
+          "diagnostic",
+          "json",
+          "script",
+          "scripts",
+          "package",
+          "packages"
+        ]
+      },
       "command": {
         "script": "code-call",
         "branchMode": "none",
@@ -2386,6 +2418,67 @@
       "sessionRequired": false
     },
     {
+      "name": "dailySchedules.publish",
+      "methodPath": [
+        "dailySchedules",
+        "publish"
+      ],
+      "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
+      "category": "artifacts",
+      "underlying": "Consuelo durable artifact catalog",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 120000,
+      "inputSchema": "DailySchedulesPublishInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "daily-schedules",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "kind",
+            "flag": "--kind",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "sourceFile",
+            "flag": "--source-file",
+            "kind": "value"
+          },
+          {
+            "source": "content",
+            "flag": "--content",
+            "kind": "value"
+          },
+          {
+            "source": "format",
+            "flag": "--format",
+            "kind": "value"
+          },
+          {
+            "source": "date",
+            "flag": "--date",
+            "kind": "value"
+          },
+          {
+            "source": "title",
+            "flag": "--title",
+            "kind": "value"
+          }
+        ]
+      },
+      "exampleInput": {
+        "kind": "security-workpad",
+        "sourceFile": "/tmp/security-workpad.md"
+      },
+      "sessionRequired": false
+    },
+    {
       "name": "decideNext",
       "methodPath": [
         "decideNext"
@@ -2450,6 +2543,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentContextInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2500,6 +2600,19 @@
       "defaultTimeout": 900000,
       "inputSchema": "DeploymentDeployInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "deploy",
+          "redeploy",
+          "promote",
+          "deployment"
+        ],
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2598,6 +2711,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentDetectInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2636,6 +2756,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentEnvironmentInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2732,6 +2859,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentListInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2808,6 +2942,13 @@
       "defaultTimeout": 180000,
       "inputSchema": "DeploymentLogsInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2903,6 +3044,30 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentRawInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare",
+          "r2",
+          "d1",
+          "wrangler",
+          "worker",
+          "workers"
+        ],
+        "entities": [
+          "r2",
+          "object",
+          "objects",
+          "bucket",
+          "buckets",
+          "d1",
+          "database",
+          "query",
+          "worker",
+          "workers"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -2967,6 +3132,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "DeploymentStatusInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "railway",
+          "vercel",
+          "cloudflare"
+        ]
+      },
       "command": {
         "script": "deployment",
         "internal": "deployment",
@@ -3213,6 +3385,15 @@
       "defaultTimeout": 30000,
       "inputSchema": "FsApplyPatchInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "anchored",
+          "patch",
+          "hunk",
+          "apply",
+          "edit"
+        ]
+      },
       "command": {
         "script": "task:fs",
         "subcommand": "apply-patch",
@@ -3257,6 +3438,15 @@
       "defaultTimeout": 30000,
       "inputSchema": "FsListInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "entities": [
+          "directory",
+          "directories",
+          "folder",
+          "folders",
+          "tree"
+        ]
+      },
       "command": {
         "script": "task:fs",
         "subcommand": "list",
@@ -3299,7 +3489,7 @@
         "path": "packages/os/scripts",
         "depth": 1
       },
-      "sessionRequired": true
+      "sessionRequired": false
     },
     {
       "name": "fs.read",
@@ -3319,6 +3509,15 @@
       "defaultTimeout": 30000,
       "inputSchema": "FsReadInput",
       "outputSchema": "FsReadOutput",
+      "search": {
+        "entities": [
+          "file",
+          "files",
+          "line",
+          "lines",
+          "contents"
+        ]
+      },
       "command": {
         "script": "task:fs",
         "subcommand": "read",
@@ -3354,6 +3553,11 @@
             "source": "to",
             "flag": "--to",
             "kind": "value"
+          },
+          {
+            "source": "full",
+            "flag": "--full",
+            "kind": "boolean"
           }
         ]
       },
@@ -3409,6 +3613,16 @@
       "defaultTimeout": 30000,
       "inputSchema": "FsSearchInput",
       "outputSchema": "FsSearchOutput",
+      "search": {
+        "keywords": [
+          "grep",
+          "ripgrep",
+          "rg",
+          "pattern",
+          "contents",
+          "codebase"
+        ]
+      },
       "command": {
         "script": "task:fs",
         "subcommand": "search",
@@ -3805,6 +4019,24 @@
       "defaultTimeout": 120000,
       "inputSchema": "GithubInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "gh"
+        ],
+        "keywords": [
+          "coderabbit",
+          "codex",
+          "openai",
+          "chatgpt",
+          "qodo",
+          "pull request",
+          "pr review",
+          "reviews",
+          "comments",
+          "feedback",
+          "checks"
+        ]
+      },
       "command": {
         "script": "github",
         "branchMode": "none",
@@ -3960,6 +4192,107 @@
       "exampleInput": {
         "method": "get",
         "url": "https://example.com"
+      },
+      "sessionRequired": false
+    },
+    {
+      "name": "lifecycle.status",
+      "methodPath": [
+        "lifecycle",
+        "status"
+      ],
+      "description": "check Consuelo OS lifecycle and runtime status, including the latest durable update operation",
+      "category": "lifecycle",
+      "underlying": "workspace lifecycle.status",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "consuelo",
+          "os",
+          "runtime",
+          "release",
+          "lifecycle",
+          "status",
+          "update status",
+          "upgrade status"
+        ],
+        "entities": [
+          "consuelo os",
+          "runtime release",
+          "lifecycle operation"
+        ]
+      },
+      "command": {
+        "script": "lifecycle",
+        "subcommand": "status",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [],
+        "executionScope": "runtime"
+      },
+      "exampleInput": {},
+      "sessionRequired": false
+    },
+    {
+      "name": "lifecycle.update",
+      "methodPath": [
+        "lifecycle",
+        "update"
+      ],
+      "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater",
+      "category": "lifecycle",
+      "underlying": "workspace lifecycle.update",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 120000,
+      "inputSchema": "LifecycleUpdateInput",
+      "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "consuelo",
+          "os",
+          "runtime",
+          "release",
+          "lifecycle",
+          "update",
+          "upgrade",
+          "updater",
+          "install latest"
+        ],
+        "entities": [
+          "consuelo os",
+          "runtime release",
+          "lifecycle updater"
+        ]
+      },
+      "command": {
+        "script": "lifecycle",
+        "subcommand": "update",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "channel",
+            "flag": "--channel",
+            "kind": "value"
+          }
+        ],
+        "executionScope": "runtime"
+      },
+      "exampleInput": {
+        "channel": "stable"
       },
       "sessionRequired": false
     },
@@ -4181,6 +4514,14 @@
       "defaultTimeout": 60000,
       "inputSchema": "LinearSearchInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "ticket",
+          "tickets",
+          "issue search",
+          "find issues"
+        ]
+      },
       "command": {
         "script": "linear",
         "subcommand": "search",
@@ -5960,6 +6301,32 @@
       "sessionRequired": false
     },
     {
+      "name": "monitor.errors",
+      "methodPath": [
+        "monitor",
+        "errors"
+      ],
+      "description": "analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates",
+      "category": "observability",
+      "underlying": "Consuelo canonical OS trace database and current OS tool contracts",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 120000,
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "monitor:errors",
+        "branchMode": "optional",
+        "arguments": []
+      },
+      "exampleInput": {},
+      "sessionRequired": false
+    },
+    {
       "name": "prReview",
       "methodPath": [
         "prReview"
@@ -5976,6 +6343,9 @@
       "defaultTimeout": 120000,
       "inputSchema": "PrReviewInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "hidden": true
+      },
       "command": {
         "script": "pr-review",
         "branchMode": "none",
@@ -6150,6 +6520,32 @@
       },
       "sessionRequired": true,
       "workflowRole": "validation.review"
+    },
+    {
+      "name": "security.scan",
+      "methodPath": [
+        "security",
+        "scan"
+      ],
+      "description": "run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths",
+      "category": "security",
+      "underlying": "Consuelo defensive repository security scanners",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 900000,
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "security:scan",
+        "branchMode": "optional",
+        "arguments": []
+      },
+      "exampleInput": {},
+      "sessionRequired": false
     },
     {
       "name": "sentry.config",
@@ -6748,7 +7144,7 @@
       "methodPath": [
         "subagent"
       ],
-      "description": "run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.",
+      "description": "run or start a subagent from an instruction handoff. Write the handoff to OS tmp first under the canonical opensaas-handoffs root; model and reasoning selection are provider-specific and surfaced explicitly. Edit self-bootstrap may call task.start first, or an existing taskSession may be supplied. task.push publishes only the task branch. task.pr merges to the stream and must not be called when the handoff says stop after push. status/wait/logs attach to an existing run and never spawn; cancel targets runId. requestId makes retries idempotent. Provider capability limitations are returned explicitly and never silently weakened. Return one compact trace-style summary with traceId, files read, files edited, tools called, and token usage.",
       "category": "subagent",
       "underlying": "workspace subagent",
       "capabilities": {
@@ -6766,10 +7162,13 @@
         "arguments": []
       },
       "exampleInput": {
-        "provider": "grok",
-        "bundle": "media",
-        "policy": "read",
-        "instructionPath": "/tmp/ko-social.md",
+        "action": "start",
+        "provider": "codex",
+        "model": "gpt-5.6-luna",
+        "reasoningEffort": "xhigh",
+        "policy": "edit",
+        "instructionPath": "/tmp/opensaas-handoffs/repair.md",
+        "requestId": "req_repair_once",
         "outputFormat": "json"
       },
       "sessionRequired": false,
@@ -7087,6 +7486,11 @@
             "kind": "value"
           },
           {
+            "source": "repo",
+            "flag": "--repo",
+            "kind": "value"
+          },
+          {
             "source": "taskOnly",
             "flag": "--task-only",
             "kind": "boolean"
@@ -7105,6 +7509,11 @@
             "source": "bodyTemplate",
             "flag": "--body-template",
             "kind": "value"
+          },
+          {
+            "source": "ackWorkpadIncomplete",
+            "flag": "--ack-workpad-incomplete",
+            "kind": "boolean"
           },
           {
             "source": "pr",
@@ -7145,6 +7554,13 @@
       "defaultTimeout": 120000,
       "inputSchema": "BranchInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "links",
+          "pr links",
+          "pull request links"
+        ]
+      },
       "command": {
         "script": "task:prs",
         "branchMode": "required",
@@ -7199,6 +7615,11 @@
           {
             "source": "branch",
             "flag": "--branch",
+            "kind": "value"
+          },
+          {
+            "source": "repo",
+            "flag": "--repo",
             "kind": "value"
           },
           {
@@ -7404,9 +7825,9 @@
         "tools",
         "search"
       ],
-      "description": "search workspace tools by intent and return ranked usage guidance",
+      "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
       "category": "tooling",
-      "underlying": "workspace tools.search",
+      "underlying": "Consuelo OS tools.search",
       "capabilities": {
         "readOnly": true,
         "mutating": false,
@@ -7418,6 +7839,7 @@
       "outputSchema": "ToolsSearchOutput",
       "command": {
         "script": "tools:search",
+        "executionScope": "runtime",
         "branchMode": "none",
         "jsonFlag": "--json",
         "arguments": [
@@ -7447,9 +7869,9 @@
             "kind": "boolean"
           },
           {
-            "source": "noDocs",
-            "flag": "--no-docs",
-            "kind": "boolean"
+            "source": "detail",
+            "flag": "--detail",
+            "kind": "value"
           }
         ]
       },
@@ -7518,6 +7940,16 @@
       "defaultTimeout": 300000,
       "inputSchema": "WaitInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "timed",
+          "polling",
+          "sleep",
+          "delay",
+          "seconds",
+          "backoff"
+        ]
+      },
       "command": {
         "script": "wait",
         "branchMode": "none",

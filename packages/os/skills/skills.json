@@ -9,7 +9,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/artifacts/SKILL.md"
+        "path": "skills/artifacts/SKILL.md"
       },
       "permission": "draft",
       "requiresApproval": false,
@@ -22,6 +22,34 @@
       ]
     },
     {
+      "name": "branch",
+      "title": "Branch",
+      "description": "Turn large phases, epics, migrations, or planning sessions into a dependency graph of compact work IDs so focused chats and agents can manage context, execute safe sequential and parallel lanes, and rejoin through one required finalization node.",
+      "trigger": "Invoke proactively when a phase, epic, migration, or long planning session is too large for one safe task or PR, needs context or memory management across focused chats, contains meaningful dependencies, or can benefit from parallel agents or branched chats. Also invoke when Ko asks to decompose or branch a project, decide what can run in parallel, freeze a Branch Graph, use a branched chat, or execute an approved short work ID such as 'D0 approved, go' or a legacy 'Branch N approved, go'. Do not invoke for ordinary Git branch commands or a single already-scoped repo task.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "skills/branch/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "planning",
+        "repo",
+        "architecture",
+        "branch-decomposition",
+        "parallel-work",
+        "dependency-graph",
+        "workstream-fanout"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
       "name": "browser",
       "title": "Browser",
       "description": "use for known-url browser work, rendered-page extraction, authenticated pages, live UI verification, Interact with docs and JS-heavy pages, screenshots, accessibility snapshots, and browser evidence. use when provided a URL to inspect, test or verify a webpage or UI, needs scraping/fetching from, wants screenshots or truth, or  pages that require clicking, filling, login state, tabs, accordions, or auth. use built-in web search for discovery first, and use browser known-url, use togther.",
@@ -29,7 +57,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/browser/SKILL.md"
+        "path": "skills/browser/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -53,7 +81,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/debugger/SKILL.md"
+        "path": "skills/debugger/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -79,7 +107,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/handoff/SKILL.md"
+        "path": "skills/handoff/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -103,7 +131,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/research-ingest/SKILL.md"
+        "path": "skills/research-ingest/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -127,7 +155,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/senior-engineer/SKILL.md"
+        "path": "skills/senior-engineer/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -151,7 +179,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/sites/SKILL.md"
+        "path": "skills/sites/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -176,7 +204,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/skill-creator/SKILL.md"
+        "path": "skills/skill-creator/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -195,13 +223,13 @@
     },
     {
       "name": "task",
-      "title": "Task Workflow",
+      "title": "Task",
       "description": "Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context → task.start → task.push → task.pr → task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/<area> → main review PR instead of the intermediate task PR.",
       "trigger": "Invoke when the user asks to start, run, validate, publish, promote, inspect, recover, or finish repo/task-scoped work in a stream.",
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/task/SKILL.md"
+        "path": "skills/task/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,
@@ -225,7 +253,7 @@
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
-        "path": "packages/os/skills/teach/SKILL.md"
+        "path": "skills/teach/SKILL.md"
       },
       "permission": "guidance",
       "requiresApproval": false,

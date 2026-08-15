@@ -12,6 +12,7 @@ const { getTrackedChanges } = require('./lib/git');
 const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./lib/nx-projects');
 const { computeVerificationState } = require('./lib/verification');
 const { beginReviewRun, finishReviewRun, makeReviewRunIdentity } = require('./lib/review-run-state');
+const { findDocumentationOpportunities } = require('./lib/review-documentation');
 const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
 let outputCapture = null;
 let activeReviewRun = null;
@@ -159,6 +160,10 @@ function isVendoredThirdPartyFile(filePath) {
   return filePath.includes('/upstream/') || filePath.includes('/vendor/');
 }
 
+function isGeneratedArtifactFile(filePath) {
+  return filePath.includes('/generated/') || filePath.includes('/generated-metadata/');
+}
+
 function isReviewableFile(filePath) {
   return filePath.startsWith('packages/')
     && !isVendoredThirdPartyFile(filePath)
@@ -172,7 +177,7 @@ function addChangedFiles(files, args) {
   }
 }
 
-function getChangedFiles(base) {
+function getChangedRepoFiles(base) {
   const files = new Set();
   addChangedFiles(files, ['diff', '--name-only', '--diff-filter=ACMR', `${base}...HEAD`]);
   addChangedFiles(files, ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD']);
@@ -186,7 +191,11 @@ function getChangedFiles(base) {
     // status output is advisory; diff output above covers committed ranges.
   }
 
-  return [...files].filter(isReviewableFile).sort();
+  return [...files].map((file) => normalizeRepoPath(gitRoot(), file)).sort();
+}
+
+function getChangedFiles(base) {
+  return getChangedRepoFiles(base).filter(isReviewableFile);
 }
 
 function addChangedLineNumbers(lines, args) {
@@ -234,7 +243,7 @@ function readFileLines(filePath) {
 }
 
 function isTestFile(f) {
-  return /__tests__|\.spec\.|\.test\./.test(f);
+  return /__tests__|\.spec\.|\.test\.|\.stories\./.test(f);
 }
 
 function isLoggerFile(f) {
@@ -794,12 +803,13 @@ function summarizeReviewTests(testResults) {
 
 const RELATED_PRE_EXISTING_PROMPT = 'Related pre-existing findings are in the same package or area as this task. Fix mechanical issues in this task, or escalate to Ko when the fix needs product, ownership, or architectural judgment.';
 
-function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult }) {
+function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult, documentationCheckRan, documentationOpportunities }) {
   const yourFindings = yours.map((finding, index) => compactFinding(finding, index, 'your_change'));
   const relatedPreExistingFindings = relatedPreExisting.map((finding, index) => compactFinding(finding, index, 'related_pre_existing'));
   const preExistingFindings = preExisting.map((finding, index) => compactFinding(finding, index, 'pre_existing'));
   const testSummary = summarizeReviewTests(testResults);
   const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (documentationCheckRan) checksRun.push('documentation_opportunities');
   if (testResults.length > 0) checksRun.push('tests');
 
   return {
@@ -815,6 +825,7 @@ function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours
       preExistingIssues: preExistingFindings.length,
       failedTestSuites: testSummary.failedSuites,
       blockingIssues: yourFindings.length + relatedPreExistingFindings.length + testSummary.failedSuites,
+      ...(documentationCheckRan ? { documentationOpportunities: documentationOpportunities.length } : {}),
     },
     mustFix: yourFindings,
     relatedPreExisting: relatedPreExistingFindings,
@@ -831,6 +842,7 @@ function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours
     },
     relatedPreExistingDigest: summarizeCompactFindings(relatedPreExistingFindings),
     preExistingDigest: summarizeCompactFindings(preExistingFindings),
+    ...(documentationCheckRan ? { documentationOpportunities } : {}),
     testSummary,
     fullEvidence: {
       command: `bun run review -- --base ${base} --json`,
@@ -952,7 +964,12 @@ async function main() {
   }
 
   // get files
-  const files = args.all ? getAllTsFiles(root) : getChangedFiles(base);
+  const allChangedFiles = args.all ? getAllTsFiles(root) : getChangedRepoFiles(base);
+  const files = args.all ? allChangedFiles : allChangedFiles.filter(isReviewableFile);
+  const documentationCheckRan = !args.all;
+  const documentationOpportunities = documentationCheckRan
+    ? findDocumentationOpportunities(allChangedFiles)
+    : [];
 
   const affectedProjects = getProjectsForFiles(root, files).map((project) => ({
     name: project.name,
@@ -975,6 +992,7 @@ async function main() {
   const allFindings = [];
   const checkResults = {};
   for (const file of files) {
+    if (isGeneratedArtifactFile(file)) continue;
     const lines = readFileLines(file);
     for (const check of ALL_CHECKS) {
       const results = check(file, lines);
@@ -1022,6 +1040,18 @@ async function main() {
   allFindings.push(...typecheckFindings);
   if (!args.quiet && !structuredOutput) {
     writeStdout(`  ${'TYPECHECK' + ' '.repeat(10)} ${typecheckFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${typecheckFindings.length})`}`);
+  }
+
+  if (!args.quiet && !structuredOutput && documentationCheckRan) {
+    const docsStatus = documentationOpportunities.length === 0
+      ? '✓ PASS'
+      : `◇ REVIEW (${documentationOpportunities.length})`;
+    writeStdout(`  ${'DOCS_OPPORTUNITY' + ' '.repeat(2)} ${docsStatus}`);
+    for (const opportunity of documentationOpportunities) {
+      writeStdout(`    ${opportunity.surface}: ${opportunity.docs.join(', ')}`);
+    }
+  } else if (!args.quiet && !structuredOutput && !documentationCheckRan) {
+    writeStdout(`  ${'DOCS_OPPORTUNITY' + ' '.repeat(2)} ⊘ SKIPPED (--all)`);
   }
 
   // spec compliance (not per-file)
@@ -1100,9 +1130,20 @@ async function main() {
   const testsFailed = testResults.some((r) => !r.passed);
 
   if (args.json || args.summaryJson) {
-    const fullPayload = { base, branch, files: files.length, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidence: confidenceResult };
+    const fullPayload = {
+      base,
+      branch,
+      files: files.length,
+      affectedProjects,
+      yours,
+      relatedPreExisting,
+      preExisting,
+      ...(documentationCheckRan ? { documentationOpportunities } : {}),
+      testResults,
+      confidence: confidenceResult,
+    };
     const payload = args.summaryJson
-      ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult })
+      ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult, documentationCheckRan, documentationOpportunities })
       : fullPayload;
     writeStdout(JSON.stringify(payload, null, 2));
     if (reviewRun) {
@@ -1121,6 +1162,15 @@ async function main() {
   if (relatedPreExisting.length > 0) writeStdout(RELATED_PRE_EXISTING_PROMPT);
   writeStdout('');
   printFindings('PRE-EXISTING (background)', preExisting, args.quiet);
+  if (documentationOpportunities.length > 0) {
+    writeStdout('');
+    writeStdout(`DOCUMENTATION OPPORTUNITIES: ${documentationOpportunities.length}`);
+    for (const opportunity of documentationOpportunities) {
+      writeStdout(`  ${opportunity.surface}: ${opportunity.reason}`);
+      writeStdout(`    docs: ${opportunity.docs.join(', ')}`);
+      writeStdout(`    next: ${opportunity.suggestedAction}`);
+    }
+  }
 
   writeStdout('');
   const blockingTotal = yours.length + relatedPreExisting.length;

@@ -5,6 +5,11 @@ import {
   sign as signBytes,
   verify as verifyBytes,
 } from 'node:crypto';
+import {
+  REQUIRED_RUNTIME_RECOVERY_CAPABILITIES,
+  missingRequiredRuntimeRecoveryCapabilities,
+  type RuntimeRecoveryCapability,
+} from './runtime-bundle';
 
 export const RELEASE_STATE_SCHEMA_VERSION = 1 as const;
 export const CHANNEL_MANIFEST_SCHEMA_VERSION = 1 as const;
@@ -46,6 +51,7 @@ export type PlatformBundlePublication = {
   manifest: {
     architecture: string;
     bundleId: string;
+    capabilities?: RuntimeRecoveryCapability[];
     platform: string;
     releaseFingerprint: string;
     schemaVersion: number;
@@ -61,6 +67,7 @@ export type BundleSignaturePayload = {
   architecture: string;
   archiveDigest: string;
   bundleId: string;
+  capabilities?: RuntimeRecoveryCapability[];
   platform: string;
   releaseFingerprint: string;
   sourceCommit: string;
@@ -87,6 +94,7 @@ export type ChannelManifestPayload = {
     architecture: string;
     archiveDigest: string;
     bundleId: string;
+    capabilities?: RuntimeRecoveryCapability[];
     cloudflareObjectKey: string;
     githubAssetName: string;
     platform: string;
@@ -523,6 +531,9 @@ function channelPlatforms(release: ReleaseRecord): ChannelManifestPayload['platf
       architecture: bundle.architecture,
       archiveDigest: bundle.archiveDigest,
       bundleId: bundle.bundleId,
+      ...(bundle.manifest.capabilities
+        ? { capabilities: [...bundle.manifest.capabilities] }
+        : {}),
       cloudflareObjectKey: bundle.cloudflare.objectKey,
       githubAssetName: bundle.github.assetName,
       platform: bundle.platform,
@@ -569,6 +580,9 @@ function verifyRuntimeBundleSignature(
       architecture: bundle.architecture,
       archiveDigest: bundle.archiveDigest,
       bundleId: bundle.bundleId,
+      ...(bundle.manifest.capabilities
+        ? { capabilities: [...bundle.manifest.capabilities] }
+        : {}),
       platform: bundle.platform,
       releaseFingerprint: bundle.manifest.releaseFingerprint,
       sourceCommit: bundle.manifest.sourceCommit,
@@ -588,6 +602,7 @@ function verifyRuntimeBundleSignature(
 function assertBundles(input: DevPublicationInput): void {
   const requiredPlatforms = input.requiredPlatforms ?? [...DEFAULT_REQUIRED_RELEASE_PLATFORMS];
   const seen = new Set<string>();
+  let expectedCapabilities: string | null = null;
   for (const bundle of input.bundles) {
     const key = platformKey(bundle);
     if (seen.has(key)) throw new Error(`duplicate runtime bundle platform: ${key}`);
@@ -611,6 +626,19 @@ function assertBundles(input: DevPublicationInput): void {
     }
     if (bundle.manifest.sourceCommit !== input.sourceCommit) {
       throw new Error(`runtime bundle source commit mismatch for ${key}`);
+    }
+    const missingCapabilities = missingRequiredRuntimeRecoveryCapabilities(
+      bundle.manifest.capabilities,
+    );
+    if (missingCapabilities.length > 0) {
+      throw new Error(
+        `runtime bundle is missing required recovery capability ${missingCapabilities[0]} for ${key}`,
+      );
+    }
+    const capabilityIdentity = JSON.stringify(bundle.manifest.capabilities);
+    if (expectedCapabilities === null) expectedCapabilities = capabilityIdentity;
+    else if (expectedCapabilities !== capabilityIdentity) {
+      throw new Error('runtime bundle recovery capabilities differ across platforms');
     }
     if (bundle.github.digest !== bundle.archiveDigest) {
       throw new Error(`GitHub digest does not match built archive digest for ${key}`);
@@ -637,7 +665,11 @@ function assertBundles(input: DevPublicationInput): void {
   }
 }
 
-function assertPublicationConsensus(state: ReleaseState, input: DevPublicationInput): void {
+function assertPublicationConsensus(
+  state: ReleaseState,
+  input: DevPublicationInput,
+  immutableTags: string[],
+): void {
   parseSemver(input.approvedVersion, 'approved release version');
   assertSha256(input.bundleId, 'release-set bundle ID');
   assertSha256(input.releaseFingerprint, 'release fingerprint');
@@ -673,7 +705,10 @@ function assertPublicationConsensus(state: ReleaseState, input: DevPublicationIn
     throw new Error('source and release fingerprint already allocated a different version');
   }
 
-  const currentTags = Object.keys(state.tags);
+  const currentTags = [...new Set([
+    ...Object.keys(state.tags),
+    ...immutableTags,
+  ])];
   const expectedVersion = calculateNextReleaseVersion({
     immutableTags: currentTags,
     intent: input.releaseIntent,
@@ -702,6 +737,7 @@ export function publishDevRelease(
   state: ReleaseState,
   input: DevPublicationInput,
   options: {
+    immutableTags?: string[];
     now: string;
     signer: ChannelSigner;
   },
@@ -735,7 +771,7 @@ export function publishDevRelease(
       throw new Error('channel schema version changes require an explicit format migration decision');
     }
   }
-  assertPublicationConsensus(state, input);
+  assertPublicationConsensus(state, input, options.immutableTags ?? []);
 
   const next = cloneState(state);
   next.revision += 1;

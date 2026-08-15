@@ -16,9 +16,10 @@ import {
   type ManagedComponentProvenance,
   type ManagedComponentSource,
 } from './managed-components';
+import { reconcileVisibleDialerSteering } from './visible-dialer-steering';
 
 export type ManagedComponentProvisionAction = {
-  type: 'create_file' | 'seed_skill' | 'seed_tool';
+  type: 'create_file' | 'seed_skill' | 'seed_tool' | 'seed_steering';
   path: string;
   status: 'planned' | 'created' | 'preserved' | 'updated' | 'skipped';
   message: string;
@@ -142,6 +143,34 @@ function compactSkill(skill: JsonObject): JsonObject {
   return compact;
 }
 
+function portableSkillMetadata(skillDir: string, skillName: string): JsonObject {
+  const skill = readJsonObject(path.join(skillDir, 'skill.json'));
+  const entrypoint =
+    typeof skill.entrypoint === 'string' && skill.entrypoint.trim()
+      ? skill.entrypoint.trim()
+      : 'SKILL.md';
+  const load = isJsonObject(skill.load) ? skill.load : {};
+  return {
+    ...skill,
+    entrypoint,
+    load: {
+      ...load,
+      type: typeof load.type === 'string' ? load.type : 'resource',
+      path: `skills/${skillName}/${entrypoint}`,
+    },
+  };
+}
+
+function portableSkillTree(skillDir: string, skillName: string): ComponentTree {
+  const content = treeFromDirectory(skillDir);
+  content['skill.json'] = `${JSON.stringify(
+    portableSkillMetadata(skillDir, skillName),
+    null,
+    2,
+  )}\n`;
+  return content;
+}
+
 function bundledSkillId(skillDir: string): string {
   const metadata = readJsonObject(path.join(skillDir, 'skill.json'));
   return typeof metadata.name === 'string' && metadata.name.trim()
@@ -205,17 +234,41 @@ function toolWrapperScript(tool: CanonicalToolEntry): string {
   const quotedName = shellSingleQuote(tool.name);
   const jsonName = shellSingleQuote(JSON.stringify(tool.name));
   const description = shellSingleQuote(tool.description ?? 'Consuelo OS tool.');
+  const runnerScript = tool.kind === 'facade-tool' ? 'tool-runner.ts' : 'os.ts';
   const runner = tool.kind === 'facade-tool'
-    ? `exec bun ./scripts/tool-runner.ts ${quotedName} "$INPUT"`
-    : `exec bun ./scripts/os.ts call "$(printf '{"name":%s,"input":%s}' ${jsonName} "$INPUT")"`;
+    ? `exec "$BUN_EXECUTABLE" "$PACKAGE_ROOT/scripts/tool-runner.ts" ${quotedName} "$INPUT"`
+    : `exec "$BUN_EXECUTABLE" "$PACKAGE_ROOT/scripts/os.ts" call "$(printf '{"name":%s,"input":%s}' ${jsonName} "$INPUT")"`;
   return [
     '#!/usr/bin/env bash',
     'set -euo pipefail',
     `TOOL_NAME=${quotedName}`,
     `TOOL_DESCRIPTION=${description}`,
     'OS_HOME="${CONSUELO_OS_HOME:-${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}}"',
-    'if [ ! -f "$OS_HOME/package.json" ] || [ ! -f "$OS_HOME/scripts/tool-runner.ts" ]; then',
-    '  printf "%s\\n" "error: Consuelo OS package root not found. Set CONSUELO_OS_HOME." >&2',
+    'BUN_EXECUTABLE="${BUN_BIN:-}"',
+    'PACKAGE_ROOT="${CONSUELO_OS_PACKAGE_ROOT:-}"',
+    'if [ -f "$OS_HOME/.env" ]; then',
+    '  while IFS= read -r line || [ -n "$line" ]; do',
+    '    case "$line" in',
+    '      BUN_BIN=*) [ -n "$BUN_EXECUTABLE" ] || BUN_EXECUTABLE="${line#BUN_BIN=}" ;;',
+    '      CONSUELO_OS_PACKAGE_ROOT=*) [ -n "$PACKAGE_ROOT" ] || PACKAGE_ROOT="${line#CONSUELO_OS_PACKAGE_ROOT=}" ;;',
+    '    esac',
+    '  done < "$OS_HOME/.env"',
+    'fi',
+    `if [ -n "$PACKAGE_ROOT" ] && [ -f "$PACKAGE_ROOT/scripts/${runnerScript}" ]; then`,
+    '  :',
+    `elif [ -f "$OS_HOME/runtime/current/scripts/${runnerScript}" ]; then`,
+    '  PACKAGE_ROOT="$OS_HOME/runtime/current"',
+    `elif [ -f "$OS_HOME/scripts/${runnerScript}" ]; then`,
+    '  PACKAGE_ROOT="$OS_HOME"',
+    'else',
+    '  printf "%s\\n" "error: Consuelo OS immutable runtime is not installed." >&2',
+    '  exit 1',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ]; then',
+    '  BUN_EXECUTABLE="$(command -v bun || true)"',
+    'fi',
+    'if [ -z "$BUN_EXECUTABLE" ] || [ ! -x "$BUN_EXECUTABLE" ]; then',
+    '  printf "%s\\n" "error: Consuelo OS cannot find the Bun executable. Re-run the installer." >&2',
     '  exit 1',
     'fi',
     'if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then',
@@ -229,7 +282,7 @@ function toolWrapperScript(tool: CanonicalToolEntry): string {
     'else',
     "  INPUT='{}'",
     'fi',
-    'cd "$OS_HOME"',
+    'cd "$PACKAGE_ROOT"',
     runner,
     '',
   ].join('\n');
@@ -315,23 +368,41 @@ export function provisionManagedComponentIndexes(input: {
 }): ManagedComponentProvisionAction[] {
   const actions: ManagedComponentProvisionAction[] = [];
   const upstream: ManagedComponentSource[] = [];
+  const runtimeComponents: ManagedComponentSource[] = [];
   const skillEntries: ComponentIndexEntry[] = [];
   const selected = new Set(input.selectedSkills);
 
   for (const skillDir of listBundledSkillDirs()) {
     const id = bundledSkillId(skillDir);
-    const content = treeFromDirectory(skillDir);
+    const metadata = portableSkillMetadata(skillDir, id);
+    const content = portableSkillTree(skillDir, id);
     const sourcePath = packageRelative(skillDir);
-    upstream.push({ id, kind: 'skill', sourcePath, content });
+    const source: ManagedComponentSource = {
+      id,
+      kind: 'skill',
+      sourcePath,
+      localPath: path.posix.join('Skills', id),
+      content,
+    };
+    runtimeComponents.push(source);
     if (selected.has(id)) {
+      upstream.push(source);
       skillEntries.push({
         id,
         kind: 'skill',
         ownership: 'bundled-managed',
         sourcePath,
         contentHash: hashComponentTree(content),
-        ...compactSkill(readJsonObject(path.join(skillDir, 'skill.json'))),
+        ...compactSkill(metadata),
       });
+      if (input.dryRun) {
+        actions.push({
+          type: 'seed_skill',
+          path: path.join(input.userRoot ?? path.join(os.homedir(), 'Consuelo'), 'Skills', id),
+          status: 'planned',
+          message: 'selected managed skill materialization planned in visible Skills',
+        });
+      }
     }
   }
 
@@ -340,7 +411,9 @@ export function provisionManagedComponentIndexes(input: {
   for (const tool of readToolManifest().tools) {
     const sourcePath = packageRelative(TOOL_MANIFEST_PATH);
     const content = { 'tool.json': `${JSON.stringify(compactTool(tool), null, 2)}\n` };
-    upstream.push({ id: tool.name, kind: 'tool', sourcePath, content });
+    const source = { id: tool.name, kind: 'tool' as const, sourcePath, content };
+    upstream.push(source);
+    runtimeComponents.push(source);
     toolEntries.push({
       id: tool.name,
       kind: 'tool',
@@ -366,7 +439,9 @@ export function provisionManagedComponentIndexes(input: {
 
   const legacy = legacyEntries(input.home);
   actions.push(...legacy.actions);
-  const sourceBundle = runtimeBundleIdentity(upstream);
+  const userRoot = input.userRoot ?? path.join(os.homedir(), 'Consuelo');
+  actions.push(reconcileVisibleDialerSteering({ userRoot, dryRun: input.dryRun }));
+  const sourceBundle = runtimeBundleIdentity(runtimeComponents);
   const componentsRoot = path.join(input.home, 'components');
   const skillsIndexPath = path.join(componentsRoot, 'installed-skills.json');
   const toolsIndexPath = path.join(componentsRoot, 'installed-tools.json');
@@ -403,21 +478,67 @@ export function provisionManagedComponentIndexes(input: {
   }, null, 2)}\n`, { mode: 0o600 });
 
   const previous = readExistingState(input.home);
-  const userRoot = input.userRoot ?? path.join(os.homedir(), 'Consuelo');
+  const retainedProvenance = previous.provenance.filter((record) => {
+    if (record.ownership !== 'bundled-managed' || !record.localPath) {
+      return true;
+    }
+    return fs.existsSync(path.join(userRoot, record.localPath));
+  });
   let state = buildManagedComponentUpdateState({
     generatedAt: input.generatedAt,
     sourceBundle,
-    provenance: previous.provenance,
+    provenance: retainedProvenance,
     retainedContent: previous.content,
     upstream,
-    localOverrides: snapshotManagedComponentLocalOverrides(userRoot, previous.provenance),
+    localOverrides: snapshotManagedComponentLocalOverrides(userRoot, previous.provenance, upstream),
     custom: legacy.custom,
   });
   writeManagedComponentState(input.home, state);
-  applySafeManagedComponentItems({
+  const selectedSkillPlan = new Map(
+    state.plan.items
+      .filter((item) => item.kind === 'skill' && selected.has(item.id))
+      .map((item) => [item.id, item]),
+  );
+  const applyResult = applySafeManagedComponentItems({
     home: input.home,
     userRoot,
   });
+  const appliedKeys = new Set(applyResult.applied);
+  const skippedKeys = new Set(applyResult.skipped);
+  for (const id of [...selected].sort((left, right) => left.localeCompare(right))) {
+    const item = selectedSkillPlan.get(id);
+    const pathValue = path.join(userRoot, 'Skills', id);
+    if (!item) {
+      actions.push({
+        type: 'seed_skill',
+        path: pathValue,
+        status: 'skipped',
+        message: 'selected managed skill is unavailable in this runtime',
+      });
+      continue;
+    }
+    const applied = appliedKeys.has(item.key);
+    actions.push({
+      type: 'seed_skill',
+      path: pathValue,
+      status: item.action === 'install' && applied
+        ? 'created'
+        : ['update-clean', 'merge-clean'].includes(item.action) && applied
+          ? 'updated'
+          : skippedKeys.has(item.key) ||
+              item.requiresReview ||
+              ['conflict', 'detach'].includes(item.action)
+            ? 'skipped'
+            : 'preserved',
+      message: item.action === 'install' && applied
+        ? 'selected managed skill materialized in visible Skills'
+        : skippedKeys.has(item.key) ||
+            item.requiresReview ||
+            ['conflict', 'detach'].includes(item.action)
+          ? 'selected managed skill preserved for explicit conflict review'
+          : 'selected managed skill already present in visible Skills',
+    });
+  }
   const applied = readManagedComponentState(input.home);
   state = buildManagedComponentUpdateState({
     generatedAt: input.generatedAt,
@@ -425,7 +546,7 @@ export function provisionManagedComponentIndexes(input: {
     provenance: applied.provenance,
     retainedContent: applied.content,
     upstream,
-    localOverrides: snapshotManagedComponentLocalOverrides(userRoot, applied.provenance),
+    localOverrides: snapshotManagedComponentLocalOverrides(userRoot, applied.provenance, upstream),
     custom: legacy.custom,
   });
   writeManagedComponentState(input.home, state);

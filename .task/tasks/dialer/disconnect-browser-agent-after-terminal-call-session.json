@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/disconnect-browser-agent-after-terminal-call-session",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1760,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1760",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1760",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1760/disconnect-browser-agent-after-terminal-call-session",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1760",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1760/disconnect-browser-agent-after-terminal-call-session",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-disconnect-browser-agent-after-terminal-call-session",
+  "taskSession": "tsk_7d06f4b03842",
+  "tmuxSession": "opensaas-dialer-disconnect-browser-agent-after-terminal-call-ses-7d06f4b0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-disconnect-browser-agent-after-terminal-call-session/.task/dialer/disconnect-browser-agent-after-terminal-call-session/session.json",
+  "createdAt": "2026-08-03T21:25:48.062Z"
+}

@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
@@ -5,7 +6,7 @@ import { join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildToolManifest, generateToolManifest } from '../scripts/generate-tool-manifest';
-import { getInputSchema, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
+import { getInputSchema, outputTypeSignatures, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 import { runToolSearch } from '../scripts/tools-search';
 
 type JsonObject = Record<string, unknown>;
@@ -245,9 +246,9 @@ describe('tool manifest generator', () => {
     const registry = buildToolManifest({ write: false });
     const generatedDefinitions = registry.full.tools.map((entry) => entry.definition);
     expect(generatedDefinitions).toEqual(baselineDefinitions);
-    expect(registry.full.tools).toHaveLength(154);
+    expect(registry.full.tools).toHaveLength(baselineDefinitions.length);
     expect(registry.report.oldRegularToolCount).toBe(0);
-    expect(registry.report.oldDevToolCount).toBe(154);
+    expect(registry.report.oldDevToolCount).toBe(baselineDefinitions.length);
     expect(registry.report.duplicateNames).toEqual([]);
     expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'media.svg.convert']));
     expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
@@ -282,19 +283,29 @@ describe('tool manifest generator', () => {
 
 
 
-  it('should model read-only fs read and search as session-optional when building manifests', () => {
+  it('should model read-only fs operations as session-optional when building manifests', () => {
     const registry = buildToolManifest({ write: false });
-    const byName = new Map(registry.full.tools.map((entry) => [entry.name, entry]));
+    const fsEntries = registry.full.tools.filter((entry) => entry.name.startsWith('fs.'));
+    const readOnlyEntries = fsEntries.filter((entry) => entry.definition.capabilities.readOnly === true);
+    const mutatingEntries = fsEntries.filter((entry) => entry.definition.capabilities.mutating === true);
+    const byName = new Map(fsEntries.map((entry) => [entry.name, entry]));
 
-    for (const toolName of ['fs.read', 'fs.search']) {
-      const entry = byName.get(toolName);
-      expect(entry?.definition.capabilities).toMatchObject({ readOnly: true, mutating: false });
-      expect(entry?.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'optional' });
-      expect(entry?.definition.sessionRequired).toBe(false);
+    expect(readOnlyEntries.map((entry) => entry.name).sort()).toEqual(['fs.list', 'fs.read', 'fs.search']);
+    expect(mutatingEntries.map((entry) => entry.name).sort()).toEqual(['fs.apply_patch', 'fs.trash', 'fs.write']);
+
+    for (const entry of readOnlyEntries) {
+      expect(entry.definition.capabilities).toMatchObject({ readOnly: true, mutating: false });
+      expect(entry.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'optional' });
+      expect(entry.definition.sessionRequired).toBe(false);
     }
 
-    expect(byName.get('fs.write')?.definition.sessionRequired).toBe(true);
-    expect(byName.get('fs.apply_patch')?.definition.sessionRequired).toBe(true);
+    expect(byName.get('fs.read')?.definition.command.arguments).toContainEqual({ source: 'full', flag: '--full', kind: 'boolean' });
+
+    for (const entry of mutatingEntries) {
+      expect(entry.definition.capabilities).toMatchObject({ readOnly: false, mutating: true });
+      expect(entry.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'required' });
+      expect(entry.definition.sessionRequired).toBe(true);
+    }
   });
 
   it('keeps public execution surface on code.call while task lifecycle stays full-manifest only', async () => {
@@ -345,6 +356,46 @@ describe('tool manifest generator', () => {
 
     expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain(`task.${'call'}`);
     expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain(`task.${'exec'}`);
+  });
+
+  it('should keep task.pr facade input and command mapping aligned when the CLI exposes the workpad escape hatch', () => {
+    // Arrange
+    const schema = getInputSchema('TaskPrInput');
+    const registry = buildToolManifest({ write: false });
+    const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    const generatedTypes = readFileSync(join(import.meta.dirname, '../src/generated/workspace.d.ts'), 'utf8');
+    const taskPrSource = readFileSync(join(packageRoot, 'scripts/task-pr.js'), 'utf8');
+
+    // Act
+    const parsed = schema.safeParse({ ackWorkpadIncomplete: true, repo: 'example/private-repo' });
+    const argumentsList = taskPr?.definition.command?.arguments;
+    const cli = spawnSync(process.execPath, [join(packageRoot, 'scripts/task-pr.js'), '--ack-workpad-incomplete', '--help'], {
+      cwd: packageRoot,
+      encoding: 'utf8',
+    });
+
+    // Assert
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true, repo: 'example/private-repo' }));
+    expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(schemaTypeSignatures.TaskPrInput).toContain('repo?: string');
+    expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('repo?: string');
+    expect(argumentsList).toContainEqual({
+      source: 'ackWorkpadIncomplete',
+      flag: '--ack-workpad-incomplete',
+      kind: 'boolean',
+    });
+    expect(argumentsList).toContainEqual({
+      source: 'repo',
+      flag: '--repo',
+      kind: 'value',
+    });
+    expect(cli.status).toBe(0);
+    expect(cli.stdout).toContain('--ack-workpad-incomplete');
+    expect(taskPrSource).toContain("const { assertWorkpadReady } = require('./lib/task-workpad');");
+    expect(taskPrSource).toContain('ackIncomplete: args.ackWorkpadIncomplete');
   });
 
   it('keeps OS task start wired to the OS runtime surface', () => {
@@ -403,6 +454,14 @@ describe('tool manifest generator', () => {
     expect(generatedWorkspace).toContain('patchText?: string');
     expect(generatedWorkspace).not.toContain('fs.patch');
     expect(generatedClient).toContain('createWorkspaceClient');
+  });
+
+  it('exposes subagent token usage in generated TypeScript surfaces', () => {
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+    const expectedUsage = 'usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }';
+
+    expect(outputTypeSignatures.SubagentOutput).toContain(expectedUsage);
+    expect(generatedWorkspace).toContain(expectedUsage);
   });
 
   it('publishes one non-core provider-neutral deployment surface and generated client types', () => {
@@ -486,7 +545,7 @@ describe('tool manifest generator', () => {
 
   it('keeps the generated catalog limited to canonical facade packages', () => {
     const registry = buildToolManifest({ write: false });
-    expect(registry.full.tools).toHaveLength(154);
+    expect(registry.full.tools).toHaveLength(baselineDefinitions.length);
     expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
     expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });

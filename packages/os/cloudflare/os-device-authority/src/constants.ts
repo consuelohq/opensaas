@@ -34,9 +34,31 @@ export const DEFAULT_SITE_SNAPSHOT_KEY =
 export const DEFAULT_SITE_SNAPSHOT_VERSION_ID = 'sha256-15c3f6f5c611b43c';
 export const DEFAULT_SITE_ID = 'launcher';
 export const DEFAULT_SITE_CONTENT_TYPE = 'text/html; charset=utf-8';
-export const DEFAULT_CONNECTOR_LOCAL_SERVICE_URL = 'http://127.0.0.1:46321';
+export const DEFAULT_CONNECTOR_LOCAL_SERVICE_URL = 'http://127.0.0.1:46320';
 export const CHATGPT_OAUTH_CLIENT_ID = 'chatgpt-consuelo-os';
 export const CHATGPT_REDIRECT_PREFIX = 'https://chatgpt.com/connector/oauth/';
+/**
+ * Local operator client for the CLI.
+ *
+ * The authorization server previously accepted only ChatGPT, which meant nothing could mint a
+ * workspace token and `workspace:nodes` documented a credential no flow could issue. This client is
+ * public and PKCE-only, and its redirect is restricted to loopback so an authorization code can
+ * never be delivered to a remote host.
+ */
+export const OPERATOR_OAUTH_CLIENT_ID = 'consuelo-os-operator-cli';
+/**
+ * Literal loopback addresses only. RFC 8252 section 8.3 recommends against accepting `localhost`
+ * for native clients, because it resolves through DNS and the hosts file and can therefore be
+ * pointed at a non-loopback address; the literals cannot be.
+ */
+export const OPERATOR_LOOPBACK_HOSTS = new Set(['127.0.0.1', '[::1]']);
+
+/**
+ * Node management is an operator capability. ChatGPT connects as an end user and must never be able
+ * to reassign or revoke nodes, so this scope is restricted to the operator CLI client rather than
+ * being available to anything that reaches the authorize endpoint.
+ */
+export const OPERATOR_ONLY_SCOPES = new Set(['workspace:nodes:manage']);
 export const MCP_OAUTH_TTL_MS = 60 * 60 * 1000;
 export const MCP_OAUTH_REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const MCP_OAUTH_CODE_TTL_MS = 5 * 60 * 1000;

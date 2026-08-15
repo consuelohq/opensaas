@@ -1,0 +1,170 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/extract-effect-application-core",
+  "base": "origin/stream/dialer",
+  "headSha": "d5744f30942dd29cde4d2eaf5d663a093a70a8e4",
+  "changeHash": "8dc354c51e89de905b50bffac2a6c9c7a636c910a0818465839cfacd13bde026",
+  "changedFiles": [
+    "packages/dialer/package.json",
+    "packages/dialer/src/application/cleanup-actions.ts",
+    "packages/dialer/src/application/get-call-session.ts",
+    "packages/dialer/src/application/parallel-application.spec.ts",
+    "packages/dialer/src/application/process-provider-callback.ts",
+    "packages/dialer/src/application/retry-pending-cleanup.ts",
+    "packages/dialer/src/application/start-parallel-session.ts",
+    "packages/dialer/src/application/terminate-call-session.ts",
+    "packages/dialer/src/domain/parallel-call.ts",
+    "packages/dialer/src/domain/parallel-group.ts",
+    "packages/dialer/src/domain/parallel-profile.ts",
+    "packages/dialer/src/domain/parallel-transition.spec.ts",
+    "packages/dialer/src/domain/parallel-transition.ts",
+    "packages/dialer/src/domain/telemetry.ts",
+    "packages/dialer/src/errors/dialer-errors.ts",
+    "packages/dialer/src/index.ts",
+    "packages/dialer/src/infrastructure/memory/parallel-state-store.ts",
+    "packages/dialer/src/infrastructure/memory/runtime.ts",
+    "packages/dialer/src/infrastructure/twilio/call-provider.ts",
+    "packages/dialer/src/ports/call-provider.ts",
+    "packages/dialer/src/ports/caller-id-lock-store.ts",
+    "packages/dialer/src/ports/clock.ts",
+    "packages/dialer/src/ports/id-generator.ts",
+    "packages/dialer/src/ports/parallel-state-store.ts",
+    "packages/dialer/src/ports/telemetry.ts",
+    "packages/dialer/src/services/parallel-dialer.ts",
+    "packages/dialer/src/types.ts",
+    "yarn.lock"
+  ],
+  "verifiedAt": "2026-07-23T18:28:54.475Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/extract-effect-application-core/current.json",
+        ".task/dialer/extract-effect-application-core/evidence-log.json",
+        ".task/dialer/extract-effect-application-core/read-log.json",
+        ".task/dialer/extract-effect-application-core/session.json",
+        ".task/dialer/extract-effect-application-core/verify.json",
+        ".task/dialer/extract-effect-application-core/workpad.md",
+        ".task/tasks/dialer/extract-effect-application-core.json",
+        "packages/dialer/package.json",
+        "packages/dialer/src/application/cleanup-actions.ts",
+        "packages/dialer/src/application/get-call-session.ts",
+        "packages/dialer/src/application/parallel-application.spec.ts",
+        "packages/dialer/src/application/process-provider-callback.ts",
+        "packages/dialer/src/application/retry-pending-cleanup.ts",
+        "packages/dialer/src/application/start-parallel-session.ts",
+        "packages/dialer/src/application/terminate-call-session.ts",
+        "packages/dialer/src/domain/parallel-call.ts",
+        "packages/dialer/src/domain/parallel-group.ts",
+        "packages/dialer/src/domain/parallel-profile.ts",
+        "packages/dialer/src/domain/parallel-transition.spec.ts",
+        "packages/dialer/src/domain/parallel-transition.ts",
+        "packages/dialer/src/domain/telemetry.ts",
+        "packages/dialer/src/errors/dialer-errors.ts",
+        "packages/dialer/src/index.ts",
+        "packages/dialer/src/infrastructure/memory/parallel-state-store.ts",
+        "packages/dialer/src/infrastructure/memory/runtime.ts",
+        "packages/dialer/src/infrastructure/twilio/call-provider.ts",
+        "packages/dialer/src/ports/call-provider.ts",
+        "packages/dialer/src/ports/caller-id-lock-store.ts",
+        "packages/dialer/src/ports/clock.ts",
+        "packages/dialer/src/ports/id-generator.ts",
+        "packages/dialer/src/ports/parallel-state-store.ts",
+        "packages/dialer/src/ports/telemetry.ts",
+        "packages/dialer/src/services/parallel-dialer.ts",
+        "packages/dialer/src/types.ts",
+        "yarn.lock"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/package.json",
+            "packages/dialer/src/application/cleanup-actions.ts",
+            "packages/dialer/src/application/get-call-session.ts",
+            "packages/dialer/src/application/parallel-application.spec.ts",
+            "packages/dialer/src/application/process-provider-callback.ts",
+            "packages/dialer/src/application/retry-pending-cleanup.ts",
+            "packages/dialer/src/application/start-parallel-session.ts",
+            "packages/dialer/src/application/terminate-call-session.ts",
+            "packages/dialer/src/domain/parallel-call.ts",
+            "packages/dialer/src/domain/parallel-group.ts",
+            "packages/dialer/src/domain/parallel-profile.ts",
+            "packages/dialer/src/domain/parallel-transition.spec.ts",
+            "packages/dialer/src/domain/parallel-transition.ts",
+            "packages/dialer/src/domain/telemetry.ts",
+            "packages/dialer/src/errors/dialer-errors.ts",
+            "packages/dialer/src/index.ts",
+            "packages/dialer/src/infrastructure/memory/parallel-state-store.ts",
+            "packages/dialer/src/infrastructure/memory/runtime.ts",
+            "packages/dialer/src/infrastructure/twilio/call-provider.ts",
+            "packages/dialer/src/ports/call-provider.ts",
+            "packages/dialer/src/ports/caller-id-lock-store.ts",
+            "packages/dialer/src/ports/clock.ts",
+            "packages/dialer/src/ports/id-generator.ts",
+            "packages/dialer/src/ports/parallel-state-store.ts",
+            "packages/dialer/src/ports/telemetry.ts",
+            "packages/dialer/src/services/parallel-dialer.ts",
+            "packages/dialer/src/types.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1161,
+          "outputTail": "trics with no winner [4.05ms]\n(pass) ParallelDialerService > computeTelemetry > should complete one-leg groups on terminal callback [0.90ms]\n(pass) ParallelDialerService > markTelemetryEmitted > should set telemetryEmittedAt on the group [3.61ms]\n(pass) ParallelDialerService > markTelemetryEmitted > should not throw for non-existent group [0.32ms]\n(pass) ParallelDialerService > generateCustomerTwiml > should return TwiML for a known call [3.04ms]\n(pass) ParallelDialerService > generateCustomerTwiml > should return null for unknown call [0.26ms]\n(pass) ParallelDialerService > InMemoryParallelStore > should support setWinnerIfAbsent atomicity [0.08ms]\n(pass) ParallelDialerService > InMemoryParallelStore > should delete group and winner together [0.08ms]\n\npackages/dialer/src/services/parallel-strategy-resolver.spec.ts:\n(pass) ParallelStrategyResolver > explicit profile selection > should use explicit profileId when provided and bypass sampling [1.77ms]\n(pass) ParallelStrategyResolver > thompson sampling > should deterministically pick aggressive when it samples highest [0.13ms]\n(pass) ParallelStrategyResolver > thompson sampling > should use informed default priors on cold start when no posteriors are returned [0.09ms]\n(pass) ParallelStrategyResolver > thompson sampling > should merge loaded posterior values instead of using defaults [0.06ms]\n(pass) ParallelStrategyResolver > thompson sampling > should sample all profiles exactly once when no explicit profileId is set [0.04ms]\n(pass) ParallelStrategyResolver > fallback behavior > should fallback to balanced when posterior loading fails without throwing [1.54ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return profile by id [0.03ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return all profiles [0.03ms]\n\npackages/dialer/src/services/whittle-index.spec.ts:\n(pass) WhittleIndexService > should increase index as answer rate increases [0.06ms]\n(pass) WhittleIndexService > should increase urgency bonus as callable window closes [0.02ms]\n(pass) WhittleIndexService > should increase exploration bonus when segment sample size is low [0.01ms]\n(pass) WhittleIndexService > should reduce index as cost per attempt increases [0.01ms]\n(pass) WhittleIndexService > should rank candidates by index descending and position ascending for ties [0.06ms]\n(pass) WhittleIndexService > should apply max urgency bonus when zero hours remain in window [0.01ms]\n(pass) WhittleIndexService > should produce near zero exploration bonus with very high sample size [0.01ms]\n(pass) WhittleIndexService > should set index to negative cost when all positive components are zero [0.01ms]\n(pass) WhittleIndexService > should allow negative index values when cost exceeds reward\n\npackages/dialer/src/services/call-timing-model.spec.ts:\n(pass) CallTimingModel > should return null when segment has insufficient sample size [0.12ms]\n(pass) CallTimingModel > should return optimal retry time when enough observations exist [0.04ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [2.45ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [3.83ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [5.33ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [3.13ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [1.30ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [3.87ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [3.50ms]\n\n 153 pass\n 0 fail\n 303 expect() calls\nRan 153 tests across 13 files. [1151.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

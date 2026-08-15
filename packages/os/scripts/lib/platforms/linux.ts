@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
 import type { LifecycleServiceController } from '../lifecycle/types';
@@ -143,16 +143,20 @@ export async function detectLinuxHost(input: {
 
 export function resolveLinuxPlatformPaths(home: string, environment: NodeJS.ProcessEnv = process.env): LinuxPlatformPaths {
   const resolvedHome = resolve(home);
-  const inferredUserHome = basename(resolvedHome) === '.consuelo'
-    ? dirname(resolvedHome)
-    : resolvedHome;
-  const configHome = resolve(environment.XDG_CONFIG_HOME ?? join(inferredUserHome, '.config'));
+  const inferredUserHome = environment.HOME
+    ? resolve(environment.HOME)
+    : basename(resolvedHome) === '.consuelo'
+      ? dirname(resolvedHome)
+      : resolvedHome;
+  const configHome = resolve(
+    environment.XDG_CONFIG_HOME ?? join(inferredUserHome, '.config'),
+  );
   const systemdUserDir = join(configHome, 'systemd', 'user');
   return {
     home: resolvedHome,
     systemdUserDir,
     unitPath: join(systemdUserDir, UNIT_NAME),
-    runtimeEntryPath: join(resolvedHome, 'runtime', 'current', 'scripts', 'server', 'main.ts'),
+    runtimeEntryPath: join(resolvedHome, 'runtime', 'current', 'scripts', 'server', 'supervisor.ts'),
     runsDir: join(resolvedHome, 'node', 'runs'),
     logsDir: join(resolvedHome, 'node', 'logs'),
     sessionStatePath: join(resolvedHome, 'node', 'runs', 'linux-session-process.json'),
@@ -187,6 +191,130 @@ export function renderSystemdUserUnit(input: { home: string; bunExecutable: stri
   ].join('\n');
 }
 
+export function renderWorkspaceNodeHeartbeatSystemdUnits(input: {
+  runtimeHome: string;
+  userHome: string;
+  bunExecutable: string;
+  heartbeatScriptPath: string;
+  heartbeatConfigPath: string;
+}): {
+  serviceName: 'consuelo-node-heartbeat.service';
+  timerName: 'consuelo-node-heartbeat.timer';
+  systemdUserDir: string;
+  servicePath: string;
+  timerPath: string;
+  service: string;
+  timer: string;
+} {
+  const paths = resolveLinuxPlatformPaths(input.userHome, {
+    ...process.env,
+    HOME: resolve(input.userHome),
+  });
+  const serviceName = 'consuelo-node-heartbeat.service' as const;
+  const timerName = 'consuelo-node-heartbeat.timer' as const;
+  return {
+    serviceName,
+    timerName,
+    systemdUserDir: paths.systemdUserDir,
+    servicePath: join(paths.systemdUserDir, serviceName),
+    timerPath: join(paths.systemdUserDir, timerName),
+    service: [
+      '[Unit]',
+      'Description=Consuelo OS workspace node heartbeat',
+      'After=network-online.target',
+      'Wants=network-online.target',
+      '',
+      '[Service]',
+      'Type=oneshot',
+      `Environment="CONSUELO_HOME=${systemdEscape(resolve(input.runtimeHome))}"`,
+      `ExecStart="${systemdEscape(resolve(input.bunExecutable))}" "${systemdEscape(resolve(input.heartbeatScriptPath))}" "--config" "${systemdEscape(resolve(input.heartbeatConfigPath))}"`,
+      'UMask=0077',
+      'NoNewPrivileges=true',
+      'PrivateTmp=true',
+      '',
+    ].join('\n'),
+    timer: [
+      '[Unit]',
+      'Description=Send Consuelo OS workspace node heartbeats',
+      '',
+      '[Timer]',
+      'OnBootSec=5',
+      'OnUnitActiveSec=30',
+      'Persistent=true',
+      `Unit=${serviceName}`,
+      '',
+      '[Install]',
+      'WantedBy=timers.target',
+      '',
+    ].join('\n'),
+  };
+}
+
+const systemdUnitSegment = (value: string): string => {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (!normalized) throw new Error('systemd unit segment is required');
+  return normalized;
+};
+
+export function renderWorkspaceCloudflaredSystemdUnit(input: {
+  runtimeHome: string;
+  userHome: string;
+  connectorId: string;
+  programArguments: string[];
+}): {
+  unitName: string;
+  systemdUserDir: string;
+  unitPath: string;
+  service: string;
+} {
+  if (input.programArguments.length === 0) {
+    throw new Error('cloudflared systemd service requires program arguments');
+  }
+  const paths = resolveLinuxPlatformPaths(input.userHome, {
+    ...process.env,
+    HOME: resolve(input.userHome),
+  });
+  const unitName = `consuelo-cloudflared-${systemdUnitSegment(
+    input.connectorId,
+  )}.service`;
+  const execStart = input.programArguments
+    .map((argument) => `"${systemdEscape(resolveExecutableArgument(argument))}"`)
+    .join(' ');
+  return {
+    unitName,
+    systemdUserDir: paths.systemdUserDir,
+    unitPath: join(paths.systemdUserDir, unitName),
+    service: [
+      '[Unit]',
+      'Description=Consuelo OS workspace Cloudflare Tunnel',
+      'After=network-online.target',
+      'Wants=network-online.target',
+      '',
+      '[Service]',
+      'Type=simple',
+      `Environment="CONSUELO_HOME=${systemdEscape(resolve(input.runtimeHome))}"`,
+      `ExecStart=${execStart}`,
+      'Restart=always',
+      'RestartSec=5',
+      'UMask=0077',
+      'NoNewPrivileges=true',
+      'PrivateTmp=true',
+      '',
+      '[Install]',
+      'WantedBy=default.target',
+      '',
+    ].join('\n'),
+  };
+}
+
+function resolveExecutableArgument(argument: string): string {
+  return argument.startsWith('/') ? resolve(argument) : argument;
+}
+
 function ensurePrivateDirectory(path: string): void {
   mkdirSync(path, { recursive: true, mode: 0o700 });
   chmodSync(path, 0o700);
@@ -203,6 +331,30 @@ function commandError(command: LinuxCommand, result: LinuxCommandResult): Error 
   return new Error(`${command.executable} ${command.args.join(' ')} failed: ${detail}`);
 }
 
+function installedLinuxGatewayUnits(systemdUserDir: string): {
+  restartUnits: string[];
+  heartbeatServiceInstalled: boolean;
+} {
+  if (!existsSync(systemdUserDir)) {
+    return { restartUnits: [], heartbeatServiceInstalled: false };
+  }
+  const names = new Set(readdirSync(systemdUserDir));
+  const cloudflared = [...names]
+    .filter((name) => /^consuelo-cloudflared-.+\.service$/.test(name))
+    .sort();
+  const restartUnits = [
+    ...cloudflared,
+    ...(names.has('consuelo-node-heartbeat.timer')
+      ? ['consuelo-node-heartbeat.timer']
+      : []),
+    ...['consuelo-portless.service', 'consuelo-watchdog.service', 'consuelo-availability.service']
+      .filter((name) => names.has(name)),
+  ];
+  return {
+    restartUnits,
+    heartbeatServiceInstalled: names.has('consuelo-node-heartbeat.service'),
+  };
+}
 function readSessionPid(path: string): number | undefined {
   try {
     const parsed = JSON.parse(readFileSync(path, 'utf8')) as { pid?: unknown };
@@ -332,19 +484,45 @@ export function createLinuxPlatformAdapter(input: {
       try {
         await preflight();
         if ((await activeManager()) === 'systemd-user') {
-          if (!existsSync(paths.unitPath)) {
+          const unitExisted = existsSync(paths.unitPath);
+          if (!unitExisted) {
             writePrivateFile(paths.unitPath, renderSystemdUserUnit({ home: paths.home, bunExecutable }));
-            for (const command of [
-              { executable: 'systemctl', args: ['--user', 'daemon-reload'], environment },
-              { executable: 'systemctl', args: ['--user', 'enable', '--now', UNIT_NAME], environment },
-            ]) {
-              const result = await run(command);
-              if (result.exitCode !== 0) throw commandError(command, result);
-            }
-          } else {
-            const command = { executable: 'systemctl', args: ['--user', 'restart', UNIT_NAME], environment };
+          }
+          const gateways = installedLinuxGatewayUnits(paths.systemdUserDir);
+          const reload = {
+            executable: 'systemctl',
+            args: ['--user', 'daemon-reload'],
+            environment,
+          };
+          const reloaded = await run(reload);
+          if (reloaded.exitCode !== 0) throw commandError(reload, reloaded);
+          const osCommand = unitExisted
+            ? { executable: 'systemctl', args: ['--user', 'restart', UNIT_NAME], environment }
+            : { executable: 'systemctl', args: ['--user', 'enable', '--now', UNIT_NAME], environment };
+          const osResult = await run(osCommand);
+          if (osResult.exitCode !== 0) throw commandError(osCommand, osResult);
+          for (const unit of gateways.restartUnits) {
+            const command = {
+              executable: 'systemctl',
+              args: ['--user', 'restart', unit],
+              environment,
+            };
             const result = await run(command);
             if (result.exitCode !== 0) throw commandError(command, result);
+            if (
+              unit === 'consuelo-node-heartbeat.timer'
+              && gateways.heartbeatServiceInstalled
+            ) {
+              const heartbeat = {
+                executable: 'systemctl',
+                args: ['--user', 'start', 'consuelo-node-heartbeat.service'],
+                environment,
+              };
+              const heartbeatResult = await run(heartbeat);
+              if (heartbeatResult.exitCode !== 0) {
+                throw commandError(heartbeat, heartbeatResult);
+              }
+            }
           }
           return;
         }

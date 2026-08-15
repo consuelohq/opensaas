@@ -2,7 +2,7 @@
 title: Result and error formats
 description: Stable tool, skill, MCP, and HTTP error envelopes.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
   - source: packages/os/scripts/lib/facade/types.ts
     tests:
@@ -132,3 +132,15 @@ Local JSON routes generally return:
 ```
 
 Use the HTTP status for transport outcome and `error.code` for program logic. Do not expose raw internal exception text to end users.
+
+## Node-routing errors
+
+Workspace routing can fail before the selected node executes a tool. Current routing errors include:
+
+| Code | Meaning |
+| --- | --- |
+| `WORKSPACE_NODE_OFFLINE` | The exact node required for the route is not currently reachable. |
+| `NODE_ROUTE_MISMATCH` | Multiple node-routing hints conflict, so Consuelo refuses to guess. |
+| `TASK_NODE_MISMATCH` | An explicit node conflicts with the node that already owns the task session. |
+
+These failures are intentionally fail-closed. In particular, task-owned work is not silently sent to another healthy node just because its owner is offline. See [Routing work](/nodes/routing/).

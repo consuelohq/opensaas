@@ -1,10 +1,23 @@
 import { execFileSync, spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import { createToolResult } from '../facade/errors';
 import { logToolExecution } from '../facade/logger';
 import type { ExecuteToolOptions, RunnerResult, ToolInput, ToolManifestEntry, ToolResult } from '../facade/types';
+import {
+  cancelDurableSubagentRun,
+  deriveSubagentRunId,
+  readDurableSubagentLogs,
+  readDurableSubagentRun,
+  reconcileDurableSubagentRun,
+  resolveSubagentRunDirectory,
+  startDurableSubagentRun,
+  waitForDurableSubagentRun,
+  type DurableSubagentRun,
+} from './lifecycle';
 import {
   recordSubagentTraceEventsSafely,
   type SubagentTraceEvent,
@@ -15,8 +28,16 @@ export type SubagentBundle = 'core' | 'media';
 export type SubagentMode = 'work';
 export type SubagentPolicy = 'read' | 'edit';
 export type SubagentOutputFormat = 'text' | 'json';
-export type SubagentStatus = 'completed' | 'failed' | 'not_configured' | 'not_supported' | 'timed_out';
+export type SubagentAction = 'run' | 'start' | 'status' | 'wait' | 'logs' | 'cancel';
+export type SubagentStatus = 'starting' | 'running' | 'completed' | 'failed' | 'cancelled' | 'completion_unknown' | 'not_configured' | 'not_supported' | 'timed_out';
 export type SubagentWorkspaceOnly = 'preferred' | 'strict' | false;
+export type SubagentCapabilities = {
+  modelSelection: boolean;
+  reasoningEffort: boolean;
+  strictWorkspaceOnly: boolean;
+  edit: boolean;
+  detachedExecution: boolean;
+};
 
 export type SubagentData = {
   provider: SubagentProvider;
@@ -25,7 +46,13 @@ export type SubagentData = {
   outputFormat: SubagentOutputFormat;
   mode: SubagentMode;
   policy: SubagentPolicy;
+  action?: SubagentAction;
   status: SubagentStatus;
+  runId?: string;
+  requestId?: string;
+  reasoningEffort?: string;
+  capabilities: SubagentCapabilities;
+  unsupportedCapabilities?: string[];
   cwd: string;
   instructionPath: string;
   command: string[];
@@ -69,6 +96,7 @@ type SubagentProviderConfig = {
   defaultPolicy: SubagentPolicy;
   workspaceOnly: SubagentWorkspaceOnly;
   model?: string;
+  reasoningEffort?: string;
   provider?: string;
   extensionPaths?: string[];
   mcpConfig?: string;
@@ -78,6 +106,7 @@ type SubagentProviderConfig = {
 export const SUBAGENT_OUTPUT_LIMIT = 8000;
 const SUBAGENT_COMPACT_OUTPUT_LIMIT = 1200;
 const SUBAGENT_MAX_TIMEOUT_MS = 1_800_000;
+const SUBAGENT_REASONING_EFFORTS = ['minimal', 'low', 'medium', 'high', 'xhigh'] as const;
 
 const subagentDefaults: Record<SubagentProvider, {
   mode: SubagentMode;
@@ -89,6 +118,17 @@ const subagentDefaults: Record<SubagentProvider, {
   opencode: { mode: 'work', policy: 'read', workspaceOnly: 'preferred' },
   grok: { mode: 'work', policy: 'read', workspaceOnly: 'preferred' },
 };
+
+const subagentCapabilities: Record<SubagentProvider, SubagentCapabilities> = {
+  codex: { modelSelection: true, reasoningEffort: true, strictWorkspaceOnly: false, edit: true, detachedExecution: true },
+  pi: { modelSelection: true, reasoningEffort: false, strictWorkspaceOnly: true, edit: true, detachedExecution: false },
+  opencode: { modelSelection: true, reasoningEffort: false, strictWorkspaceOnly: false, edit: false, detachedExecution: false },
+  grok: { modelSelection: true, reasoningEffort: false, strictWorkspaceOnly: false, edit: false, detachedExecution: true },
+};
+
+function capabilitiesForProvider(provider: SubagentProvider): SubagentCapabilities {
+  return subagentCapabilities[provider];
+}
 
 function normalizeSubagentProvider(input: ToolInput): { provider: SubagentProvider } {
   return { provider: input.provider as SubagentProvider };
@@ -103,6 +143,7 @@ function subagentConfig(provider: SubagentProvider, input: ToolInput = {}, env: 
     defaultPolicy: defaults.policy,
     workspaceOnly: defaults.workspaceOnly,
     model: requestedModel || env.WORKSPACE_SUBAGENT_CODEX_MODEL,
+    reasoningEffort: typeof input.reasoningEffort === 'string' ? input.reasoningEffort : undefined,
   };
   if (provider === 'opencode') return {
     bin: env.WORKSPACE_SUBAGENT_OPENCODE_BIN || 'opencode',
@@ -143,6 +184,10 @@ export async function executeSubagent(
     options: ExecuteToolOptions;
   },
 ): Promise<ToolResult<SubagentData>> {
+  const action = normalizeSubagentAction(input.action);
+  if (isAttachmentAction(action)) {
+    return executeSubagentAttachmentAction(entry, input, context, action);
+  }
   const providerInfo = normalizeSubagentProvider(input);
   const provider = providerInfo.provider;
   const providerConfig = subagentConfig(provider, input, context.env);
@@ -151,6 +196,9 @@ export async function executeSubagent(
   const policy = (input.policy as SubagentPolicy | undefined) || defaults.policy;
   const bundle = normalizeSubagentBundle(input.bundle);
   const outputFormat = normalizeSubagentOutputFormat(input.outputFormat);
+  const requestId = typeof input.requestId === 'string' ? input.requestId : undefined;
+  const reasoningEffort = typeof input.reasoningEffort === 'string' ? input.reasoningEffort : undefined;
+  const capabilities = capabilitiesForProvider(provider);
   const workspaceOnly = normalizeWorkspaceOnly(input.workspaceOnly, defaults.workspaceOnly);
   const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
   const branch = typeof input.branch === 'string' ? input.branch : undefined;
@@ -172,22 +220,59 @@ export async function executeSubagent(
     outputFormat,
     mode,
     policy,
+    action,
+    ...(requestId ? { requestId } : {}),
+    ...(reasoningEffort ? { reasoningEffort } : {}),
+    capabilities,
     cwd: cwdResolution.ok ? cwdResolution.cwd : context.cwd,
     instructionPath: instructionResolution?.ok ? instructionResolution.instructionPath : String(input.instructionPath || ''),
   };
 
-  if (policy === 'edit' && !taskSession) {
+  if (reasoningEffort && !capabilities.reasoningEffort) {
     return subagentToolResult(entry, context, {
       ...resultBase,
-      status: 'failed',
+      status: 'not_supported',
       command: [],
       stdout: '',
-      stderr: 'edit policy requires taskSession',
+      stderr: `provider ${provider} does not support reasoning effort selection`,
       exitCode: 1,
       audit: baseAudit,
-      ok: false,
-      code: 'TASK_SESSION_REQUIRED',
-      message: 'subagent requires taskSession for edit policy',
+      ok: true,
+      code: 'CAPABILITY_NOT_SUPPORTED',
+      message: `provider ${provider} does not support reasoning effort selection`,
+      unsupportedCapabilities: ['reasoningEffort'],
+    });
+  }
+
+  if (policy === 'edit' && !capabilities.edit) {
+    return subagentToolResult(entry, context, {
+      ...resultBase,
+      status: 'not_supported',
+      command: [],
+      stdout: '',
+      stderr: `provider ${provider} does not support edit execution`,
+      exitCode: 1,
+      audit: baseAudit,
+      ok: true,
+      code: 'CAPABILITY_NOT_SUPPORTED',
+      message: `provider ${provider} does not support edit execution`,
+      unsupportedCapabilities: ['edit'],
+    });
+  }
+
+  if (action === 'start' && !capabilities.detachedExecution) {
+    return subagentToolResult(entry, context, {
+      ...resultBase,
+      status: 'not_supported',
+      command: [],
+      stdout: '',
+      stderr: `provider ${provider} does not support detached subagent execution`,
+      exitCode: 1,
+      audit: baseAudit,
+      ok: true,
+      code: 'CAPABILITY_NOT_SUPPORTED',
+      message: `provider ${provider} does not support durable subagent action start`,
+      unsupportedCapabilities: ['detachedExecution'],
     });
   }
 
@@ -252,8 +337,9 @@ export async function executeSubagent(
       exitCode: 1,
       audit: baseAudit,
       ok: true,
-      code: 'OK',
+      code: 'CAPABILITY_NOT_SUPPORTED',
       message: 'subagent strict workspaceOnly is not supported by provider',
+      unsupportedCapabilities: ['strictWorkspaceOnly'],
     });
   }
 
@@ -305,12 +391,38 @@ export async function executeSubagent(
       workspaceOnly,
       audit: baseAudit,
       timeoutMs: subagentTimeoutMs(entry, input),
+      requestId,
+      action,
+      capabilities,
+    });
+  }
+
+  if (provider === 'codex') {
+    return executeCodexLifecycleSubagent(entry, context, {
+      ...resultBase,
+      provider,
+      model: providerConfig.model,
+      reasoningEffort,
+      bundle,
+      outputFormat,
+      mode,
+      policy,
+      cwd: cwdResolution.cwd,
+      instructionPath: instructionResolution.instructionPath,
+      instruction,
+      workspaceOnly,
+      audit: baseAudit,
+      timeoutMs: subagentTimeoutMs(entry, input),
+      requestId,
+      action,
+      capabilities,
     });
   }
 
   return executeCodexSubagent(entry, context, {
     provider,
     ...(providerConfig.model ? { model: providerConfig.model } : {}),
+    ...(reasoningEffort ? { reasoningEffort } : {}),
     bundle,
     outputFormat,
     mode,
@@ -322,6 +434,398 @@ export async function executeSubagent(
     audit: baseAudit,
     timeoutMs: subagentTimeoutMs(entry, input),
   });
+}
+
+function normalizeSubagentAction(value: unknown): SubagentAction {
+  return value === 'start' || value === 'status' || value === 'wait' || value === 'logs' || value === 'cancel'
+    ? value
+    : 'run';
+}
+
+function isAttachmentAction(action: SubagentAction): action is 'status' | 'wait' | 'logs' | 'cancel' {
+  return action === 'status' || action === 'wait' || action === 'logs' || action === 'cancel';
+}
+
+function persistedSubagentProvider(value: string): SubagentProvider | null {
+  return value === 'codex' || value === 'pi' || value === 'opencode' || value === 'grok' ? value : null;
+}
+
+async function executeSubagentAttachmentAction(
+  entry: ToolManifestEntry,
+  input: ToolInput,
+  context: {
+    cwd: string;
+    env: NodeJS.ProcessEnv;
+    startedAt: number;
+    traceId: string;
+    requestId?: string;
+    options: ExecuteToolOptions;
+  },
+  action: 'status' | 'wait' | 'logs' | 'cancel',
+): Promise<ToolResult<SubagentData>> {
+  const invalidBase = {
+    provider: 'codex' as const,
+    bundle: 'core' as const,
+    outputFormat: 'json' as const,
+    mode: 'work' as const,
+    policy: 'read' as const,
+    action,
+    capabilities: capabilitiesForProvider('codex'),
+    cwd: context.cwd,
+    instructionPath: '',
+    audit: { workspaceOnly: false as const, rawShellUsed: false },
+  };
+  const runId = typeof input.runId === 'string' ? input.runId : undefined;
+  if (!runId) {
+    return subagentToolResult(entry, context, {
+      ...invalidBase,
+      status: 'failed',
+      command: [],
+      stdout: '',
+      stderr: 'runId is required for status, wait, logs, and cancel',
+      exitCode: 1,
+      ok: false,
+      code: 'VALIDATION_ERROR',
+      message: 'runId is required for attachment actions',
+    });
+  }
+
+  const read = readDurableSubagentRun(runId, context.env);
+  if (!read.ok) {
+    return subagentToolResult(entry, context, {
+      ...invalidBase,
+      status: 'failed',
+      runId,
+      command: [],
+      stdout: '',
+      stderr: read.message,
+      exitCode: 1,
+      ok: false,
+      code: read.code === 'RUN_NOT_FOUND'
+        ? 'NOT_FOUND'
+        : read.code === 'VALIDATION_ERROR'
+          ? 'VALIDATION_ERROR'
+          : 'COMMAND_FAILED',
+      message: read.message,
+    });
+  }
+
+  const provider = persistedSubagentProvider(read.run.provider);
+  if (!provider) {
+    return subagentToolResult(entry, context, {
+      ...invalidBase,
+      status: 'failed',
+      runId,
+      command: read.run.command,
+      stdout: '',
+      stderr: `persisted provider is unsupported: ${read.run.provider}`,
+      exitCode: 1,
+      ok: false,
+      code: 'COMMAND_FAILED',
+      message: 'persisted subagent provider is unsupported',
+    });
+  }
+
+  const parser = durableSubagentParser(provider, read.run.traceId || context.traceId);
+  let run = reconcileDurableSubagentRun(read.run, context.env, parser);
+  if (action === 'wait') {
+    const waitMs = typeof input.waitMs === 'number' ? Math.min(Math.max(0, input.waitMs), SUBAGENT_MAX_TIMEOUT_MS) : SUBAGENT_MAX_TIMEOUT_MS;
+    const waited = await waitForDurableSubagentRun(run, context.env, waitMs, parser);
+    run = waited.run;
+    return durableSubagentResult(
+      entry,
+      context,
+      run,
+      action,
+      waited.timedOut ? 'WAIT_TIMEOUT' : durableTerminalOutcomeCode(run),
+    );
+  }
+  if (action === 'cancel') {
+    run = cancelDurableSubagentRun(run, context.env, parser);
+    return durableSubagentResult(entry, context, run, action, run.status === 'cancelled' ? 'OK' : durableTerminalOutcomeCode(run));
+  }
+  return durableSubagentResult(entry, context, run, action, 'OK');
+}
+
+function durableTerminalOutcomeCode(
+  run: DurableSubagentRun,
+): 'OK' | 'TIMEOUT' | 'COMMAND_FAILED' {
+  if (run.status === 'timed_out') return 'TIMEOUT';
+  if (run.status === 'failed' || run.status === 'completion_unknown' || run.status === 'cancelled') return 'COMMAND_FAILED';
+  return 'OK';
+}
+
+function durableSubagentParser(provider: SubagentProvider, traceId: string) {
+  return (stdout: string, stderr: string) => {
+    const parsed = parseSubagentOutput(provider, stdout);
+    const events = parseSubagentTraceEvents(provider, stdout);
+    return {
+      completed: Boolean(parsed.finalMessage),
+      ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
+      ...(parsed.usage ? { usage: parsed.usage } : {}),
+      summary: buildSubagentRunSummary({ traceId, events, finalMessage: parsed.finalMessage, stdout: `${stdout}${stderr}` }),
+    };
+  };
+}
+
+function durableSubagentResult(
+  entry: ToolManifestEntry,
+  context: {
+    env: NodeJS.ProcessEnv;
+    startedAt: number;
+    traceId: string;
+    requestId?: string;
+    options: ExecuteToolOptions;
+  },
+  run: DurableSubagentRun,
+  action: SubagentAction,
+  code: 'OK' | 'WAIT_TIMEOUT' | 'TIMEOUT' | 'COMMAND_FAILED' | 'IDEMPOTENCY_CONFLICT',
+): ToolResult<SubagentData> {
+  const provider = persistedSubagentProvider(run.provider) || 'codex';
+  const logs = readDurableSubagentLogs(run);
+  const status = action === 'wait' && run.status === 'starting' ? 'running' : run.status;
+  const bundle: SubagentBundle = run.bundle === 'media' ? 'media' : 'core';
+  const outputFormat: SubagentOutputFormat = run.outputFormat === 'text' ? 'text' : 'json';
+  const workspaceOnly: SubagentWorkspaceOnly = run.workspaceOnly === 'strict' || run.workspaceOnly === 'preferred'
+    ? run.workspaceOnly
+    : false;
+  const successfulCancel = action === 'cancel' && status === 'cancelled' && code === 'OK';
+  const successfulAttachmentRead = (action === 'status' || action === 'logs') && code === 'OK';
+  const rawShellUsed = run.rawShellUsed ?? (provider === 'codex');
+  const responseStderr = run.error && !logs.stderr.includes(run.error)
+    ? [logs.stderr, run.error].filter(Boolean).join('\n')
+    : logs.stderr;
+  if (status !== 'starting' && status !== 'running') {
+    const auditLogs = readDurableSubagentLogs(run, { full: true });
+    const events = parseSubagentTraceEvents(provider, auditLogs.stdout);
+    recordSubagentTraceEventsSafely({
+      provider,
+      parentTraceId: run.traceId || context.traceId,
+      cwd: run.cwd,
+      taskSession: run.taskSession,
+      branch: run.branch,
+      stdoutLogPath: run.stdoutLogPath,
+      events,
+    }, { env: context.env });
+  }
+  return subagentToolResult(entry, context, {
+    provider,
+    ...(run.model ? { model: run.model } : {}),
+    ...(run.reasoningEffort ? { reasoningEffort: run.reasoningEffort } : {}),
+    bundle,
+    outputFormat,
+    mode: 'work',
+    policy: run.policy === 'edit' ? 'edit' : 'read',
+    action,
+    ...(run.runId ? { runId: run.runId } : {}),
+    ...(run.requestId ? { requestId: run.requestId } : {}),
+    capabilities: capabilitiesForProvider(provider),
+    status,
+    cwd: run.cwd,
+    instructionPath: run.instructionPath,
+    command: run.command,
+    stdout: logs.stdout,
+    stderr: responseStderr,
+    exitCode: successfulCancel ? 0 : run.exitCode ?? (status === 'completed' ? 0 : 1),
+    ...(run.finalMessage ? { finalMessage: run.finalMessage } : {}),
+    ...(run.summary !== undefined ? { summary: run.summary as SubagentData['summary'] } : {}),
+    ...(run.usage ? { usage: run.usage } : {}),
+    stdoutLogPath: run.stdoutLogPath,
+    stderrLogPath: run.stderrLogPath,
+    stdoutChars: run.stdoutChars ?? logs.stdout.length,
+    stderrChars: run.stderrChars ?? logs.stderr.length,
+    audit: {
+      ...(run.taskSession ? { taskSession: run.taskSession } : {}),
+      ...(run.branch ? { branch: run.branch } : {}),
+      workspaceOnly,
+      rawShellUsed,
+    },
+    ok: code === 'WAIT_TIMEOUT' || successfulAttachmentRead || (code === 'OK' && (
+      status === 'completed' || status === 'running' || status === 'starting' || successfulCancel
+    )),
+    code,
+    message: code === 'WAIT_TIMEOUT'
+      ? 'subagent wait timed out; run identity is preserved'
+      : code === 'IDEMPOTENCY_CONFLICT'
+        ? 'requestId is already associated with a different subagent run specification'
+        : run.error || `subagent run ${status}`,
+  });
+}
+
+async function executeCodexLifecycleSubagent(
+  entry: ToolManifestEntry,
+  context: {
+    env: NodeJS.ProcessEnv;
+    startedAt: number;
+    traceId: string;
+    requestId?: string;
+    options: ExecuteToolOptions;
+  },
+  input: {
+    provider: 'codex';
+    model?: string;
+    reasoningEffort?: string;
+    bundle: SubagentBundle;
+    outputFormat: SubagentOutputFormat;
+    mode: SubagentMode;
+    policy: SubagentPolicy;
+    cwd: string;
+    instructionPath: string;
+    instruction: string;
+    workspaceOnly: SubagentWorkspaceOnly;
+    audit: SubagentData['audit'];
+    timeoutMs: number;
+    requestId?: string;
+    action: 'run' | 'start';
+    capabilities: SubagentCapabilities;
+  },
+): Promise<ToolResult<SubagentData>> {
+  const config = subagentConfig('codex', input, context.env);
+  const codex = findExecutable(config.bin, context.env);
+  if (!codex) {
+    return subagentToolResult(entry, context, {
+      ...input,
+      status: 'not_configured',
+      command: [config.bin, 'exec'],
+      stdout: '',
+      stderr: 'codex CLI was not found on PATH',
+      exitCode: 127,
+      ok: true,
+      code: 'OK',
+      message: 'codex provider is not configured',
+    });
+  }
+  const help = readCommandHelp(codex, ['exec', '--help'], context.env);
+  if (!help || !help.includes('codex exec') || !/stdin|-\s+is used|read from stdin/i.test(help)) {
+    return subagentToolResult(entry, context, {
+      ...input,
+      status: 'not_supported',
+      command: [codex, 'exec', '--help'],
+      stdout: '',
+      stderr: 'codex exec does not advertise a supported non-interactive stdin mode',
+      exitCode: 1,
+      ok: true,
+      code: 'CAPABILITY_NOT_SUPPORTED',
+      message: 'codex provider is not supported by this Codex CLI',
+      unsupportedCapabilities: ['detachedExecution'],
+    });
+  }
+  const plan = buildCodexArgs(help, input);
+  if (!plan.ok) {
+    return subagentToolResult(entry, context, {
+      ...input,
+      status: 'not_supported',
+      command: [codex, 'exec'],
+      stdout: '',
+      stderr: plan.message,
+      exitCode: 1,
+      ok: true,
+      code: 'CAPABILITY_NOT_SUPPORTED',
+      message: plan.message,
+      unsupportedCapabilities: plan.unsupportedCapabilities,
+    });
+  }
+
+  const runId = deriveSubagentRunId(input.requestId, context.traceId);
+  const command = [codex, ...plan.args];
+  const instructionDigest = createHash('sha256').update(input.instruction, 'utf8').digest('hex');
+  const runDirectory = resolveSubagentRunDirectory(runId, context.env);
+  const stagedInstructionPath = path.join(runDirectory, 'instruction.md');
+  const handoffRoot = path.join(os.tmpdir(), 'opensaas-handoffs');
+  const provenance = JSON.stringify({
+    sourcePath: input.instructionPath,
+    sourceKind: isPathWithin(path.resolve(input.instructionPath), handoffRoot) ? 'canonical-os-handoff' : 'repo-or-task',
+    stagedPath: stagedInstructionPath,
+    instructionSha256: instructionDigest,
+    traceId: context.traceId,
+    stagedAt: new Date().toISOString(),
+  }, null, 2);
+  const fingerprint = JSON.stringify({
+    provider: 'codex',
+    model: input.model,
+    reasoningEffort: input.reasoningEffort,
+    bundle: input.bundle,
+    outputFormat: input.outputFormat,
+    policy: input.policy,
+    workspaceOnly: input.workspaceOnly,
+    taskSession: input.audit.taskSession,
+    cwd: input.cwd,
+    instructionPath: input.instructionPath,
+    instructionSha256: instructionDigest,
+    timeoutMs: input.timeoutMs,
+    command,
+  });
+  const started = startDurableSubagentRun({
+    requestId: input.requestId,
+    fingerprint,
+    provider: 'codex',
+    model: input.model,
+    reasoningEffort: input.reasoningEffort,
+    bundle: input.bundle,
+    outputFormat: input.outputFormat,
+    policy: input.policy,
+    workspaceOnly: input.workspaceOnly,
+    taskSession: input.audit.taskSession,
+    branch: input.audit.branch,
+    rawShellUsed: true,
+    cwd: input.cwd,
+    instructionPath: stagedInstructionPath,
+    command,
+    env: context.env,
+    stdin: subagentInstruction({ ...input, instructionPath: stagedInstructionPath, taskSession: input.audit.taskSession }),
+    artifacts: [
+      { path: stagedInstructionPath, content: input.instruction, mode: 0o600 },
+      { path: `${stagedInstructionPath}.provenance.json`, content: provenance, mode: 0o600 },
+    ],
+    timeoutMs: input.timeoutMs,
+    traceId: context.traceId,
+  });
+  if (!started.ok) {
+    if (started.run) return durableSubagentResult(entry, context, started.run, input.action, started.code);
+    return subagentToolResult(entry, context, {
+      ...input,
+      status: 'failed',
+      command,
+      stdout: '',
+      stderr: started.message,
+      exitCode: 1,
+      ok: false,
+      code: started.code,
+      message: started.message,
+    });
+  }
+
+  let run = started.run;
+  if (input.action === 'run') {
+    const waited = await waitForDurableSubagentRun(run, context.env, input.timeoutMs, durableSubagentParser('codex', context.traceId));
+    run = waited.run;
+    return durableSubagentResult(entry, context, run, input.action, waited.timedOut ? 'TIMEOUT' : durableTerminalOutcomeCode(run));
+  }
+  return durableSubagentResult(entry, context, run, input.action, 'OK');
+}
+
+function buildCodexArgs(
+  help: string,
+  input: { model?: string; reasoningEffort?: string; cwd: string; policy: SubagentPolicy },
+): { ok: true; args: string[] } | { ok: false; message: string; unsupportedCapabilities: string[] } {
+  const args = ['exec'];
+  if (input.model) {
+    if (!help.includes('--model')) return { ok: false, message: 'Codex CLI does not support requested model selection', unsupportedCapabilities: ['modelSelection'] };
+    args.push('--model', input.model);
+  }
+  if (input.reasoningEffort) {
+    if (!SUBAGENT_REASONING_EFFORTS.includes(input.reasoningEffort as typeof SUBAGENT_REASONING_EFFORTS[number])) {
+      return { ok: false, message: `unsupported reasoning effort: ${input.reasoningEffort}`, unsupportedCapabilities: ['reasoningEffort'] };
+    }
+    if (!help.includes('--config') && !help.includes('-c')) return { ok: false, message: 'Codex CLI does not support reasoning-effort config overrides', unsupportedCapabilities: ['reasoningEffort'] };
+    args.push('-c', `model_reasoning_effort="${input.reasoningEffort}"`);
+  }
+  if (help.includes('--cd')) args.push('--cd', input.cwd);
+  if (help.includes('--sandbox')) args.push('--sandbox', input.policy === 'read' ? 'read-only' : 'workspace-write');
+  if (help.includes('--ask-for-approval')) args.push('--ask-for-approval', 'never');
+  if (help.includes('--json')) args.push('--json');
+  args.push('-');
+  return { ok: true, args };
 }
 
 async function executeCodexSubagent(
@@ -336,6 +840,7 @@ async function executeCodexSubagent(
   input: {
     provider: SubagentProvider;
     model?: string;
+    reasoningEffort?: string;
     bundle: SubagentBundle;
     outputFormat: SubagentOutputFormat;
     mode: SubagentMode;
@@ -381,12 +886,23 @@ async function executeCodexSubagent(
     });
   }
 
-  const args = ['exec'];
-  if (help.includes('--cd')) args.push('--cd', input.cwd);
-  if (help.includes('--sandbox')) args.push('--sandbox', input.policy === 'read' ? 'read-only' : 'workspace-write');
-  if (help.includes('--ask-for-approval')) args.push('--ask-for-approval', 'never');
-  if (help.includes('--json')) args.push('--json');
-  args.push('-');
+  const argsPlan = buildCodexArgs(help, input);
+  if (!argsPlan.ok) {
+    return subagentToolResult(entry, context, {
+      ...input,
+      status: 'not_supported',
+      command: [codex, 'exec', '--help'],
+      stdout: '',
+      stderr: argsPlan.message,
+      exitCode: 1,
+      audit: input.audit,
+      ok: true,
+      code: 'CAPABILITY_NOT_SUPPORTED',
+      message: argsPlan.message,
+      unsupportedCapabilities: argsPlan.unsupportedCapabilities,
+    });
+  }
+  const args = argsPlan.args;
 
   const command = [codex, ...args];
   const started = (context.options.now || Date.now)();
@@ -395,7 +911,7 @@ async function executeCodexSubagent(
     args,
     cwd: input.cwd,
     env: context.env,
-    stdin: subagentInstruction(input),
+    stdin: subagentInstruction({ ...input, taskSession: input.audit.taskSession }),
     timeoutMs: input.timeoutMs,
   });
   const status: SubagentStatus = run.timedOut ? 'timed_out' : run.exitCode === 0 ? 'completed' : 'failed';
@@ -636,6 +1152,9 @@ async function executeGrokSubagent(
     workspaceOnly: SubagentWorkspaceOnly;
     audit: SubagentData['audit'];
     timeoutMs: number;
+    requestId?: string;
+    action: 'run' | 'start';
+    capabilities: SubagentCapabilities;
   },
 ): Promise<ToolResult<SubagentData>> {
   const config = subagentConfig('grok', input, context.env);
@@ -679,8 +1198,12 @@ async function executeGrokSubagent(
     });
   }
 
+  const runId = deriveSubagentRunId(input.requestId, context.traceId);
+  const runDirectory = resolveSubagentRunDirectory(runId, context.env);
+  const stagedInstructionPath = path.join(runDirectory, 'instruction.md');
+  const instructionDigest = createHash('sha256').update(input.instruction, 'utf8').digest('hex');
   const prompt = [
-    subagentInstruction(input),
+    subagentInstruction({ ...input, instructionPath: stagedInstructionPath, taskSession: input.audit.taskSession }),
     ...(input.policy === 'read'
       ? ['Read-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context.']
       : []),
@@ -707,44 +1230,63 @@ async function executeGrokSubagent(
   args.push('--output-format', input.outputFormat === 'json' ? 'json' : 'text');
 
   const command = [grok, ...args];
-  const started = (context.options.now || Date.now)();
-  const run = await runSubagentProcess({
-    command: grok,
-    args,
+  const fingerprint = JSON.stringify({
+    provider: 'grok',
+    model: input.model,
+    bundle: input.bundle,
+    outputFormat: input.outputFormat,
+    policy: input.policy,
+    workspaceOnly: input.workspaceOnly,
+    taskSession: input.audit.taskSession,
     cwd: input.cwd,
-    env: context.env,
+    instructionPath: input.instructionPath,
+    instructionSha256: instructionDigest,
     timeoutMs: input.timeoutMs,
-  });
-  const completionFailure = !run.timedOut && run.exitCode === 0
-    ? grokCompletionFailure(run.stdout)
-    : undefined;
-  const completed = !run.timedOut && run.exitCode === 0 && !completionFailure;
-  const status: SubagentStatus = run.timedOut ? 'timed_out' : completed ? 'completed' : 'failed';
-  const stderr = [run.stderr.trim(), completionFailure].filter(Boolean).join('\n');
-  return subagentToolResult(entry, context, {
-    ...input,
-    status,
     command,
-    ...compactSubagentOutput({
-      provider: 'grok',
-      cwd: input.cwd,
-      traceId: context.traceId,
-      stdout: run.stdout,
-      stderr,
-      taskSession: input.audit.taskSession,
-      branch: input.audit.branch,
-    }),
-    exitCode: completed ? 0 : 1,
-    durationMs: elapsedMs(started, context.options.now),
-    audit: { ...input.audit, rawShellUsed: true },
-    ok: completed,
-    code: run.timedOut ? 'TIMEOUT' : completed ? 'OK' : 'COMMAND_FAILED',
-    message: run.timedOut
-      ? 'grok provider timed out'
-      : completed
-        ? 'grok provider completed'
-        : completionFailure || 'grok provider failed',
   });
+  const started = startDurableSubagentRun({
+    requestId: input.requestId,
+    fingerprint,
+    provider: 'grok',
+    model: input.model,
+    bundle: input.bundle,
+    outputFormat: input.outputFormat,
+    policy: input.policy,
+    workspaceOnly: input.workspaceOnly,
+    taskSession: input.audit.taskSession,
+    branch: input.audit.branch,
+    rawShellUsed: true,
+    cwd: input.cwd,
+    instructionPath: stagedInstructionPath,
+    command,
+    env: context.env,
+    stdin: prompt,
+    artifacts: [{ path: stagedInstructionPath, content: input.instruction, mode: 0o600 }],
+    timeoutMs: input.timeoutMs,
+    traceId: context.traceId,
+  });
+  if (!started.ok) {
+    if (started.run) return durableSubagentResult(entry, context, started.run, input.action, started.code);
+    return subagentToolResult(entry, context, {
+      ...input,
+      status: 'failed',
+      command,
+      stdout: '',
+      stderr: started.message,
+      exitCode: 1,
+      ok: false,
+      code: started.code,
+      message: started.message,
+    });
+  }
+
+  let run = started.run;
+  if (input.action === 'run') {
+    const waited = await waitForDurableSubagentRun(run, context.env, input.timeoutMs, durableSubagentParser('grok', context.traceId));
+    run = waited.run;
+    return durableSubagentResult(entry, context, run, input.action, waited.timedOut ? 'TIMEOUT' : durableTerminalOutcomeCode(run));
+  }
+  return durableSubagentResult(entry, context, run, input.action, 'OK');
 }
 
 function grokCompletionFailure(stdout: string): string | undefined {
@@ -784,10 +1326,11 @@ function subagentToolResult(
     requestId?: string;
     options: ExecuteToolOptions;
   },
-  input: Omit<SubagentData, 'durationMs'> & {
+  input: Omit<SubagentData, 'durationMs' | 'capabilities'> & {
     durationMs?: number;
+    capabilities?: SubagentCapabilities;
     ok: boolean;
-    code: 'OK' | 'COMMAND_FAILED' | 'TIMEOUT' | 'TASK_SESSION_REQUIRED';
+    code: 'OK' | 'COMMAND_FAILED' | 'TIMEOUT' | 'TASK_SESSION_REQUIRED' | 'VALIDATION_ERROR' | 'NOT_FOUND' | 'CAPABILITY_NOT_SUPPORTED' | 'WAIT_TIMEOUT' | 'IDEMPOTENCY_CONFLICT';
     message: string;
   },
 ): ToolResult<SubagentData> {
@@ -798,6 +1341,12 @@ function subagentToolResult(
     outputFormat: input.outputFormat,
     mode: input.mode,
     policy: input.policy,
+    ...(input.action ? { action: input.action } : {}),
+    ...(input.runId ? { runId: input.runId } : {}),
+    ...(input.requestId ? { requestId: input.requestId } : {}),
+    ...(input.reasoningEffort ? { reasoningEffort: input.reasoningEffort } : {}),
+    capabilities: input.capabilities || capabilitiesForProvider(input.provider),
+    ...(input.unsupportedCapabilities ? { unsupportedCapabilities: input.unsupportedCapabilities } : {}),
     status: input.status,
     cwd: input.cwd,
     instructionPath: input.instructionPath,
@@ -904,7 +1453,8 @@ function resolveSubagentInstructionPath(
   const resolved = path.resolve(cwd, rawPath);
   const repoRoot = resolveGitRoot(rootCwd);
   const taskWorktree = typeof input.taskWorktree === 'string' ? path.resolve(input.taskWorktree) : undefined;
-  const roots = [repoRoot, taskWorktree].filter((item): item is string => Boolean(item)).map((item) => path.resolve(item));
+  const handoffRoot = path.join(os.tmpdir(), 'opensaas-handoffs');
+  const roots = [repoRoot, taskWorktree, handoffRoot].filter((item): item is string => Boolean(item)).map((item) => path.resolve(item));
   if (!roots.some((root) => isPathWithin(resolved, root))) {
     return { ok: false, message: 'subagent instructionPath must stay inside the repo root or task worktree' };
   }
@@ -982,7 +1532,7 @@ function readCommandHelp(command: string, args: string[], env: NodeJS.ProcessEnv
   }
 }
 
-function subagentInstruction(input: { instruction: string; instructionPath: string; workspaceOnly: SubagentWorkspaceOnly; bundle: SubagentBundle; outputFormat: SubagentOutputFormat }): string {
+function subagentInstruction(input: { instruction: string; instructionPath: string; workspaceOnly: SubagentWorkspaceOnly; bundle: SubagentBundle; outputFormat: SubagentOutputFormat; policy?: SubagentPolicy; taskSession?: string }): string {
   const guidance = input.workspaceOnly === 'strict'
     ? 'Use only workspace tooling/MCP/facade operations. Return NOT_SUPPORTED if that cannot be enforced.'
     : input.workspaceOnly === 'preferred'
@@ -993,6 +1543,11 @@ function subagentInstruction(input: { instruction: string; instructionPath: stri
     guidance,
     `Instruction file: ${input.instructionPath}`,
     'Read the instruction file first. Treat that file as the full user request.',
+    input.policy === 'edit'
+      ? input.taskSession
+        ? 'Use the existing taskSession for task-scoped mutation. task.push publishes only the task branch. task.pr merges to the stream; do not call task.pr when the handoff says stop after push.'
+        : 'Self-bootstrap edit mode: your first repository action must be task.start before any task-scoped repository mutation. task.push publishes only the task branch. task.pr merges to the stream; do not call task.pr when the handoff says stop after push.'
+      : 'status/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.',
   ].join('\n\n');
 }
 

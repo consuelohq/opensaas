@@ -1,0 +1,150 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/make-task-start-hooks-executable-and-workflow-bundles-current",
+  "base": "origin/task/workspace-agents/make-task-start-hooks-executable-and-workflow-bundles-current",
+  "headSha": "ac8b16108c8aa953b879bb1b50fba060ced0239b",
+  "changeHash": "8f5bbdfbacc2744a0bf60409d3b1b03c9b477fe40233ad92f3d004590d321928",
+  "changedFiles": [
+    "packages/os/scripts/task-start.js",
+    "packages/os/tests/task-hook-dispatcher.test.ts",
+    "packages/os/tests/workflow-intent.test.ts",
+    "packages/os/workflows/generated/workflow-bundles.json",
+    "packages/os/workflows/workflows.ts",
+    "packages/workspace/manifests/workflow-bundles.json",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/task-hook-dispatcher.test.ts",
+    "packages/workspace/tests/workflow-intent.test.ts",
+    "packages/workspace/tooling/workflows.json"
+  ],
+  "verifiedAt": "2026-08-12T00:04:26.070Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/make-task-start-hooks-executable-and-workflow-bundles-current.json",
+        ".task/workspace-agents/make-task-start-hooks-executable-and-workflow-bundles-current/current.json",
+        ".task/workspace-agents/make-task-start-hooks-executable-and-workflow-bundles-current/session.json",
+        ".task/workspace-agents/make-task-start-hooks-executable-and-workflow-bundles-current/workpad.md",
+        "packages/os/scripts/task-start.js",
+        "packages/os/tests/task-hook-dispatcher.test.ts",
+        "packages/os/tests/workflow-intent.test.ts",
+        "packages/os/workflows/generated/workflow-bundles.json",
+        "packages/os/workflows/workflows.ts",
+        "packages/workspace/manifests/workflow-bundles.json",
+        "packages/workspace/scripts/task-start.js",
+        "packages/workspace/tests/task-hook-dispatcher.test.ts",
+        "packages/workspace/tests/workflow-intent.test.ts",
+        "packages/workspace/tooling/workflows.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-task-session",
+          "critical": true,
+          "reason": "Task routing and metadata changes must prove task-session behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-start.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/scripts/task-start.js",
+            "packages/os/tests/task-hook-dispatcher.test.ts",
+            "packages/os/tests/workflow-intent.test.ts",
+            "packages/os/workflows/generated/workflow-bundles.json",
+            "packages/os/workflows/workflows.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 119,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [2.11ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.69ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.24ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.21ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.14ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.28ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.02ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [3.15ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.12ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.09ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.15ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.05ms]\n\n 12 pass\n 0 fail\n 31 expect() calls\nRan 12 tests across 2 files. [112.00ms]\n"
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4,
+          "outputTail": ".ts publish\n\n  $ bun run artifact:validate\n    bun ./scripts/artifact-validate.ts\n\n  $ bun run semantic:embeddings\n    bun ./scripts/semantic-embeddings.js\n\n  $ bun run cloudflare:workspace-edge:dev\n    wrangler dev --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:deploy:dry-run\n    wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n\n  $ bun run cloudflare:workspace-edge:deploy\n    bun ./scripts/deploy-cloudflare-worker.ts workspace-edge\n\n  $ bun run cloudflare:workspace-edge:migrate\n    wrangler d1 migrations apply consuelo-workspace-route-registry --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:seed\n    bun ./scripts/seed-workspace-edge-route.ts\n\n  $ bun run platform:managed-os-mcp-ingress:provision\n    bun ./scripts/provision-managed-os-mcp-ingress-policy.ts\n\n  $ bun run cloud:node\n    bun ./scripts/managed-cloud-node.ts\n\n  $ bun run smoke:workspace-edge\n    bun ./scripts/smoke-workspace-edge.ts\n\n  $ bun run media\n    bun ./scripts/media.ts\n\n  $ bun run media:doctor\n    bun ./scripts/media.ts doctor --json\n\n  $ bun run media:install\n    bun ./scripts/media.ts install\n\n  $ bun run media:screenshot\n    bun ./scripts/media.ts screenshot render\n\n  $ bun run media:test\n    vitest run tests/media\n\n  $ bun run media:test:manifest\n    vitest run tests/media/00-manifest-taxonomy.test.ts tests/media/01-package-boundaries.test.ts tests/media/02-workflow-intent.test.ts\n\n  $ bun run media:test:deps\n    vitest run tests/media/03-runtime-dependency-catalog.test.ts tests/media/04-installer-plan.test.ts tests/media/05-doctor.test.ts\n\n  $ bun run media:test:contracts\n    vitest run tests/media/06-effect-architecture.test.ts tests/media/07-contracts-asset.test.ts tests/media/08-contracts-timeline.test.ts tests/media/09-contracts-render-result.test.ts tests/media/10-cli-json-envelope.test.ts\n\n  $ bun run media:test:core\n    vitest run tests/media/11-core-probe.test.ts tests/media/12-core-frames-extract.test.ts tests/media/13-core-timeline-validate.test.ts tests/media/14-core-compose.test.ts tests/media/15-core-qa.test.ts\n\n  $ bun run media:test:youtube\n    vitest run tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts\n\n  $ bun run media:test:audio\n    vitest run tests/media/20-audio-transcribe.test.ts\n\n  $ bun run media:test:vision\n    vitest run tests/media/21-scene-detect.test.ts tests/media/22-vision-light-opencv.test.ts tests/media/23-vision-pose-mediapipe.test.ts tests/media/24-motion-track.test.ts\n\n  $ bun run media:test:render\n    vitest run tests/media/25-overlay-render.test.ts tests/media/26-sports-science-breakdown.test.ts tests/media/27-export-package.test.ts tests/media/32-screenshot-render.test.ts\n\n  $ bun run media:test:handoff\n    vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts\n\n  $ bun run media:test:ingest\n    vitest run tests/media/16-source-capture-internal.test.ts tests/media/17-media-ingest-source-capture.test.ts tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts\n\n  $ bun run media:test:svg\n    vitest run tests/media/31-svg-convert.test.ts\n\n  $ bun run media:svg\n    python3 ./scripts/media-svg.py\n\n  $ bun run trace:watch\n    bun ./scripts/trace-watch.ts\n\n  $ bun run generate-tool-manifest:check\n    bun ./scripts/generate-tool-manifest.ts --check\n\n  $ bun run lifecycle\n    bun ./scripts/lifecycle.ts\n\n  $ bun run windows-platform\n    bun ./scripts/windows-platform.ts\n\n  $ bun run managed-components\n    bun ./scripts/managed-components.ts\n\n  $ bun run cloudflare:device-authority:deploy:dry-run\n    wrangler deploy --config cloudflare/os-device-authority/wrangler.toml --dry-run\n\n  $ bun run cloudflare:device-authority:deploy\n    bun ./scripts/deploy-cloudflare-worker.ts os-device-authority\n\n  $ bun run login\n    bun ./scripts/login.ts\n\n  $ bun run secrets\n    bun ./scripts/secrets.ts\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -248,6 +248,33 @@ describe('ConferenceService', () => {
       expect(mockParticipantUpdate).toHaveBeenCalledWith({ hold: true });
     });
 
+    it('should restore the customer when warm transfer target creation fails', async () => {
+      mockConferencesList.mockResolvedValue([{ sid: 'CF_abc' }]);
+      mockParticipantsList.mockResolvedValue([
+        { callSid: 'CA_cust', conferenceSid: 'CF_abc', label: 'customer', hold: false, muted: false, status: 'connected' },
+      ]);
+      mockParticipantsCreate.mockRejectedValue(new Error('target failed'));
+
+      const result = await service.initiateTransfer({ ...baseOpts, type: 'warm' });
+
+      expect(result.success).toBe(false);
+      expect(mockParticipantUpdate).toHaveBeenNthCalledWith(1, { hold: true });
+      expect(mockParticipantUpdate).toHaveBeenNthCalledWith(2, { hold: false });
+    });
+
+    it('should remove the new target when cold transfer cannot remove the agent', async () => {
+      mockConferencesList.mockResolvedValue([{ sid: 'CF_abc' }]);
+      mockParticipantsCreate.mockResolvedValue({ callSid: 'CA_target' });
+      mockParticipantRemove
+        .mockRejectedValueOnce(new Error('agent removal failed'))
+        .mockResolvedValueOnce({});
+
+      const result = await service.initiateTransfer({ ...baseOpts, type: 'cold' });
+
+      expect(result.success).toBe(false);
+      expect(mockParticipantRemove).toHaveBeenCalledTimes(2);
+    });
+
     it('should return error when warm transfer conference not found', async () => {
       mockConferencesList.mockResolvedValue([]);
       const result = await service.initiateTransfer({ ...baseOpts, type: 'warm' });

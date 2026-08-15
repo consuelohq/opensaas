@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f78ed94d271e",
+  "tmuxSession": "opensaas-dialer-serialize-leadconnector-learning-initialization-f78ed94d",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/serialize-leadconnector-learning-initialization",
+  "branch": "task/dialer/serialize-leadconnector-learning-initialization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-serialize-leadconnector-learning-initialization",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-serialize-leadconnector-learning-initialization",
+  "prNumber": 1754,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1754",
+  "createdAt": "2026-08-01T16:42:44.634Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-serialize-leadconnector-learning-initialization/.task/dialer/serialize-leadconnector-learning-initialization/session.json"
+}

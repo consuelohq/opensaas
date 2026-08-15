@@ -9,12 +9,9 @@ import {
   refreshArtifactsSite,
   type ArtifactCatalog,
 } from './artifacts';
-import { CHATGPT_MCP_URL } from './chatgpt-mcp-connection';
-import {
-  renderLauncherOnboarding,
-  type LauncherLocalAgent,
-} from './launcher-onboarding';
+import { buildObservabilityTracesSite } from './observability-traces-site';
 import { materializeConfigurationSite } from './settings-materialization';
+import { renderConfigurationSite } from './settings-site';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -96,6 +93,8 @@ export type SitesPaths = {
   configurationSnapshotPath: string;
   toolsDir: string;
   toolsIndexPath: string;
+  nodesDir: string;
+  nodesIndexPath: string;
   environmentsDir: string;
   environmentsIndexPath: string;
   secretsDir: string;
@@ -120,6 +119,7 @@ export type MaterializeSitesResult = {
   configurationIndexPath: string;
   configurationSnapshotPath: string;
   toolsIndexPath: string;
+  nodesIndexPath: string;
   environmentsIndexPath: string;
   secretsIndexPath: string;
   data: ArtifactCatalog;
@@ -551,85 +551,11 @@ function baseStyles(): string {
   `;
 }
 
-type LauncherConfig = {
-  workspace?: { host?: string };
-  agents?: Array<{ name?: string; status?: string }>;
-};
-
-type ChatGptMcpConfig = {
-  url?: string;
-};
-
-const agentLabels: Record<string, string> = {
-  codex: 'Codex',
-  cursor: 'Cursor',
-  claude: 'Claude',
-  opencode: 'OpenCode',
-  factory: 'Factory',
-  gemini: 'Gemini',
-  pi: 'Pi',
-};
-
-function readJsonFile<TData>(filePath: string): TData | null {
-  try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8')) as TData;
-  } catch {
-    return null;
-  }
-}
-
-function rewriteChatGptMcpConfigUrl(configPath: string, config: ChatGptMcpConfig): void {
-  if (config.url === CHATGPT_MCP_URL) return;
-  fs.mkdirSync(path.dirname(configPath), { recursive: true });
-  fs.writeFileSync(configPath, `${JSON.stringify({ ...config, url: CHATGPT_MCP_URL, updatedAt: nowIso() }, null, 2)}
-`, { mode: 0o600 });
-}
-
-function launcherMcpUrl(home: string): string {
-  const configPaths = [
-    path.join(home, 'node', 'security', 'generated', 'chatgpt-mcp.json'),
-    path.join(home, 'security', 'generated', 'chatgpt-mcp.json'),
-  ];
-  for (const configPath of configPaths) {
-    const mcpConfig = readJsonFile<ChatGptMcpConfig>(configPath);
-    if (typeof mcpConfig?.url === 'string' && mcpConfig.url.length > 0) {
-      rewriteChatGptMcpConfigUrl(configPath, mcpConfig);
-      return CHATGPT_MCP_URL;
-    }
-  }
-
-  return CHATGPT_MCP_URL;
-}
-
-function launcherLocalAgents(home: string): LauncherLocalAgent[] {
-  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
-  return (config?.agents ?? [])
-    .filter((agent): agent is { name: string; status: 'verified' } =>
-      typeof agent.name === 'string' && agent.status === 'verified',
-    )
-    .map((agent) => ({
-      name: agent.name,
-      label: agentLabels[agent.name] ?? agent.name,
-      status: agent.status,
-    }));
-}
-
-function launcherWorkspaceHostname(
-  home: string,
-  workspaceHost: string | null | undefined,
-): string | null {
-  const explicit = workspaceHost?.trim();
-  if (explicit) return explicit;
-  const config = readJsonFile<LauncherConfig>(path.join(home, 'config.json'));
-  return config?.workspace?.host?.trim() || null;
-}
-
-function buildSitesIndex(home: string, workspaceHost?: string | null): string {
-  return renderLauncherOnboarding({
-    mcpUrl: launcherMcpUrl(home),
-    workspaceHostname: launcherWorkspaceHostname(home, workspaceHost),
-    localAgents: launcherLocalAgents(home),
-  });
+function buildSitesIndex(): string {
+  // The workspace root is the operational home for an authenticated OS workspace.
+  // Keep it identical to Overview so every daemon refresh, update, and restart converges
+  // on the same default page instead of resurrecting Nodes or the retired local launcher.
+  return renderConfigurationSite('configuration');
 }
 
 function buildPagesIndex(registry: SitePageRegistry): string {
@@ -656,14 +582,6 @@ function buildReservedSitePage(site: ReservedSite): string {
 `;
 }
 
-function buildTracesSite(): string {
-  return `<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Traces - Consuelo OS</title><style>${baseStyles()}</style></head>
-<body><main><header><h1>Traces</h1><p>The trace viewer is served by the authenticated local OS Hono application.</p></header><section><div class="section-header"><h2>Canonical trace viewer</h2></div><p style="padding: 18px;">This generated Sites page is a compatibility notice only. <a href="/traces">Open authenticated traces</a>.</p></section></main></body></html>
-`;
-}
-
 export function getSitesPaths(home: string): SitesPaths {
   const sitesDir = path.join(home, 'sites');
   const pagesDir = path.join(sitesDir, 'pages');
@@ -676,6 +594,7 @@ export function getSitesPaths(home: string): SitesPaths {
   const configurationDir = path.join(sitesDir, 'configuration');
   const configurationDataDir = path.join(sitesDir, '.data', 'configuration');
   const toolsDir = path.join(sitesDir, 'tools');
+  const nodesDir = path.join(sitesDir, 'nodes');
   const environmentsDir = path.join(sitesDir, 'environments');
   const secretsDir = path.join(sitesDir, 'secrets');
   return {
@@ -701,6 +620,8 @@ export function getSitesPaths(home: string): SitesPaths {
     configurationSnapshotPath: path.join(configurationDataDir, 'snapshot.json'),
     toolsDir,
     toolsIndexPath: path.join(toolsDir, 'index.html'),
+    nodesDir,
+    nodesIndexPath: path.join(nodesDir, 'index.html'),
     environmentsDir,
     environmentsIndexPath: path.join(environmentsDir, 'index.html'),
     secretsDir,
@@ -711,7 +632,7 @@ export function getSitesPaths(home: string): SitesPaths {
 export function materializeSites(options: MaterializeSitesOptions): MaterializeSitesResult {
   const paths = getSitesPaths(options.home);
   const actions: SitesAction[] = [];
-  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.artifactsDir, paths.artifactsDataDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.configurationDir, paths.configurationDataDir, paths.toolsDir, paths.environmentsDir, paths.secretsDir]) {
+  for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.artifactsDir, paths.artifactsDataDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.configurationDir, paths.configurationDataDir, paths.toolsDir, paths.nodesDir, paths.environmentsDir, paths.secretsDir]) {
     addDirectoryAction(actions, dirPath, options.dryRun);
   }
   const data = readArtifactCatalog(options.home);
@@ -723,18 +644,19 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   for (const site of RESERVED_SITES) addFileAction(actions, path.join(paths.sitesDir, site.slug, 'index.html'), options.dryRun, `${site.title} site generated`);
   addFileAction(actions, paths.configurationIndexPath, options.dryRun, 'Configuration site generated');
   addFileAction(actions, paths.toolsIndexPath, options.dryRun, 'Tools site generated');
+  addFileAction(actions, paths.nodesIndexPath, options.dryRun, 'Nodes site generated');
   addFileAction(actions, paths.environmentsIndexPath, options.dryRun, 'Environments site generated');
   addFileAction(actions, paths.secretsIndexPath, options.dryRun, 'Secrets site generated');
   addFileAction(actions, paths.configurationSnapshotPath, options.dryRun, 'Configuration snapshot generated');
   if (!options.dryRun) {
     fs.writeFileSync(
       paths.indexPath,
-      buildSitesIndex(options.home, options.workspaceHost),
+      buildSitesIndex(),
       { mode: 0o600 },
     );
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     refreshArtifactsSite(options.home, data);
-    fs.writeFileSync(paths.tracesIndexPath, buildTracesSite(), { mode: 0o600 });
+    fs.writeFileSync(paths.tracesIndexPath, buildObservabilityTracesSite(), { mode: 0o600 });
     for (const site of RESERVED_SITES) fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), buildReservedSitePage(site), { mode: 0o600 });
     materializeConfigurationSite(options.home);
   }
@@ -749,6 +671,7 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
     configurationIndexPath: paths.configurationIndexPath,
     configurationSnapshotPath: paths.configurationSnapshotPath,
     toolsIndexPath: paths.toolsIndexPath,
+    nodesIndexPath: paths.nodesIndexPath,
     environmentsIndexPath: paths.environmentsIndexPath,
     secretsIndexPath: paths.secretsIndexPath,
     data,

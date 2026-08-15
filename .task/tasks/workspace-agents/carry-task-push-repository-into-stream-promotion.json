@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/carry-task-push-repository-into-stream-promotion",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1855,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1855",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1855",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1855/carry-task-push-repository-into-stream-promotion",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1855",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1855/carry-task-push-repository-into-stream-promotion",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-carry-task-push-repository-into-stream-promotion",
+  "taskSession": "tsk_1330d558950b",
+  "tmuxSession": "opensaas-workspace-agents-carry-task-push-repository-into-stream-promotion-1330d558",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-carry-task-push-repository-into-stream-promotion/.task/workspace-agents/carry-task-push-repository-into-stream-promotion/session.json",
+  "createdAt": "2026-08-12T00:05:37.269Z"
+}

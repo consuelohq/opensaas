@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ce69ffcb40e5",
+  "tmuxSession": "opensaas-os-repair-stream-server-pending-core-migration-ce69ffcb",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-stream-server-pending-core-migration",
+  "branch": "task/os/repair-stream-server-pending-core-migration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-stream-server-pending-core-migration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-stream-server-pending-core-migration",
+  "prNumber": 1935,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1935",
+  "createdAt": "2026-08-14T03:01:18.404Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-stream-server-pending-core-migration/.task/os/repair-stream-server-pending-core-migration/session.json"
+}

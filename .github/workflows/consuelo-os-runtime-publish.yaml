@@ -1,18 +1,19 @@
 name: Consuelo OS runtime publish
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     paths:
       - 'packages/os/**'
+      - 'packages/diff-cockpit/**'
       - '.github/workflows/consuelo-os-runtime-publish.yaml'
       - 'bun.lock'
       - 'package.json'
 
 permissions:
-  contents: write
-  deployments: write
+  contents: read
 
 concurrency:
   group: consuelo-os-release-state
@@ -22,8 +23,39 @@ env:
   RELEASE_STATE_PATH: .release/release-state.json
 
 jobs:
+  distribution-gate:
+    name: Validate distribution matrix
+    uses: ./.github/workflows/consuelo-os-distribution-environments.yaml
+    permissions:
+      contents: read
+
+  windows-service-host:
+    name: Build deterministic Windows service host
+    needs: distribution-gate
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: microsoft/setup-msbuild@v2
+      - name: Build deterministic Windows service host
+        shell: pwsh
+        run: |
+          msbuild packages/os/native/windows-service/Consuelo.Windows.Service.csproj /p:Configuration=Release /p:Platform=x64 /m
+          $serviceHost = 'packages/os/native/windows-service/bin/Release/Consuelo.Windows.Service.exe'
+          if (-not (Test-Path -LiteralPath $serviceHost -PathType Leaf)) {
+            throw "Windows service build did not produce $serviceHost"
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-service-host
+          path: packages/os/native/windows-service/bin/Release/Consuelo.Windows.Service.exe
+          if-no-files-found: error
+          retention-days: 7
+
   plan:
     name: Plan dev publication
+    needs:
+      - distribution-gate
+      - windows-service-host
     runs-on: ubuntu-latest
     environment: consuelo / production
     outputs:
@@ -36,6 +68,10 @@ jobs:
         with:
           fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-service-host
+          path: packages/os/native/windows-service/bin/Release
       - name: Install dependencies
         working-directory: packages/os
         run: bun install --frozen-lockfile
@@ -69,7 +105,9 @@ jobs:
         id: fingerprint
         run: |
           bun run --cwd packages/os runtime-bundle:fingerprint -- \
-            --source-root . > .release/fingerprint.json
+            --source-root . \
+            --vendored-source "scripts/server/vendor/diff-cockpit.ts=../diff-cockpit/src/index.ts" \
+            > .release/fingerprint.json
           echo "value=$(jq -r '.releaseFingerprint' .release/fingerprint.json)" >> "$GITHUB_OUTPUT"
       - name: Allocate release version only when changed
         id: plan
@@ -115,7 +153,9 @@ jobs:
 
   build:
     name: Build ${{ matrix.platform }}-${{ matrix.architecture }}
-    needs: plan
+    needs:
+      - plan
+      - windows-service-host
     if: needs.plan.outputs.changed == 'true'
     strategy:
       fail-fast: false
@@ -134,6 +174,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-service-host
+          path: packages/os/native/windows-service/bin/Release
       - name: Install dependencies
         working-directory: packages/os
         shell: bash
@@ -151,6 +195,10 @@ jobs:
             --version "${{ needs.plan.outputs.version }}" \
             --source-commit "${GITHUB_SHA}" \
             --minimum-updater-version "${{ vars.CONSUELO_OS_MINIMUM_UPDATER_VERSION || '0.1.0' }}" \
+            --migration "2026-08-13-reconcile-caddy-worker-pool:scripts/migrations/reconcile-caddy-worker-pool.ts" \
+            --migration "release-${{ needs.plan.outputs.version }}-reconcile-caddy-gateway:scripts/migrations/reconcile-caddy-worker-pool.ts" \
+            --migration "2026-08-13-reconcile-caddy-ha-watchdog:scripts/migrations/reconcile-caddy-ha-watchdog.ts" \
+            --vendored-source "scripts/server/vendor/diff-cockpit.ts=../diff-cockpit/src/index.ts" \
             --output "../../${OUTPUT_PATH}"
           bun run --cwd packages/os runtime-bundle:verify -- \
             --archive "../../${OUTPUT_PATH}"
@@ -164,11 +212,15 @@ jobs:
   publish:
     name: Publish immutable release and dev pointer
     needs:
+      - distribution-gate
       - plan
       - build
     if: needs.plan.outputs.changed == 'true'
     runs-on: ubuntu-latest
     environment: consuelo / production
+    permissions:
+      contents: write
+      deployments: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -239,6 +291,14 @@ jobs:
         shell: bash
         run: |
           release_time="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq '.created_at')"
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/tags?per_page=100" \
+            --jq '.[] | select(.name | startswith("consuelo-os-v")) | .name' \
+            > .release/immutable-tags.txt
+          mapfile -t tags < .release/immutable-tags.txt
+          tag_args=()
+          for tag in "${tags[@]}"; do
+            tag_args+=(--immutable-tag "$tag")
+          done
           bun run --cwd packages/os release:channels -- publish \
             --channel dev \
             --bundle "${{ steps.publication.outputs.bundle }}" \
@@ -246,5 +306,6 @@ jobs:
             --state "../../${RELEASE_STATE_PATH}" \
             --expected-revision "${{ needs.plan.outputs.revision }}" \
             --now "${release_time}" \
+            "${tag_args[@]}" \
             --apply \
             --json

@@ -5,6 +5,8 @@ import { json } from './http';
 import { registerDeviceRoutes } from './routes/device';
 import { registerGoogleOAuthRoutes } from './routes/google-oauth';
 import { registerHealthRoutes } from './routes/health';
+import { registerInstallControlPlaneRoutes } from './routes/install-control-plane';
+import { registerManagedCloudProvisioningRoutes } from './routes/managed-cloud-provisioning';
 import { registerMcpOAuthRoutes } from './routes/mcp-oauth';
 import { registerMcpProxyRoutes } from './routes/mcp-proxy';
 import { registerWorkspaceAgentRoutes } from './routes/workspace-agents';
@@ -12,11 +14,14 @@ import { registerWorkspaceNodeRoutes } from './routes/workspace-nodes';
 import { registerWebAuthRoutes } from './routes/web-auth';
 import type {
   DefaultSiteSnapshot,
+  CheckoutObservability,
+  DeviceAuthorityLogger,
   DeviceAuthorityRuntime,
   Store,
   WorkspaceConnectorProvisioner,
   WorkspaceRouteRegistryBinding,
 } from './types';
+import type { ManagedCloudPricingRuntime } from './services/managed-cloud-pricing';
 
 export type CreateDeviceAuthorityHandlerInput = {
   store: Store;
@@ -30,6 +35,22 @@ export type CreateDeviceAuthorityHandlerInput = {
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
+  managedCloudPricing?: ManagedCloudPricingRuntime;
+  managedCloudProvisionerSecret?: string;
+  managedCloudEnrollmentSecret?: string;
+  stripeSecretKey?: string;
+  stripeWebhookSecret?: string;
+  stripeApiBaseUrl?: string;
+  stripeSyntheticSecretKey?: string;
+  stripeSyntheticWebhookSecret?: string;
+  stripeSyntheticAccountIds?: string;
+  stripeSyntheticWorkspaceIds?: string;
+  checkoutObservability?: CheckoutObservability;
+  operationalLogger?: DeviceAuthorityLogger;
+  installControlPlaneRepository?: DeviceAuthorityRuntime['installControlPlaneRepository'];
+  installDiagnosticBundleStore?: DeviceAuthorityRuntime['installDiagnosticBundleStore'];
+  installTelemetryObserver?: DeviceAuthorityRuntime['installTelemetryObserver'];
+  installSentryDsn?: string;
 };
 
 export function createOsDeviceAuthorityApp(
@@ -44,6 +65,8 @@ export function createOsDeviceAuthorityApp(
   const app = new Hono();
 
   registerHealthRoutes(app, runtime);
+  registerInstallControlPlaneRoutes(app, runtime);
+  registerManagedCloudProvisioningRoutes(app, runtime);
   registerMcpProxyRoutes(app, runtime);
   registerMcpOAuthRoutes(app, runtime);
   registerGoogleOAuthRoutes(app, runtime);

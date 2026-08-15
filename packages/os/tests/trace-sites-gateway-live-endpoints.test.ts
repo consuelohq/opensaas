@@ -238,6 +238,29 @@ describe('Trace Sites gateway live endpoints', () => {
     });
   });
 
+  it('forwards a full-history search query through the authenticated recent route', async () => {
+    let observedQuery = '';
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: {
+        resolveHealth() { return {}; },
+        readRecentEvents(input) { return { cursor: input.cursor, events: [] }; },
+        readCachedAggregate() { return { cursor: '000000000000', summary: null }; },
+        readHistoryPage(input) {
+          observedQuery = input.query ?? '';
+          return { rows: [], nextCursor: null };
+        },
+      },
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+
+    const response = await endpoints.handle(
+      request('/gateway/traces/recent?direction=older&cursor=latest&limit=100&sourceMode=local-networked&includeRawPayload=true&query=tool%3Afs.read+branch%3Afeature%2Fsearch'),
+    );
+
+    expect(response.status).toBe(200);
+    expect(observedQuery).toBe('tool:fs.read branch:feature/search');
+  });
+
   it('serves older rich trace pages through the authenticated recent route without changing the live cursor contract', async () => {
     const dbPath = join(tempDir, 'history-endpoint.db');
     await createHistoryFixtureDb(dbPath);
@@ -565,6 +588,41 @@ describe('Trace Sites local trace backend adapter', () => {
         success: true,
       }),
     ]);
+  });
+
+  it('should migrate missing routing columns when rich history reads an older trace database', async () => {
+    const dbPath = join(tempDir, 'legacy-history.db');
+    await createHistoryFixtureDb(dbPath);
+    const { Database } = await import('bun:sqlite');
+    const before = new Database(dbPath, { readonly: true });
+    const beforeColumns = (before.query('PRAGMA table_info(tool_traces)').all() as Array<{ name: string }>)
+      .map((column) => column.name);
+    before.close();
+    expect(beforeColumns).not.toContain('resolved_node_id');
+    expect(beforeColumns).not.toContain('route_source');
+
+    const backend = createLocalTraceSitesReadBackend({ dbPath });
+    const page = await backend.readHistoryPage!({
+      workspaceId: 'wrk_live',
+      workspaceHost: 'testing.consuelohq.com',
+      site: 'trace-burn-intelligence',
+      sourceMode: 'local-networked',
+      cursor: 'id:row_4',
+      limit: 2,
+    });
+
+    expect(page.rows.map((historyRow) => historyRow.recordId)).toEqual(['row_3', 'row_2']);
+    const after = new Database(dbPath, { readonly: true });
+    const afterColumns = (after.query('PRAGMA table_info(tool_traces)').all() as Array<{ name: string }>)
+      .map((column) => column.name);
+    after.close();
+    expect(afterColumns).toEqual(expect.arrayContaining([
+      'requested_node_id',
+      'resolved_node_id',
+      'resolved_node_name',
+      'default_node_id',
+      'route_source',
+    ]));
   });
 
   it('reads overlap-free rich older-history pages from an opaque record cursor', async () => {

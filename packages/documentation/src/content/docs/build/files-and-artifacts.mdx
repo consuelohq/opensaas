@@ -2,17 +2,17 @@
 title: Files and artifacts
 description: Distinguish ordinary files from versioned outputs with provenance and optional app visibility.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-11
 evidence:
   - source: packages/os/scripts/lib/artifacts.ts
     tests:
       - packages/os/tests/artifacts.test.ts
-      - packages/os/tests/os-call-artifacts.test.ts
-    runtime: Local artifact creation, versioning, rollback, and trace linkage were exercised by focused tests on 2026-07-13.
-  - source: packages/os/scripts/lib/cloud-artifacts.ts
+      - packages/os/tests/artifacts-skill.test.ts
+    runtime: Local artifact creation, versioning, rollback, and trace linkage were exercised by focused tests on 2026-08-11.
+  - source: packages/os/scripts/lib/consuelo-sites-artifacts-adapter.ts
     tests:
-      - packages/os/tests/cloud-artifacts.test.ts
-    runtime: App-visible publication and safe failure codes were exercised by focused tests.
+      - packages/os/tests/consuelo-sites-artifacts-adapter.test.ts
+    runtime: Current artifact delivery through the Sites gateway adapter was inspected and verified by focused tests.
 ---
 
 A **file** is ordinary material an agent can read or write within its allowed scope. An **artifact** is a durable output with metadata and versions that connect it to the execution that produced it.
@@ -33,11 +33,9 @@ Creation and update writes are atomic. Artifact changes can refresh the local Si
 
 Use ordinary files for source material, configuration, scratch work, repository changes, and inputs that do not need artifact metadata. A file does not become an artifact merely because an agent created it.
 
-## App-visible publication
+## Publishing and delivery
 
-An artifact remains local unless a supported publish path is used. When app file capability is configured, OS can upload artifact bytes, create an app file record, and return app-visible references.
-
-Publication fails safely when the app capability is missing, an attachment target is unsupported, or upload or record creation fails. A local artifact is not lost because app publication failed.
+Artifacts can be rendered and published through the current Artifacts/Sites path. Publishing is separate from drafting: the artifact remains a durable versioned output, while Sites owns the page-delivery layer and stable routes.
 
 ## Provenance
 

@@ -4,6 +4,7 @@ import {
   ParallelDialerService,
   InMemoryParallelStore,
 } from './parallel-dialer';
+import { CallerIdLockService, InMemoryLockStore } from './caller-id';
 
 const mockCallsCreate = jest.fn();
 const mockCallUpdate = jest.fn();
@@ -44,6 +45,7 @@ describe('ParallelDialerService', () => {
   };
 
   const baseOpts = {
+    workspaceId: 'workspace-1',
     customerNumbers: ['+15551111111', '+15552222222', '+15553333333'],
     fromNumbers: ['+15554444444', '+15555555555', '+15556666666'],
     queueId: 'queue-1',
@@ -173,8 +175,9 @@ describe('ParallelDialerService', () => {
       );
 
       const group = await service.getGroup(result.groupId);
-      // unknown is classified as 'unknown', not 'human', so human-only rejects
       expect(group!.winnerSid).toBeNull();
+      expect(group!.calls[0].status).toBe('completed');
+      expect(mockCallUpdate).toHaveBeenCalledWith({ status: 'completed' });
     });
 
     it('should terminate machine-detected calls', async () => {
@@ -182,12 +185,35 @@ describe('ParallelDialerService', () => {
       await service.handleStatusCallback(
         result.calls[0].callSid,
         'in-progress',
-        'machine',
+        'machine_start',
       );
 
       const group = await service.getGroup(result.groupId);
       expect(group!.winnerSid).toBeNull();
+      expect(group!.calls[0].status).toBe('completed');
       expect(mockCallUpdate).toHaveBeenCalledWith({ status: 'completed' });
+    });
+
+    it('should keep duplicate winner callbacks idempotent', async () => {
+      const result = await service.initiateGroup(baseOpts);
+
+      await service.handleStatusCallback(
+        result.calls[0].callSid,
+        'in-progress',
+        'human',
+      );
+      mockCallUpdate.mockClear();
+
+      await service.handleStatusCallback(
+        result.calls[0].callSid,
+        'in-progress',
+        'human',
+      );
+
+      const group = await service.getGroup(result.groupId);
+      expect(group!.winnerSid).toBe(result.calls[0].callSid);
+      expect(group!.calls[0].status).toBe('in-progress');
+      expect(mockCallUpdate).not.toHaveBeenCalled();
     });
 
     it('should reject second answerer (race condition)', async () => {
@@ -236,7 +262,10 @@ describe('ParallelDialerService', () => {
         limit: 1,
       });
       expect(mockClient.conferences).toHaveBeenCalledWith('CF_parallel');
-      expect(mockParticipantUpdate).toHaveBeenCalledWith({ muted: false });
+      expect(mockParticipantUpdate).toHaveBeenCalledWith({
+        muted: false,
+        endConferenceOnExit: true,
+      });
     });
 
     it('should mark group completed when all calls resolve with no winner', async () => {
@@ -282,6 +311,29 @@ describe('ParallelDialerService', () => {
   });
 
   describe('TTL expiry', () => {
+    it('should retain connected callback state beyond five minutes', async () => {
+      jest.useFakeTimers();
+      try {
+        const result = await service.initiateGroup({
+          ...baseOpts,
+          customerNumbers: ['+15551111111'],
+          fromNumbers: ['+15554444444'],
+          profile: { ...baseProfile, fanout: 1 },
+        });
+        const callSid = result.calls[0].callSid;
+
+        await service.handleStatusCallback(callSid, 'in-progress', 'human');
+        jest.advanceTimersByTime(6 * 60 * 1000);
+
+        await expect(service.getGroup(result.groupId)).resolves.not.toBeNull();
+        await expect(service.getGroupIdForCall(callSid)).resolves.toBe(
+          result.groupId,
+        );
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
     it('should return null for expired group', async () => {
       // manually set a group with past expiry
       await store.setGroup('pg_expired', '{"status":"dialing"}', 0);
@@ -308,7 +360,45 @@ describe('ParallelDialerService', () => {
 
       expect(twiml).toContain('muted="true"');
       expect(twiml).toContain('beep="false"');
-      expect(twiml).toContain('startConferenceOnEnter="true"');
+      expect(twiml).toContain('startConferenceOnEnter="false"');
+      expect(twiml).toContain('endConferenceOnExit="false"');
+      expect(twiml).toContain('waitUrl=""');
+      expect(twiml).toContain(
+        `participantLabel="customer-${result.calls[0].callSid}"`,
+      );
+    });
+
+    it('should join the selected winner unmuted', async () => {
+      const result = await service.initiateGroup(baseOpts);
+
+      await service.handleStatusCallback(
+        result.calls[0].callSid,
+        'in-progress',
+        'human',
+      );
+
+      const twiml = await service.generateCustomerTwiml(
+        result.calls[0].callSid,
+      );
+
+      expect(twiml).toContain('muted="false"');
+    });
+
+    it('should return empty TwiML for an AMD-rejected terminal leg', async () => {
+      const result = await service.initiateGroup(baseOpts);
+
+      await service.handleStatusCallback(
+        result.calls[0].callSid,
+        'in-progress',
+        'machine_start',
+      );
+
+      const twiml = await service.generateCustomerTwiml(
+        result.calls[0].callSid,
+      );
+
+      expect(twiml).toContain('<Response />');
+      expect(twiml).not.toContain('<Conference');
     });
   });
 
@@ -331,6 +421,30 @@ describe('ParallelDialerService', () => {
       await service.terminateGroup(result.groupId);
       // should only terminate the 2 remaining calls, not the already-completed one
       expect(mockCallUpdate).toHaveBeenCalledTimes(2);
+    });
+
+    it('should release caller ID locks when stale lookup force-completes a group', async () => {
+      const lockService = new CallerIdLockService(new InMemoryLockStore());
+      service.withCallerIdLock(lockService);
+      const result = await service.initiateGroup(baseOpts);
+      for (const call of result.calls) {
+        await lockService.acquireLock(
+          call.fromNumber,
+          baseOpts.userId,
+          call.callSid,
+        );
+      }
+      const raw = await store.getGroup(result.groupId);
+      expect(raw).not.toBeNull();
+      const group = JSON.parse(raw!);
+      group.createdAt = new Date(Date.now() - 61_000).toISOString();
+      await store.setGroup(result.groupId, JSON.stringify(group), 300);
+
+      await service.getGroup(result.groupId);
+
+      for (const call of result.calls) {
+        expect(await lockService.isNumberAvailable(call.fromNumber)).toBe(true);
+      }
     });
 
     it('should complete stale dialing groups on lookup', async () => {

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5bbc3874fa21",
+  "tmuxSession": "opensaas-dialer-transcription-and-admin-call-history-5bbc3874",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/transcription-and-admin-call-history",
+  "branch": "task/dialer/transcription-and-admin-call-history",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-transcription-and-admin-call-history",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-transcription-and-admin-call-history",
+  "prNumber": 1764,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1764",
+  "createdAt": "2026-08-04T17:05:16.708Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-transcription-and-admin-call-history/.task/dialer/transcription-and-admin-call-history/session.json"
+}

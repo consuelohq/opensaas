@@ -4,52 +4,30 @@ permissions:
   contents: read
 
 on:
+  workflow_call:
   pull_request:
     paths:
-      - .github/workflows/consuelo-os-distribution-environments.yaml
-      - packages/os/native/windows-service/**
-      - packages/os/native/macos/**
-      - packages/os/scripts/bootstrap.ps1
-      - packages/os/scripts/windows-platform.ts
-      - packages/os/scripts/lib/windows-platform.ts
-      - packages/os/scripts/lib/lifecycle/**
-      - packages/os/scripts/install.ts
-      - packages/os/scripts/testing/windows-platform-acceptance.ps1
-      - packages/os/scripts/testing/macos-alpha-package.sh
-      - packages/os/tests/windows-*.test.ts
-      - packages/os/tests/macos-platform.test.ts
-      - packages/os/scripts/testing/distribution/**
-      - packages/os/scripts/lib/platforms/**
-      - packages/os/tests/distribution/**
-      - packages/os/tests/linux-platform.test.ts
-      - packages/os/docs/linux-platform.md
-      - packages/os/docs/macos-platform.md
+      - '.github/workflows/consuelo-os-distribution-environments.yaml'
+      - '.github/workflows/consuelo-os-runtime-publish.yaml'
+      - 'packages/os/**'
+      - 'packages/workspace/scripts/ci/run-changed-os-native-tests.mjs'
+      - 'packages/workspace/tests/run-changed-os-native-tests.test.mjs'
+      - 'packages/workspace/tests/github-workflow-policy.test.js'
+      - 'bun.lock'
+      - 'package.json'
   push:
     branches:
-      - main
       - stream/os-distribution
       - stream/os-native
     paths:
-      - .github/workflows/consuelo-os-distribution-environments.yaml
-      - packages/os/native/windows-service/**
-      - packages/os/native/macos/**
-      - packages/os/scripts/bootstrap.ps1
-      - packages/os/scripts/windows-platform.ts
-      - packages/os/scripts/lib/windows-platform.ts
-      - packages/os/scripts/lib/lifecycle/**
-      - packages/os/scripts/install.ts
-      - packages/os/scripts/testing/windows-platform-acceptance.ps1
-      - packages/os/scripts/testing/macos-alpha-package.sh
-      - packages/os/tests/windows-*.test.ts
-      - packages/os/tests/macos-platform.test.ts
-      - packages/os/scripts/testing/distribution/**
-      - packages/os/scripts/lib/platforms/**
-      - packages/os/tests/distribution/**
-      - packages/os/tests/linux-platform.test.ts
-      - packages/os/docs/linux-platform.md
-      - packages/os/docs/macos-platform.md
+      - '.github/workflows/consuelo-os-distribution-environments.yaml'
+      - 'packages/os/**'
+      - 'packages/workspace/scripts/ci/run-changed-os-native-tests.mjs'
+      - 'packages/workspace/tests/run-changed-os-native-tests.test.mjs'
+      - 'packages/workspace/tests/github-workflow-policy.test.js'
+      - 'bun.lock'
+      - 'package.json'
   workflow_dispatch:
-
 concurrency:
   group: consuelo-os-distribution-${{ github.ref }}
   cancel-in-progress: true
@@ -93,6 +71,11 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve OS test comparison SHAs
+        uses: nrwl/nx-set-shas@v4
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -153,9 +136,11 @@ jobs:
           Remove-Item -LiteralPath packages/os/native/windows-service/bin -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -LiteralPath packages/os/native/windows-service/obj -Recurse -Force -ErrorAction SilentlyContinue
 
-      - name: Run distribution harness contracts
-        working-directory: packages/os
-        run: bun x vitest run tests/distribution --testTimeout 15000
+      - name: Run selected native distribution contracts
+        env:
+          NATIVE_TEST_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          NATIVE_TEST_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node packages/workspace/scripts/ci/run-changed-os-native-tests.mjs
 
       - name: Probe the native runner
         working-directory: packages/os

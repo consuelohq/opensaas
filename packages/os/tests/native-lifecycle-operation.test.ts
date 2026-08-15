@@ -1,4 +1,4 @@
-import { statSync, writeFileSync } from 'node:fs';
+import { readFileSync, statSync, writeFileSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -46,7 +46,7 @@ const fakeEngine = () => {
       calls.push(
         input?.check
           ? 'update:check'
-          : `update:apply:${input?.expectedVersion ?? 'unbounded'}`,
+          : `update:apply:${input?.expectedVersion ?? 'unbounded'}:${input?.channel ?? 'default'}`,
       );
       if (input?.expectedVersion && input.expectedVersion !== '1.5.0') {
         throw new Error(
@@ -60,7 +60,11 @@ const fakeEngine = () => {
             updateAvailable: true,
             version: '1.5.0',
           }
-        : lifecycleResult('update');
+        : {
+            ...lifecycleResult('update'),
+            version: '1.5.0',
+            bundleId: 'bundle-1.5.0',
+          };
     }),
     restart: vi.fn(async () => {
       calls.push('restart');
@@ -89,6 +93,28 @@ const fakeEngine = () => {
 
 describe('native lifecycle detached operations', () => {
   it('parses only the detached worker operation contract', () => {
+    expect(
+      parseNativeLifecycleOperationArguments([
+        '--home',
+        '/tmp/consuelo-home',
+        '--operation-id',
+        'op-update',
+        '--kind',
+        'update',
+        '--target-version',
+        '1.5.0',
+        '--channel',
+        'canary',
+      ]),
+    ).toEqual({
+      home: '/tmp/consuelo-home',
+      operation: {
+        operationId: 'op-update',
+        kind: 'update',
+        targetVersion: '1.5.0',
+        channel: 'canary',
+      },
+    });
     expect(
       parseNativeLifecycleOperationArguments([
         '--home',
@@ -135,6 +161,20 @@ describe('native lifecycle detached operations', () => {
         'false',
       ]),
     ).toThrow('must be true or false');
+    expect(() =>
+      parseNativeLifecycleOperationArguments([
+        '--home',
+        '/tmp/consuelo-home',
+        '--operation-id',
+        'op-update',
+        '--kind',
+        'update',
+        '--target-version',
+        '1.5.0',
+        '--channel',
+        'made-up',
+      ]),
+    ).toThrow('unsupported release channel');
   });
 
   it('persists owner-only operation state atomically', async () => {
@@ -191,7 +231,11 @@ describe('native lifecycle detached operations', () => {
     });
 
     await expect(
-      launcher.launch({ kind: 'update', targetVersion: '1.5.0' }),
+      launcher.launch({
+        kind: 'update',
+        targetVersion: '1.5.0',
+        channel: 'canary',
+      }),
     ).resolves.toEqual({ accepted: true, operationId: 'native-op-1' });
 
     expect(invocations).toEqual([
@@ -207,6 +251,8 @@ describe('native lifecycle detached operations', () => {
           'update',
           '--target-version',
           '1.5.0',
+          '--channel',
+          'canary',
         ],
         options: expect.objectContaining({
           detached: true,
@@ -224,6 +270,194 @@ describe('native lifecycle detached operations', () => {
     await expect(launcher.launch({ kind: 'restart' })).rejects.toThrow(
       'already active',
     );
+  });
+
+  it('bootstraps a one-shot macOS launchd worker when invoked from a LaunchAgent', async () => {
+    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+    temporaryRoots.push(home);
+    const invocations: Array<{
+      command: string;
+      args: string[];
+      options: Record<string, unknown>;
+    }> = [];
+    const launcher = createDetachedNativeLifecycleOperationLauncher({
+      home,
+      executable: '/opt/homebrew/bin/bun',
+      scriptPath: '/runtime/scripts/native-lifecycle-operation.ts',
+      operationId: () => 'native-macos-update',
+      now: () => new Date('2026-07-27T03:00:00.000Z'),
+      platform: 'darwin',
+      userId: 501,
+      env: {
+        HOME: '/Users/tester',
+        USER: 'tester',
+        BUN_BIN: '/opt/homebrew/bin/bun',
+        XPC_SERVICE_NAME: 'com.consuelo.system',
+      },
+      spawnProcess: (command, args, options) => {
+        invocations.push({ command, args, options });
+        return {
+          pid: 4321,
+          unref: () => undefined,
+          once: (_event, _listener) => undefined,
+        };
+      },
+    });
+
+    await launcher.launch({
+      kind: 'update',
+      targetVersion: '1.5.0',
+      channel: 'canary',
+    });
+
+    const plistPath = join(
+      home,
+      'run',
+      'native-lifecycle-native-macos-update.plist',
+    );
+
+    expect(invocations).toEqual([
+      {
+        command: '/bin/launchctl',
+        args: [
+          'bootstrap',
+          'gui/501',
+          plistPath,
+        ],
+        options: expect.objectContaining({
+          detached: false,
+          stdio: 'ignore',
+          cwd: '/runtime',
+        }),
+      },
+    ]);
+    const plist = readFileSync(plistPath, 'utf8');
+    expect(plist).toContain('<string>com.consuelo.lifecycle.native-macos-update</string>');
+    expect(plist).toContain('<key>RunAtLoad</key>\n  <true/>');
+    expect(plist).toContain('<key>KeepAlive</key>\n  <false/>');
+    expect(plist).toContain('<key>LaunchOnlyOnce</key>\n  <true/>');
+    expect(plist).toContain('<string>CONSUELO_HOME=' + home + '</string>');
+    expect(plist).toContain('<string>--target-version</string>');
+    expect(plist).toContain('<string>1.5.0</string>');
+    expect(plist).toContain('<string>--channel</string>');
+    expect(plist).toContain('<string>canary</string>');
+  });
+
+  it('uses a transient systemd user unit for lifecycle work launched by the Linux daemon', async () => {
+    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+    temporaryRoots.push(home);
+    const invocations: Array<{
+      command: string;
+      args: string[];
+      options: Record<string, unknown>;
+    }> = [];
+    const launcher = createDetachedNativeLifecycleOperationLauncher({
+      home,
+      executable: '/usr/bin/bun',
+      scriptPath: '/runtime/scripts/native-lifecycle-operation.ts',
+      operationId: () => 'linux-update',
+      platform: 'linux',
+      env: {
+        HOME: '/home/tester',
+        USER: 'tester',
+        PATH: '/usr/bin:/bin',
+        BUN_BIN: '/usr/bin/bun',
+        CONSUELO_OS_DAEMON_PROCESS: '1',
+        INVOCATION_ID: 'systemd-invocation',
+      },
+      spawnProcess: (command, args, options) => {
+        invocations.push({ command, args, options });
+        return {
+          pid: 321,
+          unref: () => undefined,
+          once: (_event, _listener) => undefined,
+        };
+      },
+    });
+
+    await launcher.launch({
+      kind: 'update',
+      targetVersion: '1.5.0',
+      channel: 'canary',
+    });
+
+    expect(invocations).toHaveLength(1);
+    expect(invocations[0]).toMatchObject({
+      command: 'systemd-run',
+      options: expect.objectContaining({ detached: false, stdio: 'ignore' }),
+    });
+    expect(invocations[0].args).toEqual(
+      expect.arrayContaining([
+        '--user',
+        '--collect',
+        '--quiet',
+        '--unit=consuelo-lifecycle-linux-update',
+        '--property=Type=exec',
+        '--property=UMask=0077',
+        '--setenv=CONSUELO_HOME=' + home,
+        '--setenv=BUN_BIN=/usr/bin/bun',
+        '/usr/bin/bun',
+        '/runtime/scripts/native-lifecycle-operation.ts',
+        '--target-version',
+        '1.5.0',
+        '--channel',
+        'canary',
+      ]),
+    );
+  });
+
+  it('uses the Windows service host breakaway helper for lifecycle work launched by the daemon', async () => {
+    const home = await mkdtemp('/tmp/consuelo-native-operation-');
+    temporaryRoots.push(home);
+    const invocations: Array<{
+      command: string;
+      args: string[];
+      options: Record<string, unknown>;
+    }> = [];
+    const launcher = createDetachedNativeLifecycleOperationLauncher({
+      home,
+      executable: '/managed/bun.exe',
+      scriptPath: '/runtime/scripts/native-lifecycle-operation.ts',
+      operationId: () => 'windows-update',
+      platform: 'win32',
+      env: {
+        CONSUELO_OS_DAEMON_PROCESS: '1',
+        BUN_BIN: '/managed/bun.exe',
+      },
+      spawnProcess: (command, args, options) => {
+        invocations.push({ command, args, options });
+        return {
+          pid: 654,
+          unref: () => undefined,
+          once: (_event, _listener) => undefined,
+        };
+      },
+    });
+
+    await launcher.launch({ kind: 'update', targetVersion: '1.5.0' });
+
+    expect(invocations).toEqual([
+      {
+        command: join(home, 'bin', 'Consuelo.Windows.Service.exe'),
+        args: [
+          '--config',
+          join(home, 'node', 'service', 'windows-service.json'),
+          '--launch-lifecycle',
+          '--home',
+          home,
+          '--operation-id',
+          'windows-update',
+          '--kind',
+          'update',
+          '--target-version',
+          '1.5.0',
+        ],
+        options: expect.objectContaining({
+          detached: false,
+          stdio: 'ignore',
+        }),
+      },
+    ]);
   });
 
   it('prefers the persisted Bun executable and records early worker exit', async () => {
@@ -405,6 +639,7 @@ describe('native lifecycle detached operations', () => {
       operationId: 'update-op',
       kind: 'update',
       targetVersion: '1.5.0',
+      channel: 'canary',
     },
     {
       operationId: 'rollback-op',
@@ -426,6 +661,13 @@ describe('native lifecycle detached operations', () => {
       temporaryRoots.push(home);
       const { engine, calls } = fakeEngine();
       const store = createNativeLifecycleOperationStore(home);
+      store.write({
+        schemaVersion: 1,
+        operationId: operation.operationId,
+        kind: operation.kind,
+        phase: 'queued',
+        updatedAt: '2026-07-27T02:59:59.000Z',
+      });
 
       await executeNativeLifecycleOperation({
         home,
@@ -440,9 +682,17 @@ describe('native lifecycle detached operations', () => {
         operationId: operation.operationId,
         kind: operation.kind,
         phase: 'succeeded',
+        ...(operation.kind === 'update'
+          ? {
+              targetVersion: '1.5.0',
+              channel: 'canary',
+              resultingVersion: '1.5.0',
+              resultingBundleId: 'bundle-1.5.0',
+            }
+          : {}),
       });
       const expected: Record<NativeLifecycleOperation['kind'], string[]> = {
-        update: ['update:apply:1.5.0'],
+        update: ['update:apply:1.5.0:canary'],
         rollback: ['rollback'],
         repair: ['repair'],
         restart: ['restart'],
@@ -457,6 +707,13 @@ describe('native lifecycle detached operations', () => {
     temporaryRoots.push(home);
     const { engine } = fakeEngine();
     const store = createNativeLifecycleOperationStore(home);
+    store.write({
+      schemaVersion: 1,
+      operationId: 'stale-update',
+      kind: 'update',
+      phase: 'queued',
+      updatedAt: '2026-07-27T02:59:59.000Z',
+    });
 
     await expect(
       executeNativeLifecycleOperation({

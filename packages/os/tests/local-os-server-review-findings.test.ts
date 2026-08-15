@@ -34,6 +34,27 @@ afterEach(() => {
 });
 
 describe('local OS server review findings', () => {
+  it('installs package-local OS dependencies before generic verify when OS changes are selected', () => {
+    const workflow = readFileSync(
+      resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),
+      'utf8',
+    );
+    const verifyStart = workflow.indexOf('\n  verify:\n');
+    const verifyEnd = workflow.indexOf('\n  workspace-contracts:\n', verifyStart);
+    const verifyJob = workflow.slice(verifyStart, verifyEnd);
+    const installStep = [
+      '      - name: Install OS dependencies for verify',
+      "        if: needs.consuelo-changes.outputs.verify == 'true' && needs.consuelo-changes.outputs.os_contracts == 'true'",
+      '        working-directory: packages/os',
+      '        run: bun install --frozen-lockfile',
+    ].join('\n');
+
+    expect(verifyJob).toContain(installStep);
+    expect(verifyJob.indexOf(installStep)).toBeLessThan(
+      verifyJob.indexOf('      - name: Run workspace verify'),
+    );
+  });
+
   it('installs package-local OS dependencies before CI contract tests', () => {
     const workflow = readFileSync(
       resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),
@@ -49,6 +70,44 @@ describe('local OS server review findings', () => {
     expect(workflow).toContain(installStep);
     expect(workflow.indexOf(installStep)).toBeLessThan(
       workflow.indexOf('      - name: Run OS contract tests'),
+    );
+  });
+
+  it('pins downstream CI verification to the immutable pull-request or merge-group base commit', () => {
+    const workflow = readFileSync(
+      resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),
+      'utf8',
+    );
+
+    expect(workflow).toContain(
+      'base_ref="$(git rev-parse HEAD^1 2>/dev/null || true)"',
+    );
+    expect(workflow).toContain(
+      'fallback_base="${{ github.event.pull_request.base.sha }}"',
+    );
+    expect(workflow).toContain(
+      "jq -r '.merge_group.base_sha // empty' \"$GITHUB_EVENT_PATH\"",
+    );
+    expect(workflow).toContain(
+      'base_ref="$(git rev-parse \"${base_ref}^{commit}\")"',
+    );
+    expect(workflow).toContain(
+      'write_output base_ref "$base_ref"',
+    );
+    expect(workflow).toContain(
+      'head_sha: ${{ steps.classify.outputs.head_sha }}',
+    );
+    expect(workflow).toContain(
+      'write_output head_sha "$(git rev-parse HEAD)"',
+    );
+    expect(
+      workflow.match(/ref: \$\{\{ needs\.consuelo-changes\.outputs\.head_sha \}\}/g)?.length ?? 0,
+    ).toBeGreaterThanOrEqual(6);
+    expect(workflow).toContain(
+      'bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --committed-only-tests --no-stamp --review-arg --no-tests',
+    );
+    expect(workflow).not.toContain(
+      'pull_request)\n              base_ref="origin/${{ github.base_ref }}"',
     );
   });
 

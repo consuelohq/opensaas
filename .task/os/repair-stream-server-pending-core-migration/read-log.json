@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".github/workflows/ci-server.yaml",
+    "packages/twenty-server/src/database/typeorm/core/core.datasource.ts",
+    "packages/workspace/tests/run-changed-server-task.test.mjs"
+  ],
+  "updatedAt": "2026-08-14T03:09:26.288Z"
+}

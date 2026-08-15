@@ -2,19 +2,19 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2360,
-    "mappedTestCount": 2291,
-    "unmappedTestCount": 69,
-    "ruleCount": 29,
-    "explicitRuleCount": 10,
+    "testFileCount": 2633,
+    "mappedTestCount": 2550,
+    "unmappedTestCount": 83,
+    "ruleCount": 59,
+    "explicitRuleCount": 40,
     "autoRuleCount": 19,
-    "projectCount": 13,
-    "packageTestScriptCount": 17,
+    "projectCount": 15,
+    "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 112,
+      "packages/os/tests": 256,
       "packages/twenty-server/test/integration/graphql/utils": 65,
+      "packages/workspace/tests": 61,
       "packages/twenty-sdk/src/cli": 51,
-      "packages/workspace/tests": 45,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/utils": 31,
@@ -28,6 +28,7 @@
       "packages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/validator-utils": 20,
       "packages/twenty-server/test/integration/constants": 20,
       "packages/twenty-server/test/integration/graphql/suites/inputs-validation/filter-validation": 20,
+      "packages/dialer-server/src": 19,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/graphWidgetBarChart/utils": 18,
       "packages/twenty-front/src/modules/workflow/workflow-variables/utils": 17,
       "packages/twenty-server/src/modules/dashboard/chart-data/utils": 17,
@@ -43,6 +44,8 @@
       "packages/twenty-front/src/modules/views/utils": 14,
       "packages/twenty-server/test/integration/metadata/suites/object-metadata/utils": 14,
       "packages/twenty-server/test/integration/metadata/suites/skill/utils": 14,
+      "packages/lead-connector/src/embed": 13,
+      "packages/os/tests/distribution": 13,
       "packages/twenty-front/src/modules/navigation-menu-item/utils": 13,
       "packages/twenty-shared/src/utils/filter/utils": 13,
       "packages/twenty-server/src/engine/twenty-orm/utils": 12,
@@ -53,6 +56,8 @@
       "packages/twenty-server/test/integration/metadata/suites/view-group/utils": 12,
       "packages/twenty-server/test/integration/metadata/suites/view/utils": 12,
       "packages/twenty-server/test/integration/twenty-config/utils": 12,
+      "packages/consuelo-website/tests": 11,
+      "packages/documentation/tests": 11,
       "packages/twenty-front/src/modules/page-layout/hooks": 11,
       "packages/twenty-front/src/modules/workflow/workflow-diagram/utils": 11,
       "packages/twenty-server/test/integration/metadata/suites/field-metadata": 11,
@@ -60,6 +65,7 @@
       "packages/twenty-server/test/integration/metadata/suites/page-layout-widget/utils": 11,
       "packages/twenty-server/test/integration/metadata/suites/role/utils": 11,
       "packages/api/src/routes": 10,
+      "packages/dialer/src/services": 10,
       "packages/twenty-front/src/modules/object-metadata/utils": 10,
       "packages/twenty-front/src/modules/object-record/record-field/ui/utils": 10,
       "packages/twenty-server/src/engine/core-modules/billing/utils": 10,
@@ -70,9 +76,6 @@
       "packages/twenty-server/test/integration/metadata/suites/view-filter-group": 10,
       "packages/twenty-server/test/integration/metadata/suites/view-filter/utils": 10,
       "packages/twenty-server/test/integration/utils": 10,
-      "packages/consuelo-website/tests": 9,
-      "packages/dialer/src/services": 9,
-      "packages/documentation/tests": 9,
       "packages/twenty-front/src/modules/object-record/utils": 9,
       "packages/twenty-front/src/modules/workflow/workflow-trigger/utils": 9,
       "packages/twenty-front/src/utils/array": 9,
@@ -93,6 +96,7 @@
       "packages/twenty-server/test/integration/metadata/suites/navigation-menu-item/utils": 8,
       "packages/twenty-server/test/integration/metadata/suites/page-layout": 8,
       "packages/twenty-server/test/integration/metadata/suites/view-filter-group/utils": 8,
+      "packages/lead-connector/src": 7,
       "packages/twenty-front/src/modules/favorites/utils": 7,
       "packages/twenty-front/src/modules/object-record/cache/utils": 7,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/graphWidgetLineChart/utils": 7,
@@ -111,6 +115,7 @@
       "packages/twenty-server/test/integration/metadata/suites/skill": 7,
       "packages/twenty-shared/src/utils/strings": 7,
       "packages/twenty-shared/src/utils/url": 7,
+      "packages/lead-connector/src/deployment": 6,
       "packages/twenty-front/src/hooks": 6,
       "packages/twenty-front/src/modules/ai/utils": 6,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/chart-core/utils": 6,
@@ -130,6 +135,7 @@
       "packages/twenty-server/test/integration/metadata/suites/front-component": 6,
       "packages/twenty-shared/src/utils/validation": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
+      "packages/dialer-server/src/runtime": 5,
       "packages/twenty-front/src/modules/apollo/utils": 5,
       "packages/twenty-front/src/modules/auth/sign-in-up/hooks": 5,
       "packages/twenty-front/src/modules/dialer/hooks": 5,
@@ -138,6 +144,7 @@
       "packages/twenty-front/src/utils/format": 5,
       "packages/twenty-sdk/src/cli/utilities/entity": 5,
       "packages/twenty-server/src/engine/api/common/common-query-runners/common-create-many-query-runner/utils": 5,
+      "packages/twenty-server/src/engine/core-modules/consuelo-api/services": 5,
       "packages/twenty-server/src/engine/workspace-manager/workspace-migration/universal-flat-entity/utils": 5,
       "packages/twenty-server/src/modules/workflow/workflow-executor/utils": 5,
       "packages/twenty-server/test/integration/metadata/suites/dashboard": 5,
@@ -148,6 +155,7 @@
       "packages/twenty-server/test/integration/metadata/suites/utils": 5,
       "packages/consuelo-design/upstream/open-design/apps/web/src/i18n": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/runtime": 4,
+      "packages/os/tools/deployment-provider": 4,
       "packages/twenty-front/src/modules/activities/hooks": 4,
       "packages/twenty-front/src/modules/apollo/optimistic-effect/group-by/utils": 4,
       "packages/twenty-front/src/modules/favorites/hooks": 4,
@@ -162,7 +170,6 @@
       "packages/twenty-front/src/modules/ui/utilities/focus/hooks": 4,
       "packages/twenty-front/src/modules/workflow/workflow-steps/workflow-actions/utils": 4,
       "packages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/utils": 4,
-      "packages/twenty-server/src/engine/core-modules/consuelo-api/services": 4,
       "packages/twenty-server/src/engine/core-modules/domain/subdomain-manager/utils/__test__": 4,
       "packages/twenty-server/src/engine/core-modules/twenty-config/decorators": 4,
       "packages/twenty-server/src/engine/core-modules/two-factor-authentication": 4,
@@ -178,6 +185,7 @@
       "packages/twenty-server/test/integration/metadata/suites/dashboard/utils": 4,
       "packages/twenty-server/test/integration/metadata/suites/field-metadata/relation": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/providers": 3,
+      "packages/dialer-server/src/call-operations": 3,
       "packages/os/scripts": 3,
       "packages/twenty-front/src/modules/action-menu/utils": 3,
       "packages/twenty-front/src/modules/activities/calendar/utils": 3,
@@ -226,9 +234,13 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
+      "packages/dialer-server/src/lab": 2,
+      "packages/dialer/src/application": 2,
+      "packages/dialer/src/domain": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
       "packages/os/tests/facade": 2,
+      "packages/os/tests/fixtures": 2,
       "packages/twenty-e2e-testing/tests/authentication": 2,
       "packages/twenty-front/src/modules/activities/emails/graphql/queries": 2,
       "packages/twenty-front/src/modules/activities/tasks/hooks": 2,
@@ -314,6 +326,7 @@
       "packages/twenty-ui/src/utilities/device": 2,
       "cron_jobs": 1,
       "packages/agent/src/pi-extensions": 1,
+      "packages/coaching": 1,
       "packages/consuelo-core/tests": 1,
       "packages/consuelo-design/scripts": 1,
       "packages/consuelo-design/upstream/open-design/packages/platform/src": 1,
@@ -321,8 +334,34 @@
       "packages/consuelo-design/upstream/open-design/packages/sidecar/src": 1,
       "packages/consuelo-design/upstream/open-design/tools/dev/src": 1,
       "packages/consuelo-design/upstream/open-design/tools/pack/src": 1,
+      "packages/dialer-server/src/database": 1,
+      "packages/dialer-server/src/release": 1,
       "packages/dialer/src": 1,
-      "packages/os/tests/fixtures": 1,
+      "packages/dialer/src/infrastructure/redis": 1,
+      "packages/os/tools/artifacts": 1,
+      "packages/os/tools/codemode": 1,
+      "packages/os/tools/composed": 1,
+      "packages/os/tools/daily-schedules": 1,
+      "packages/os/tools/decision-engine": 1,
+      "packages/os/tools/filesystem": 1,
+      "packages/os/tools/generation": 1,
+      "packages/os/tools/git": 1,
+      "packages/os/tools/github": 1,
+      "packages/os/tools/http": 1,
+      "packages/os/tools/linear": 1,
+      "packages/os/tools/mac": 1,
+      "packages/os/tools/media": 1,
+      "packages/os/tools/memory": 1,
+      "packages/os/tools/monitor": 1,
+      "packages/os/tools/railway": 1,
+      "packages/os/tools/review": 1,
+      "packages/os/tools/security": 1,
+      "packages/os/tools/sentry": 1,
+      "packages/os/tools/stream": 1,
+      "packages/os/tools/subagent": 1,
+      "packages/os/tools/task-lifecycle": 1,
+      "packages/os/tools/tool-discovery": 1,
+      "packages/os/tools/utilities": 1,
       "packages/twenty-front/src/modules/accounts/utils": 1,
       "packages/twenty-front/src/modules/action-menu/actions/record-actions/utils": 1,
       "packages/twenty-front/src/modules/action-menu/actions/record-agnostic-actions/hooks": 1,
@@ -454,6 +493,7 @@
       "packages/twenty-server/src/engine/core-modules/client-config": 1,
       "packages/twenty-server/src/engine/core-modules/client-config/services": 1,
       "packages/twenty-server/src/engine/core-modules/cloudflare/guards": 1,
+      "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers": 1,
       "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers": 1,
       "packages/twenty-server/src/engine/core-modules/dns-manager/services": 1,
       "packages/twenty-server/src/engine/core-modules/domain/domain-server-config/services/__test__": 1,
@@ -587,6 +627,7 @@
       "packages/twenty-ui/src/theme/utils": 1,
       "packages/twenty-ui/src/utilities/responsive/hooks": 1,
       "packages/twenty-ui/src/utilities/utils": 1,
+      "packages/workspace/scripts/lib": 1,
       "packages/workspace/tests/audit": 1,
       "packages/workspace/tests/facade": 1,
       "tests": 1
@@ -594,10 +635,11 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 276,
-      "spec": 145,
+      "test": 539,
+      "spec": 152,
       "other": 7,
-      "tests-dir": 6,
+      "tests-dir": 7,
+      "integration": 2,
       "e2e": 1
     }
   },
@@ -666,7 +708,9 @@
             "bun",
             "test",
             "packages/workspace/tests/task-session.test.js",
-            "packages/workspace/tests/task-meta.test.ts"
+            "packages/workspace/tests/task-meta.test.ts",
+            "packages/workspace/tests/task-init.test.js",
+            "packages/workspace/tests/task-selection.test.js"
           ]
         }
       ],
@@ -744,6 +788,1183 @@
       "origin": "explicit"
     },
     {
+      "id": "consuelo-ci-immutable-base",
+      "source": [
+        ".github/workflows/consuelo-ci.yaml",
+        "packages/os/tests/local-os-server-review-findings.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "trace-site-pagination",
+      "source": [
+        "packages/os/assets/vendor/observability-traces-v38/inspector.js",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/scripts/lib/trace-site-inspector/**",
+        "packages/os/scripts/lib/trace-sites-gateway-*.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/scripts/lib/trace-persistence.ts",
+        "packages/os/scripts/lib/redaction.ts",
+        "packages/os/scripts/server/services/trace-gateway.ts",
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/redaction.test.ts",
+        "packages/os/tests/trace-history-redaction.test.ts",
+        "packages/os/tests/trace-site-inspector-os-owned.test.ts",
+        "packages/os/tests/trace-sites-gateway-read-layer.test.ts",
+        "packages/os/tests/trace-sites-history-endpoint-contract.test.ts",
+        "packages/os/tests/trace-sites-runtime-boundary.test.ts",
+        "packages/os/assets/vendor/observability-traces-v38/**",
+        "packages/os/tests/fixtures/trace-persistence-runtime.ts",
+        "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+        "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
+        "packages/os/tests/trace-site-inspector-interactions.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts"
+          ]
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-release-surface-freshness",
+      "source": [
+        ".github/workflows/consuelo-os-runtime-publish.yaml",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/tests/distribution/release-channel-workflows.test.ts",
+        "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/workspace/scripts/os-release.ts",
+        "packages/workspace/scripts/os-release-device-auth.ts",
+        "packages/workspace/scripts/os-release-workspace-edge.ts",
+        "packages/workspace/tests/website-deploy.test.js"
+      ],
+      "tests": [
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts"
+          ]
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ]
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-workspace-edge-rollout",
+      "source": [
+        "packages/os/scripts/lib/install-edge-site-publisher.ts",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/tests/install-edge-site-publisher.test.ts",
+        "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/lib/workspace-edge-node-auth.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS workspace edge snapshot publisher contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-edge-site-publisher.test.ts"
+          ]
+        },
+        {
+          "name": "OS workspace edge route preservation contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Workspace edge rollout changes must preserve immutable snapshots and live node/connector route state without relying on a broad package test.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-hosted-site-update-reconciliation",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+        "packages/os/scripts/lib/lifecycle/engine.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ]
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-bun-lockfile-consistency",
+      "source": [
+        "packages/os/bun.lock"
+      ],
+      "tests": [
+        {
+          "name": "OS Bun frozen lockfile contract",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/os",
+            "--frozen-lockfile",
+            "--lockfile-only",
+            "--dry-run"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "OS dependency lock changes must prove the exact frozen Bun install contract used by distribution and release workflows without selecting unrelated package-wide tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-install-state-tool-inventory",
+      "source": [
+        "packages/os/tests/install-state.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS install-state tool inventory contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/install-state.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Install-state tool inventory regressions must run the focused manifest/install contract without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-runtime-bundle-distribution-contract",
+      "source": [
+        "packages/os/tests/distribution/runtime-bundle.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS runtime-bundle distribution contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/distribution/runtime-bundle.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Runtime-bundle distribution harness changes must run the exact runtime-bundle contract without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-lifecycle-legacy-mcp-scrub",
+      "source": [
+        "packages/os/scripts/consuelo-reload.js",
+        "packages/os/tests/finish-line-lifecycle-contract.test.ts",
+        "packages/os/scripts/start-consuelo-daemon.sh",
+        "packages/os/tests/daemon-bun-path.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS lifecycle legacy MCP environment scrub contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/finish-line-lifecycle-contract.test.ts",
+            "tests/daemon-bun-path.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Lifecycle daemon/reload changes must prove inherited-secret scrub, activated-runtime managed Sites refresh, Bun path resolution, and fail-open startup without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-gateway-security-caddy-handoff",
+      "source": [
+        "packages/os/scripts/lib/security-gateway.ts",
+        "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+        "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+        "packages/os/tests/security-gateway.test.ts",
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS gateway security and Caddy contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/security-gateway.test.ts",
+            "tests/caddy-worker-pool-reconciliation.test.ts"
+          ]
+        },
+        {
+          "name": "OS gateway security syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Gateway security and Caddy handoff changes must prove signed Workspace Edge headers survive local proxying, gateway authorization remains fail-closed, worker-pool reconciliation is idempotent, and syntax stays valid without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-lifecycle-update-handoff",
+      "source": [
+        "packages/os/SCRIPTS.md",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/native/windows-service/**",
+        "packages/os/scripts/lifecycle.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/native-lifecycle-operation.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/cli-update-routing.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/lifecycle-facade.test.ts",
+        "packages/os/tests/lifecycle-tool-surface.test.ts",
+        "packages/os/tests/native-lifecycle-operation.test.ts",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/tool-package-layout.test.ts",
+        "packages/os/scripts/lib/windows-platform.ts",
+        "packages/os/tools/lifecycle/**",
+        "packages/os/tools/registry.ts",
+        "packages/os/scripts/lib/lifecycle/service.ts",
+        "packages/os/scripts/lib/platforms/linux.ts",
+        "packages/os/tests/lifecycle-restart-contract.test.ts",
+        "packages/os/tests/linux-platform.test.ts",
+        "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+        "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+          ]
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-launcher-copy-interaction",
+      "source": [
+        "packages/consuelo-website/src/pages/os/launcher.astro",
+        "packages/os/scripts/lib/launcher-onboarding.ts",
+        "packages/os/tests/launcher-astro-source.test.ts",
+        "packages/os/tests/launcher-onboarding.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS launcher copy interaction contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/launcher-onboarding.test.ts",
+            "tests/launcher-astro-source.test.ts"
+          ]
+        },
+        {
+          "name": "OS launcher Sites materialization contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/sites-cli.test.ts",
+            "-t",
+            "launcher"
+          ]
+        },
+        {
+          "name": "Consuelo website launcher Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Launcher onboarding copy-interaction changes must prove generated UI behavior, Sites materialization, and Astro source validity without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-managed-cloud-checkout-observability",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts",
+        "packages/os/scripts/lib/device-authority-release-readiness.ts",
+        "packages/os/tests/managed-cloud-checkout-observability.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS managed cloud checkout observability contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "vitest",
+            "run",
+            "tests/managed-cloud-checkout-observability.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/os-web-auth-contract.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-universal-login.test.ts",
+            "tests/security-scan.test.ts"
+          ]
+        },
+        {
+          "name": "OS managed cloud checkout observability syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Managed-cloud checkout, Stripe synthetic testing, PostHog funnel instrumentation, Sentry error reporting, and checkout security changes must prove focused billing/auth/release contracts without selecting the historically noisy unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-cloud-first-auth-onboarding",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/health.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/cloud-first-onboarding.ts",
+        "packages/os/tests/cloud-first-web-onboarding.test.ts",
+        "packages/os/tests/os-universal-login.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS cloud-first auth onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-universal-login.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-lifecycle-onboarding.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/managed-cloud-pricing.test.ts"
+          ]
+        },
+        {
+          "name": "OS cloud-first auth onboarding Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS cloud-first auth onboarding syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Cloud-first Consuelo OS login, canonical signup, workspace trial, and provisioning handoff changes must prove the exact browser auth, managed-cloud, installer-lifecycle, launcher, Worker, and syntax contracts without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-mcp-admission-error-contract",
+      "source": [
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/scripts/server/middleware/dangerous-material.ts",
+        "packages/os/scripts/server/logger.ts",
+        "packages/os/scripts/lib/dangerous-material-policy.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/dangerous-material-policy.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS MCP admission contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ]
+        },
+        {
+          "name": "OS dangerous material ingress contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dangerous-material-policy.test.ts"
+          ]
+        },
+        {
+          "name": "OS MCP admission syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "MCP request admission and dangerous-material boundary changes must prove JSON-RPC transport/error behavior, fail-closed safety, authentication/gateway compatibility, and syntax without selecting the historically broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-chatgpt-mcp-oauth",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+        "packages/os/tests/operator-oauth-client.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS ChatGPT MCP OAuth contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/operator-oauth-client.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "ChatGPT MCP OAuth client binding and authorization changes must prove the exact client/redirect, Worker, architecture, release, and syntax contracts without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-chatgpt-node-routing-facade",
+      "source": [
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/os-get-steering-trace.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT node-routing syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-device-approval-canonical-identity",
+      "source": [
+        "packages/consuelo-website/src/pages/login/device.astro",
+        "packages/os/cloudflare/os-device-authority/src/routes/device.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/canonical-device-identity.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/install-identity.ts",
+        "packages/os/cloudflare/workspace-edge/migrations/0005_install_user_workspace_verification.sql",
+        "packages/os/scripts/lib/install-control-plane-d1.ts",
+        "packages/os/scripts/lib/install-control-plane.ts",
+        "packages/os/tests/canonical-device-identity.test.ts",
+        "packages/os/tests/install-control-plane-d1.test.ts",
+        "packages/os/tests/install-control-plane.test.ts",
+        "packages/os/tests/internal-dashboard-integration.test.ts",
+        "packages/os/tests/native-google-device-approval.test.ts",
+        "packages/os/tests/oauth-device-page-contract.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS canonical device approval syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-internal-workspace-shell",
+      "source": [
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/scripts/lib/settings-snapshot.ts",
+        "packages/os/scripts/lib/settings-materialization.ts",
+        "packages/os/scripts/lib/workspace-chrome.ts",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/tests/settings-site.test.ts",
+        "packages/os/tests/launcher-nodes-materialization.test.ts",
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/sites-cli.test.ts",
+        "packages/os/tests/launcher-local-customization.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/local-agent-connectivity.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/settings-site.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts"
+          ]
+        },
+        {
+          "name": "OS internal workspace shell syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Overview across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid without falling back to the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-managed-cloud-one-click-provisioning",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
+        "packages/os/cloudflare/os-device-authority/src/security/route-policies.ts",
+        "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/os-device-authority/src/worker.ts",
+        "packages/os/cloudflare/workspace-edge/src/index.ts",
+        "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
+        "packages/os/scripts/lib/managed-cloud-node-enrollment.ts",
+        "packages/os/scripts/lib/managed-cloud-node.ts",
+        "packages/os/scripts/lib/managed-cloud-provisioning-runner.ts",
+        "packages/os/scripts/lib/managed-cloud-provisioning.ts",
+        "packages/os/scripts/lib/platform-managed-cloud-node.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/scripts/managed-cloud-node-enroll.ts",
+        "packages/os/scripts/managed-cloud-provisioning-runner.ts",
+        "packages/os/tests/cloudflare-worker-release-readiness.test.ts",
+        "packages/os/tests/launcher-nodes-control-plane.test.ts",
+        "packages/os/tests/managed-cloud-one-click-provisioning.test.ts",
+        "packages/os/tests/managed-cloud-one-click-runner.test.ts",
+        "packages/os/tests/os-device-authority-architecture.test.ts",
+        "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/os/tests/settings-site.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ]
+        },
+        {
+          "name": "OS device authority Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS one-click managed cloud syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "One-click managed-cloud control-plane, launcher, provisioning-runner, enrollment, and Worker changes must prove their focused security and lifecycle contracts without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-vitest-runtime-regressions",
+      "source": [
+        "packages/os/tests/operator-login.test.ts",
+        "packages/os/tests/runtime-state.test.ts",
+        "packages/os/tests/node-resource-lock.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Vitest runtime regression contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/operator-login.test.ts",
+            "tests/runtime-state.test.ts",
+            "tests/node-resource-lock.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Verifier-only OS test fixes must prove rejection observation, child-process coordination, and lock-wait cleanup in the package's native Vitest runtime without selecting unrelated full OS package tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-macos-menu-app",
+      "source": [
+        "packages/os/docs/macos-platform.md",
+        "packages/os/native/macos/**",
+        "packages/os/scripts/testing/macos-alpha-package.sh",
+        "packages/os/tests/macos-platform.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "macOS menu Swift contracts",
+          "command": [
+            "swift",
+            "run",
+            "--package-path",
+            "packages/os/native/macos",
+            "--scratch-path",
+            "/tmp/consuelo-os-macos-contract-tests",
+            "ConsueloMacContractTests"
+          ]
+        },
+        {
+          "name": "macOS menu platform contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/macos-platform.test.ts"
+          ]
+        },
+        {
+          "name": "macOS alpha package syntax",
+          "command": [
+            "bash",
+            "-n",
+            "packages/os/scripts/testing/macos-alpha-package.sh"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Native macOS menu, lifecycle presentation, and alpha packaging changes must run the focused Swift and platform contracts without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-native-menu-node-discovery",
+      "source": [
+        "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+        "packages/os/scripts/lib/operator-login.ts",
+        "packages/os/scripts/lib/operator-token-store.ts",
+        "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
+        "packages/os/scripts/lib/workspace-node-snapshot-cache.ts",
+        "packages/os/scripts/login.ts",
+        "packages/os/scripts/workspace-node-heartbeat.ts",
+        "packages/os/tests/native-lifecycle-endpoint.test.ts",
+        "packages/os/tests/operator-login.test.ts",
+        "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+        "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS operator login contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/operator-login.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS native menu node discovery syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Native menu lifecycle/auth/heartbeat changes must prove read-only enrolled-node discovery, privileged operator mutations, refresh-token persistence, heartbeat snapshot safety, and lifecycle presentation without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "frontend-lint-config-contract",
+      "source": [
+        ".github/workflows/ci-front.yaml",
+        "eslint.config.mjs",
+        "packages/eslint-rules/eslint.config.react.mjs",
+        "packages/twenty-front/eslint.config.mjs",
+        "packages/twenty-shared/eslint.config.mjs",
+        "packages/twenty-ui/eslint.config.mjs",
+        "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs",
+        "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
+        "packages/workspace/scripts/ci/run-changed-frontend-task.mjs",
+        "packages/workspace/tests/run-changed-frontend-task.test.mjs",
+        ".github/workflows/ci-shared.yaml"
+      ],
+      "tests": [
+        {
+          "name": "changed frontend lint helper tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
+            "packages/workspace/tests/run-changed-frontend-task.test.mjs"
+          ]
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ]
+        },
+        {
+          "name": "changed frontend files lint",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Frontend lint configuration and workflow-only changes must validate their exact configs, workflow policy, and changed-file lint lane without selecting unrelated full application test targets.",
+      "origin": "explicit"
+    },
+    {
+      "id": "obsolete-metering-artifact-contract",
+      "source": [
+        "packages/os/scripts/artifacts-design.ts",
+        "packages/os/tests/artifacts-legacy-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS artifact manifest contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/artifacts-legacy-contract.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Removal of the obsolete metering package from the deployed artifact manifest must retain the canonical Artifacts boundary without selecting unrelated OS suites.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-bundled-skill-contract",
+      "source": [
+        "packages/os/skills/**",
+        "packages/os/tests/branch-skill.test.ts",
+        "packages/os/tests/cli-skill-routing.test.ts",
+        "packages/os/tests/onboarding-skills.test.ts",
+        "packages/os/tests/senior-engineer-skill.test.ts",
+        "packages/os/tests/skill-migration.test.ts",
+        "packages/os/tests/skill-selection-cli.test.ts",
+        "packages/os/tests/skills-registry.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS bundled skill contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--",
+            "tests/branch-skill.test.ts",
+            "tests/cli-skill-routing.test.ts",
+            "tests/onboarding-skills.test.ts",
+            "tests/skill-selection-cli.test.ts",
+            "tests/skills-registry.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Bundled skill instructions, metadata, registry output, and skill-routing contracts must run the focused skill lifecycle suite without selecting unrelated historically red package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "native-os-workflow-contract",
+      "source": [
+        ".github/workflows/consuelo-os-distribution-environments.yaml",
+        "packages/workspace/scripts/ci/run-changed-os-native-tests.mjs",
+        "packages/workspace/tests/run-changed-os-native-tests.test.mjs",
+        "packages/workspace/tests/github-workflow-policy.test.js",
+        "packages/os/tests/windows-platform.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ]
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ]
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests.",
+      "origin": "explicit"
+    },
+    {
       "id": "dialer-package",
       "source": [
         "packages/dialer/**"
@@ -763,6 +1984,105 @@
       "origin": "explicit"
     },
     {
+      "id": "dialer-server-package",
+      "source": [
+        "packages/dialer-server/**"
+      ],
+      "tests": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+      "origin": "explicit"
+    },
+    {
+      "id": "lead-connector-package",
+      "source": [
+        "packages/lead-connector/**"
+      ],
+      "tests": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+      "origin": "explicit"
+    },
+    {
+      "id": "coaching-package-contract",
+      "source": [
+        "packages/coaching/**"
+      ],
+      "tests": [
+        {
+          "name": "coaching package declaration contract",
+          "command": [
+            "bun",
+            "test",
+            "packages/coaching/package-contract.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Coaching package changes must emit the declaration artifact advertised by package.json so clean consumers can typecheck.",
+      "origin": "explicit"
+    },
+    {
+      "id": "server-ci-task-contract",
+      "source": [
+        ".github/workflows/ci-server.yaml",
+        "packages/workspace/scripts/ci/run-changed-server-task.mjs",
+        "packages/workspace/tests/run-changed-server-task.test.mjs",
+        "packages/workspace/tests/typeorm-cli-contract.test.mjs",
+        "packages/workspace/tests/github-workflow-policy.test.js",
+        "packages/twenty-server/project.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/test-selection.registry.json"
+      ],
+      "tests": [
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ]
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+      "origin": "explicit"
+    },
+    {
       "id": "api-package",
       "source": [
         "packages/api/**"
@@ -771,9 +2091,11 @@
         {
           "name": "api specs",
           "command": [
-            "bun",
-            "test",
-            "packages/api/src"
+            "bunx",
+            "jest",
+            "--config",
+            "packages/api/jest.config.mjs",
+            "--runInBand"
           ]
         }
       ],
@@ -815,7 +2137,8 @@
             "npx",
             "nx",
             "test",
-            "twenty-front"
+            "twenty-front",
+            "--coverage=false"
           ]
         }
       ],
@@ -833,9 +2156,9 @@
           "name": "@consuelo/core package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/consuelo-core",
-            "run",
             "test"
           ]
         }
@@ -854,9 +2177,9 @@
           "name": "@consuelo/diff-cockpit package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/diff-cockpit",
-            "run",
             "test"
           ]
         }
@@ -875,9 +2198,9 @@
           "name": "@consuelo/os package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/os",
-            "run",
             "test"
           ]
         }
@@ -896,9 +2219,9 @@
           "name": "@open-design/daemon package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/consuelo-design/upstream/open-design/apps/daemon",
-            "run",
             "test"
           ]
         }
@@ -917,9 +2240,9 @@
           "name": "@open-design/e2e package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/consuelo-design/upstream/open-design/e2e",
-            "run",
             "test"
           ]
         }
@@ -938,9 +2261,9 @@
           "name": "@open-design/platform package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/consuelo-design/upstream/open-design/packages/platform",
-            "run",
             "test"
           ]
         }
@@ -959,9 +2282,9 @@
           "name": "@open-design/sidecar-proto package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/consuelo-design/upstream/open-design/packages/sidecar-proto",
-            "run",
             "test"
           ]
         }
@@ -980,9 +2303,9 @@
           "name": "@open-design/sidecar package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/consuelo-design/upstream/open-design/packages/sidecar",
-            "run",
             "test"
           ]
         }
@@ -1001,9 +2324,9 @@
           "name": "@open-design/tools-dev package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/consuelo-design/upstream/open-design/tools/dev",
-            "run",
             "test"
           ]
         }
@@ -1022,9 +2345,9 @@
           "name": "@open-design/tools-pack package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/consuelo-design/upstream/open-design/tools/pack",
-            "run",
             "test"
           ]
         }
@@ -1043,9 +2366,9 @@
           "name": "@open-design/web package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/consuelo-design/upstream/open-design/apps/web",
-            "run",
             "test"
           ]
         }
@@ -1064,9 +2387,9 @@
           "name": "open-design package test",
           "command": [
             "bun",
+            "run",
             "--cwd",
             "packages/consuelo-design/upstream/open-design",
-            "run",
             "test"
           ]
         }
@@ -1293,6 +2616,11 @@
       "path": "packages/api/src/services/workspace-phone-numbers.spec.ts",
       "group": "packages/api/src/services",
       "kind": "spec"
+    },
+    {
+      "path": "packages/coaching/package-contract.test.ts",
+      "group": "packages/coaching",
+      "kind": "test"
     },
     {
       "path": "packages/consuelo-core/tests/registry.test.ts",
@@ -1630,12 +2958,22 @@
       "kind": "test"
     },
     {
+      "path": "packages/consuelo-website/tests/footer-art.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
       "group": "packages/consuelo-website/tests",
       "kind": "test"
     },
     {
       "path": "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/os-launcher-links.test.mjs",
       "group": "packages/consuelo-website/tests",
       "kind": "test"
     },
@@ -1670,9 +3008,189 @@
       "kind": "spec"
     },
     {
+      "path": "packages/dialer-server/src/app.contract.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/architecture.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/call-history-application.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/call-operations/application.test.ts",
+      "group": "packages/dialer-server/src/call-operations",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/call-operations/groq.test.ts",
+      "group": "packages/dialer-server/src/call-operations",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/call-operations/persistence.test.ts",
+      "group": "packages/dialer-server/src/call-operations",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/calls.contract.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/commercial-application.acceptance.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/commercial-persistence.acceptance.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/commercial-providers.acceptance.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/commercial-routes.acceptance.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/commercial.acceptance.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/compatibility-cutover.contract.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/database/migrations.test.ts",
+      "group": "packages/dialer-server/src/database",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/embed-bootstrap.contract.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/embed-boundary.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lead-connector-boundary.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lifecycle.integration.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/release/production-release.test.ts",
+      "group": "packages/dialer-server/src/release",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/embed-session.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/lead-connector-learning.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/predictive-target-ranking.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/railway.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/twilio-provider-mode.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/transcription-boundary.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/transfer-application.acceptance.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/transfer-persistence.acceptance.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/transfer-routes.acceptance.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/twilio-boundary.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/application/adapter-application.spec.ts",
+      "group": "packages/dialer/src/application",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/application/parallel-application.spec.ts",
+      "group": "packages/dialer/src/application",
+      "kind": "spec"
+    },
+    {
       "path": "packages/dialer/src/dialer.spec.ts",
       "group": "packages/dialer/src",
       "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/domain/parallel-group.spec.ts",
+      "group": "packages/dialer/src/domain",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/domain/parallel-transition.spec.ts",
+      "group": "packages/dialer/src/domain",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts",
+      "group": "packages/dialer/src/infrastructure/redis",
+      "kind": "test"
     },
     {
       "path": "packages/dialer/src/services/cadence-optimizer.spec.ts",
@@ -1701,6 +3219,11 @@
     },
     {
       "path": "packages/dialer/src/services/parallel-dialer.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/parallel-lifecycle.contract.spec.ts",
       "group": "packages/dialer/src/services",
       "kind": "spec"
     },
@@ -1741,6 +3264,16 @@
     },
     {
       "path": "packages/documentation/tests/foundation.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/documentation/tests/navigation-memory.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/documentation/tests/nodes.test.ts",
       "group": "packages/documentation/tests",
       "kind": "test"
     },
@@ -1845,6 +3378,136 @@
       "kind": "spec"
     },
     {
+      "path": "packages/lead-connector/src/application.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/architecture.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/commercial-webhook.acceptance.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/deployment/commercial-artifacts.test.ts",
+      "group": "packages/lead-connector/src/deployment",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/deployment/custom-menu.test.ts",
+      "group": "packages/lead-connector/src/deployment",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/deployment/marketplace-bootstrap.test.ts",
+      "group": "packages/lead-connector/src/deployment",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/deployment/production-menu.test.ts",
+      "group": "packages/lead-connector/src/deployment",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+      "group": "packages/lead-connector/src/deployment",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/deployment/worker-release.test.ts",
+      "group": "packages/lead-connector/src/deployment",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed-bootstrap.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/agent-voice.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/api-client.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/architecture.contract.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/click-to-call-runtime.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/contact-label.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/controller.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/embed-build.contract.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/idle-refresh.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/protocol.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/state-machine.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/view.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/infrastructure.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/persistent-stores.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/webhook.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/scripts/compact-daemon-output.test.ts",
       "group": "packages/os/scripts",
       "kind": "test"
@@ -1900,7 +3563,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/bootstrap-release-verifier-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/bootstrap-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/branch-skill.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -1911,6 +3584,36 @@
     },
     {
       "path": "packages/os/tests/bun-product-server-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/caddy-ha-watchdog-migration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/canonical-device-identity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/cli-skill-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/cli-update-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/cloud-first-web-onboarding.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -1940,6 +3643,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/cloudflare-worker-release-readiness.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/code-call-parity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -1950,7 +3658,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/code-call-snapshot.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/code-call.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/coderabbit-config.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -1965,7 +3683,22 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/consuelo-reload.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/consuelo-sites-artifacts-adapter.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-diffs-adapter.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/consuelo-sites-environment-adapter.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -1995,7 +3728,7 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/consuelo-workspace-snapshot.test.ts",
+      "path": "packages/os/tests/credential-broker.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2005,8 +3738,93 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/daily-schedules.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/dangerous-material-policy.test.ts",
       "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/dialer-stream-instructions.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/diffs-coderabbit-review-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/diffs-hono-routes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/environment-probe.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/fixture-harness.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/lifecycle-contract.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/local-container-runner.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-channel-provider-retries.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-channel-schema.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-channel-workflows.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-channels-cli.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-channels.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/release-publication-preparer.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/runtime-bundle-workspace-closure.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/runtime-bundle.test.ts",
+      "group": "packages/os/tests/distribution",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/distribution/workflow-contract.test.ts",
+      "group": "packages/os/tests/distribution",
       "kind": "test"
     },
     {
@@ -2016,6 +3834,26 @@
     },
     {
       "path": "packages/os/tests/doctor-redaction.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-control-plane.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-hono-routes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/environment-sites-gateway-endpoints.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2030,9 +3868,29 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/finish-line-lifecycle-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/fixtures/os-replica-correctness-worker.ts",
+      "group": "packages/os/tests/fixtures",
+      "kind": "tests-dir"
+    },
+    {
       "path": "packages/os/tests/fixtures/trace-persistence-runtime.ts",
       "group": "packages/os/tests/fixtures",
       "kind": "tests-dir"
+    },
+    {
+      "path": "packages/os/tests/foundation-finish-line-regressions.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/fs-read-output-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
     },
     {
       "path": "packages/os/tests/fs-read.test.ts",
@@ -2050,12 +3908,62 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/gateway-placeholder-workspace-auth.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/gcloud-managed-cloud-node-instance.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/gcloud-managed-cloud-node.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/github-pr-reviews.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
       "path": "packages/os/tests/github.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/health-readiness.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/hosted-release-worker-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-control-plane-cloudflare.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-control-plane-d1.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-control-plane-http.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-control-plane-r2.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-control-plane.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2070,7 +3978,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/install-observability-integrations.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/install-state.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/install-telemetry-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2095,7 +4013,47 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/installer-telemetry-device-correlation.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/installer-telemetry-onboarding-wiring.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/installer-telemetry-runtime.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/internal-dashboard-integration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/internal-user-dashboard.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/launcher-astro-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/launcher-local-customization.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/launcher-nodes-control-plane.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/launcher-nodes-materialization.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2105,7 +4063,57 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/legacy-system-daemons.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-engine.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-facade.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-gcp-metadata-release-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-help.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-restart-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-retention-uninstall.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-tool-surface.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/linux-platform.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/local-agent-connectivity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/local-agent-mcp-bridge.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2130,7 +4138,82 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/macos-platform.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-checkout-observability.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-node-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-node-enrollment-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-node-enrollment.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-node-instance-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-node-lifecycle-onboarding.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-node-linux-connector.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-node-linux-heartbeat.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-one-click-provisioning.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-one-click-runner.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-pricing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-cloud-review-regressions.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-components.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-user-content.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2140,7 +4223,27 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/mcp-authenticated-principal.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-central-proxy-scope.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-gateway-action-scopes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/mcp-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-origin.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2315,6 +4418,61 @@
       "kind": "tests-dir"
     },
     {
+      "path": "packages/os/tests/memory-adjacent.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/memory.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/monitor-errors.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/native-google-device-approval.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/native-lifecycle-client.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/native-lifecycle-endpoint.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/native-lifecycle-operation.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/node-credential-sealing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/node-encryption-key-file.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/node-resource-lock.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/node-sealed-credential-store.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/oauth-device-http-client.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2330,12 +4488,27 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/observability-traces-site.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/onboarding-skills.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/os-call-artifacts.test.ts",
+      "path": "packages/os/tests/operator-login.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/operator-oauth-client.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-device-agent-status.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2370,12 +4543,37 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/os-raw-steering.test.ts",
+      "path": "packages/os/tests/os-replica-correctness.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-steering-tool-trace.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-universal-login.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/os-web-auth-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
       "path": "packages/os/tests/platform-cloudflare-provisioning-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/platform-managed-cloud-node-instance.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/platform-managed-cloud-node.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2390,12 +4588,27 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/production-release-mcp-security.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/provider-cutover.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/redaction.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
       "path": "packages/os/tests/repo-default-config.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2415,7 +4628,22 @@
       "kind": "tests-dir"
     },
     {
+      "path": "packages/os/tests/secrets-hono-routes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/secrets-surface.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/security-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/security-scan.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2426,6 +4654,21 @@
     },
     {
       "path": "packages/os/tests/semantic-index-storage.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/senior-engineer-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/settings-control-plane.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2460,7 +4703,67 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/skill-selection-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/skills-registry.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/source-control-config.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/steering-canonical-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-context-memory.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-install-state.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/stream-service.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/subagent-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/subagent-executable-discovery.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/subagent-orchestration-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/subagent-runner-termination.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/system-daemon-reliability.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2490,6 +4793,16 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/task-pr-repository-recovery.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-push-local-sync.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/task-selection.test.js",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2500,7 +4813,27 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/task-start-output.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/tool-manifest.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/tool-package-layout.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/tool-scope-authorization.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/tools-search-benchmark.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2510,12 +4843,42 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/tools-search-v3.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/trace-gateway-workspace-host.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/trace-history-redaction.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/trace-persistence.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-search-query.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-inspector-interactions.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-inspector-os-owned.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-renderer.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2545,6 +4908,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/trace-sites-history-endpoint-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/trace-sites-live-smoke-script.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2565,6 +4933,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/traces-hono-routes.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/verification.test.js",
       "group": "packages/os/tests",
       "kind": "test"
@@ -2575,7 +4948,37 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/visible-dialer-steering.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/windows-bootstrap-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/windows-platform.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/worker-pool-lifecycle.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/worker-pool-process.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/workflow-intent.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-cloudflare-d1-migration-regression.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2590,7 +4993,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/workspace-edge-node-auth.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-edge-route-seed-identity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -2605,13 +5018,193 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/workspace-gateway-node-end-to-end.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-gateway-node-proxy.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/workspace-hostname-edge-router.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-node-heartbeat-scheduler.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-nodes-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-project-cwd.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
       "path": "packages/os/tests/workspace-site-snapshot-publishing.test.ts",
       "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/artifacts/handler.test.ts",
+      "group": "packages/os/tools/artifacts",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/codemode/handler.test.ts",
+      "group": "packages/os/tools/codemode",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/composed/handler.test.ts",
+      "group": "packages/os/tools/composed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/daily-schedules/handler.test.ts",
+      "group": "packages/os/tools/daily-schedules",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/decision-engine/handler.test.ts",
+      "group": "packages/os/tools/decision-engine",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/deployment-provider/cloudflare.test.ts",
+      "group": "packages/os/tools/deployment-provider",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/deployment-provider/facade.test.ts",
+      "group": "packages/os/tools/deployment-provider",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/deployment-provider/handler.test.ts",
+      "group": "packages/os/tools/deployment-provider",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/deployment-provider/vercel.test.ts",
+      "group": "packages/os/tools/deployment-provider",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/filesystem/handler.test.ts",
+      "group": "packages/os/tools/filesystem",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/generation/handler.test.ts",
+      "group": "packages/os/tools/generation",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/git/handler.test.ts",
+      "group": "packages/os/tools/git",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/github/handler.test.ts",
+      "group": "packages/os/tools/github",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/http/handler.test.ts",
+      "group": "packages/os/tools/http",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/linear/handler.test.ts",
+      "group": "packages/os/tools/linear",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/mac/handler.test.ts",
+      "group": "packages/os/tools/mac",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/media/handler.test.ts",
+      "group": "packages/os/tools/media",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/memory/handler.test.ts",
+      "group": "packages/os/tools/memory",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/monitor/handler.test.ts",
+      "group": "packages/os/tools/monitor",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/railway/handler.test.ts",
+      "group": "packages/os/tools/railway",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/review/handler.test.ts",
+      "group": "packages/os/tools/review",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/security/handler.test.ts",
+      "group": "packages/os/tools/security",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/sentry/handler.test.ts",
+      "group": "packages/os/tools/sentry",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/stream/handler.test.ts",
+      "group": "packages/os/tools/stream",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/subagent/handler.test.ts",
+      "group": "packages/os/tools/subagent",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/task-lifecycle/handler.test.ts",
+      "group": "packages/os/tools/task-lifecycle",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/tool-discovery/handler.test.ts",
+      "group": "packages/os/tools/tool-discovery",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/utilities/handler.test.ts",
+      "group": "packages/os/tools/utilities",
       "kind": "test"
     },
     {
@@ -7375,6 +9968,11 @@
       "kind": "spec"
     },
     {
+      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.spec.ts",
+      "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers",
+      "kind": "spec"
+    },
+    {
       "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/guards/dialer-call-permission.guard.spec.ts",
       "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/guards",
       "kind": "spec"
@@ -7387,6 +9985,11 @@
     {
       "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.spec.ts",
       "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts",
+      "group": "packages/twenty-server/src/engine/core-modules/consuelo-api/services",
       "kind": "spec"
     },
     {
@@ -12785,6 +15388,16 @@
       "kind": "__tests__"
     },
     {
+      "path": "packages/workspace/scripts/lib/stream-instructions.test.ts",
+      "group": "packages/workspace/scripts/lib",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/audit/audit.test.ts",
       "group": "packages/workspace/tests/audit",
       "kind": "test"
@@ -12831,6 +15444,16 @@
     },
     {
       "path": "packages/workspace/tests/deploy-wrappers.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/dialer-validation-runbook.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -12895,6 +15518,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/pr-links.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -12915,12 +15543,42 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/review-documentation-opportunity.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/review-generated-artifact-contract.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/review-run-state.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/run-changed-frontend-task.test.mjs",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/run-changed-os-native-tests.test.mjs",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/run-changed-server-task.test.mjs",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/stream-lifecycle.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/stream-sync-node-modules.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -12945,12 +15603,37 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/task-init.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/task-meta.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
     {
       "path": "packages/workspace/tests/task-node-modules.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-pr-repository-recovery.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-push-local-sync.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-push-session.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-selection.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -12985,17 +15668,22 @@
       "kind": "test"
     },
     {
-      "path": "packages/workspace/tests/tools-search-v2.test.ts",
-      "group": "packages/workspace/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/workspace/tests/trace-home.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
     {
       "path": "packages/workspace/tests/trace-site-inspector.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/typeorm-cli-contract.test.mjs",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -13032,8 +15720,10 @@
     "packages/consuelo-website/tests/blog-refresh.test.mjs",
     "packages/consuelo-website/tests/blog-toc-responsive.test.mjs",
     "packages/consuelo-website/tests/brand-assets.test.mjs",
+    "packages/consuelo-website/tests/footer-art.test.mjs",
     "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
     "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+    "packages/consuelo-website/tests/os-launcher-links.test.mjs",
     "packages/consuelo-website/tests/pricing-interactions.test.mjs",
     "packages/consuelo-website/tests/site-header.test.mjs",
     "packages/consuelo-website/tests/social-card.test.mjs",
@@ -13043,12 +15733,16 @@
     "packages/documentation/tests/build.test.ts",
     "packages/documentation/tests/connect.test.ts",
     "packages/documentation/tests/foundation.test.ts",
+    "packages/documentation/tests/navigation-memory.test.ts",
+    "packages/documentation/tests/nodes.test.ts",
     "packages/documentation/tests/observe.test.ts",
     "packages/documentation/tests/reference.test.ts",
     "packages/documentation/tests/review-cleanup.test.ts",
     "packages/documentation/tests/secure.test.ts",
     "packages/documentation/tests/sites.test.ts",
     "packages/documentation/tests/start.test.ts",
+    "packages/workspace/scripts/lib/stream-instructions.test.ts",
+    "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
     "packages/workspace/tests/browser-review-contract.test.ts",
     "packages/workspace/tests/browser-service.test.ts",
     "packages/workspace/tests/chunker.test.js",
@@ -13058,6 +15752,8 @@
     "packages/workspace/tests/codemode.test.ts",
     "packages/workspace/tests/context-trace.test.js",
     "packages/workspace/tests/deploy-wrappers.test.js",
+    "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
+    "packages/workspace/tests/dialer-validation-runbook.test.ts",
     "packages/workspace/tests/docs-production-release.test.js",
     "packages/workspace/tests/email-package-removal.test.ts",
     "packages/workspace/tests/embedding-config.test.js",
@@ -13068,31 +15764,37 @@
     "packages/workspace/tests/fs-search.test.ts",
     "packages/workspace/tests/git-diff.test.ts",
     "packages/workspace/tests/github-pr-reviews.test.ts",
-    "packages/workspace/tests/github-workflow-policy.test.js",
     "packages/workspace/tests/github.test.ts",
     "packages/workspace/tests/pr-links.test.js",
     "packages/workspace/tests/pr-ref.test.js",
     "packages/workspace/tests/pr-review.test.js",
     "packages/workspace/tests/research-ingest.test.js",
+    "packages/workspace/tests/review-documentation-opportunity.test.js",
+    "packages/workspace/tests/review-generated-artifact-contract.test.js",
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/stream-lifecycle.test.ts",
+    "packages/workspace/tests/stream-sync-node-modules.test.js",
     "packages/workspace/tests/stream-workpads.test.js",
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
     "packages/workspace/tests/task-hook-workflow-contract.test.ts",
     "packages/workspace/tests/task-hooks.test.ts",
+    "packages/workspace/tests/task-init.test.js",
     "packages/workspace/tests/task-meta.test.ts",
     "packages/workspace/tests/task-node-modules.test.js",
+    "packages/workspace/tests/task-pr-repository-recovery.test.ts",
+    "packages/workspace/tests/task-push-local-sync.test.ts",
+    "packages/workspace/tests/task-push-session.test.ts",
+    "packages/workspace/tests/task-selection.test.js",
     "packages/workspace/tests/task-selector-pr-ref.test.js",
     "packages/workspace/tests/task-session.test.js",
     "packages/workspace/tests/task-workpad.test.js",
     "packages/workspace/tests/task-workpad.test.ts",
     "packages/workspace/tests/tool-manifest.test.ts",
-    "packages/workspace/tests/tools-search-v2.test.ts",
     "packages/workspace/tests/trace-home.test.ts",
     "packages/workspace/tests/trace-site-inspector.test.ts",
+    "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
     "packages/workspace/tests/verification.test.js",
     "packages/workspace/tests/wait.test.js",
-    "packages/workspace/tests/website-deploy.test.js",
     "packages/workspace/tests/workflow-intent.test.ts",
     "tests/operator.test.ts"
   ],
@@ -13109,6 +15811,14 @@
       "name": "@consuelo/dialer",
       "root": "packages/dialer",
       "file": "packages/dialer/project.json",
+      "testTargets": [],
+      "typecheck": true,
+      "lint": false
+    },
+    {
+      "name": "@consuelo/dialer-server",
+      "root": "packages/dialer-server",
+      "file": "packages/dialer-server/project.json",
       "testTargets": [],
       "typecheck": true,
       "lint": false
@@ -13132,6 +15842,14 @@
       ],
       "typecheck": true,
       "lint": true
+    },
+    {
+      "name": "@consuelo/lead-connector",
+      "root": "packages/lead-connector",
+      "file": "packages/lead-connector/project.json",
+      "testTargets": [],
+      "typecheck": true,
+      "lint": false
     },
     {
       "name": "@consuelo/logger",
@@ -13352,6 +16070,15 @@
       }
     },
     {
+      "name": "@consuelo/dialer-server",
+      "root": "packages/dialer-server",
+      "file": "packages/dialer-server/package.json",
+      "scripts": {
+        "test": "bun test src",
+        "validate:provider-test": "bun ./scripts/validate-provider-test.ts"
+      }
+    },
+    {
       "name": "@consuelo/diff-cockpit",
       "root": "packages/diff-cockpit",
       "file": "packages/diff-cockpit/package.json",
@@ -13371,6 +16098,7 @@
         "test:browser": "bun scripts/test-foundation-browser.mjs",
         "test:connect": "bun test tests/connect.test.ts",
         "test:connect-browser": "bun scripts/test-connect-browser.mjs",
+        "test:nodes": "bun test tests/nodes.test.ts",
         "test:build": "bun test tests/build.test.ts",
         "test:build-browser": "bun scripts/test-build-browser.mjs",
         "test:sites": "bun test tests/sites.test.ts",
@@ -13382,6 +16110,14 @@
         "test:reference": "bun test tests/reference.test.ts",
         "test:reference-browser": "bun scripts/test-reference-browser.mjs",
         "test:review-cleanup": "bun test tests/review-cleanup.test.ts"
+      }
+    },
+    {
+      "name": "@consuelo/lead-connector",
+      "root": "packages/lead-connector",
+      "file": "packages/lead-connector/package.json",
+      "scripts": {
+        "test": "bun test src"
       }
     },
     {

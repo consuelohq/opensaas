@@ -1,4 +1,4 @@
-import type { AccountWorkspace, WorkspaceNode } from '../types';
+import type { AccountWorkspace, WorkspaceAgentName, WorkspaceNode, WorkspaceNodeRole } from '../types';
 import { workspaceIdFromSlug } from '../utils';
 
 export const WORKSPACE_NODE_HEARTBEAT_TTL_MS = 60_000;
@@ -6,6 +6,35 @@ export const WORKSPACE_NODE_HEARTBEAT_STALE_MULTIPLIER = 3;
 export const WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS = 5 * 60_000;
 
 export type WorkspaceNodePresence = 'online' | 'stale' | 'offline';
+
+export type SafeWorkspaceNode = {
+  workspaceId: string;
+  nodeId: string;
+  displayName: string;
+  role: WorkspaceNodeRole;
+  platform: string;
+  architecture: string;
+  channel: string;
+  connectorId: string | null;
+  capabilities: string[];
+  agents: WorkspaceAgentName[] | null;
+  createdAt: string;
+  lastSeenAt: string | null;
+  presence: WorkspaceNodePresence;
+  state: 'active' | 'revoked';
+  publicKeyThumbprint: string;
+};
+
+export type WorkspaceNodeListPayload = {
+  workspaceId: string;
+  workspaceHost: string;
+  currentNodeId: string | null;
+  currentNode: SafeWorkspaceNode | null;
+  defaultNodeId: string | null;
+  nodeCount: number;
+  presence: Record<WorkspaceNodePresence, number>;
+  nodes: SafeWorkspaceNode[];
+};
 
 export function workspaceNodeId(node: WorkspaceNode): string {
   return node.workspaceId ?? workspaceIdFromSlug(node.workspaceSlug);
@@ -23,9 +52,11 @@ export function workspaceNodePresence(
   ttlMs = WORKSPACE_NODE_HEARTBEAT_TTL_MS,
 ): WorkspaceNodePresence {
   if ((node.state ?? 'active') === 'revoked') return 'offline';
-  const lastSeenAt = node.lastSeenAt ?? node.updatedAt;
+  if (node.connectorStatus === 'disconnected') return 'offline';
+  const lastSeenAt = node.lastSeenAt;
+  if (lastSeenAt === undefined) return 'offline';
   const ageMs = Math.max(0, nowMs - lastSeenAt);
-  if (ageMs <= ttlMs && (node.connectorStatus ?? 'connected') === 'connected') {
+  if (ageMs <= ttlMs) {
     return 'online';
   }
   if (ageMs <= ttlMs * WORKSPACE_NODE_HEARTBEAT_STALE_MULTIPLIER) {
@@ -37,7 +68,7 @@ export function workspaceNodePresence(
 export function safeWorkspaceNode(
   node: WorkspaceNode,
   nowMs: number,
-): Record<string, unknown> {
+): SafeWorkspaceNode {
   return {
     workspaceId: workspaceNodeId(node),
     nodeId: node.nodeId,
@@ -48,8 +79,12 @@ export function safeWorkspaceNode(
     channel: node.channel ?? 'stable',
     connectorId: node.connectorId ?? null,
     capabilities: [...(node.capabilities ?? [])].sort(),
+    agents: node.agents === undefined ? null : [...node.agents],
     createdAt: new Date(node.createdAt).toISOString(),
-    lastSeenAt: new Date(node.lastSeenAt ?? node.updatedAt).toISOString(),
+    lastSeenAt:
+      node.lastSeenAt === undefined
+        ? null
+        : new Date(node.lastSeenAt).toISOString(),
     presence: workspaceNodePresence(node, nowMs),
     state: node.state ?? 'active',
     publicKeyThumbprint: node.devicePublicKeyThumbprint,
@@ -61,7 +96,7 @@ export function workspaceNodeListPayload(input: {
   nodes: WorkspaceNode[];
   nowMs: number;
   currentNodeId?: string;
-}): Record<string, unknown> {
+}): WorkspaceNodeListPayload {
   const nodes = input.nodes
     .filter((node) => node.workspaceHost === input.workspace.workspaceHost)
     .sort((left, right) => left.createdAt - right.createdAt)

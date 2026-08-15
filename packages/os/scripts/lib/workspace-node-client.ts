@@ -53,6 +53,113 @@ export type WorkspaceNodeClient = {
   execute: (command: WorkspaceNodeCommand) => Promise<Record<string, unknown>>;
 };
 
+const MAX_OUTPUT_NODES = 50;
+const MAX_OUTPUT_CAPABILITIES = 8;
+const MAX_OUTPUT_AGENTS = 7;
+const MAX_OUTPUT_STRING_LENGTH = 80;
+
+function boundedString(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  return value.slice(0, MAX_OUTPUT_STRING_LENGTH);
+}
+
+function boundedStringArray(value: unknown, limit: number): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .slice(0, limit)
+    .map((item) => item.slice(0, MAX_OUTPUT_STRING_LENGTH));
+}
+
+function boundedCount(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.max(0, Math.trunc(value))
+    : 0;
+}
+
+function safeNodeOutput(value: unknown): Record<string, unknown> | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  const node = value as Record<string, unknown>;
+  const output: Record<string, unknown> = {};
+  for (const field of [
+    'workspaceId',
+    'nodeId',
+    'displayName',
+    'role',
+    'platform',
+    'architecture',
+    'channel',
+    'connectorId',
+    'createdAt',
+    'lastSeenAt',
+    'presence',
+    'state',
+    'publicKeyThumbprint',
+  ]) {
+    const normalized = boundedString(node[field]);
+    if (normalized !== undefined) output[field] = normalized;
+    else if (node[field] === null && (field === 'connectorId' || field === 'lastSeenAt')) {
+      output[field] = null;
+    }
+  }
+  output.capabilities = boundedStringArray(
+    node.capabilities,
+    MAX_OUTPUT_CAPABILITIES,
+  );
+  output.agents = boundedStringArray(node.agents, MAX_OUTPUT_AGENTS);
+  return output;
+}
+
+function safePresence(value: unknown): Record<string, number> {
+  const presence = value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+  return {
+    online: boundedCount(presence.online),
+    stale: boundedCount(presence.stale),
+    offline: boundedCount(presence.offline),
+  };
+}
+
+export function formatWorkspaceNodeCommandResult(
+  command: WorkspaceNodeCommand,
+  result: Record<string, unknown>,
+): string {
+  if (command.action === 'list') {
+    const sourceNodes = Array.isArray(result.nodes) ? result.nodes : [];
+    const nodes = sourceNodes
+      .slice(0, MAX_OUTPUT_NODES)
+      .map(safeNodeOutput)
+      .filter((node): node is Record<string, unknown> => Boolean(node));
+    const nodeCount = boundedCount(result.nodeCount);
+    return JSON.stringify({
+      workspaceId: boundedString(result.workspaceId) ?? null,
+      workspaceHost: boundedString(result.workspaceHost) ?? null,
+      currentNodeId: boundedString(result.currentNodeId) ?? null,
+      defaultNodeId: boundedString(result.defaultNodeId) ?? null,
+      nodeCount,
+      presence: safePresence(result.presence),
+      nodes,
+      truncated: sourceNodes.length > MAX_OUTPUT_NODES || nodeCount > nodes.length,
+    });
+  }
+  if (command.action === 'default') {
+    return JSON.stringify({
+      defaultNodeId:
+        boundedString(result.defaultNodeId) ?? command.nodeId.slice(0, MAX_OUTPUT_STRING_LENGTH),
+    });
+  }
+  return JSON.stringify({
+    node:
+      safeNodeOutput(result.node) ??
+      {
+        nodeId: command.nodeId.slice(0, MAX_OUTPUT_STRING_LENGTH),
+        capabilities: [],
+        agents: [],
+      },
+  });
+}
+
 function normalizeOrigin(value: string): string {
   const origin = new URL(value);
   if (origin.protocol !== 'https:' && origin.hostname !== 'localhost') {

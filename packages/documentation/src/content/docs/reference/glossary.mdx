@@ -2,7 +2,7 @@
 title: Glossary
 description: Canonical meanings for Consuelo OS product and runtime terms.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
   - source: packages/os/README.md
     tests:
@@ -35,17 +35,27 @@ evidence:
 
 **File** — Workspace material stored or referenced within an allowed file boundary. A file is not automatically an artifact.
 
-**Home node** — The authoritative machine running live Consuelo OS for a workspace.
+**Current node** — The node serving the request or local runtime context being inspected.
+
+**Default node** — The workspace node used for new untargeted OS calls when no task owner or explicit node determines routing.
+
+**Home node** — The first approved node's enrollment role. Home is an identity and registration concept; it is separate from the mutable default node used for routing.
 
 **Live OS** — The active runtime and tool authority on a node. It can execute permitted work and produce current traces.
 
-**Local node** — A machine-local OS installation. A local node can be the home node or a member node.
+**Local node** — A Consuelo OS installation on a computer you operate. A local node can have the `home` or `member` enrollment role.
 
 **MCP** — Model Context Protocol, the discovery and invocation protocol used to connect supported agents to OS skills.
 
-**Member node** — A node joined to a workspace without being its authoritative home node.
+**Member node** — A later approved node with the `member` enrollment role.
 
-**Node** — One machine running Consuelo OS, with node-local identity, security material, database, logs, and runtime state.
+**Node** — A computer or managed runtime running Consuelo OS, with node-local identity, security material, database, logs, and runtime state.
+
+**Cloud node** — A Consuelo-managed node intended to stay available without depending on one person's computer.
+
+**Node presence** — The current online, stale, or offline state derived from recent node proof. Presence affects whether a node can receive routed work.
+
+**Route source** — The reason a node was selected for a call: task ownership, an explicit node request, or the workspace default.
 
 **OS skill** — A discoverable skill entry that MCP can list and call. It can contain guidance, executable behavior, or both depending on its metadata.
 
@@ -61,7 +71,7 @@ evidence:
 
 **Steering** — Durable workspace and project instructions agents load before working.
 
-**Task session** — The identifier that binds repository tools to one isolated task branch and worktree.
+**Task session** — The identifier for one isolated task. Once a task starts on a node, its session also keeps follow-up routed work on that owning node until affinity is successfully released.
 
 **Tool** — One operation an agent can call. In broad product language this includes facade tools and callable OS skills; exact manifests distinguish their `kind`.
 

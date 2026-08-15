@@ -5,6 +5,7 @@ import { Effect, Schema } from 'effect';
 
 export const MAX_READ_LINES = 2_000;
 export const MAX_READ_BYTES = 50 * 1024;
+export const MAX_FULL_READ_BYTES = 1_000_000;
 export const MAX_MEDIA_INGEST_BYTES = 20 * 1024 * 1024;
 export const MAX_LINE_LENGTH = 2_000;
 export const MAX_LINE_SUFFIX = `... (line truncated to ${MAX_LINE_LENGTH} chars)`;
@@ -16,14 +17,16 @@ export const FsReadPageInput = Schema.Struct({
   limit: Schema.optional(Schema.Number),
   from: Schema.optional(Schema.Number),
   to: Schema.optional(Schema.Number),
+  full: Schema.optional(Schema.Boolean),
 });
 
-export type FsReadFileInput = { path: string; offset?: number; limit?: number; from?: number; to?: number };
+export type FsReadFileInput = { path: string; offset?: number; limit?: number; from?: number; to?: number; full?: boolean };
 export type FsReadTextPage = { type: 'text-page'; path: string; mime: string; encoding: 'utf8'; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number };
+export type FsReadTextFull = { type: 'text-full'; path: string; mime: string; encoding: 'utf8'; sizeBytes: number; lines: number; content: string };
 export type FsReadBinary = { type: 'binary'; path: string; mime?: string; sizeBytes: number; message: string };
 export type FsReadMedia = { type: 'media'; path: string; mime: 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp'; sizeBytes: number; encoding: 'base64'; content: string };
 export type FsReadError = { type: 'error'; code: string; path?: string; message: string };
-export type FsReadPage = FsReadTextPage | FsReadBinary | FsReadMedia;
+export type FsReadPage = FsReadTextPage | FsReadTextFull | FsReadBinary | FsReadMedia;
 export type FsReadResult = FsReadPage | FsReadError;
 export type FsReadManyResult = FsReadResult | { results: Array<{ path: string; ok: true; page: FsReadPage } | { path: string; ok: false; error: FsReadError }> };
 
@@ -220,6 +223,29 @@ const readTextPageEffect = (resolved: ResolvedPath, input: FsReadFileInput, size
   },
 });
 
+const readTextFullEffect = (resolved: ResolvedPath, sizeBytes: number) => Effect.try({
+  try: (): FsReadTextFull | FsReadError => {
+    if (sizeBytes > MAX_FULL_READ_BYTES) {
+      return readError('FULL_READ_TOO_LARGE', `Full read exceeds ${MAX_FULL_READ_BYTES} byte limit: ${resolved.displayPath}`, resolved.displayPath);
+    }
+    const content = new TextDecoder('utf-8', { fatal: true }).decode(fs.readFileSync(resolved.realPath));
+    return {
+      type: 'text-full',
+      path: resolved.displayPath,
+      mime: mimeType(resolved.realPath, 'text/plain'),
+      encoding: 'utf8',
+      sizeBytes,
+      lines: content === '' ? 0 : content.split('\n').length,
+      content,
+    };
+  },
+  catch: (cause) => {
+    const message = String((cause as Error).message || cause);
+    if (message.includes('encoded data was not valid') || message.includes('invalid')) return binaryResult(resolved, sizeBytes, `Cannot decode as UTF-8: ${resolved.displayPath}`);
+    return readError('READ_FAILED', `Failed to read file: ${message}`, resolved.displayPath);
+  },
+});
+
 export const readFileEffect = (input: FsReadFileInput, options: { root?: string } = {}) => Effect.gen(function* () {
   const root = options.root || process.cwd();
   const resolved = yield* resolveResourceEffect(input.path, root);
@@ -231,6 +257,7 @@ export const readFileEffect = (input: FsReadFileInput, options: { root?: string 
   if (mediaMime) return yield* readMediaEffect(resolved, mediaMime, Number(stat.size));
   if (startsWith(first, [0x25, 0x50, 0x44, 0x46])) return binaryResult(resolved, Number(stat.size), `Cannot read binary PDF file as text: ${resolved.displayPath}`, 'application/pdf');
   if (isProbablyBinary(resolved.displayPath, first)) return binaryResult(resolved, Number(stat.size), `Cannot read binary file as text: ${resolved.displayPath}`);
+  if (input.full) return yield* readTextFullEffect(resolved, Number(stat.size));
   return yield* readTextPageEffect(resolved, input, Number(stat.size));
 }).pipe(Effect.catchAll((failure) => Effect.succeed(failure as FsReadError)));
 

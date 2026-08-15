@@ -25,14 +25,18 @@ describe('shared trace site renderer', () => {
     expect(TRACE_SITE_JAVASCRIPT).not.toContain('node_renderer');
   });
 
-  it('demotes the generated Sites trace page to a non-interactive canonical link', () => {
+  it('keeps the generated Sites trace page on the maintained observability renderer', () => {
     const sitesSource = readFileSync(
       new URL('../scripts/lib/sites.ts', import.meta.url),
       'utf8',
     );
 
-    expect(sitesSource).toContain('Open authenticated traces');
-    expect(sitesSource).toContain('href="/traces"');
+    expect(sitesSource).toContain(
+      "import { buildObservabilityTracesSite } from './observability-traces-site';",
+    );
+    expect(sitesSource).toContain(
+      'fs.writeFileSync(paths.tracesIndexPath, buildObservabilityTracesSite()',
+    );
     expect(sitesSource).not.toContain("return renderTraceSite({ assetMode: 'inline' });");
     expect(sitesSource).not.toContain("import { renderTraceSite } from './trace-site';");
     expect(sitesSource).not.toContain("payload.events || payload.rows || payload.traces");
@@ -44,5 +48,16 @@ describe('shared trace site renderer', () => {
     expect(TRACE_SITE_JAVASCRIPT).toContain('selectedId: view.selectedId');
     expect(TRACE_SITE_JAVASCRIPT).not.toContain('rawInputJson:');
     expect(TRACE_SITE_JAVASCRIPT).not.toContain('rawResultJson:');
+  });
+
+  it('recovers an expired workspace session instead of rendering an empty trace table', () => {
+    expect(TRACE_SITE_JAVASCRIPT).toContain("response.status !== 401");
+    expect(TRACE_SITE_JAVASCRIPT).toContain("payload.error !== 'workspace_session_required'");
+    expect(TRACE_SITE_JAVASCRIPT).toContain("'/login/google/start'");
+    expect(TRACE_SITE_JAVASCRIPT).toContain("searchParams.set('purpose', 'web')");
+    expect(TRACE_SITE_JAVASCRIPT).toContain(
+      'window.location.pathname + window.location.search + window.location.hash',
+    );
+    expect(TRACE_SITE_JAVASCRIPT).toContain('window.location.assign(loginUrl.toString())');
   });
 });

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-exact-head-mainline-security-and-transport-review",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1722,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1722",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1722",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1722/resolve-exact-head-mainline-security-and-transport-review",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1722",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1722/resolve-exact-head-mainline-security-and-transport-review",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-exact-head-mainline-security-and-transport-review",
+  "taskSession": "tsk_bf55f4b77aeb",
+  "tmuxSession": "opensaas-os-resolve-exact-head-mainline-security-and-transpo-bf55f4b7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-exact-head-mainline-security-and-transport-review/.task/os/resolve-exact-head-mainline-security-and-transport-review/session.json",
+  "createdAt": "2026-07-29T07:05:24.629Z"
+}

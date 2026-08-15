@@ -1,0 +1,87 @@
+---
+title: LeadConnector dialer
+description: Install, open, and verify the embedded Consuelo Dialer inside LeadConnector.
+status: preview
+verifiedAt: 2026-07-28
+evidence:
+  - source: packages/api/src/routes/ghl.ts
+    tests:
+      - packages/api/src/routes/__tests__/ghl.spec.ts
+      - packages/consuelo-website/tests/website-structure.test.js
+    runtime: 'The Marketplace draft, embedded admin route, overlay route, and exact legacy documentation URL were verified in the isolated App Test location on 2026-07-28.'
+---
+
+import Note from '../../../../components/mintlify/Note.astro';
+import Card from '../../../../components/mintlify/Card.astro';
+import CardGroup from '../../../../components/mintlify/CardGroup.astro';
+
+The Consuelo Dialer runs inside LeadConnector with two connected surfaces:
+
+- **Admin** at `/admin` — installation status, analytics, caller IDs, permissions, diagnostics, and calling configuration.
+- **Calling overlay** at `/overlay` — the compact dialer opened from supported CRM pages such as Opportunities and Contacts.
+
+<Note>
+  Open the dialer from the installed LeadConnector app. Opening an OAuth callback or another internal endpoint directly will show a validation error because the required installation context is missing.
+</Note>
+
+## Before you start
+
+You need:
+
+- the Consuelo Dialer installed in the intended LeadConnector location;
+- permission to use installed apps in that location;
+- microphone permission enabled for the LeadConnector browser tab;
+- at least one contact or opportunity with a callable phone number.
+
+## Open the admin page
+
+Choose **Consuelo Dialer** from the LeadConnector sidebar. A healthy installation loads the embedded admin surface instead of a protected-host or refused-to-connect page.
+
+Use the admin page for installation status, caller-ID health, team permissions, calling profiles, multiline limits, and browser diagnostics.
+
+## Open the calling overlay
+
+Navigate to **Opportunities** or **Contacts**. The installed Custom JS module adds a compact **Dial** launcher on supported CRM routes.
+
+1. Choose a contact or opportunity.
+2. Open the Dial launcher.
+3. Confirm the compact overlay appears without leaving the CRM page.
+4. Allow microphone access when the browser asks.
+
+The overlay reveals only the current stage of the workflow: target selection, dialing, connected call, wrap-up, and completion.
+
+## Verify the installation without placing a call
+
+A safe first verification checks:
+
+- the sidebar admin page loads;
+- the Dial launcher appears on Opportunities and Contacts;
+- the overlay opens and closes;
+- selected CRM context appears in the overlay;
+- reloading the CRM page restores a usable launcher;
+- no customer data or full phone number appears in screenshots or logs.
+
+A real carrier call requires a separate test authorization with an approved destination, caller ID, call-leg count, duration limit, and recording policy.
+
+## Troubleshooting
+
+### The sidebar page shows a protected workspace error
+
+The installed Custom Page is still pointing at a retired Consuelo hostname. Refresh or reinstall the current draft/test version so the sidebar uses the deployed embedded admin URL.
+
+### The embedded page refuses to connect
+
+Confirm the parent LeadConnector application origin is included in the Worker frame-ancestor and message-origin allowlists. Do not weaken the policy with wildcard origins.
+
+### No Dial launcher appears
+
+Hard-refresh the CRM page after updating the installed draft. Existing installations may keep the previous Custom JS snapshot until the test version is updated or reinstalled.
+
+### The callback endpoint says code and state are required
+
+The OAuth callback was opened directly. Start installation from the Marketplace test link so LeadConnector supplies the temporary authorization values automatically.
+
+<CardGroup cols={2}>
+  <Card title="Consuelo support" href="https://consuelohq.com/support">Get help with installation, access, or an embedded dialer issue.</Card>
+  <Card title="Applications" href="/connect/apps-and-services/">Return to the Consuelo integration catalog.</Card>
+</CardGroup>

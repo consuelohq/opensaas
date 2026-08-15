@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-public-docs-and-download-redirects",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1698,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1698",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1698",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1698/fix-public-docs-and-download-redirects",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1698",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1698/fix-public-docs-and-download-redirects",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-public-docs-and-download-redirects",
+  "taskSession": "tsk_bd40aed11854",
+  "tmuxSession": "opensaas-os-fix-public-docs-and-download-redirects-bd40aed1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-public-docs-and-download-redirects/.task/os/fix-public-docs-and-download-redirects/session.json",
+  "createdAt": "2026-07-28T03:29:53.318Z"
+}

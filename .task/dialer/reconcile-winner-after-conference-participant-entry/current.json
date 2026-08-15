@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/reconcile-winner-after-conference-participant-entry",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1762,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1762",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1762",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1762/reconcile-winner-after-conference-participant-entry",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1762",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1762/reconcile-winner-after-conference-participant-entry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconcile-winner-after-conference-participant-entry",
+  "taskSession": "tsk_4756f9e154d1",
+  "tmuxSession": "opensaas-dialer-reconcile-winner-after-conference-participant-en-4756f9e1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconcile-winner-after-conference-participant-entry/.task/dialer/reconcile-winner-after-conference-participant-entry/session.json",
+  "createdAt": "2026-08-03T22:19:23.829Z"
+}

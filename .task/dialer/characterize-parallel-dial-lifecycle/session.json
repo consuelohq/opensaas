@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6b6e1fd99991",
+  "tmuxSession": "opensaas-dialer-characterize-parallel-dial-lifecycle-6b6e1fd9",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/characterize-parallel-dial-lifecycle",
+  "branch": "task/dialer/characterize-parallel-dial-lifecycle",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-characterize-parallel-dial-lifecycle",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-characterize-parallel-dial-lifecycle",
+  "prNumber": 1592,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1592",
+  "createdAt": "2026-07-23T17:21:02.329Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-characterize-parallel-dial-lifecycle/.task/dialer/characterize-parallel-dial-lifecycle/session.json"
+}

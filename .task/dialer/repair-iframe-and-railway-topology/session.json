@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_52c4cf881c1d",
+  "tmuxSession": "opensaas-dialer-repair-iframe-and-railway-topology-52c4cf88",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/repair-iframe-and-railway-topology",
+  "branch": "task/dialer/repair-iframe-and-railway-topology",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-repair-iframe-and-railway-topology",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-repair-iframe-and-railway-topology",
+  "prNumber": 1681,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1681",
+  "createdAt": "2026-07-27T20:58:06.521Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-repair-iframe-and-railway-topology/.task/dialer/repair-iframe-and-railway-topology/session.json"
+}

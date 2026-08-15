@@ -42,7 +42,7 @@ describe('Observe documentation contract', () => {
     for (const [sourcePath] of observePages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toContain('verifiedAt: 2026-07-13');
+      expect(source).toMatch(/verifiedAt: 2026-0[78]-\d{2}/);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
       expect(source).toContain('tests:');

@@ -51,6 +51,7 @@ describe('DialerCallStartResolver', () => {
       },
     );
 
+    expect(mockDialerCallStartService.startDialerCall).toHaveBeenCalledTimes(1);
     expect(mockDialerCallStartService.startDialerCall).toHaveBeenCalledWith(
       expect.objectContaining({
         input: expect.objectContaining({
@@ -85,6 +86,7 @@ describe('DialerCallStartResolver', () => {
       twilioGroupId: 'pg_test',
       status: 'completed',
     });
+    expect(mockParallelService.terminateGroup).toHaveBeenCalledTimes(1);
     expect(mockParallelService.terminateGroup).toHaveBeenCalledWith({
       groupId: 'pg_test',
       userId: 'user-id',

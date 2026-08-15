@@ -192,6 +192,19 @@ function isServiceAlreadyStopped(result: WindowsProcessResult): boolean {
   );
 }
 
+function parseWindowsServiceSid(result: WindowsProcessResult): string {
+  if (result.exitCode !== 0) {
+    throw failure(result, 'failed to resolve the Consuelo Windows service SID');
+  }
+  const match = `${result.stdout}\n${result.stderr}`.match(
+    /\bS-1-5-80(?:-\d+){5}\b/,
+  );
+  if (!match) {
+    throw new Error('failed to resolve the Consuelo Windows service SID');
+  }
+  return match[0];
+}
+
 function parseServiceStatus(
   result: WindowsProcessResult,
 ): WindowsServiceStatus {
@@ -499,7 +512,7 @@ export function createWindowsServiceController(input: {
               bunExecutable: input.bunExecutable,
               consueloHome: paths.home,
               runtimeCurrent: paths.runtimeCurrent,
-              entrypoint: 'scripts/server/main.ts',
+              entrypoint: 'scripts/server/supervisor.ts',
               logs: paths.logs,
             },
             null,
@@ -573,10 +586,14 @@ export function createWindowsServiceController(input: {
           }
         }
 
+        const serviceSid = parseWindowsServiceSid(
+          await run('sc.exe', ['showsid', serviceName]),
+        );
+
         const serviceDacl = await run('sc.exe', [
           'sdset',
           serviceName,
-          `D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWRPWPDTLOCRRC;;;${currentUserSid})`,
+          `D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWRPWPDTLOCRRC;;;${currentUserSid})(A;;CCLCSWRPWPDTLOCRRC;;;${serviceSid})`,
         ]);
         if (serviceDacl.exitCode !== 0) {
           throw failure(

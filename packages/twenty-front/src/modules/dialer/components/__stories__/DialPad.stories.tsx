@@ -104,7 +104,7 @@ export const InteractiveDialing: Story = {
     await userEvent.click(canvas.getByLabelText('3, DEF'));
 
     const display = canvas.getByLabelText('Phone number');
-    await expect(display).toHaveValue('(123) ');
+    await expect(display).toHaveValue('123');
   },
 };
 
@@ -113,16 +113,16 @@ export const CompletePhoneNumber: Story = {
     const canvas = within(canvasElement);
 
     // Dial a complete 10-digit number
-    await userEvent.click(canvas.getByLabelText('5'));
-    await userEvent.click(canvas.getByLabelText('5'));
-    await userEvent.click(canvas.getByLabelText('5'));
+    await userEvent.click(canvas.getByLabelText('5, JKL'));
+    await userEvent.click(canvas.getByLabelText('5, JKL'));
+    await userEvent.click(canvas.getByLabelText('5, JKL'));
     await userEvent.click(canvas.getByLabelText('1'));
-    await userEvent.click(canvas.getByLabelText('2'));
-    await userEvent.click(canvas.getByLabelText('3'));
-    await userEvent.click(canvas.getByLabelText('4'));
-    await userEvent.click(canvas.getByLabelText('5'));
-    await userEvent.click(canvas.getByLabelText('6'));
-    await userEvent.click(canvas.getByLabelText('7'));
+    await userEvent.click(canvas.getByLabelText('2, ABC'));
+    await userEvent.click(canvas.getByLabelText('3, DEF'));
+    await userEvent.click(canvas.getByLabelText('4, GHI'));
+    await userEvent.click(canvas.getByLabelText('5, JKL'));
+    await userEvent.click(canvas.getByLabelText('6, MNO'));
+    await userEvent.click(canvas.getByLabelText('7, PQRS'));
 
     const display = canvas.getByLabelText('Phone number');
     await expect(display).toHaveValue('(555) 123-4567');

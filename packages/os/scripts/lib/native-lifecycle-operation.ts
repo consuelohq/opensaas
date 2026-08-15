@@ -11,10 +11,15 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { spawn, type SpawnOptions } from 'node:child_process';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 
 import { createDefaultLifecycleEngine } from '../lifecycle';
-import type { LifecycleEngine } from './lifecycle';
+import {
+  lifecycleReleaseChannels,
+  type LifecycleEngine,
+  type LifecycleOperationResult,
+  type LifecycleReleaseChannel,
+} from './lifecycle';
 import { redactLifecycleDetail } from './lifecycle/diagnostics';
 import { readLifecycleReleaseReference } from './lifecycle/retention';
 
@@ -26,7 +31,11 @@ export type NativeLifecycleOperationKind =
   | 'uninstall';
 
 export type NativeLifecycleOperationInput =
-  | { kind: 'update'; targetVersion: string }
+  | {
+      kind: 'update';
+      targetVersion: string;
+      channel?: LifecycleReleaseChannel;
+    }
   | { kind: 'rollback'; targetVersion: string }
   | { kind: 'repair' }
   | { kind: 'restart' }
@@ -48,6 +57,10 @@ export type NativeLifecycleOperationState = {
   updatedAt: string;
   workerPid?: number;
   message?: string;
+  targetVersion?: string;
+  channel?: LifecycleReleaseChannel;
+  resultingVersion?: string;
+  resultingBundleId?: string;
 };
 
 export type NativeLifecycleOperationStore = {
@@ -85,12 +98,89 @@ const ACTIVE_PHASES = new Set<NativeLifecycleOperationState['phase']>([
   'queued',
   'running',
 ]);
+const FORWARDED_LIFECYCLE_ENVIRONMENT_NAMES = [
+  'CONSUELO_OS_PORT',
+  'PORT',
+  'CONSUELO_RELEASE_BASE_URL',
+  'CONSUELO_RELEASE_GCP_METADATA_AUTH',
+  'CONSUELO_RELEASE_PUBLIC_KEYS_JSON',
+  'CONSUELO_RELEASE_KEY_ID',
+  'CONSUELO_RELEASE_PUBLIC_KEY',
+  'CONSUELO_MANAGED_CLOUD_NODE_ONBOARDING_FILE',
+] as const;
 
 const safeMessage = (error: unknown): string => {
   const message = error instanceof Error ? error.message : String(error);
   return String(redactLifecycleDetail(message))
     .replace(HOME_PATH, '/Users/[REDACTED]')
     .replace(/(token|secret|password|passphrase)=([^&\s]+)/gi, '$1=[REDACTED]');
+};
+
+const escapeLaunchdXml = (value: string): string =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
+
+const launchdWorkerPlist = (input: {
+  label: string;
+  arguments: string[];
+}): string => {
+  const argumentsXml = input.arguments
+    .map((argument) => `    <string>${escapeLaunchdXml(argument)}</string>`)
+    .join('\n');
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
+    '<plist version="1.0">',
+    '<dict>',
+    '  <key>Label</key>',
+    `  <string>${escapeLaunchdXml(input.label)}</string>`,
+    '  <key>ProgramArguments</key>',
+    '  <array>',
+    argumentsXml,
+    '  </array>',
+    '  <key>RunAtLoad</key>',
+    '  <true/>',
+    '  <key>KeepAlive</key>',
+    '  <false/>',
+    '  <key>LaunchOnlyOnce</key>',
+    '  <true/>',
+    '  <key>ProcessType</key>',
+    '  <string>Background</string>',
+    '  <key>StandardOutPath</key>',
+    '  <string>/dev/null</string>',
+    '  <key>StandardErrorPath</key>',
+    '  <string>/dev/null</string>',
+    '</dict>',
+    '</plist>',
+    '',
+  ].join('\n');
+};
+
+const cleanupLaunchdWorkerPlist = (
+  home: string,
+  environment: NodeJS.ProcessEnv,
+): void => {
+  const plistPath = environment.CONSUELO_LIFECYCLE_LAUNCHD_PLIST?.trim();
+  if (!plistPath) return;
+  const runDirectory = resolve(home, 'run');
+  const resolvedPath = resolve(plistPath);
+  const relativePath = relative(runDirectory, resolvedPath);
+  if (
+    !relativePath ||
+    relativePath.startsWith('..') ||
+    resolve(runDirectory, relativePath) !== resolvedPath
+  ) {
+    return;
+  }
+  try {
+    unlinkSync(resolvedPath);
+  } catch {
+    // Lifecycle completion must not be downgraded by best-effort plist cleanup.
+  }
 };
 
 const isOperationKind = (
@@ -101,6 +191,18 @@ const isOperationKind = (
   value === 'repair' ||
   value === 'restart' ||
   value === 'uninstall';
+
+const optionalStateString = (
+  state: Record<string, unknown>,
+  name: string,
+): string | undefined => {
+  const value = state[name];
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(`native lifecycle operation state has invalid ${name}`);
+  }
+  return value;
+};
 
 const parseState = (value: unknown): NativeLifecycleOperationState => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -140,6 +242,16 @@ const parseState = (value: unknown): NativeLifecycleOperationState => {
   if (state.message !== undefined && typeof state.message !== 'string') {
     throw new Error('native lifecycle operation state has invalid message');
   }
+  const targetVersion = optionalStateString(state, 'targetVersion');
+  const channel = optionalStateString(state, 'channel');
+  if (
+    channel !== undefined &&
+    !lifecycleReleaseChannels.includes(channel as LifecycleReleaseChannel)
+  ) {
+    throw new Error('native lifecycle operation state has invalid channel');
+  }
+  const resultingVersion = optionalStateString(state, 'resultingVersion');
+  const resultingBundleId = optionalStateString(state, 'resultingBundleId');
   return {
     schemaVersion: 1,
     operationId: state.operationId,
@@ -150,6 +262,10 @@ const parseState = (value: unknown): NativeLifecycleOperationState => {
       ? { workerPid: state.workerPid }
       : {}),
     ...(state.message ? { message: state.message } : {}),
+    ...(targetVersion ? { targetVersion } : {}),
+    ...(channel ? { channel: channel as LifecycleReleaseChannel } : {}),
+    ...(resultingVersion ? { resultingVersion } : {}),
+    ...(resultingBundleId ? { resultingBundleId } : {}),
   };
 };
 
@@ -277,11 +393,39 @@ const operationArguments = (operation: NativeLifecycleOperation): string[] => {
   if (operation.kind === 'update' || operation.kind === 'rollback') {
     args.push('--target-version', operation.targetVersion);
   }
+  if (operation.kind === 'update' && operation.channel) {
+    args.push('--channel', operation.channel);
+  }
   if (operation.kind === 'uninstall') {
     args.push('--remove-node', String(operation.removeNode));
     args.push('--remove-user-content', String(operation.removeUserContent));
   }
   return args;
+};
+
+const operationStateMetadata = (
+  operation: NativeLifecycleOperation,
+): Pick<NativeLifecycleOperationState, 'targetVersion' | 'channel'> => {
+  if (operation.kind === 'update') {
+    return {
+      targetVersion: operation.targetVersion,
+      ...(operation.channel ? { channel: operation.channel } : {}),
+    };
+  }
+  if (operation.kind === 'rollback') {
+    return { targetVersion: operation.targetVersion };
+  }
+  return {};
+};
+
+const systemdUnitSegment = (value: string): string => {
+  const segment = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (!segment) throw new Error('lifecycle operation id cannot form a systemd unit');
+  return segment;
 };
 
 const defaultSpawnProcess: SpawnProcess = (command, args, options) =>
@@ -303,6 +447,8 @@ const defaultProcessAlive = (pid: number): boolean => {
 
 export const createDetachedNativeLifecycleOperationLauncher = (input: {
   home: string;
+  platform?: NodeJS.Platform;
+  userId?: number;
   executable?: string;
   scriptPath?: string;
   spawnProcess?: SpawnProcess;
@@ -332,6 +478,19 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
     queuedStaleMs,
     input.pidlessRunningStaleMs ?? 2 * 60 * 60 * 1_000,
   );
+  const runsInsideManagedDaemon =
+    input.env?.CONSUELO_OS_DAEMON_PROCESS === '1' ||
+    input.env?.XPC_SERVICE_NAME === 'com.consuelo.system';
+  const useLaunchdIsolation =
+    input.platform === 'darwin' && runsInsideManagedDaemon;
+  const useSystemdIsolation =
+    input.platform === 'linux' &&
+    runsInsideManagedDaemon &&
+    Boolean(
+      input.env?.INVOCATION_ID?.trim() || input.env?.SYSTEMD_EXEC_PID?.trim(),
+    );
+  const useWindowsBreakaway =
+    input.platform === 'win32' && runsInsideManagedDaemon;
 
   const readCurrentOperation = ():
     | NativeLifecycleOperationState
@@ -376,24 +535,142 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
           kind: operation.kind,
           phase: 'queued',
           updatedAt: now().toISOString(),
+          ...operationStateMetadata(operation),
         });
       });
       try {
-        const child = spawnProcess(
-          executable,
-          [scriptPath, '--home', input.home, ...operationArguments(operation)],
-          {
-            cwd: resolve(dirname(scriptPath), '..'),
-            detached: true,
-            stdio: 'ignore',
-            env: {
-              ...process.env,
-              ...input.env,
-              CONSUELO_HOME: input.home,
-            },
-          },
-        );
+        const workerArguments = [
+          scriptPath,
+          '--home',
+          input.home,
+          ...operationArguments(operation),
+        ];
+        const effectiveEnvironment = {
+          ...process.env,
+          ...input.env,
+          CONSUELO_HOME: input.home,
+        };
+        let launchdPlistPath: string | undefined;
+        let launchdLabel: string | undefined;
+        let launchdDomain: string | undefined;
+        if (useLaunchdIsolation) {
+          const userId = input.userId ?? process.getuid?.();
+          if (!Number.isSafeInteger(userId) || Number(userId) < 0) {
+            throw new Error('macOS lifecycle isolation requires a valid user id');
+          }
+          launchdLabel = `com.consuelo.lifecycle.${operation.operationId}`;
+          launchdDomain = `gui/${String(userId)}`;
+          launchdPlistPath = join(
+            input.home,
+            'run',
+            `native-lifecycle-${operation.operationId}.plist`,
+          );
+          const launchdArguments = [
+            '/usr/bin/env',
+            `HOME=${effectiveEnvironment.HOME ?? ''}`,
+            `USER=${effectiveEnvironment.USER ?? ''}`,
+            `CONSUELO_HOME=${input.home}`,
+            `BUN_BIN=${executable}`,
+            `CONSUELO_LIFECYCLE_LAUNCHD_LABEL=${launchdLabel}`,
+            `CONSUELO_LIFECYCLE_LAUNCHD_DOMAIN=${launchdDomain}`,
+            `CONSUELO_LIFECYCLE_LAUNCHD_PLIST=${launchdPlistPath}`,
+            ...FORWARDED_LIFECYCLE_ENVIRONMENT_NAMES.flatMap((name) => {
+              const value = effectiveEnvironment[name]?.trim();
+              return value ? [`${name}=${value}`] : [];
+            }),
+            executable,
+            ...workerArguments,
+          ];
+          writeFileSync(
+            launchdPlistPath,
+            launchdWorkerPlist({
+              label: launchdLabel,
+              arguments: launchdArguments,
+            }),
+            { mode: 0o600, flag: 'wx' },
+          );
+          chmodSync(launchdPlistPath, 0o600);
+        }
+        const child = useLaunchdIsolation
+          ? spawnProcess(
+              '/bin/launchctl',
+              ['bootstrap', launchdDomain!, launchdPlistPath!],
+              {
+                cwd: resolve(dirname(scriptPath), '..'),
+                detached: false,
+                stdio: 'ignore',
+                env: effectiveEnvironment,
+              },
+            )
+          : useSystemdIsolation
+            ? spawnProcess(
+                'systemd-run',
+                [
+                  '--user',
+                  '--collect',
+                  '--quiet',
+                  `--unit=consuelo-lifecycle-${systemdUnitSegment(operation.operationId)}`,
+                  '--property=Type=exec',
+                  '--property=UMask=0077',
+                  ...[
+                    ['HOME', effectiveEnvironment.HOME],
+                    ['USER', effectiveEnvironment.USER],
+                    ['PATH', effectiveEnvironment.PATH],
+                    ['CONSUELO_HOME', input.home],
+                    ['BUN_BIN', executable],
+                    ...FORWARDED_LIFECYCLE_ENVIRONMENT_NAMES.map((name) => [
+                      name,
+                      effectiveEnvironment[name],
+                    ]),
+                  ].flatMap(([name, value]) => {
+                    const normalized = value?.trim();
+                    return normalized ? [`--setenv=${name}=${normalized}`] : [];
+                  }),
+                  executable,
+                  ...workerArguments,
+                ],
+                {
+                  cwd: resolve(dirname(scriptPath), '..'),
+                  detached: false,
+                  stdio: 'ignore',
+                  env: effectiveEnvironment,
+                },
+              )
+            : useWindowsBreakaway
+              ? spawnProcess(
+                  join(input.home, 'bin', 'Consuelo.Windows.Service.exe'),
+                  [
+                    '--config',
+                    join(
+                      input.home,
+                      'node',
+                      'service',
+                      'windows-service.json',
+                    ),
+                    '--launch-lifecycle',
+                    ...workerArguments.slice(1),
+                  ],
+                  {
+                    cwd: resolve(dirname(scriptPath), '..'),
+                    detached: false,
+                    stdio: 'ignore',
+                    env: effectiveEnvironment,
+                  },
+                )
+          : spawnProcess(executable, workerArguments, {
+              cwd: resolve(dirname(scriptPath), '..'),
+              detached: true,
+              stdio: 'ignore',
+              env: effectiveEnvironment,
+            });
         const recordLaunchFailure = (error: unknown): void => {
+          if (launchdPlistPath) {
+            try {
+              unlinkSync(launchdPlistPath);
+            } catch {
+              // Operation state carries the launch failure; cleanup is best effort.
+            }
+          }
           store.withLock(() => {
             const current = store.read();
             if (
@@ -403,9 +680,7 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
               return;
             }
             store.write({
-              schemaVersion: 1,
-              operationId: operation.operationId,
-              kind: operation.kind,
+              ...current,
               phase: 'failed',
               updatedAt: now().toISOString(),
               message: safeMessage(error),
@@ -428,9 +703,7 @@ export const createDetachedNativeLifecycleOperationLauncher = (input: {
           const current = store.read();
           if (current?.operationId === operation.operationId) {
             store.write({
-              schemaVersion: 1,
-              operationId: operation.operationId,
-              kind: operation.kind,
+              ...current,
               phase: 'failed',
               updatedAt: now().toISOString(),
               message: safeMessage(error),
@@ -467,12 +740,11 @@ export const executeNativeLifecycleOperation = async (input: {
       return false;
     }
     store.write({
-      schemaVersion: 1,
-      operationId: input.operation.operationId,
-      kind: input.operation.kind,
+      ...current,
       phase: 'running',
       updatedAt: now().toISOString(),
       workerPid: processId,
+      ...operationStateMetadata(input.operation),
     });
     return true;
   });
@@ -489,6 +761,7 @@ export const executeNativeLifecycleOperation = async (input: {
   const write = (
     phase: NativeLifecycleOperationState['phase'],
     message?: string,
+    result?: LifecycleOperationResult,
   ): void => {
     if (input.operation.kind === 'uninstall' && !existsSync(input.home)) {
       return;
@@ -497,19 +770,21 @@ export const executeNativeLifecycleOperation = async (input: {
       const current = store.read();
       if (current?.operationId !== input.operation.operationId) return;
       store.write({
-        schemaVersion: 1,
-        operationId: input.operation.operationId,
-        kind: input.operation.kind,
+        ...current,
         phase,
         updatedAt: now().toISOString(),
         ...(message ? { message } : {}),
+        ...(result?.version ? { resultingVersion: result.version } : {}),
+        ...(result?.bundleId ? { resultingBundleId: result.bundleId } : {}),
       });
     });
   };
   try {
+    let result: LifecycleOperationResult;
     switch (input.operation.kind) {
       case 'update':
-        await engine.update({
+        result = await engine.update({
+          channel: input.operation.channel,
           yes: true,
           expectedVersion: input.operation.targetVersion,
         });
@@ -523,27 +798,29 @@ export const executeNativeLifecycleOperation = async (input: {
             'requested rollback target does not match the retained rollback release',
           );
         }
-        await engine.rollback();
+        result = await engine.rollback();
         break;
       }
       case 'repair':
-        await engine.repair();
+        result = await engine.repair();
         break;
       case 'restart':
-        await engine.restart();
+        result = await engine.restart();
         break;
       case 'uninstall':
-        await engine.uninstall({
+        result = await engine.uninstall({
           removeNode: input.operation.removeNode,
           removeUserContent: input.operation.removeUserContent,
         });
         break;
     }
-    write('succeeded');
+    write('succeeded', undefined, result);
   } catch (error: unknown) {
     const message = safeMessage(error);
     write('failed', message);
     throw new Error(message);
+  } finally {
+    cleanupLaunchdWorkerPlist(input.home, process.env);
   }
 };
 
@@ -584,7 +861,24 @@ export const parseNativeLifecycleOperationArguments = (
   const operationId = requiredArgument(values, 'operation-id');
   const kind = requiredArgument(values, 'kind');
   switch (kind) {
-    case 'update':
+    case 'update': {
+      const channel = values.get('channel')?.trim();
+      if (
+        channel &&
+        !lifecycleReleaseChannels.includes(channel as LifecycleReleaseChannel)
+      ) {
+        throw new Error(`unsupported release channel: ${channel}`);
+      }
+      return {
+        home,
+        operation: {
+          operationId,
+          kind,
+          targetVersion: requiredArgument(values, 'target-version'),
+          ...(channel ? { channel: channel as LifecycleReleaseChannel } : {}),
+        },
+      };
+    }
     case 'rollback':
       return {
         home,

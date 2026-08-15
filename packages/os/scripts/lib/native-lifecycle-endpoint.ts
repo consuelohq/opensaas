@@ -19,6 +19,7 @@ import {
   resolveConsueloHomeLayout,
 } from './consuelo-home';
 import { redactLifecycleDetail } from './lifecycle/diagnostics';
+import { detectLocalAgents } from './local-agent-connectivity';
 import { resolveLifecyclePaths } from './lifecycle/paths';
 import { readLifecycleReleaseReference } from './lifecycle/retention';
 import type {
@@ -32,6 +33,7 @@ import {
   type NativeLifecycleOperationInput,
   type NativeLifecycleOperationState,
 } from './native-lifecycle-operation';
+import { resolveStoredOperatorWorkspaceCredential } from './operator-token-store';
 import type {
   ConnectorState,
   LifecycleRequest,
@@ -43,6 +45,7 @@ import type {
   WorkspaceNode,
 } from './native-lifecycle-client';
 import { createWorkspaceNodeClient } from './workspace-node-client';
+import { readStoredWorkspaceNodeSnapshot } from './workspace-node-snapshot-cache';
 
 export const NATIVE_LIFECYCLE_MAX_PAYLOAD_BYTES = 1024 * 1024;
 const USER_SELECTABLE_CHANNELS = ['stable', 'beta', 'canary', 'dev'] as const;
@@ -195,6 +198,10 @@ const localWorkspace = (input: {
       channel: input.channel,
       connectorId: 'local-runtime',
       capabilities: [...node.capabilities],
+      agents: detectLocalAgents({ home: layout.home })
+        .filter((agent) => agent.status === 'verified')
+        .map((agent) => agent.name)
+        .sort(),
       createdAt,
       lastSeenAt,
       presence: 'online',
@@ -275,6 +282,17 @@ const normalizeWorkspacePayload = (
         `workspace authority returned invalid node capabilities ${index}`,
       );
     }
+    if (
+      node.agents !== null &&
+      node.agents !== undefined &&
+      (!Array.isArray(node.agents) ||
+        !node.agents.every((value) => typeof value === 'string'))
+    ) {
+      throw new Error(
+        `workspace authority returned invalid node agents ${index}`,
+      );
+    }
+    const createdAt = stringField(node.createdAt, `node ${index} createdAt`);
     return {
       workspaceId: stringField(node.workspaceId, `node ${index} workspaceId`),
       nodeId: stringField(node.nodeId, `node ${index} nodeId`),
@@ -288,14 +306,14 @@ const normalizeWorkspacePayload = (
       channel: stringField(node.channel, `node ${index} channel`),
       connectorId: optionalString(node.connectorId) ?? 'unavailable',
       capabilities: [...node.capabilities] as string[],
-      createdAt: stringField(node.createdAt, `node ${index} createdAt`),
-      lastSeenAt: stringField(node.lastSeenAt, `node ${index} lastSeenAt`),
+      ...(Array.isArray(node.agents)
+        ? { agents: [...node.agents] as string[] }
+        : {}),
+      createdAt,
+      lastSeenAt: optionalString(node.lastSeenAt) ?? createdAt,
       presence,
       state,
-      publicKeyThumbprint: stringField(
-        node.publicKeyThumbprint,
-        `node ${index} publicKeyThumbprint`,
-      ),
+      publicKeyThumbprint: optionalString(node.publicKeyThumbprint) ?? 'unavailable',
     };
   });
   return {
@@ -718,9 +736,27 @@ export const createNativeLifecycleEndpointController = (
           case 'workspace.default-node.set':
             if (!input.setDefaultNode)
               throw new Error('workspace node authority is unavailable');
-            return runOperation('repair', () =>
-              input.setDefaultNode!(request.nodeId),
-            );
+            {
+              const id = nextOperationId();
+              const generation = ++localOperationGeneration;
+              currentOperation = { kind: 'repair', phase: 'running' };
+              try {
+                await input.setDefaultNode(request.nodeId);
+                if (generation === localOperationGeneration) {
+                  currentOperation = { kind: 'repair', phase: 'succeeded' };
+                }
+                return { accepted: true, operationId: id };
+              } catch (error: unknown) {
+                if (generation === localOperationGeneration) {
+                  currentOperation = {
+                    kind: 'repair',
+                    phase: 'failed',
+                    message: safeMessage(error),
+                  };
+                }
+                throw error;
+              }
+            }
           case 'diagnostics.export':
             return runOperation('repair', exportDiagnostics);
           case 'uninstall.execute':
@@ -902,12 +938,6 @@ export const startDefaultNativeLifecycleEndpoint = async (
       json: true,
       progress: () => undefined,
     });
-    const accessToken = env.CONSUELO_OS_WORKSPACE_TOKEN?.trim();
-    const authorityOrigin =
-      env.CONSUELO_OS_AUTHORITY_ORIGIN?.trim() || 'https://os.consuelohq.com';
-    const workspaceClient = accessToken
-      ? createWorkspaceNodeClient({ origin: authorityOrigin, accessToken })
-      : undefined;
     const local = (): LifecycleSnapshot['workspace'] | undefined => {
       try {
         const status = {
@@ -927,35 +957,93 @@ export const startDefaultNativeLifecycleEndpoint = async (
         return undefined;
       }
     };
-    const inspectWorkspace = workspaceClient
-      ? async (): Promise<LifecycleSnapshot['workspace'] | undefined> => {
-          try {
-            const current = local();
-            const payload = await workspaceClient.execute({
-              action: 'list',
-              ...(current?.currentNodeId
-                ? { currentNodeId: current.currentNodeId }
-                : {}),
-            });
-            return normalizeWorkspacePayload(payload);
-          } catch (error: unknown) {
-            throw new Error(safeMessage(error));
-          }
+    const explicitAccessToken = env.CONSUELO_OS_WORKSPACE_TOKEN?.trim();
+    const explicitAuthorityOrigin =
+      env.CONSUELO_OS_AUTHORITY_ORIGIN?.trim() || 'https://os.consuelohq.com';
+    const resolveWorkspaceAccess = async (): Promise<
+      | {
+          client: ReturnType<typeof createWorkspaceNodeClient>;
+          canManageNodes: boolean;
         }
-      : (): Promise<LifecycleSnapshot['workspace'] | undefined> =>
-          Promise.resolve(local());
-    const setDefaultNode = workspaceClient
-      ? async (nodeId: string): Promise<void> => {
-          try {
-            await workspaceClient.execute({ action: 'default', nodeId });
-          } catch (error: unknown) {
-            throw new Error(safeMessage(error));
-          }
+      | undefined
+    > => {
+      try {
+        if (explicitAccessToken) {
+          return {
+            client: createWorkspaceNodeClient({
+              origin: explicitAuthorityOrigin,
+              accessToken: explicitAccessToken,
+            }),
+            canManageNodes: true,
+          };
         }
-      : undefined;
+        const localIdentity = local();
+        const credential = await resolveStoredOperatorWorkspaceCredential({
+          home,
+          ...(localIdentity?.workspaceHost
+            ? { workspaceHost: localIdentity.workspaceHost }
+            : {}),
+        });
+        if (!credential) return undefined;
+        return {
+          client: createWorkspaceNodeClient({
+            origin: credential.authorityOrigin,
+            accessToken: credential.accessToken,
+          }),
+          canManageNodes: credential.canManageNodes,
+        };
+      } catch (error: unknown) {
+        throw new Error(safeMessage(error));
+      }
+    };
+    const inspectWorkspace = async (): Promise<
+      LifecycleSnapshot['workspace'] | undefined
+    > => {
+      const current = local();
+      const cached = (): LifecycleSnapshot['workspace'] | undefined => {
+        if (!current?.workspaceId || !current.currentNodeId || !current.workspaceHost) {
+          return undefined;
+        }
+        const snapshot = readStoredWorkspaceNodeSnapshot({
+          home,
+          expectedWorkspaceId: current.workspaceId,
+          expectedCurrentNodeId: current.currentNodeId,
+          expectedWorkspaceHost: current.workspaceHost,
+        });
+        return snapshot
+          ? normalizeWorkspacePayload(snapshot as unknown as Record<string, unknown>)
+          : undefined;
+      };
+      try {
+        const access = await resolveWorkspaceAccess();
+        if (!access) return cached() ?? current;
+        const payload = await access.client.execute({
+          action: 'list',
+          ...(current?.currentNodeId
+            ? { currentNodeId: current.currentNodeId }
+            : {}),
+        });
+        return normalizeWorkspacePayload(payload);
+      } catch (error: unknown) {
+        void error;
+        return cached() ?? current;
+      }
+    };
+    const setDefaultNode = async (nodeId: string): Promise<void> => {
+      try {
+        const access = await resolveWorkspaceAccess();
+        if (!access?.canManageNodes) {
+          throw new Error('workspace node management sign-in is required');
+        }
+        await access.client.execute({ action: 'default', nodeId });
+      } catch (error: unknown) {
+        throw new Error(safeMessage(error));
+      }
+    };
     const operationLauncher = createDetachedNativeLifecycleOperationLauncher({
       home,
       env,
+      platform: process.platform,
     });
     const controller = createNativeLifecycleEndpointController({
       engine,

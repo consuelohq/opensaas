@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const { execFileSync, spawn } = require('child_process');
-const { existsSync } = require('fs');
+const { existsSync, readFileSync, writeFileSync } = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -14,8 +14,13 @@ const START_SCRIPT = path.join(OS_DIR, 'scripts', 'start-consuelo-daemon.sh');
 const LOG_FILE = process.env.CONSUELO_DAEMON_LOG_FILE || path.join(HOME, 'Library', 'Logs', 'Consuelo', 'system.log');
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
+const RELOAD_POLL_MS = 500;
 const EXPECTED_SERVER_NAME = 'consuelo-os';
 const CONFLICTING_LABELS = ['com.consuelo.workspace'];
+const CONSUELO_HOME = process.env.CONSUELO_HOME || path.join(HOME, '.consuelo');
+const WORKER_POOL_STATE = path.join(CONSUELO_HOME, 'node', 'runs', 'os-worker-pool.json');
+const CADDYFILE = path.join(CONSUELO_HOME, 'node', 'caddy', 'Caddyfile');
+const RETIRED_LAUNCHD_ENV_KEYS = ['MCP_BEARER_TOKEN'];
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
@@ -26,6 +31,27 @@ function runBestEffort(command, args = []) {
   } catch (error) {
     return error.stdout?.trim() || '';
   }
+}
+
+function scrubRetiredLaunchdCredentials() {
+  if (!existsSync(PLIST)) return false;
+  let source;
+  try {
+    source = readFileSync(PLIST, 'utf8');
+  } catch {
+    return false;
+  }
+  let next = source;
+  for (const key of RETIRED_LAUNCHD_ENV_KEYS) {
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    next = next.replace(
+      new RegExp(`\\n\\s*<key>${escaped}</key>\\s*\\n\\s*<string>[^<]*</string>`, 'g'),
+      '',
+    );
+  }
+  if (next === source) return false;
+  writeFileSync(PLIST, next);
+  return true;
 }
 
 function runRequired(command, args, label) {
@@ -61,9 +87,105 @@ function isExpectedHealth(result) {
   return result?.name === EXPECTED_SERVER_NAME;
 }
 
+function workerPoolState() {
+  try {
+    const parsed = JSON.parse(readFileSync(WORKER_POOL_STATE, 'utf8'));
+    if (!parsed || parsed.schemaVersion !== 1 || !Array.isArray(parsed.workers)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function caddyWorkerUpstreams() {
+  try {
+    const source = readFileSync(CADDYFILE, 'utf8');
+    const match = source.match(/^\s*reverse_proxy\s+([^\n{]+)\s*\{/m);
+    if (!match?.[1]) return [];
+    return [...new Set(
+      match[1]
+        .trim()
+        .split(/\s+/)
+        .filter((value) => /^127\.0\.0\.1:\d+$/.test(value)),
+    )].sort((left, right) => {
+      const leftPort = Number(left.slice(left.lastIndexOf(':') + 1));
+      const rightPort = Number(right.slice(right.lastIndexOf(':') + 1));
+      return leftPort - rightPort;
+    });
+  } catch {
+    return [];
+  }
+}
+
+function workerPoolSummary(pool) {
+  const workers = Array.isArray(pool?.workers) ? pool.workers : [];
+  return {
+    desired: Number.isInteger(pool?.desiredWorkers) ? pool.desiredWorkers : 0,
+    ready: workers.filter((worker) => worker?.state === 'ready').length,
+    draining: workers.filter((worker) => worker?.state === 'draining').length,
+    failed: workers.filter((worker) => worker?.state === 'failed').length,
+  };
+}
+
+function expectedReadyUpstreams(pool) {
+  if (!Array.isArray(pool?.workers)) return [];
+  return pool.workers
+    .filter((worker) => worker?.state === 'ready' && Number.isInteger(worker?.port))
+    .map((worker) => `127.0.0.1:${worker.port}`)
+    .sort((left, right) => {
+      const leftPort = Number(left.slice(left.lastIndexOf(':') + 1));
+      const rightPort = Number(right.slice(right.lastIndexOf(':') + 1));
+      return leftPort - rightPort;
+    });
+}
+
+function caddyMatchesReadyPool(pool) {
+  const expected = expectedReadyUpstreams(pool);
+  const actual = caddyWorkerUpstreams();
+  return expected.length > 0
+    && expected.length === actual.length
+    && expected.every((value, index) => value === actual[index]);
+}
+
+function isHighAvailabilityReady(pool) {
+  const summary = workerPoolSummary(pool);
+  return Boolean(
+    pool
+    && summary.desired >= 2
+    && summary.ready === summary.desired
+    && summary.draining === 0
+    && summary.failed === 0
+    && caddyMatchesReadyPool(pool)
+  );
+}
+
+function writeWorkerPoolStatus() {
+  const pool = workerPoolState();
+  if (!pool) return;
+  const summary = workerPoolSummary(pool);
+  const upstreams = caddyWorkerUpstreams();
+  writeStdout(`  workers: ${summary.ready}/${pool.desiredWorkers} ready`);
+  writeStdout(
+    `  worker states: desired=${summary.desired} ready=${summary.ready} draining=${summary.draining} failed=${summary.failed}`,
+  );
+  writeStdout(`  caddy upstreams: ${upstreams.length ? upstreams.join(', ') : 'unavailable'}`);
+  writeStdout(`  HA: ${isHighAvailabilityReady(pool) ? 'ready' : 'unavailable'}`);
+  for (const worker of pool.workers) {
+    const pid = worker?.pid ? ` pid=${worker.pid}` : '';
+    writeStdout(`    ${worker.workerId}: ${worker.state} port=${worker.port}${pid} restarts=${worker.restartCount ?? 0}`);
+  }
+}
+
 function isLaunchdLoaded() {
-  const output = runBestEffort('launchctl', ['print', `${LAUNCH_DOMAIN}/${LABEL}`]);
-  return output.includes(LABEL) || output.includes('state = running');
+  try {
+    execFileSync('launchctl', ['print', `${LAUNCH_DOMAIN}/${LABEL}`], {
+      timeout: 10000,
+      stdio: ['ignore', 'ignore', 'ignore'],
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function findServerPid() {
@@ -71,7 +193,7 @@ function findServerPid() {
 }
 
 function findServerPids() {
-  return parsePids(runBestEffort('pgrep', ['-f', 'packages/os/scripts/server/main.ts|scripts/server/main.ts']));
+  return parsePids(runBestEffort('pgrep', ['-f', 'packages/os/scripts/server/supervisor.ts|scripts/server/supervisor.ts|packages/os/scripts/server/main.ts|scripts/server/main.ts']));
 }
 
 function findPortPids() {
@@ -148,18 +270,121 @@ function bootoutLaunchAgent() {
   bootoutLaunchLabel(LABEL);
 }
 
+function scrubInheritedLegacyEnvironment() {
+  runBestEffort('launchctl', ['unsetenv', 'WORKSPACE_MCP_TOKEN']);
+}
+
 function bootstrapLaunchAgent() {
   runRequired('launchctl', ['bootstrap', LAUNCH_DOMAIN, PLIST], 'launchctl bootstrap');
   runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
 }
 
-function runReload({ useLaunchd }) {
-  if (useLaunchd && existsSync(PLIST)) {
-    bootoutLaunchAgent();
-    stopConflictingLaunchAgents();
-    killServer();
-    sleep(1);
+function kickstartOrBootstrapLaunchAgent() {
+  try {
+    runRequired(
+      'launchctl',
+      ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`],
+      'launchctl kickstart',
+    );
+  } catch (error) {
+    if (
+      !existsSync(PLIST)
+      || !(error instanceof Error)
+      || !/could not find service/i.test(error.message)
+    ) {
+      throw error;
+    }
     bootstrapLaunchAgent();
+  }
+}
+
+function isHealthyRollingPool(pool) {
+  return Boolean(
+    pool
+    && Number.isInteger(pool.supervisorPid)
+    && pool.supervisorPid > 0
+    && Number.isInteger(pool.desiredWorkers)
+    && pool.desiredWorkers >= 2
+    && pool.workers.length === pool.desiredWorkers
+    && pool.workers.every((worker) =>
+      worker
+      && worker.state === 'ready'
+      && typeof worker.workerInstanceId === 'string'
+      && worker.workerInstanceId.length > 0
+      && Number.isInteger(worker.pid)
+      && worker.pid > 0
+    )
+  );
+}
+
+function rollingReloadWaitAttempts(before) {
+  const configuredDrainTimeout = Number(process.env.CONSUELO_OS_DRAIN_TIMEOUT_MS || 30_000);
+  const drainTimeoutMs = Number.isInteger(configuredDrainTimeout)
+    && configuredDrainTimeout >= 0
+    && configuredDrainTimeout <= 300_000
+    ? configuredDrainTimeout
+    : 30_000;
+  const desiredWorkers = Number.isInteger(before?.desiredWorkers) && before.desiredWorkers > 0
+    ? before.desiredWorkers
+    : 1;
+  const derivedAttempts = Math.ceil(
+    (desiredWorkers * Math.max(60_000, drainTimeoutMs + 20_000)) / RELOAD_POLL_MS,
+  );
+  return Math.max(RELOAD_WAIT_ATTEMPTS, derivedAttempts);
+}
+
+function waitForRollingReload(before, attempts = rollingReloadWaitAttempts(before)) {
+  const previousInstances = new Map(
+    before.workers.map((worker) => [worker.workerId, worker.workerInstanceId]),
+  );
+  for (let index = 0; index < attempts; index += 1) {
+    const current = workerPoolState();
+    if (
+      isHealthyRollingPool(current)
+      && current.supervisorPid === before.supervisorPid
+      && current.workers.every((worker) =>
+        previousInstances.get(worker.workerId) !== worker.workerInstanceId
+      )
+    ) return true;
+    sleep(RELOAD_POLL_MS / 1000);
+  }
+  return false;
+}
+
+function tryRollingReload() {
+  if (process.platform === 'win32') return false;
+  const pool = workerPoolState();
+  if (!isHealthyRollingPool(pool)) return false;
+  if (!caddyMatchesReadyPool(pool)) {
+    throw new Error('Caddy worker upstreams do not match the ready worker pool.');
+  }
+  const supervisorPid = String(pool.supervisorPid);
+  if (!findServerPids().includes(supervisorPid)) return false;
+  runRequired('kill', ['-USR2', supervisorPid], 'rolling worker reload signal');
+  if (!waitForRollingReload(pool)) {
+    throw new Error('Consuelo OS worker pool did not complete rolling reload.');
+  }
+  const reloadedPool = workerPoolState();
+  if (!isHighAvailabilityReady(reloadedPool)) {
+    throw new Error('Consuelo OS worker pool lost HA quorum or Caddy upstream parity after rolling reload.');
+  }
+  if (!waitForHealth('reloaded', 1)) {
+    throw new Error('Consuelo OS did not remain healthy after rolling reload.');
+  }
+  return true;
+}
+
+function runReload({ useLaunchd }) {
+  scrubInheritedLegacyEnvironment();
+  if (useLaunchd && existsSync(PLIST)) {
+    const scrubbedRetiredCredential = scrubRetiredLaunchdCredentials();
+    stopConflictingLaunchAgents();
+    if (isLaunchdLoaded() && !scrubbedRetiredCredential) {
+      kickstartOrBootstrapLaunchAgent();
+    } else {
+      if (scrubbedRetiredCredential && isLaunchdLoaded()) bootoutLaunchAgent();
+      bootstrapLaunchAgent();
+    }
   } else {
     stopConflictingLaunchAgents();
     killServer();
@@ -171,8 +396,8 @@ function runReload({ useLaunchd }) {
   }
 }
 
-function scheduleReload({ useLaunchd }) {
-  const child = spawn(process.execPath, [__filename, 'reload-now'], {
+function scheduleReload({ useLaunchd, command = 'reload-now' }) {
+  const child = spawn(process.execPath, [__filename, command], {
     detached: true,
     stdio: ['ignore', 'ignore', 'ignore'],
     cwd: OS_DIR,
@@ -189,7 +414,7 @@ function scheduleReload({ useLaunchd }) {
 
 const args = process.argv.slice(2);
 if (args.includes('--help')) {
-  writeStdout('usage: bun run consuelo-reload -- [reload|reload-now|status|stop|start|logs]');
+  writeStdout('usage: bun run consuelo-reload -- [reload|reload-now|restart|restart-now|status|stop|start|logs]');
   writeStdout('manages the local Consuelo OS Bun server and user LaunchAgent.');
   process.exit(0);
 }
@@ -209,6 +434,7 @@ switch (command) {
       if (pids.length) writeStdout(`  pid: ${pids.join(', ')}`);
       writeStdout(`  mode: ${useLaunchd ? 'launchd' : 'direct'}`);
       writeStdout(`  health: ${HEALTH}`);
+      writeWorkerPoolStatus();
     } else {
       writeStdout('server not responding');
       if (result?.name) writeStdout(`  wrong server responding: ${result.name} (expected ${EXPECTED_SERVER_NAME})`);
@@ -225,14 +451,17 @@ switch (command) {
     break;
 
   case 'start':
+    scrubInheritedLegacyEnvironment();
     if (findRunningPids().length) {
       writeStdout('server already running');
       break;
     }
     if (hasLaunchdPlist) {
-      if (useLaunchd) {
-        runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
+      const scrubbedRetiredCredential = scrubRetiredLaunchdCredentials();
+      if (useLaunchd && !scrubbedRetiredCredential) {
+        kickstartOrBootstrapLaunchAgent();
       } else {
+        if (scrubbedRetiredCredential && useLaunchd) bootoutLaunchAgent();
         bootstrapLaunchAgent();
       }
     } else {
@@ -245,11 +474,20 @@ switch (command) {
 
   case 'consuelo-reload':
   case 'reload':
+    scheduleReload({ useLaunchd: hasLaunchdPlist, command: 'reload-now' });
+    break;
+
   case 'restart':
-    scheduleReload({ useLaunchd: hasLaunchdPlist });
+    scheduleReload({ useLaunchd: hasLaunchdPlist, command: 'restart-now' });
     break;
 
   case 'reload-now':
+    sleep(0.5);
+    if (!tryRollingReload()) {
+      runReload({ useLaunchd: process.env.CONSUELO_OS_RELOAD_LAUNCHD === '1' || hasLaunchdPlist });
+    }
+    break;
+
   case 'restart-now':
     sleep(0.5);
     runReload({ useLaunchd: process.env.CONSUELO_OS_RELOAD_LAUNCHD === '1' || hasLaunchdPlist });

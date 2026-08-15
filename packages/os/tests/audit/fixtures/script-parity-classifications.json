@@ -737,6 +737,10 @@
       "status": "os-only-intentional",
       "reason": "scripts/lib/native-lifecycle-client.ts is an intentional OS-owned native lifecycle adapter with no workspace counterpart."
     },
+    "scripts/lib/node-resource-lock.ts": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; same-node browser serialization depends on both facades using the same lock contract."
+    },
     "scripts/lib/nx-projects.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
@@ -978,6 +982,10 @@
     "scripts/lib/verify-run-state.js": {
       "status": "os-only-intentional",
       "reason": "scripts/lib/verify-run-state.js is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
+    },
+    "scripts/lib/worker-pool.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned same-node worker supervisor state machine manages deterministic worker slots, readiness, crash replacement, and bounded draining with no workspace counterpart."
     },
     "scripts/lib/workspace-cloudflare-d1-route-registry.ts": {
       "status": "os-only-intentional",
@@ -1236,6 +1244,14 @@
     "scripts/server/services/trace-gateway.ts": {
       "status": "os-only-intentional",
       "reason": "scripts/server/services/trace-gateway.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
+    },
+    "scripts/server/supervisor.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned node supervisor launches the request worker pool and owns singleton lifecycle sidecars; workspace does not host this runtime topology."
+    },
+    "scripts/server/worker-runtime-state.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned per-worker request accounting and drain state supports readiness and graceful worker retirement with no workspace counterpart."
     },
     "scripts/smoke-workspace-edge.ts": {
       "status": "os-only-intentional",
@@ -1532,6 +1548,46 @@
     "scripts/workspace.ts": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/secrets.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned credential setup ceremony; value handling is node-local and intentionally has no workspace script counterpart."
+    },
+    "scripts/lib/node-credential-sealing.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned sealed credential delivery primitive for self-hosted nodes; node-local by design with no workspace counterpart."
+    },
+    "scripts/lib/node-sealed-credential-store.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned at-rest credential custody on a node; node-local by design with no workspace counterpart."
+    },
+    "scripts/lib/node-encryption-key-file.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned node encryption key lifecycle; per-node material that must never exist in the workspace tree."
+    },
+    "scripts/lib/credential-broker.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned runtime credential injection boundary; resolves node-local material and has no workspace counterpart."
+    },
+    "scripts/lib/managed-user-content.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned reconciliation of the visible ~/Consuelo tree; install and update lifecycle behavior with no workspace counterpart."
+    },
+    "scripts/lib/managed-user-content-release.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned release-scoped user content reconciliation; reads the activated runtime bundle and has no workspace counterpart."
+    },
+    "scripts/lib/workspace-project-cwd.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned resolution of a workspace project checkout for tool cwd; depends on OS home layout and has no workspace counterpart."
+    },
+    "scripts/login.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned operator sign-in ceremony; node-local token handling with no workspace script counterpart."
+    },
+    "scripts/lib/operator-login.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned PKCE loopback login flow for the operator CLI; no workspace counterpart."
     }
   },
   "highRiskScripts": [

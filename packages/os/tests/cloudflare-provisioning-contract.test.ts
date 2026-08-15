@@ -91,6 +91,7 @@ type WorkspaceCloudflareProvisioningClient = {
   putTunnelConfig: (input: {
     tunnelId: string;
     hostname: string;
+    httpHostHeader: string;
     localServiceUrl: string;
   }) => Promise<void>;
   createOrReuseWorkerRouteExclusion: (input: {
@@ -528,6 +529,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       expect(expression).toContain('or http.host in {\n    "os.consuelohq.com"\n  }');
       expect(expression).toContain('"workspace.consuelohq.com"');
       expect(expression).toContain('"workspace-edge.consuelohq.com"');
+      expect(expression).not.toContain('"internal.consuelohq.com"');
       expect(expression).not.toContain('kokayi.consuelohq.com');
       expect(expression).not.toContain('openai.consuelohq.com');
     }
@@ -554,6 +556,27 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       mcpAllowedIpsListName: 'mcp_allowed_ips',
       managedMcpHostnames: ['os.example.com'],
     })).toThrow(/os\.example\.com.*consuelohq\.com/);
+  });
+
+  it('should protect internal as a workspace hostname without capturing non-workspace MCP surfaces', async () => {
+    const { buildManagedOsMcpIngressPolicyRules } =
+      await loadWorkspaceCloudflareProvisioningContract();
+
+    const { allowRule, blockRule } = buildManagedOsMcpIngressPolicyRules({
+      zoneId: 'zone_123',
+      baseDomain: 'consuelohq.com',
+      mcpAllowedIpsListName: 'mcp_allowed_ips',
+    });
+
+    for (const expression of [allowRule.expression, blockRule.expression]) {
+      expect(expression).toContain('ends_with(http.host, ".consuelohq.com")');
+      expect(expression).toContain('starts_with(http.request.uri.path, "/mcp")');
+      expect(expression).toContain('not (starts_with(http.host, "c-")');
+      expect(expression).toContain('not (http.host in {');
+      expect(expression).toContain('"app.consuelohq.com"');
+      expect(expression).toContain('"workspace.consuelohq.com"');
+      expect(expression).not.toContain('"internal.consuelohq.com"');
+    }
   });
 
   it('should read managed OS MCP ingress policy config from Cloudflare env', async () => {
@@ -965,7 +988,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
   });
 
-  it('should fail closed when the configured Cloudflare account IP list is missing', async () => {
+  it('should let the Rulesets API validate the configured account IP list reference', async () => {
     const { ensureManagedOsMcpIngressPolicy } =
       await loadWorkspaceCloudflareProvisioningContract();
     const fakeCloudflare = createFakeCloudflarePolicyClient({ accountLists: [] });
@@ -980,12 +1003,12 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
           mcpAllowedIpsListName: 'mcp_allowed_ips',
         },
       }),
-    ).rejects.toThrow(/Cloudflare account IP list mcp_allowed_ips was not found/);
+    ).resolves.toMatchObject({
+      allowedIpsListName: 'mcp_allowed_ips',
+    });
     expect(
-      fakeCloudflare.calls.some((call) =>
-        ['createZoneCustomRuleset', 'createZoneCustomRulesetRule'].includes(
-          call.operation,
-        ),
+      fakeCloudflare.calls.some(
+        (call) => call.operation === 'getAccountIpList',
       ),
     ).toBe(false);
   });
@@ -1030,7 +1053,6 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
 
     expect(fakeCloudflare.calls.map((call) => call.operation)).toEqual([
-      'getAccountIpList',
       'getZoneCustomRuleset',
       'createZoneCustomRulesetRule',
       'createZoneCustomRulesetRule',
@@ -1082,7 +1104,6 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
 
     expect(fakeCloudflare.calls.map((call) => call.operation)).toEqual([
-      'getAccountIpList',
       'getZoneCustomRuleset',
       'createZoneCustomRulesetRule',
       'createZoneCustomRulesetRule',
@@ -1216,12 +1237,11 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
     });
     expect(calls.map((call) => call.method)).toEqual([
       'GET',
-      'GET',
       'PATCH',
       'PATCH',
     ]);
     expect(calls.some((call) => call.method === 'POST')).toBe(false);
-    expect(calls[2]?.body).toMatchObject({
+    expect(calls[1]?.body).toMatchObject({
       ref: 'consuelo-os-mcp-provider-allow',
       action_parameters: {
         ruleset: 'current',
@@ -1523,6 +1543,7 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
       'createOrReuseDnsRecord',
     ]);
     expect(calls.find((call) => call.operation === 'putTunnelConfig')?.body).toMatchObject({
+      httpHostHeader: 'kokayi.consuelohq.com',
       localServiceUrl: 'http://127.0.0.1:8787',
     });
     expect(calls.find(
@@ -1633,6 +1654,9 @@ contractDescribe('workspace Cloudflare provisioning contract', () => {
           {
             hostname: 'c-242bbe85b163ac3c32c7d9d6ce269707.consuelohq.com',
             service: 'http://127.0.0.1:46321',
+            originRequest: {
+              httpHostHeader: 'kokayi.consuelohq.com',
+            },
           },
           { service: 'http_status:404' },
         ],

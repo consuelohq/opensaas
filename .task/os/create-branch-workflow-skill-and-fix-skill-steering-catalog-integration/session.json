@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4a64790b3620",
+  "tmuxSession": "opensaas-os-create-branch-workflow-skill-and-fix-skill-steer-4a64790b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/create-branch-workflow-skill-and-fix-skill-steering-catalog-integration",
+  "branch": "task/os/create-branch-workflow-skill-and-fix-skill-steering-catalog-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-create-branch-workflow-skill-and-fix-skill-steering-catalog-integration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-create-branch-workflow-skill-and-fix-skill-steering-catalog-integration",
+  "prNumber": 1837,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1837",
+  "createdAt": "2026-08-11T21:13:56.758Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-create-branch-workflow-skill-and-fix-skill-steering-catalog-integration/.task/os/create-branch-workflow-skill-and-fix-skill-steering-catalog-integration/session.json"
+}

@@ -1,0 +1,46 @@
+---
+title: Streams
+description: Use stream context as the shared continuity layer for related tasks and agents.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/scripts/lib/streams/context-runtime.ts
+    tests:
+      - packages/os/tests/stream-service.test.ts
+      - packages/os/tests/task-hook-workflow-contract.test.ts
+    runtime: The current stream context composition and lookup behavior were inspected on 2026-08-11.
+  - source: packages/os/tools/stream/schema.ts
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: The current stream tool surface was inspected on 2026-08-11.
+---
+
+A **stream** is the durable context for a related line of work. Tasks can come and go, and different agents can take them, while the stream remains the shared place that explains what is happening around those tasks.
+
+The read-only `stream.context` tool is the main continuity surface for an agent entering ongoing work.
+
+## What stream context collects
+
+For an area, `stream.context` assembles the current:
+
+- stream instructions;
+- stream decisions;
+- open task PRs;
+- recent workpads;
+- recent commits;
+- local worktrees;
+- ahead/behind state for the stream branch when it is available.
+
+That mix is intentional. Git history tells an agent what landed, open task PRs show what is in flight, recent workpads explain intent and validation, and stream instructions and decisions carry the durable rules for the area.
+
+## Passing work between agents
+
+An agent taking over work should read stream context before opening a new scoped task when fresh shared context matters. Because recent workpads and open task PRs are included, the agent can see what other agents are already doing and avoid duplicating or colliding with their work.
+
+This is how a stream can pass work from one agent to another without depending on the original conversation. The stream does not replace a handoff; it gives the handoff a live neighborhood.
+
+## Related stream operations
+
+`stream.list` shows available stream branches. `stream.create` creates a durable stream with instruction files. `stream.sync` updates a stream branch with main. `stream.context` stays read-only so loading shared context does not mutate the workspace.
+
+Implementation evidence: `packages/os/scripts/lib/streams/context-runtime.ts` and `packages/os/tools/stream/schema.ts`.

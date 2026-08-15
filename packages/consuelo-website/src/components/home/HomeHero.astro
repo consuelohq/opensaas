@@ -1,11 +1,13 @@
 ---
-import { INSTALL_COMMAND } from '../../data/home-content';
+import { homeHeroRotatingAssistant, INSTALL_COMMAND } from '../../data/home-content';
 
 type Props = {
   sectionId?: string;
 };
 
 const { sectionId = 'intro' } = Astro.props as Props;
+const heroCopy = homeHeroRotatingAssistant;
+const [primaryAssistant, secondaryAssistant] = heroCopy.assistants;
 ---
 
 <section class="os-hero" id={sectionId} data-section="hero">
@@ -17,23 +19,28 @@ const { sectionId = 'intro' } = Astro.props as Props;
   </div>
 
   <div class="os-hero__content">
-    <p class="os-hero__eyebrow">OPEN SOURCE <span aria-hidden="true">•</span> MIT LICENSE</p>
-    <h1 data-hero-heading>
-      <span data-hero-desktop-line>YOUR ASSISTANT</span>
-      <span data-hero-desktop-line>SHOULD COME PREPARED.</span>
-      <span data-hero-mobile-line>YOUR</span>
-      <span data-hero-mobile-line>ASSISTANT</span>
-      <span data-hero-mobile-line>SHOULD COME</span>
-      <span data-hero-mobile-line>PREPARED.</span>
+    <h1 data-hero-heading aria-label={heroCopy.ariaLabel}>
+      <span class="os-hero__heading-line">
+        <span>{heroCopy.prefix}</span>
+        <span
+          class="os-hero__assistant-rotator"
+          data-assistant-rotator
+          data-active-assistant={primaryAssistant}
+          aria-hidden="true"
+        >
+          <span data-assistant-name={primaryAssistant}>{primaryAssistant}</span>
+          <span data-assistant-name={secondaryAssistant}>{secondaryAssistant}</span>
+        </span>
+      </span>
+      <span class="os-hero__heading-line">{heroCopy.suffix}</span>
     </h1>
-    <p class="os-hero__subtitle" data-hero-subtitle>
-      <span data-hero-subtitle-primary>Cloud when you need it. Local where it matters.</span>
-      <span>The agent runner for ChatGPT, Claude, Cursor, OpenCode, and Grok.</span>
+    <p class="os-hero__subtitle">
+      {heroCopy.subtitle}
     </p>
 
     <div class="os-hero__actions">
       <a class="os-hero__button" href="https://os.consuelohq.com">
-        SIGN IN
+        {heroCopy.signInLabel}
         <svg class="os-hero__button-arrow" viewBox="0 0 6 9" fill="currentColor" aria-hidden="true">
           <rect x="0" y="0" width="1" height="9" />
           <rect x="1" y="1" width="1" height="1" />
@@ -47,18 +54,17 @@ const { sectionId = 'intro' } = Astro.props as Props;
       </a>
     </div>
 
-    <button class="os-hero__command" type="button" data-copy-install aria-label="Copy install command">
+    <button class="os-hero__command" type="button" data-copy-install aria-label={heroCopy.copyInstallAriaLabel}>
       <code>{INSTALL_COMMAND}</code>
-      <span data-copy-label>COPY</span>
+      <span data-copy-label>{heroCopy.copyLabel}</span>
     </button>
   </div>
 </section>
 
-<script define:vars={{ INSTALL_COMMAND }}>
+<script define:vars={{ INSTALL_COMMAND, copyLabel: heroCopy.copyLabel }}>
   const labels = Array.from(document.querySelectorAll('[data-copy-label]')).filter(
     (label) => label instanceof HTMLElement,
   );
-  const defaultLabels = new Map(labels.map((label) => [label, label.textContent ?? '']));
 
   document.querySelectorAll('[data-copy-install]').forEach((button) => {
     button.addEventListener('click', async () => {
@@ -77,7 +83,7 @@ const { sectionId = 'intro' } = Astro.props as Props;
       });
       window.setTimeout(() => {
         labels.forEach((label) => {
-          label.textContent = defaultLabels.get(label) ?? '';
+          label.textContent = copyLabel;
         });
       }, 1500);
     });
@@ -85,111 +91,173 @@ const { sectionId = 'intro' } = Astro.props as Props;
 </script>
 
 <script>
-  import { measureNaturalWidth, prepareWithSegments } from '@chenglou/pretext';
+  import gsap from 'gsap';
 
-  const heading = document.querySelector('[data-hero-heading]');
-  const subtitle = document.querySelector('[data-hero-subtitle]');
-  const subtitlePrimary = document.querySelector('[data-hero-subtitle-primary]');
-  const mobileMedia = window.matchMedia('(max-width: 720px)');
+  // Hero/editorial motion contract: translation max 32px (animations.md).
+  const HERO_NAME_OFFSET_PX = 32;
+  const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+  const ROTATION_EASE = 'power3.inOut';
+  const ROTATION_DURATION = 0.52;
 
-  type FitOptions = {
-    texts: string[];
-    availableWidth: number;
-    fontFamily: string;
-    fontWeight: string;
-    letterSpacing: number;
-    min: number;
-    max: number;
-  };
+  const hero = document.querySelector('[data-section="hero"]');
+  const rotator = document.querySelector('[data-assistant-rotator]');
+  const primaryName = document.querySelector('[data-assistant-name="ChatGPT"]');
+  const secondaryName = document.querySelector('[data-assistant-name="Claude"]');
+  const reduceMotion = window.matchMedia(REDUCED_MOTION_QUERY);
 
-  const measureAtSize = (
-    text: string,
-    fontFamily: string,
-    fontWeight: string,
-    letterSpacing: number,
-    size: number,
-  ) => {
-    const font = `${fontWeight} ${size}px ${fontFamily}`;
-    return measureNaturalWidth(
-      prepareWithSegments(text, font, letterSpacing === 0 ? undefined : { letterSpacing }),
-    );
-  };
+  let timeline: gsap.core.Timeline | null = null;
+  let context: gsap.Context | null = null;
+  let visibilityObserver: IntersectionObserver | null = null;
+  let isHeroVisible = true;
 
-  const findLargestFittingSize = ({
-    texts,
-    availableWidth,
-    fontFamily,
-    fontWeight,
-    letterSpacing,
-    min,
-    max,
-  }: FitOptions) => {
-    let lower = min;
-    let upper = Math.max(min, max);
+  const hasRotatorNodes = () =>
+    rotator instanceof HTMLElement &&
+    primaryName instanceof HTMLElement &&
+    secondaryName instanceof HTMLElement;
 
-    for (let index = 0; index < 12; index += 1) {
-      const candidate = (lower + upper) / 2;
-      const widestLine = Math.max(
-        ...texts.map((value) => measureAtSize(value, fontFamily, fontWeight, letterSpacing, candidate)),
-      );
-
-      if (widestLine <= availableWidth) {
-        lower = candidate;
-      } else {
-        upper = candidate;
-      }
-    }
-
-    return lower;
-  };
-
-  const fitHeroTypography = () => {
-    if (!(heading instanceof HTMLElement) || !(subtitle instanceof HTMLElement) || !(subtitlePrimary instanceof HTMLElement)) {
+  const clearInlineMotionStyles = () => {
+    if (!(primaryName instanceof HTMLElement) || !(secondaryName instanceof HTMLElement)) {
       return;
     }
 
-    const isMobile = mobileMedia.matches;
-    const headingStyle = window.getComputedStyle(heading);
-    const headingLines = Array.from(
-      heading.querySelectorAll(isMobile ? '[data-hero-mobile-line]' : '[data-hero-desktop-line]'),
-    )
-      .map((line) => line.textContent?.trim() ?? '')
-      .filter(Boolean);
-    const headingWidth = Math.max(1, heading.clientWidth - 2);
-    const headingSize = findLargestFittingSize({
-      texts: headingLines,
-      availableWidth: headingWidth,
-      fontFamily: headingStyle.fontFamily,
-      fontWeight: headingStyle.fontWeight,
-      letterSpacing: Number.parseFloat(headingStyle.letterSpacing) || 0,
-      min: isMobile ? 42 : 58,
-      max: isMobile ? Math.min(62, window.innerWidth * 0.145) : 108,
-    });
-    heading.style.setProperty('--hero-heading-size', `${headingSize.toFixed(2)}px`);
-
-    const subtitleStyle = window.getComputedStyle(subtitle);
-    const subtitleSize = findLargestFittingSize({
-      texts: [subtitlePrimary.textContent?.trim() ?? ''],
-      availableWidth: Math.max(1, subtitle.clientWidth - 2),
-      fontFamily: subtitleStyle.fontFamily,
-      fontWeight: subtitleStyle.fontWeight,
-      letterSpacing: Number.parseFloat(subtitleStyle.letterSpacing) || 0,
-      min: isMobile ? 13 : 16,
-      max: isMobile ? 17 : 20,
-    });
-    subtitle.style.setProperty('--hero-subtitle-size', `${subtitleSize.toFixed(2)}px`);
+    for (const node of [primaryName, secondaryName]) {
+      node.style.removeProperty('opacity');
+      node.style.removeProperty('visibility');
+      node.style.removeProperty('transform');
+    }
   };
 
-  let frame = 0;
-  const queueFit = () => {
-    window.cancelAnimationFrame(frame);
-    frame = window.requestAnimationFrame(fitHeroTypography);
+  const resetActiveAssistant = () => {
+    if (!(rotator instanceof HTMLElement)) {
+      return;
+    }
+
+    rotator.dataset.activeAssistant = 'ChatGPT';
   };
 
-  queueFit();
-  document.fonts.ready.then(queueFit);
-  mobileMedia.addEventListener('change', queueFit);
-  window.addEventListener('resize', queueFit, { passive: true });
+  const destroyRotation = () => {
+    visibilityObserver?.disconnect();
+    visibilityObserver = null;
+    timeline?.kill();
+    timeline = null;
+    context?.revert();
+    context = null;
+    clearInlineMotionStyles();
+    resetActiveAssistant();
+  };
+
+  const syncTimelinePlayback = () => {
+    if (!timeline) {
+      return;
+    }
+
+    if (isHeroVisible && !reduceMotion.matches) {
+      timeline.play();
+      return;
+    }
+
+    timeline.pause();
+  };
+
+  const bindVisibilityObserver = () => {
+    if (!(hero instanceof HTMLElement) || typeof IntersectionObserver === 'undefined') {
+      isHeroVisible = true;
+      syncTimelinePlayback();
+      return;
+    }
+
+    visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        isHeroVisible = entry?.isIntersecting ?? false;
+        syncTimelinePlayback();
+      },
+      { threshold: 0.15 },
+    );
+    visibilityObserver.observe(hero);
+  };
+
+  const startRotation = () => {
+    if (!hasRotatorNodes() || reduceMotion.matches) {
+      destroyRotation();
+      return;
+    }
+
+    if (!(rotator instanceof HTMLElement) || !(primaryName instanceof HTMLElement) || !(secondaryName instanceof HTMLElement)) {
+      return;
+    }
+
+    destroyRotation();
+
+    context = gsap.context(() => {
+      gsap.set(primaryName, { autoAlpha: 1, y: 0 });
+      gsap.set(secondaryName, { autoAlpha: 0, y: HERO_NAME_OFFSET_PX });
+
+      timeline = gsap.timeline({
+        repeat: -1,
+        paused: true,
+      });
+
+      timeline
+        .to(
+          primaryName,
+          { autoAlpha: 0, y: -HERO_NAME_OFFSET_PX, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          2.4,
+        )
+        .to(
+          secondaryName,
+          { autoAlpha: 1, y: 0, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
+        .call(() => {
+          rotator.dataset.activeAssistant = 'Claude';
+        })
+        .set(primaryName, { autoAlpha: 0, y: HERO_NAME_OFFSET_PX }, '+=2.6')
+        .to(
+          secondaryName,
+          { autoAlpha: 0, y: -HERO_NAME_OFFSET_PX, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
+        .to(
+          primaryName,
+          { autoAlpha: 1, y: 0, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
+        .call(() => {
+          rotator.dataset.activeAssistant = 'ChatGPT';
+        });
+    }, rotator);
+
+    bindVisibilityObserver();
+    syncTimelinePlayback();
+  };
+
+  const handleReducedMotionChange = () => {
+    if (reduceMotion.matches) {
+      destroyRotation();
+      return;
+    }
+
+    startRotation();
+  };
+
+  const handlePageHide = () => {
+    destroyRotation();
+  };
+
+  const handlePageShow = (event: PageTransitionEvent) => {
+    if (!event.persisted) {
+      return;
+    }
+
+    isHeroVisible = true;
+    startRotation();
+  };
+
+  startRotation();
+  reduceMotion.addEventListener('change', handleReducedMotionChange);
+  window.addEventListener('pagehide', handlePageHide);
+  window.addEventListener('pageshow', handlePageShow);
 </script>
 
 <style>
@@ -217,12 +285,6 @@ const { sectionId = 'intro' } = Astro.props as Props;
     gap: clamp(1rem, 1.55vw, 1.4rem);
   }
 
-  .os-hero__eyebrow {
-    margin: 0 0 clamp(0.1rem, 0.45vw, 0.35rem);
-    font: 650 clamp(0.66rem, 0.85vw, 0.78rem)/1 var(--site-font-mono);
-    letter-spacing: 0.2em;
-  }
-
   .os-hero h1 {
     width: 100%;
     min-width: 0;
@@ -230,42 +292,48 @@ const { sectionId = 'intro' } = Astro.props as Props;
     margin: 0;
     color: white;
     font-family: var(--site-font-display);
-    font-size: var(--hero-heading-size, clamp(3.75rem, 7.5vw, 6.75rem));
+    font-size: clamp(3.75rem, 7vw, 6.75rem);
     font-optical-sizing: auto;
     font-weight: 400;
-    letter-spacing: 0.015em;
-    line-height: 1;
+    letter-spacing: 0.01em;
+    line-height: 0.96;
     text-wrap: balance;
   }
 
-  .os-hero h1 > span {
-    display: block;
+  .os-hero__heading-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.2em;
     white-space: nowrap;
   }
 
-  [data-hero-mobile-line] {
-    display: none !important;
+  .os-hero__assistant-rotator {
+    position: relative;
+    display: inline-grid;
+    overflow: hidden;
+    min-width: 3.75em;
+    place-items: baseline center;
+    vertical-align: baseline;
+  }
+
+  .os-hero__assistant-rotator > span {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+  }
+
+  [data-assistant-name='Claude'] {
+    opacity: 0;
+    visibility: hidden;
   }
 
   .os-hero__subtitle {
-    width: min(100%, 64rem);
+    width: min(100%, 56rem);
     min-width: 0;
     margin: 0;
     color: rgba(255, 255, 255, 0.9);
-    font-size: var(--hero-subtitle-size, clamp(1rem, 1.4vw, 1.25rem));
-    line-height: 1.42;
-    text-wrap: pretty;
-  }
-
-  .os-hero__subtitle > span {
-    display: block;
-  }
-
-  .os-hero__subtitle > span:first-child {
-    white-space: nowrap;
-  }
-
-  .os-hero__subtitle > span:last-child {
+    font-size: clamp(1rem, 1.4vw, 1.25rem);
+    line-height: 1.45;
     text-wrap: balance;
   }
 
@@ -416,30 +484,21 @@ const { sectionId = 'intro' } = Astro.props as Props;
       transform: translateY(-3.5svh);
     }
 
-    .os-hero__eyebrow {
-      margin-bottom: 0.2rem;
-      font-size: 0.67rem;
-    }
-
-    [data-hero-desktop-line] {
-      display: none !important;
-    }
-
-    [data-hero-mobile-line] {
-      display: block !important;
-    }
-
     .os-hero h1 {
-      font-size: var(--hero-heading-size, 13.75vw);
-      letter-spacing: 0.01em;
+      font-size: clamp(2rem, 10vw, 3.2rem);
+      letter-spacing: 0.005em;
       line-height: 0.98;
     }
 
+    .os-hero__heading-line {
+      gap: 0.16em;
+    }
+
     .os-hero__subtitle {
-      width: 100%;
+      width: min(100%, 23rem);
       max-width: 100%;
-      font-size: var(--hero-subtitle-size, 0.92rem);
-      line-height: 1.45;
+      font-size: 0.94rem;
+      line-height: 1.48;
     }
 
     .os-hero__actions,

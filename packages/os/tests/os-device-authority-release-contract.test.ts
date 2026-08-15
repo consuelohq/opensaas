@@ -4,10 +4,15 @@ import { pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
+import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
+
 type WorkerSecretMetadata = Array<{ name: string; type?: string }>;
 
 type ReadinessModule = {
   REQUIRED_DEVICE_AUTHORITY_WORKER_SECRETS: readonly string[];
+  OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_SECRETS: readonly string[];
+  OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_ALLOWLISTS: readonly string[];
   assertRequiredDeviceAuthorityWorkerSecrets: (secrets: WorkerSecretMetadata | string) => void;
 };
 
@@ -104,16 +109,14 @@ describe('OS device authority release contract', () => {
       CLOUDFLARE_ZONE_ID: '3787f63d39977227bc1cb346e0d67dc9',
       OS_DEVICE_AUTH_BASE_DOMAIN: 'consuelohq.com',
       OS_DEVICE_AUTH_WORKSPACE_EDGE_HOSTNAME: 'workspace-edge.consuelohq.com',
-      OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL: 'http://127.0.0.1:46321',
+      OS_DEVICE_AUTH_CONNECTOR_LOCAL_SERVICE_URL: 'http://127.0.0.1:46320',
     });
   });
 
-  it('should declare the required server-side Cloudflare secret when Worker config loads', () => {
+  it('should not use unsupported Wrangler secret declaration sections', () => {
     const config = readWorkerConfig();
 
-    expect(config.secrets).toEqual({
-      required: ['CLOUDFLARE_API_TOKEN'],
-    });
+    expect(config).not.toHaveProperty('secrets');
     expect(JSON.stringify(config)).not.toMatch(/CLOUDFLARE_API_TOKEN\s*[:=]\s*[^\]"}]+/);
   });
 
@@ -125,12 +128,111 @@ describe('OS device authority release contract', () => {
 
     expect(REQUIRED_DEVICE_AUTHORITY_WORKER_SECRETS).toEqual([
       'CLOUDFLARE_API_TOKEN',
+      'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET',
+      'OS_MANAGED_CLOUD_PROVISIONER_SECRET',
+      'OS_MANAGED_CLOUD_ENROLLMENT_SECRET',
     ]);
     expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
       { name: 'GOOGLE_OAUTH_CLIENT_ID', type: 'secret_text' },
       { name: 'GOOGLE_OAUTH_CLIENT_SECRET', type: 'secret_text' },
       { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+      { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
     ])).not.toThrow();
+  });
+
+  it('should accept Stripe billing as either fully absent or fully configured', async () => {
+    const {
+      OPTIONAL_DEVICE_AUTHORITY_STRIPE_SECRETS,
+      assertRequiredDeviceAuthorityWorkerSecrets,
+    } = await loadReadinessModule();
+    const required = [
+      { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+      { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+    ];
+
+    expect(OPTIONAL_DEVICE_AUTHORITY_STRIPE_SECRETS).toEqual([
+      'OS_STRIPE_SECRET_KEY',
+      'OS_STRIPE_WEBHOOK_SECRET',
+    ]);
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets(required)).not.toThrow();
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
+      ...required,
+      { name: 'OS_STRIPE_SECRET_KEY', type: 'secret_text' },
+      { name: 'OS_STRIPE_WEBHOOK_SECRET', type: 'secret_text' },
+    ])).not.toThrow();
+  });
+
+  it('should accept synthetic Stripe testing as either fully absent or fully configured', async () => {
+    const {
+      OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_ALLOWLISTS,
+      OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_SECRETS,
+      assertRequiredDeviceAuthorityWorkerSecrets,
+    } = await loadReadinessModule();
+    const required = [
+      { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+      { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+    ];
+
+    expect(OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_SECRETS).toEqual([
+      'OS_STRIPE_SYNTHETIC_SECRET_KEY',
+      'OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET',
+    ]);
+    expect(OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_ALLOWLISTS).toEqual([
+      'OS_STRIPE_SYNTHETIC_ACCOUNT_IDS',
+      'OS_STRIPE_SYNTHETIC_WORKSPACE_IDS',
+    ]);
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets(required)).not.toThrow();
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
+      ...required,
+      { name: 'OS_STRIPE_SYNTHETIC_SECRET_KEY', type: 'secret_text' },
+      { name: 'OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET', type: 'secret_text' },
+      { name: 'OS_STRIPE_SYNTHETIC_ACCOUNT_IDS', type: 'secret_text' },
+    ])).not.toThrow();
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
+      ...required,
+      { name: 'OS_STRIPE_SYNTHETIC_SECRET_KEY', type: 'secret_text' },
+      { name: 'OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET', type: 'secret_text' },
+      { name: 'OS_STRIPE_SYNTHETIC_WORKSPACE_IDS', type: 'secret_text' },
+    ])).not.toThrow();
+  });
+
+  it('should reject partial synthetic Stripe configuration', async () => {
+    const { assertRequiredDeviceAuthorityWorkerSecrets } = await loadReadinessModule();
+    const required = [
+      { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+      { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+    ];
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
+      ...required,
+      { name: 'OS_STRIPE_SYNTHETIC_SECRET_KEY', type: 'secret_text' },
+      { name: 'OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET', type: 'secret_text' },
+    ])).toThrowError(
+      'Device authority synthetic Stripe testing requires both Stripe secrets and at least one allowlist: OS_STRIPE_SYNTHETIC_ACCOUNT_IDS or OS_STRIPE_SYNTHETIC_WORKSPACE_IDS',
+    );
+  });
+
+  it('should reject a half-configured Stripe billing secret pair', async () => {
+    const { assertRequiredDeviceAuthorityWorkerSecrets } = await loadReadinessModule();
+    const required = [
+      { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+      { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+      { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+    ];
+    expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
+      ...required,
+      { name: 'OS_STRIPE_SECRET_KEY', type: 'secret_text' },
+    ])).toThrowError(
+      'Device authority Stripe billing secrets must be configured together: OS_STRIPE_SECRET_KEY, OS_STRIPE_WEBHOOK_SECRET',
+    );
   });
 
   it('should reject release readiness when the Worker secret is missing', async () => {
@@ -196,6 +298,279 @@ describe('OS device authority release contract', () => {
     expect(commands.some((command) => command.args[0] === 'r2')).toBe(false);
   });
 
+  it('should stop release before remote mutation when the Hono route-refresh credential is unavailable', async () => {
+    const { runDeviceAuthorityReleaseCli } = await loadReleaseModule();
+    const commands: ReleaseCommand[] = [];
+    const errors: string[] = [];
+    const previousProvisionerSecret = process.env.OS_MANAGED_CLOUD_PROVISIONER_SECRET;
+    delete process.env.OS_MANAGED_CLOUD_PROVISIONER_SECRET;
+    try {
+      const exitCode = await runDeviceAuthorityReleaseCli([], {
+        commandRunner(command) {
+          commands.push(command);
+          if (
+            command.command === 'wrangler'
+            && command.args.join(' ') ===
+              'secret list --name consuelo-os-device-authority --format json'
+          ) {
+            return {
+              status: 0,
+              stdout: JSON.stringify([
+                { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+                { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+                { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+                { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+              ]),
+              stderr: '',
+            };
+          }
+          throw new Error(`unexpected release mutation: ${command.command} ${command.args.join(' ')}`);
+        },
+        writeOut() {},
+        writeErr(message = '') { errors.push(message); },
+      });
+
+      expect(exitCode).toBe(1);
+      expect(errors).toEqual([
+        'OS_MANAGED_CLOUD_PROVISIONER_SECRET is required to refresh release-managed workspace routes',
+      ]);
+      expect(commands).toHaveLength(1);
+      expect(commands.some((command) => command.args[0] === 'r2')).toBe(false);
+      expect(commands.some((command) => command.args[0] === 'deploy')).toBe(false);
+    } finally {
+      if (previousProvisionerSecret === undefined) {
+        delete process.env.OS_MANAGED_CLOUD_PROVISIONER_SECRET;
+      } else {
+        process.env.OS_MANAGED_CLOUD_PROVISIONER_SECRET = previousProvisionerSecret;
+      }
+    }
+  });
+
+  it('should materialize and bundle a valid default workspace during dry-run without remote uploads', async () => {
+    const { runDeviceAuthorityReleaseCli } = await loadReleaseModule();
+    const commands: ReleaseCommand[] = [];
+    const output: string[] = [];
+    const errors: string[] = [];
+
+    const exitCode = await runDeviceAuthorityReleaseCli(['--dry-run'], {
+      commandRunner(command) {
+        commands.push(command);
+        if (
+          command.command === 'wrangler' &&
+          command.args.join(' ') ===
+            'secret list --name consuelo-os-device-authority --format json'
+        ) {
+          return {
+            status: 0,
+            stdout: JSON.stringify([
+              { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+              { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+            ]),
+            stderr: '',
+          };
+        }
+        if (
+          command.command === 'wrangler' &&
+          command.args[0] === 'deploy' &&
+          command.args.includes('--dry-run')
+        ) {
+          return { status: 0, stdout: '', stderr: '' };
+        }
+        throw new Error(
+          `unexpected release mutation: ${command.command} ${command.args.join(' ')}`,
+        );
+      },
+      writeOut(message = '') {
+        output.push(message);
+      },
+      writeErr(message = '') {
+        errors.push(message);
+      },
+    });
+
+    expect(exitCode).toBe(0);
+    expect(errors).toEqual([]);
+    expect(output.filter((line) => line.startsWith('plannedSnapshot='))).toHaveLength(10);
+    for (const siteId of [
+      'launcher',
+      'artifacts',
+      'traces',
+      'diffs',
+      'docs',
+      'configuration',
+      'tools',
+      'nodes',
+      'environments',
+      'secrets',
+    ]) {
+      expect(output).toContainEqual(
+        expect.stringMatching(
+          new RegExp(`^plannedSnapshot=r2://consuelo-sites-snapshots/sites/workspace_testing/${siteId}/sha256-[a-f0-9]{16}/index\\.html$`),
+        ),
+      );
+    }
+    expect(output).toContainEqual(
+      expect.stringMatching(
+        /^defaultSiteSnapshotKey=sites\/workspace_testing\/launcher\/sha256-[a-f0-9]{16}\/index\.html$/,
+      ),
+    );
+    expect(output).toContainEqual(
+      expect.stringMatching(
+        /^plannedRouteRefresh=workspace_route_registry:sha256-[a-f0-9]{16}$/,
+      ),
+    );
+    expect(commands.some((command) => command.args[0] === 'r2')).toBe(false);
+    expect(commands.some((command) => command.args[0] === 'd1')).toBe(false);
+    expect(commands.at(-1)).toMatchObject({
+      command: 'wrangler',
+      args: expect.arrayContaining(['deploy', '--dry-run']),
+    });
+  });
+
+  it('deploys Device Authority before refreshing release-managed workspace site routes through the Hono D1 binding', async () => {
+    const { runDeviceAuthorityReleaseCli } = await loadReleaseModule();
+    const commands: ReleaseCommand[] = [];
+    const requests: Array<{ url: string; init?: RequestInit }> = [];
+    const output: string[] = [];
+    const errors: string[] = [];
+    const previousProvisionerSecret = process.env.OS_MANAGED_CLOUD_PROVISIONER_SECRET;
+    process.env.OS_MANAGED_CLOUD_PROVISIONER_SECRET = 'release-route-secret';
+
+    const exitCode = await runDeviceAuthorityReleaseCli([], {
+      commandRunner(command) {
+        commands.push(command);
+        if (
+          command.command === 'wrangler'
+          && command.args.join(' ') ===
+            'secret list --name consuelo-os-device-authority --format json'
+        ) {
+          return {
+            status: 0,
+            stdout: JSON.stringify([
+              { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+              { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+            ]),
+            stderr: '',
+          };
+        }
+        if (command.command === 'wrangler' && ['r2', 'deploy'].includes(command.args[0] ?? '')) {
+          return { status: 0, stdout: '', stderr: '' };
+        }
+        throw new Error(
+          'unexpected release mutation: ' + command.command + ' ' + command.args.join(' '),
+        );
+      },
+      async fetchImpl(input, init) {
+        const url = String(input);
+        requests.push({ url, init });
+        if (url === 'https://os.consuelohq.com/internal/release/site-snapshots/refresh') {
+          return Response.json({ ok: true, updated: true });
+        }
+        if (url === 'https://os.consuelohq.com/health') {
+          return Response.json({ ok: true, connector_provisioning_configured: true });
+        }
+        if (url.startsWith('https://os.consuelohq.com/login/device?')) {
+          return new Response(
+            '<a href="https://os.consuelohq.com/login/google/start?user_code=RELSMOKE">Continue</a>',
+          );
+        }
+        if (url === 'https://os.consuelohq.com/login/device/code') {
+          return Response.json(
+            { error: 'device_public_key_required' },
+            { status: 400 },
+          );
+        }
+        throw new Error('unexpected request: ' + url);
+      },
+      async sleepImpl() {},
+      writeOut(message = '') { output.push(message); },
+      writeErr(message = '') { errors.push(message); },
+    });
+    if (previousProvisionerSecret === undefined) delete process.env.OS_MANAGED_CLOUD_PROVISIONER_SECRET;
+    else process.env.OS_MANAGED_CLOUD_PROVISIONER_SECRET = previousProvisionerSecret;
+
+    expect(exitCode).toBe(0);
+    expect(errors).toEqual([]);
+    const deployIndex = commands.findIndex(
+      (command) => command.command === 'wrangler' && command.args[0] === 'deploy',
+    );
+    const routeRefreshIndex = requests.findIndex(
+      (request) => request.url === 'https://os.consuelohq.com/internal/release/site-snapshots/refresh',
+    );
+    expect(deployIndex).toBeGreaterThan(0);
+    expect(routeRefreshIndex).toBeGreaterThanOrEqual(0);
+    expect(commands.some((command) => command.args[0] === 'd1')).toBe(false);
+    const routeRefresh = requests[routeRefreshIndex];
+    expect(routeRefresh.init?.method).toBe('POST');
+    expect(new Headers(routeRefresh.init?.headers).get('authorization')).toBe(
+      'Bearer release-route-secret',
+    );
+    const payload = JSON.parse(String(routeRefresh.init?.body)) as {
+      versionId: string;
+      snapshotWorkspaceId: string;
+      siteContentHashes: Record<string, string>;
+    };
+    expect(payload.snapshotWorkspaceId).toBe('workspace_testing');
+    expect(payload.versionId).toMatch(/^sha256-[a-f0-9]{16}$/);
+    for (const siteId of [
+      'launcher', 'traces', 'configuration', 'tools', 'nodes', 'environments', 'secrets',
+    ]) {
+      expect(payload.siteContentHashes[siteId]).toMatch(/^[a-f0-9]{64}$/);
+    }
+    expect(payload.siteContentHashes).not.toHaveProperty('artifacts');
+    expect(payload.siteContentHashes).not.toHaveProperty('docs');
+    expect(output).toContain('Verified https://os.consuelohq.com/health');
+  });
+
+  it('refreshes release-managed site routes through an authenticated Device Authority Hono endpoint', async () => {
+    let executedSql = '';
+    const handler = createOsDeviceAuthorityHandler({
+      store: createMemoryDeviceGrantStore(),
+      origin: 'https://os.consuelohq.com',
+      managedCloudProvisionerSecret: 'release-route-secret',
+      workspaceRouteRegistry: {
+        async exec(sql) {
+          executedSql = sql;
+          return { success: true };
+        },
+      },
+    });
+    const body = JSON.stringify({
+      versionId: 'sha256-release123456',
+      snapshotWorkspaceId: 'workspace_testing',
+      siteContentHashes: Object.fromEntries([
+        'launcher', 'traces', 'configuration', 'tools', 'nodes', 'environments', 'secrets',
+      ].map((siteId) => [siteId, 'a'.repeat(64)])),
+    });
+
+    const denied = await handler(new Request(
+      'https://os.consuelohq.com/internal/release/site-snapshots/refresh',
+      { method: 'POST', headers: { 'content-type': 'application/json' }, body },
+    ));
+    expect(denied.status).toBe(401);
+    expect(executedSql).toBe('');
+
+    const response = await handler(new Request(
+      'https://os.consuelohq.com/internal/release/site-snapshots/refresh',
+      {
+        method: 'POST',
+        headers: {
+          authorization: 'Bearer release-route-secret',
+          'content-type': 'application/json',
+        },
+        body,
+      },
+    ));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ ok: true, updated: true });
+    expect(executedSql).toContain('UPDATE workspace_route_registry SET');
+    expect(executedSql).toContain('sha256-release123456');
+    expect(executedSql).toContain('traces');
+  });
   it('should reject release health when connector provisioning is unavailable', async () => {
     const { assertDeviceAuthorityHealth } = await loadReleaseModule();
 
