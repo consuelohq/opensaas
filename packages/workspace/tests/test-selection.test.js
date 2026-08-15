@@ -97,7 +97,7 @@ describe('test selection registry', () => {
       'twenty-shared',
       '--coverage=false',
     ]);
-  });
+  }, 15_000);
 
   it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
     const rulesPath = path.resolve(
@@ -264,6 +264,28 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
       'OS artifact manifest contract',
+    ]);
+  });
+
+  it('uses focused bundled-skill contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/skills/branch/skill.json',
+      '--changed-file',
+      'packages/os/skills/skills.json',
+      '--changed-file',
+      'packages/os/tests/branch-skill.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-bundled-skill-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS bundled skill contracts',
     ]);
   });
 

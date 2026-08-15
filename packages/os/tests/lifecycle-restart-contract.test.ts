@@ -148,6 +148,90 @@ describe('lifecycle restart parity', () => {
     }
   });
 
+  it('retries a transient macOS gateway bootstrap after bootout settles', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-retry-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.caddy';
+    const plistPath = join(launchAgents, label + '.plist');
+    writeFileSync(plistPath, '<plist/>\n');
+    const calls: Array<{ command: string; args: string[] }> = [];
+    let bootstrapAttempts = 0;
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        sleep: async () => {},
+        run: async (command, args) => {
+          calls.push({ command, args });
+          if (command === 'launchctl' && args[0] === 'bootstrap') {
+            bootstrapAttempts += 1;
+            if (bootstrapAttempts === 1) {
+              return {
+                exitCode: 5,
+                stdout: '',
+                stderr: 'Bootstrap failed: 5: Input/output error',
+              };
+            }
+          }
+          if (command === 'launchctl' && args[0] === 'print') {
+            return { exitCode: 113, stdout: '', stderr: 'Could not find service' };
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      expect(bootstrapAttempts).toBe(2);
+      expect(calls).toContainEqual({
+        command: 'launchctl',
+        args: ['print', 'gui/501/' + label],
+      });
+      expect(calls.at(-1)).toEqual({
+        command: 'launchctl',
+        args: ['kickstart', '-k', 'gui/501/' + label],
+      });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('includes the gateway label when bootstrap retries are exhausted', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-failure-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.caddy';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        sleep: async () => {},
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'bootstrap') {
+            return {
+              exitCode: 5,
+              stdout: '',
+              stderr: 'Bootstrap failed: 5: Input/output error',
+            };
+          }
+          if (command === 'launchctl' && args[0] === 'print') {
+            return { exitCode: 113, stdout: '', stderr: 'Could not find service' };
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true })).rejects.toThrow(label);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('reconciles preserved Caddy topology from the activated runtime before lifecycle restart', async () => {
     const lifecycle = source('scripts/lifecycle.ts');
     const service = source('scripts/lib/lifecycle/service.ts');

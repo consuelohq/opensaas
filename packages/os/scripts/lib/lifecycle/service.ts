@@ -16,6 +16,8 @@ const MAC_GATEWAY_SERVICE_PREFIXES = [
   'com.consuelo.os.cloudflared.',
   'com.consuelo.os.node-heartbeat.',
 ];
+const MAC_GATEWAY_BOOTSTRAP_ATTEMPTS = 4;
+const MAC_GATEWAY_BOOTSTRAP_RETRY_MS = 200;
 
 export type LifecycleProcessResult = {
   exitCode: number;
@@ -88,6 +90,7 @@ export function createReloadServiceController(input: {
   platform?: NodeJS.Platform;
   environment?: NodeJS.ProcessEnv;
   userId?: number;
+  sleep?: (milliseconds: number) => Promise<void>;
 }): LifecycleServiceController {
   const bootstrapReloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
   const activeRuntimeRoot = input.activeRuntimeRoot ?? input.osRoot;
@@ -104,6 +107,7 @@ export function createReloadServiceController(input: {
   const uninstallScript = resolve(input.osRoot, 'scripts', 'uninstall-system-daemons.sh');
   const run = input.run ?? defaultRunner;
   const platform = input.platform ?? process.platform;
+  const sleepImpl = input.sleep ?? sleep;
   const reconcileCaddy = async (): Promise<void> => {
     if (platform !== 'darwin' || !lifecycleHome) return;
     try {
@@ -157,16 +161,50 @@ export function createReloadServiceController(input: {
           const domain = 'gui/' + String(userId);
           for (const gateway of installedMacGatewayLaunchAgents(input.environment)) {
             await run('launchctl', ['bootout', domain + '/' + gateway.label]);
-            const bootstrap = await run('launchctl', [
-              'bootstrap',
-              domain,
-              gateway.plistPath,
-            ]);
-            if (bootstrap.exitCode !== 0) {
-              throw commandFailure(
-                bootstrap,
-                'gateway bootstrap exited ' + String(bootstrap.exitCode) + ': ' + gateway.label,
-              );
+            let bootstrapped = false;
+            let lastBootstrap: LifecycleProcessResult | undefined;
+            for (let attempt = 1; attempt <= MAC_GATEWAY_BOOTSTRAP_ATTEMPTS; attempt += 1) {
+              const bootstrap = await run('launchctl', [
+                'bootstrap',
+                domain,
+                gateway.plistPath,
+              ]);
+              lastBootstrap = bootstrap;
+              if (bootstrap.exitCode === 0) {
+                bootstrapped = true;
+                break;
+              }
+
+              const detail = `${bootstrap.stdout}\n${bootstrap.stderr}`;
+              const transientExitFive = bootstrap.exitCode === 5
+                || /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
+              if (!transientExitFive) break;
+
+              // launchd can briefly keep the old job in its teardown transaction after
+              // bootout. A bootstrap during that window reports exit 5 even though the
+              // plist is valid. If the job is already visible again, accept it; otherwise
+              // wait briefly and retry the same immutable plist.
+              const loaded = await run('launchctl', [
+                'print',
+                domain + '/' + gateway.label,
+              ]);
+              if (loaded.exitCode === 0) {
+                bootstrapped = true;
+                break;
+              }
+              if (attempt < MAC_GATEWAY_BOOTSTRAP_ATTEMPTS) {
+                await sleepImpl(MAC_GATEWAY_BOOTSTRAP_RETRY_MS);
+              }
+            }
+            if (!bootstrapped) {
+              const result = lastBootstrap ?? {
+                exitCode: 1,
+                stdout: '',
+                stderr: '',
+              };
+              const detail = result.stderr.trim() || result.stdout.trim()
+                || 'launchctl bootstrap exited ' + String(result.exitCode);
+              throw new Error('gateway bootstrap failed for ' + gateway.label + ': ' + detail);
             }
             const kickstart = await run('launchctl', [
               'kickstart',
