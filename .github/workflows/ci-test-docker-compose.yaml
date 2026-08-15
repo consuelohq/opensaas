@@ -7,7 +7,6 @@ on:
   pull_request:
     paths:
       - 'packages/twenty-docker/**'
-      - 'docker-compose.yml'
       - '.github/workflows/ci-test-docker-compose.yaml'
 
 concurrency:
@@ -20,7 +19,6 @@ jobs:
     with:
       files: |
         packages/twenty-docker/**
-        docker-compose.yml
   test:
     needs: changed-files-check
     if: needs.changed-files-check.outputs.any_changed == 'true'

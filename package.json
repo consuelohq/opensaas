@@ -236,7 +236,7 @@
     "stream:create": "bun packages/os/scripts/stream-create.js",
     "stream:sync": "bun packages/workspace/scripts/stream-sync.js",
     "stream:context": "bun packages/workspace/scripts/stream-context.js",
-    "start": "npx concurrently --kill-others 'npx nx run-many -t start -p twenty-server twenty-front' 'npx wait-on tcp:3000 && npx nx run twenty-server:worker'",
+    "start": "bun packages/dialer-server/src/main.ts",
     "prepare": "husky",
     "railway:logs": "bun packages/os/scripts/railway-logs.js",
     "railway:redeploy": "bun packages/os/scripts/railway-redeploy.js",

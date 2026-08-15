@@ -435,8 +435,10 @@ function printNextSteps(deploymentType: 'hosted' | 'self-hosted'): void {
     log.info('1. consuelo status');
     log.info('2. https://consuelohq.com');
   } else {
-    log.info('1. docker-compose up');
-    log.info('2. http://localhost:3000');
-    log.info('3. https://consuelohq.com');
+    log.info('1. docker compose up -d db redis');
+    log.info('2. configure the dialer-server environment');
+    log.info(
+      '3. start the standalone dialer-server from the Consuelo source checkout',
+    );
   }
 }
