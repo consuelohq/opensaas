@@ -1,9 +1,11 @@
 import { spawn } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { Effect } from 'effect';
 
 import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from '../facade/process-tree';
+import { resolveConsueloHomeLayout } from '../consuelo-home';
 
 export type RunResult = {
   stdout: string;
@@ -31,6 +33,7 @@ const DARWIN_WRITE_CONTAINMENT_PROFILE = [
   '(deny default)',
   '(allow process*)',
   '(allow file-read*)',
+  '(deny file-read* (subpath (param "CONSUELO_KEYS_ROOT")) (subpath (param "CONSUELO_SECURITY_ROOT")) (subpath (param "CONSUELO_TUNNELS_ROOT")))',
   '(allow file-write* (subpath (param "WRITE_ROOT")) (subpath (param "SCRATCH_ROOT")) (literal "/dev/null"))',
   '(allow network*)',
   '(allow sysctl-read)',
@@ -43,6 +46,7 @@ const DARWIN_READ_CONTAINMENT_PROFILE = [
   '(deny default)',
   '(allow process*)',
   '(allow file-read*)',
+  '(deny file-read* (subpath (param "CONSUELO_KEYS_ROOT")) (subpath (param "CONSUELO_SECURITY_ROOT")) (subpath (param "CONSUELO_TUNNELS_ROOT")))',
   '(allow file-write* (subpath (param "SCRATCH_ROOT")) (literal "/dev/null"))',
   '(allow network*)',
   '(allow sysctl-read)',
@@ -87,6 +91,14 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
 
     const writeBoundaryRoot = canonicalPath(options.writeBoundaryRoot);
     const scratchRoot = canonicalPath(options.scratchRoot);
+    const consueloHome = resolveConsueloHomeLayout(
+      options.env.CONSUELO_HOME
+        ?? options.env.WORKSPACE_DAEMON_CONSUELO_HOME
+        ?? options.env.CONSUELO_OS_HOME,
+    ).home;
+    const keysRoot = canonicalPath(join(consueloHome, 'node', 'keys'));
+    const securityRoot = canonicalPath(join(consueloHome, 'node', 'security', 'generated'));
+    const tunnelsRoot = canonicalPath(join(consueloHome, 'node', 'tunnels'));
     spawnCommand = DARWIN_SANDBOX_EXEC;
     spawnArgs = [
       '-p',
@@ -97,6 +109,12 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
       `WRITE_ROOT=${writeBoundaryRoot}`,
       '-D',
       `SCRATCH_ROOT=${scratchRoot}`,
+      '-D',
+      `CONSUELO_KEYS_ROOT=${keysRoot}`,
+      '-D',
+      `CONSUELO_SECURITY_ROOT=${securityRoot}`,
+      '-D',
+      `CONSUELO_TUNNELS_ROOT=${tunnelsRoot}`,
       command,
       ...args,
     ];

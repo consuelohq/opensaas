@@ -177,7 +177,7 @@ describe('canonical OS trace persistence', () => {
     ]);
   });
 
-  it('persists work-session identity and canonical work path as first-class trace metadata', () => {
+  it('should persist work-session identity when recording canonical work-path trace metadata', () => {
     const output = runScenario('work-session');
 
     expect(output.recorded).toBe(true);

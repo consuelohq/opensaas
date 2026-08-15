@@ -162,6 +162,7 @@
         "packages/os/scripts/lib/fs/mutation-path.ts",
         "packages/os/scripts/lib/work-session-fs.ts",
         "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/session-start-foundation.test.ts",
         "packages/os/tests/fixtures/tool-package-baseline.json",
         "packages/os/tests/tool-manifest.test.ts",
         "packages/os/tests/work-session-fs.test.ts",
@@ -203,6 +204,41 @@
         }
       ],
       "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-work-session-code-call",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/code-call/**",
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/tests/generated-error-code-parity.test.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/work-session-code-call.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS work-session Code Call and MCP authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-code-call.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/generated-error-code-parity.test.ts",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ]
+        },
+        {
+          "name": "OS work-session Code Call syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests."
     },
     {
       "id": "trace-watch",
@@ -576,7 +612,6 @@
         "packages/os/scripts/lifecycle.ts",
         "packages/os/scripts/lib/facade/schemas.ts",
         "packages/os/scripts/lib/native-lifecycle-operation.ts",
-        "packages/os/src/generated/workspace.d.ts",
         "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
         "packages/os/tests/fixtures/tool-package-baseline.json",
         "packages/os/tests/cli-update-routing.test.ts",

@@ -206,6 +206,62 @@ describe('work-session code.call authority', () => {
     expect(result.message).toContain('taskSession');
   });
 
+  it('should protect daemon-owned Consuelo home paths when only the daemon home environment is set', async () => {
+    const home = tempRoot('consuelo-code-call-home-');
+    const mainRepo = tempRoot('consuelo-code-call-main-');
+    const workPath = join(home, 'ordinary-work');
+    mkdirSync(workPath, { recursive: true });
+    initRepo(mainRepo);
+    const workSession = createTestWorkSession(home, workPath);
+    const env = { ...process.env, WORKSPACE_DAEMON_CONSUELO_HOME: home };
+    delete env.CONSUELO_HOME;
+    delete env.CONSUELO_OS_HOME;
+
+    const result = await executeTool('code.call', {
+      workSession,
+      language: 'python',
+      mode: 'edit',
+      code: 'print("should not run")',
+    }, {
+      cwd: mainRepo,
+      env,
+      now: () => 1_000,
+      randomUUID: () => TEST_UUID,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('PERMISSION_DENIED');
+    expect(result.message).toContain('Consuelo-managed state');
+  });
+
+  it.runIf(process.platform === 'darwin')('should deny work-session reads of Consuelo credential directories', async () => {
+    const home = tempRoot('consuelo-code-call-home-');
+    const mainRepo = tempRoot('consuelo-code-call-main-');
+    const workPath = tempRoot('consuelo-code-call-work-');
+    const keysDir = join(home, 'node', 'keys');
+    const secretPath = join(keysDir, 'test-secret.txt');
+    mkdirSync(keysDir, { recursive: true });
+    writeFileSync(secretPath, 'credential-material');
+    initRepo(mainRepo);
+    const workSession = createTestWorkSession(home, workPath);
+
+    const result = await executeTool('code.call', {
+      workSession,
+      language: 'python',
+      mode: 'read',
+      code: `from pathlib import Path\nprint(Path(${JSON.stringify(secretPath)}).read_text())`,
+    }, {
+      cwd: mainRepo,
+      env: { ...process.env, CONSUELO_HOME: home },
+      now: () => 1_000,
+      randomUUID: () => TEST_UUID,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('COMMAND_FAILED');
+    expect(JSON.stringify(result)).not.toContain('credential-material');
+  });
+
   it.runIf(process.platform === 'darwin')('prevents a work-session process from writing outside its root', async () => {
     const home = tempRoot('consuelo-code-call-home-');
     const mainRepo = tempRoot('consuelo-code-call-main-');

@@ -53,7 +53,7 @@ function callBody(argumentsInput: Record<string, unknown>): string {
 }
 
 describe('session.start foundation', () => {
-  it('publishes session.start while retaining task.start as a compatibility alias', () => {
+  it('should publish session.start when retaining task.start as a compatibility alias', () => {
     const definitions = new Map(toolPackage.definitions.map((definition) => [definition.name, definition]));
     expect(definitions.has('session.start')).toBe(true);
     expect(definitions.has('task.start')).toBe(true);
@@ -64,7 +64,7 @@ describe('session.start foundation', () => {
     });
   });
 
-  it('validates task and work constructor inputs independently', () => {
+  it('should validate task and work constructor inputs when parsing session.start', () => {
     const schema = getInputSchema('SessionStartInput');
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example' }).success).toBe(true);
@@ -73,7 +73,7 @@ describe('session.start foundation', () => {
     expect(schema?.safeParse({ kind: 'task' }).success).toBe(false);
   });
 
-  it('creates metadata-only work sessions in managed node state', () => {
+  it('should create metadata-only work sessions when starting ordinary work', () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-session-foundation-'));
     tempRoots.push(home);
     const workPath = join(home, 'Raycast Extension');
@@ -112,7 +112,7 @@ describe('session.start foundation', () => {
     });
   });
 
-  it('generalizes node affinity while preserving legacy task affinity reads', async () => {
+  it('should preserve legacy task affinity reads when node affinity is generalized', async () => {
     const store = createMemoryDeviceGrantStore();
     const base = {
       accountId: 'account_test',
@@ -150,7 +150,7 @@ describe('session.start foundation', () => {
     })).resolves.toMatchObject({ ownerNodeId: 'node_owner', sessionKind: 'task', sessionId: 'tsk_legacy' });
   });
 
-  it('persists work-session affinity through the durable store contract', async () => {
+  it('should persist work-session affinity when using the durable store contract', async () => {
     const values = new Map<string, unknown>();
     const storage = {
       async get<T>(key: string): Promise<T | undefined> {
@@ -211,7 +211,7 @@ describe('session.start foundation', () => {
     })).resolves.toBeUndefined();
   });
 
-  it('inspects a top-level work session and rejects mixed session authority', () => {
+  it('should reject mixed session authority when inspecting a top-level work session', () => {
     expect(inspectMcpNodeRoutingBody(callBody({ workSession: 'wrk_test' }))).toMatchObject({
       ok: true,
       workSession: 'wrk_test',
@@ -222,7 +222,7 @@ describe('session.start foundation', () => {
     });
   });
 
-  it('passes workSession into the local facade call and rejects task+work together', async () => {
+  it('should pass workSession into the local facade call when task authority is absent', async () => {
     const seen: Array<{ tool: string; input: Record<string, unknown> }> = [];
     const response = await handleMcpGatewayJsonRpc(callBody({ workSession: 'wrk_test' }), {
       getSteering: async () => 'steering',
@@ -240,7 +240,7 @@ describe('session.start foundation', () => {
     }))).toMatchObject({ ok: false, status: 400 });
   });
 
-  it('routes a work session through its owner node at the central MCP edge', async () => {
+  it('should route a work session through its owner node when the central MCP edge resolves affinity', async () => {
     const origin = 'https://os.consuelohq.com';
     const workspaceHost = 'session-foundation.consuelohq.com';
     const accountId = 'google:session-foundation-user';
@@ -344,7 +344,7 @@ describe('session.start foundation', () => {
     expect(routeSource).toBe('work');
   });
 
-  it('claims work-session affinity from a successful session.start response', async () => {
+  it('should claim work-session affinity when session.start succeeds', async () => {
     const origin = 'https://os.consuelohq.com';
     const workspaceHost = 'session-claim.consuelohq.com';
     const accountId = 'google:session-claim-user';
@@ -455,5 +455,21 @@ describe('session.start foundation', () => {
       sessionKind: 'work',
       sessionId: 'wrk_claimed_session',
     });
+  });
+
+  it('should cap MCP workSession identifiers when advertising the call schema', async () => {
+    const response = await handleMcpGatewayJsonRpc(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'tools/list',
+    }), {
+      getSteering: async () => 'unused',
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+    const tools = (response.result as { tools?: Array<Record<string, unknown>> } | undefined)?.tools ?? [];
+    const call = tools.find((tool) => tool.name === 'call') as {
+      inputSchema?: { properties?: { workSession?: { maxLength?: number } } };
+    } | undefined;
+    expect(call?.inputSchema?.properties?.workSession?.maxLength).toBe(240);
   });
 });

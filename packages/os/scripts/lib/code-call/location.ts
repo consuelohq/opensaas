@@ -183,7 +183,9 @@ const resolveWorkSessionRootEffect = (
   }
 
   const protectedRoots = gitWorktreePaths(contextCwd);
-  const consueloHome = yield* realpathIfExistsEffect(resolveConsueloHomeLayout(env.CONSUELO_HOME).home);
+  const consueloHome = yield* realpathIfExistsEffect(resolveConsueloHomeLayout(
+    env.CONSUELO_HOME ?? env.WORKSPACE_DAEMON_CONSUELO_HOME ?? env.CONSUELO_OS_HOME,
+  ).home);
   protectedRoots.push(consueloHome);
   const overlap = protectedRoots.find((protectedRoot) => pathsOverlap(resolved, protectedRoot));
   if (overlap) {
@@ -201,7 +203,7 @@ export const resolveSafeCwdEffect = (
   contextCwd: string,
   env: NodeJS.ProcessEnv = process.env,
 ) => Effect.gen(function* () {
-  if (input.taskWorktree && input.workSessionRoot) {
+  if (input.taskWorktree && input.workSession) {
     return yield* Effect.fail(codeCallServiceError({
       envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
       message: 'Code Call may use taskSession or workSession authority, but not both.',

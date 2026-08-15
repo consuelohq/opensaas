@@ -54,7 +54,11 @@ export function isBatchChild(row: TraceRecord | null | undefined): boolean {
 }
 
 export function branchName(row: TraceRecord | null | undefined): string {
-  return clean(row?.workPath ?? row?.branch ?? row?.taskSession ?? row?.workSession) || 'no-branch';
+  for (const candidate of [row?.workPath, row?.branch, row?.taskSession, row?.workSession]) {
+    const value = clean(candidate);
+    if (value) return value;
+  }
+  return 'no-branch';
 }
 
 export function traceNodeId(row: TraceRecord | null | undefined): string {

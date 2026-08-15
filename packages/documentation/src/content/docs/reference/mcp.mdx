@@ -108,6 +108,7 @@ Before JSON-RPC execution, route validation can return:
 | --- | --- |
 | `INVALID_MCP_REQUEST` | Body is not a JSON-RPC request object. |
 | `INVALID_MCP_TOOL_CALL` | `tools/call` has no non-empty tool name. |
+| `INVALID_SESSION_ROUTE` | The request supplies conflicting task/work session routing authority. |
 | `UNKNOWN_MCP_METHOD` | Method is outside the supported set. |
 | `UNSUPPORTED_MCP_TOOL` | Name resolves to a non-skill surface; only OS skills are callable. |
 
@@ -119,4 +120,4 @@ JSON-RPC errors use standard codes for the current cases:
 
 Authorization, missing scopes, expired credentials, and signed-transport errors are defined in [Security reference](/secure/security-reference/).
 
-Node selection can also fail before JSON-RPC execution. `WORKSPACE_NODE_OFFLINE`, `NODE_ROUTE_MISMATCH`, `TASK_NODE_MISMATCH`, and `WORK_SESSION_NODE_MISMATCH` are workspace routing errors; they are not MCP method errors. See [Result and error formats](/reference/result-and-error-formats/#node-routing-errors).
+Node selection can also fail before JSON-RPC execution. `WORKSPACE_NODE_OFFLINE`, `NODE_ROUTE_MISMATCH`, `TASK_NODE_MISMATCH`, `WORK_SESSION_NODE_MISMATCH`, `TASK_WORKSPACE_MISMATCH`, and `WORK_SESSION_WORKSPACE_MISMATCH` are workspace routing errors; they are not MCP method errors. See [Result and error formats](/reference/result-and-error-formats/#node-routing-errors).

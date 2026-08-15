@@ -33,7 +33,7 @@ export type CodeCallInput = {
   taskSession?: string;
   workSession?: string;
   taskWorktree?: string;
-  /** Internal facade resolution only; callers supply workSession, not a physical root. */
+  // Internal facade resolution only; callers supply workSession, not a physical root.
   workSessionRoot?: string;
   branch?: string;
 };

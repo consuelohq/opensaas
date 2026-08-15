@@ -186,12 +186,12 @@ async function run(): Promise<unknown> {
           content: 'export const observed = true;\n',
           mkdirs: true,
         }, stableFacadeOptions());
-        const db = new Database(resolveCanonicalTraceDbPath(), { readonly: true });
-        const row = db.query(
+        const traceDb = new Database(resolveCanonicalTraceDbPath(), { readonly: true });
+        const workSessionRow = traceDb.query(
           'SELECT work_session, work_path FROM tool_traces WHERE trace_id = ?',
         ).get(result.traceId);
-        db.close();
-        return { result, recorded: true, workSessionRow: row };
+        traceDb.close();
+        return { result, recorded: result.ok === true, workSessionRow };
       } finally {
         rmSync(workPath, { recursive: true, force: true });
       }
