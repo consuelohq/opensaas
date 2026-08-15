@@ -23,8 +23,44 @@ started: 2026-08-15
 
 ## files changed
 
-- Reconciliation brings the current `main` file set into `stream/os`; task diff currently contains 122 files / 8,217 insertions / 219 deletions relative to the stream, mostly already-reviewed main changes and their task metadata.
-- Conflict-resolution edits are concentrated in lifecycle service/tests, CLI lifecycle docs, and test-selection rules/tests. The tracing/Overview/shared-chrome files resolve back to the already-validated stream versions, so they are unchanged relative to task HEAD.
+- `packages/dialer-server/README.md`
+- `packages/dialer-server/package.json`
+- `packages/documentation/scripts/test-connect-browser.mjs`
+- `packages/documentation/scripts/test-foundation-browser.mjs`
+- `packages/documentation/src/components/BrowseMenu.astro`
+- `packages/documentation/src/components/DocsMenuTrigger.astro`
+- `packages/documentation/src/components/PageTitle.astro`
+- `packages/documentation/src/components/Sidebar.astro`
+- `packages/documentation/src/content/docs/connect/agents/create-your-own.mdx`
+- `packages/documentation/src/content/docs/connect/apps-and-services/create-your-own.mdx`
+- `packages/documentation/src/content/docs/connect/apps-and-services/index.mdx`
+- `packages/documentation/src/content/docs/reference/cli.mdx`
+- `packages/documentation/src/content/docs/secure/hosted-mcp-ingress.mdx`
+- `packages/documentation/src/content/docs/secure/security-model.mdx`
+- `packages/documentation/src/content/docs/start/install-consuelo-os.mdx`
+- `packages/documentation/src/lib/docs-navigation.ts`
+- `packages/documentation/src/styles/docs.css`
+- `packages/documentation/tests/connect.test.ts`
+- `packages/documentation/tests/foundation.test.ts`
+- `packages/os/scripts/lib/lifecycle/service.ts`
+- `packages/os/scripts/lib/mcp-gateway.ts`
+- `packages/os/scripts/lib/native-lifecycle-endpoint.ts`
+- `packages/os/scripts/lifecycle.ts`
+- `packages/os/scripts/os.ts`
+- `packages/os/tests/lifecycle-restart-contract.test.ts`
+- `packages/os/tests/mcp-gateway.test.ts`
+- `packages/os/tests/native-lifecycle-endpoint.test.ts`
+- `packages/os/tests/os-get-steering-trace.test.ts`
+- `packages/workspace/scripts/os-release.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
+- `packages/workspace/tests/website-deploy.test.js`
+- `packages/dialer-server/scripts/local-dialer-lab.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.test.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.ts`
+
 
 ## workspace-owned: files changed
 
@@ -49,6 +85,7 @@ started: 2026-08-15
 - 2026-08-15 07:42:58 `review.run`: passed — OK
 - 2026-08-15 07:43:48 `verify`: passed — OK
 - 2026-08-15 07:45:08 `verify`: passed — OK
+- 2026-08-15 07:46:43 `verify`: passed — OK
 
 ## key decisions
 
