@@ -1,0 +1,19 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "stream/twenty-migration",
+  "startFrom": "stream",
+  "prNumber": 1998,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1998",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1998",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1998/harden-consuelo-ci-bun-readiness",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1998",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1998/harden-consuelo-ci-bun-readiness",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-harden-consuelo-ci-bun-readiness",
+  "taskSession": "tsk_a30fbcb3a9a5",
+  "tmuxSession": "opensaas-twenty-migration-harden-consuelo-ci-bun-readiness-a30fbcb3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-harden-consuelo-ci-bun-readiness/.task/twenty-migration/harden-consuelo-ci-bun-readiness/session.json",
+  "createdAt": "2026-08-15T02:56:22.503Z"
+}

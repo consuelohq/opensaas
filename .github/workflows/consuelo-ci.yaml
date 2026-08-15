@@ -28,7 +28,6 @@ jobs:
       head_sha: ${{ steps.classify.outputs.head_sha }}
       verify: ${{ steps.classify.outputs.verify }}
       workflow_security: ${{ steps.classify.outputs.workflow_security }}
-      workspace_contracts: ${{ steps.classify.outputs.workspace_contracts }}
       os_contracts: ${{ steps.classify.outputs.os_contracts }}
       dialer: ${{ steps.classify.outputs.dialer }}
       sites_gateway_cloudflare: ${{ steps.classify.outputs.sites_gateway_cloudflare }}
@@ -37,91 +36,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Consuelo CI planner
+        uses: ./.github/actions/consuelo-ci-setup
+        with:
+          setup-node: 'false'
+          install-root: 'false'
+          install-os: 'false'
+
       - name: Classify Consuelo changes
         id: classify
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          case "${{ github.event_name }}" in
-            pull_request)
-              fallback_base="${{ github.event.pull_request.base.sha }}"
-              base_ref="$(git rev-parse HEAD^1 2>/dev/null || true)"
-              if [[ -z "$base_ref" ]]; then
-                base_ref="$fallback_base"
-              fi
-              ;;
-            merge_group)
-              fallback_base="$(jq -r '.merge_group.base_sha // empty' "$GITHUB_EVENT_PATH")"
-              base_ref="$(git rev-parse HEAD^1 2>/dev/null || true)"
-              if [[ -z "$base_ref" ]]; then
-                base_ref="$fallback_base"
-              fi
-              if [[ -z "$base_ref" ]]; then
-                merge_base_ref="$(jq -r '.merge_group.base_ref // "refs/heads/main"' "$GITHUB_EVENT_PATH")"
-                base_ref="${merge_base_ref#refs/heads/}"
-                base_ref="origin/${base_ref}"
-              fi
-              ;;
-            workflow_dispatch)
-              base_ref="${{ github.event.inputs.base || 'origin/main' }}"
-              ;;
-            *)
-              base_ref="origin/main"
-              ;;
-          esac
-
-          if [[ "$base_ref" == origin/* ]]; then
-            base_branch="${base_ref#origin/}"
-            git fetch --no-tags --prune origin "+refs/heads/${base_branch}:refs/remotes/origin/${base_branch}"
-          fi
-
-          base_ref="$(git rev-parse "${base_ref}^{commit}")"
-          git diff --name-only --diff-filter=ACMR "${base_ref}...HEAD" > /tmp/consuelo-changed-files.txt
-          cat /tmp/consuelo-changed-files.txt
-
-          has_change() {
-            grep -E "$1" /tmp/consuelo-changed-files.txt >/dev/null 2>&1
-          }
-
-          write_output() {
-            local name="$1"
-            local value="$2"
-            echo "${name}=${value}" >> "$GITHUB_OUTPUT"
-          }
-
-          workflow_security=false
-          workspace_contracts=false
-          os_contracts=false
-          dialer=false
-          sites_gateway_cloudflare=false
-          verify=false
-
-          if has_change '^\.github/'; then workflow_security=true; verify=true; fi
-          if has_change '^(package\.json|yarn\.lock|\.yarnrc\.yml|nx\.json|tsconfig[^/]*\.json)$'; then dialer=true; verify=true; fi
-          if has_change '^\.yarn/'; then dialer=true; verify=true; fi
-          if has_change '^packages/workspace/'; then workspace_contracts=true; verify=true; fi
-          if has_change '^packages/os/'; then os_contracts=true; verify=true; fi
-          if has_change '^packages/dialer/'; then dialer=true; verify=true; fi
-          if has_change '^packages/dialer-server/'; then dialer=true; verify=true; fi
-          if has_change '^packages/lead-connector/'; then dialer=true; verify=true; fi
-          if has_change '^packages/logger/'; then dialer=true; verify=true; fi
-          if has_change '^packages/api/'; then verify=true; fi
-          if has_change '^packages/consuelo-core/'; then verify=true; fi
-          if has_change '^packages/consuelo-docs/'; then verify=true; fi
-          if has_change '^packages/consuelo-website/'; then verify=true; fi
-          if has_change '^packages/twenty-server/src/engine/core-modules/consuelo-api/'; then dialer=true; verify=true; fi
-          if has_change '^\.github/workflows/(consuelo-ci|consuelo-production-release|consuelo-dialer-rollback)\.yaml$'; then dialer=true; fi
-          if has_change '(^packages/os/cloudflare/|gateway|sites-gateway|workspace-edge|wrangler\.toml$)'; then sites_gateway_cloudflare=true; os_contracts=true; verify=true; fi
-
-          write_output base_ref "$base_ref"
-          write_output head_sha "$(git rev-parse HEAD)"
-          write_output verify "$verify"
-          write_output workflow_security "$workflow_security"
-          write_output workspace_contracts "$workspace_contracts"
-          write_output os_contracts "$os_contracts"
-          write_output dialer "$dialer"
-          write_output sites_gateway_cloudflare "$sites_gateway_cloudflare"
+        env:
+          CONSUELO_CI_MANUAL_BASE: ${{ github.event.inputs.base || 'origin/main' }}
+        run: bun packages/os/scripts/ci-plan.ts
 
   workflow-security:
     name: Consuelo / workflow security
@@ -131,7 +57,7 @@ jobs:
     steps:
       - name: No workflow changes
         if: needs.consuelo-changes.outputs.workflow_security != 'true'
-        run: echo "No GitHub workflow changes detected."
+        run: echo "No GitHub workflow or local action changes detected."
 
       - uses: actions/checkout@v4
         if: needs.consuelo-changes.outputs.workflow_security == 'true'
@@ -139,7 +65,7 @@ jobs:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
-      - name: Review changed workflows
+      - name: Review changed GitHub automation
         if: needs.consuelo-changes.outputs.workflow_security == 'true'
         run: node packages/workspace/scripts/ci/check-github-workflows.cjs "${{ needs.consuelo-changes.outputs.base_ref }}"
 
@@ -159,47 +85,15 @@ jobs:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Setup Consuelo verification
         if: needs.consuelo-changes.outputs.verify == 'true'
-
-      - name: Install dependencies
-        if: needs.consuelo-changes.outputs.verify == 'true'
-        uses: ./.github/actions/yarn-install
-
-      - name: Install OS dependencies for verify
-        if: needs.consuelo-changes.outputs.verify == 'true' && needs.consuelo-changes.outputs.os_contracts == 'true'
-        working-directory: packages/os
-        run: bun install --frozen-lockfile
+        uses: ./.github/actions/consuelo-ci-setup
+        with:
+          install-root: 'true'
+          install-os: ${{ needs.consuelo-changes.outputs.os_contracts }}
 
       - name: Run workspace verify
         if: needs.consuelo-changes.outputs.verify == 'true'
-        run: bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --committed-only-tests --no-stamp --review-arg --no-tests
-
-  workspace-contracts:
-    name: Consuelo / workspace contracts
-    needs: consuelo-changes
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: No workspace contract changes
-        if: needs.consuelo-changes.outputs.workspace_contracts != 'true'
-        run: echo "No workspace contract changes detected."
-
-      - uses: actions/checkout@v4
-        if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
-        with:
-          ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
-
-      - uses: oven-sh/setup-bun@v2
-        if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
-
-      - name: Install dependencies
-        if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
-        uses: ./.github/actions/yarn-install
-
-      - name: Run workspace contract gate
-        if: needs.consuelo-changes.outputs.workspace_contracts == 'true'
         run: bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --committed-only-tests --no-stamp --review-arg --no-tests
 
   os-contracts:
@@ -218,17 +112,12 @@ jobs:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Setup OS contract tests
         if: needs.consuelo-changes.outputs.os_contracts == 'true'
-
-      - name: Install dependencies
-        if: needs.consuelo-changes.outputs.os_contracts == 'true'
-        uses: ./.github/actions/yarn-install
-
-      - name: Install OS dependencies
-        if: needs.consuelo-changes.outputs.os_contracts == 'true'
-        working-directory: packages/os
-        run: bun install --frozen-lockfile
+        uses: ./.github/actions/consuelo-ci-setup
+        with:
+          install-root: 'false'
+          install-os: 'true'
 
       - name: Run OS contract tests
         if: needs.consuelo-changes.outputs.os_contracts == 'true'
@@ -255,12 +144,9 @@ jobs:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Setup dialer CI
         if: needs.consuelo-changes.outputs.dialer == 'true'
-
-      - name: Install dependencies
-        if: needs.consuelo-changes.outputs.dialer == 'true'
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/consuelo-ci-setup
 
       - name: Run dialer release package tests
         if: needs.consuelo-changes.outputs.dialer == 'true'
@@ -311,17 +197,18 @@ jobs:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
           fetch-depth: 0
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Setup Sites Gateway tests
         if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'
-
-      - name: Install dependencies
-        if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/consuelo-ci-setup
+        with:
+          install-root: 'false'
+          install-os: 'true'
 
       - name: Run Sites Gateway and Cloudflare tests
         if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'
+        working-directory: packages/os
         run: |
           bun x vitest run \
-            packages/os/tests/consuelo-sites-gateway.test.ts \
-            packages/os/tests/consuelo-sites-gateway-policy.test.ts \
-            packages/os/tests/cloudflare-worker-deployment-contract.test.ts
+            tests/consuelo-sites-gateway.test.ts \
+            tests/consuelo-sites-gateway-policy.test.ts \
+            tests/cloudflare-worker-deployment-contract.test.ts

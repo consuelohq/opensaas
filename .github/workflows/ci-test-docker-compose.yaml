@@ -1,12 +1,14 @@
-name: CI Docker Compose
+name: Legacy Twenty / Docker Compose
 
 permissions:
   contents: read
 
 on:
-  merge_group:
-
   pull_request:
+    paths:
+      - 'packages/twenty-docker/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/ci-test-docker-compose.yaml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

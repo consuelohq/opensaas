@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 import { describe, expect, test } from 'vitest';
+import { parse } from 'yaml';
 
 const repoRoot = resolve(import.meta.dirname, '..', '..', '..');
 const workflowDir = join(repoRoot, '.github', 'workflows');
@@ -30,7 +31,105 @@ function readWorkflowSources() {
     .join('\n');
 }
 
+const legacyTwentyWorkflowScopes = {
+  'ci-front.yaml': [
+    'packages/twenty-front/**',
+    'packages/twenty-server/**',
+    'packages/twenty-shared/**',
+    'packages/twenty-ui/**',
+    'packages/twenty-sdk/**',
+    'packages/twenty-e2e-testing/**',
+  ],
+  'ci-server.yaml': [
+    'packages/twenty-server/**',
+    'packages/twenty-shared/**',
+  ],
+  'ci-sdk.yaml': ['packages/twenty-sdk/**'],
+  'ci-shared.yaml': ['packages/twenty-shared/**'],
+  'ci-test-docker-compose.yaml': ['packages/twenty-docker/**'],
+  'ci-create-app.yaml': ['packages/create-twenty-app/**'],
+  'ci-utils.yaml': ['packages/twenty-*/**'],
+  'ci-breaking-changes.yaml': [
+    'packages/twenty-server/**',
+    'packages/twenty-shared/**',
+  ],
+};
+
+function readWorkflow(name) {
+  return parse(readFileSync(join(workflowDir, name), 'utf8'));
+}
+
 describe('GitHub workflow policy', () => {
+  test('delegates Consuelo routing to the Bun-native CI planner', () => {
+    const workflow = readFileSync(join(workflowDir, 'consuelo-ci.yaml'), 'utf8');
+
+    expect(workflow).toContain('bun packages/os/scripts/ci-plan.ts');
+    expect(workflow).not.toContain('has_consuelo_package_change()');
+    expect(workflow).not.toContain('git diff --name-only --diff-filter=ACMR');
+    expect(workflow).not.toContain('workspace_contracts');
+    expect(readWorkflow('consuelo-ci.yaml').jobs['workspace-contracts']).toBeUndefined();
+  });
+
+  test('uses one package-manager-neutral Consuelo CI setup boundary', () => {
+    const workflow = readFileSync(join(workflowDir, 'consuelo-ci.yaml'), 'utf8');
+    const setupAction = readFileSync(
+      join(repoRoot, '.github/actions/consuelo-ci-setup/action.yaml'),
+      'utf8',
+    );
+
+    expect(setupAction).toContain('uses: oven-sh/setup-bun@v2');
+    expect(setupAction).toContain("default: '1.3.14'");
+    expect(setupAction).toContain('uses: actions/setup-node@v4');
+    expect(setupAction).toContain("default: '24'");
+    expect(setupAction).toContain('uses: ./.github/actions/yarn-install');
+    expect(setupAction).toContain('working-directory: packages/os');
+    expect(setupAction).toContain('bun install --frozen-lockfile');
+    expect(workflow).toContain('uses: ./.github/actions/consuelo-ci-setup');
+    expect(workflow).not.toContain('uses: oven-sh/setup-bun@v2');
+    expect(workflow).not.toContain('uses: ./.github/actions/yarn-install');
+    expect(workflow).toContain("setup-node: 'false'");
+  });
+
+  test('includes local composite actions in workflow security policy', () => {
+    const policy = readFileSync(
+      join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),
+      'utf8',
+    );
+
+    expect(policy).toContain("/^\\.github\\/actions\\/.+\\/action\\.ya?ml$/");
+    expect(policy).toContain('local composite actions must receive credentials explicitly from the caller');
+    expect(policy).toContain('const usesMutableBranch = /@(?:main|master)');
+  });
+
+  test('keeps OS-only Consuelo lanes off the root Yarn install', () => {
+    const workflow = readWorkflow('consuelo-ci.yaml');
+
+    for (const jobName of ['os-contracts', 'sites-gateway-cloudflare']) {
+      const setup = workflow.jobs[jobName].steps.find(
+        (step) => step.uses === './.github/actions/consuelo-ci-setup',
+      );
+
+      expect(setup, jobName).toBeTruthy();
+      expect(setup.with['install-root'], jobName).toBe('false');
+      expect(setup.with['install-os'], jobName).toBe('true');
+    }
+  });
+
+  test('scopes legacy Twenty pull-request CI to Twenty-owned paths', () => {
+    for (const [name, requiredPaths] of Object.entries(legacyTwentyWorkflowScopes)) {
+      const workflow = readWorkflow(name);
+      const pullRequest = workflow.on?.pull_request;
+
+      expect(pullRequest, name).toBeTruthy();
+      expect(pullRequest.paths, name).toEqual(expect.arrayContaining(requiredPaths));
+      expect(pullRequest.paths, name).not.toContain('package.json');
+      expect(pullRequest.paths, name).not.toContain('yarn.lock');
+      expect(pullRequest.paths, name).not.toContain('packages/**');
+      expect(workflow.on?.merge_group, name).toBeUndefined();
+      expect(workflow.name, name).toMatch(new RegExp('^Legacy Twenty / '));
+    }
+  });
+
   test('does not include retired automation workflows', () => {
     for (const path of obsoleteWorkflowPaths) {
       expect(existsSync(join(repoRoot, path)), path).toBe(false);
