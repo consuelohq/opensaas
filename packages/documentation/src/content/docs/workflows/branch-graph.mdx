@@ -1,0 +1,234 @@
+---
+title: Branch Graph
+description: Break large phases, epics, and migrations into compact work IDs, safe parallel waves, focused chats, and one required final cleanup node.
+status: preview
+verifiedAt: 2026-08-15
+evidence:
+  - source: packages/os/skills/branch/SKILL.md
+    tests:
+      - packages/os/tests/branch-skill.test.ts
+      - packages/os/tests/skill-selection-cli.test.ts
+    runtime: The bundled Branch skill contract, compact work-ID model, and finalization rules were verified on 2026-08-15.
+  - source: packages/workspace/scripts/task-start.js
+    tests:
+      - packages/documentation/tests/navigation-memory.test.ts
+    runtime: Task branches, workpads, task PRs, and streams remain the durable execution memory beneath Branch Graph.
+---
+
+Branch Graph is a **context management and dependency management workflow** for work that is too large to keep safely inside one implementation chat.
+
+The useful mental model is simple: the parent chat keeps the long-horizon plan, each child chat gets one bounded piece of working memory, the repository records what actually happened, and the last node reconciles the whole graph before anything ships.
+
+## The map in 30 seconds
+
+- The **parent chat** is the control room. It owns the objective, architecture, dependencies, decisions, and unresolved questions.
+- A **work ID** such as `D1` is one bounded unit with a frozen contract.
+- A **child chat** is focused working memory for one work ID.
+- A **task PR** is durable execution evidence for one work ID.
+- A **stream** is integration memory for related task PRs before `main`.
+- An **arrow** means one work ID depends on another.
+- A **wave** is a set of independent work IDs that may run in parallel.
+- The **finalization node** is the required last join: review every task and stream surface, fix remaining issues, clean local resources, and perform only the explicitly authorized ship/update steps.
+
+This is almost task management, but the stronger reason to use it is **memory management**. The graph decides how much context each chat needs and where truth survives after sibling chats diverge.
+
+## When to use Branch Graph
+
+Use it for a large phase, epic, migration, research-to-build program, or long planning session when any of these are true:
+
+- one safe PR cannot express the whole change;
+- several subsystems or streams are involved;
+- some work can happen in parallel and some has hard dependencies;
+- multiple agents or chats would otherwise duplicate discovery;
+- the parent planning session contains valuable context that should not be copied wholesale into every implementation chat;
+- the work may continue for hours or days and needs durable re-entry points.
+
+Skip it for one already-bounded task. Branch Graph should reduce coordination cost.
+
+## Use compact issue-style IDs
+
+A Branch Graph ID should be easy to read in a dependency graph and easy to use as a chat name.
+
+Use **1–3 letters plus a number**, with an optional trailing letter when one approved unit later splits:
+
+```text
+D0    Dialer local lab
+D1    Dialer model contracts
+M0A   Migration CI isolation
+M0B   Migration CI hardening
+M1    Migration CLI auth cutover
+OS2   OS release verification
+DOC3  Documentation cleanup
+```
+
+The letters are a mnemonic lane or domain. The number is stable sequence inside that lane. Keep the short coordination ID free of dashes so it behaves like a small Linear-style issue key. Git branches and PRs can keep the repository's normal descriptive names.
+
+Once the graph is approved, keep IDs stable. If `M0` splits, prefer `M0A` and `M0B` over renumbering later work.
+
+A useful chat title is:
+
+```text
+D1 — Dialer model contracts
+```
+
+## Draw dependencies before assigning parallel work
+
+Start with what depends on what:
+
+```text
+stream/dialer
+    D0 → D1 → D2 → D3 → D4...
+                    │
+                    └──────────┐
+                               ▼
+stream/twenty-migration
+    M0A → M0B → M1 → M2 ─────→ M3 → M4 → M5 → M6 → M7
+```
+
+An arrow is a contract: the downstream node assumes the upstream guarantee exists in the repository or stream.
+
+Only after those assumptions are explicit should you decide what can run at the same time.
+
+## Turn the graph into waves
+
+```text
+Wave 0: D0 ∥ M0A
+Wave 1: D1 ∥ M0B ∥ M1
+Wave 2: D2 ∥ M2
+Gate:   D3
+Then:   M3 → M4
+Then:   D4 ∥ M5
+Finally: M6 → M7
+```
+
+`∥` means deliberately parallel. `→` means sequential.
+
+Two work IDs belong in the same wave only when neither depends on the other, their file/state ownership is compatible, and one cannot invalidate the other's assumptions while both are in flight.
+
+## Give every work ID a frozen contract
+
+A child chat should receive enough context to execute without receiving the entire parent transcript.
+
+```text
+D1 — <short title>
+Trigger: "D1 approved, go"
+
+Purpose
+Depends on / assumes
+Primary files or subsystems
+Changes
+Acceptance / regression gates
+Non-goals
+Integration or rollback notes
+```
+
+The contract is executable context. It tells a fresh agent what must be true, what this node owns, what proves completion, and what to leave alone.
+
+Once the contract is frozen, `D1 approved` or `D1 approved, go` means execute the already-defined node. It does not reopen the whole architecture by default.
+
+## Branch into a focused chat
+
+When the client supports message branching, branch from the parent message that contains the frozen graph or node contract.
+
+1. Open the message action menu.
+2. Choose **Branch in new chat**.
+3. Rename the child chat to its short work ID, preferably `D1 — <title>`.
+4. Execute only that node's frozen contract.
+5. Use the repository and stream to verify sibling work instead of assuming another chat's future state.
+
+![ChatGPT message menu showing Branch in new chat as the first action](/images/workflows/branch-in-new-chat.jpg)
+
+Other clients may call this fork, duplicate, or new conversation from message. The invariant is the same: inherit the planning point, then give the child bounded working memory.
+
+## The repository is shared memory between chats
+
+Sibling conversations inherit the planning context that existed when they branched. They do not automatically receive later implementation events from one another.
+
+Use this memory hierarchy:
+
+```text
+parent chat        -> why and architecture
+work-ID contract   -> what this node owns
+child chat         -> focused working memory
+workpad            -> durable task state and evidence
+task PR            -> reviewable task delta
+stream             -> integration truth across siblings
+main/canary        -> shipped truth after finalization
+```
+
+Before mutation, a later node should verify its prerequisites from the current stream. Conversation memory explains intent; repository state proves reality.
+
+## Optional fresh subagent review
+
+A fresh subagent review is useful near the end of a large graph because the reviewer starts outside the branch conversation and does not inherit its assumptions.
+
+Treat this as optional independent review, not as the finalization node itself.
+
+Give the subagent a bounded, read-only packet containing:
+
+- objective and frozen dependency graph;
+- base/head or stream/task PR identifiers;
+- changed files and important invariants;
+- validation evidence and known limitations;
+- specific review questions;
+- instruction to return exact file/line findings plus an overall summary.
+
+The fresh subagent should review repository truth, not reconstruct the planning conversation. Verify its findings before applying them.
+
+## Every graph ends with a required finalization node
+
+The last work ID is always cleanup/finalization. Give it the next stable ID in the owning lane, for example `M7` or `DOC4`.
+
+This node depends on every release-blocking node. Its job is to prove that the **whole graph**, including intermediate task branches, is ready to ship.
+
+A finalization node should:
+
+1. Enumerate every work ID, task PR, stream PR, follow-up fix, and relevant integration commit in the graph.
+2. Re-open **every task PR even if it was already promoted into the stream**. Inspect human comments, late bot reviews, unresolved threads, pending checks, and failing checks. A promoted task PR can still contain review debt that the stream merge did not erase.
+3. Inspect the stream PR's human reviews, CodeRabbit, Codex, and every other configured automated review/check surface. Distinguish resolved comments from live blockers.
+4. Optionally trigger one fresh zero-context subagent review of the integrated graph and verify each finding against current code.
+5. Perform a holistic review for correctness, security, regressions, duplicated implementations, stale docs, missing tests, semantic conflicts, and assumptions that became invalid while sibling work was in flight.
+6. Fix still-valid graph-attributed issues in the final cleanup task and rerun the appropriate focused/full verification gates.
+7. Reconcile the integration stream with current `main`. Resolve semantic conflicts deliberately; never use blanket conflict choices that can discard sibling work.
+8. Verify every intended commit is pushed and every task is represented correctly on the stream.
+9. Clean merged/stale task branches, worktrees, sessions, and task resources through the normal typed lifecycle. Keep anything still needed for review explicit.
+10. Prove the stream is green after final cleanup.
+11. If the frozen finalization contract explicitly authorizes it, merge/promote the stream to `main` through the repository's normal workflow.
+12. If the contract explicitly authorizes canary release, release to **canary**, verify the shipped behavior there, and stop before broader production unless separately authorized.
+13. If the graph changed Consuelo OS, run the normal **Consuelo update** against the intended canary/local canary runtime when the release contract requires it, then test the exact shipped behavior end to end.
+14. Sync/pull local `main` and the integration stream to the resulting remote state. Confirm the local repository is clean except for explicitly known unrelated work.
+15. Report the final graph status, shipped commit/release, validation evidence, cleaned resources, and any residual risks.
+
+The cleanup node is required. The fresh subagent review inside it is optional.
+
+Approval of an earlier work ID does not authorize merging to `main`, releasing canary, updating OS, or touching production. Those actions must be explicit in the finalization contract so the approval is auditable.
+
+If final review finds substantial new product work, add another work ID and make finalization depend on it. Do not hide a feature inside cleanup.
+
+## A complete example
+
+```text
+Goal: separate a legacy application while preserving a mature dialer model.
+
+stream/dialer
+D0 → D1 → D2 → D3 → D4
+
+stream/twenty-migration
+M0A → M0B → M1 → M2 ──┐
+                        ├→ M3 → M4 → M5 → M6 → M7
+D3 ─────────────────────┘
+
+Wave 0: D0 ∥ M0A
+Wave 1: D1 ∥ M0B ∥ M1
+Wave 2: D2 ∥ M2
+Gate: D3
+Then: M3 → M4
+Then: D4 ∥ M5
+Finally: M6 → M7
+```
+
+The parent chat can stay useful as the control room while `D0`, `M0A`, and later nodes run in separate chats for long periods. Every child needs only its bounded contract plus current repository truth.
+
+## Keep this rule
+
+**Split by dependency. Give each chat only the working memory it needs. Keep IDs stable. Always end with one deliberate cleanup join.**
