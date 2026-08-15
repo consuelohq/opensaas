@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -12,12 +12,6 @@ const TEST_UUID = 'abc123def4567890abc123def4567890';
 
 function tempRoot(prefix = 'os-code-call-'): string {
   return mkdtempSync(join(tmpdir(), prefix));
-}
-
-function tempTaskWorktree(): string {
-  const worktreeRoot = join(tmpdir(), 'opensaas-worktrees');
-  mkdirSync(worktreeRoot, { recursive: true });
-  return mkdtempSync(join(worktreeRoot, 'task-os-code-call-'));
 }
 
 function repoRoot(): string {
@@ -244,14 +238,25 @@ describe('code.call runtime', () => {
   });
 
   it('allows edit mode when the facade has already routed cwd to a managed task worktree', async () => {
-    const root = tempTaskWorktree();
+    const mainRepo = tempRoot('os-code-call-main-');
+    const worktreeParent = tempRoot('os-code-call-worktree-parent-');
+    const root = join(worktreeParent, 'arbitrary-task-checkout');
     try {
+      initGitRepo(mainRepo);
+      spawnSync('git', ['config', 'user.email', 'tests@consuelo.local'], { cwd: mainRepo });
+      spawnSync('git', ['config', 'user.name', 'Consuelo Tests'], { cwd: mainRepo });
+      writeFileSync(join(mainRepo, 'README.md'), 'initial\n');
+      expect(spawnSync('git', ['add', 'README.md'], { cwd: mainRepo }).status).toBe(0);
+      expect(spawnSync('git', ['commit', '-m', 'initial'], { cwd: mainRepo }).status).toBe(0);
+      expect(spawnSync('git', ['worktree', 'add', '-b', 'task/os/code-call-test', root], { cwd: mainRepo }).status).toBe(0);
       const result = await executeCodeCall({
         language: 'bash',
         mode: 'edit',
+        taskWorktree: root,
+        branch: 'task/os/code-call-test',
         code: 'printf changed > edited.txt',
       }, {
-        cwd: root,
+        cwd: mainRepo,
         now: () => 1000,
         randomUUID: () => TEST_UUID,
       });
@@ -262,7 +267,8 @@ describe('code.call runtime', () => {
       expect(result.data.filesChanged).toContain('edited.txt');
       expect(readFileSync(join(root, 'edited.txt'), 'utf8')).toBe('changed');
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      rmSync(worktreeParent, { recursive: true, force: true });
+      rmSync(mainRepo, { recursive: true, force: true });
     }
   });
 
@@ -589,8 +595,8 @@ describe('code.call OS integration', () => {
 
   it('is generated as a core OS tool and documented for steering', () => {
     const osRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-    const fullManifest = JSON.parse(readFileSync(join(osRoot, 'manifests', 'tool.manifest.json'), 'utf8'));
-    const coreManifest = JSON.parse(readFileSync(join(osRoot, 'manifests', 'core.manifest.json'), 'utf8'));
+    const fullManifest = JSON.parse(readFileSync(join(osRoot, 'manifests', 'generated', 'tool.manifest.json'), 'utf8'));
+    const coreManifest = JSON.parse(readFileSync(join(osRoot, 'manifests', 'generated', 'core.manifest.json'), 'utf8'));
     const docs = readFileSync(join(osRoot, 'TOOLS.md'), 'utf8');
     const fullEntry = fullManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
     const coreEntry = coreManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
@@ -599,6 +605,6 @@ describe('code.call OS integration', () => {
     expect(coreEntry?.core).toBe(true);
     expect(fullEntry?.definition?.command?.internal).toBe('code.call');
     expect(docs).toContain('workspace.code.call');
-    expect(docs).toContain('Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence');
+    expect(docs).toContain('Run focused Python, Bun, or Bash programs where runtime output is the evidence');
   });
 });

@@ -14,6 +14,8 @@ export type CodeCallMistakeClass =
   | 'runtime_missing'
   | 'cwd_out_of_scope'
   | 'invalid_source'
+  | 'work_session_protected_root'
+  | 'containment_unavailable'
   | 'unsafe_shell';
 
 export type CodeCallInput = {
@@ -29,7 +31,10 @@ export type CodeCallInput = {
   dryRun?: boolean;
   requestId?: string;
   taskSession?: string;
+  workSession?: string;
   taskWorktree?: string;
+  /** Internal facade resolution only; callers supply workSession, not a physical root. */
+  workSessionRoot?: string;
   branch?: string;
 };
 
