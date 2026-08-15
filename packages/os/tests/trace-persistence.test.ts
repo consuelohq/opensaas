@@ -1,7 +1,8 @@
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -48,9 +49,11 @@ type ScenarioResult = {
   events?: Array<Record<string, unknown>>;
   status?: number;
   body?: Record<string, unknown>;
+  workSessionRow?: Record<string, unknown>;
 };
 
 let tempHome: string;
+const OS_PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 beforeEach(() => {
   tempHome = mkdtempSync(join(tmpdir(), 'consuelo-trace-persistence-'));
@@ -64,9 +67,11 @@ function runScenario(name: string): ScenarioResult {
   const env = { ...process.env, CONSUELO_HOME: tempHome };
   delete env.CONSUELO_TRACE_DB;
   delete env.TRACE_DB;
-  const fixture = join(process.cwd(), 'tests', 'fixtures', 'trace-persistence-runtime.ts');
+  delete env.TASK_BRANCH;
+  delete env.TASK_WORKTREE;
+  const fixture = join(OS_PACKAGE_ROOT, 'tests', 'fixtures', 'trace-persistence-runtime.ts');
   const run = spawnSync('bun', [fixture, name, tempHome], {
-    cwd: process.cwd(),
+    cwd: OS_PACKAGE_ROOT,
     env,
     encoding: 'utf8',
   });
@@ -170,6 +175,16 @@ describe('canonical OS trace persistence', () => {
         route_source: 'default',
       }),
     ]);
+  });
+
+  it('persists work-session identity and canonical work path as first-class trace metadata', () => {
+    const output = runScenario('work-session');
+
+    expect(output.recorded).toBe(true);
+    expect(output.workSessionRow).toEqual({
+      work_session: expect.stringMatching(/^wrk_/),
+      work_path: expect.stringContaining('consuelo-trace-work-session-'),
+    });
   });
 
   it('persists code.call and batch parent envelopes alongside nested child traces', () => {
@@ -319,7 +334,7 @@ describe('canonical OS trace persistence', () => {
   });
 
   it('exports the canonical trace path for the installed daemon', () => {
-    const daemon = readFileSync(join(process.cwd(), 'scripts', 'start-consuelo-daemon.sh'), 'utf8');
+    const daemon = readFileSync(join(OS_PACKAGE_ROOT, 'scripts', 'start-consuelo-daemon.sh'), 'utf8');
     expect(daemon).toContain('CONSUELO_TRACE_DB');
     expect(daemon).toContain('$CONSUELO_HOME/node/db/traces.db');
   });

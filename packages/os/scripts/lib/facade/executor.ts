@@ -1479,6 +1479,14 @@ function logResult(
     : typeof resolvedInput.worktree === 'string'
       ? resolvedInput.worktree
       : undefined;
+  const workSession = typeof resolvedInput.workSession === 'string'
+    ? resolvedInput.workSession
+    : typeof rawInput.workSession === 'string'
+      ? rawInput.workSession
+      : undefined;
+  const workPath = typeof resolvedInput.workSessionRoot === 'string'
+    ? resolvedInput.workSessionRoot
+    : undefined;
   const mcpTraceId = typeof resolvedInput.mcpTraceId === 'string'
     ? resolvedInput.mcpTraceId
     : typeof resolvedInput.parentTraceId === 'string'
@@ -1503,6 +1511,8 @@ function logResult(
     code: result.code,
     taskSession,
     worktree,
+    workSession,
+    workPath,
     mcpTraceId,
     input: traceContext.input,
     resolvedInput: traceContext.resolvedInput,

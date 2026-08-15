@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2633,
-    "mappedTestCount": 2549,
+    "testFileCount": 2634,
+    "mappedTestCount": 2550,
     "unmappedTestCount": 84,
     "ruleCount": 55,
     "explicitRuleCount": 36,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 257,
+      "packages/os/tests": 258,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 62,
       "packages/twenty-sdk/src/cli": 51,
@@ -634,7 +634,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 540,
+      "test": 541,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -894,7 +894,12 @@
         "packages/os/tests/fixtures/trace-persistence-runtime.ts",
         "packages/os/scripts/lib/distribution/runtime-bundle.ts",
         "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
-        "packages/os/tests/trace-site-inspector-interactions.test.ts"
+        "packages/os/tests/trace-site-inspector-interactions.test.ts",
+        "packages/os/scripts/lib/facade/logger.ts",
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-search-query.ts",
+        "packages/os/tests/trace-persistence.test.ts",
+        "packages/os/tests/trace-search-query.test.ts"
       ],
       "tests": [
         {
@@ -922,6 +927,19 @@
             "packages/os",
             "test",
             "tests/trace-sites-runtime-boundary.test.ts"
+          ]
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
           ]
         }
       ],
@@ -4751,6 +4769,11 @@
     },
     {
       "path": "packages/os/tests/windows-platform.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/work-session-code-call.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
