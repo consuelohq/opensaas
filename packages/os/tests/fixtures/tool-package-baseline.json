@@ -7010,8 +7010,7 @@
         "title": "example task",
         "workflow": "task"
       },
-      "sessionRequired": false,
-      "workflowRole": "task.start"
+      "sessionRequired": false
     },
     {
       "name": "status",

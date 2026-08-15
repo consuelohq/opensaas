@@ -185,7 +185,7 @@ function renderDocs(): string {
     '})',
     '```',
     '',
-    'Task-scoped work must pass the `taskSession` returned by `task.start`. The facade resolves the session to the correct branch and worktree before invoking the underlying script.',
+    'Task-scoped work must pass the `taskSession` returned by `session.start({ kind: \"task\" })`; `task.start` remains a compatibility alias. Work sessions use `session.start({ kind: \"work\", path })` and pass `workSession` only for ordinary filesystem work outside managed repositories. The facade resolves session authority before invoking the underlying script.',
     '',
     '## Tool index',
     '',

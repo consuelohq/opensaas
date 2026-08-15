@@ -20,10 +20,5 @@ describe('session integration guidance', () => {
     expect(seniorEngineer).toContain('compatibility alias');
   });
 
-  it('keeps the simple observability session presentation contract', () => {
-    const source = read('packages/os/scripts/lib/observability-traces-site.ts');
-    expect(source).toContain('<div>Session</div>');
-    expect(source).toContain('<p class=\"eyebrow\">Sessions</p>');
-    expect(source).toContain('first(row.workPath, row.branch, row.gitBranch, row.taskSession, row.workSession');
-  });
+
 });

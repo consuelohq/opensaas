@@ -61,11 +61,25 @@ describe('session.start foundation', () => {
       methodPath: ['session', 'start'],
       inputSchema: 'SessionStartInput',
       sessionRequired: false,
-      workflowRole: 'task.start',
       description: expect.stringMatching(/canonical/i),
     });
     expect(definitions.get('task.start')).toMatchObject({
       description: expect.stringMatching(/compatibility alias/i),
+    });
+    expect(getInputSchema('SessionStartInput').parse({
+      kind: 'task',
+      area: 'os',
+      title: 'canonical task',
+      workflow: 'task',
+      description: 'legacy description',
+      pr: 2036,
+      github: 'https://github.com/consuelohq/opensaas/pull/2036',
+      bodyFile: '/tmp/body.md',
+      startFrom: 'stream',
+    })).toMatchObject({
+      kind: 'task',
+      description: 'legacy description',
+      pr: 2036,
     });
   });
 
@@ -79,9 +93,10 @@ describe('session.start foundation', () => {
   });
 
   it('should create metadata-only work sessions when starting ordinary work', () => {
-    const home = mkdtempSync(join(tmpdir(), 'consuelo-session-foundation-'));
-    tempRoots.push(home);
-    const workPath = join(home, 'Raycast Extension');
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-session-foundation-'));
+    tempRoots.push(root);
+    const home = join(root, '.consuelo');
+    const workPath = join(root, 'Raycast Extension');
     mkdirSync(workPath, { recursive: true });
     const layout = resolveConsueloHomeLayout(home);
     writeYamlConfig(

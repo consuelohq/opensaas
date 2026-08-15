@@ -125,9 +125,7 @@ function isTaskStartEvent(event) {
   if (event.tool === 'task.start') return true;
   if (event.tool !== 'session.start') return false;
   const kind = event.input?.kind || event.state?.kind || event.state?.input?.kind;
-  if (event.event === 'tool.preInvoke') return kind === 'task';
-  const result = event.result || {};
-  return kind === 'task' || Boolean(result.taskSession || result.data?.taskSession);
+  return kind === 'task';
 }
 
 function handlePreTaskStart(event, resolver) {

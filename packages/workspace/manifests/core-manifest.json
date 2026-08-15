@@ -659,7 +659,7 @@
       "kind": "facade-tool",
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
-      "category": "task lifecycle",
+      "category": "session lifecycle",
       "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
       "core": true,
       "definition": {
@@ -669,7 +669,7 @@
           "start"
         ],
         "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
-        "category": "task lifecycle",
+        "category": "session lifecycle",
         "underlying": "workspace session.start",
         "capabilities": {
           "readOnly": false,
@@ -724,6 +724,16 @@
               "source": "startFrom",
               "flag": "--start-from",
               "kind": "value"
+            },
+            {
+              "source": "description",
+              "flag": "--description",
+              "kind": "value"
+            },
+            {
+              "source": "createStream",
+              "flag": "--create-stream",
+              "kind": "boolean"
             }
           ],
           "jsonFlag": "--json"
@@ -734,8 +744,7 @@
           "title": "example task",
           "workflow": "task"
         },
-        "sessionRequired": false,
-        "workflowRole": "task.start"
+        "sessionRequired": false
       }
     },
     {

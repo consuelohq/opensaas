@@ -414,10 +414,13 @@ const SessionTaskStartInput = z.object({
   stream: optionalString,
   title: optionalString,
   workflow: z.enum(['task', 'artifacts', 'media']).optional(),
+  description: optionalString,
+  pr: prRefInput.optional(),
+  github: optionalString,
   bodyFile: optionalString,
   startFrom: z.enum(['main', 'stream']).optional(),
-}).refine((input) => Boolean(input.area || input.stream), {
-  message: 'provide area or stream',
+}).refine((input) => Boolean(input.area || input.stream || input.pr || input.github), {
+  message: 'provide area/stream or a PR reference',
   path: ['area'],
 });
 

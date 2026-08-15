@@ -393,7 +393,6 @@ export const toolSchemas = [
       "command",
       "exampleInput",
       "sessionRequired",
-      "workflowRole"
     ],
     "definition": {
       "name": "session.start",
@@ -419,8 +418,7 @@ export const toolSchemas = [
         "title": "example task",
         "workflow": "task"
       },
-      "sessionRequired": false,
-      "workflowRole": "task.start"
+      "sessionRequired": false
     }
   },
   {

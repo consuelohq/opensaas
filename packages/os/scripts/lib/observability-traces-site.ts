@@ -12,6 +12,25 @@ const canonicalAssetDir = path.resolve(
 const canonicalAsset = (name: string): string =>
   fs.readFileSync(path.join(canonicalAssetDir, name), 'utf8');
 
+export function resolveObservabilitySessionValue(row: Record<string, unknown>): string {
+  const metadata = row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+    ? row.metadata as Record<string, unknown>
+    : {};
+  for (const value of [
+    row.workPath,
+    row.branch,
+    row.gitBranch,
+    row.taskSession,
+    row.workSession,
+    metadata.workPath,
+    metadata.branch,
+  ]) {
+    if (value !== undefined && value !== null && String(value).length > 0) return String(value);
+  }
+  return 'no-branch';
+}
+
+
 const productionHistoryTransport = `<script id="consuelo-trace-history-transport">
 (()=>{const historyRoute='/gateway/traces/recent';const snapshotRoute='/trace-burn-intelligence/live-traces.json';const snapshotUrl=historyRoute+'?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true';const allowed=(url)=>url===snapshotRoute||url===historyRoute||url.startsWith(historyRoute+'?');window.__consueloTraceHistoryTransport={fetchJson(url){if(!allowed(url))return Promise.reject(new Error('Trace history route is not allowed.'));const requestUrl=url===snapshotRoute?snapshotUrl:url;return fetch(requestUrl,{cache:'no-store',credentials:'same-origin',headers:{accept:'application/json'}}).then(response=>response.json().then(payload=>{if(!response.ok||payload?.ok===false)throw new Error(payload?.error?.message||'Trace history request failed.');return url===snapshotRoute?(payload?.data??{rows:[],failures:[]}):payload;}));}};})();
 </script>`;

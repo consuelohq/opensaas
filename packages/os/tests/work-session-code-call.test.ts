@@ -59,6 +59,34 @@ function createTestWorkSession(home: string, workPath: string): string {
   }).workSession;
 }
 
+
+function writeLegacyWorkSessionMetadata(home: string, workPath: string): string {
+  const layout = resolveConsueloHomeLayout(home);
+  writeYamlConfig(
+    layout.nodeConfigPath,
+    createDefaultNodeYamlConfig({
+      nodeId: 'node_work_session_test',
+      nodeName: 'Work Session Test',
+      workspaceId: 'workspace_work_session_test',
+    }),
+    false,
+  );
+  const workSession = 'wrk_1234567812344234';
+  const directory = join(layout.nodeDir, 'sessions', 'work');
+  mkdirSync(directory, { recursive: true });
+  writeFileSync(join(directory, `${workSession}.json`), `${JSON.stringify({
+    version: 1,
+    sessionKind: 'work',
+    workSession,
+    ownerNodeId: 'node_work_session_test',
+    path: realpathSync(workPath),
+    createdAt: '2026-08-15T02:00:00.000Z',
+    updatedAt: '2026-08-15T02:00:00.000Z',
+  }, null, 2)}
+`);
+  return workSession;
+}
+
 afterEach(() => {
   while (tempRoots.length > 0) {
     const root = tempRoots.pop();
@@ -212,7 +240,7 @@ describe('work-session code.call authority', () => {
     const workPath = join(home, 'ordinary-work');
     mkdirSync(workPath, { recursive: true });
     initRepo(mainRepo);
-    const workSession = createTestWorkSession(home, workPath);
+    const workSession = writeLegacyWorkSessionMetadata(home, workPath);
     const env = { ...process.env, WORKSPACE_DAEMON_CONSUELO_HOME: home };
     delete env.CONSUELO_HOME;
     delete env.CONSUELO_OS_HOME;

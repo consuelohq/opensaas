@@ -23,7 +23,7 @@ await workspace.call({
 })
 ```
 
-Task-scoped work must pass the `taskSession` returned by `task.start`. The facade resolves the session to the correct branch and worktree before invoking the underlying script.
+Task-scoped work must pass the `taskSession` returned by `session.start({ kind: "task" })`; `task.start` remains a compatibility alias. Work sessions use `session.start({ kind: "work", path })` and pass `workSession` only for ordinary filesystem work outside managed repositories. The facade resolves session authority before invoking the underlying script.
 
 ## Tool index
 
@@ -43,9 +43,10 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | media | 1 |
 | review | 4 |
 | sentry | 7 |
+| session lifecycle | 1 |
 | stream | 4 |
 | subagent | 1 |
-| task lifecycle | 14 |
+| task lifecycle | 13 |
 | tooling | 1 |
 | utilities | 34 |
 
@@ -3220,6 +3221,70 @@ await workspace.call({
 }
 ```
 
+## session lifecycle
+
+### workspace.session.start
+
+Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.
+
+| Field | Value |
+| --- | --- |
+| Category | session lifecycle |
+| Signature | `workspace.session.start(({ kind: "task"; stream?: string; area?: string; title: string; workflow?: "task"; description?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string } &#124; { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace session.start` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "session.start",
+  "input": {
+    "kind": "task",
+    "area": "workspace-agents",
+    "title": "example task",
+    "workflow": "task"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## stream
 
 ### workspace.stream.cleanup
@@ -3523,68 +3588,6 @@ await workspace.call({
 ```
 
 ## task lifecycle
-
-### workspace.session.start
-
-Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.
-
-| Field | Value |
-| --- | --- |
-| Category | task lifecycle |
-| Signature | `workspace.session.start(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
-| Runtime | `workspace session.start` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 60000ms |
-
-#### Example call
-
-```ts
-await workspace.call({
-  "tool": "session.start",
-  "input": {
-    "kind": "task",
-    "area": "workspace-agents",
-    "title": "example task",
-    "workflow": "task"
-  }
-});
-```
-
-#### Success envelope
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-#### Error envelope
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
 
 ### workspace.task.call
 

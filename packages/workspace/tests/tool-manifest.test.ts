@@ -17,7 +17,8 @@ const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
   'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
-  'task.start': "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+  'session.start': 'Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.',
+  'task.start': 'Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.',
 } as const;
 const removedCoreToolNames = [
   'fs.list',
@@ -68,6 +69,7 @@ const retainedCoreToolNames = [
   'fs.apply_patch',
   'fs.trash',
   'github',
+  'session.start',
   'task.start',
   'review.run',
   'stream.context',

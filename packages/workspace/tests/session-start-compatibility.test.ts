@@ -5,6 +5,8 @@ import { spawnSync } from 'node:child_process';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { parseArgs } from '../scripts/session-start';
+
 import {
   createDefaultNodeYamlConfig,
   resolveConsueloHomeLayout,
@@ -68,4 +70,53 @@ describe('workspace session.start compatibility', () => {
       path: canonicalWorkRoot,
     });
   });
+
+
+  it('rejects a work session rooted in the managed repository', () => {
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-workspace-session-protected-'));
+    roots.push(root);
+    const home = join(root, '.consuelo');
+    const layout = resolveConsueloHomeLayout(home);
+    mkdirSync(layout.nodeDir, { recursive: true });
+    const config = createDefaultNodeYamlConfig({
+      nodeId: 'node_workspace_session_test',
+      nodeName: 'Workspace Session Test',
+      workspaceId: 'workspace_session_test',
+    });
+    writeYamlConfig(layout.nodeConfigPath, config);
+
+    const result = spawnSync(
+      'bun',
+      ['packages/workspace/scripts/session-start.ts', '--kind', 'work', '--path', process.cwd(), '--json'],
+      { cwd: process.cwd(), encoding: 'utf8', env: { ...process.env, CONSUELO_HOME: home } },
+    );
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('Use a taskSession for repository edits');
+  });
+
+
+  it('forwards legacy task-start flags unchanged in task mode', () => {
+    const parsed = parseArgs([
+      '--kind', 'task',
+      '--area', 'workspace-agents',
+      '--title', 'compat task',
+      '--description', 'legacy description',
+      '--body-file', '/tmp/body.md',
+      '--start-from', 'stream',
+      '--create-stream',
+      '--json',
+    ]);
+    expect(parsed.kind).toBe('task');
+    expect(parsed.forwarded).toEqual([
+      '--area', 'workspace-agents',
+      '--title', 'compat task',
+      '--description', 'legacy description',
+      '--body-file', '/tmp/body.md',
+      '--start-from', 'stream',
+      '--create-stream',
+      '--json',
+    ]);
+  });
+
 });

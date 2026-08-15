@@ -20,17 +20,96 @@ started: 2026-08-15
 
 ## files changed
 
-- none yet
+- `areas/workspace-agents/AGENTS.md`
+- `packages/documentation/src/content/docs/build/skills/bundled/task.mdx`
+- `packages/documentation/src/content/docs/build/workflows.mdx`
+- `packages/documentation/src/content/docs/reference/tools.mdx`
+- `packages/os/hooks/task/guidance.js`
+- `packages/os/hooks/task/workflow.js`
+- `packages/os/manifests/generated/core.manifest.json`
+- `packages/os/manifests/generated/tool.manifest.json`
+- `packages/os/skills/task/SKILL.md`
+- `packages/os/steering/system_prompt.md`
+- `packages/os/tests/fixtures/tool-package-baseline.json`
+- `packages/os/tests/session-integration-guidance.test.ts`
+- `packages/os/tests/session-start-foundation.test.ts`
+- `packages/os/tests/task-hook-workflow-contract.test.ts`
+- `packages/os/tests/task-hooks.test.ts`
+- `packages/os/tests/tool-manifest.test.ts`
+- `packages/os/TOOLS.md`
+- `packages/os/tools/task-lifecycle/schema.ts`
+- `packages/os/workflows/generated/workflow-bundles.json`
+- `packages/workspace/hooks/task/guidance.js`
+- `packages/workspace/hooks/task/workflow.js`
+- `packages/workspace/manifests/core-manifest.json`
+- `packages/workspace/manifests/manifest.config.json`
+- `packages/workspace/manifests/tool-manifest.json`
+- `packages/workspace/manifests/workflow-bundles.json`
+- `packages/workspace/package.json`
+- `packages/workspace/scripts/lib/facade/schemas.ts`
+- `packages/workspace/scripts/session-start.ts`
+- `packages/workspace/senior-engineer.md`
+- `packages/workspace/src/generated/workspace.d.ts`
+- `packages/workspace/task.md`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/session-start-compatibility.test.ts`
+- `packages/workspace/tests/task-hook-workflow-contract.test.ts`
+- `packages/workspace/tests/task-hooks.test.ts`
+- `packages/workspace/tests/test-selection.test.js`
+- `packages/workspace/tests/workflow-intent.test.ts`
+- `packages/workspace/tooling/tool-manifest.json`
+- `packages/workspace/TOOLS.md`
 
 ## workspace-owned: files changed
 
-- none yet
+- `areas/workspace-agents/AGENTS.md`
+- `packages/documentation/src/content/docs/build/skills/bundled/task.mdx`
+- `packages/documentation/src/content/docs/build/workflows.mdx`
+- `packages/documentation/src/content/docs/reference/tools.mdx`
+- `packages/os/hooks/task/guidance.js`
+- `packages/os/hooks/task/workflow.js`
+- `packages/os/manifests/generated/core.manifest.json`
+- `packages/os/manifests/generated/tool.manifest.json`
+- `packages/os/skills/task/SKILL.md`
+- `packages/os/steering/system_prompt.md`
+- `packages/os/tests/fixtures/tool-package-baseline.json`
+- `packages/os/tests/session-integration-guidance.test.ts`
+- `packages/os/tests/session-start-foundation.test.ts`
+- `packages/os/tests/task-hook-workflow-contract.test.ts`
+- `packages/os/tests/task-hooks.test.ts`
+- `packages/os/tests/tool-manifest.test.ts`
+- `packages/os/TOOLS.md`
+- `packages/os/tools/task-lifecycle/schema.ts`
+- `packages/os/workflows/generated/workflow-bundles.json`
+- `packages/workspace/hooks/task/guidance.js`
+- `packages/workspace/hooks/task/workflow.js`
+- `packages/workspace/manifests/core-manifest.json`
+- `packages/workspace/manifests/manifest.config.json`
+- `packages/workspace/manifests/tool-manifest.json`
+- `packages/workspace/manifests/workflow-bundles.json`
+- `packages/workspace/package.json`
+- `packages/workspace/scripts/lib/facade/schemas.ts`
+- `packages/workspace/scripts/session-start.ts`
+- `packages/workspace/senior-engineer.md`
+- `packages/workspace/src/generated/workspace.d.ts`
+- `packages/workspace/task.md`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/session-start-compatibility.test.ts`
+- `packages/workspace/tests/task-hook-workflow-contract.test.ts`
+- `packages/workspace/tests/task-hooks.test.ts`
+- `packages/workspace/tests/test-selection.test.js`
+- `packages/workspace/tests/workflow-intent.test.ts`
+- `packages/workspace/tooling/tool-manifest.json`
+- `packages/workspace/TOOLS.md`
 
 ## workspace-owned: activity log
 
 - 2026-08-15 06:57:18 fs.write: `.task/workspace-agent/session-integration/workpad.md`
 - 2026-08-15 07:19:07 fs.write: `.task/workspace-agent/session-integration/workpad.md`
 - 2026-08-15 07:31:50 fs.write: `.task/workspace-agent/session-integration/workpad.md`
+- 2026-08-15 08:00:06 fs.write: `.task/workspace-agent/session-integration/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -41,6 +120,9 @@ started: 2026-08-15
 - 2026-08-15 07:31:05 `review.run`: passed — OK
 - 2026-08-15 07:31:35 `verify`: passed — OK
 - 2026-08-15 07:32:25 `verify`: passed — OK
+- 2026-08-15 07:59:27 `review.run`: passed — OK
+- 2026-08-15 07:59:57 `verify`: passed — OK
+- 2026-08-15 08:00:29 `verify`: passed — OK
 
 ## key decisions
 
@@ -78,16 +160,21 @@ bun run task:finish
 - `packages/os/hooks/task/guidance.js`
 - `packages/os/hooks/task/workflow.js`
 - `packages/os/package.json`
+- `packages/os/scripts/lib/code-call/location.ts`
 - `packages/os/scripts/lib/consuelo-home.ts`
+- `packages/os/scripts/lib/facade/executor.ts`
 - `packages/os/scripts/lib/facade/schemas.ts`
+- `packages/os/scripts/lib/observability-traces-site.ts`
 - `packages/os/scripts/lib/private-workspace-session-recovery.ts`
 - `packages/os/scripts/lib/sites.ts`
 - `packages/os/scripts/lib/work-session-fs.ts`
 - `packages/os/scripts/lib/work-session.ts`
+- `packages/os/scripts/lib/workspace-project-cwd.ts`
 - `packages/os/scripts/session-start.ts`
 - `packages/os/skills/task/SKILL.md`
 - `packages/os/streams/workspace-agent/AGENTS.md`
 - `packages/os/tests/fixtures/tool-package-baseline.json`
+- `packages/os/tests/observability-traces-site.test.ts`
 - `packages/os/tests/session-start-foundation.test.ts`
 - `packages/os/tests/task-hook-workflow-contract.test.ts`
 - `packages/os/tests/task-hooks.test.ts`
@@ -99,6 +186,7 @@ bun run task:finish
 - `packages/workspace/manifests/manifest.config.json`
 - `packages/workspace/package.json`
 - `packages/workspace/scripts/generate-tool-manifest.ts`
+- `packages/workspace/scripts/generate-types.ts`
 - `packages/workspace/scripts/gh.js`
 - `packages/workspace/scripts/lib/facade/schemas.ts`
 - `packages/workspace/scripts/os-release.ts`
@@ -108,6 +196,7 @@ bun run task:finish
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/task-hook-workflow-contract.test.ts`
 - `packages/workspace/tests/test-selection.test.js`
+- `packages/workspace/tests/tool-manifest.test.ts`
 - `packages/workspace/tests/workflow-intent.test.ts`
 - `packages/workspace/tooling/tool-manifest.json`
 
@@ -170,3 +259,24 @@ no-test waiver: none.
 4. Re-verify after any Grok fixes, merge #2036 into `stream/workspace-agent`, and finish the task.
 
 - 2026-08-15 07:31:50 append: `.task/workspace-agent/session-integration/workpad.md`
+
+## Grok second-pass fixes
+
+Grok run `run_b19bb7dce2b4314285426640` reviewed pushed head `d846591cb7411b08160010797deeacff49deec02`. The primary agent published Grok's detailed review and actionable inline comments on PR #2036 because the Grok environment could read GitHub but its external review POST was blocked.
+
+All actionable findings are fixed:
+- Task-mode `SessionStartInput` now preserves legacy task-start compatibility fields/argv; workspace generated types expose the typed task/work union.
+- `session.start` no longer carries a static task-only workflow role; task hooks require explicit `kind: task` on the umbrella constructor while `task.start` remains the compatibility alias.
+- Work-session creation now shares the same protected-root policy as execution and rejects Consuelo home, the managed default project, and its registered task worktrees before metadata is created.
+- Session-specific selector ownership no longer claims shared facade schema/manifest files; generic facade ownership covers those surfaces while session-specific files stay focused.
+- Workspace session wrapper has executable work metadata, task argv forwarding, and managed-repo rejection coverage.
+- Workspace generated tool docs use canonical `session.start({ kind: "task" })` wording.
+- Observability coverage now behaviorally projects work filesystem paths / task branches into the same Session value without UI badges.
+
+Post-Grok validation:
+- Grok regression + containment suite: 118 passed, 1 platform skip.
+- Exact selected repository gate: all selected suites passed after characterization refresh; no whole-OS package fallback is selected.
+- Strict review: 0 issues, 0 blockers, 0 documentation gaps.
+- Formal verify: publishValid true; DB guard clean.
+
+- 2026-08-15 08:00:06 append: `.task/workspace-agent/session-integration/workpad.md`

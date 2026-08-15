@@ -149,6 +149,15 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).not.toContain('os-lifecycle-update-handoff');
   });
 
+  it('keeps shared facade schema ownership out of the session-specific exclusive rule', () => {
+    const result = run(['check', '--changed-file', 'packages/workspace/scripts/lib/facade/schemas.ts', '--json']);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    expect(matchedRuleIds).toContain('workspace-facade');
+    expect(matchedRuleIds).not.toContain('workspace-session-integration');
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain('workspace facade manifest contracts');
+  });
+
   it('routes session integration changes to focused task/work compatibility tests', () => {
     for (const changedFile of [
       'packages/workspace/scripts/session-start.ts',

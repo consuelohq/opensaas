@@ -207,6 +207,40 @@ describe('OS manifest-driven task workflow hooks contract', () => {
     expect(guidance.requiredNextAction.input.content).toContain('Test-first contract');
   });
 
+  test('does not treat work-mode session.start as a task workflow event', async () => {
+    const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
+    const registry = createTaskWorkflowHookRegistry({ manifest: manifestFixture, skillText: TASK_SKILL_EXCERPT });
+
+    expect(registry.handle({
+      event: 'tool.preInvoke',
+      tool: 'session.start',
+      workflow: 'task',
+      input: { kind: 'work', path: '/tmp/work' },
+      state: { hasStreamContext: false },
+    })).toBeNull();
+
+    expect(registry.handle({
+      event: 'tool.postInvoke',
+      tool: 'session.start',
+      workflow: 'task',
+      input: { kind: 'work', path: '/tmp/work' },
+      result: { workSession: 'wrk_example', taskSession: 'tsk_stale' },
+    })).toBeNull();
+  });
+
+  test('requires an explicit task kind for umbrella session.start task hooks', async () => {
+    const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
+    const registry = createTaskWorkflowHookRegistry({ manifest: manifestFixture, skillText: TASK_SKILL_EXCERPT });
+
+    expect(registry.handle({
+      event: 'tool.preInvoke',
+      tool: 'session.start',
+      workflow: 'task',
+      input: { area: 'os', title: 'missing kind' },
+      state: { hasStreamContext: false },
+    })).toBeNull();
+  });
+
   test('keeps task.start as a compatibility alias for task workflow hooks', async () => {
     const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
     const registry = createTaskWorkflowHookRegistry({ manifest: manifestFixture, skillText: TASK_SKILL_EXCERPT });

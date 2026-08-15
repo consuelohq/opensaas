@@ -143,16 +143,18 @@ describe('Workspace workflow intent bundles', () => {
     expect(sessionEntry).toEqual(expect.objectContaining({
       name: 'session.start',
       methodPath: ['session', 'start'],
-      workflowRole: 'task.start',
+      category: 'session lifecycle',
       command: expect.objectContaining({ script: 'session:start' }),
       description: expect.stringMatching(/canonical/i),
     }));
+    const sessionArguments = (sessionEntry?.command as { arguments?: Array<{ source?: string; flag?: string }> })?.arguments ?? [];
+    expect(sessionArguments).toContainEqual(expect.objectContaining({ source: 'description', flag: '--description' }));
+    expect(sessionArguments).toContainEqual(expect.objectContaining({ source: 'createStream', flag: '--create-stream' }));
     expect(coreSessionEntry).toEqual(expect.objectContaining({
       name: 'session.start',
       core: true,
       definition: expect.objectContaining({
         methodPath: ['session', 'start'],
-        workflowRole: 'task.start',
       }),
     }));
     expect(taskAlias).toEqual(expect.objectContaining({
@@ -163,6 +165,23 @@ describe('Workspace workflow intent bundles', () => {
     expect(getInputSchema('SessionStartInput').parse({
       kind: 'task', area: 'workspace-agents', title: 'canonical task start',
     })).toMatchObject({ kind: 'task' });
+    const canonicalTask = getInputSchema('SessionStartInput').parse({
+      kind: 'task',
+      area: 'workspace-agents',
+      title: 'canonical task start',
+      workflow: 'task',
+      description: 'kept description',
+      bodyFile: '/tmp/body.md',
+      startFrom: 'stream',
+      createStream: true,
+    });
+    expect(canonicalTask).toMatchObject({
+      kind: 'task',
+      title: 'canonical task start',
+      description: 'kept description',
+      createStream: true,
+    });
+
     expect(getInputSchema('SessionStartInput').parse({
       kind: 'work', path: '/tmp/example-work-root',
     })).toMatchObject({ kind: 'work' });

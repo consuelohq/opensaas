@@ -3,17 +3,18 @@
 import path from 'node:path';
 
 import { createWorkSession } from './lib/work-session';
+import { resolveActiveWorkspaceProjectCwd } from './lib/workspace-project-cwd';
 
 type SessionKind = 'task' | 'work';
 
-type ParsedArgs = {
+export type ParsedArgs = {
   kind?: SessionKind;
   path?: string;
   json: boolean;
   forwarded: string[];
 };
 
-function parseArgs(argv: string[]): ParsedArgs {
+export function parseArgs(argv: string[]): ParsedArgs {
   const parsed: ParsedArgs = { json: false, forwarded: [] };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
@@ -71,7 +72,7 @@ async function startTaskSession(args: ParsedArgs): Promise<void> {
   }
 }
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (args.kind === 'task') {
     if (args.path) throw new Error('--path is only valid for work sessions');
@@ -82,7 +83,10 @@ async function main(): Promise<void> {
   if (args.forwarded.some((argument) => argument !== '--json')) {
     throw new Error('work sessions accept only --kind, --path, and --json');
   }
-  const metadata = createWorkSession({ path: args.path });
+  const metadata = createWorkSession({
+    path: args.path,
+    managedRepoRoot: resolveActiveWorkspaceProjectCwd() ?? process.cwd(),
+  });
   writeResult({
     sessionKind: 'work',
     workSession: metadata.workSession,
@@ -93,7 +97,9 @@ async function main(): Promise<void> {
   }, args.json);
 }
 
-main().catch((error: unknown) => {
-  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((error: unknown) => {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exit(1);
+  });
+}
