@@ -30,7 +30,7 @@ const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bas
 const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
-  'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
+  'fs.trash': 'move files to trash inside an authorized task worktree or work-session directory',
   'task.start': "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
 } as const;
 const removedCoreToolNames = [

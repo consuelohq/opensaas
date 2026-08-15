@@ -4129,7 +4129,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+      "description": "apply an anchored patch inside an authorized task worktree or work-session directory",
       "core": true,
       "definition": {
         "name": "fs.apply_patch",
@@ -4137,7 +4137,7 @@
           "fs",
           "apply_patch"
         ],
-        "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+        "description": "apply an anchored patch inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.apply_patch",
         "capabilities": {
@@ -4482,7 +4482,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "An agent safe file deletion path. Prefered over rm rf",
+      "description": "move files to trash inside an authorized task worktree or work-session directory",
       "core": true,
       "definition": {
         "name": "fs.trash",
@@ -4490,7 +4490,7 @@
           "fs",
           "trash"
         ],
-        "description": "An agent safe file deletion path. Prefered over rm rf",
+        "description": "move files to trash inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.trash",
         "capabilities": {
@@ -4529,7 +4529,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "write a file in a task worktree",
+      "description": "write a file inside an authorized task worktree or work-session directory",
       "core": false,
       "definition": {
         "name": "fs.write",
@@ -4537,7 +4537,7 @@
           "fs",
           "write"
         ],
-        "description": "write a file in a task worktree",
+        "description": "write a file inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.write",
         "capabilities": {

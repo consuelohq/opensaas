@@ -299,7 +299,7 @@
           "source": "filesystem",
           "sourcePath": "packages/os/tools/filesystem/manifest.ts",
           "category": "filesystem",
-          "description": "write a file in a task worktree",
+          "description": "write a file inside an authorized task worktree or work-session directory",
           "core": false,
           "definition": {
             "name": "fs.write",
@@ -307,7 +307,7 @@
               "fs",
               "write"
             ],
-            "description": "write a file in a task worktree",
+            "description": "write a file inside an authorized task worktree or work-session directory",
             "category": "filesystem",
             "underlying": "workspace fs.write",
             "capabilities": {
