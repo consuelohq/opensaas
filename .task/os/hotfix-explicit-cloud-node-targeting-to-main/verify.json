@@ -4,13 +4,13 @@
   "mode": "full",
   "branch": "task/os/hotfix-explicit-cloud-node-targeting-to-main",
   "base": "origin/main",
-  "headSha": "fa5f92d408ae4ca842c25b4300f25f8e2e1d0600",
-  "changeHash": "899a26e726b4c6ef94fa916bc0c2901e73b6546bd3ad9ea0bd84926ca325791e",
+  "headSha": "0f4e2c6178556eb6eada077bf8b4632a7ef763c8",
+  "changeHash": "883bfdde9ec73b31d199a3c1a446daec16806133a4ec59c3e8cd1feaf5ced88e",
   "changedFiles": [
     "packages/workspace/server.py",
     "packages/workspace/tests/server_call_test.py"
   ],
-  "verifiedAt": "2026-08-15T01:34:36.128Z",
+  "verifiedAt": "2026-08-15T01:36:17.560Z",
   "review": {
     "skipped": false,
     "passed": true,

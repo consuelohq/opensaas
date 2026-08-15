@@ -31,6 +31,7 @@ started: 2026-08-15
 - `packages/workspace/server.py`
 - `packages/workspace/tests/server_call_test.py`
 
+
 ## workspace-owned: files changed
 
 - none yet
@@ -47,6 +48,8 @@ started: 2026-08-15
 - 2026-08-15 01:34:22 `verify`: passed — OK
 - 2026-08-15 01:34:22 `verify`: passed — OK
 - 2026-08-15 01:34:36 `verify`: passed — OK
+- 2026-08-15 01:36:17 `verify`: passed — OK
+- 2026-08-15 01:36:17 `verify`: passed — OK
 
 ## key decisions
 
@@ -74,6 +77,7 @@ started: 2026-08-15
 ## issues and recovery
 
 - RED reproduced on current `main`: `test_call_public_signature_exposes_optional_node_id` failed because the public parameter list is `tool,input,taskSession,timeout`; `test_call_keeps_node_id_out_of_inner_workspace_input` errored because `call()` rejects the unexpected `nodeId` keyword. Trace: `trc_f3622ef09a03`.
+- `task.pr` normally targets `stream/os`, but this hotfix explicitly must not ship the stream's unrelated 33 commits. After the isolated branch was pushed and verified against `origin/main`, PR #1982 was retargeted from `stream/os` to `main`. The typed GitHub facade has no `pr.edit` operation, so the scoped `github.raw` fallback was used only for `gh pr edit 1982 --base main` (`trc_61d9eba97887`).
 
 ### RED evidence
 
@@ -87,6 +91,13 @@ started: 2026-08-15
 - Downstream unchanged routing regressions pass: `workspace-node-registry-routing.test.ts` 40/40 and `os-device-authority-worker.test.ts` 29/29, total 69/69. Trace: `trc_b523f3b376af`.
 - Destructive-literal preflight was clean for all three executed test sources.
 - Working-tree diff contains only the two intended code/test files plus scoped task metadata.
+
+### Final validation before publish
+
+- Strict review against `origin/main`: 0 task issues / 0 blockers. Trace: `trc_603ca9aa5a7f`.
+- Test-selection inspection: zero auto-selected suites; no broad workspace/OS suite is hidden behind the verifier. The behavior tests above were run explicitly.
+- Full guarded `verify --base origin/main`: `publishValid: true`, 0 DB risks/findings, exactly the two intended product/test files covered. Trace: `trc_9ac214710932`.
+- Remaining acceptance after publish: isolated GitHub CI/main merge, runtime/server delivery, ChatGPT Refresh/Publish, and explicit `cloud-1` + default-route smoke.
 - Strict review against `origin/main`: 0 blockers / 0 task-attributed issues; reported lint/typecheck findings are pre-existing and outside this two-file hotfix (`trc_51c9a7729bfb`).
 - Full verify against `origin/main`: `passed=true`, `publishValid=true`, changed product files exactly `packages/workspace/server.py` + `packages/workspace/tests/server_call_test.py` (`trc_4886883595ee`).
 
@@ -105,3 +116,7 @@ bun run task:finish
 - `packages/workspace/tests/server_call_test.py`
 
 - 2026-08-15 01:34:31 apply-patch: `.task/os/hotfix-explicit-cloud-node-targeting-to-main/workpad.md`
+
+- 2026-08-15 01:34:43 apply-patch: `.task/os/hotfix-explicit-cloud-node-targeting-to-main/workpad.md`
+
+- 2026-08-15 01:35:08 apply-patch: `.task/os/hotfix-explicit-cloud-node-targeting-to-main/workpad.md`
