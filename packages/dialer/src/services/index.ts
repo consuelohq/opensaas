@@ -13,5 +13,7 @@ export {
 
 export { CallTimingModel } from './call-timing-model.service.js';
 export { WhittleIndexService } from './whittle-index.service.js';
+export { PredictiveSelectionModel } from './predictive-selection-model.js';
+export { RetryDecisionModel } from './retry-decision-model.js';
 
 export { CadenceOptimizerService } from './cadence-optimizer.service.js';
