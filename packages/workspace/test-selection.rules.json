@@ -222,15 +222,25 @@
       "exclusive": true,
       "source": [
         "packages/os/explore-bench/**",
+        "packages/os/cloudflare/workspace-edge/src/index.ts",
+        "packages/os/cloudflare/workspace-edge/src/semantic-embedding-gateway.ts",
+        "packages/os/cloudflare/workspace-edge/wrangler.toml",
         "packages/os/scripts/explore-bench.js",
         "packages/os/scripts/explore.js",
         "packages/os/scripts/lib/explore-bench.js",
+        "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
+        "packages/os/scripts/lib/index/embedding-gateway.js",
         "packages/os/scripts/lib/index/store.js",
         "packages/os/scripts/lib/search/**",
         "packages/os/tests/explore-bench.test.ts",
         "packages/os/tests/explore-output-contract.test.ts",
         "packages/os/tests/explore-retrieval-policy.test.ts",
-        "packages/os/tests/explore-retriever-fallback.test.ts"
+        "packages/os/tests/explore-retriever-fallback.test.ts",
+        "packages/os/tests/explore-runtime-routing.test.ts",
+        "packages/os/tests/semantic-embedding-edge-gateway.test.ts",
+        "packages/os/tests/semantic-embedding-gateway.test.ts",
+        "packages/os/tests/semantic-embedding-identity.test.ts",
+        "packages/os/tools/decision-engine/handler.ts"
       ],
       "tests": [
         {
@@ -243,11 +253,15 @@
             "tests/explore-retrieval-policy.test.ts",
             "tests/explore-retriever-fallback.test.ts",
             "tests/explore-bench.test.ts",
-            "tests/explore-output-contract.test.ts"
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts"
           ]
         }
       ],
-      "reason": "Agent-facing OS Explore retrieval, benchmark, and search-index changes must prove hard scope, missing-semantic fallback, rank fusion, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite."
+      "reason": "Agent-facing OS Explore retrieval, hosted embeddings, runtime routing, benchmark, and search-index changes must prove hard scope, missing-semantic fallback, fixed-model gateway confinement, rate limits, rank fusion, benchmark metrics, runtime ownership, and compact/full output without selecting the historically red package-wide OS suite."
     },
     {
       "id": "os-release-surface-freshness",

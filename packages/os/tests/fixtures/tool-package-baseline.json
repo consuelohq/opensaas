@@ -3336,6 +3336,7 @@
       "outputSchema": "RawOutput",
       "command": {
         "script": "explore",
+        "executionScope": "runtime",
         "branchMode": "none",
         "jsonFlag": "--json",
         "arguments": [
@@ -4237,11 +4238,11 @@
       },
       "command": {
         "script": "lifecycle",
+        "executionScope": "runtime",
         "subcommand": "status",
         "branchMode": "none",
         "jsonFlag": "--json",
-        "arguments": [],
-        "executionScope": "runtime"
+        "arguments": []
       },
       "exampleInput": {},
       "sessionRequired": false
@@ -4284,6 +4285,7 @@
       },
       "command": {
         "script": "lifecycle",
+        "executionScope": "runtime",
         "subcommand": "update",
         "branchMode": "none",
         "jsonFlag": "--json",
@@ -4293,8 +4295,7 @@
             "flag": "--channel",
             "kind": "value"
           }
-        ],
-        "executionScope": "runtime"
+        ]
       },
       "exampleInput": {
         "channel": "stable"

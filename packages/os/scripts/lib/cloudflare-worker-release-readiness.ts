@@ -5,6 +5,7 @@ export const CLOUDFLARE_WORKER_RELEASE_CONFIGS = {
     requiredSecrets: [
       'CONSUELO_EDGE_SIGNING_SECRET',
       'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET',
+      'OPENROUTER_API_KEY',
     ],
   },
   'os-device-authority': {

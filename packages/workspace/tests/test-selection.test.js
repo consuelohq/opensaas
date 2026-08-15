@@ -551,6 +551,16 @@ describe('test selection registry', () => {
       'packages/os/manifests/generated/core.manifest.json',
       '--changed-file',
       'packages/os/tools/decision-engine/handler.ts',
+      '--changed-file',
+      'packages/os/cloudflare/workspace-edge/src/semantic-embedding-gateway.ts',
+      '--changed-file',
+      'packages/os/cloudflare/workspace-edge/wrangler.toml',
+      '--changed-file',
+      'packages/os/scripts/lib/index/embedding-gateway.js',
+      '--changed-file',
+      'packages/os/tests/explore-runtime-routing.test.ts',
+      '--changed-file',
+      'packages/os/tests/semantic-embedding-edge-gateway.test.ts',
       '--json',
     ]);
     const data = json(result);
