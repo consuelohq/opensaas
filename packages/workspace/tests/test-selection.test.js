@@ -873,6 +873,30 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes gateway security and Caddy handoff changes through focused contracts instead of the broad OS package suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/security-gateway.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts',
+      '--changed-file',
+      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-gateway-security-caddy-handoff',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'OS gateway security and Caddy contracts',
+      'OS gateway security syntax contracts',
+    ]);
+  });
+
   it('routes lifecycle updater changes through the focused universal handoff contracts', () => {
     const data = json(run([
       'check',
