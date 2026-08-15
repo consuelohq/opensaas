@@ -1,0 +1,19 @@
+{
+  "files": [
+    ".task/dialer-algorithm/d2-scientific-predictive-learning-persistence/workpad.md",
+    ".task/dialer-algorithm/d3-canonical-predictive-runtime-cutover/workpad.md",
+    "packages/dialer-server/src/lab/local-dialer-lab.ts",
+    "packages/dialer-server/src/learning/postgres-predictive-model-store.contract.test.ts",
+    "packages/dialer-server/src/runtime/lead-connector-learning.ts",
+    "packages/dialer-server/src/runtime/predictive-runtime-cutover.test.ts",
+    "packages/dialer-server/src/runtime/predictive-target-ranking.ts",
+    "packages/dialer-server/src/runtime/railway.test.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer/MODEL.md",
+    "packages/dialer/src/application/start-dialer-call.ts",
+    "packages/dialer/src/errors/dialer-errors.ts",
+    "packages/dialer/src/ports/dialer-call-start.ts",
+    "packages/dialer/src/services/predictive-selection-model.ts"
+  ],
+  "updatedAt": "2026-08-15T04:57:27.942Z"
+}

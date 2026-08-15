@@ -107,11 +107,25 @@ const createUnlearnedPredictiveDatabase = (): LeadConnectorDatabase => ({
         ] as T[],
       };
     }
+    if (text.includes('FROM dialer_learning_observations')) {
+      return { rows: [] as T[] };
+    }
+    if (text.includes('FROM dialer_workspace_settings')) {
+      return {
+        rows: [
+          {
+            avg_deal_value: '100',
+            avg_close_rate: '1',
+            cost_per_attempt: '0.03',
+          },
+        ] as T[],
+      };
+    }
     return { rows: [] as T[] };
   },
 });
 
-const createLeadConnectorLearnedDatabase = (): LeadConnectorDatabase => ({
+const createCanonicalLearnedDatabase = (): LeadConnectorDatabase => ({
   query: async <T>(text: string) => {
     if (text.includes('FROM contact_attempt_ledger')) {
       return {
@@ -129,11 +143,45 @@ const createLeadConnectorLearnedDatabase = (): LeadConnectorDatabase => ({
         ] as T[],
       };
     }
-    if (text.includes('FROM consuelo_lead_connector_call_outcomes')) {
+    if (text.includes('FROM dialer_learning_observations')) {
+      if (
+        text.includes('local_hour') &&
+        text.includes('GROUP BY attempt_number, local_hour, local_day_of_week')
+      ) {
+        return {
+          rows: [
+            {
+              attempt_number: 1,
+              local_hour: 10,
+              local_day_of_week: 1,
+              successes: 10,
+              trials: 100,
+            },
+            {
+              attempt_number: 2,
+              local_hour: 10,
+              local_day_of_week: 1,
+              successes: 80,
+              trials: 100,
+            },
+          ] as T[],
+        };
+      }
       return {
         rows: [
-          { attempt_number: 1, answer_rate: 0.1, sample_size: 20 },
-          { attempt_number: 2, answer_rate: 0.8, sample_size: 20 },
+          { attempt_number: 1, successes: 10, trials: 100 },
+          { attempt_number: 2, successes: 80, trials: 100 },
+        ] as T[],
+      };
+    }
+    if (text.includes('FROM dialer_workspace_settings')) {
+      return {
+        rows: [
+          {
+            avg_deal_value: '100',
+            avg_close_rate: '1',
+            cost_per_attempt: '0.03',
+          },
         ] as T[],
       };
     }
@@ -375,11 +423,11 @@ describe('Railway dialer-server runtime composition', () => {
     });
   });
 
-  it('ranks predictive targets from LeadConnector learned outcomes without Twenty model rows', async () => {
+  it('ranks predictive targets from canonical observations without Twenty model rows', async () => {
     const redis = new MemoryRedis();
     const layers = await createRailwayDialerApplicationLayers(environment, {
       redis,
-      database: createLeadConnectorLearnedDatabase(),
+      database: createCanonicalLearnedDatabase(),
     });
     const application = createEffectDialerApplication(layers);
     const result = await Effect.runPromise(

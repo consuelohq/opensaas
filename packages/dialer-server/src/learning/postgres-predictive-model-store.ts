@@ -33,16 +33,37 @@ type EconomicsRow = {
 };
 
 const ATTEMPT_PROBABILITIES_SQL = `
-  WITH ordered AS (
+  WITH prepared AS (
+    SELECT
+      observations.workspace_id,
+      observations.contact_id,
+      observations.segment_id,
+      observations.outcome_class,
+      observations.attempted_at,
+      observations.group_id,
+      observations.position,
+      ledger.attempts_total,
+      COUNT(*) OVER (
+        PARTITION BY observations.workspace_id, observations.contact_id
+      )::integer AS canonical_attempt_count
+    FROM dialer_learning_observations AS observations
+    LEFT JOIN contact_attempt_ledger AS ledger
+      ON ledger.workspace_id = observations.workspace_id
+     AND ledger.contact_id = observations.contact_id
+    WHERE observations.workspace_id = $1
+  ),
+  ordered AS (
     SELECT
       segment_id,
       outcome_class,
-      ROW_NUMBER() OVER (
-        PARTITION BY workspace_id, contact_id
-        ORDER BY attempted_at, group_id, position
+      (
+        GREATEST(COALESCE(attempts_total, canonical_attempt_count) - canonical_attempt_count, 0)
+        + ROW_NUMBER() OVER (
+            PARTITION BY workspace_id, contact_id
+            ORDER BY attempted_at, group_id, position
+          )
       )::integer AS attempt_number
-    FROM dialer_learning_observations
-    WHERE workspace_id = $1
+    FROM prepared
   )
   SELECT
     attempt_number,
@@ -60,18 +81,41 @@ const ATTEMPT_PROBABILITIES_SQL = `
 `;
 
 const HAZARD_ESTIMATES_SQL = `
-  WITH ordered AS (
+  WITH prepared AS (
+    SELECT
+      observations.workspace_id,
+      observations.contact_id,
+      observations.segment_id,
+      observations.outcome_class,
+      observations.local_hour,
+      observations.local_day_of_week,
+      observations.attempted_at,
+      observations.group_id,
+      observations.position,
+      ledger.attempts_total,
+      COUNT(*) OVER (
+        PARTITION BY observations.workspace_id, observations.contact_id
+      )::integer AS canonical_attempt_count
+    FROM dialer_learning_observations AS observations
+    LEFT JOIN contact_attempt_ledger AS ledger
+      ON ledger.workspace_id = observations.workspace_id
+     AND ledger.contact_id = observations.contact_id
+    WHERE observations.workspace_id = $1
+  ),
+  ordered AS (
     SELECT
       segment_id,
       outcome_class,
       local_hour,
       local_day_of_week,
-      ROW_NUMBER() OVER (
-        PARTITION BY workspace_id, contact_id
-        ORDER BY attempted_at, group_id, position
+      (
+        GREATEST(COALESCE(attempts_total, canonical_attempt_count) - canonical_attempt_count, 0)
+        + ROW_NUMBER() OVER (
+            PARTITION BY workspace_id, contact_id
+            ORDER BY attempted_at, group_id, position
+          )
       )::integer AS attempt_number
-    FROM dialer_learning_observations
-    WHERE workspace_id = $1
+    FROM prepared
   )
   SELECT
     attempt_number,

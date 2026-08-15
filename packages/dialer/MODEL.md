@@ -6,9 +6,9 @@
 
 The current predictive model is an uncertainty-aware contextual ranking heuristic over observational Bernoulli response data. It is not a causal model, a calibrated lifetime-value model, or a formally derived Whittle index.
 
-The legacy `WhittleIndexService` remains only for the pre-D3 compatibility runtime. Its historical score combines expected reward, cost, urgency, and an ad-hoc exploration term; it should not be cited as a Whittle index because no restless-bandit state transition model, subsidy problem, or indexability proof was specified.
+The legacy `WhittleIndexService` remains only on compatibility surfaces outside the standalone dialer-server predictive runtime. Its historical score combines expected reward, cost, urgency, and an ad-hoc exploration term; it should not be cited as a Whittle index because no restless-bandit state transition model, subsidy problem, or indexability proof was specified. D3 removes it from the standalone runtime decision path entirely.
 
-D2 replaces that heuristic inside the provider-neutral predictive path with explicit statistical evidence:
+D2 established the provider-neutral predictive path with explicit statistical evidence:
 
 - Bernoulli sufficient statistics: successes and uncensored trials;
 - 95% Wilson score intervals for finite-sample uncertainty;
@@ -54,11 +54,13 @@ Censored rows still consume chronological attempt order because the call was att
 
 ## Attempt ordering and local time
 
-Attempt number is derived from canonical event order with:
+Canonical event order is derived with:
 
 `ROW_NUMBER() OVER (PARTITION BY workspace_id, contact_id ORDER BY attempted_at, group_id, position)`
 
-The ordinal is computed before censored rows are excluded from Bernoulli aggregation. Callback arrival order therefore cannot change attempt number.
+The ordinal is computed before censored rows are excluded from Bernoulli aggregation. Callback arrival order therefore cannot change event order.
+
+D3 also preserves the lifetime attempt ordinal for contacts that already had attempts before canonical D2 observations began. For each contact, the model computes an attempt offset as `max(attempts_total - canonical_attempt_count, 0)` from the idempotent attempt ledger, then adds the chronological canonical row number. This uses only attempt counts, not legacy response labels: if a contact has four completed lifetime attempts and two canonical observations, those canonical events are modeled as attempts 3 and 4. This relies on D2's atomic canonical-observation gate: successful post-D2 telemetry increments the attempt ledger and writes the canonical row together, so their count difference remains the pre-canonical baseline rather than drifting with successful new observations.
 
 Historical local hour/day are persisted when the observation is written. Aggregation does not recompute old events from the workspace's current timezone setting, which avoids retroactively moving observations across bins after a configuration change and preserves DST-local bins.
 
@@ -81,15 +83,23 @@ Workspace economics are explicit model inputs:
 - `valuePerConnection = avgDealValue * avgCloseRate`;
 - `costPerAttempt` is the marginal attempt cost.
 
-The Postgres store fails if configured economic values are missing or invalid rather than inventing model economics. D3 may define product-level fallback policy outside the statistical store if required.
+The Postgres store fails if configured economic values are missing or invalid rather than inventing model economics. D3 handles that infrastructure/configuration failure outside the statistical store by preserving the original FIFO candidate order and emitting `dialer.predictive.fifo_fallback`. Missing canonical response observations with otherwise valid economics are different: the model remains deterministic and FIFO without treating absence of evidence as an error or a zero-probability failure.
 
 ## Historical retry intent
 
 The April 11, 2026 stopping/timing integration explicitly separated stopping as **whether** to retry and timing as **when** to retry. A later review rewrite removed the concrete timing schedule while retaining a timing-model field. The current core preserves that durable separation without reviving old hard-coded five-minute or 30-second delays.
 
-## Migration and runtime boundary
+## D3 runtime boundary
 
-D2 adds canonical persistence and dual-writes new telemetry, but it does not cut production selection over to the new model. The existing pre-D3 ranking path remains operational for compatibility until D3 proves runtime cutover.
+D3 cuts the standalone dialer-server predictive-selection runtime to `PredictiveSelectionModel` backed by the canonical Postgres store. The runtime adapter reads `contact_attempt_ledger` only for per-contact attempt count and last-attempt state, while all response-rate, timing, uncertainty, stopping, and economic model evidence comes from `dialer_learning_observations` and `dialer_workspace_settings`.
+
+Standalone queue identity is the model segment identity. The Railway runtime passes the resolved queue ID as `segmentId`, matching canonical telemetry's `campaignSegment || queueId` fallback semantics. This keeps training and selection scoped to the same population without importing provider entities into the core model.
+
+`consuelo_lead_connector_call_outcomes` remains a temporary compatibility mirror for legacy consumers and migration safety, but it is not a standalone predictive decision input. The isolated D3 service proof deliberately gives that compatibility table the opposite preference from canonical observations and verifies that runtime ranking follows canonical evidence.
+
+Canonical stopping is applied before fanout. If every queue candidate is economically suppressed, normal call-start capacity handling returns `NO_CALLABLE_TARGETS` before mock or provider initiation. If canonical persistence or configured economics are unavailable, runtime fails open to the original FIFO candidate order and emits the explicit fallback event rather than silently substituting a different statistical model.
+
+D3 does not add a retry scheduler. `RetryDecisionModel` continues to define provider-neutral whether/when evidence, but the standalone runtime does not yet own an explicit scheduling surface for `preferredWindow`; adding one would be a separate product/runtime change rather than part of the model-source cutover.
 
 There is intentionally no backfill from `consuelo_lead_connector_call_outcomes` into canonical observations. Legacy rows do not contain enough information to distinguish true non-response from winner-race censoring, so backfilling them would manufacture biased training labels.
 
