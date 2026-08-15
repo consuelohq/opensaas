@@ -1,8 +1,12 @@
-name: CI Utils
+name: Legacy Twenty / Utils
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'packages/twenty-*/**'
+      - 'packages/create-twenty-app/**'
+      - '.github/workflows/ci-utils.yaml'
 
 permissions:
   contents: read

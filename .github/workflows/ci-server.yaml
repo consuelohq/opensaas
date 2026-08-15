@@ -1,9 +1,15 @@
-name: CI Server
+name: Legacy Twenty / Server
 
 on:
   pull_request:
-
-  merge_group:
+    paths:
+      - 'packages/twenty-server/**'
+      - 'packages/twenty-front/src/generated/**'
+      - 'packages/twenty-front/src/generated-metadata/**'
+      - 'packages/twenty-shared/**'
+      - '.github/workflows/ci-server.yaml'
+      - 'packages/workspace/scripts/ci/run-changed-server-task.mjs'
+      - 'packages/workspace/tests/run-changed-server-task.test.mjs'
 
 permissions:
   contents: read

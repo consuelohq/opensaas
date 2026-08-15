@@ -1,9 +1,20 @@
-name: CI Front and E2E
+name: Legacy Twenty / Front and E2E
 
 on:
   pull_request:
-
-  merge_group:
+    paths:
+      - 'packages/twenty-front/**'
+      - 'packages/twenty-server/**'
+      - 'packages/twenty-shared/**'
+      - 'packages/twenty-ui/**'
+      - 'packages/twenty-sdk/**'
+      - 'packages/twenty-e2e-testing/**'
+      - 'playwright.config.ts'
+      - '.github/workflows/ci-front.yaml'
+      - 'packages/workspace/scripts/ci/lint-changed-frontend-files.mjs'
+      - 'packages/workspace/scripts/ci/run-changed-frontend-task.mjs'
+      - 'packages/workspace/tests/lint-changed-frontend-files.test.mjs'
+      - 'packages/workspace/tests/run-changed-frontend-task.test.mjs'
 
 permissions:
   contents: read
