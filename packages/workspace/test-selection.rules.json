@@ -554,6 +554,47 @@
       "reason": "Launcher onboarding copy-interaction changes must prove generated UI behavior, Sites materialization, and Astro source validity without selecting the historically red unrelated OS package suite."
     },
     {
+      "id": "os-managed-cloud-checkout-observability",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts",
+        "packages/os/scripts/lib/device-authority-release-readiness.ts",
+        "packages/os/tests/managed-cloud-checkout-observability.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS managed cloud checkout observability contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "vitest",
+            "run",
+            "tests/managed-cloud-checkout-observability.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/os-web-auth-contract.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-universal-login.test.ts",
+            "tests/security-scan.test.ts"
+          ]
+        },
+        {
+          "name": "OS managed cloud checkout observability syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Managed-cloud checkout, Stripe synthetic testing, PostHog funnel instrumentation, Sentry error reporting, and checkout security changes must prove focused billing/auth/release contracts without selecting the historically noisy unrelated OS package suite."
+    },
+    {
       "id": "os-cloud-first-auth-onboarding",
       "critical": true,
       "exclusive": true,

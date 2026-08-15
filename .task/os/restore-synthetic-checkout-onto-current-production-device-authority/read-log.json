@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/tests/managed-cloud-checkout-observability.test.ts",
+    "packages/os/tests/os-device-authority-architecture.test.ts",
+    "packages/os/tests/os-universal-login.test.ts",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-15T04:55:28.221Z"
+}

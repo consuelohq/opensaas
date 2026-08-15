@@ -86,6 +86,11 @@ describe('OS device authority architecture', () => {
       { method: 'POST', path: '/auth/handoff', trust: 'authority-session' },
       { method: 'GET', path: '/auth/consume', trust: 'public' },
       { method: 'POST', path: '/auth/logout', trust: 'workspace-session' },
+      { method: 'GET', path: '/auth/synthetic/checkout', trust: 'authority-session' },
+      { method: 'POST', path: '/auth/synthetic/checkout/start', trust: 'authority-session' },
+      { method: 'GET', path: '/auth/synthetic/checkout/result', trust: 'authority-session' },
+      { method: 'POST', path: '/webhooks/stripe', trust: 'webhook-signature' },
+      { method: 'POST', path: '/webhooks/stripe-synthetic', trust: 'webhook-signature' },
       {
         method: 'POST',
         path: '/internal/auth/session/validate',
