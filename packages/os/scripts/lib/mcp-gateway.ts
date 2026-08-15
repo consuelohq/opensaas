@@ -71,7 +71,7 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
   {
     name: 'call',
     title: 'Call an OS tool',
-    description: 'Run one typed Consuelo OS tool through the authenticated facade described by get_steering.',
+    description: 'Run one typed Consuelo OS tool through the authenticated facade described by get_steering. To target a specific workspace node, pass top-level nodeId from routing.availableNodes; node names are routing targets, not tools.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -100,7 +100,7 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
           type: 'string',
           minLength: 1,
           maxLength: 160,
-          description: 'Optional workspace node target. Omit to use the workspace default node.',
+          description: 'Optional top-level workspace node target from get_steering routing.availableNodes. Omit to use the workspace default node.',
         },
         timeout: {
           type: 'integer',

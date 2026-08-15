@@ -90,16 +90,43 @@ describe('lifecycle restart parity', () => {
     ]);
   });
 
-  it('reconciles preserved Caddy topology before lifecycle restart', () => {
+  it('reconciles preserved Caddy topology from the activated runtime before lifecycle restart', async () => {
     const lifecycle = source('scripts/lifecycle.ts');
     const service = source('scripts/lib/lifecycle/service.ts');
+    const activeRuntimeRoot = resolve(osRoot, 'runtime-current');
+    const home = resolve(osRoot, '.tmp-lifecycle-home');
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const controllerInput = {
+      osRoot,
+      activeRuntimeRoot,
+      home,
+      platform: 'darwin' as const,
+      run: async (command: string, args: string[]) => {
+        calls.push({ command, args });
+        return { exitCode: 0, stdout: '{"ok":true,"changed":false}\n', stderr: '' };
+      },
+    };
+    const controller = createReloadServiceController(controllerInput);
 
-    expect(lifecycle).toContain('nodeHome: lifecyclePaths.nodeDir');
-    expect(service).toContain('reconcileCaddyWorkerPoolConfig');
-    expect(service).toContain("'com.consuelo.caddy'");
-    expect(service).toContain("const caddy = await run('launchctl'");
-    expect(service).toContain("'kickstart',");
-    expect(service).toContain("'-k',");
+    await controller.restart({ waitForCompletion: true });
+
+    expect(calls).toEqual([
+      {
+        command: process.execPath,
+        args: [
+          resolve(activeRuntimeRoot, 'scripts', 'migrations', 'reconcile-caddy-worker-pool.ts'),
+          home,
+        ],
+      },
+      {
+        command: process.execPath,
+        args: [resolve(activeRuntimeRoot, 'scripts', 'consuelo-reload.js'), 'restart-now'],
+      },
+    ]);
+    expect(lifecycle).toContain('activeRuntimeRoot: lifecyclePaths.currentLink');
+    expect(service).not.toContain("import { reconcileCaddyWorkerPoolConfig } from '../caddy-worker-pool-reconciliation'");
+    expect(service).toContain("'migrations',");
+    expect(service).toContain("'reconcile-caddy-worker-pool.ts',");
     const workflow = source('../../.github/workflows/consuelo-os-runtime-publish.yaml');
     expect(workflow).toContain(
       '--migration "2026-08-13-reconcile-caddy-worker-pool:scripts/migrations/reconcile-caddy-worker-pool.ts"',
