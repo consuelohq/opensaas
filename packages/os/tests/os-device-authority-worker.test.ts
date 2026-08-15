@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
-import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
+import {
+  createMemoryDeviceGrantStore,
+  DurableStore,
+} from '../cloudflare/os-device-authority/src/stores';
+import type { StorageLike } from '../cloudflare/os-device-authority/src/types';
 import { createMemoryInstallControlPlaneRepository } from '../scripts/lib/install-control-plane';
 import { createConnectorOriginHostname } from '../scripts/lib/connector-origin-hostname';
 import { deriveWorkspaceEdgeNodeSecret } from '../scripts/lib/workspace-edge-node-auth';
@@ -72,6 +76,21 @@ function form(data: Record<string, string>): {
   return {
     body: new URLSearchParams(data).toString(),
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  };
+}
+
+function createSharedDurableStorage(): StorageLike {
+  const values = new Map<string, unknown>();
+  return {
+    async get<T>(key: string) {
+      return values.get(key) as T | undefined;
+    },
+    async put<T>(key: string, value: T) {
+      values.set(key, value);
+    },
+    async delete(key: string) {
+      return values.delete(key);
+    },
   };
 }
 
@@ -370,6 +389,91 @@ describe('os device authority worker', () => {
         origin +
         '/.well-known/oauth-protected-resource"',
     );
+  });
+
+  it('should route MCP provider errors through a durable Google callback boundary', async () => {
+    const storage = createSharedDurableStorage();
+    const createHandler = () =>
+      createOsDeviceAuthorityHandler({
+        store: new DurableStore(storage),
+        origin,
+        now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+        googleOAuthClientId: 'test-google-client-id',
+        googleOAuthClientSecret: 'test-google-client-secret',
+      });
+    const authorize = await createHandler()(
+      new Request(
+        `${origin}/oauth/authorize?${new URLSearchParams({
+          response_type: 'code',
+          client_id: 'chatgpt-consuelo-os',
+          redirect_uri: 'https://chatgpt.com/connector/oauth/callback',
+          scope: 'mcp:read',
+          resource: origin + '/mcp',
+          state: 'chatgpt-state',
+          code_challenge: 'durable-boundary-challenge',
+          code_challenge_method: 'S256',
+        })}`,
+      ),
+    );
+    const state = new URL(authorize.headers.get('location') ?? '').searchParams.get(
+      'state',
+    );
+    expect(state).toMatch(/^mcp_oauth_state_/);
+    await expect(
+      new DurableStore(storage).byMcpOAuthState(state ?? ''),
+    ).resolves.toMatchObject({ requestedState: 'chatgpt-state' });
+
+    const callback = await createHandler()(
+      new Request(
+        `${origin}/login/google/callback?error=access_denied&state=${encodeURIComponent(state ?? '')}`,
+      ),
+    );
+
+    expect(callback.status).toBe(302);
+    const callbackUrl = new URL(callback.headers.get('location') ?? '');
+    expect(callbackUrl.origin + callbackUrl.pathname).toBe(
+      'https://chatgpt.com/connector/oauth/callback',
+    );
+    expect(callbackUrl.searchParams.get('error')).toBe('access_denied');
+    expect(callbackUrl.searchParams.get('state')).toBe('chatgpt-state');
+    await expect(
+      new DurableStore(storage).byMcpOAuthState(state ?? ''),
+    ).resolves.toBeUndefined();
+  });
+
+  it('should route web provider errors through a durable Google callback boundary', async () => {
+    const storage = createSharedDurableStorage();
+    const createHandler = () =>
+      createOsDeviceAuthorityHandler({
+        store: new DurableStore(storage),
+        origin,
+        now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+        googleOAuthClientId: 'test-google-client-id',
+        googleOAuthClientSecret: 'test-google-client-secret',
+      });
+    const start = await createHandler()(
+      new Request(`${origin}/login/google/start?purpose=web&intent=login&return_to=%2F`),
+    );
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get(
+      'state',
+    );
+    expect(state).toMatch(/^web_state_/);
+    await expect(
+      new DurableStore(storage).byWebOAuthState(state ?? ''),
+    ).resolves.toMatchObject({ intent: 'login', returnPath: '/' });
+
+    const callback = await createHandler()(
+      new Request(
+        `${origin}/login/google/callback?error=access_denied&state=${encodeURIComponent(state ?? '')}`,
+      ),
+    );
+
+    expect(callback.status).toBe(400);
+    expect(callback.headers.get('content-type')).toContain('application/json');
+    await expect(callback.json()).resolves.toEqual({ error: 'invalid_login' });
+    await expect(
+      new DurableStore(storage).byWebOAuthState(state ?? ''),
+    ).resolves.toBeUndefined();
   });
 
   it('should deny central MCP OAuth when the Google account has no workspace membership', async () => {

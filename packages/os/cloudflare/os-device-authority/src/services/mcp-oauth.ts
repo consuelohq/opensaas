@@ -352,8 +352,18 @@ export async function finishMcpOAuthGoogleCallback(input: {
   const url = new URL(input.request.url);
   const stateValue = url.searchParams.get('state') ?? '';
   const authCode = url.searchParams.get('code') ?? '';
-  const oauthState = await input.store.byMcpOAuthState(stateValue);
-  if (!stateValue || !authCode || !oauthState)
+  const providerError = url.searchParams.get('error') ?? '';
+  let oauthState;
+  try {
+    oauthState = await input.store.byMcpOAuthState(stateValue);
+  } catch {
+    return invalidOauthRequest(
+      'temporarily_unavailable',
+      'OAuth session storage is temporarily unavailable.',
+      503,
+    );
+  }
+  if (!stateValue || !oauthState)
     return invalidOauthRequest(
       'invalid_request',
       'OAuth session was not found.',
@@ -364,6 +374,24 @@ export async function finishMcpOAuthGoogleCallback(input: {
       'OAuth session expired.',
       410,
     );
+  if (providerError || !authCode) {
+    await input.store.delMcpOAuthState(stateValue);
+    const error = providerError
+      ? providerError === 'server_error' || providerError === 'temporarily_unavailable'
+        ? 'temporarily_unavailable'
+        : 'access_denied'
+      : 'invalid_request';
+    const errorDescription = providerError
+      ? error === 'temporarily_unavailable'
+        ? 'Google sign-in is temporarily unavailable.'
+        : 'Google approval was not completed.'
+      : 'Google authorization code was not returned.';
+    return redirectWithParams(oauthState.redirectUri, {
+      error,
+      error_description: errorDescription,
+      ...(oauthState.requestedState ? { state: oauthState.requestedState } : {}),
+    });
+  }
   let identity: { sub: string; email: string; emailVerified: boolean };
   try {
     identity = await googleIdentity({
