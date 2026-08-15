@@ -131,6 +131,7 @@ async function handleGoogleOAuthRequest(
       if (authCode && mcpOAuthState) {
         return await finishMcpOAuthGoogleCallback({
           request,
+          runtime,
           store: input.store,
           origin,
           googleClientId: google.clientId,

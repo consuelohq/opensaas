@@ -9,6 +9,7 @@ import {
 } from '../constants';
 import { json } from '../http';
 import type {
+  DeviceAuthorityRuntime,
   McpOAuthAccessToken,
   McpOAuthCode,
   McpOAuthRefreshToken,
@@ -34,6 +35,11 @@ import {
   googleIdentity,
   redirectUri,
 } from './google-oauth';
+import {
+  CloudFirstOnboardingError,
+  resolveCanonicalWebUser,
+  resolveWebOperatingAccountId,
+} from './cloud-first-onboarding';
 
 const CHATGPT_CALLBACK_ID_PATTERN = /^[A-Za-z0-9_-]{1,160}$/u;
 
@@ -334,6 +340,7 @@ export async function startMcpOAuthAuthorization(input: {
 
 export async function finishMcpOAuthGoogleCallback(input: {
   request: Request;
+  runtime: DeviceAuthorityRuntime;
   store: Store;
   origin: string;
   googleClientId: string;
@@ -374,7 +381,32 @@ export async function finishMcpOAuthGoogleCallback(input: {
       502,
     );
   }
-  const accountId = 'google:' + identity.sub;
+  let accountId: string;
+  try {
+    const resolved = await resolveCanonicalWebUser({
+      runtime: input.runtime,
+      email: identity.email,
+      intent: 'login',
+    });
+    accountId = await resolveWebOperatingAccountId({
+      runtime: input.runtime,
+      user: resolved.user,
+      googleSubject: identity.sub,
+    });
+  } catch (error: unknown) {
+    if (error instanceof CloudFirstOnboardingError && error.status < 500) {
+      return invalidOauthRequest(
+        'access_denied',
+        'This Google account is not connected to Consuelo OS.',
+        403,
+      );
+    }
+    return invalidOauthRequest(
+      'temporarily_unavailable',
+      'Consuelo identity is temporarily unavailable.',
+      503,
+    );
+  }
   const workspaceResolution = await resolveMcpOAuthWorkspaceHost({
     store: input.store,
     accountId,
