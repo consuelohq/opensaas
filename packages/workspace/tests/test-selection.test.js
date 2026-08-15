@@ -929,6 +929,10 @@ describe('test selection registry', () => {
       'check',
       '--changed-file',
       'packages/os/scripts/lifecycle.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/lifecycle/service.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-restart-contract.test.ts',
       '--json',
     ]));
 
@@ -944,6 +948,12 @@ describe('test selection registry', () => {
         'OS lifecycle syntax contracts',
       ]),
     );
+    const lifecycleSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS lifecycle update handoff contracts',
+    );
+    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
+      'packages/os/tests/lifecycle-restart-contract.test.ts',
+    ]));
   });
 
   it('routes native macOS menu changes through focused Mac contracts', () => {
