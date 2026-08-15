@@ -6,19 +6,22 @@ export type WorkspaceSurfaceId =
   | 'secrets'
   | 'documentation';
 
-type WorkspaceRouteGroup = 'Observe' | 'Configure' | 'Guides' | null;
-
-const WORKSPACE_ROUTES: Array<{
-  id: WorkspaceSurfaceId;
+type WorkspaceRouteGroup = 'Observe' | 'Configure' | 'Connect' | 'Guides' | null;
+type WorkspaceRouteId = WorkspaceSurfaceId | 'artifacts' | 'diffs' | 'chatgpt-connect' | 'claude-connect';
+type WorkspaceRoute = {
+  id: WorkspaceRouteId;
   label: string;
   href: string;
   group: WorkspaceRouteGroup;
   description: string;
-}> = [
+  external?: boolean;
+};
+
+const WORKSPACE_ROUTES: WorkspaceRoute[] = [
   {
     id: 'overview',
-    label: 'Overview',
-    href: '/',
+    label: 'Home',
+    href: '/configuration',
     group: null,
     description: 'Workspace health and operating context.',
   },
@@ -28,6 +31,20 @@ const WORKSPACE_ROUTES: Array<{
     href: '/tracing',
     group: 'Observe',
     description: 'Inspect live traces and tool execution.',
+  },
+  {
+    id: 'artifacts',
+    label: 'Artifacts',
+    href: '/artifacts',
+    group: 'Observe',
+    description: 'Browse agent work and generated outputs.',
+  },
+  {
+    id: 'diffs',
+    label: 'Code',
+    href: '/diffs',
+    group: 'Observe',
+    description: 'Review code diffs and changes.',
   },
   {
     id: 'nodes',
@@ -51,6 +68,22 @@ const WORKSPACE_ROUTES: Array<{
     description: 'Manage credential bindings without revealing values.',
   },
   {
+    id: 'chatgpt-connect',
+    label: 'ChatGPT',
+    href: 'https://chatgpt.com/plugins#settings/Connectors?create-connector=true&redirectAfter=%2Fplugins',
+    group: 'Connect',
+    description: 'Add Consuelo as a custom MCP connector.',
+    external: true,
+  },
+  {
+    id: 'claude-connect',
+    label: 'Claude',
+    href: 'https://claude.ai/customize/connectors',
+    group: 'Connect',
+    description: 'Add Consuelo as a custom MCP connector.',
+    external: true,
+  },
+  {
     id: 'documentation',
     label: 'Documentation',
     href: '/docs',
@@ -69,15 +102,18 @@ function escapeHtml(value: string): string {
 }
 
 function renderRouteOption(
-  route: (typeof WORKSPACE_ROUTES)[number],
+  route: WorkspaceRoute,
   active: WorkspaceSurfaceId,
   primary = false,
 ): string {
   const current = route.id === active ? ' aria-current="page"' : '';
   const className = primary
     ? 'workspace-route-option workspace-route-primary'
-    : 'workspace-route-option';
-  return `<a class="${className}" role="menuitem"${current} href="${route.href}"><span>${escapeHtml(route.label)}</span><small>${escapeHtml(route.description)}</small></a>`;
+    : route.group === 'Connect'
+      ? 'workspace-route-option workspace-route-card'
+      : 'workspace-route-option';
+  const external = route.external ? ' target="_blank" rel="noopener noreferrer"' : '';
+  return `<a class="${className}" role="menuitem"${current}${external} href="${escapeHtml(route.href)}"><span>${escapeHtml(route.label)}</span><small>${escapeHtml(route.description)}</small></a>`;
 }
 
 function renderRouteGroup(
@@ -88,7 +124,7 @@ function renderRouteGroup(
     .filter((route) => route.group === group)
     .map((route) => renderRouteOption(route, active))
     .join('');
-  return `<section class="workspace-route-group"><p>${group}</p>${links}</section>`;
+  return `<section class="workspace-route-group" data-route-group="${group}"><p>${group}</p>${links}</section>`;
 }
 
 export function renderWorkspaceChromeBar(
@@ -99,10 +135,10 @@ export function renderWorkspaceChromeBar(
   const menuShortcut = traceCompat ? '' : ' data-workspace-menu-shortcut';
   const fullscreenControl = traceCompat ? '' : ' data-workspace-fullscreen';
   const overviewRoute = WORKSPACE_ROUTES.find((route) => route.id === 'overview');
-  if (!overviewRoute) throw new Error('Workspace Overview route is required.');
+  if (!overviewRoute) throw new Error('Workspace Home route is required.');
   return `<div class="trxChrome" data-workspace-chrome>
     <div class="trxDots" aria-label="Window controls">
-      <button class="trxDot red" type="button" data-window-control="close" data-close-traces data-workspace-home aria-label="Go to Overview"></button>
+      <button class="trxDot red" type="button" data-window-control="close" data-close-traces data-workspace-home aria-label="Go to Home"></button>
       <button class="trxDot yellow" type="button" data-window-control="sidebar"${menuShortcut} aria-label="${traceCompat ? 'Toggle trace sidebar' : 'Open workspace routes'}"></button>
       <button class="trxDot green" type="button" data-window-control="fullscreen"${fullscreenControl} aria-label="Toggle fullscreen"></button>
     </div>
@@ -114,6 +150,7 @@ export function renderWorkspaceChromeBar(
         <div class="workspace-route-primary-slot">${renderRouteOption(overviewRoute, active, true)}</div>
         ${renderRouteGroup('Observe', active)}
         ${renderRouteGroup('Configure', active)}
+        ${renderRouteGroup('Connect', active)}
         ${renderRouteGroup('Guides', active)}
       </div>
     </div>
@@ -166,7 +203,7 @@ export function workspaceRouteSwitcherStyles(): string {
     .workspace-route-control { position: relative; z-index: 90; min-width: 0; }
     .workspace-route-trigger { appearance: none; border: 0; background: transparent; color: inherit; font: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 30px; padding: 2px 9px; border-radius: 7px; cursor: pointer; }
     .workspace-route-trigger:hover, .workspace-route-trigger[aria-expanded="true"] { background: var(--workspace-menu-hover); }
-    .workspace-route-trigger:focus-visible { outline: 1px solid var(--workspace-menu-accent); outline-offset: 2px; }
+    .workspace-route-trigger:focus-visible { outline: none; background: var(--workspace-menu-current); color: var(--workspace-menu-accent); box-shadow: inset 0 -2px 0 var(--workspace-menu-accent); }
     .workspace-route-chevron { font-size: 12px; transform: translateY(-1px); }
     .workspace-route-menu { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); width: min(360px, calc(100vw - 28px)); max-height: min(540px, calc(100vh - 72px)); overflow: auto; padding: 8px; border: 1px solid var(--workspace-menu-border); border-radius: 13px; background: var(--workspace-menu-bg); color: var(--workspace-menu-ink); box-shadow: var(--workspace-menu-shadow); backdrop-filter: blur(18px); text-align: left; }
     .workspace-route-primary-slot { padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--workspace-menu-rule); }
@@ -179,6 +216,10 @@ export function workspaceRouteSwitcherStyles(): string {
     .workspace-route-option[aria-current="page"] { color: var(--workspace-menu-accent); background: var(--workspace-menu-current); }
     .workspace-route-option span { font: 13px/1.25 Georgia, "Times New Roman", serif; }
     .workspace-route-option small { color: var(--workspace-menu-muted); font: 10px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .workspace-route-group[data-route-group="Connect"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+    .workspace-route-group[data-route-group="Connect"] > p { grid-column: 1 / -1; }
+    .workspace-route-card { grid-template-columns: 1fr; gap: 5px; align-content: start; min-height: 72px; border: 1px solid var(--workspace-menu-rule); padding: 10px; }
+    .workspace-route-card span { font-size: 15px; }
     @media (max-width: 560px) {
       .workspace-route-menu { position: fixed; top: 52px; left: 50vw; right: auto; transform: translateX(-50%); width: min(360px, calc(100vw - 24px)); max-height: calc(100dvh - 64px); }
       .workspace-route-option { grid-template-columns: 70px minmax(0, 1fr); }
@@ -195,11 +236,83 @@ export function workspaceChromeClientScript(): string {
       const close = document.querySelector('button[data-close-traces]');
       const fullscreen = document.querySelector('[data-workspace-fullscreen]');
       const clock = document.querySelector('[data-workspace-clock]');
+      const TRACE_PREFETCH_KEY = 'consuelo:tracing-prefetch:v1';
+      const TRACE_PREFETCH_URL = '/gateway/traces/recent?direction=older&cursor=latest&limit=40&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
+      const TRACE_PREFETCH_MAX_BYTES = 250000;
+      const TRACE_PREFETCH_TTL_MS = 20000;
+      const warmedRoutes = new Set();
+      let tracePrefetchPromise = null;
+      const sameOriginRoute = (href) => {
+        try {
+          const url = new URL(href, window.location.href);
+          return url.origin === window.location.origin ? url.pathname + url.search + url.hash : null;
+        } catch {
+          return null;
+        }
+      };
+      const warmRoute = (href) => {
+        const route = sameOriginRoute(href);
+        if (!route || warmedRoutes.has(route) || route === window.location.pathname + window.location.search + window.location.hash) return;
+        warmedRoutes.add(route);
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = route;
+        link.as = 'document';
+        link.setAttribute('data-workspace-prefetch', '');
+        document.head.appendChild(link);
+      };
+      const warmTracingPreview = () => {
+        if (window.location.pathname === '/tracing') return Promise.resolve();
+        if (tracePrefetchPromise) return tracePrefetchPromise;
+        tracePrefetchPromise = fetch(TRACE_PREFETCH_URL, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { accept: 'application/json' },
+        }).then((response) => {
+          if (!response.ok) throw new Error('trace prefetch returned ' + response.status);
+          return response.json();
+        }).then((payload) => {
+          const savedAt = Date.now();
+          const encoded = JSON.stringify({ savedAt, payload });
+          if (encoded.length <= TRACE_PREFETCH_MAX_BYTES) {
+            sessionStorage.setItem(TRACE_PREFETCH_KEY, encoded);
+            window.setTimeout(() => {
+              try {
+                const raw = sessionStorage.getItem(TRACE_PREFETCH_KEY);
+                const cached = raw ? JSON.parse(raw) : null;
+                if (cached && Number(cached.savedAt || 0) === savedAt) sessionStorage.removeItem(TRACE_PREFETCH_KEY);
+              } catch {
+                try { sessionStorage.removeItem(TRACE_PREFETCH_KEY); } catch {}
+              }
+            }, TRACE_PREFETCH_TTL_MS);
+          }
+        }).catch(() => {
+          // Opportunistic only. Tracing still performs its normal live refresh.
+        }).finally(() => {
+          tracePrefetchPromise = null;
+        });
+        return tracePrefetchPromise;
+      };
+      const warmMenuRoutes = () => {
+        if (!(menu instanceof HTMLElement)) return;
+        menu.querySelectorAll('a[href]').forEach((link) => {
+          if (link instanceof HTMLAnchorElement) warmRoute(link.getAttribute('href') || '');
+        });
+        void warmTracingPreview();
+      };
+      const warmIntent = (event) => {
+        const target = event.target instanceof Element ? event.target.closest('a[href]') : null;
+        if (!(target instanceof HTMLAnchorElement) || !(menu instanceof HTMLElement) || !menu.contains(target)) return;
+        const href = target.getAttribute('href') || '';
+        warmRoute(href);
+        if (sameOriginRoute(href)?.startsWith('/tracing')) void warmTracingPreview();
+      };
       const setMenuOpen = (open) => {
         if (!(trigger instanceof HTMLButtonElement) || !(menu instanceof HTMLElement)) return;
         trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
         menu.hidden = !open;
         if (open) {
+          warmMenuRoutes();
           const current = menu.querySelector('[aria-current="page"]');
           const first = current || menu.querySelector('[role="menuitem"]');
           if (first instanceof HTMLElement) window.requestAnimationFrame(() => first.focus());
@@ -210,6 +323,9 @@ export function workspaceChromeClientScript(): string {
         setMenuOpen(trigger.getAttribute('aria-expanded') !== 'true');
       };
       trigger?.addEventListener('click', toggleMenu);
+      menu?.addEventListener('pointerover', warmIntent);
+      menu?.addEventListener('focusin', warmIntent);
+      menu?.addEventListener('touchstart', warmIntent, { passive: true });
       shortcut?.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -245,6 +361,9 @@ export function workspaceChromeClientScript(): string {
       };
       updateClock();
       window.setInterval(updateClock, 30_000);
+      const scheduleWarmHome = () => warmRoute('/configuration');
+      if ('requestIdleCallback' in window) window.requestIdleCallback(scheduleWarmHome, { timeout: 1200 });
+      else window.setTimeout(scheduleWarmHome, 180);
     })();
   `;
 }

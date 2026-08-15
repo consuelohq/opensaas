@@ -1,4 +1,4 @@
-import { listManagedCloudPlans, listManagedCloudRegions } from './managed-cloud-pricing';
+import { nodesClientScript, nodesSiteStyles, renderNodesContent } from './nodes-site';
 import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
 import {
   renderWorkspaceChromeBar,
@@ -19,7 +19,7 @@ const PAGE_COPY: Record<ConfigurationPageId, {
   description: string;
 }> = {
   configuration: {
-    title: 'Overview',
+    title: 'Home',
     description: 'See what is connected to your workspace and what agents can use here.',
   },
   tools: {
@@ -292,7 +292,7 @@ function configurationStyles(): string {
       .plan-grid { grid-template-columns: 1fr; }
       .node-meta { grid-template-columns: 1fr; }
     }
-  ` + workspaceRouteSwitcherStyles();
+  ` + workspaceRouteSwitcherStyles() + nodesSiteStyles();
 }
 
 function configurationClientScript(): string {
@@ -934,7 +934,7 @@ function renderOverviewPanels(): string {
           <div class="overview-context">
             <div class="overview-context-copy">
               <h2>One workspace, directly readable</h2>
-              <p>Overview shows the operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
+              <p>Home shows the operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
             </div>
             <a class="overview-context-link" href="/docs">Open Documentation →</a>
           </div>
@@ -1078,95 +1078,6 @@ function renderSecretsContent(): string {
           <div class="table-wrap"><table><thead><tr><th>Binding</th><th>Node</th><th>Status</th><th>Updated</th></tr></thead><tbody id="secret-rows"></tbody></table></div>
         </section>
       </div>`;
-}
-
-function renderNodesContent(): string {
-  const plans = listManagedCloudPlans();
-  const regions = listManagedCloudRegions();
-  const planCards = plans.map((plan) => {
-    const cpu = plan.cpu.vcpus + (plan.cpu.shared ? ' shared vCPU' : ' vCPU');
-    const checked = plan.recommended ? ' checked' : '';
-    const recommended = plan.recommended ? '<span class="plan-recommended">Recommended</span>' : '';
-    return '<label class="plan-option"><input type="radio" name="cloud-plan" value="' + escapeHtml(plan.id) + '"' + checked + '><span class="plan-card"><span class="plan-name"><strong>' + escapeHtml(plan.name) + '</strong>' + recommended + '</span><span class="plan-spec">' + escapeHtml(cpu) + ' · ' + escapeHtml(String(plan.memoryGb)) + ' GB RAM</span><span class="plan-price" data-plan-price="' + escapeHtml(plan.id) + '">Price loading…</span></span></label>';
-  }).join('');
-  const regionOptions = regions.map((region) =>
-    '<option value="' + escapeHtml(region.id) + '">' + escapeHtml(region.name) + '</option>',
-  ).join('');
-  return [
-    '<p id="node-loading" class="sr-only" aria-live="polite">Loading workspace nodes</p>',
-    '<section id="node-error" class="state-panel" aria-live="polite" hidden>',
-    '  <strong>Nodes unavailable</strong>',
-    '  <p class="muted">Sign in again or verify the workspace control plane is available.</p>',
-    '</section>',
-    '<div id="node-content" aria-busy="true">',
-    '  <section class="panel-section">',
-    '    <div class="nodes-toolbar">',
-    '      <div class="nodes-toolbar-copy"><h2>Workspace nodes</h2><p id="node-summary" class="muted">Loading node presence…</p></div>',
-    '      <button id="add-node-button" class="primary-button" type="button">+ Add node</button>',
-    '    </div>',
-    '    <p id="node-feedback" class="muted node-feedback" aria-live="polite">The default node receives calls when an agent does not choose one explicitly.</p>',
-    '    <div id="node-list" class="node-list"></div>',
-    '  </section>',
-    '</div>',
-    '<dialog id="add-node-dialog" aria-labelledby="add-node-title">',
-    '  <div class="dialog-shell">',
-    '    <header class="dialog-header">',
-    '      <div class="dialog-title"><p class="identity">Managed by Consuelo</p><h2 id="add-node-title">Create cloud node</h2><p class="muted">Always available. One flat monthly price. No cold starts when your agents need to work.</p></div>',
-    '      <button id="add-node-close" class="dialog-close" type="button" aria-label="Close">×</button>',
-    '    </header>',
-    '    <section class="subsection" aria-labelledby="plan-heading"><h3 id="plan-heading">Choose a plan</h3><div class="plan-grid">' + planCards + '</div></section>',
-    '    <section class="cloud-config">',
-    '      <label class="field"><span>Region</span><select id="cloud-region">' + regionOptions + '</select></label>',
-    '      <div class="cloud-note"><strong>Built for always-on agent work</strong><p class="muted">CPU, RAM, storage, networking, and managed operations are rolled into the monthly price.</p></div>',
-    '    </section>',
-    '    <div class="actions"><button id="create-cloud-node-button" class="primary-button provisioning-button" type="button" disabled>Create cloud node</button><button id="add-node-cancel" type="button">Cancel</button></div>',
-    '    <p id="pricing-status" class="muted" aria-live="polite">Loading current monthly prices…</p>',
-    '    <div id="provisioning-progress" class="provisioning-progress" aria-live="polite" hidden><strong id="provisioning-phase">Preparing cloud node</strong><p id="provisioning-detail" class="muted">You can leave this page after creation starts. The node will continue provisioning.</p></div>',
-    '  </div>',
-    '</dialog>',
-  ].join(String.fromCharCode(10));
-}
-
-function nodesClientScript(): string {
-  return [
-    "const byId = (id) => document.getElementById(id);",
-    "const setHidden = (id, value) => { const element = byId(id); if (element) element.hidden = value; };",
-    "const setText = (id, value) => { const element = byId(id); if (element) element.textContent = value; };",
-    "const escapeHtml = (value) => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll(String.fromCharCode(34), '&quot;').replaceAll(String.fromCharCode(39), '&#39;');",
-    "let currentNodeSnapshot = null;",
-    "let pricingRequestGeneration = 0;",
-    "let currentPricing = null;",
-    "let currentProvisioningJobId = null;",
-    "let currentProvisioningKey = null;",
-    "let provisioningPollTimer = null;",
-    "const prettyPlatform = (value) => value === 'darwin' ? 'macOS' : value === 'linux' ? 'Linux' : value === 'win32' || value === 'windows' ? 'Windows' : (value || 'Unknown platform');",
-    "const prettyPresence = (value) => value === 'online' ? 'Online' : value === 'stale' ? 'Stale' : 'Offline';",
-    "const csrfToken = () => { const part = document.cookie.split(';').map((value) => value.trim()).find((value) => value.startsWith('__Host-consuelo_os_csrf=')); return part ? decodeURIComponent(part.slice(part.indexOf('=') + 1)) : ''; };",
-    "const selectedPlanId = () => { const input = document.querySelector('input[name=\"cloud-plan\"]:checked'); return input instanceof HTMLInputElement ? input.value : ''; };",
-    "const selectedRegionId = () => { const input = byId('cloud-region'); return input instanceof HTMLSelectElement ? input.value : ''; };",
-    "const selectedQuote = () => { const planId = selectedPlanId(); const region = selectedRegionId(); const quotes = currentPricing && Array.isArray(currentPricing.quotes) ? currentPricing.quotes : []; return quotes.find((quote) => quote && quote.plan && quote.plan.id === planId && quote.region && quote.region.id === region) || null; };",
-    "const nodeCard = (node) => { const isDefault = currentNodeSnapshot && currentNodeSnapshot.defaultNodeId === node.nodeId; const isCurrent = currentNodeSnapshot && currentNodeSnapshot.currentNodeId === node.nodeId; const online = node.presence === 'online' && node.state === 'active'; const badges = [isDefault ? '<span class=\"status-pill status-connected\">Default</span>' : '', isCurrent ? '<span class=\"status-pill\">Current</span>' : '', node.role === 'home' ? '<span class=\"status-pill\">Home</span>' : ''].filter(Boolean).join(''); const action = isDefault ? '<button type=\"button\" disabled>Default node</button>' : '<button type=\"button\" data-make-default=\"' + escapeHtml(node.nodeId) + '\" ' + (online ? '' : 'disabled') + '>Make default</button>'; return '<article class=\"node-card' + (isDefault ? ' is-default' : '') + '\">' + '<header class=\"node-card-header\"><div class=\"node-card-title\"><strong>' + escapeHtml(node.displayName || node.nodeId) + '</strong><code>' + escapeHtml(node.nodeId) + '</code></div><div class=\"node-badges\">' + badges + '</div></header>' + '<div class=\"node-meta\"><div class=\"node-meta-item\"><span>Platform</span><span>' + escapeHtml(prettyPlatform(node.platform)) + '</span></div><div class=\"node-meta-item\"><span>Channel</span><span>' + escapeHtml(node.channel || 'standard') + '</span></div></div>' + '<footer class=\"node-card-footer\"><span class=\"presence presence-' + escapeHtml(node.presence || 'offline') + '\"><span class=\"presence-dot\"></span>' + escapeHtml(prettyPresence(node.presence)) + '</span>' + action + '</footer>' + '</article>'; };",
-    "function bindDefaultButtons() { document.querySelectorAll('[data-make-default]').forEach((button) => { button.addEventListener('click', () => void makeDefault(button.getAttribute('data-make-default') || '', button)); }); }",
-    "function renderNodes(snapshot) { currentNodeSnapshot = snapshot; const nodes = Array.isArray(snapshot.nodes) ? snapshot.nodes : []; const list = byId('node-list'); if (list) list.innerHTML = nodes.length ? nodes.map(nodeCard).join('') : '<section class=\"state-panel\"><strong>No nodes yet</strong><p class=\"muted\">Add a cloud node to start using Consuelo without installing it on a computer.</p></section>'; const presence = snapshot.presence || {}; setText('node-summary', nodes.length + (nodes.length === 1 ? ' node' : ' nodes') + ' · ' + String(presence.online || 0) + ' online'); setHidden('node-loading', true); setHidden('node-error', true); const content = byId('node-content'); if (content) content.setAttribute('aria-busy', 'false'); bindDefaultButtons(); }",
-    "async function loadNodes() { try { const response = await fetch('/gateway/nodes/snapshot', { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' }); if (!response.ok) throw new Error('nodes unavailable'); renderNodes(await response.json()); } catch { setHidden('node-loading', true); setHidden('node-error', false); const content = byId('node-content'); if (content) content.setAttribute('aria-busy', 'false'); } }",
-    "async function makeDefault(nodeId, button) { const csrf = csrfToken(); if (!nodeId || !csrf) { setText('node-feedback', 'Your workspace session needs to be refreshed before changing the default node.'); return; } if (button instanceof HTMLButtonElement) button.disabled = true; setText('node-feedback', 'Updating workspace default…'); try { const response = await fetch('/gateway/nodes/default', { method: 'POST', credentials: 'same-origin', headers: { accept: 'application/json', 'content-type': 'application/json', 'x-consuelo-csrf-token': csrf }, body: JSON.stringify({ nodeId }) }); if (!response.ok) throw new Error('default update denied'); await loadNodes(); setText('node-feedback', 'Default node updated. New untargeted OS calls will route there.'); } catch { if (button instanceof HTMLButtonElement) button.disabled = false; setText('node-feedback', 'Default node update failed. The existing default was kept.'); } }",
-    "const formatMonthlyPrice = (quote) => { if (!quote || !Number.isSafeInteger(quote.monthlyPriceCents)) return 'Price available soon'; const value = quote.monthlyPriceCents / 100; try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: quote.currency || 'USD', maximumFractionDigits: 0 }).format(value) + '<small>/month</small>'; } catch { return '$' + String(Math.ceil(value)) + '<small>/month</small>'; } };",
-    "function updateCreateButton() { const button = byId('create-cloud-node-button'); if (!(button instanceof HTMLButtonElement)) return; const ready = Boolean(selectedQuote()) && !currentProvisioningJobId; button.disabled = !ready; button.textContent = currentProvisioningJobId ? 'Creating cloud node…' : 'Create cloud node'; }",
-    "async function loadPricing() { const requestGeneration = ++pricingRequestGeneration; const selectedRegion = selectedRegionId() || 'us-east1'; setText('pricing-status', 'Loading current monthly prices…'); currentPricing = null; updateCreateButton(); try { const response = await fetch('/gateway/nodes/pricing?region=' + encodeURIComponent(selectedRegion), { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' }); if (!response.ok) throw new Error('pricing unavailable'); const payload = await response.json(); if (requestGeneration !== pricingRequestGeneration) return; currentPricing = payload; const quotes = Array.isArray(payload.quotes) ? payload.quotes : []; document.querySelectorAll('[data-plan-price]').forEach((element) => { const quote = quotes.find((candidate) => candidate && candidate.plan && candidate.plan.id === element.getAttribute('data-plan-price')); element.innerHTML = formatMonthlyPrice(quote); }); setText('pricing-status', payload.pricingAvailable ? 'Monthly price includes an always-on node and managed operations.' : 'Plans are ready; monthly prices will appear when the current rate card is published.'); updateCreateButton(); } catch { if (requestGeneration !== pricingRequestGeneration) return; document.querySelectorAll('[data-plan-price]').forEach((element) => { element.textContent = 'Price available soon'; }); setText('pricing-status', 'Pricing is temporarily unavailable. Try again in a moment.'); updateCreateButton(); } }",
-    "const provisioningCopy = (status) => status === 'requested' ? ['Request received', 'Your cloud node is queued for provisioning.'] : status === 'provisioning' ? ['Creating cloud resources', 'Preparing compute, storage, and private networking.'] : status === 'booting' ? ['Installing Consuelo', 'The node is booting and installing the current Consuelo runtime.'] : status === 'connecting' ? ['Connecting your node', 'Consuelo is establishing its secure workspace connection.'] : status === 'ready' ? ['Cloud node ready', 'Your node is online and available to your agents.'] : status === 'failed' ? ['Cloud node needs attention', 'Provisioning did not finish. No second node will be created by retrying this request.'] : ['Preparing cloud node', 'Provisioning is starting.'];",
-    "function renderProvisioning(job) { if (!job) return; currentProvisioningJobId = job.jobId; const copy = provisioningCopy(job.status); setHidden('provisioning-progress', false); setText('provisioning-phase', copy[0]); setText('provisioning-detail', job.status === 'failed' && job.errorMessage ? job.errorMessage : copy[1]); updateCreateButton(); }",
-    "function stopProvisioningPoll() { if (provisioningPollTimer) window.clearTimeout(provisioningPollTimer); provisioningPollTimer = null; }",
-    "async function pollProvisioning() { if (!currentProvisioningJobId) return; try { const response = await fetch('/gateway/nodes/provisioning?job_id=' + encodeURIComponent(currentProvisioningJobId), { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' }); if (!response.ok) throw new Error('status unavailable'); const payload = await response.json(); const job = payload && payload.job; renderProvisioning(job); if (job && job.status === 'ready') { stopProvisioningPoll(); await loadNodes(); currentProvisioningJobId = null; currentProvisioningKey = null; updateCreateButton(); window.setTimeout(() => { const dialog = byId('add-node-dialog'); if (dialog instanceof HTMLDialogElement) dialog.close(); }, 900); return; } if (job && job.status === 'failed') { stopProvisioningPoll(); currentProvisioningJobId = null; currentProvisioningKey = null; updateCreateButton(); return; } } catch { setText('provisioning-detail', 'The node is still being created. Status will retry automatically.'); } provisioningPollTimer = window.setTimeout(() => void pollProvisioning(), 2000); }",
-    "async function createCloudNode() { const csrf = csrfToken(); const quote = selectedQuote(); if (!csrf || !quote) { setText('pricing-status', 'Refresh the page and current monthly price before creating a node.'); return; } const button = byId('create-cloud-node-button'); if (button instanceof HTMLButtonElement) button.disabled = true; currentProvisioningKey = currentProvisioningKey || (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function' ? globalThis.crypto.randomUUID() : 'cloud-' + Date.now() + '-' + Math.random().toString(16).slice(2)); setHidden('provisioning-progress', false); setText('provisioning-phase', 'Creating cloud node'); setText('provisioning-detail', 'Submitting your plan and region to Consuelo…'); try { const response = await fetch('/gateway/nodes/provision', { method: 'POST', credentials: 'same-origin', headers: { accept: 'application/json', 'content-type': 'application/json', 'x-consuelo-csrf-token': csrf }, body: JSON.stringify({ planId: quote.plan.id, region: quote.region.id, pricingVersion: quote.pricingVersion, idempotencyKey: currentProvisioningKey }) }); const payload = await response.json().catch(() => ({})); const job = payload && payload.job; if (!response.ok && response.status !== 409) throw new Error('create failed'); if (!job) throw new Error('missing job'); renderProvisioning(job); void pollProvisioning(); } catch { currentProvisioningJobId = null; setText('provisioning-phase', 'Cloud node was not created'); setText('provisioning-detail', 'Nothing was charged or provisioned. Check your connection and try again.'); updateCreateButton(); } }",
-    "const dialog = byId('add-node-dialog');",
-    "byId('add-node-button')?.addEventListener('click', () => { if (dialog instanceof HTMLDialogElement) { currentProvisioningKey = null; setHidden('provisioning-progress', true); dialog.showModal(); void loadPricing(); } });",
-    "byId('add-node-close')?.addEventListener('click', () => { if (dialog instanceof HTMLDialogElement) dialog.close(); });",
-    "byId('add-node-cancel')?.addEventListener('click', () => { if (dialog instanceof HTMLDialogElement) dialog.close(); });",
-    "byId('create-cloud-node-button')?.addEventListener('click', () => void createCloudNode());",
-    "byId('cloud-region')?.addEventListener('change', () => void loadPricing());",
-    "document.querySelectorAll('input[name=\"cloud-plan\"]').forEach((input) => input.addEventListener('change', updateCreateButton));",
-    "void loadNodes();",
-  ].join(String.fromCharCode(10));
 }
 
 function renderEnvironmentContent(): string {

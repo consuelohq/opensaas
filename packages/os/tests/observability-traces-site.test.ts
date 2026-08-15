@@ -44,11 +44,14 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('aria-label="Workspace routes"');
     expect(html).toContain('aria-current="page" href="/tracing"');
     expect(html).toContain('class="workspace-route-option workspace-route-primary"');
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/configuration"');
+    expect(html).toContain('href="/artifacts"');
+    expect(html).toContain('href="/diffs"');
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/secrets"');
     expect(html).toContain('href="/docs"');
+    expect(html).toContain('>Connect</p>');
     expect(html).toContain('>Guides</p>');
     expect(html).toContain('--workspace-chrome-bg:');
     expect(html).toContain('--workspace-menu-bg:');
@@ -167,6 +170,19 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).not.toMatch(/\b192\.168(?:\.\d{1,3}){2}\b/);
     expect(html).not.toMatch(/\bc-[a-f0-9]+\.consuelohq\.com\b/i);
     expect(html).not.toMatch(/\bBearer\s+[A-Za-z0-9._~+/=-]{12,}/i);
+  });
+
+  it('consumes a short-lived prefetched trace preview before the live refresh without persisting it', () => {
+    const clientScript = buildObservabilityTracesClientScript();
+    const html = buildObservabilityTracesSite();
+
+    expect(clientScript).toContain("const TRACE_PREFETCH_KEY = 'consuelo:tracing-prefetch:v1'");
+    expect(clientScript).toContain('sessionStorage.getItem(TRACE_PREFETCH_KEY)');
+    expect(clientScript).toContain('sessionStorage.removeItem(TRACE_PREFETCH_KEY)');
+    expect(clientScript).toContain('Date.now() - Number(cached.savedAt || 0)');
+    expect(clientScript).toContain('const prefetchedFeed = readPrefetchedTraceFeed()');
+    expect(clientScript).toContain('let state = createState(prefetchedFeed || fallbackFeed)');
+    expect(html).not.toContain('trace-seed-data">{"savedAt"');
   });
 
   it('owns the maintained Trace Burn browser source in OS with no deprecated workspace dependency', () => {
