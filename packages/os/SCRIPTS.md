@@ -622,7 +622,7 @@ The work-session path must already exist and be a directory. Work-session-aware 
 
 ### task:start — compatibility alias for task-session creation
 
-`task:start` remains available as a compatibility alias for existing agents, skills, hooks, and automation. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Use `--workflow` to select task, office, design, sites, or media; the default is `task`.
+`task:start` remains available as a compatibility alias for existing agents, skills, hooks, and automation. It creates the task branch, durable worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the durable default `~/.consuelo/node/tasks/worktrees`. Explicit worktree-root overrides remain supported, and active legacy temp worktrees are not moved out from under running tasks. Use `--workflow` to select task, office, design, sites, or media; the default is `task`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
@@ -695,12 +695,14 @@ bun run task:merge -- --json
 
 ---
 
-### task:finish — verify merge, remove worktree, delete branch
+### task:finish — verify merge, close task session, remove worktree, delete branch
 
 ```bash
 bun run task:finish -- --branch task/dialer/fix-thing  # finish exact task
 bun run task:finish -- --pr 213 --json
 ```
+
+`task:finish` is the normal final cleanup path. After merge verification it terminates only the task-owned tmux session, removes the linked worktree and local task branch, and removes durable registry/recovery state. An already-evicted task remains finishable from the durable registry even when its worktree is absent.
 
 **task:finish failure modes**
 
@@ -726,17 +728,21 @@ auto-detects the worktree path from `git worktree list` if `--worktree` is not p
 
 ---
 
-### task:cleanup — remove stale worktrees, branches, and task sessions
+### task:cleanup — evict inactive worktrees or remove finished task state
 
 ```bash
 bun run task:cleanup -- --preview     # preview worktrees, branches, and tmux sessions that would be removed
 bun run task:cleanup -- --merged      # remove branches already merged
-bun run task:cleanup -- --stale-days 7  # remove worktrees older than 7 days
+bun run task:cleanup -- --stale-days 7  # safely evict durable worktrees inactive for 7 days
 bun run task:cleanup -- --force       # force removal
 bun run task:cleanup -- --keep task/dialer/queue  # keep a specific branch
 ```
 
-when cleanup removes a task worktree, it reads `.task/session.json` and `.task/current.json` before removal and closes only the tmux session explicitly tied to that task metadata. preview mode reports the tmux session that would be closed without touching tmux. if tmux is unavailable, the metadata is missing, or the session no longer exists, cleanup continues safely and reports the warning/status instead of broad-scanning tmux sessions.
+`--stale-days` is reversible eviction, not task completion. Staleness is measured from the durable registry's `lastActiveAt`, not task creation time. Clean remote-backed worktrees can be removed directly while their branch, PR, and task identity remain intact. Dirty, non-ignored untracked, or locally-ahead state is first captured through a synthetic Git checkpoint and verified recovery bundle under `~/.consuelo/node/tasks/archives/<taskSession>/`; archive or verification failure leaves the worktree untouched. The next task-scoped call restores the worktree automatically and recreates missing tmux state.
+
+The OS supervisor runs the same safe eviction scan approximately hourly with a default 24-hour inactivity lease. Operator/debug overrides are `CONSUELO_TASK_WORKTREE_GC_INTERVAL_MS` and `CONSUELO_TASK_WORKTREE_EVICT_AFTER_MS`. Cleanup is lease-based rather than tied to a fixed wall-clock hour.
+
+Explicit/merged/force cleanup retains the existing destructive cleanup semantics and targets only the exact task-owned tmux session; it never broad-scans tmux.
 
 ---
 

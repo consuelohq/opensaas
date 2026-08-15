@@ -495,6 +495,7 @@ async function main() {
       stream,
       taskBranch,
       worktreePath,
+      repoRoot,
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
     }, taskTmux.created);
@@ -509,6 +510,7 @@ async function main() {
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
       worktreePath,
+      repoRoot,
       taskSession: taskSessionMeta.taskSession,
       tmuxSession: taskSessionMeta.tmuxSession,
       sessionPath: path.join(worktreePath, '.task', 'session.json'),

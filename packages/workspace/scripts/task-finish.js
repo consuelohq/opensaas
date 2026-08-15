@@ -17,6 +17,9 @@ const { DEFAULT_REPO, resolveGitRoot } = require('./lib/paths');
 const { resolvePrRefNumber } = require('./lib/pr-ref');
 const { findTaskMeta } = require('./lib/task-meta');
 const { findActiveTaskResult } = require('./lib/task-selection');
+const { listDurableTaskSessionMetadata, readDurableTaskSessionMetadata } = require('./lib/task-registry');
+const { terminateTaskTmuxSession } = require('./lib/task-session');
+const { removeDurableTaskRecoveryState } = require('./lib/task-worktree-eviction');
 const {
   assertStreamBranchName,
   assertTaskBranchName,
@@ -118,7 +121,26 @@ function getSelectedTaskContext(args) {
   });
 
   if (selected.error) {
-    throw new Error(selected.error);
+    const durableMatches = listDurableTaskSessionMetadata().filter((metadata) => {
+      if (args.branch && metadata.taskBranch !== args.branch) return false;
+      if (args.area && metadata.area !== args.area) return false;
+      if (args.prNumber !== undefined && Number(metadata.taskPrNumber ?? metadata.prNumber) !== args.prNumber) return false;
+      return Boolean(args.branch || args.area || args.prNumber !== undefined);
+    });
+    if (durableMatches.length === 0) throw new Error(selected.error);
+    if (durableMatches.length > 1) {
+      throw new Error(
+        `multiple durable tasks match this selector: ${durableMatches.map((metadata) => metadata.taskBranch).join(', ')}; pass --branch or --pr`,
+      );
+    }
+    const [durable] = durableMatches;
+    const parsedTaskBranch = assertTaskBranchName(durable.taskBranch);
+    return {
+      repoRoot: durable.repoRoot ? path.resolve(durable.repoRoot) : repoRoot,
+      taskMeta: { data: durable, dir: durable.worktreePath },
+      branch: durable.taskBranch,
+      area: parsedTaskBranch.area,
+    };
   }
 
   const parsedTaskBranch = assertTaskBranchName(selected.task.meta.taskBranch);
@@ -259,6 +281,18 @@ async function main() {
 
   const worktree = getWorktreeForBranch(context.repoRoot, context.branch);
   let removedWorktree = null;
+  const taskSession = context.taskMeta?.data?.taskSession || null;
+  const durableTask = taskSession ? readDurableTaskSessionMetadata(taskSession) : null;
+  const tmuxCleanup = terminateTaskTmuxSession(
+    [durableTask, context.taskMeta?.data].filter(Boolean),
+    {
+      branch: context.branch,
+      worktreePath: worktree?.path || context.taskMeta?.data?.worktreePath,
+    },
+  );
+  if (tmuxCleanup.status === 'terminate-failed' || tmuxCleanup.status === 'inspect-failed') {
+    throw new Error(`unable to finish ${context.branch}: task tmux cleanup ${tmuxCleanup.status}`);
+  }
 
   if (worktree) {
     ensureOutsideWorktree(context.repoRoot, worktree.path);
@@ -273,6 +307,8 @@ async function main() {
     deletedLocalBranch = true;
   }
 
+  if (taskSession) removeDurableTaskRecoveryState(taskSession);
+
   printResult(
     {
       branch: context.branch,
@@ -283,6 +319,7 @@ async function main() {
       mergedAt: pullRequest.merged_at,
       removedWorktree,
       deletedLocalBranch,
+      tmuxCleanup,
     },
     args.json,
   );
