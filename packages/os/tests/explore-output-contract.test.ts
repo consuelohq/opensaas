@@ -38,6 +38,14 @@ type RichExplorePayload = {
   query: string;
   budget: number;
   results: RichExploreResult[];
+  policy: {
+    policy_version: number;
+    readiness: string;
+    edit_ready: boolean;
+    uncertainty: { reasons: string[] };
+    next_action: { type: string; path: string | null };
+    dependency_map: { primary: { root_path: string }; alternative_count: number };
+  };
   index_stats: {
     total_files: number;
     total_chunks: number;
@@ -99,6 +107,17 @@ function richPayload(): RichExplorePayload {
     query: 'where is the explore decision engine wired to its tests and callers',
     budget: 6,
     results,
+    policy: {
+      policy_version: 1,
+      readiness: 'gathering',
+      edit_ready: false,
+      uncertainty: { reasons: ['read the top hypothesis root'] },
+      next_action: { type: 'read', path: 'packages/os/scripts/example-0.ts' },
+      dependency_map: {
+        primary: { root_path: 'packages/os/scripts/example-0.ts' },
+        alternative_count: 2,
+      },
+    },
     index_stats: {
       total_files: 15_710,
       total_chunks: 80_769,
@@ -130,6 +149,7 @@ describe('Explore compact response contract', () => {
     expect(compact.detail).toBe('compact');
     expect(compact.query).toBe(rich.query);
     expect(compact.budget).toBe(rich.budget);
+    expect((compact as { policy?: unknown }).policy).toEqual(rich.policy);
     expect(compact.results.map((result) => result.path)).toEqual(rich.results.map((result) => result.path));
 
     const first = compact.results[0];

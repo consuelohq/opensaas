@@ -68,6 +68,7 @@ function formatExploreOutput(payload, detail = 'compact') {
     detail: 'compact',
     query: payload.query,
     budget: payload.budget,
+    policy: payload.policy || null,
     results: (payload.results || []).map(compactExploreResult),
     index_stats: compactIndexStats(payload.index_stats),
   };

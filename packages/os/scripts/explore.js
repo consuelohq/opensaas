@@ -5,16 +5,19 @@ const { retrieve } = require('./lib/search/retriever');
 const { formatExploreOutput } = require('./lib/search/explore-output');
 const {
   appendEvidenceEvent,
+  getEvidenceEvents,
   getReadFilesFromEvidence,
   readEvidenceLog,
 } = require('./lib/state/evidence-log');
 const {
   buildInvestigationHypotheses,
   readExploreState,
+  updateHypothesesWithEvents,
   writeExploreState,
 } = require('./lib/state/explore-state');
 const calibration = require('./lib/state/explore-calibration.v1.json');
 const { getRankSupport } = require('./lib/state/explore-hypothesis-model');
+const { evaluateExplorePolicy } = require('./lib/state/explore-policy');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -216,6 +219,22 @@ function printHuman(args, results, indexResult) {
   writeStdout(`index: ${indexResult.stats.totalFiles} files, ${indexResult.stats.totalChunks} chunks, ${indexResult.filesIndexed} files refreshed`);
 }
 
+function printPolicyHuman(policy) {
+  writeStdout('');
+  writeStdout(`readiness: ${policy.readiness}`);
+  writeStdout(`edit-ready: ${policy.edit_ready ? 'yes' : 'no'}`);
+  if (policy.dependency_map?.primary) {
+    writeStdout(`hypothesis: ${policy.dependency_map.primary.root_path} (${policy.dependency_map.primary.support_state})`);
+  }
+  if (policy.uncertainty?.reasons?.length) {
+    writeStdout(`uncertainty: ${policy.uncertainty.reasons.join('; ')}`);
+  }
+  if (policy.next_action) {
+    const target = policy.next_action.path || policy.next_action.query || '';
+    writeStdout(`next: ${policy.next_action.type}${target ? ` ${target}` : ''}`);
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -249,8 +268,7 @@ async function main() {
   const previousState = readExploreState(indexResult.repoRoot) || {};
   const shouldPreserveHypotheses = previousState.query === args.question && previousState.hypothesis_version === 1;
   const hypotheses = buildInvestigationHypotheses(payload.results, shouldPreserveHypotheses ? previousState.hypotheses : []);
-
-  const statePath = writeExploreState(indexResult.repoRoot, {
+  const nextState = {
     ...payload,
     hypothesis_version: 1,
     hypotheses,
@@ -259,7 +277,7 @@ async function main() {
     mode: 'exploring',
     worktree_id: indexResult.worktreeId,
     updated_at: new Date().toISOString(),
-  });
+  };
 
   appendEvidenceEvent(indexResult.repoRoot, {
     type: 'explore.result',
@@ -284,10 +302,21 @@ async function main() {
     },
   }, { requireMirror: true });
 
+  const events = getEvidenceEvents(indexResult.repoRoot);
+  const state = updateHypothesesWithEvents(nextState, events);
+  const policy = evaluateExplorePolicy(state, events);
+  const statePath = writeExploreState(indexResult.repoRoot, {
+    ...state,
+    policy_snapshot: policy,
+    updated_at: new Date().toISOString(),
+  });
+  const outputPayload = { ...payload, policy };
+
   if (args.json) {
-    writeStdout(JSON.stringify(formatExploreOutput(payload, args.detail), null, 2));
+    writeStdout(JSON.stringify(formatExploreOutput(outputPayload, args.detail), null, 2));
   } else {
     printHuman(args, results, indexResult);
+    printPolicyHuman(policy);
     writeStdout(`state: ${statePath}`);
   }
 }
