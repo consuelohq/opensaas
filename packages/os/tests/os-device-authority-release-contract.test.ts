@@ -310,13 +310,102 @@ describe('OS device authority release contract', () => {
         /^defaultSiteSnapshotKey=sites\/workspace_testing\/launcher\/sha256-[a-f0-9]{16}\/index\.html$/,
       ),
     );
+    expect(output).toContainEqual(
+      expect.stringMatching(
+        /^plannedRouteRefresh=workspace_route_registry:sha256-[a-f0-9]{16}$/,
+      ),
+    );
     expect(commands.some((command) => command.args[0] === 'r2')).toBe(false);
+    expect(commands.some((command) => command.args[0] === 'd1')).toBe(false);
     expect(commands.at(-1)).toMatchObject({
       command: 'wrangler',
       args: expect.arrayContaining(['deploy', '--dry-run']),
     });
   });
 
+  it('deploys Device Authority before refreshing release-managed workspace site routes', async () => {
+    const { runDeviceAuthorityReleaseCli } = await loadReleaseModule();
+    const commands: ReleaseCommand[] = [];
+    const output: string[] = [];
+    const errors: string[] = [];
+
+    const exitCode = await runDeviceAuthorityReleaseCli([], {
+      commandRunner(command) {
+        commands.push(command);
+        if (
+          command.command === 'wrangler'
+          && command.args.join(' ') ===
+            'secret list --name consuelo-os-device-authority --format json'
+        ) {
+          return {
+            status: 0,
+            stdout: JSON.stringify([
+              { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+              { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+            ]),
+            stderr: '',
+          };
+        }
+        if (
+          command.command === 'wrangler'
+          && ['r2', 'deploy', 'd1'].includes(command.args[0] ?? '')
+        ) {
+          return { status: 0, stdout: '', stderr: '' };
+        }
+        throw new Error(
+          'unexpected release mutation: ' + command.command + ' ' + command.args.join(' '),
+        );
+      },
+      async fetchImpl(input) {
+        const url = String(input);
+        if (url === 'https://os.consuelohq.com/health') {
+          return Response.json({ ok: true, connector_provisioning_configured: true });
+        }
+        if (url.startsWith('https://os.consuelohq.com/login/device?')) {
+          return new Response(
+            '<a href="https://os.consuelohq.com/login/google/start?user_code=RELSMOKE">Continue</a>',
+          );
+        }
+        if (url === 'https://os.consuelohq.com/login/device/code') {
+          return Response.json(
+            { error: 'device_public_key_required' },
+            { status: 400 },
+          );
+        }
+        throw new Error('unexpected request: ' + url);
+      },
+      async sleepImpl() {},
+      writeOut(message = '') { output.push(message); },
+      writeErr(message = '') { errors.push(message); },
+    });
+
+    expect(exitCode).toBe(0);
+    expect(errors).toEqual([]);
+    const deployIndex = commands.findIndex(
+      (command) => command.command === 'wrangler' && command.args[0] === 'deploy',
+    );
+    const routeRefreshIndex = commands.findIndex(
+      (command) => command.command === 'wrangler' && command.args[0] === 'd1',
+    );
+    expect(deployIndex).toBeGreaterThan(0);
+    expect(routeRefreshIndex).toBeGreaterThan(deployIndex);
+    const routeRefresh = commands[routeRefreshIndex];
+    expect(routeRefresh.args.slice(0, 3)).toEqual([
+      'd1', 'execute', 'consuelo-workspace-route-registry',
+    ]);
+    expect(routeRefresh.args).toContain('--remote');
+    expect(routeRefresh.args).toContain('--command');
+    const sql = routeRefresh.args[routeRefresh.args.indexOf('--command') + 1] ?? '';
+    for (const siteId of [
+      'launcher', 'traces', 'configuration', 'tools', 'nodes', 'environments', 'secrets',
+    ]) {
+      expect(sql).toContain(siteId);
+    }
+    expect(sql).not.toMatch(/target\.siteId[^\n]*(?:artifacts|docs)/);
+    expect(output).toContain('Verified https://os.consuelohq.com/health');
+  });
   it('should reject release health when connector provisioning is unavailable', async () => {
     const { assertDeviceAuthorityHealth } = await loadReleaseModule();
 

@@ -263,7 +263,6 @@ export async function reconcileWorkspaceRouteState(input: {
         heartbeatTtlMs: 60_000,
       },
       makeDefault: node.nodeId === defaultNodeId,
-      refreshSiteSnapshots: true,
       localServiceUrl: DEFAULT_CONNECTOR_LOCAL_SERVICE_URL,
     });
   }
