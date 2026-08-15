@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 describe('workspace root isolation from legacy launcher customization', () => {
-  it('never lets legacy launcher extra sections replace the Nodes workspace root', () => {
+  it('never lets legacy launcher extra sections replace the Overview workspace root', () => {
     writeFileSync(
       join(home, 'consuelo.yaml'),
       [

@@ -316,6 +316,16 @@ describe('test selection registry', () => {
       'packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts',
       '--changed-file',
       'packages/os/scripts/lib/settings-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/nodes-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/managed-cloud-public-pricing.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts',
+      '--changed-file',
+      'packages/os/tests/managed-cloud-public-pricing.test.ts',
       '--json',
     ]);
     const data = json(result);
