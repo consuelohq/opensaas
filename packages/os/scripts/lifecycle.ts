@@ -816,7 +816,18 @@ export async function runLifecycleCli(
         env: environment,
       });
     let result: LifecycleOperationResult;
-    if (runsInsideActiveDaemon && parsed.command === 'update' && !parsed.check) {
+    if (runsInsideActiveDaemon && parsed.command === 'restart') {
+      const accepted = await operationLauncher.launch({ kind: 'restart' });
+      result = {
+        operation: 'restart',
+        changed: true,
+        detail: {
+          detached: true,
+          accepted: accepted.accepted,
+          operationId: accepted.operationId,
+        },
+      };
+    } else if (runsInsideActiveDaemon && parsed.command === 'update' && !parsed.check) {
       const checked = await engine.update({
         channel: parsed.channel,
         check: true,

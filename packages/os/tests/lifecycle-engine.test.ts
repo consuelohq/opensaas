@@ -1179,6 +1179,75 @@ describe('unified lifecycle engine', () => {
     });
   });
 
+  it('hands a self-hosted restart to the durable lifecycle worker before disruption', async () => {
+    const engine = createEngine();
+    const restart = vi.spyOn(engine, 'restart').mockRejectedValue(
+      new Error('inline restart must not run inside the active daemon'),
+    );
+    const launch = vi.fn(async () => ({
+      accepted: true as const,
+      operationId: 'daemon-restart-1',
+    }));
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+
+    const exitCode = await runLifecycleCli(['restart', '--json'], {
+      engine,
+      environment: {
+        CONSUELO_OS_DAEMON_PROCESS: '1',
+      },
+      operationLauncher: { launch, read: () => undefined },
+      stdout: (value) => stdout.push(value),
+      stderr: (value) => stderr.push(value),
+    });
+
+    expect(exitCode).toBe(0);
+    expect(stderr).toEqual([]);
+    expect(restart).not.toHaveBeenCalled();
+    expect(launch).toHaveBeenCalledWith({ kind: 'restart' });
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
+      schemaVersion: 1,
+      command: 'restart',
+      ok: true,
+      result: {
+        operation: 'restart',
+        changed: true,
+        detail: {
+          detached: true,
+          accepted: true,
+          operationId: 'daemon-restart-1',
+        },
+      },
+    });
+  });
+
+  it('keeps terminal lifecycle restart synchronous outside the active daemon', async () => {
+    const engine = createEngine();
+    const restart = vi.spyOn(engine, 'restart').mockResolvedValue({
+      operation: 'restart',
+      changed: true,
+    });
+    const launch = vi.fn();
+    const stdout: string[] = [];
+
+    const exitCode = await runLifecycleCli(['restart', '--json'], {
+      engine,
+      environment: {},
+      operationLauncher: { launch, read: () => undefined },
+      stdout: (value) => stdout.push(value),
+      stderr: () => {},
+    });
+
+    expect(exitCode).toBe(0);
+    expect(restart).toHaveBeenCalledTimes(1);
+    expect(launch).not.toHaveBeenCalled();
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
+      command: 'restart',
+      ok: true,
+      result: { operation: 'restart', changed: true },
+    });
+  });
+
   it('should hand off an update when inherited daemon context survives launchd rewriting XPC_SERVICE_NAME', async () => {
     const engine = createEngine();
     const update = vi.spyOn(engine, 'update').mockResolvedValue({
