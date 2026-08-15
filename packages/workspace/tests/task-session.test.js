@@ -201,14 +201,21 @@ test('recoverDurableTaskSession validates branch and recreates missing tmux', ()
   const branch = 'task/workspace-agent/recover';
   try {
     process.env.CONSUELO_HOME = path.join(root, 'home');
-    fs.mkdirSync(path.join(root, 'worktree'), { recursive: true });
+    const worktreePath = path.join(root, 'worktree');
+    fs.mkdirSync(worktreePath, { recursive: true });
+    childProcess.execFileSync('git', ['init', '-q'], { cwd: worktreePath });
+    childProcess.execFileSync('git', ['config', 'user.email', 'tests@consuelo.local'], { cwd: worktreePath });
+    childProcess.execFileSync('git', ['config', 'user.name', 'Consuelo Tests'], { cwd: worktreePath });
+    fs.writeFileSync(path.join(worktreePath, 'README.md'), 'fixture\n');
+    childProcess.execFileSync('git', ['add', 'README.md'], { cwd: worktreePath });
+    childProcess.execFileSync('git', ['commit', '-qm', 'fixture'], { cwd: worktreePath });
+    childProcess.execFileSync('git', ['checkout', '-qb', branch], { cwd: worktreePath });
     const registry = require('../scripts/lib/task-registry.js');
     const handle = getTaskSessionHandle(branch);
-    registry.writeDurableTaskSessionMetadata({ area: 'workspace-agent', taskBranch: branch, taskSession: handle, worktreePath: path.join(root, 'worktree') });
+    registry.writeDurableTaskSessionMetadata({ area: 'workspace-agent', taskBranch: branch, taskSession: handle, worktreePath });
     const calls = [];
     const result = withSpawnSync((command, args) => {
       calls.push([command, ...args]);
-      if (command === 'git') return { status: 0, stdout: branch + '\n' };
       if (args[0] === '-V') return { status: 0 };
       if (args[0] === 'has-session') return { status: 1 };
       if (args[0] === 'new-session') return { status: 0 };
