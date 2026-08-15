@@ -310,6 +310,34 @@ describe('test selection registry', () => {
     );
   });
 
+  it('uses focused managed-cloud checkout observability contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts',
+      '--changed-file',
+      'packages/os/tests/managed-cloud-checkout-observability.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-managed-cloud-checkout-observability');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'OS managed cloud checkout observability contracts',
+        'OS managed cloud checkout observability syntax contracts',
+      ]),
+    );
+  });
+
+
   it('uses focused cloud-first auth onboarding contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

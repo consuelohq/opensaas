@@ -10,6 +10,7 @@ import {
   DEFAULT_SITE_SNAPSHOT_VERSION_ID,
   ORIGIN,
 } from './constants';
+import { createCheckoutObservability } from './services/checkout-observability';
 import { createWorkspaceConnectorProvisionerFromEnv } from './services/connectors';
 import { managedCloudPricingFromJson } from './services/managed-cloud-pricing';
 import { DurableStore } from './stores';
@@ -69,6 +70,18 @@ export class OsDeviceGrantDurableObject {
       stripeSecretKey: env.OS_STRIPE_SECRET_KEY,
       stripeWebhookSecret: env.OS_STRIPE_WEBHOOK_SECRET,
       stripeApiBaseUrl: env.OS_STRIPE_API_BASE_URL,
+      stripeSyntheticSecretKey: env.OS_STRIPE_SYNTHETIC_SECRET_KEY,
+      stripeSyntheticWebhookSecret: env.OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET,
+      stripeSyntheticAccountIds: env.OS_STRIPE_SYNTHETIC_ACCOUNT_IDS,
+      checkoutObservability:
+        env.POSTHOG_API_KEY?.trim() || env.SENTRY_DSN?.trim()
+          ? createCheckoutObservability({
+              posthogApiKey: env.POSTHOG_API_KEY,
+              posthogHost: env.POSTHOG_HOST,
+              sentryDsn: env.SENTRY_DSN,
+              fetchImpl: (url, init) => globalThis.fetch(url, init),
+            })
+          : undefined,
       managedCloudPricing: managedCloudPricingFromJson({
         policyJson: env.OS_MANAGED_CLOUD_PRICING_POLICY_JSON,
         rateCardsJson: env.OS_MANAGED_CLOUD_RATE_CARDS_JSON,
