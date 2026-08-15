@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2640,
-    "mappedTestCount": 2556,
+    "testFileCount": 2641,
+    "mappedTestCount": 2557,
     "unmappedTestCount": 84,
     "ruleCount": 60,
     "explicitRuleCount": 41,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 262,
+      "packages/os/tests": 263,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 62,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 546,
+      "test": 547,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -870,18 +870,28 @@
     {
       "id": "os-explore-retrieval-science",
       "source": [
-        "packages/os/explore-bench/**",
         "packages/os/cloudflare/workspace-edge/src/index.ts",
         "packages/os/cloudflare/workspace-edge/src/semantic-embedding-gateway.ts",
         "packages/os/cloudflare/workspace-edge/wrangler.toml",
+        "packages/os/dev-steering.md",
+        "packages/os/explore-bench/**",
+        "packages/os/scripts/ai-review.js",
+        "packages/os/scripts/confidence-score.js",
+        "packages/os/scripts/decide-next.js",
+        "packages/os/scripts/exploit.js",
         "packages/os/scripts/explore-bench.js",
         "packages/os/scripts/explore.js",
-        "packages/os/scripts/lib/explore-bench.js",
         "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
+        "packages/os/scripts/lib/explore-bench.js",
         "packages/os/scripts/lib/index/embedding-gateway.js",
         "packages/os/scripts/lib/index/store.js",
         "packages/os/scripts/lib/search/**",
+        "packages/os/scripts/lib/state/explore-calibration.v1.json",
+        "packages/os/scripts/lib/state/explore-hypothesis-model.js",
+        "packages/os/scripts/lib/state/explore-state.js",
+        "packages/os/scripts/review.js",
         "packages/os/tests/explore-bench.test.ts",
+        "packages/os/tests/explore-hypothesis-model.test.ts",
         "packages/os/tests/explore-output-contract.test.ts",
         "packages/os/tests/explore-retrieval-policy.test.ts",
         "packages/os/tests/explore-retriever-fallback.test.ts",
@@ -889,7 +899,8 @@
         "packages/os/tests/semantic-embedding-edge-gateway.test.ts",
         "packages/os/tests/semantic-embedding-gateway.test.ts",
         "packages/os/tests/semantic-embedding-identity.test.ts",
-        "packages/os/tools/decision-engine/handler.ts"
+        "packages/os/tools/decision-engine/handler.ts",
+        "packages/os/tools/decision-engine/schema.ts"
       ],
       "tests": [
         {
@@ -903,6 +914,7 @@
             "tests/explore-retriever-fallback.test.ts",
             "tests/explore-bench.test.ts",
             "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
             "tests/explore-runtime-routing.test.ts",
             "tests/semantic-embedding-edge-gateway.test.ts",
             "tests/semantic-embedding-gateway.test.ts",
@@ -912,7 +924,7 @@
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Agent-facing OS Explore retrieval, hosted embeddings, runtime routing, benchmark, and search-index changes must prove hard scope, missing-semantic fallback, fixed-model gateway confinement, rate limits, rank fusion, benchmark metrics, runtime ownership, and compact/full output without selecting the historically red package-wide OS suite.",
+      "reason": "Agent-facing OS Explore retrieval, honest hypothesis/readiness state, hosted embeddings, runtime routing, benchmark, and search-index changes must prove hard scope, missing-semantic fallback, calibrated/provisional support boundaries, neutral reads, explicit relevance evidence, rank fusion, benchmark metrics, runtime ownership, and compact/full output without selecting the historically red package-wide OS suite.",
       "origin": "explicit"
     },
     {
@@ -3869,6 +3881,11 @@
     },
     {
       "path": "packages/os/tests/explore-bench.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-hypothesis-model.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
