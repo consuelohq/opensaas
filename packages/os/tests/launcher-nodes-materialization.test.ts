@@ -11,8 +11,8 @@ afterEach(() => {
   for (const home of homes.splice(0)) rmSync(home, { recursive: true, force: true });
 });
 
-describe('workspace root Overview materialization', () => {
-  it('materializes Overview as the workspace root while retaining the first-class Nodes snapshot', async () => {
+describe('workspace root Home materialization', () => {
+  it('materializes Home as the workspace root while retaining the first-class Nodes snapshot', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-nodes-site-'));
     homes.push(home);
     const result = await runSitesCommand(['refresh', '--json'], { home, openUrl: false });
@@ -22,7 +22,7 @@ describe('workspace root Overview materialization', () => {
     expect(existsSync(result.environmentsIndexPath)).toBe(true);
 
     const rootHtml = readFileSync(result.indexPath, 'utf8');
-    expect(rootHtml).toContain('<title>Overview - Consuelo OS</title>');
+    expect(rootHtml).toContain('<title>Home - Consuelo OS</title>');
     expect(rootHtml).toContain('data-workspace-shell');
     expect(rootHtml).toContain('data-workspace-route-trigger');
     expect(rootHtml).toContain('/gateway/configuration/snapshot');
@@ -35,7 +35,7 @@ describe('workspace root Overview materialization', () => {
     expect(nodesHtml).toContain('/gateway/nodes/snapshot');
     expect(nodesHtml).not.toMatch(/e2-(?:medium|standard)/);
   });
-  it('keeps daemon refresh wired to the Overview root renderer instead of Nodes or the retired launcher', () => {
+  it('keeps daemon refresh wired to the Home root renderer instead of Nodes or the retired launcher', () => {
     const osRoot = resolve(import.meta.dirname, '..');
     const daemon = readFileSync(resolve(osRoot, 'scripts', 'start-consuelo-daemon.sh'), 'utf8');
     const sites = readFileSync(resolve(osRoot, 'scripts', 'lib', 'sites.ts'), 'utf8');

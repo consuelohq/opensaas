@@ -8,6 +8,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertRequiredDeviceAuthorityWorkerSecrets } from '../../os/scripts/lib/device-authority-release-readiness';
+import { fetchGoogleCloudPublicPricingRuntime } from '../../os/scripts/lib/google-cloud-public-pricing-refresh';
+import { createDefaultManagedCloudPricingRuntime, type DefaultManagedCloudPricingRuntime } from '../../os/scripts/lib/managed-cloud-public-pricing';
 import { getSitesPaths, materializeSites } from '../../os/scripts/lib/sites';
 import { WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS } from '../../os/scripts/lib/workspace-edge-route-seed';
 
@@ -59,6 +61,7 @@ type ReleaseDependencies = {
   writeErr: (message?: string) => void;
   fetchImpl: typeof fetch;
   sleepImpl: (ms: number) => Promise<void>;
+  managedCloudPricingLoader: () => Promise<DefaultManagedCloudPricingRuntime>;
 };
 
 type ReleaseDependencyOverrides = Partial<ReleaseDependencies>;
@@ -105,12 +108,16 @@ function defaultCommandRunner(input: ReleaseCommand): ReleaseCommandResult {
 function dependencies(
   overrides: ReleaseDependencyOverrides = {},
 ): ReleaseDependencies {
+  const fetchImpl = overrides.fetchImpl ?? fetch;
   return {
     commandRunner: overrides.commandRunner ?? defaultCommandRunner,
     writeOut: overrides.writeOut ?? defaultWriteOut,
     writeErr: overrides.writeErr ?? defaultWriteErr,
-    fetchImpl: overrides.fetchImpl ?? fetch,
+    fetchImpl,
     sleepImpl: overrides.sleepImpl ?? defaultSleep,
+    managedCloudPricingLoader:
+      overrides.managedCloudPricingLoader ??
+      (() => fetchGoogleCloudPublicPricingRuntime({ fetchImpl })),
   };
 }
 
@@ -207,13 +214,25 @@ function snapshotVersionId(html: string): string {
   return `sha256-${createHash('sha256').update(html).digest('hex').slice(0, 16)}`;
 }
 
+function commandForLog(input: ReleaseCommand): string {
+  const args = input.args.map((arg, index) => {
+    if (input.args[index - 1] !== '--var') return arg;
+    if (!arg.startsWith('OS_MANAGED_CLOUD_')) return arg;
+    const separator = arg.indexOf(':');
+    return separator < 0
+      ? '<managed-cloud-pricing>'
+      : `${arg.slice(0, separator)}:<redacted-pricing>`;
+  });
+  return [input.command, ...args].join(' ');
+}
+
 function runCommand(
   input: ReleaseCommand,
   deps: ReleaseDependencies,
   options: { announce?: boolean } = {},
 ): ReleaseCommandResult {
   if (options.announce !== false) {
-    deps.writeOut(`$ ${[input.command, ...input.args].join(' ')}`);
+    deps.writeOut(`$ ${commandForLog(input)}`);
   }
   const result = deps.commandRunner(input);
 
@@ -527,6 +546,18 @@ async function runDeviceAuthorityRelease(
     const defaultSiteSnapshot = releaseDefaultSiteSnapshots(options.dryRun, deps);
     deps.writeOut(`defaultSiteSnapshotKey=${defaultSiteSnapshot.key}`);
     deps.writeOut(`defaultSiteSnapshotVersion=${defaultSiteSnapshot.versionId}`);
+    let managedCloudPricing: DefaultManagedCloudPricingRuntime;
+    try {
+      managedCloudPricing = options.dryRun
+        ? createDefaultManagedCloudPricingRuntime()
+        : await deps.managedCloudPricingLoader();
+    } catch (error: unknown) {
+      throw new Error(
+        `managed cloud pricing refresh failed: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
+    deps.writeOut(`managedCloudPricingVersion=${managedCloudPricing.policy.pricingVersion}`);
 
     const deployArgs = [
       'deploy',
@@ -535,6 +566,10 @@ async function runDeviceAuthorityRelease(
       `OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY:${defaultSiteSnapshot.key}`,
       '--var',
       `OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID:${defaultSiteSnapshot.versionId}`,
+      '--var',
+      `OS_MANAGED_CLOUD_PRICING_POLICY_JSON:${JSON.stringify(managedCloudPricing.policy)}`,
+      '--var',
+      `OS_MANAGED_CLOUD_RATE_CARDS_JSON:${JSON.stringify(managedCloudPricing.rateCards)}`,
     ];
     if (options.dryRun) deployArgs.push('--dry-run');
     runCommand({

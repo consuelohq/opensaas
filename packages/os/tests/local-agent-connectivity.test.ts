@@ -406,10 +406,10 @@ describe('local agent connectivity', () => {
       status: 'connected',
       details: ['opencode'],
     });
-    expect(integration.root).toContain('<title>Overview - Consuelo OS</title>');
+    expect(integration.root).toContain('<title>Home - Consuelo OS</title>');
     expect(integration.root).toContain('data-workspace-shell');
     expect(integration.root).not.toContain('data-agent-count');
-    expect(integration.configuration).toContain('<title>Overview - Consuelo OS</title>');
+    expect(integration.configuration).toContain('<title>Home - Consuelo OS</title>');
     expect(integration.configurationSnapshot.localAgents).toEqual(
       expect.arrayContaining([expect.objectContaining({ name: 'opencode', status: 'verified' })]),
     );
@@ -417,31 +417,50 @@ describe('local agent connectivity', () => {
   });
 
   it('persists verification outcomes independently for each configured agent', async () => {
+    const packageRoot = join(osHome, 'independent-agent-package-root');
+    const packageServerPath = join(packageRoot, 'scripts', 'mcp-stdio.ts');
+    mkdirSync(join(packageRoot, 'scripts'), { recursive: true });
     mkdirSync(join(userHome, '.config', 'opencode'), { recursive: true });
     mkdirSync(join(userHome, '.cursor'), { recursive: true });
-    await provisionAgentAndStartDaemon('opencode');
-    configureLocalAgents({ home: osHome, userHome, agentNames: ['cursor'] });
-
-    const credentialPath = join(
-      osHome,
-      'node',
-      'security',
-      'generated',
-      'local-agent-mcp.json',
-    );
-    const credentials = readJson(credentialPath);
-    const agents = credentials.agents as Record<string, unknown>;
-    agents.cursor = {
-      tokenId: 'invalid-cursor-token',
-      bearerToken: 'invalid-cursor-secret',
-    };
-    writeJson(credentialPath, credentials);
+    writeFileSync(packageServerPath, `
+      process.stdin.setEncoding('utf8');
+      let buffer = '';
+      process.stdin.on('data', (chunk) => {
+        buffer += chunk;
+        let newline = buffer.indexOf('\\n');
+        while (newline >= 0) {
+          const line = buffer.slice(0, newline).trim();
+          buffer = buffer.slice(newline + 1);
+          if (line) {
+            const request = JSON.parse(line);
+            if (request.method === 'server/discover') {
+              process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { supportedVersions: ['2026-07-28'] } }) + '\\n');
+            } else if (request.method === 'tools/list') {
+              if (process.env.CONSUELO_AGENT_ID === 'cursor') {
+                process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, error: { code: -32001, message: 'cursor fixture failed' } }) + '\\n');
+              } else {
+                process.stdout.write(JSON.stringify({ jsonrpc: '2.0', id: request.id, result: { tools: [{ name: 'status', inputSchema: { type: 'object' } }] } }) + '\\n');
+              }
+            }
+          }
+          newline = buffer.indexOf('\\n');
+        }
+      });
+    `);
+    process.env.CONSUELO_OS_PACKAGE_ROOT = packageRoot;
+    provisionLocalOs({
+      home: osHome,
+      userHome,
+      mode: 'local',
+      port: await getFreeTcpPort(),
+      connectAgents: ['cursor', 'opencode'],
+    });
 
     const verification = await verifyLocalAgents({
       home: osHome,
       userHome,
       agentNames: ['cursor', 'opencode'],
-      timeoutMs: 10_000,
+      timeoutMs: 2_000,
     });
 
     expect(verification.agents.find((agent) => agent.name === 'opencode')).toMatchObject({
