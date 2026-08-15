@@ -257,20 +257,27 @@ describe('work-session filesystem mutation authority', () => {
     expect(existsSync(join(linked, 'blocked.txt'))).toBe(false);
   });
 
-  it('defensively rejects simultaneous task and work authority', async () => {
+  it.each(['fs.write', 'fs.apply_patch', 'fs.trash'] as const)(
+    'rejects simultaneous task and work authority for %s before resolving either root',
+    async (tool) => {
     const root = makeRoot();
     const workPath = join(root, 'work');
     const { home, metadata } = makeWorkSession(root, workPath);
+    const input = tool === 'fs.write'
+      ? { path: 'blocked.txt', content: 'blocked' }
+      : tool === 'fs.apply_patch'
+        ? { patchText: '*** Begin Patch\n*** Add File: blocked.txt\n+blocked\n*** End Patch' }
+        : { path: 'blocked.txt' };
 
-    const result = await executeTool('fs.write', {
+    const result = await executeTool(tool, {
       taskSession: 'tsk_conflict',
       workSession: metadata.workSession,
-      path: 'blocked.txt',
-      content: 'blocked',
+      ...input,
     }, options(home));
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('VALIDATION_ERROR');
     expect(existsSync(join(workPath, 'blocked.txt'))).toBe(false);
-  });
+    },
+  );
 });

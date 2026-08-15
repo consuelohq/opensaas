@@ -530,17 +530,6 @@ function readPatchPayload({ patchText, patchFile }) {
   return stdinContent;
 }
 
-function assertSafePatchPath(rawPath) {
-  if (!rawPath || typeof rawPath !== 'string') throw new Error('unsafe patch path: empty path');
-  if (path.isAbsolute(rawPath)) throw new Error(`unsafe patch path: ${rawPath}`);
-  const parts = rawPath.split(/[\\/]+/).filter(Boolean);
-  if (parts.includes('..') || parts.includes('.git')) throw new Error(`unsafe patch path: ${rawPath}`);
-  const resolved = resolve(rawPath);
-  const relative = path.relative(process.cwd(), resolved);
-  if (relative.startsWith('..') || path.isAbsolute(relative)) throw new Error(`unsafe patch path: ${rawPath}`);
-  return { rawPath, resolved };
-}
-
 function parsePatchHeader(line, prefix) {
   if (!line.startsWith(prefix)) return null;
   return line.slice(prefix.length).trim();
@@ -690,7 +679,10 @@ function conflictForPatchPath(existing, incoming) {
   return `conflicting patch operations for ${incoming.rawPath} and ${existing.path}`;
 }
 
-function applyPatchOperations(operations, resolveMutationPath = assertSafePatchPath) {
+function applyPatchOperations(operations, resolveMutationPath) {
+  if (typeof resolveMutationPath !== 'function') {
+    throw new Error('apply-patch requires a bounded mutation-path resolver');
+  }
   const plannedWrites = new Map();
   const plannedDeletes = new Map();
   const touched = [];

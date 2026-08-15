@@ -10,6 +10,8 @@ export type ErrorCode =
   | "TIMEOUT"
   | "PARSE_ERROR"
   | "NOT_FOUND"
+  | "TASK_SESSION_REQUIRED"
+  | "TASK_SESSION_NOT_FOUND"
   | "WORK_SESSION_NOT_FOUND"
   | "DRY_RUN";
 

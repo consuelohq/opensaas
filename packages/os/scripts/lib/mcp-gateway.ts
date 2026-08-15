@@ -93,6 +93,7 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
         workSession: {
           type: 'string',
           minLength: 1,
+          maxLength: 240,
           description: 'Work session used to route non-task work to its owning node.',
         },
         nodeId: {
