@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/twenty-migration/m3-detach-twenty-runtime-infrastructure/workpad.md",
+    "packages/cli/package.json",
+    "packages/workspace/package.json"
+  ],
+  "updatedAt": "2026-08-15T07:56:58.208Z"
+}
