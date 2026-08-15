@@ -9,15 +9,14 @@ import { fileURLToPath } from 'node:url';
 
 import { assertRequiredDeviceAuthorityWorkerSecrets } from '../../os/scripts/lib/device-authority-release-readiness';
 import { getSitesPaths, materializeSites } from '../../os/scripts/lib/sites';
-import { createWorkspaceReleaseManagedSiteRefreshSql } from '../../os/scripts/lib/workspace-edge-route-seed';
+import { WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS } from '../../os/scripts/lib/workspace-edge-route-seed';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '..', '..', '..');
 const WORKER_DIR = resolve(REPO_ROOT, 'packages/os/cloudflare/os-device-authority');
-const WORKSPACE_EDGE_CONFIG = resolve(REPO_ROOT, 'packages/os/cloudflare/workspace-edge/wrangler.toml');
-const ROUTE_REGISTRY_DATABASE = 'consuelo-workspace-route-registry';
 const WORKER_NAME = 'consuelo-os-device-authority';
 const HEALTH_URL = 'https://os.consuelohq.com/health';
+const RELEASE_SITE_REFRESH_URL = 'https://os.consuelohq.com/internal/release/site-snapshots/refresh';
 const DEVICE_PAGE_URL = 'https://os.consuelohq.com/login/device?user_code=RELSMOKE';
 const DEVICE_CODE_URL = 'https://os.consuelohq.com/login/device/code';
 const REQUEST_TIMEOUT_MS = 30_000;
@@ -246,6 +245,16 @@ function assertRemoteWorkerReleaseReadiness(deps: ReleaseDependencies): void {
   assertRequiredDeviceAuthorityWorkerSecrets(result.stdout);
 }
 
+function releaseManagedRouteRefreshSecret(): string {
+  const secret = process.env.OS_MANAGED_CLOUD_PROVISIONER_SECRET?.trim();
+  if (!secret) {
+    throw new Error(
+      'OS_MANAGED_CLOUD_PROVISIONER_SECRET is required to refresh release-managed workspace routes',
+    );
+  }
+  return secret;
+}
+
 function releaseDefaultSiteSnapshots(
   dryRun: boolean,
   deps: ReleaseDependencies,
@@ -322,37 +331,50 @@ function releaseDefaultSiteSnapshots(
   }
 }
 
-function refreshReleaseManagedWorkspaceSiteRoutes(
+async function refreshReleaseManagedWorkspaceSiteRoutes(
   snapshot: DefaultSiteSnapshot,
   dryRun: boolean,
   deps: ReleaseDependencies,
-): void {
+): Promise<void> {
   if (dryRun) {
     deps.writeOut(
       `plannedRouteRefresh=workspace_route_registry:${snapshot.versionId}`,
     );
     return;
   }
-  const sql = createWorkspaceReleaseManagedSiteRefreshSql({
-    versionId: snapshot.versionId,
-    snapshotWorkspaceId: DEFAULT_SNAPSHOT_WORKSPACE_ID,
-    siteContentHashes: snapshot.siteContentHashes,
-  });
-  runCommand({
-    command: 'wrangler',
-    args: [
-      'd1',
-      'execute',
-      ROUTE_REGISTRY_DATABASE,
-      '--remote',
-      '--config',
-      WORKSPACE_EDGE_CONFIG,
-      '--command',
-      sql,
-    ],
-    cwd: WORKER_DIR,
-    stdio: 'inherit',
-  }, deps);
+  const releaseRouteSecret = releaseManagedRouteRefreshSecret();
+  let response: Response;
+  try {
+    response = await fetchWithDefaults(RELEASE_SITE_REFRESH_URL, deps.fetchImpl, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${releaseRouteSecret}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        versionId: snapshot.versionId,
+        snapshotWorkspaceId: DEFAULT_SNAPSHOT_WORKSPACE_ID,
+        siteContentHashes: Object.fromEntries(
+          WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS.map((siteId) => [
+            siteId,
+            snapshot.siteContentHashes[siteId],
+          ]),
+        ),
+      }),
+    });
+  } catch (error: unknown) {
+    throw new Error(
+      `workspace route refresh request failed: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    );
+  }
+  if (!response.ok) {
+    const detail = (await response.text()).trim();
+    throw new Error(
+      `workspace route refresh failed with HTTP ${response.status}${detail ? `: ${detail}` : ''}`,
+    );
+  }
+  deps.writeOut(`refreshedRoutes=workspace_route_registry:${snapshot.versionId}`);
 }
 
 async function fetchWithDefaults(
@@ -494,6 +516,7 @@ async function runDeviceAuthorityRelease(
 
   if (!options.verifyOnly) {
     assertRemoteWorkerReleaseReadiness(deps);
+    if (!options.dryRun) releaseManagedRouteRefreshSecret();
   }
 
   deps.writeOut(`workerDir=${WORKER_DIR}`);
@@ -520,7 +543,7 @@ async function runDeviceAuthorityRelease(
       cwd: WORKER_DIR,
       stdio: 'inherit',
     }, deps);
-    refreshReleaseManagedWorkspaceSiteRoutes(
+    await refreshReleaseManagedWorkspaceSiteRoutes(
       defaultSiteSnapshot,
       options.dryRun,
       deps,
