@@ -1,0 +1,294 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/make-mcp-admission-failures-observable-and-non-network-shaped",
+  "base": "origin/stream/os",
+  "headSha": "2c914cbad3593b5d8ea2a136d0e2eb51a2207df5",
+  "changeHash": "ffe4b374508327592babf4129a3e9a3e38bca1751262e688ea7ad32059a08117",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/reference/mcp.mdx",
+    "packages/os/scripts/server/logger.ts",
+    "packages/os/scripts/server/middleware/dangerous-material.ts",
+    "packages/os/scripts/server/routes/mcp.ts",
+    "packages/os/tests/mcp-gateway.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-15T04:20:06.215Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/make-mcp-admission-failures-observable-and-non-network-shaped/current.json",
+        ".task/os/make-mcp-admission-failures-observable-and-non-network-shaped/session.json",
+        ".task/os/make-mcp-admission-failures-observable-and-non-network-shaped/workpad.md",
+        ".task/tasks/os/make-mcp-admission-failures-observable-and-non-network-shaped.json",
+        "packages/documentation/src/content/docs/reference/mcp.mdx",
+        "packages/os/scripts/server/logger.ts",
+        "packages/os/scripts/server/middleware/dangerous-material.ts",
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-mcp-admission-error-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "MCP request admission and dangerous-material boundary changes must prove JSON-RPC transport/error behavior, fail-closed safety, authentication/gateway compatibility, and syntax without selecting the historically broad OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/server/logger.ts",
+            "packages/os/scripts/server/middleware/dangerous-material.ts",
+            "packages/os/scripts/server/routes/mcp.ts",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS MCP admission contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true
+        },
+        {
+          "name": "OS dangerous material ingress contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dangerous-material-policy.test.ts"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true
+        },
+        {
+          "name": "OS MCP admission syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2386,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-mcp-admission-failures-observable-and-non-network-shaped\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m34 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2092\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1090\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m34 passed\u001b[39m\u001b[22m\u001b[90m (34)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:20:00\n\u001b[2m   Duration \u001b[22m 2.17s\u001b[2m (transform 13ms, setup 0ms, import 19ms, tests 2.09s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS MCP admission contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 937,
+          "outputTail": "ge\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"af7ff27b-0a42-4578-bee2-a5751401851b\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.401Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"a8a0865f-6faa-496d-b08c-8d991a901174\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.402Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"68545fc3-17dd-4d97-bc17-54331f01bbc8\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.405Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"b24d1ab7-aae8-4c59-a800-35c35d7c14f2\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.410Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"b1ffdf1b-141b-430a-855b-cfd2ad2dfe3b\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.416Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"7b6971b6-ee68-4317-a563-5f61912d3a15\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.421Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"17062b39-5f39-453a-ad61-1eb2f7fba5c9\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.426Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"801d5415-58b3-427e-9890-aa3ededef473\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.432Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"bae8f36d-b974-4aeb-a587-653436354b68\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.436Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"cbe02f66-19ae-4d6c-9d42-bd0583e5f54b\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.439Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"9eb255c0-8d98-413b-b692-b0cb8885e655\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.440Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"48eb0d2d-3ce3-48a5-9aac-bbce6c27e5ae\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.441Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"074f90d3-9c46-4cc8-8e39-aefdbe52b28a\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.444Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"bd008f5d-2600-4fd3-ac84-fc8a6ff324b8\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.449Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"9e0a133e-055e-4aeb-817e-acade63a7d89\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T04:20:03.454Z\"}\n(node:49316) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS dangerous material ingress contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dangerous-material-policy.test.ts"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 341,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-mcp-admission-failures-observable-and-non-network-shaped/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/dangerous-material-policy.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 128\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:20:03\n\u001b[2m   Duration \u001b[22m 195ms\u001b[2m (transform 20ms, setup 0ms, import 26ms, tests 128ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS MCP admission syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1597,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 63,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.574041ms)\n✔ parseCliArguments selects GraphQL generation mode (0.051333ms)\n✔ parseCliArguments selects migration generation mode (0.057916ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.080916ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.060042ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.049083ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.156041ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.615333ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.292583ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.0705ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.168875ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.301708ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.074458ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.075833ms)\n✔ server lint configuration resolves the existing workspace rules project (0.137333ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.067916ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.140542ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.082792ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.08175ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.156083ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.109791ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.110875ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 39.395208\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 135,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.07ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [0.69ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.04ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [129.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 437,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.297458ms)\n✔ the configured TypeORM wrapper resolves from the installed package (379.876625ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 413.178083\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

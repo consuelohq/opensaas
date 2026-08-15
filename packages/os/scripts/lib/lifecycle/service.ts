@@ -1,11 +1,21 @@
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 import type {
   LifecycleHealthAcceptance,
   LifecycleServiceController,
 } from './types';
 const LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT = 'retire-legacy-system-daemons.sh';
+const MAC_GATEWAY_SERVICE_LABELS = new Set([
+  'com.consuelo.caddy',
+  'com.consuelo.portless.system',
+  'com.consuelo.watchdog',
+  'com.consuelo.availability',
+]);
+const MAC_GATEWAY_SERVICE_PREFIXES = [
+  'com.consuelo.os.cloudflared.',
+  'com.consuelo.os.node-heartbeat.',
+];
 
 export type LifecycleProcessResult = {
   exitCode: number;
@@ -48,6 +58,26 @@ function commandFailure(result: LifecycleProcessResult, fallback: string): Error
   return new Error(result.stderr.trim() || result.stdout.trim() || fallback);
 }
 
+function installedMacGatewayLaunchAgents(environment?: NodeJS.ProcessEnv): Array<{
+  label: string;
+  plistPath: string;
+}> {
+  const userHome = environment?.HOME?.trim();
+  if (!userHome) return [];
+  const launchAgentDir = join(userHome, 'Library', 'LaunchAgents');
+  if (!existsSync(launchAgentDir)) return [];
+  return readdirSync(launchAgentDir)
+    .filter((name) => name.endsWith('.plist'))
+    .map((name) => ({
+      label: name.slice(0, -'.plist'.length),
+      plistPath: join(launchAgentDir, name),
+    }))
+    .filter(({ label }) =>
+      MAC_GATEWAY_SERVICE_LABELS.has(label)
+      || MAC_GATEWAY_SERVICE_PREFIXES.some((prefix) => label.startsWith(prefix)),
+    )
+    .sort((left, right) => left.label.localeCompare(right.label));
+}
 export function createReloadServiceController(input: {
   osRoot: string;
   activeRuntimeRoot?: string;
@@ -118,6 +148,38 @@ export function createReloadServiceController(input: {
         const result = await run(runtimeExecutable, [activeReloadScript, command]);
         if (result.exitCode !== 0) {
           throw commandFailure(result, `reload adapter exited ${result.exitCode}`);
+        }
+        if (platform === 'darwin' && options.waitForCompletion) {
+          const userId = input.userId ?? process.getuid?.();
+          if (userId === undefined) {
+            throw new Error('cannot resolve the user id for gateway restart');
+          }
+          const domain = 'gui/' + String(userId);
+          for (const gateway of installedMacGatewayLaunchAgents(input.environment)) {
+            await run('launchctl', ['bootout', domain + '/' + gateway.label]);
+            const bootstrap = await run('launchctl', [
+              'bootstrap',
+              domain,
+              gateway.plistPath,
+            ]);
+            if (bootstrap.exitCode !== 0) {
+              throw commandFailure(
+                bootstrap,
+                'gateway bootstrap exited ' + String(bootstrap.exitCode) + ': ' + gateway.label,
+              );
+            }
+            const kickstart = await run('launchctl', [
+              'kickstart',
+              '-k',
+              domain + '/' + gateway.label,
+            ]);
+            if (kickstart.exitCode !== 0) {
+              throw commandFailure(
+                kickstart,
+                'gateway restart exited ' + String(kickstart.exitCode) + ': ' + gateway.label,
+              );
+            }
+          }
         }
       } catch (error: unknown) {
         throw new Error(

@@ -11,7 +11,8 @@ evidence:
   - source: packages/os/scripts/server/routes/mcp.ts
     tests:
       - packages/os/tests/local-os-server-hono-architecture.test.ts
-    runtime: HTTP method handling and bearer-versus-signed authorization paths were inspected on 2026-07-13.
+      - packages/os/tests/mcp-gateway.test.ts
+    runtime: HTTP method handling, bearer-versus-signed authorization, request receipts, and pre-auth safety denials were verified on 2026-08-14.
 ---
 
 Consuelo OS exposes Model Context Protocol through local stdio for supported coding agents and HTTPS for approved hosted agents.
@@ -117,6 +118,10 @@ JSON-RPC errors use standard codes for the current cases:
 - `-32600` — invalid request;
 - `-32601` — method not found;
 - `-32602` — invalid `tools/call` parameters.
+
+Consuelo safety admission can reject an MCP request before authentication or tool execution. Those denials use HTTP 200 with a JSON-RPC server error code of `-32040`, a generic `DANGEROUS_MATERIAL_BLOCKED` data code, and an `x-consuelo-request-id` receipt. The receipt lets operators distinguish a request that reached Consuelo OS and was denied locally from a transport failure that never reached the OS boundary. Raw blocked payloads are not included in this telemetry.
+
+Authentication failures keep their HTTP status contract; for example, a missing bearer credential remains HTTP 401. MCP responses that reach the local OS boundary also carry `x-consuelo-request-id` for correlation.
 
 Authorization, missing scopes, expired credentials, and signed-transport errors are defined in [Security reference](/secure/security-reference/).
 

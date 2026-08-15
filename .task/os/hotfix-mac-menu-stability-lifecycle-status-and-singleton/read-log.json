@@ -1,0 +1,17 @@
+{
+  "files": [
+    ".task/os/hotfix-mac-menu-stability-lifecycle-status-and-singleton/workpad.md",
+    ".task/tasks/os/hotfix-mac-menu-stability-lifecycle-status-and-singleton.json",
+    "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/native-lifecycle-client.ts",
+    "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+    "packages/os/scripts/lib/operator-token-store.ts",
+    "packages/os/scripts/login.ts",
+    "packages/os/tests/native-lifecycle-endpoint.test.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts"
+  ],
+  "updatedAt": "2026-08-14T22:16:32.102Z"
+}

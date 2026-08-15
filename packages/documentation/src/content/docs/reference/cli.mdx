@@ -68,7 +68,9 @@ Available release channels are `stable`, `beta`, `canary`, `dev`, and `nightly`.
 
 ### Restart and update gateway reconciliation
 
-`consuelo restart` reconciles the local gateway from the currently active runtime before reloading services. A successful `consuelo update` activates the verified candidate first, then runs gateway reconciliation and reload from that newly active runtime rather than from the older process that initiated the update. This prevents stale proxy configuration from being restored after an otherwise successful update.
+`consuelo restart` reconciles the local gateway from the currently active runtime before reloading services. On macOS, a completed restart also reloads installed local gateway sidecars such as the Cloudflare connector, node heartbeat, Caddy or Portless, watchdog, and availability service before health acceptance completes.
+
+`consuelo update` activates the verified candidate first, then runs gateway reconciliation and reload from that newly active runtime rather than from the older process that initiated the update. If the installed release is already current, a normal update still performs this service reconciliation instead of returning early; `consuelo update --check` remains read-only. This prevents an otherwise healthy OS process from continuing alongside stale gateway definitions.
 
 Private workspace pages depend on signed Workspace Edge headers surviving that local gateway hop. A lifecycle command now fails if the activated runtime cannot complete its gateway reconciliation instead of silently continuing with stale configuration.
 

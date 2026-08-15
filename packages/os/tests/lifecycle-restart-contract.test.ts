@@ -1,5 +1,6 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -90,6 +91,63 @@ describe('lifecycle restart parity', () => {
     ]);
   });
 
+  it('restarts every installed macOS gateway sidecar during a completed lifecycle restart', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateways-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    for (const label of [
+      'com.consuelo.caddy',
+      'com.consuelo.watchdog',
+      'com.consuelo.os.cloudflared.connector-test',
+      'com.consuelo.os.node-heartbeat.node-test',
+    ]) {
+      writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    }
+    const calls: Array<{ command: string; args: string[] }> = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        run: async (command, args) => {
+          calls.push({ command, args });
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await controller.restart({ waitForCompletion: true });
+
+      expect(calls).toEqual([
+        {
+          command: process.execPath,
+          args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'restart-now'],
+        },
+        ...[
+          'com.consuelo.caddy',
+          'com.consuelo.os.cloudflared.connector-test',
+          'com.consuelo.os.node-heartbeat.node-test',
+          'com.consuelo.watchdog',
+        ].flatMap((label) => [
+          {
+            command: 'launchctl',
+            args: ['bootout', 'gui/501/' + label],
+          },
+          {
+            command: 'launchctl',
+            args: ['bootstrap', 'gui/501', join(launchAgents, label + '.plist')],
+          },
+          {
+            command: 'launchctl',
+            args: ['kickstart', '-k', 'gui/501/' + label],
+          },
+        ]),
+      ]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('reconciles preserved Caddy topology from the activated runtime before lifecycle restart', async () => {
     const lifecycle = source('scripts/lifecycle.ts');
     const service = source('scripts/lib/lifecycle/service.ts');
@@ -134,6 +192,15 @@ describe('lifecycle restart parity', () => {
     expect(workflow).toContain(
       '--migration "2026-08-13-reconcile-caddy-ha-watchdog:scripts/migrations/reconcile-caddy-ha-watchdog.ts"',
     );
+  });
+
+  it('publishes a fresh Caddy gateway reconciliation migration with every runtime release', () => {
+    const workflow = source('../../.github/workflows/consuelo-os-runtime-publish.yaml');
+
+    expect(workflow).toContain(
+      '--migration "release-${{ needs.plan.outputs.version }}-reconcile-caddy-gateway:scripts/migrations/reconcile-caddy-worker-pool.ts"',
+    );
+    expect(workflow.match(/reconcile-caddy-gateway:scripts\/migrations\/reconcile-caddy-worker-pool\.ts/g)).toHaveLength(1);
   });
 
   it('fails macOS lifecycle preflight when recognized legacy root supervision remains', async () => {

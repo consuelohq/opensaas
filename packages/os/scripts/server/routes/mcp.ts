@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { Hono } from 'hono';
 
 import {
@@ -29,13 +29,26 @@ import {
 import { internalError, jsonResponse } from '../middleware/errors';
 import { queueGatewayAuthenticationTraceSafely } from '../../lib/trace-persistence';
 import type { TraceRoutingContext } from '../../lib/trace-routing-context';
-import { logLocalOsServerError } from '../logger';
+import { logLocalOsServerError, logLocalOsServerEvent } from '../logger';
 import { validateMcpRequestOrigin } from '../security/mcp-origin';
 import { executeLocalOsFacadeTool } from '../services/call-service';
 import { resolveMcpRequestSession } from '../services/mcp-session';
 import { readGuardedLocalOsSteering } from '../services/steering-service';
 
 const MCP_PATH = '/mcp';
+const MCP_REQUEST_ID_PATTERN = /^[a-zA-Z0-9._:-]{8,128}$/;
+
+type McpRouteVariables = {
+  requestId: string;
+};
+
+function resolveMcpRequestId(request: Request): string {
+  const provided = request.headers.get('x-consuelo-request-id')?.trim();
+  return provided && MCP_REQUEST_ID_PATTERN.test(provided)
+    ? provided
+    : randomUUID();
+}
+
 
 type McpRouteDependencies = {
   getSteering: (
@@ -134,12 +147,25 @@ function resolveSteeringCallerKey(input: {
 
 export function createMcpRoutes(
   dependencies: McpRouteDependencies = defaultDependencies,
-): Hono {
-  const app = new Hono();
+) {
+  const app = new Hono<{ Variables: McpRouteVariables }>();
+
+  app.use(MCP_PATH, async (context, next) => {
+    const requestId = resolveMcpRequestId(context.req.raw);
+    context.set('requestId', requestId);
+    logLocalOsServerEvent('local_os.mcp_request_received', {
+      requestId,
+      route: MCP_PATH,
+      method: context.req.method,
+    });
+    await next();
+    context.header('x-consuelo-request-id', requestId);
+  });
 
   app.all(MCP_PATH, async (context) => {
     try {
       const request = context.req.raw;
+      const requestId = context.get('requestId');
 
       try {
         const config = loadAuthConfigForRequest();
@@ -178,10 +204,10 @@ export function createMcpRoutes(
       }
 
       const body = await request.clone().text();
-      const rawMaterialDenied = admitRawMcpBody(body);
+      const rawMaterialDenied = admitRawMcpBody(body, requestId);
       if (rawMaterialDenied) return rawMaterialDenied;
 
-      const decodedMaterialDenied = admitDecodedMcpBody(body);
+      const decodedMaterialDenied = admitDecodedMcpBody(body, requestId);
       if (decodedMaterialDenied) return decodedMaterialDenied;
 
       const mcpScope = resolveMcpGatewayRequiredScope(body);

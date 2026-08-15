@@ -96,91 +96,6 @@
       "reason": "Task routing and metadata changes must prove task-session behavior."
     },
     {
-      "id": "workspace-session-integration",
-      "critical": true,
-      "exclusive": true,
-      "source": [
-        "packages/os/tools/task-lifecycle/schema.ts",
-        "packages/os/hooks/task/**",
-        "packages/workspace/hooks/task/**",
-        "packages/os/skills/task/SKILL.md",
-        "packages/workspace/task.md",
-        "packages/workspace/senior-engineer.md",
-        "packages/os/steering/system_prompt.md",
-        "packages/workspace/scripts/session-start.ts",
-        "packages/os/tests/session-integration-guidance.test.ts",
-        "packages/os/tests/task-hook-workflow-contract.test.ts",
-        "packages/os/tests/task-hooks.test.ts",
-        "packages/os/scripts/session-start.ts",
-        "packages/os/scripts/lib/work-session.ts",
-        "packages/os/scripts/lib/observability-traces-site.ts",
-        "packages/os/tests/observability-traces-site.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "workspace session integration contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/os/tests/session-integration-guidance.test.ts",
-            "packages/os/tests/session-start-foundation.test.ts",
-            "packages/os/tests/task-hook-workflow-contract.test.ts",
-            "packages/os/tests/task-hooks.test.ts",
-            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
-            "packages/workspace/tests/task-hooks.test.ts",
-            "packages/workspace/tests/workflow-intent.test.ts",
-            "packages/workspace/tests/session-start-compatibility.test.ts",
-            "packages/os/tests/observability-traces-site.test.ts"
-          ]
-        }
-      ],
-      "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract."
-    },
-    {
-      "id": "os-task-worktree-eviction",
-      "critical": true,
-      "exclusive": true,
-      "source": [
-        "packages/os/scripts/task-start.js",
-        "packages/os/scripts/task-cleanup.js",
-        "packages/os/scripts/task-finish.js",
-        "packages/os/scripts/task-worktree-gc.js",
-        "packages/os/scripts/lib/task-registry.js",
-        "packages/os/scripts/lib/task-session.js",
-        "packages/os/scripts/lib/task-worktree-eviction.js",
-        "packages/os/scripts/lib/task-worktree-gc.js",
-        "packages/os/scripts/lib/task-worktree-gc-scheduler.ts",
-        "packages/os/scripts/lib/facade/executor.ts",
-        "packages/os/scripts/server/supervisor.ts",
-        "packages/os/tests/task-worktree-gc-scheduler.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "task worktree eviction and recovery contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/workspace/tests/task-worktree-eviction.test.ts",
-            "packages/workspace/tests/durable-task-worktrees.test.ts",
-            "packages/workspace/tests/task-session.test.js",
-            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
-          ]
-        },
-        {
-          "name": "task worktree eviction syntax contracts",
-          "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
-          ]
-        }
-      ],
-      "reason": "Durable task eviction, recovery archives, inactivity GC, supervisor scheduling, and facade recovery must prove reversible cleanup without selecting the unrelated package-wide OS baseline."
-    },
-    {
       "id": "workspace-test-selection",
       "critical": true,
       "source": [
@@ -202,103 +117,6 @@
         }
       ],
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy."
-    },
-    {
-      "id": "os-work-session-fs",
-      "critical": true,
-      "exclusive": true,
-      "source": [
-        "packages/os/TOOLS.md",
-        "packages/os/manifests/generated/core.manifest.json",
-        "packages/os/manifests/generated/tool.manifest.json",
-        "packages/os/scripts/fs.js",
-        "packages/os/scripts/generate-docs.ts",
-        "packages/os/scripts/generate-types.ts",
-        "packages/os/scripts/lib/facade/executor.ts",
-        "packages/os/scripts/lib/facade/schemas.ts",
-        "packages/os/scripts/lib/facade/types.ts",
-        "packages/os/scripts/lib/fs/mutation-path.ts",
-        "packages/os/scripts/lib/work-session-fs.ts",
-        "packages/os/src/generated/workspace.d.ts",
-        "packages/os/tests/session-start-foundation.test.ts",
-        "packages/os/tests/fixtures/tool-package-baseline.json",
-        "packages/os/tests/tool-manifest.test.ts",
-        "packages/os/tests/work-session-fs.test.ts",
-        "packages/os/tools/filesystem/schema.ts",
-        "packages/os/workflows/generated/workflow-bundles.json",
-        "packages/os/scripts/lib/work-session-protection.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS work-session filesystem authority contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/os/tests/work-session-fs.test.ts",
-            "packages/os/tests/fs-write.test.ts",
-            "packages/os/tests/session-start-foundation.test.ts",
-            "packages/os/tests/tool-manifest.test.ts"
-          ]
-        },
-        {
-          "name": "OS task-session filesystem compatibility contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/os/tests/facade/facade.test.ts",
-            "-t",
-            "fs\\.(apply_patch|write)"
-          ]
-        },
-        {
-          "name": "OS work-session filesystem syntax contracts",
-          "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
-          ]
-        }
-      ],
-      "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests."
-    },
-    {
-      "id": "os-work-session-code-call",
-      "critical": true,
-      "exclusive": true,
-      "source": [
-        "packages/os/scripts/lib/code-call/**",
-        "packages/os/scripts/lib/mcp-gateway.ts",
-        "packages/os/tests/generated-error-code-parity.test.ts",
-        "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/work-session-code-call.test.ts",
-        "packages/os/scripts/lib/work-session-protection.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS work-session Code Call and MCP authority contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/os/tests/work-session-code-call.test.ts",
-            "packages/os/tests/session-start-foundation.test.ts",
-            "packages/os/tests/generated-error-code-parity.test.ts",
-            "packages/os/tests/mcp-gateway.test.ts"
-          ]
-        },
-        {
-          "name": "OS work-session Code Call syntax contracts",
-          "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
-          ]
-        }
-      ],
-      "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests."
     },
     {
       "id": "trace-watch",
@@ -497,7 +315,9 @@
         "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/tests/install-edge-site-publisher.test.ts",
         "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
-        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/lib/workspace-edge-node-auth.ts"
       ],
       "tests": [
         {
@@ -705,6 +525,7 @@
         "packages/os/scripts/lifecycle.ts",
         "packages/os/scripts/lib/facade/schemas.ts",
         "packages/os/scripts/lib/native-lifecycle-operation.ts",
+        "packages/os/src/generated/workspace.d.ts",
         "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
         "packages/os/tests/fixtures/tool-package-baseline.json",
         "packages/os/tests/cli-update-routing.test.ts",
@@ -718,7 +539,12 @@
         "packages/os/tools/lifecycle/**",
         "packages/os/tools/registry.ts",
         "packages/os/scripts/lib/lifecycle/service.ts",
-        "packages/os/tests/lifecycle-restart-contract.test.ts"
+        "packages/os/scripts/lib/platforms/linux.ts",
+        "packages/os/tests/lifecycle-restart-contract.test.ts",
+        "packages/os/tests/linux-platform.test.ts",
+        "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+        "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
       ],
       "tests": [
         {
@@ -729,6 +555,7 @@
             "vitest",
             "run",
             "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
             "packages/os/tests/lifecycle-facade.test.ts",
             "packages/os/tests/native-lifecycle-operation.test.ts",
             "packages/os/tests/lifecycle-tool-surface.test.ts",
@@ -737,7 +564,7 @@
             "packages/os/tests/windows-platform.test.ts",
             "packages/os/tests/tool-manifest.test.ts",
             "packages/os/tests/tool-package-layout.test.ts",
-            "packages/os/tests/lifecycle-restart-contract.test.ts"
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
           ]
         },
         {
@@ -902,6 +729,50 @@
       "reason": "Cloud-first Consuelo OS login, canonical signup, workspace trial, and provisioning handoff changes must prove the exact browser auth, managed-cloud, installer-lifecycle, launcher, Worker, and syntax contracts without selecting unrelated package-wide OS tests."
     },
     {
+      "id": "os-mcp-admission-error-contract",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/scripts/server/middleware/dangerous-material.ts",
+        "packages/os/scripts/server/logger.ts",
+        "packages/os/scripts/lib/dangerous-material-policy.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/dangerous-material-policy.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS MCP admission contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ]
+        },
+        {
+          "name": "OS dangerous material ingress contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dangerous-material-policy.test.ts"
+          ]
+        },
+        {
+          "name": "OS MCP admission syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "MCP request admission and dangerous-material boundary changes must prove JSON-RPC transport/error behavior, fail-closed safety, authentication/gateway compatibility, and syntax without selecting the historically broad OS package suite."
+    },
+    {
       "id": "os-chatgpt-mcp-oauth",
       "critical": true,
       "exclusive": true,
@@ -1028,6 +899,53 @@
         }
       ],
       "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-internal-workspace-shell",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/scripts/lib/settings-snapshot.ts",
+        "packages/os/scripts/lib/settings-materialization.ts",
+        "packages/os/scripts/lib/workspace-chrome.ts",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/tests/settings-site.test.ts",
+        "packages/os/tests/launcher-nodes-materialization.test.ts",
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/sites-cli.test.ts",
+        "packages/os/tests/launcher-local-customization.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/local-agent-connectivity.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/settings-site.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts"
+          ]
+        },
+        {
+          "name": "OS internal workspace shell syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "The workspace shell tests share process.env and spawn local MCP daemons; run files serially so one test file cannot corrupt another file\u2019s agent-verification state."
     },
     {
       "id": "os-managed-cloud-one-click-provisioning",
@@ -1551,6 +1469,188 @@
         }
       ],
       "reason": "Frontend package changes should run the project test target."
+    },
+    {
+      "id": "workspace-session-integration",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tools/task-lifecycle/schema.ts",
+        "packages/os/hooks/task/**",
+        "packages/workspace/hooks/task/**",
+        "packages/os/skills/task/SKILL.md",
+        "packages/workspace/task.md",
+        "packages/workspace/senior-engineer.md",
+        "packages/os/steering/system_prompt.md",
+        "packages/workspace/scripts/session-start.ts",
+        "packages/os/tests/session-integration-guidance.test.ts",
+        "packages/os/tests/task-hook-workflow-contract.test.ts",
+        "packages/os/tests/task-hooks.test.ts",
+        "packages/os/scripts/session-start.ts",
+        "packages/os/scripts/lib/work-session.ts",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/tests/observability-traces-site.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts"
+          ]
+        }
+      ],
+      "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract."
+    },
+    {
+      "id": "os-task-worktree-eviction",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/task-start.js",
+        "packages/os/scripts/task-cleanup.js",
+        "packages/os/scripts/task-finish.js",
+        "packages/os/scripts/task-worktree-gc.js",
+        "packages/os/scripts/lib/task-registry.js",
+        "packages/os/scripts/lib/task-session.js",
+        "packages/os/scripts/lib/task-worktree-eviction.js",
+        "packages/os/scripts/lib/task-worktree-gc.js",
+        "packages/os/scripts/lib/task-worktree-gc-scheduler.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/server/supervisor.ts",
+        "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ]
+        },
+        {
+          "name": "task worktree eviction syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Durable task eviction, recovery archives, inactivity GC, supervisor scheduling, and facade recovery must prove reversible cleanup without selecting the unrelated package-wide OS baseline."
+    },
+    {
+      "id": "os-work-session-fs",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/generated/core.manifest.json",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/scripts/fs.js",
+        "packages/os/scripts/generate-docs.ts",
+        "packages/os/scripts/generate-types.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/facade/types.ts",
+        "packages/os/scripts/lib/fs/mutation-path.ts",
+        "packages/os/scripts/lib/work-session-fs.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/session-start-foundation.test.ts",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/work-session-fs.test.ts",
+        "packages/os/tools/filesystem/schema.ts",
+        "packages/os/workflows/generated/workflow-bundles.json",
+        "packages/os/scripts/lib/work-session-protection.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ]
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write)"
+          ]
+        },
+        {
+          "name": "OS work-session filesystem syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-work-session-code-call",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/code-call/**",
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/tests/generated-error-code-parity.test.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/work-session-code-call.test.ts",
+        "packages/os/scripts/lib/work-session-protection.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS work-session Code Call and MCP authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-code-call.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/generated-error-code-parity.test.ts",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ]
+        },
+        {
+          "name": "OS work-session Code Call syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests."
     }
   ]
 }
