@@ -211,6 +211,80 @@ describe('lifecycle restart parity', () => {
     }
   });
 
+  it('retries a transient macOS gateway kickstart after bootstrap succeeds', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-kickstart-retry-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.caddy';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    let kickstartAttempts = 0;
+    const sleepCalls: number[] = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        sleep: async (milliseconds) => {
+          sleepCalls.push(milliseconds);
+        },
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'kickstart') {
+            kickstartAttempts += 1;
+            if (kickstartAttempts === 1) {
+              return {
+                exitCode: 5,
+                stdout: '',
+                stderr: 'Bootstrap failed: 5: Input/output error',
+              };
+            }
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      expect(kickstartAttempts).toBe(2);
+      expect(sleepCalls).toEqual([200]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('includes the gateway label when transient kickstart retries are exhausted', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-kickstart-failure-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.caddy';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    let kickstartAttempts = 0;
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        sleep: async () => {},
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'kickstart') {
+            kickstartAttempts += 1;
+            return {
+              exitCode: 5,
+              stdout: '',
+              stderr: 'Bootstrap failed: 5: Input/output error',
+            };
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true })).rejects.toThrow(label);
+      expect(kickstartAttempts).toBe(4);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('includes the gateway label when bootstrap retries are exhausted', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-failure-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
