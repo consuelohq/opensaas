@@ -357,6 +357,31 @@ describe('foundation source contract', () => {
     expect(pageTitle).toContain("closest('[data-home-install-copy]')");
   });
 
+  test('uses compact neutral desktop docs chrome and a two-column home', () => {
+    const css = read('src/styles/docs.css');
+    const sidebar = read('src/components/Sidebar.astro');
+    const pageTitle = read('src/components/PageTitle.astro');
+    expect(css).toContain('--sl-sidebar-width: 18rem');
+    expect(css).toContain('.right-sidebar {');
+    expect(css).toContain('.right-sidebar-container {');
+    expect(css).toContain('width: 15rem');
+    expect(css).toContain('border-left: 0');
+    expect(css).toContain(".right-sidebar a[aria-current=\'true\']");
+    expect(css).toContain('font-weight: 500');
+    expect(css).toContain('.main-frame:has(.docs-home-hero) .right-sidebar-container');
+    expect(css).toContain('display: none');
+    expect(css).toContain(":has(> #start-in-one-command)");
+    expect(css).toContain('#pick-up-where-you-need');
+    expect(pageTitle).toContain('docs-home-quick-start');
+    expect(pageTitle).toContain('.docs-home-quick-start {');
+    expect(pageTitle).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
+    expect(sidebar).toContain('font-size: 0.875rem');
+    expect(sidebar).toContain('font-weight: 400');
+    expect(sidebar).toContain('min-height: 2.25rem');
+    expect(pageTitle).toContain('font-size: clamp(3.25rem, 4.4vw, 3.75rem)');
+    expect(pageTitle).toContain('min-height: 2.25rem');
+  });
+
   test('uses the launcher warm editorial palette without changing fonts', () => {
     const css = read('src/styles/docs.css');
     for (const token of [
