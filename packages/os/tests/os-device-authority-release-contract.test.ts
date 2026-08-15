@@ -639,6 +639,9 @@ describe('OS device authority release contract', () => {
             'unexpected release mutation: ' + command.command + ' ' + command.args.join(' '),
           );
         },
+        async managedCloudPricingLoader() {
+          return createDefaultManagedCloudPricingRuntime();
+        },
         async fetchImpl(input) {
           const url = String(input);
           if (url === 'https://os.consuelohq.com/internal/release/site-snapshots/refresh') {
