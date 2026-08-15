@@ -43,10 +43,17 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).toContain('aria-label="Workspace routes"');
     expect(html).toContain('aria-current="page" href="/tracing"');
+    expect(html).toContain('class="workspace-route-option workspace-route-primary"');
+    expect(html).toContain('href="/"');
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/tools"');
-    expect(html).toContain('href="/configuration"');
     expect(html).toContain('href="/secrets"');
+    expect(html).toContain('href="/docs"');
+    expect(html).toContain('>Guides</p>');
+    expect(html).toContain('--workspace-chrome-bg:');
+    expect(html).toContain('--workspace-menu-bg:');
+    expect(html).toContain('@media (prefers-color-scheme: dark)');
+    expect(html).toContain('left: 50vw;');
     expect(html).not.toContain('<div>Machine</div>');
 
     expect(html).not.toContain('Live tracing cockpit');

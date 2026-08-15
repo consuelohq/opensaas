@@ -3,8 +3,8 @@
   "stream": "stream/os",
   "taskBranch": "task/os/stabilize-configuration-shell-and-redesign-tools",
   "baseBranch": "stream/os",
-  "sourceBranch": "main",
-  "startFrom": "main",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
   "prNumber": 2030,
   "prUrl": "https://github.com/consuelohq/opensaas/pull/2030",
   "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2030",
@@ -15,5 +15,5 @@
   "taskSession": "tsk_ec71b73ce90b",
   "tmuxSession": "opensaas-os-stabilize-configuration-shell-and-redesign-tools-ec71b73c",
   "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/.task/os/stabilize-configuration-shell-and-redesign-tools/session.json",
-  "createdAt": "2026-08-15T05:31:16.987Z"
+  "createdAt": "2026-08-15T06:45:52.459Z"
 }

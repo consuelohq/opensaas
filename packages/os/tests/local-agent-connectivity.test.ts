@@ -406,7 +406,7 @@ describe('local agent connectivity', () => {
       status: 'connected',
       details: ['opencode'],
     });
-    expect(integration.root).toContain('<title>Nodes - Consuelo OS</title>');
+    expect(integration.root).toContain('<title>Overview - Consuelo OS</title>');
     expect(integration.root).toContain('data-workspace-shell');
     expect(integration.root).not.toContain('data-agent-count');
     expect(integration.configuration).toContain('<title>Overview - Consuelo OS</title>');

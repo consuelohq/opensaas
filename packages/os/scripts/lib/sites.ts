@@ -553,9 +553,9 @@ function baseStyles(): string {
 
 function buildSitesIndex(): string {
   // The workspace root is the operational home for an authenticated OS workspace.
-  // Keep it identical to /nodes so every daemon refresh, update, and restart converges
-  // on the same page instead of resurrecting the retired local launcher.
-  return renderConfigurationSite('nodes');
+  // Keep it identical to Overview so every daemon refresh, update, and restart converges
+  // on the same default page instead of resurrecting Nodes or the retired local launcher.
+  return renderConfigurationSite('configuration');
 }
 
 function buildPagesIndex(registry: SitePageRegistry): string {
