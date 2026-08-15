@@ -1,0 +1,19 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "stream/twenty-migration",
+  "startFrom": "stream",
+  "prNumber": 2010,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2010",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2010",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2010/m1-extract-twenty-orchestration-from-migrated-path",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2010",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2010/m1-extract-twenty-orchestration-from-migrated-path",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m1-extract-twenty-orchestration-from-migrated-path",
+  "taskSession": "tsk_7e8acd19a839",
+  "tmuxSession": "opensaas-twenty-migration-m1-extract-twenty-orchestration-from-migrated-pa-7e8acd19",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m1-extract-twenty-orchestration-from-migrated-path/.task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path/session.json",
+  "createdAt": "2026-08-15T04:03:52.899Z"
+}

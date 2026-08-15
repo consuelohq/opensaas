@@ -30,9 +30,16 @@ started: 2026-08-15
 
 ## files changed
 
+- `packages/cli/package.json`
+- `packages/cli/src/api-client.ts`
 - `packages/cli/src/auth.ts`
+- `packages/cli/src/commands/init.ts`
+- `packages/cli/src/config.ts`
+- `packages/cli/src/index.ts`
+- `packages/cli/src/sentry.ts`
 - `packages/cli/src/commands/login.ts`
 - `packages/cli/tests/auth.test.ts`
+
 
 ## workspace-owned: files changed
 

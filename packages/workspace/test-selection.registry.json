@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2629,
-    "mappedTestCount": 2546,
+    "testFileCount": 2635,
+    "mappedTestCount": 2552,
     "unmappedTestCount": 83,
-    "ruleCount": 55,
-    "explicitRuleCount": 36,
-    "autoRuleCount": 19,
+    "ruleCount": 58,
+    "explicitRuleCount": 38,
+    "autoRuleCount": 20,
     "projectCount": 15,
-    "packageTestScriptCount": 19,
+    "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 254,
+      "packages/os/tests": 255,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 61,
       "packages/twenty-sdk/src/cli": 51,
@@ -25,10 +25,10 @@
       "packages/twenty-server/test/integration/graphql/suites/inputs-validation/create-validation": 23,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/twenty-front/src/modules/billing/hooks": 21,
+      "packages/dialer-server/src": 20,
       "packages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/validator-utils": 20,
       "packages/twenty-server/test/integration/constants": 20,
       "packages/twenty-server/test/integration/graphql/suites/inputs-validation/filter-validation": 20,
-      "packages/dialer-server/src": 19,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/graphWidgetBarChart/utils": 18,
       "packages/twenty-front/src/modules/workflow/workflow-variables/utils": 17,
       "packages/twenty-server/src/modules/dashboard/chart-data/utils": 17,
@@ -186,6 +186,7 @@
       "packages/twenty-server/test/integration/metadata/suites/field-metadata/relation": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/providers": 3,
       "packages/dialer-server/src/call-operations": 3,
+      "packages/dialer/src/application": 3,
       "packages/os/scripts": 3,
       "packages/twenty-front/src/modules/action-menu/utils": 3,
       "packages/twenty-front/src/modules/activities/calendar/utils": 3,
@@ -234,7 +235,7 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
-      "packages/dialer/src/application": 2,
+      "packages/dialer-server/src/lab": 2,
       "packages/dialer/src/domain": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
@@ -325,6 +326,7 @@
       "packages/twenty-ui/src/utilities/device": 2,
       "cron_jobs": 1,
       "packages/agent/src/pi-extensions": 1,
+      "packages/cli/tests": 1,
       "packages/coaching": 1,
       "packages/consuelo-core/tests": 1,
       "packages/consuelo-design/scripts": 1,
@@ -634,12 +636,12 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 536,
+      "test": 541,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
-      "e2e": 1,
-      "integration": 1
+      "integration": 2,
+      "e2e": 1
     }
   },
   "rules": [
@@ -806,6 +808,29 @@
       ],
       "critical": true,
       "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "consuelo-ci-planner",
+      "source": [
+        "packages/os/scripts/ci-plan.ts",
+        "packages/os/tests/ci-plan.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "Consuelo CI planner contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/ci-plan.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Consuelo CI planner changes have a focused routing contract and must not select the broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -1889,6 +1914,29 @@
       "origin": "explicit"
     },
     {
+      "id": "twenty-migration-call-start-orchestration",
+      "source": [
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts"
+      ],
+      "tests": [
+        {
+          "name": "Twenty call-start compatibility contracts",
+          "command": [
+            "bash",
+            "-lc",
+            "cd packages/twenty-server && NODE_ENV=test npx --no-install jest --config jest.config.mjs src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts --runInBand"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "M1 call-start extraction must prove the compatibility service and architecture boundary without scheduling the unrelated full Twenty server suite.",
+      "origin": "explicit"
+    },
+    {
       "id": "twenty-server-project",
       "source": [
         "packages/twenty-server/**",
@@ -1930,6 +1978,27 @@
       "critical": false,
       "reason": "Frontend package changes should run the project test target.",
       "origin": "explicit"
+    },
+    {
+      "id": "auto:@consuelo/cli:package-test",
+      "source": [
+        "packages/cli/**"
+      ],
+      "tests": [
+        {
+          "name": "@consuelo/cli package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/cli",
+            "test"
+          ]
+        }
+      ],
+      "critical": false,
+      "reason": "Auto-discovered package test script for packages/cli.",
+      "origin": "auto"
     },
     {
       "id": "auto:@consuelo/core:package-test",
@@ -2403,6 +2472,11 @@
       "kind": "spec"
     },
     {
+      "path": "packages/cli/tests/auth.test.ts",
+      "group": "packages/cli/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/coaching/package-contract.test.ts",
       "group": "packages/coaching",
       "kind": "test"
@@ -2873,6 +2947,16 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/lead-connector-boundary.test.ts",
       "group": "packages/dialer-server/src",
       "kind": "test"
@@ -2881,6 +2965,11 @@
       "path": "packages/dialer-server/src/lifecycle.integration.test.ts",
       "group": "packages/dialer-server/src",
       "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/m1-twenty-orchestration.contract.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
     },
     {
       "path": "packages/dialer-server/src/release/production-release.test.ts",
@@ -2941,6 +3030,11 @@
       "path": "packages/dialer/src/application/adapter-application.spec.ts",
       "group": "packages/dialer/src/application",
       "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/application/dialer-call-start-application.test.ts",
+      "group": "packages/dialer/src/application",
+      "kind": "test"
     },
     {
       "path": "packages/dialer/src/application/parallel-application.spec.ts",
@@ -3369,6 +3463,11 @@
     },
     {
       "path": "packages/os/tests/canonical-device-identity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/ci-plan.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15728,6 +15827,14 @@
         "test-selection": "node packages/workspace/scripts/test-selection.js",
         "test:reader": "bun run --cwd packages/consuelo-design test:reader",
         "docs:test-translation": "bun run --cwd packages/documentation test:translation"
+      }
+    },
+    {
+      "name": "@consuelo/cli",
+      "root": "packages/cli",
+      "file": "packages/cli/package.json",
+      "scripts": {
+        "test": "npx vitest run tests"
       }
     },
     {

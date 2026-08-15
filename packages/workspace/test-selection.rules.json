@@ -160,6 +160,28 @@
       "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite."
     },
     {
+      "id": "consuelo-ci-planner",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/ci-plan.ts",
+        "packages/os/tests/ci-plan.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "Consuelo CI planner contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/ci-plan.test.ts"
+          ]
+        }
+      ],
+      "reason": "Consuelo CI planner changes have a focused routing contract and must not select the broad OS package suite."
+    },
+    {
       "id": "trace-site-pagination",
       "critical": true,
       "source": [
@@ -1211,6 +1233,28 @@
         }
       ],
       "reason": "API changes must run API route and service specs."
+    },
+    {
+      "id": "twenty-migration-call-start-orchestration",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts"
+      ],
+      "tests": [
+        {
+          "name": "Twenty call-start compatibility contracts",
+          "command": [
+            "bash",
+            "-lc",
+            "cd packages/twenty-server && NODE_ENV=test npx --no-install jest --config jest.config.mjs src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts --runInBand"
+          ]
+        }
+      ],
+      "reason": "M1 call-start extraction must prove the compatibility service and architecture boundary without scheduling the unrelated full Twenty server suite."
     },
     {
       "id": "twenty-server-project",
