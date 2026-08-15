@@ -379,6 +379,49 @@ export const toolSchemas = [
     }
   },
   {
+    "name": "session.start",
+    "order": [
+      "name",
+      "methodPath",
+      "description",
+      "category",
+      "underlying",
+      "capabilities",
+      "defaultTimeout",
+      "inputSchema",
+      "outputSchema",
+      "command",
+      "exampleInput",
+      "sessionRequired"
+    ],
+    "definition": {
+      "name": "session.start",
+      "methodPath": [
+        "session",
+        "start"
+      ],
+      "description": "Start a Consuelo session. Use kind=task for repo work that needs a branch/worktree/PR, or kind=work for metadata-only work rooted at an existing directory.",
+      "category": "session lifecycle",
+      "underlying": "os session.start",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "SessionStartInput",
+      "outputSchema": "RawOutput",
+      "exampleInput": {
+        "kind": "task",
+        "stream": "stream/workspace-agent",
+        "title": "example task",
+        "workflow": "task"
+      },
+      "sessionRequired": false
+    }
+  },
+  {
     "name": "task.start",
     "order": [
       "name",

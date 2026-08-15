@@ -106,6 +106,22 @@ Agent clients call the facade with a tool name and typed input. Task-scoped oper
 
 The facade validates input before executing the backing command. It returns a `ToolResult`, not unstructured terminal prose.
 
+The call envelope also supports a top-level `workSession` for work-session node routing. `taskSession` and `workSession` are mutually exclusive. Adding work-session routing does not by itself grant a tool new filesystem mutation authority: a tool must explicitly support work-session execution before it can use that session for work.
+
+## Starting sessions
+
+`session.start` is the canonical session constructor. `kind: "task"` delegates to the existing task lifecycle and returns the normal `taskSession`; `task.start` remains available as a compatibility alias. `kind: "work"` creates metadata only for an existing directory and returns a `workSession` owned by the current node. It does not create a branch, worktree, PR, or copied directory.
+
+```json
+{
+  "tool": "session.start",
+  "input": {
+    "kind": "work",
+    "path": "/Users/me/Developer/raycast-extension"
+  }
+}
+```
+
 ## Maintenance and observability examples
 
 The full manifest can expose higher-level maintenance operations in addition to file and task primitives:
@@ -118,11 +134,13 @@ The full manifest can expose higher-level maintenance operations in addition to 
 
 `security.scan` and `monitor.errors` are read surfaces. Publishing a durable Daily Schedules entry is a separate mutating operation so callers can inspect evidence without creating an artifact as a hidden side effect.
 
-## Node and task routing
+## Node and session routing
 
-When a workspace has more than one node, the OS routing layer can resolve a facade call from task ownership, an explicit node target, or the workspace default. Task-scoped operations continue to put `taskSession` at the call envelope's top level.
+When a workspace has more than one node, the OS routing layer can resolve a facade call from task ownership, work-session ownership, an explicit node target, or the workspace default. Task-scoped operations put `taskSession` at the call envelope's top level; work-session calls use `workSession` instead.
 
 Do not assume that changing the default node moves an active task. A successful `task.start` binds that session to the node that started it; follow-up calls carrying the session keep using that owner until the task affinity is successfully released.
+
+A successful `session.start` with `kind: "work"` similarly binds the returned work session to the node that created it. Central routing stores the session-to-node affinity, while the work-session path remains local to the owner node.
 
 See [Routing work](/nodes/routing/) for user-facing behavior and [Result and error formats](/reference/result-and-error-formats/#node-routing-errors) for mismatch and offline failures.
 
