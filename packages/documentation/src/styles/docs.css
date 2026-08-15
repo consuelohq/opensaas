@@ -135,7 +135,7 @@
     display: none;
   }
 
-  .sl-markdown-content .home-install-command {
+  .home-install-command {
     align-items: center;
     background: var(--docs-surface);
     border: 1px solid var(--docs-line-strong);
@@ -155,6 +155,18 @@
     white-space: normal;
   }
 
+  .home-install-command code {
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+  }
+
+  .home-install-command > :first-child {
+    margin: 0;
+    min-width: 0;
+  }
+
   .home-install-command button {
     align-items: center;
     background: transparent;
@@ -171,7 +183,7 @@
   .home-install-command button:hover,
   .home-install-command button:focus-visible,
   .home-install-command button[data-copied='true'] {
-    color: var(--docs-accent);
+    color: var(--docs-ink);
   }
 
   .home-install-command button svg {
@@ -313,6 +325,10 @@
   }
 
   @media (min-width: 72rem) {
+    :root {
+      --sl-sidebar-width: 18rem;
+    }
+
     html[data-has-sidebar] .page {
       align-items: stretch;
       display: grid;
@@ -338,6 +354,7 @@
 
     html[data-has-sidebar] .sidebar-pane {
       background: var(--docs-paper);
+      border-right: 0;
       height: calc(100vh - var(--sl-nav-height));
       inset: auto;
       position: sticky;
@@ -354,11 +371,96 @@
       width: 100%;
     }
 
+    html[data-has-toc] .main-pane {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: calc(100% - 15rem);
+    }
+
+    .right-sidebar-container {
+      flex: 0 0 15rem;
+      width: 15rem;
+    }
+
     .right-sidebar {
+      border-left: 0;
+      flex: 0 0 15rem;
       height: calc(100vh - var(--sl-nav-height));
+      max-width: 15rem;
       padding-top: 0;
       position: sticky;
       top: var(--sl-nav-height);
+      width: 15rem;
+    }
+
+    .right-sidebar h2 {
+      color: var(--docs-muted);
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.25rem;
+    }
+
+    .right-sidebar a {
+      color: var(--docs-muted);
+      transition: color 150ms ease;
+    }
+
+    .right-sidebar a:hover,
+    .right-sidebar a:focus-visible {
+      color: var(--docs-ink);
+    }
+
+    .right-sidebar a[aria-current='true'] {
+      color: var(--docs-ink);
+      font-weight: 500;
+    }
+
+    .main-frame:has(.docs-home-hero) .right-sidebar-container {
+      display: none;
+    }
+
+    .main-frame:has(.docs-home-hero) .main-pane {
+      flex: 1 1 100%;
+      width: 100%;
+    }
+
+    .main-frame:has(.docs-home-hero) .content-panel {
+      padding-inline: 1.5rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .content-panel:first-child {
+      padding-block: 4.5rem 4rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .content-panel:nth-child(2) {
+      padding-block: 2.5rem 3rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .sl-container {
+      margin-inline: 0;
+      max-width: 57.5rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .sl-heading-wrapper:has(> #start-in-one-command),
+    .main-frame:has(.docs-home-hero) .sl-heading-wrapper:has(> #start-in-one-command) + p,
+    .main-frame:has(.docs-home-hero) .sl-heading-wrapper:has(> #start-in-one-command) + p + .home-install-command {
+      display: none;
+    }
+
+    .main-frame:has(.docs-home-hero) .sl-heading-wrapper:has(> #pick-up-where-you-need) {
+      margin-top: 0;
+    }
+
+    .main-frame:has(.docs-home-hero) #pick-up-where-you-need {
+      font-size: 1.75rem;
+      letter-spacing: -0.035em;
+      line-height: 2.125rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .docs-home-install-command {
+      border-color: var(--docs-line);
+      border-radius: 0.625rem;
+      margin-top: 0.5rem;
     }
   }
 

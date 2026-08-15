@@ -58,7 +58,7 @@ try {
     backgroundColor: getComputedStyle(element).backgroundColor,
     color: getComputedStyle(element).color,
   }));
-  if (globalLinkHover.backgroundColor !== 'rgba(0, 0, 0, 0)') throw new Error(`Global sidebar hover has a background: ${globalLinkHover.backgroundColor}`);
+  if (globalLinkHover.backgroundColor === 'rgba(0, 0, 0, 0)') throw new Error('Global sidebar hover must add a subtle neutral surface');
   if (globalLinkHover.color === globalLinkRest.color) throw new Error('Global sidebar hover must brighten the text');
 
   const assertPointerFocusIsQuiet = async (locator, label) => {
@@ -465,10 +465,10 @@ try {
         throw new Error(`Mobile primary CTA is still effectively full-width: ${JSON.stringify(getStartedBox)}`);
       }
     }
-    const installCommand = page.locator('[data-home-install-command]');
+    const installCommand = page.locator('[data-home-install-command]:visible');
     const installOverflow = await installCommand.evaluate((element) => element.scrollWidth - element.clientWidth);
     if (installOverflow > 1) throw new Error(`Home install command overflows by ${installOverflow}px on ${viewport.name}`);
-    const installCopy = page.getByRole('button', { name: 'Copy install command' });
+    const installCopy = page.locator('[data-home-install-copy]:visible');
     const installCopyStyle = await installCopy.evaluate((element) => ({
       borderWidth: getComputedStyle(element).borderTopWidth,
       backgroundColor: getComputedStyle(element).backgroundColor,
