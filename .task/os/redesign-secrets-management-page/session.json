@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9b13247eab76",
+  "tmuxSession": "opensaas-os-redesign-secrets-management-page-9b13247e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/redesign-secrets-management-page",
+  "branch": "task/os/redesign-secrets-management-page",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-redesign-secrets-management-page",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-redesign-secrets-management-page",
+  "prNumber": 2035,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2035",
+  "createdAt": "2026-08-15T06:49:15.407Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-redesign-secrets-management-page/.task/os/redesign-secrets-management-page/session.json"
+}

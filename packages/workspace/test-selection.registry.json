@@ -5,8 +5,8 @@
     "testFileCount": 2632,
     "mappedTestCount": 2549,
     "unmappedTestCount": 83,
-    "ruleCount": 58,
-    "explicitRuleCount": 39,
+    "ruleCount": 60,
+    "explicitRuleCount": 41,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -1474,6 +1474,102 @@
       "origin": "explicit"
     },
     {
+      "id": "os-secrets-management",
+      "source": [
+        "packages/os/scripts/lib/consuelo-sites-secrets-adapter.ts",
+        "packages/os/scripts/lib/node-sealed-credential-store.ts",
+        "packages/os/scripts/lib/secrets-site.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/server/route-policies.ts",
+        "packages/os/scripts/server/routes/secrets.ts",
+        "packages/os/tests/local-os-server-hono-architecture.test.ts",
+        "packages/os/tests/secrets-hono-routes.test.ts",
+        "packages/os/tests/secrets-surface.test.ts",
+        "packages/os/tests/workspace-gateway-node-end-to-end.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Secrets sealed credential contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/secrets-surface.test.ts",
+            "tests/secrets-hono-routes.test.ts",
+            "tests/node-sealed-credential-store.test.ts",
+            "tests/settings-site.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets signed gateway bridge",
+          "command": [
+            "bun",
+            "test",
+            "--cwd",
+            "packages/os",
+            "tests/local-os-server-hono-architecture.test.ts",
+            "tests/workspace-gateway-node-end-to-end.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets edge route contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Secrets UI, sealed-envelope storage, signed node routes, and Workspace Edge write routing must prove browser-to-node encryption and metadata-only behavior without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-local-agent-connectivity",
+      "source": [
+        "packages/os/scripts/lib/local-agent-connectivity.ts",
+        "packages/os/tests/local-agent-connectivity.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS local agent connectivity contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-agent-connectivity.test.ts"
+          ]
+        },
+        {
+          "name": "OS local agent connectivity syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Local agent MCP configuration and handshake verification are a separate connectivity domain and must not gate unrelated workspace shell rendering changes.",
+      "origin": "explicit"
+    },
+    {
       "id": "os-internal-workspace-shell",
       "source": [
         "packages/os/scripts/lib/sites.ts",
@@ -1487,8 +1583,7 @@
         "packages/os/tests/observability-traces-site.test.ts",
         "packages/os/tests/sites-cli.test.ts",
         "packages/os/tests/launcher-local-customization.test.ts",
-        "packages/os/tests/install-state.test.ts",
-        "packages/os/tests/local-agent-connectivity.test.ts"
+        "packages/os/tests/install-state.test.ts"
       ],
       "tests": [
         {
@@ -1503,8 +1598,7 @@
             "tests/observability-traces-site.test.ts",
             "tests/sites-cli.test.ts",
             "tests/launcher-local-customization.test.ts",
-            "tests/install-state.test.ts",
-            "tests/local-agent-connectivity.test.ts"
+            "tests/install-state.test.ts"
           ]
         },
         {
