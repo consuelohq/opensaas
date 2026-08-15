@@ -5,8 +5,8 @@
     "testFileCount": 2629,
     "mappedTestCount": 2546,
     "unmappedTestCount": 83,
-    "ruleCount": 54,
-    "explicitRuleCount": 35,
+    "ruleCount": 55,
+    "explicitRuleCount": 36,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -1295,6 +1295,52 @@
       "critical": true,
       "exclusive": true,
       "reason": "ChatGPT MCP OAuth client binding and authorization changes must prove the exact client/redirect, Worker, architecture, release, and syntax contracts without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-chatgpt-node-routing-facade",
+      "source": [
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/os-get-steering-trace.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT node-routing syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {

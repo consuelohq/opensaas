@@ -515,15 +515,26 @@ export function getSteering(options: {
 } = {}): string {
   const runtimePaths = ensureRuntimePaths();
   const packageRoot = getPackageRoot();
+  const runtimeIdentity = envPresence(options.nodeRouting);
   const sections = [
     '# Consuelo OS runtime context',
     '',
     '## Runtime identity',
     '',
     '```json',
-    safeJson(envPresence(options.nodeRouting)),
+    safeJson(runtimeIdentity),
     '```',
   ];
+  if (Object.hasOwn(runtimeIdentity, 'routing')) {
+    sections.push(
+      '',
+      '## Workspace node routing',
+      '',
+      'Nodes are routing targets, not tools. Do not use `tools.search` to look for a node name.',
+      'To execute on a non-default node, pass `nodeId` at the top level of `os.call` using the exact canonical `nodeId` from `routing.availableNodes` above. Do not put `nodeId` inside the selected tool `input`.',
+      'Omit `nodeId` to use the workspace default node. If an explicit target is unknown, offline, or unavailable, fail closed instead of silently retrying on the default node.',
+    );
+  }
   sections.push(readSteeringSnapshot({
     home: runtimePaths.home,
     packageRoot,
