@@ -527,6 +527,63 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(JSON.stringify(record.routes.filter((route) => route.target.kind !== 'os-connector'))).not.toMatch(forbiddenBrowserLeakPattern);
   });
 
+  it('routes every private Site and Gateway surface through workspace-session auth and complete signed node headers', async () => {
+    const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
+    const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
+    const auth = await importModule<{ WORKSPACE_EDGE_NODE_HEADERS: Record<string, string> }>('scripts/lib/workspace-edge-node-auth.ts');
+    const seed = await importModule<EdgeRouteSeedContract>('scripts/lib/workspace-edge-route-seed.ts');
+    const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      connectorId: 'connector_internal',
+      tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
+      publishedSiteIds: ['launcher', 'artifacts', 'traces', 'diffs', 'docs', 'configuration', 'tools', 'nodes', 'environments', 'secrets'],
+    });
+
+    const privateSiteRoutes = record.routes.filter((route) =>
+      route.target.kind === 'site-snapshot' && route.auth === 'workspace-session'
+    );
+    expect(new Set(privateSiteRoutes.map((route) => route.target.kind === 'site-snapshot' ? route.target.siteId : ''))).toEqual(
+      new Set(['launcher', 'traces', 'configuration', 'tools', 'nodes', 'environments', 'secrets']),
+    );
+    expect(privateSiteRoutes.every((route) => route.auth === 'workspace-session')).toBe(true);
+
+    const db = d1.createInMemoryWorkspaceRouteD1();
+    await d1.migrateWorkspaceRouteD1(db);
+    await d1.upsertWorkspaceHostnameInD1(db, record);
+    const upstreamRequests: Request[] = [];
+    const router = edge.createWorkspaceCloudflareEdgeRouter({
+      registry: d1.createWorkspaceCloudflareD1RouteRegistry(db),
+      internalSigningSecret: 'edge-test-secret',
+      authorizeWorkspaceSession: async () => true,
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
+        return Response.json({ ok: true });
+      },
+    });
+
+    const gatewayRoutes = record.routes.filter((route) => route.target.kind === 'consuelo-gateway-service');
+    expect(gatewayRoutes.length).toBeGreaterThan(0);
+    for (const route of gatewayRoutes) {
+      expect(route.auth).toBe('workspace-session');
+      const method = /(?:overlay|upsert|delete|write)$/.test(route.pathPrefix) ? 'POST' : 'GET';
+      const response = await router.fetch(new Request('https://internal.consuelohq.com' + route.pathPrefix, {
+        method,
+        headers: { cookie: 'consuelo_workspace_session=session-internal' },
+      }));
+      expect(response.status, route.pathPrefix).toBe(200);
+    }
+
+    expect(upstreamRequests).toHaveLength(gatewayRoutes.length);
+    for (const request of upstreamRequests) {
+      for (const header of Object.values(auth.WORKSPACE_EDGE_NODE_HEADERS)) {
+        expect(request.headers.get(header), new URL(request.url).pathname + ' missing ' + header).toBeTruthy();
+      }
+    }
+  });
+
   it('should serve GET /traces from the published Site snapshot shell instead of the OS connector', async () => {
     const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
     const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');

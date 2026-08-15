@@ -3,6 +3,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
+import {
+  renderWorkspaceChromeBar,
+  workspaceChromeClientScript,
+  workspaceRouteSwitcherStyles,
+} from './workspace-chrome';
 
 const canonicalAssetDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -16,9 +21,13 @@ const productionHistoryTransport = `<script id="consuelo-trace-history-transport
 (()=>{const historyRoute='/gateway/traces/recent';const snapshotRoute='/trace-burn-intelligence/live-traces.json';const snapshotUrl=historyRoute+'?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true';const allowed=(url)=>url===snapshotRoute||url===historyRoute||url.startsWith(historyRoute+'?');window.__consueloTraceHistoryTransport={fetchJson(url){if(!allowed(url))return Promise.reject(new Error('Trace history route is not allowed.'));const requestUrl=url===snapshotRoute?snapshotUrl:url;return fetch(requestUrl,{cache:'no-store',credentials:'same-origin',headers:{accept:'application/json'}}).then(response=>response.json().then(payload=>{if(!response.ok||payload?.ok===false)throw new Error(payload?.error?.message||'Trace history request failed.');return url===snapshotRoute?(payload?.data??{rows:[],failures:[]}):payload;}));}};})();
 </script>`;
 
-const launcherNavigation = `<script id="consuelo-trace-launcher-navigation">
-(()=>{const close=document.querySelector('button[data-close-traces]');if(!close)return;close.addEventListener('click',()=>{location.assign('/');});})();
+const workspaceNavigation = `<script id="consuelo-trace-workspace-navigation">
+${workspaceChromeClientScript().replaceAll('</script', '<\/script')}
 </script>`;
+
+const workspaceRouteStyle = `<style id="consuelo-workspace-route-switcher">
+${workspaceRouteSwitcherStyles().replaceAll('</style', '<\/style')}
+</style>`;
 
 const nodeObservabilityStyle = `<style id="consuelo-trace-node-observability">
 #tbmLiveTraceModal .trxNode{min-width:0;display:flex;flex-direction:column;gap:2px;overflow:hidden}
@@ -26,16 +35,31 @@ const nodeObservabilityStyle = `<style id="consuelo-trace-node-observability">
 #tbmLiveTraceModal .trxNodeRoute{display:block;font:10px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#918a7f;text-transform:uppercase;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(min-width:761px){
   #tbmLiveTraceModal .trxTable{min-width:2160px!important}
-  #tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:2160px!important;grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) 150px minmax(350px,.96fr) minmax(350px,.96fr) 180px 78px 92px!important}
+  #tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:2160px!important;grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) minmax(350px,.96fr) minmax(350px,.96fr) 150px 180px 78px 92px!important}
   #tbmLiveTraceModal .trxSkeletonRows{min-width:2160px!important}
-  #tbmLiveTraceModal .trxSkeletonRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) 150px minmax(350px,.96fr) minmax(350px,.96fr) 180px 78px 92px!important}
+  #tbmLiveTraceModal .trxSkeletonRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) minmax(350px,.96fr) minmax(350px,.96fr) 150px 180px 78px 92px!important}
 }
 @media(max-width:760px){
   #tbmLiveTraceModal.open .trxTable,#tbmLiveTraceModal.open .trxHead,#tbmLiveTraceModal.open .trxRow{min-width:1760px!important}
-  #tbmLiveTraceModal.open .trxHead,#tbmLiveTraceModal.open .trxRow{grid-template-columns:34px 140px 156px 82px 76px minmax(280px,1fr) 140px minmax(270px,.9fr) minmax(270px,.9fr) 150px 70px 86px!important}
+  #tbmLiveTraceModal.open .trxHead,#tbmLiveTraceModal.open .trxRow{grid-template-columns:34px 140px 156px 82px 76px minmax(280px,1fr) minmax(270px,.9fr) minmax(270px,.9fr) 140px 150px 70px 86px!important}
   #tbmLiveTraceModal .trxSkeletonRows,#tbmLiveTraceModal .trxSkeletonRow{min-width:1760px!important}
-  #tbmLiveTraceModal .trxSkeletonRow{grid-template-columns:34px 140px 156px 82px 76px minmax(280px,1fr) 140px minmax(270px,.9fr) minmax(270px,.9fr) 150px 70px 86px!important}
+  #tbmLiveTraceModal .trxSkeletonRow{grid-template-columns:34px 140px 156px 82px 76px minmax(280px,1fr) minmax(270px,.9fr) minmax(270px,.9fr) 140px 150px 70px 86px!important}
 }
+</style>`;
+
+const traceWorkspaceIntegrationStyle = `<style id="consuelo-trace-workspace-integration">
+#tbmLiveTraceModal[aria-hidden="false"]{display:flex!important;align-items:center!important;justify-content:center!important;padding:14px!important;overflow:hidden!important}
+#tbmLiveTraceModal[aria-hidden="false"] .trxShell{width:calc(100vw - 28px)!important;max-width:none!important;height:calc(100dvh - 28px)!important;max-height:none!important;margin:0!important;grid-template-rows:38px minmax(0,1fr)!important}
+#tbmLiveTraceModal .trxChrome[data-workspace-chrome]{position:relative!important;z-index:200!important;overflow:visible!important}
+#tbmLiveTraceModal .trxChrome[data-workspace-chrome] .workspace-route-control{overflow:visible!important}
+#tbmLiveTraceModal .workspace-route-menu{z-index:220!important}
+#tbmLiveTraceModal .trxBody{min-width:0!important;min-height:0!important;overflow:hidden!important}
+#tbmLiveTraceModal .trxTablePane{min-width:0!important;max-width:100%!important;min-height:0!important;overflow:hidden!important}
+#tbmLiveTraceModal .trxTableScroll{width:100%!important;max-width:100%!important;min-width:0!important;overflow:auto!important;overscroll-behavior:contain!important;scroll-padding-inline-end:18px!important}
+#tbmLiveTraceModal .trxTable{width:max-content!important;max-width:none!important;padding-right:18px!important;box-sizing:content-box!important}
+#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) minmax(350px,.96fr) minmax(350px,.96fr) 150px 180px 78px 92px!important}
+#tbmLiveTraceModal .trxHead{align-items:center!important}
+@media(max-width:760px){#tbmLiveTraceModal[aria-hidden="false"]{padding:0!important;align-items:stretch!important;justify-content:stretch!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell{width:100%!important;max-width:100%!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;border-radius:0!important;border:0!important;grid-template-rows:38px minmax(0,1fr)!important}#tbmLiveTraceModal .trxBody{grid-row:2!important}#tbmLiveTraceModal .trxTable,#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:1620px!important}#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:1620px!important;grid-template-columns:34px 108px 150px 78px 76px 260px 240px 240px 140px 140px 70px 84px!important}#tbmLiveTraceModal .trxHead{height:34px!important;min-height:34px!important}#tbmLiveTraceModal .trxHead>div{height:34px!important;min-height:34px!important;padding:0 10px!important;display:flex!important;align-items:center!important}#tbmLiveTraceModal .trxHead>div:nth-child(2){font-size:13px!important;line-height:1.1!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxTablePane{width:100%!important;max-width:100%!important;min-width:0!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxResizer{display:none!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxRail{display:block!important;position:fixed!important;inset:auto 0 0!important;width:100vw!important;max-width:100vw!important;height:min(82dvh,760px)!important;max-height:calc(100dvh - 56px)!important;z-index:10020!important;border:1px solid rgba(243,234,211,.18)!important;border-bottom:0!important;border-radius:22px 22px 0 0!important;background:#080706!important;box-shadow:0 -24px 80px #000000c7!important;transform:none!important;translate:none!important;overflow:hidden!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxRailInner{height:100%!important;max-width:100vw!important;min-width:0!important;overflow-x:hidden!important;overflow-y:auto!important;padding-top:28px!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .tiInspector{width:100%!important;max-width:100%!important;margin:0!important}}
 </style>`;
 
 const privateWorkspaceSessionRecovery = `<script id="consuelo-private-workspace-session-recovery">
@@ -377,14 +401,21 @@ export function buildObservabilityTracesSite(): string {
   html = replaceExactlyOnce(
     html,
     /<\/head>/i,
-    `${nodeObservabilityStyle}${privateWorkspaceSessionRecovery}</head>`,
+    `${nodeObservabilityStyle}${traceWorkspaceIntegrationStyle}${workspaceRouteStyle}${privateWorkspaceSessionRecovery}</head>`,
     'document head close',
   );
 
   html = replaceExactlyOnce(
     html,
+    /<div class="trxChrome">\s*<div class="trxDots">[\s\S]*?<div class="trxChromeActions">[\s\S]*?<\/div>\s*<\/div>\s*<div class="trxBody">/i,
+    `${renderWorkspaceChromeBar('tracing', 'Tracing')} <div class="trxBody">`,
+    'workspace chrome',
+  );
+
+  html = replaceExactlyOnce(
+    html,
     /<div class="trxHead"><div><\/div><div>Time<\/div><div>Tool<\/div><div>Latency<\/div><div>Tokens<\/div><div>Branch<\/div><div>Input<\/div><div>Output<\/div><div>Trace<\/div><div>Status<\/div><div>Cost<\/div><\/div>/i,
-    '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Node</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
+    '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     'trace table header',
   );
 
@@ -425,7 +456,7 @@ export function buildObservabilityTracesSite(): string {
   html = replaceExactlyOnce(
     html,
     /<\/body>/i,
-    `${launcherNavigation}</body>`,
+    `${workspaceNavigation}</body>`,
     'document body close',
   );
 

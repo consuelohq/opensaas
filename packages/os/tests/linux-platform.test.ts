@@ -124,6 +124,39 @@ describe('Linux platform adapter', () => {
     ]);
   });
 
+  it('restarts installed Linux connector and heartbeat gateway units with the OS service', async () => {
+    const paths = resolveLinuxPlatformPaths(home, environment);
+    mkdirSync(paths.systemdUserDir, { recursive: true });
+    writeFileSync(paths.unitPath, renderSystemdUserUnit({ home, bunExecutable: '/opt/consuelo/bin/bun' }));
+    for (const unit of [
+      'consuelo-cloudflared-connector-test.service',
+      'consuelo-node-heartbeat.service',
+      'consuelo-node-heartbeat.timer',
+      'consuelo-watchdog.service',
+    ]) {
+      writeFileSync(join(paths.systemdUserDir, unit), '[Unit]\nDescription=test\n');
+    }
+    const adapter = createLinuxPlatformAdapter({
+      home,
+      environment,
+      host: { platform: 'linux', architecture: 'x64', libc: 'glibc' },
+      run: runner(),
+      bunExecutable: '/opt/consuelo/bin/bun',
+    });
+
+    await adapter.restart({ waitForCompletion: true });
+
+    expect(commands.map(({ executable, args }) => [executable, args])).toEqual([
+      ['systemctl', ['--user', 'show-environment']],
+      ['systemctl', ['--user', 'daemon-reload']],
+      ['systemctl', ['--user', 'restart', 'consuelo-os.service']],
+      ['systemctl', ['--user', 'restart', 'consuelo-cloudflared-connector-test.service']],
+      ['systemctl', ['--user', 'restart', 'consuelo-node-heartbeat.timer']],
+      ['systemctl', ['--user', 'start', 'consuelo-node-heartbeat.service']],
+      ['systemctl', ['--user', 'restart', 'consuelo-watchdog.service']],
+    ]);
+  });
+
   it('keeps systemd user configuration under the login home when the OS data home is custom', async () => {
     const osHome = join(home, 'var-lib-consuelo');
     const userHome = join(home, 'home-consuelo');

@@ -784,13 +784,13 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     setTraceTooltip(cell, branch);
     cell.style.setProperty('--branch-color', branchColor(branch));
   });
-  appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
     setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
   });
   appendCell(button, 'trxJson trxOutputCell', formatted.outputLabel, (cell) =>
     setTraceTooltip(cell, formatted.outputFull || formatted.outputLabel),
   );
+  appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
   appendCell(button, 'trxJson trxTraceCell', itemTraceId(row));
   appendCell(button, '', '', (cell) => {
     const badge = document.createElement('span');
@@ -840,13 +840,13 @@ function appendChildCells(
   );
   appendCell(button, 'trxTokens', formatCompact(totalTokens(child)));
   appendCell(button, 'trxBranch', stripTaskPrefix(branch));
-  appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
     setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
   });
   appendCell(button, 'trxJson trxOutputCell', formatted.outputLabel, (cell) =>
     setTraceTooltip(cell, formatted.outputFull || formatted.outputLabel),
   );
+  appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
   appendCell(button, 'trxJson trxTraceCell', clean(child.traceId));
   appendCell(button, '', '', (cell) => {
     const badge = document.createElement('span');

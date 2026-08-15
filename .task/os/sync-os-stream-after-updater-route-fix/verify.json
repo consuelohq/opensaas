@@ -1,0 +1,47 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/sync-os-stream-after-updater-route-fix",
+  "base": "origin/stream/os",
+  "headSha": "6d32824681b46e05870b5b47e6001ff2b3338b6e",
+  "changeHash": "ddd9a9cc96de0cd59dca4d44cc7ec9cc6a02388859cc3251d35db119e9eb9a57",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-15T08:41:38.041Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/sync-os-stream-after-updater-route-fix/current.json",
+        ".task/os/sync-os-stream-after-updater-route-fix/session.json",
+        ".task/os/sync-os-stream-after-updater-route-fix/verify.json",
+        ".task/os/sync-os-stream-after-updater-route-fix/workpad.md",
+        ".task/tasks/os/sync-os-stream-after-updater-route-fix.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

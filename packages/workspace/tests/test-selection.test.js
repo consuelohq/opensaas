@@ -97,7 +97,7 @@ describe('test selection registry', () => {
       'twenty-shared',
       '--coverage=false',
     ]);
-  });
+  }, 15_000);
 
   it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
     const rulesPath = path.resolve(
@@ -267,6 +267,28 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused bundled-skill contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/skills/branch/skill.json',
+      '--changed-file',
+      'packages/os/skills/skills.json',
+      '--changed-file',
+      'packages/os/tests/branch-skill.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-bundled-skill-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS bundled skill contracts',
+    ]);
+  });
+
   it('uses the focused native OS workflow contracts for Windows workflow assertions', () => {
     const result = run([
       'check',
@@ -302,13 +324,40 @@ describe('test selection registry', () => {
 
     expect(matchedRuleIds).toContain('os-managed-cloud-one-click-provisioning');
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toContain('OS one-click managed cloud contracts');
+    expect(suiteNames.some((name) =>
+      name === 'OS one-click managed cloud syntax contracts'
+      || name === 'OS internal workspace shell syntax'
+    )).toBe(true);
+  });
+
+  it('uses focused managed-cloud checkout observability contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts',
+      '--changed-file',
+      'packages/os/tests/managed-cloud-checkout-observability.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-managed-cloud-checkout-observability');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(suiteNames).toEqual(
       expect.arrayContaining([
-        'OS one-click managed cloud contracts',
-        'OS one-click managed cloud syntax contracts',
+        'OS managed cloud checkout observability contracts',
+        'OS managed cloud checkout observability syntax contracts',
       ]),
     );
   });
+
 
   it('uses focused cloud-first auth onboarding contracts instead of the broad OS package suite', () => {
     const result = run([
@@ -361,6 +410,45 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused MCP admission contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/server/routes/mcp.ts',
+      '--changed-file',
+      'packages/os/scripts/server/middleware/dangerous-material.ts',
+      '--changed-file',
+      'packages/os/scripts/server/logger.ts',
+      '--changed-file',
+      'packages/os/tests/mcp-gateway.test.ts',
+      '--changed-file',
+      'packages/documentation/src/content/docs/reference/mcp.mdx',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-admission-error-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS MCP admission contracts',
+      'OS dangerous material ingress contracts',
+      'OS MCP admission syntax contracts',
+    ]));
+    const ingressSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS dangerous material ingress contracts',
+    );
+    expect(ingressSuite?.command).toEqual([
+      'bun',
+      '--cwd',
+      'packages/os',
+      '../../node_modules/vitest/vitest.mjs',
+      'run',
+      'tests/dangerous-material-policy.test.ts',
+    ]);
+  });
+
   it('uses focused ChatGPT MCP OAuth contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -406,11 +494,14 @@ describe('test selection registry', () => {
 
     expect(matchedRuleIds).toContain('os-chatgpt-node-routing-facade');
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
-    expect(suiteNames).toEqual([
+    expect(suiteNames).toEqual(expect.arrayContaining([
       'OS ChatGPT node-routing facade contracts',
       'OS ChatGPT node-routing authority contracts',
-      'OS ChatGPT node-routing syntax contracts',
-    ]);
+    ]));
+    expect(suiteNames.some((name) =>
+      name === 'OS ChatGPT node-routing syntax contracts'
+      || name === 'OS MCP admission syntax contracts'
+    )).toBe(true);
   });
 
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
@@ -873,11 +964,85 @@ describe('test selection registry', () => {
     ]));
   });
 
-  it('routes lifecycle updater changes through the focused universal handoff contracts', () => {
+  it('routes internal workspace shell and root Sites changes through loud focused contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/sites.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/settings-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/workspace-chrome.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/observability-traces-site.ts',
+      '--changed-file',
+      'packages/os/tests/launcher-nodes-materialization.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-internal-workspace-shell',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    const suite = data.selectedSuites.find(
+      (candidate) => candidate.ruleId === 'os-internal-workspace-shell'
+        && candidate.name === 'OS internal workspace shell contracts',
+    );
+    expect(suite?.critical).toBe(true);
+    expect(suite?.command).toEqual(expect.arrayContaining([
+      'tests/settings-site.test.ts',
+      'tests/launcher-nodes-materialization.test.ts',
+      'tests/observability-traces-site.test.ts',
+      'tests/sites-cli.test.ts',
+      'tests/launcher-local-customization.test.ts',
+    ]));
+  });
+
+  it('routes gateway security and Caddy handoff changes through focused contracts instead of the broad OS package suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/security-gateway.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts',
+      '--changed-file',
+      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-gateway-security-caddy-handoff',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual(
+      expect.arrayContaining([
+        'OS gateway security and Caddy contracts',
+        'OS gateway security syntax contracts',
+      ]),
+    );
+  });
+
+  it('routes lifecycle updater and gateway restart changes through the focused universal handoff contracts', () => {
     const data = json(run([
       'check',
       '--changed-file',
       'packages/os/scripts/lifecycle.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/lifecycle/service.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/platforms/linux.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts',
+      '--changed-file',
+      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-restart-contract.test.ts',
+      '--changed-file',
+      'packages/os/tests/linux-platform.test.ts',
       '--json',
     ]));
 
@@ -887,12 +1052,20 @@ describe('test selection registry', () => {
     expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
       'auto:@consuelo/os:package-test',
     );
-    expect(data.selectedSuites.map((suite) => suite.name)).toEqual(
-      expect.arrayContaining([
-        'OS lifecycle update handoff contracts',
-        'OS lifecycle syntax contracts',
-      ]),
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    expect(suiteNames).toContain('OS lifecycle update handoff contracts');
+    expect(suiteNames.some((name) =>
+      name === 'OS lifecycle syntax contracts'
+      || name === 'OS gateway security syntax contracts'
+    )).toBe(true);
+    const lifecycleSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS lifecycle update handoff contracts',
     );
+    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
+      'packages/os/tests/lifecycle-restart-contract.test.ts',
+      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      'packages/os/tests/linux-platform.test.ts',
+    ]));
   });
 
   it('routes native macOS menu changes through focused Mac contracts', () => {

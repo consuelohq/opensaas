@@ -579,8 +579,12 @@ export function createDefaultLifecycleServiceController(input: {
   }
   return createReloadServiceController({
     osRoot: input.osRoot,
+    activeRuntimeRoot: lifecyclePaths.currentLink,
+    home: lifecycleHome,
     nodeHome: lifecyclePaths.nodeDir,
+    runtimeExecutable: bunExecutable,
     platform,
+    environment: process.env,
   });
 }
 
@@ -816,36 +820,43 @@ export async function runLifecycleCli(
         env: environment,
       });
     let result: LifecycleOperationResult;
-    if (runsInsideActiveDaemon && parsed.command === 'update' && !parsed.check) {
+    if (runsInsideActiveDaemon && parsed.command === 'restart') {
+      const accepted = await operationLauncher.launch({ kind: 'restart' });
+      result = {
+        operation: 'restart',
+        changed: true,
+        detail: {
+          detached: true,
+          accepted: accepted.accepted,
+          operationId: accepted.operationId,
+        },
+      };
+    } else if (runsInsideActiveDaemon && parsed.command === 'update' && !parsed.check) {
       const checked = await engine.update({
         channel: parsed.channel,
         check: true,
         yes: parsed.yes,
       });
-      if (checked.updateAvailable !== true) {
-        result = checked;
-      } else {
-        if (!checked.version) {
-          throw lifecycleError(
-            'MANIFEST_INVALID',
-            'update check did not return a target release version',
-          );
-        }
-        const accepted = await operationLauncher.launch({
-          kind: 'update',
-          targetVersion: checked.version,
-          ...(parsed.channel ? { channel: parsed.channel } : {}),
-        });
-        result = {
-          ...checked,
-          detail: {
-            ...checked.detail,
-            detached: true,
-            accepted: accepted.accepted,
-            operationId: accepted.operationId,
-          },
-        };
+      if (!checked.version) {
+        throw lifecycleError(
+          'MANIFEST_INVALID',
+          'update check did not return a target release version',
+        );
       }
+      const accepted = await operationLauncher.launch({
+        kind: 'update',
+        targetVersion: checked.version,
+        ...(parsed.channel ? { channel: parsed.channel } : {}),
+      });
+      result = {
+        ...checked,
+        detail: {
+          ...checked.detail,
+          detached: true,
+          accepted: accepted.accepted,
+          operationId: accepted.operationId,
+        },
+      };
     } else {
       result = await executeCommand(parsed, engine);
     }

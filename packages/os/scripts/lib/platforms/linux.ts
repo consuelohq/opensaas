@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
 import type { LifecycleServiceController } from '../lifecycle/types';
@@ -331,6 +331,30 @@ function commandError(command: LinuxCommand, result: LinuxCommandResult): Error 
   return new Error(`${command.executable} ${command.args.join(' ')} failed: ${detail}`);
 }
 
+function installedLinuxGatewayUnits(systemdUserDir: string): {
+  restartUnits: string[];
+  heartbeatServiceInstalled: boolean;
+} {
+  if (!existsSync(systemdUserDir)) {
+    return { restartUnits: [], heartbeatServiceInstalled: false };
+  }
+  const names = new Set(readdirSync(systemdUserDir));
+  const cloudflared = [...names]
+    .filter((name) => /^consuelo-cloudflared-.+\.service$/.test(name))
+    .sort();
+  const restartUnits = [
+    ...cloudflared,
+    ...(names.has('consuelo-node-heartbeat.timer')
+      ? ['consuelo-node-heartbeat.timer']
+      : []),
+    ...['consuelo-portless.service', 'consuelo-watchdog.service', 'consuelo-availability.service']
+      .filter((name) => names.has(name)),
+  ];
+  return {
+    restartUnits,
+    heartbeatServiceInstalled: names.has('consuelo-node-heartbeat.service'),
+  };
+}
 function readSessionPid(path: string): number | undefined {
   try {
     const parsed = JSON.parse(readFileSync(path, 'utf8')) as { pid?: unknown };
@@ -460,19 +484,45 @@ export function createLinuxPlatformAdapter(input: {
       try {
         await preflight();
         if ((await activeManager()) === 'systemd-user') {
-          if (!existsSync(paths.unitPath)) {
+          const unitExisted = existsSync(paths.unitPath);
+          if (!unitExisted) {
             writePrivateFile(paths.unitPath, renderSystemdUserUnit({ home: paths.home, bunExecutable }));
-            for (const command of [
-              { executable: 'systemctl', args: ['--user', 'daemon-reload'], environment },
-              { executable: 'systemctl', args: ['--user', 'enable', '--now', UNIT_NAME], environment },
-            ]) {
-              const result = await run(command);
-              if (result.exitCode !== 0) throw commandError(command, result);
-            }
-          } else {
-            const command = { executable: 'systemctl', args: ['--user', 'restart', UNIT_NAME], environment };
+          }
+          const gateways = installedLinuxGatewayUnits(paths.systemdUserDir);
+          const reload = {
+            executable: 'systemctl',
+            args: ['--user', 'daemon-reload'],
+            environment,
+          };
+          const reloaded = await run(reload);
+          if (reloaded.exitCode !== 0) throw commandError(reload, reloaded);
+          const osCommand = unitExisted
+            ? { executable: 'systemctl', args: ['--user', 'restart', UNIT_NAME], environment }
+            : { executable: 'systemctl', args: ['--user', 'enable', '--now', UNIT_NAME], environment };
+          const osResult = await run(osCommand);
+          if (osResult.exitCode !== 0) throw commandError(osCommand, osResult);
+          for (const unit of gateways.restartUnits) {
+            const command = {
+              executable: 'systemctl',
+              args: ['--user', 'restart', unit],
+              environment,
+            };
             const result = await run(command);
             if (result.exitCode !== 0) throw commandError(command, result);
+            if (
+              unit === 'consuelo-node-heartbeat.timer'
+              && gateways.heartbeatServiceInstalled
+            ) {
+              const heartbeat = {
+                executable: 'systemctl',
+                args: ['--user', 'start', 'consuelo-node-heartbeat.service'],
+                environment,
+              };
+              const heartbeatResult = await run(heartbeat);
+              if (heartbeatResult.exitCode !== 0) {
+                throw commandError(heartbeat, heartbeatResult);
+              }
+            }
           }
           return;
         }

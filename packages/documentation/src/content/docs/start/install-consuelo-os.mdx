@@ -2,7 +2,7 @@
 title: Install Consuelo OS
 description: Install the local Consuelo OS runtime on a supported Mac and verify it is ready.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-15
 evidence:
   - source: packages/os/scripts/bootstrap.sh
     tests:
@@ -14,6 +14,11 @@ evidence:
       - packages/os/tests/installer-onboarding-ui.test.ts
       - packages/os/scripts/onboarding-flow.test.ts
     runtime: Non-interactive local install completed in a temporary Consuelo home on 2026-07-13.
+  - source: packages/os/scripts/lib/lifecycle/service.ts
+    tests:
+      - packages/os/tests/lifecycle-restart-contract.test.ts
+      - packages/os/tests/lifecycle-engine.test.ts
+    runtime: Cross-version activation handoff and current-runtime gateway reconciliation were verified on 2026-08-15.
 ---
 
 import Note from '../../../components/mintlify/Note.astro';
@@ -78,6 +83,12 @@ curl -fsSL https://install.consuelohq.com/os | bash -s -- --yes --install-daemon
 ```
 
 Skipping the service does not remove the OS files. It only skips user LaunchAgent setup.
+
+## Updates after installation
+
+The lifecycle updater stages and verifies a new runtime before switching `runtime/current`. After that switch, service reload and local gateway reconciliation are executed from the newly active runtime. This matters for private workspace routes because their signed edge identity must pass through the local reverse proxy unchanged.
+
+`consuelo restart` uses the same current-runtime reconciliation path. If gateway reconciliation fails, the lifecycle operation reports the failure rather than treating a stale proxy configuration as healthy.
 
 ## Verify the installation
 

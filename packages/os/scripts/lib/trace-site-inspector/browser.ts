@@ -566,14 +566,19 @@ function applyLayout(): void {
   if (!shell || !rail) return;
   const body = rail.parentElement;
   const availableWidth = body?.clientWidth ?? shell.clientWidth;
-  const maxWidth = Math.max(420, availableWidth - 8);
+  const compactLayout = availableWidth <= 760;
+  const maxWidth = compactLayout
+    ? availableWidth
+    : Math.max(420, availableWidth - 8);
   const inspectorWidth = Math.min(state.width, maxWidth);
-  const tableWidth = Math.max(0, availableWidth - inspectorWidth - 8);
+  const tableWidth = compactLayout
+    ? availableWidth
+    : Math.max(0, availableWidth - inspectorWidth - 8);
   shell.style.setProperty('--ti-inspector-width', `${inspectorWidth}px`);
   const open = Boolean(state.selectedKey) && state.layout !== 'collapsed';
   body?.style.setProperty(
     'grid-template-columns',
-    open
+    open && !compactLayout
       ? `${Math.floor(tableWidth)}px 8px minmax(420px, ${inspectorWidth}px)`
       : 'minmax(0, 1fr)',
     'important',

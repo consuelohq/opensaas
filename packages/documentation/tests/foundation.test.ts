@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { normalizeMdxToMarkdown, pagePathToMarkdownHref, sourcePathToMarkdownSlug } from '../src/lib/markdown-pages';
 import {
+  expandCurrentSidebarPath,
   footerSections,
   getBreadcrumbs,
   globalSectionLinks,
@@ -118,6 +119,7 @@ describe('documentation navigation', () => {
       { label: 'Tools', href: '/tools/' },
       { label: 'Sites', href: '/sites/' },
       { label: 'Skills', href: '/skills/' },
+      { label: 'Workflows', href: '/workflows/' },
       { label: 'Steering', href: '/steering/' },
       { label: 'Memory', href: '/memory/' },
       { label: 'Observe', href: '/observe/' },
@@ -142,12 +144,16 @@ describe('documentation navigation', () => {
       { label: 'Skills', href: '/skills/' },
       { label: 'How skills work', href: '/build/skills/how-skills-work/', current: true },
     ]);
+    expect(getBreadcrumbs('/workflows/branch-graph/')).toEqual([
+      { label: 'Workflows', href: '/workflows/' },
+      { label: 'Branch Graph', href: '/workflows/branch-graph/', current: true },
+    ]);
     expect(getBreadcrumbs('/sites/publish/')).toEqual([
       { label: 'Sites', href: '/sites/' },
       { label: 'Publish', href: '/sites/publish/', current: true },
     ]);
 
-    expect(footerSections).toHaveLength(11);
+    expect(footerSections).toHaveLength(12);
     expect(footerSections.find((section) => section.label === 'Start')?.links).toContainEqual({
       label: 'Install Consuelo OS',
       href: '/start/install-consuelo-os/',
@@ -169,15 +175,28 @@ describe('documentation navigation', () => {
     if (selectedGroup?.type !== 'group') throw new Error('Expected a section group');
     expect(selectedGroup.collapsed).toBe(false);
   });
+
+  test('keeps the full global tree on responsive routes and expands the current path', () => {
+    const expanded = expandCurrentSidebarPath(sidebar);
+    expect(expanded).toHaveLength(3);
+    const connect = expanded[1];
+    expect(connect?.type).toBe('group');
+    if (connect?.type !== 'group') throw new Error('Expected Connect group');
+    expect(connect.collapsed).toBe(false);
+    const start = expanded[0];
+    expect(start?.type).toBe('group');
+    if (start?.type !== 'group') throw new Error('Expected Start group');
+    expect(start.collapsed).toBe(true);
+  });
 });
 
 describe('foundation source contract', () => {
   const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
-  test('declares the eleven approved top-level areas and Starlight overrides', () => {
+  test('declares the twelve approved top-level areas and Starlight overrides', () => {
     const config = read('astro.config.mjs');
     const navigation = read('src/lib/docs-navigation.ts');
-    for (const label of ['Start', 'Connect', 'Nodes', 'Tools', 'Sites', 'Skills', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference']) {
+    for (const label of ['Start', 'Connect', 'Nodes', 'Tools', 'Sites', 'Skills', 'Workflows', 'Steering', 'Memory', 'Observe', 'Secure', 'Reference']) {
       expect(navigation).toContain(`label: '${label}'`);
     }
     expect(navigation).not.toContain("label: 'Build with OS'");
@@ -193,7 +212,7 @@ describe('foundation source contract', () => {
   });
 
   test('scaffolds every top-level route', () => {
-    for (const route of ['start', 'connect', 'nodes', 'tools', 'sites', 'skills', 'steering', 'memory', 'observe', 'secure', 'reference']) {
+    for (const route of ['start', 'connect', 'nodes', 'tools', 'sites', 'skills', 'workflows', 'steering', 'memory', 'observe', 'secure', 'reference']) {
       expect(existsSync(new URL(`../src/content/docs/${route}/index.mdx`, import.meta.url))).toBe(true);
     }
   });
@@ -232,7 +251,8 @@ describe('foundation source contract', () => {
     expect(sidebar).toContain('global-section-link');
     expect(sidebar).toContain('globalSectionLinks');
     expect(sidebar).toContain('global-sidebar-mobile');
-    expect(sidebar).toContain('SidebarSublist sublist={navigation.entries}');
+    expect(sidebar).toContain('SidebarSublist sublist={mobileNavigation}');
+    expect(sidebar).toContain('expandCurrentSidebarPath');
     expect(footer).toContain('SiteFooter');
     expect(footer).toContain('data-docs-site-footer-home');
     expect(siteFooter).toContain('footerSections');
@@ -333,7 +353,7 @@ describe('foundation source contract', () => {
     const home = read('src/content/docs/index.mdx');
     expect(css).toContain('left: 0');
     expect(css).toContain('right: auto');
-    expect(css).toContain('border-right: 1px solid var(--docs-line)');
+    expect(css).toContain('border-right: 0');
     expect(css).toContain('.content-panel + .content-panel');
     expect(css).toContain('border-top: 0');
     expect(css).toContain('.page > header.header');
@@ -355,6 +375,48 @@ describe('foundation source contract', () => {
     expect(css).toContain('overflow-wrap: anywhere');
     expect(css).toContain('.home-install-command button');
     expect(pageTitle).toContain("closest('[data-home-install-copy]')");
+  });
+
+  test('uses the approved Vercel-derived responsive type, controls, canvas, and drawer', () => {
+    const css = read('src/styles/docs.css');
+    const sidebar = read('src/components/Sidebar.astro');
+    const pageTitle = read('src/components/PageTitle.astro');
+    const docsMenuTrigger = read('src/components/DocsMenuTrigger.astro');
+
+    expect(sidebar).toContain('SidebarSublist sublist={mobileNavigation}');
+    expect(sidebar).toContain('expandCurrentSidebarPath');
+    expect(sidebar).toContain('.section-sidebar');
+    expect(sidebar).toContain('display: none');
+    expect(css).toContain('width: min(75vw, 25rem)');
+    expect(css).toContain('box-shadow: 0 18px 55px');
+    expect(css).toContain('body[data-mobile-menu-expanded]::after');
+    expect(css).toContain('transition: opacity 300ms ease');
+    expect(css).toContain('animation: none;');
+    expect(css).toContain('font-size: 1.5rem');
+    expect(css).toContain('line-height: 2rem');
+    expect(pageTitle).toContain('font-size: 2.5rem');
+    expect(pageTitle).toContain('line-height: 3rem');
+    expect(css).toContain('max-width: none');
+    expect(pageTitle).toContain('min-height: 2.25rem');
+    expect(pageTitle).toContain('font-weight: 500');
+    expect(pageTitle).toContain('transition: background-color 150ms ease');
+    expect(docsMenuTrigger).toContain('duration: 0.22');
+    expect(docsMenuTrigger).toContain('duration: 0.2');
+  });
+
+  test('keeps the responsive Browse menu collapsed, divider-free, and compact', () => {
+    const browseMenu = read('src/components/BrowseMenu.astro');
+
+    expect(browseMenu).not.toContain('data-docs-browse-group open');
+    expect(browseMenu).toContain('.docs-browse-header {');
+    expect(browseMenu).toContain('border-bottom: 0;');
+    expect(browseMenu).toContain('.docs-browse-group {');
+    expect(browseMenu).not.toContain('border-bottom: 1px solid var(--docs-line);');
+    expect(browseMenu).toContain('font-size: 1rem;');
+    expect(browseMenu).toContain('line-height: 1.5rem;');
+    expect(browseMenu).toContain('font-size: 0.9375rem;');
+    expect(browseMenu).toContain('min-height: 2.25rem;');
+    expect(browseMenu).toContain('border-radius: 0.375rem;');
   });
 
   test('uses compact neutral desktop docs chrome and a two-column home', () => {

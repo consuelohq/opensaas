@@ -37,9 +37,23 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('data-show-filters');
     expect(html).toContain('data-trace-count');
     expect(html).toContain(
-      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Node</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
+      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     );
     expect(html).toContain('consuelo-trace-node-observability');
+    expect(html).toContain('data-workspace-route-trigger');
+    expect(html).toContain('aria-label="Workspace routes"');
+    expect(html).toContain('aria-current="page" href="/tracing"');
+    expect(html).toContain('class="workspace-route-option workspace-route-primary"');
+    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/nodes"');
+    expect(html).toContain('href="/tools"');
+    expect(html).toContain('href="/secrets"');
+    expect(html).toContain('href="/docs"');
+    expect(html).toContain('>Guides</p>');
+    expect(html).toContain('--workspace-chrome-bg:');
+    expect(html).toContain('--workspace-menu-bg:');
+    expect(html).toContain('@media (prefers-color-scheme: dark)');
+    expect(html).toContain('left: 50vw;');
     expect(html).not.toContain('<div>Machine</div>');
 
     expect(html).not.toContain('Live tracing cockpit');
@@ -49,6 +63,43 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).not.toContain('Recent errors');
     expect(html).not.toContain('class="kpis"');
     expect(html).not.toContain('class="hero"');
+  });
+
+  it('keeps the shared tracing chrome and table viewport-bounded across visible desktop and mobile states', () => {
+    const html = buildObservabilityTracesSite();
+
+    expect(html).toContain('id="consuelo-trace-workspace-integration"');
+    expect(html).toContain('Inspect live traces and tool execution.');
+    expect(html).not.toContain('Inspect live agent and tool execution.');
+    expect(html).toContain('#tbmLiveTraceModal[aria-hidden="false"]');
+    expect(html).toContain('display:flex!important');
+    expect(html).toContain('grid-template-rows:38px minmax(0,1fr)!important');
+    expect(html).toContain(
+      '.trxChrome[data-workspace-chrome] .workspace-route-control{overflow:visible!important}',
+    );
+    expect(html).toContain(
+      '#tbmLiveTraceModal .trxTableScroll{width:100%!important;max-width:100%!important;min-width:0!important;overflow:auto!important;',
+    );
+    expect(html).toContain('scroll-padding-inline-end:18px!important');
+    expect(html).toContain(
+      '#tbmLiveTraceModal .trxTable{width:max-content!important;max-width:none!important;padding-right:18px!important;',
+    );
+    expect(html).toContain(
+      '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) minmax(350px,.96fr) minmax(350px,.96fr) 150px 180px 78px 92px!important}',
+    );
+    expect(html).toContain(
+      '@media(max-width:760px){#tbmLiveTraceModal[aria-hidden="false"]{padding:0!important;',
+    );
+    expect(html).toContain(
+      '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:1620px!important;grid-template-columns:34px 108px 150px 78px 76px 260px 240px 240px 140px 140px 70px 84px!important}',
+    );
+    expect(html).toContain(
+      '#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxRail{display:block!important;position:fixed!important;',
+    );
+    expect(html).toContain('width:100vw!important;max-width:100vw!important');
+    expect(html).toContain(
+      '#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .tiInspector{width:100%!important;max-width:100%!important;',
+    );
   });
 
   it('uses the exact v38 interaction assets with only same-origin gateway transport', () => {
@@ -70,6 +121,11 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(browserSource).toContain('installTracePaginationTransport');
     expect(browserSource).toContain('installLivePolling');
     expect(browserSource).toContain('traceLiveUrl');
+    expect([
+      ...browserSource.matchAll(
+        /trxOutputCell[\s\S]{0,260}appendNodeCell\(button,[\s\S]{0,180}trxTraceCell/g,
+      ),
+    ]).toHaveLength(2);
 
     expect(html).not.toContain('/trace-burn-intelligence/_astro/');
     expect(html).not.toContain('<script src="https://');
@@ -133,6 +189,10 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     );
 
     expect(source).not.toContain('packages/workspace');
+    expect(source).toContain('const compactLayout = availableWidth <= 760;');
+    expect(source).toContain(
+      "open && !compactLayout\n      ? `${Math.floor(tableWidth)}px 8px minmax(420px, ${inspectorWidth}px)`",
+    );
     expect(runtime).not.toContain('packages/workspace/scripts/trace-site-inspector');
     expect(packageJson).toContain('\"@tanstack/virtual-core\"');
   });
