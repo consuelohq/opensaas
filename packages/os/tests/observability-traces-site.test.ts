@@ -37,7 +37,7 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('data-show-filters');
     expect(html).toContain('data-trace-count');
     expect(html).toContain(
-      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Node</div><div>Input</div><div>Output</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
+      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     );
     expect(html).toContain('consuelo-trace-node-observability');
     expect(html).toContain('data-workspace-route-trigger');
@@ -85,13 +85,13 @@ describe('Observability Traces canonical Trace Burn surface', () => {
       '#tbmLiveTraceModal .trxTable{width:max-content!important;max-width:none!important;padding-right:18px!important;',
     );
     expect(html).toContain(
-      '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) 150px minmax(350px,.96fr) minmax(350px,.96fr) 180px 78px 92px!important}',
+      '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) minmax(350px,.96fr) minmax(350px,.96fr) 150px 180px 78px 92px!important}',
     );
     expect(html).toContain(
       '@media(max-width:760px){#tbmLiveTraceModal[aria-hidden="false"]{padding:0!important;',
     );
     expect(html).toContain(
-      '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:1620px!important;grid-template-columns:34px 108px 150px 78px 76px 260px 140px 240px 240px 140px 70px 84px!important}',
+      '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:1620px!important;grid-template-columns:34px 108px 150px 78px 76px 260px 240px 240px 140px 140px 70px 84px!important}',
     );
     expect(html).toContain(
       '#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxRail{display:block!important;position:fixed!important;',
@@ -121,6 +121,11 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(browserSource).toContain('installTracePaginationTransport');
     expect(browserSource).toContain('installLivePolling');
     expect(browserSource).toContain('traceLiveUrl');
+    expect([
+      ...browserSource.matchAll(
+        /trxOutputCell[\s\S]{0,260}appendNodeCell\(button,[\s\S]{0,180}trxTraceCell/g,
+      ),
+    ]).toHaveLength(2);
 
     expect(html).not.toContain('/trace-burn-intelligence/_astro/');
     expect(html).not.toContain('<script src="https://');
