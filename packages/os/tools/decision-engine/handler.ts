@@ -127,6 +127,11 @@ export const toolHandlers = [
           "kind": "boolean"
         },
         {
+          "source": "detail",
+          "flag": "--detail",
+          "kind": "value"
+        },
+        {
           "source": "reindex",
           "flag": "--reindex",
           "kind": "boolean"
