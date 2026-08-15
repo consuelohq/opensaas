@@ -14,6 +14,7 @@ import { registerWorkspaceNodeRoutes } from './routes/workspace-nodes';
 import { registerWebAuthRoutes } from './routes/web-auth';
 import type {
   DefaultSiteSnapshot,
+  CheckoutObservability,
   DeviceAuthorityLogger,
   DeviceAuthorityRuntime,
   Store,
@@ -40,6 +41,10 @@ export type CreateDeviceAuthorityHandlerInput = {
   stripeSecretKey?: string;
   stripeWebhookSecret?: string;
   stripeApiBaseUrl?: string;
+  stripeSyntheticSecretKey?: string;
+  stripeSyntheticWebhookSecret?: string;
+  stripeSyntheticAccountIds?: string;
+  checkoutObservability?: CheckoutObservability;
   operationalLogger?: DeviceAuthorityLogger;
   installControlPlaneRepository?: DeviceAuthorityRuntime['installControlPlaneRepository'];
   installDiagnosticBundleStore?: DeviceAuthorityRuntime['installDiagnosticBundleStore'];

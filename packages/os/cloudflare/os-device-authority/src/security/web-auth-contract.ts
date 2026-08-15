@@ -121,6 +121,7 @@ export type UniversalAuthRouteContract = {
     | 'preserved-mcp-oauth'
     | 'preserved-bearer'
     | 'public-sanitized-status'
+    | 'public-signed-webhook'
     | 'node-bootstrap-bearer';
   owner: 'worker-14' | 'existing';
 };
@@ -137,6 +138,11 @@ export const UNIVERSAL_AUTH_ROUTE_MATRIX: readonly UniversalAuthRouteContract[] 
   { method: 'POST', path: '/auth/handoff', access: 'authority-session', owner: 'worker-14' },
   { method: 'GET', path: '/auth/consume', access: 'public-handoff-consumer', owner: 'worker-14' },
   { method: 'POST', path: '/auth/logout', access: 'workspace-session', owner: 'worker-14' },
+  { method: 'GET', path: '/auth/synthetic/checkout', access: 'authority-session', owner: 'worker-14' },
+  { method: 'POST', path: '/auth/synthetic/checkout/start', access: 'authority-session', owner: 'worker-14' },
+  { method: 'GET', path: '/auth/synthetic/checkout/result', access: 'authority-session', owner: 'worker-14' },
+  { method: 'POST', path: '/webhooks/stripe', access: 'public-signed-webhook', owner: 'worker-14' },
+  { method: 'POST', path: '/webhooks/stripe-synthetic', access: 'public-signed-webhook', owner: 'worker-14' },
   { method: 'GET', path: '/login/device', access: 'preserved-device-oauth', owner: 'existing' },
   { method: 'POST', path: '/login/device/code', access: 'preserved-device-oauth', owner: 'existing' },
   { method: 'POST', path: '/login/device/workspace', access: 'preserved-device-oauth', owner: 'existing' },

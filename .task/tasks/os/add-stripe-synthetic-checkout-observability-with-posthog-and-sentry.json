@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-stripe-synthetic-checkout-observability-with-posthog-and-sentry",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1997,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1997",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1997",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1997/add-stripe-synthetic-checkout-observability-with-posthog-and-sentry",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1997",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1997/add-stripe-synthetic-checkout-observability-with-posthog-and-sentry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-stripe-synthetic-checkout-observability-with-posthog-and-sentry",
+  "taskSession": "tsk_8a7f4130d820",
+  "tmuxSession": "opensaas-os-add-stripe-synthetic-checkout-observability-with-8a7f4130",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-stripe-synthetic-checkout-observability-with-posthog-and-sentry/.task/os/add-stripe-synthetic-checkout-observability-with-posthog-and-sentry/session.json",
+  "createdAt": "2026-08-15T02:51:04.470Z"
+}

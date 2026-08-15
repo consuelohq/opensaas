@@ -518,12 +518,47 @@ export type Env = {
   OS_STRIPE_SECRET_KEY?: string;
   OS_STRIPE_WEBHOOK_SECRET?: string;
   OS_STRIPE_API_BASE_URL?: string;
+  OS_STRIPE_SYNTHETIC_SECRET_KEY?: string;
+  OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET?: string;
+  OS_STRIPE_SYNTHETIC_ACCOUNT_IDS?: string;
   OS_DEVICE_AUTH_LOGGER?: DeviceAuthorityLogger;
   INSTALL_DIAGNOSTICS?: InstallDiagnosticR2Bucket;
   OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS?: string;
   SENTRY_DSN?: string;
   POSTHOG_API_KEY?: string;
   POSTHOG_HOST?: string;
+};
+
+export type CheckoutTelemetryEventName =
+  | 'checkout_catalog_viewed'
+  | 'checkout_plan_selected'
+  | 'checkout_session_created'
+  | 'checkout_cancelled'
+  | 'checkout_completed'
+  | 'checkout_failed'
+  | 'checkout_synthetic_session_created'
+  | 'checkout_synthetic_completed'
+  | 'checkout_synthetic_failed';
+
+export type CheckoutTelemetryEvent = {
+  name: CheckoutTelemetryEventName;
+  accountId?: string;
+  checkoutId?: string;
+  stripeSessionId?: string;
+  planId?: string;
+  pricingVersion?: string;
+  monthlyPriceCents?: number;
+  currency?: string;
+  synthetic: boolean;
+  outcome?: 'started' | 'success' | 'cancelled' | 'error';
+  errorCode?: string;
+  durationMs?: number;
+  cloudflareRayId?: string;
+};
+
+export type CheckoutObservability = {
+  observe(event: CheckoutTelemetryEvent): Promise<void>;
+  captureException(error: unknown, event: CheckoutTelemetryEvent): Promise<void>;
 };
 
 export type DeviceAuthorityOperationalLogContext = {
@@ -560,6 +595,10 @@ export type DeviceAuthorityRuntime = {
   stripeSecretKey?: string;
   stripeWebhookSecret?: string;
   stripeApiBaseUrl?: string;
+  stripeSyntheticSecretKey?: string;
+  stripeSyntheticWebhookSecret?: string;
+  stripeSyntheticAccountIds?: string;
+  checkoutObservability?: CheckoutObservability;
   operationalLogger?: DeviceAuthorityLogger;
   installControlPlaneRepository?: InstallControlPlaneRepository;
   installDiagnosticBundleStore?: InstallDiagnosticBundleStore;
