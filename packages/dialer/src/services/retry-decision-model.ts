@@ -44,11 +44,12 @@ export class RetryDecisionModel {
       ]);
       const observedProbability = answerProbabilities.find(
         (item) => item.attemptNumber === nextAttemptNumber,
-      )?.probability;
+      );
       const stoppingThreshold = evaluateStoppingThreshold({
         segmentId: input.segmentId,
         attemptNumber: nextAttemptNumber,
-        answerProbability: observedProbability,
+        answerProbability: observedProbability?.probability,
+        answerProbabilityUpperBound: observedProbability?.upperBound,
         valuePerConnection: economics.valuePerConnection,
         costPerAttempt: economics.costPerAttempt,
       });
@@ -72,7 +73,8 @@ export class RetryDecisionModel {
           estimate.attemptNumber === nextAttemptNumber,
       );
       const timingSampleSize = hazards.reduce(
-        (total, estimate) => total + Math.max(estimate.sampleSize, 0),
+        (total, estimate) =>
+          total + Math.max(estimate.trials ?? estimate.sampleSize, 0),
         0,
       );
       const bestHazard =

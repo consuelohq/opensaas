@@ -41,12 +41,23 @@ describeIntegration('local dialer lab service integration', () => {
         persistedFixture: {
           candidateLedgerRows: number;
           trainingOutcomeRows: number;
+          canonicalObservationRows: number;
         };
         benchmarks: {
           dataset: { seed: number };
           ranking: Record<string, unknown>;
           aggregation: { groups: number };
           ingestion: { operations: number };
+          scientificValidation: {
+            observedAttemptNumbers: number[];
+            observedProbabilities: number[];
+            censoredAttemptExcludedFromDenominator: boolean;
+            idempotency: {
+              canonicalRows: number;
+              ledgerAttempts: number;
+              compatibilityOutcomeRows: number;
+            };
+          };
           redisCoordination: { samples: number };
         };
         cleanup: {
@@ -65,9 +76,13 @@ describeIntegration('local dialer lab service integration', () => {
       expect(result.migration.applied).toContain(
         '20260810_001_standalone_dialer_baseline',
       );
+      expect(result.migration.applied).toContain(
+        '20260815_002_predictive_learning_observations',
+      );
       expect(result.persistedFixture).toEqual({
         candidateLedgerRows: 250,
         trainingOutcomeRows: 1_000,
+        canonicalObservationRows: 1_000,
       });
       expect(result.benchmarks.dataset.seed).toBe(4242);
       expect(Object.keys(result.benchmarks.ranking)).toEqual([
@@ -77,6 +92,21 @@ describeIntegration('local dialer lab service integration', () => {
       ]);
       expect(result.benchmarks.aggregation.groups).toBeGreaterThan(0);
       expect(result.benchmarks.ingestion.operations).toBe(50);
+      expect(
+        result.benchmarks.scientificValidation.observedAttemptNumbers,
+      ).toEqual([1, 3]);
+      expect(
+        result.benchmarks.scientificValidation.observedProbabilities,
+      ).toEqual([1, 0]);
+      expect(
+        result.benchmarks.scientificValidation
+          .censoredAttemptExcludedFromDenominator,
+      ).toBe(true);
+      expect(result.benchmarks.scientificValidation.idempotency).toEqual({
+        canonicalRows: 1,
+        ledgerAttempts: 1,
+        compatibilityOutcomeRows: 1,
+      });
       expect(result.benchmarks.redisCoordination.samples).toBe(50);
       expect(result.cleanup).toEqual({
         postgresClosed: true,

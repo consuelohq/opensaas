@@ -6,11 +6,18 @@ export const rankHazardEstimates = (
   hazardEstimates: HazardEstimate[],
 ): HazardEstimate[] =>
   [...hazardEstimates].sort((left, right) => {
-    if (right.answerRate !== left.answerRate) {
-      return right.answerRate - left.answerRate;
+    const leftEvidence = left.lowerBound ?? left.answerRate;
+    const rightEvidence = right.lowerBound ?? right.answerRate;
+
+    if (rightEvidence !== leftEvidence) {
+      return rightEvidence - leftEvidence;
     }
 
-    return right.sampleSize - left.sampleSize;
+    if (right.sampleSize !== left.sampleSize) {
+      return right.sampleSize - left.sampleSize;
+    }
+
+    return right.answerRate - left.answerRate;
   });
 
 export class CallTimingModel {

@@ -6,6 +6,7 @@ import {
 } from '@consuelo/dialer';
 import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
 
+import { createPostgresPredictiveModelStore } from '../learning/postgres-predictive-model-store';
 import { recordLeadConnectorAttemptTelemetry } from '../runtime/lead-connector-learning';
 import { rankPredictiveLeadConnectorTargets } from '../runtime/predictive-target-ranking';
 
@@ -144,7 +145,10 @@ export const createSyntheticDialerFixture = ({
     const hourOfDay = slot % 24;
     for (let attemptNumber = 1; attemptNumber <= attemptsPerContact; attemptNumber += 1) {
       const attemptedAt = new Date(
-        baseDay - daysAgo * 24 * 60 * 60 * 1_000 + hourOfDay * 60 * 60 * 1_000,
+        baseDay -
+          daysAgo * 24 * 60 * 60 * 1_000 +
+          hourOfDay * 60 * 60 * 1_000 +
+          (attemptNumber - 1) * 60 * 1_000,
       ).toISOString();
       const roll = random();
       const probability = answerProbability(attemptNumber, hourOfDay);
@@ -218,6 +222,10 @@ export const seedSyntheticDialerFixture = async (
 ): Promise<void> => {
   try {
     await database.query(
+      'DELETE FROM dialer_learning_observations WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
       'DELETE FROM consuelo_lead_connector_call_outcomes WHERE workspace_id = $1',
       [workspaceId],
     );
@@ -280,6 +288,54 @@ export const seedSyntheticDialerFixture = async (
           outcomes.map((outcome) => outcome.attemptedAt),
           outcomes.map((outcome) => outcome.attemptNumber),
           outcomes.map((outcome) => outcome.outcome),
+        ],
+      );
+
+      const responseAt = outcomes.map((outcome) =>
+        outcome.outcome === 'answered'
+          ? new Date(
+              new Date(outcome.attemptedAt).getTime() + 30 * 1_000,
+            ).toISOString()
+          : null,
+      );
+      const observedUntilAt = outcomes.map((outcome, index) =>
+        responseAt[index] ??
+        new Date(
+          new Date(outcome.attemptedAt).getTime() + 60 * 1_000,
+        ).toISOString(),
+      );
+      await database.query(
+        `INSERT INTO dialer_learning_observations (
+           workspace_id, group_id, position, segment_id, contact_id,
+           attempted_at, response_at, observed_until_at, local_hour,
+           local_day_of_week, outcome_class, censor_reason
+         )
+         SELECT
+           $1, rows.group_id, 1, 'lab-segment', rows.contact_id,
+           rows.attempted_at, rows.response_at, rows.observed_until_at,
+           rows.local_hour, rows.local_day_of_week, rows.outcome_class, NULL
+         FROM UNNEST(
+           $2::text[], $3::text[], $4::timestamptz[], $5::timestamptz[],
+           $6::timestamptz[], $7::int[], $8::int[], $9::text[]
+         ) AS rows(
+           group_id, contact_id, attempted_at, response_at,
+           observed_until_at, local_hour, local_day_of_week, outcome_class
+         )`,
+        [
+          workspaceId,
+          outcomes.map(
+            (outcome) =>
+              `lab-fixture-${outcome.contactId}-${String(outcome.attemptNumber).padStart(2, '0')}`,
+          ),
+          outcomes.map((outcome) => outcome.contactId),
+          outcomes.map((outcome) => outcome.attemptedAt),
+          responseAt,
+          observedUntilAt,
+          outcomes.map((outcome) => new Date(outcome.attemptedAt).getUTCHours()),
+          outcomes.map((outcome) => new Date(outcome.attemptedAt).getUTCDay()),
+          outcomes.map((outcome) =>
+            outcome.outcome === 'answered' ? 'response' : 'non_response',
+          ),
         ],
       );
     }
@@ -395,11 +451,14 @@ const createIngestRecord = (
           callSid,
           customerNumber: syntheticPhone(index),
           fromNumber: '+15559999999',
-          position: 0,
+          position: 1,
           status: answered ? 'completed' : 'no-answer',
           amdResult: answered ? 'human' : 'unknown',
           contactId: `lab-ingest-contact-${String(index).padStart(8, '0')}`,
           dialStartedAt: attemptedAt,
+          answeredAt: answered
+            ? new Date(new Date(attemptedAt).getTime() + 800).toISOString()
+            : undefined,
         },
       ],
       workspaceId,
@@ -424,6 +483,150 @@ const createIngestRecord = (
     },
     success: answered,
   };
+};
+
+export type PredictiveScienceValidation = {
+  observedAttemptNumbers: number[];
+  observedProbabilities: number[];
+  censoredAttemptExcludedFromDenominator: boolean;
+  idempotency: {
+    canonicalRows: number;
+    ledgerAttempts: number;
+    compatibilityOutcomeRows: number;
+  };
+};
+
+export const validatePredictiveLearningScience = async (
+  database: LeadConnectorDatabase,
+  workspaceId: string,
+  baseTime: string,
+): Promise<PredictiveScienceValidation> => {
+  try {
+    await database.query(
+      'DELETE FROM dialer_learning_observations WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
+      'DELETE FROM consuelo_lead_connector_call_outcomes WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
+      'DELETE FROM contact_attempt_ledger WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
+      'DELETE FROM dialer_workspace_settings WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
+      `INSERT INTO dialer_workspace_settings (
+         workspace_id, avg_deal_value, avg_close_rate, cost_per_attempt
+       ) VALUES ($1, 2500, 0.08, 0.03)`,
+      [workspaceId],
+    );
+
+    const base = new Date(baseTime).getTime();
+    const chronologicalRows = [
+      {
+        groupId: 'science-group-3',
+        attemptedAt: new Date(base + 2 * 60 * 60 * 1_000),
+        outcomeClass: 'non_response',
+        censorReason: null,
+      },
+      {
+        groupId: 'science-group-1',
+        attemptedAt: new Date(base),
+        outcomeClass: 'response',
+        censorReason: null,
+      },
+      {
+        groupId: 'science-group-2',
+        attemptedAt: new Date(base + 60 * 60 * 1_000),
+        outcomeClass: 'censored',
+        censorReason: 'competing_winner',
+      },
+    ] as const;
+
+    for (const row of chronologicalRows) {
+      const responseAt =
+        row.outcomeClass === 'response'
+          ? new Date(row.attemptedAt.getTime() + 60 * 1_000)
+          : null;
+      await database.query(
+        `INSERT INTO dialer_learning_observations (
+           workspace_id, group_id, position, segment_id, contact_id,
+           attempted_at, response_at, observed_until_at, local_hour,
+           local_day_of_week, outcome_class, censor_reason
+         ) VALUES ($1, $2, 1, 'science-segment', 'science-contact',
+                   $3::timestamptz, $4::timestamptz, $5::timestamptz,
+                   $6, $7, $8, $9)`,
+        [
+          workspaceId,
+          row.groupId,
+          row.attemptedAt.toISOString(),
+          responseAt?.toISOString() ?? null,
+          new Date(row.attemptedAt.getTime() + 90 * 1_000).toISOString(),
+          row.attemptedAt.getUTCHours(),
+          row.attemptedAt.getUTCDay(),
+          row.outcomeClass,
+          row.censorReason,
+        ],
+      );
+    }
+
+    const store = createPostgresPredictiveModelStore(database);
+    const estimates = await store.getAnswerProbabilities({
+      workspaceId,
+      segmentId: 'science-segment',
+    });
+
+    const idempotentRecord = createIngestRecord(workspaceId, 1_000, baseTime);
+    await recordLeadConnectorAttemptTelemetry(
+      database,
+      idempotentRecord,
+      undefined,
+      { timezone: 'UTC' },
+    );
+    await recordLeadConnectorAttemptTelemetry(
+      database,
+      idempotentRecord,
+      undefined,
+      { timezone: 'UTC' },
+    );
+    const idempotency = await database.query<{
+      canonical_rows: number;
+      ledger_attempts: number;
+      compatibility_outcome_rows: number;
+    }>(
+      `SELECT
+         (SELECT COUNT(*)::int
+            FROM dialer_learning_observations
+           WHERE workspace_id = $1 AND contact_id = $2) AS canonical_rows,
+         COALESCE((SELECT attempts_total
+            FROM contact_attempt_ledger
+           WHERE workspace_id = $1 AND contact_id = $2), 0)::int AS ledger_attempts,
+         (SELECT COUNT(*)::int
+            FROM consuelo_lead_connector_call_outcomes
+           WHERE workspace_id = $1 AND contact_id = $2) AS compatibility_outcome_rows`,
+      [workspaceId, idempotentRecord.group.calls[0]?.contactId ?? ''],
+    );
+    const idempotencyRow = idempotency.rows[0];
+
+    return {
+      observedAttemptNumbers: estimates.map((estimate) => estimate.attemptNumber),
+      observedProbabilities: estimates.map((estimate) => estimate.probability),
+      censoredAttemptExcludedFromDenominator:
+        estimates.every((estimate) => estimate.attemptNumber !== 2),
+      idempotency: {
+        canonicalRows: idempotencyRow?.canonical_rows ?? 0,
+        ledgerAttempts: idempotencyRow?.ledger_attempts ?? 0,
+        compatibilityOutcomeRows:
+          idempotencyRow?.compatibility_outcome_rows ?? 0,
+      },
+    };
+  } catch (cause: unknown) {
+    throw labFailure('predictive science validation', cause);
+  }
 };
 
 const persistIngestRecords = (
@@ -506,6 +709,7 @@ export type LocalDialerBenchmarkResult = {
   ranking: Record<string, SampleSummary>;
   aggregation: Awaited<ReturnType<typeof benchmarkAggregation>>;
   ingestion: Awaited<ReturnType<typeof benchmarkIngestion>>;
+  scientificValidation: PredictiveScienceValidation;
   redisCoordination: SampleSummary;
 };
 
@@ -544,6 +748,11 @@ export const runLocalDialerBenchmarks = async (options: {
         `${options.workspaceId}-ingest`,
         options.fixture,
         options.scale.ingestOperations,
+      ),
+      scientificValidation: await validatePredictiveLearningScience(
+        options.database,
+        `${options.workspaceId}-science`,
+        options.fixture.baseTime,
       ),
       redisCoordination: await benchmarkRedis(
         options.redis,

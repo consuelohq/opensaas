@@ -1237,6 +1237,10 @@ export const createRailwayDialerApplicationLayers = async (
                     event: 'dialer.learning.persistence_unavailable',
                     ...details,
                   }),
+                {
+                  timezone:
+                    environment.DIALER_LOCAL_TIMEZONE ?? 'America/New_York',
+                },
               )
             : Promise.resolve(true);
           return persistence.then(() => {
