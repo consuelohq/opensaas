@@ -27,7 +27,7 @@ const WORKSPACE_ROUTES: Array<{
     label: 'Tracing',
     href: '/tracing',
     group: 'Observe',
-    description: 'Inspect live agent and tool execution.',
+    description: 'Inspect live traces and tool execution.',
   },
   {
     id: 'nodes',
