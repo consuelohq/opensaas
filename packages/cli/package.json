@@ -1,7 +1,7 @@
 {
   "name": "@consuelo/cli",
   "version": "0.0.1",
-  "description": "CLI tool for Consuelo SDK",
+  "description": "Consuelo command-line interface",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,8 +27,7 @@
     "commander": "^13.1.0",
     "open": "^11.0.0",
     "ora": "^9.3.0",
-    "pg": "^8.13.0",
-    "twenty-sdk": "*"
+    "pg": "^8.13.0"
   },
   "license": "MIT",
   "publishConfig": {

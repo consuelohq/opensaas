@@ -37,32 +37,17 @@ await initSentry();
 
 program
   .name('consuelo')
-  .description('AI-powered sales toolkit')
+  .description('Consuelo command-line interface')
   .version('0.0.1')
   .option('--json', 'machine-readable output')
   .option('--quiet', 'suppress output')
   .option('--no-telemetry', 'disable error reporting')
-  .option('--workspace <name>', 'use a specific workspace configuration')
   .hook('preAction', async (_thisCommand, actionCommand) => {
     lastCommandName = actionCommand.name();
     lastCommandArgs = actionCommand.args;
     const opts = actionCommand.optsWithGlobals();
     if (opts.json) globalThis.__consuelo_json = true;
     if (opts.quiet) globalThis.__consuelo_quiet = true;
-
-    // twenty-sdk workspace resolution
-    try {
-      // eslint-disable-next-line @nx/enforce-module-boundaries -- DEV-788: nx tags not configured for cli
-      const { ConfigService } = await import('twenty-sdk/cli');
-      let workspace = opts.workspace as string | undefined;
-      if (!workspace) {
-        const configService = new ConfigService();
-        workspace = await configService.getDefaultWorkspace();
-      }
-      ConfigService.setActiveWorkspace(workspace);
-    } catch (_err: unknown) {
-      // twenty-sdk not available — skip workspace resolution — intentional: optional dep
-    }
   })
   .action(async () => {
     try {
@@ -76,7 +61,8 @@ program
     } catch (err: unknown) {
       handleCommandError(err, {
         code: 'CLI_ERROR',
-        friendlyMessage: 'consuelo failed — check your configuration and try again',
+        friendlyMessage:
+          'consuelo failed — check your configuration and try again',
         command: 'consuelo',
       });
     }
@@ -108,9 +94,7 @@ program
   .command('coach')
   .description('analyze a call transcript')
   .option('--transcript <file>', 'path to transcript file')
-  .action(async (opts) => {
-    await coachCommand({ transcript: opts.transcript });
-  });
+  .action((opts) => coachCommand({ transcript: opts.transcript }));
 
 // phase 8 command groups
 registerContacts(program);
@@ -128,15 +112,6 @@ registerOs(program);
 registerSkillCommands(program);
 registerUpdate(program);
 registerLogin(program);
-
-// twenty-sdk platform commands (auth, app, entity, function)
-try {
-  // eslint-disable-next-line @nx/enforce-module-boundaries -- DEV-788: nx tags not configured for cli
-  const { registerCommands } = await import('twenty-sdk/cli');
-  registerCommands(program);
-} catch (_err: unknown) {
-  // twenty-sdk not built — platform commands unavailable — intentional: optional dep
-}
 
 program
   .command('analytics')
