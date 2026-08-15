@@ -84,11 +84,13 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(workflow).toContain('- docs');
   expect(workflow).toContain('- website');
   expect(workflow).toContain('- os');
+  expect(workflow).toContain('- os-device-auth');
   expect(workflow.split('environment: consuelo / production')).toHaveLength(4);
   expect(workflow).toContain('needs: [deploy-docs, deploy-website]');
   expect(workflow).toContain("inputs.target == 'docs'");
   expect(workflow).toContain("inputs.target == 'website'");
   expect(workflow).toContain("inputs.target == 'os'");
+  expect(workflow).toContain("inputs.target == 'os-device-auth'");
   expect(workflow).toContain("needs.deploy-docs.result == 'success'");
   expect(workflow).toContain("needs.deploy-docs.result == 'skipped'");
   expect(workflow).toContain("needs.deploy-website.result == 'success'");
@@ -97,6 +99,23 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(workflow).toContain('bun run website:deploy -- --branch main --json');
   expect(workflow).toContain('bun install --global wrangler@4.105.0');
   expect(workflow).toContain('bun run os:release');
+  expect(workflow).toContain('bun run os:release -- --device-auth-only');
+  const osReleaseScript = readFileSync(
+    join(repoRoot, 'packages/workspace/scripts/os-release.ts'),
+    'utf8',
+  );
+  const rootPackage = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
+  const osPackage = JSON.parse(
+    readFileSync(join(repoRoot, 'packages/os/package.json'), 'utf8'),
+  );
+  expect(rootPackage.scripts['os:release-workspace-edge']).toBe(
+    'bun packages/workspace/scripts/os-release-workspace-edge.ts',
+  );
+  expect(osPackage.scripts['cloudflare:workspace-edge:migrate']).toContain('--remote');
+  expect(osReleaseScript).toContain("runScript('os:release-workspace-edge', options)");
+  expect(osReleaseScript.indexOf("runScript('os:release-workspace-edge', options)")).toBeLessThan(
+    osReleaseScript.indexOf("runScript('os:release-device-auth', options)"),
+  );
   expect(workflow).toContain('Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID');
   expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_PAGES_API_TOKEN');
   expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN');

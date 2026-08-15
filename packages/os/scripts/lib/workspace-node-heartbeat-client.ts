@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
 import type { AgentName } from './local-agent-connectivity';
+import {
+  parseWorkspaceNodeSnapshot,
+  type WorkspaceNodeSnapshot,
+} from './workspace-node-snapshot-cache';
 
 import {
   createDevicePublicKeyProof,
@@ -34,6 +38,7 @@ export type WorkspaceNodeHeartbeatResult = {
   routeReady: boolean;
   connectorId?: string;
   edgeRequestSigningSecret?: string;
+  workspace?: WorkspaceNodeSnapshot;
 };
 
 export type WorkspaceNodeHeartbeatClient = {
@@ -132,6 +137,7 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
   const edgeRequestSigningSecret = (
     payload as { edgeRequestSigningSecret?: unknown }
   ).edgeRequestSigningSecret;
+  const rawWorkspace = (payload as { workspace?: unknown }).workspace;
   if (
     typeof nodeId !== 'string' ||
     !['online', 'stale', 'offline'].includes(String(presence))
@@ -157,6 +163,9 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
           edgeRequestSigningSecret: edgeRequestSigningSecret.trim(),
         }
       : {}),
+    ...(rawWorkspace === undefined
+      ? {}
+      : { workspace: parseWorkspaceNodeSnapshot(rawWorkspace) }),
   };
 }
 

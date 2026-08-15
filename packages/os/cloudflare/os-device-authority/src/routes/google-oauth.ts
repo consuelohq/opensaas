@@ -6,7 +6,8 @@ import { normalizeAuthReturnPath } from '../security/web-auth-contract';
 import { resolveCanonicalDeviceIdentity } from '../services/canonical-device-identity';
 import {
   CloudFirstOnboardingError,
-  resolveOrCreateCanonicalWebUser,
+  resolveCanonicalWebUser,
+  resolveWebOperatingAccountId,
 } from '../services/cloud-first-onboarding';
 import type { DeviceAuthorityRuntime } from '../types';
 import { rand } from '../utils';
@@ -26,7 +27,7 @@ import {
 import { registerApprovedWorkspaceRoute } from '../services/connectors';
 import { recordCanonicalInstallIdentity } from '../services/install-identity';
 import { finishMcpOAuthGoogleCallback } from '../services/mcp-oauth';
-import { completeWebGoogleLogin } from './web-auth';
+import { accountNotFoundPage, completeWebGoogleLogin } from './web-auth';
 
 async function handleGoogleOAuthRequest(
   request: Request,
@@ -127,9 +128,10 @@ async function handleGoogleOAuthRequest(
       const mcpOAuthState = stateValue
         ? await input.store.byMcpOAuthState(stateValue)
         : undefined;
-      if (authCode && mcpOAuthState) {
+      if (mcpOAuthState) {
         return await finishMcpOAuthGoogleCallback({
           request,
+          runtime,
           store: input.store,
           origin,
           googleClientId: google.clientId,
@@ -142,9 +144,9 @@ async function handleGoogleOAuthRequest(
       const webOAuthState = stateValue
         ? await input.store.byWebOAuthState(stateValue)
         : undefined;
-      if (authCode && webOAuthState) {
+      if (webOAuthState) {
         await input.store.delWebOAuthState(stateValue);
-        if (now() >= webOAuthState.expiresAt) {
+        if (now() >= webOAuthState.expiresAt || !authCode) {
           return json({ error: 'invalid_login' }, { status: 400 });
         }
         try {
@@ -156,25 +158,35 @@ async function handleGoogleOAuthRequest(
             fetchImpl,
             expectedNonce: webOAuthState.nonce,
           });
-          const user = await resolveOrCreateCanonicalWebUser({
+          const resolved = await resolveCanonicalWebUser({
             runtime,
             email: identity.email,
+            intent: webOAuthState.intent,
+          });
+          const accountId = await resolveWebOperatingAccountId({
+            runtime,
+            user: resolved.user,
+            googleSubject: identity.sub,
           });
           return await completeWebGoogleLogin({
             runtime,
-            accountId: user.userId,
+            accountId,
             email: identity.email,
             returnPath: webOAuthState.returnPath,
+            cloudOnboardingEligible: resolved.created,
           });
         } catch (error: unknown) {
           if (error instanceof CloudFirstOnboardingError) {
+            if (error.code === 'ACCOUNT_NOT_FOUND') {
+              return text(accountNotFoundPage(), { status: error.status });
+            }
             return json({ error: error.code.toLowerCase() }, { status: error.status });
           }
           return json({ error: 'invalid_login' }, { status: 400 });
         }
       }
       const oauthState = await input.store.byOAuthState(stateValue);
-      if (!stateValue || !authCode || !oauthState)
+      if (!stateValue || !oauthState)
         return text(
           page({
             code: '',
@@ -183,6 +195,17 @@ async function handleGoogleOAuthRequest(
           }),
           { status: 400 },
         );
+      if (!authCode) {
+        await input.store.delOAuthState(stateValue);
+        return text(
+          page({
+            code: oauthState.userCode,
+            origin,
+            error: 'Google approval was not completed. Restart the installer.',
+          }),
+          { status: 400 },
+        );
+      }
       if (now() >= oauthState.expiresAt)
         return text(
           page({

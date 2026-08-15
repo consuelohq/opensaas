@@ -217,6 +217,56 @@
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior."
     },
     {
+      "id": "os-release-surface-freshness",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        ".github/workflows/consuelo-os-runtime-publish.yaml",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/tests/distribution/release-channel-workflows.test.ts",
+        "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/workspace/scripts/os-release.ts",
+        "packages/workspace/scripts/os-release-device-auth.ts",
+        "packages/workspace/scripts/os-release-workspace-edge.ts",
+        "packages/workspace/tests/website-deploy.test.js"
+      ],
+      "tests": [
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts"
+          ]
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ]
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ]
+        }
+      ],
+      "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "os-workspace-edge-rollout",
       "critical": true,
       "source": [
@@ -553,6 +603,40 @@
       "reason": "Cloud-first Consuelo OS login, canonical signup, workspace trial, and provisioning handoff changes must prove the exact browser auth, managed-cloud, installer-lifecycle, launcher, Worker, and syntax contracts without selecting unrelated package-wide OS tests."
     },
     {
+      "id": "os-chatgpt-mcp-oauth",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+        "packages/os/tests/operator-oauth-client.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS ChatGPT MCP OAuth contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/operator-oauth-client.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "ChatGPT MCP OAuth client binding and authorization changes must prove the exact client/redirect, Worker, architecture, release, and syntax contracts without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "os-device-approval-canonical-identity",
       "critical": true,
       "exclusive": true,
@@ -743,6 +827,89 @@
         }
       ],
       "reason": "Native macOS menu, lifecycle presentation, and alpha packaging changes must run the focused Swift and platform contracts without selecting the broad OS package suite."
+    },
+    {
+      "id": "os-native-menu-node-discovery",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+        "packages/os/scripts/lib/operator-login.ts",
+        "packages/os/scripts/lib/operator-token-store.ts",
+        "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
+        "packages/os/scripts/lib/workspace-node-snapshot-cache.ts",
+        "packages/os/scripts/login.ts",
+        "packages/os/scripts/workspace-node-heartbeat.ts",
+        "packages/os/tests/native-lifecycle-endpoint.test.ts",
+        "packages/os/tests/operator-login.test.ts",
+        "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+        "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS operator login contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/operator-login.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS native menu node discovery syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Native menu lifecycle/auth/heartbeat changes must prove read-only enrolled-node discovery, privileged operator mutations, refresh-token persistence, heartbeat snapshot safety, and lifecycle presentation without selecting the historically red unrelated OS package suite."
     },
     {
       "id": "frontend-lint-config-contract",

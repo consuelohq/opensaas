@@ -41,7 +41,7 @@ export const WORKSPACE_SITE_SNAPSHOT_IDS = [
 export type WorkspaceSiteSnapshotId =
   (typeof WORKSPACE_SITE_SNAPSHOT_IDS)[number];
 
-const WORKSPACE_PRIVATE_SITE_SNAPSHOT_IDS = new Set<WorkspaceSiteSnapshotId>([
+export const WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS = [
   'launcher',
   'traces',
   'configuration',
@@ -49,7 +49,11 @@ const WORKSPACE_PRIVATE_SITE_SNAPSHOT_IDS = new Set<WorkspaceSiteSnapshotId>([
   'nodes',
   'environments',
   'secrets',
-]);
+] as const satisfies readonly WorkspaceSiteSnapshotId[];
+
+const WORKSPACE_PRIVATE_SITE_SNAPSHOT_IDS = new Set<WorkspaceSiteSnapshotId>(
+  WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS,
+);
 
 export const workspaceSiteSnapshotRequiresSession = (
   siteId: WorkspaceSiteSnapshotId,

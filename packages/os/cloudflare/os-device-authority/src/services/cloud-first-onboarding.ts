@@ -24,6 +24,7 @@ export class CloudFirstOnboardingError extends Error {
     readonly code:
       | 'IDENTITY_DIRECTORY_UNAVAILABLE'
       | 'IDENTITY_AMBIGUOUS'
+      | 'ACCOUNT_NOT_FOUND'
       | 'WORKSPACE_NAME_INVALID'
       | 'WORKSPACE_EXISTS'
       | 'PRICING_UNAVAILABLE'
@@ -38,13 +39,14 @@ export class CloudFirstOnboardingError extends Error {
 
 const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 
-const normalizeWorkspaceName = (value: string): string =>
+export const normalizeCloudFirstWorkspaceName = (value: string): string =>
   value.replace(/\s+/g, ' ').trim();
 
-export async function resolveOrCreateCanonicalWebUser(input: {
+export async function resolveCanonicalWebUser(input: {
   runtime: DeviceAuthorityRuntime;
   email: string;
-}): Promise<InstallControlPlaneCanonicalUser> {
+  intent: 'login' | 'signup';
+}): Promise<{ user: InstallControlPlaneCanonicalUser; created: boolean }> {
   try {
     const repository = input.runtime.installControlPlaneRepository;
     if (!repository) {
@@ -71,7 +73,14 @@ export async function resolveOrCreateCanonicalWebUser(input: {
           'A legacy Google alias cannot be used as a canonical Consuelo user.',
         );
       }
-      return existing[0];
+      return { user: existing[0], created: false };
+    }
+    if (input.intent === 'login') {
+      throw new CloudFirstOnboardingError(
+        'ACCOUNT_NOT_FOUND',
+        404,
+        'No Consuelo account found for this Google account.',
+      );
     }
 
     const digest = await hashHex(`consuelo:web-user:${email}`);
@@ -93,7 +102,7 @@ export async function resolveOrCreateCanonicalWebUser(input: {
         'This Google identity could not be bound unambiguously.',
       );
     }
-    return created[0];
+    return { user: created[0], created: true };
   } catch (error: unknown) {
     if (error instanceof CloudFirstOnboardingError) throw error;
     throw new CloudFirstOnboardingError(
@@ -104,7 +113,50 @@ export async function resolveOrCreateCanonicalWebUser(input: {
   }
 }
 
-async function derivedWorkspaceIdentity(input: {
+export async function resolveWebOperatingAccountId(input: {
+  runtime: DeviceAuthorityRuntime;
+  user: InstallControlPlaneCanonicalUser;
+  googleSubject: string;
+}): Promise<string> {
+  try {
+    const canonicalMemberships = await input.runtime.store.listWorkspaceMemberships(
+      input.user.userId,
+    );
+    if (canonicalMemberships.some((membership) => membership.status === 'active')) {
+      return input.user.userId;
+    }
+
+    const googleSubject = input.googleSubject.trim();
+    if (!googleSubject) return input.user.userId;
+    const legacyAccountId = `google:${googleSubject}`;
+    const legacyMemberships = (
+      await input.runtime.store.listWorkspaceMemberships(legacyAccountId)
+    ).filter((membership) => membership.status === 'active');
+    if (legacyMemberships.length === 0) return input.user.userId;
+
+    const canonicalWorkspaceIds = new Set(
+      input.user.workspaceMemberships.map((membership) => membership.workspaceId),
+    );
+    if (
+      canonicalWorkspaceIds.size > 0 &&
+      !legacyMemberships.some((membership) =>
+        canonicalWorkspaceIds.has(membership.workspaceId),
+      )
+    ) {
+      return input.user.userId;
+    }
+    return legacyAccountId;
+  } catch (error: unknown) {
+    if (error instanceof CloudFirstOnboardingError) throw error;
+    throw new CloudFirstOnboardingError(
+      'IDENTITY_DIRECTORY_UNAVAILABLE',
+      503,
+      'Consuelo workspace identity is temporarily unavailable.',
+    );
+  }
+}
+
+export async function derivedCloudFirstWorkspaceIdentity(input: {
   accountId: string;
   displayName: string;
 }): Promise<Pick<AccountWorkspace, 'workspaceId' | 'workspaceSlug' | 'workspaceHost'>> {
@@ -135,14 +187,17 @@ async function derivedWorkspaceIdentity(input: {
   }
 }
 
-function standardQuote(runtime: DeviceAuthorityRuntime) {
+export function managedCloudQuoteForPlan(
+  runtime: DeviceAuthorityRuntime,
+  planId: ManagedCloudPlanId,
+) {
   const catalog = buildManagedCloudPublicCatalog(
     runtime.managedCloudPricing,
     CLOUD_FIRST_REGION_ID,
   );
   const quote = catalog.quotes.find(
     (candidate) =>
-      candidate.plan.id === CLOUD_FIRST_PLAN_ID &&
+      candidate.plan.id === planId &&
       candidate.region.id === CLOUD_FIRST_REGION_ID,
   );
   if (!catalog.pricingAvailable || !quote) {
@@ -166,7 +221,7 @@ export async function createCloudFirstWorkspace(input: {
   job: ManagedCloudProvisioningJob;
 }> {
   try {
-  const displayName = normalizeWorkspaceName(input.workspaceName);
+  const displayName = normalizeCloudFirstWorkspaceName(input.workspaceName);
   if (displayName.length < 1 || displayName.length > 80) {
     throw new CloudFirstOnboardingError(
       'WORKSPACE_NAME_INVALID',
@@ -177,7 +232,7 @@ export async function createCloudFirstWorkspace(input: {
 
   // Pricing is validated before any durable workspace/trial mutation. This keeps
   // a temporary provider pricing outage from producing a half-onboarded tenant.
-  const quote = standardQuote(input.runtime);
+  const quote = managedCloudQuoteForPlan(input.runtime, CLOUD_FIRST_PLAN_ID);
   const nowMs = input.runtime.now();
   const nowIso = new Date(nowMs).toISOString();
   const existingWorkspace = await input.runtime.store.byAccountWorkspace(
@@ -234,7 +289,7 @@ export async function createCloudFirstWorkspace(input: {
     ({
       accountId: input.accountId,
       displayName,
-      ...(await derivedWorkspaceIdentity({
+      ...(await derivedCloudFirstWorkspaceIdentity({
         accountId: input.accountId,
         displayName,
       })),
@@ -328,15 +383,32 @@ export async function cloudFirstProvisioningStatus(input: {
       : undefined;
     if (!job || job.accountId !== input.accountId) return undefined;
     const trial = await input.runtime.store.byWorkspaceCloudTrial(job.workspaceId);
-    if (!trial || trial.accountId !== input.accountId) return undefined;
+    const paidCheckout = trial
+      ? undefined
+      : await input.runtime.store.byAccountManagedCloudCheckout(input.accountId);
+    const paidMatches = Boolean(
+      paidCheckout?.status === 'paid' &&
+      paidCheckout.workspaceId === job.workspaceId &&
+      paidCheckout.provisioningJobId === job.jobId,
+    );
+    if ((!trial || trial.accountId !== input.accountId) && !paidMatches) return undefined;
     return {
       job: publicManagedCloudProvisioningJob(job),
-      trial: {
-        planId: trial.planId,
-        provisioningJobId: trial.provisioningJobId,
-        startedAt: trial.startedAt,
-        endsAt: trial.endsAt,
-      },
+      ...(trial
+        ? {
+            trial: {
+              planId: trial.planId,
+              provisioningJobId: trial.provisioningJobId,
+              startedAt: trial.startedAt,
+              endsAt: trial.endsAt,
+            },
+          }
+        : {
+            billing: {
+              kind: 'stripe_subscription' as const,
+              planId: paidCheckout?.planId,
+            },
+          }),
     };
   } catch (error: unknown) {
     if (error instanceof CloudFirstOnboardingError) throw error;

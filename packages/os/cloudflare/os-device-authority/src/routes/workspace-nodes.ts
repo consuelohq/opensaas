@@ -480,10 +480,22 @@ async function handleHeartbeat(
   }
   const safeNode = safeWorkspaceNode(updated, nowMs);
   const connectorId = updated.connectorId?.trim();
+  const workspace = await runtime.store.byAccountWorkspace(updated.accountId);
+  const workspaceSnapshot = workspace && workspace.workspaceHost === updated.workspaceHost
+    ? launcherWorkspaceNodeListPayload({
+        workspace,
+        nodes: (await runtime.store.listWorkspaceNodes(updated.accountId)).map((candidate) =>
+          candidate.nodeId === updated.nodeId ? updated : candidate,
+        ),
+        nowMs,
+        currentNodeId: nodeId,
+      })
+    : undefined;
   return json(
     {
       ...safeNode,
       routeReady,
+      ...(workspaceSnapshot ? { workspace: workspaceSnapshot } : {}),
       ...(runtime.workspaceEdgeInternalSigningSecret?.trim() && connectorId
         ? {
             edgeRequestSigningSecret: deriveWorkspaceEdgeNodeSecret({
@@ -503,6 +515,7 @@ function launcherWorkspaceNodeListPayload(input: {
   workspace: AccountWorkspace;
   nodes: WorkspaceNode[];
   nowMs: number;
+  currentNodeId?: string;
 }) {
   const payload = workspaceNodeListPayload(input);
   const sanitize = (node: typeof payload.nodes[number]) => {

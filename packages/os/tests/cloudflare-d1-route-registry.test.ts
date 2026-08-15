@@ -115,6 +115,7 @@ type WorkspaceRouteD1RegistryContract = {
       target: NonNullable<WorkspaceRouteD1RecordInput['nodeTargets']>[number];
       makeDefault?: boolean;
       localServiceUrl?: string;
+      refreshSiteSnapshots?: boolean;
     },
   ) => Promise<void>;
 };
@@ -739,6 +740,96 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
       allowed: true,
       route: '/',
       surface: 'app',
+    });
+  });
+
+  it('should refresh active release-managed site snapshots without replacing published public sites', async () => {
+    const registry = await loadWorkspaceRouteD1RegistryContract();
+    const db = registry.createInMemoryWorkspaceRouteD1();
+    await registry.migrateWorkspaceRouteD1(db);
+    const nowMs = Date.parse('2026-08-14T09:30:00.000Z');
+
+    const siteRoute = (pathPrefix: string, siteId: string, versionId: string, workspaceId: string, auth: WorkspaceRouteD1Route['auth']): WorkspaceRouteD1Route => ({
+      surface: 'sites',
+      pathPrefix,
+      auth,
+      status: 'active',
+      target: {
+        kind: 'site-snapshot',
+        siteId,
+        versionId,
+        manifestKey: `sites/${workspaceId}/${siteId}/${versionId}/index.html`,
+        cachePolicy: pathPrefix === '/' ? 'private-preview' : 'static-shell',
+      },
+    });
+
+    await registry.upsertWorkspaceHostnameInD1(db, {
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        siteRoute('/', 'launcher', 'old-shell', 'workspace_internal', 'workspace-session'),
+        siteRoute('/observability', 'traces', 'old-shell', 'workspace_internal', 'workspace-session'),
+        siteRoute('/artifacts', 'artifacts', 'customer-artifact-version', 'workspace_internal', 'public'),
+      ],
+    });
+
+    await registry.upsertWorkspaceNodeTargetInD1(db, {
+      record: {
+        workspaceId: 'workspace_internal',
+        workspaceSlug: 'internal',
+        hostname: 'internal.consuelohq.com',
+        baseDomain: 'consuelohq.com',
+        provider: 'cloudflare',
+        owner: 'consuelo-os-cloud',
+        status: 'active',
+        routes: [
+          siteRoute('/', 'launcher', 'new-shell', 'workspace_testing', 'workspace-session'),
+          siteRoute('/observability', 'traces', 'new-shell', 'workspace_testing', 'workspace-session'),
+          { surface: 'sites', pathPrefix: '/artifacts', auth: 'public', status: 'disabled', target: { kind: 'site-snapshot', siteId: 'artifacts', versionId: 'new-shell', manifestKey: 'sites/workspace_testing/artifacts/new-shell/index.html', cachePolicy: 'static-shell' } },
+        ],
+      },
+      target: {
+        nodeId: 'node-current',
+        connectorId: 'connector_current',
+        connectorStatus: 'connected',
+        tunnelOriginUrl: 'https://current.connector.test',
+        state: 'active',
+        lastSeenAt: nowMs,
+        heartbeatTtlMs: 60_000,
+      },
+      makeDefault: true,
+      refreshSiteSnapshots: true,
+      localServiceUrl: 'http://127.0.0.1:46320',
+    });
+
+    await expect(registry.resolveWorkspaceRouteFromD1(db, {
+      host: 'internal.consuelohq.com',
+      path: '/observability',
+      nowMs,
+    })).resolves.toMatchObject({
+      allowed: true,
+      target: {
+        kind: 'site-snapshot',
+        versionId: 'new-shell',
+        manifestKey: 'sites/workspace_testing/traces/new-shell/index.html',
+      },
+    });
+    await expect(registry.resolveWorkspaceRouteFromD1(db, {
+      host: 'internal.consuelohq.com',
+      path: '/artifacts',
+      nowMs,
+    })).resolves.toMatchObject({
+      allowed: true,
+      target: {
+        kind: 'site-snapshot',
+        versionId: 'customer-artifact-version',
+        manifestKey: 'sites/workspace_internal/artifacts/customer-artifact-version/index.html',
+      },
     });
   });
 

@@ -147,6 +147,46 @@ describe('Branch 6 internal dashboard integration', () => {
     expect(await css.text()).toContain('--dash-bg: #151515');
   });
 
+  it('keeps workspace auth handoff ahead of the internal operator dashboard Access gate', async () => {
+    const routeRegistry = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routeRegistry);
+    let authorityCalls = 0;
+    const edge = createWorkspaceEdgeHandler(
+      {
+        WORKSPACE_ROUTE_REGISTRY: routeRegistry,
+        CONSUELO_EDGE_SIGNING_SECRET: 'edge-secret',
+        WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET: 'internal-secret',
+        OS_DEVICE_AUTHORITY: {
+          idFromName: (name: string) => name,
+          get: () => ({
+            fetch: async () => {
+              authorityCalls += 1;
+              return new Response(null, { status: 204 });
+            },
+          }),
+        },
+      },
+      {
+        internalDashboardService: createInstallControlPlaneService({
+          repository: createMemoryInstallControlPlaneRepository(),
+        }),
+        authorizeInternalDashboard: async () => false,
+        now: () => NOW,
+      },
+    );
+
+    const consume = await edge(
+      new Request('https://internal.consuelohq.com/auth/consume?handoff=abc'),
+    );
+    expect(consume.status).toBe(204);
+    expect(authorityCalls).toBe(1);
+
+    const users = await edge(
+      new Request('https://internal.consuelohq.com/users'),
+    );
+    expect(users.status).toBe(403);
+  });
+
   it('downloads the current redacted diagnostic through the authenticated dashboard without exposing the R2 object key', async () => {
     const repository = createMemoryInstallControlPlaneRepository();
     await repository.ingestEvent(installStarted(), {

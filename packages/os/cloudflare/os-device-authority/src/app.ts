@@ -37,6 +37,9 @@ export type CreateDeviceAuthorityHandlerInput = {
   managedCloudPricing?: ManagedCloudPricingRuntime;
   managedCloudProvisionerSecret?: string;
   managedCloudEnrollmentSecret?: string;
+  stripeSecretKey?: string;
+  stripeWebhookSecret?: string;
+  stripeApiBaseUrl?: string;
   operationalLogger?: DeviceAuthorityLogger;
   installControlPlaneRepository?: DeviceAuthorityRuntime['installControlPlaneRepository'];
   installDiagnosticBundleStore?: DeviceAuthorityRuntime['installDiagnosticBundleStore'];

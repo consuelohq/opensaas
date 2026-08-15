@@ -152,6 +152,22 @@ describe('launcher onboarding', () => {
     expect(html).not.toContain('app.consuelohq.com');
   });
 
+  it('renders a host-neutral release snapshot that resolves live workspace state from the request host', () => {
+    const html = renderLauncherOnboarding({
+      mcpUrl: 'https://os.consuelohq.com/mcp',
+      workspaceHostname: null,
+      localAgents: [],
+    });
+
+    expect(html).toContain('href="/artifacts"');
+    expect(html).toContain('href="/observability"');
+    expect(html).toContain('href="/diffs"');
+    expect(html).not.toContain('testing.consuelohq.com');
+    expect(html).toContain('const launcherWorkspaceHost = null');
+    expect(html).toContain('if (!launcherWorkspaceHost || workspaceHost === launcherWorkspaceHost)');
+    expect(html).toContain("agentStatusUrl.searchParams.set('workspace_host', workspaceHost)");
+  });
+
   it('rejects non-workspace hosts instead of generating a global fallback', () => {
     expect(() => renderLauncherOnboarding({
       mcpUrl: 'https://os.consuelohq.com/mcp',
