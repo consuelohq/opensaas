@@ -81,6 +81,7 @@ const retainedCoreToolNames = [
   'fs.apply_patch',
   'fs.trash',
   'github',
+  'session.start',
   'task.start',
   'review.run',
   'stream.context',

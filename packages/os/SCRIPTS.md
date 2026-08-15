@@ -109,7 +109,7 @@ every change — even tiny ones — follows this flow. no exceptions.
 ```bash
  1. bun run stream:context -- --area <area>              # understand the stream state
  2. bun run stream:sync -- --area <area>                 # sync stream with latest main
- 3. bun run task:start -- --area <area> --title "x"      # create task branch + worktree + PR
+ 3. bun run session:start -- --kind task --area <area> --title "x"  # canonical task-session constructor
  4. (make changes via task:fs and code-call)
  5. bun run verify                                       # run review + db guards, write stamp
  6. bun run task:push -- --message "type(scope): x" --changed  # push via github api
@@ -609,9 +609,20 @@ bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 
 Safety: the resolver does not strip arbitrary digits. GitHub and diffs URLs must contain `/pull/<number>`, Graphite URLs must contain `/github/pr/<owner>/<repo>/<number>`, wrong-repo URLs are rejected, and ambiguous free text is rejected. For `task:start`, a task PR is adopted by branch while a stream PR starts a new task from that stream.
 
-### task:start — start scoped work and return workflow guidance
+### session:start — canonical session constructor
 
-Call this directly at the beginning of every scoped repo task. Do not run `tools:search` or search for another task-start tool first. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Use `--workflow` to select task, office, design, sites, or media; the default is `task`.
+`session:start` is the canonical constructor for Consuelo sessions. `--kind task` delegates to the existing task lifecycle and creates the normal task branch, worktree, PR, and `taskSession`. `--kind work` creates only durable local session metadata for an existing directory and returns a `workSession`; it does not create or copy files, create a branch, or create a PR.
+
+```bash
+bun run session:start -- --kind task --area os --title "start scoped work" --workflow task
+bun run session:start -- --kind work --path /Users/me/Developer/raycast-extension
+```
+
+The work-session path must already exist and be a directory. Work-session-aware edit behavior is provided by the tools that explicitly support `workSession`; creating a work session by itself does not widen filesystem mutation authority.
+
+### task:start — compatibility alias for task-session creation
+
+`task:start` remains available as a compatibility alias for existing agents, skills, hooks, and automation. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Use `--workflow` to select task, office, design, sites, or media; the default is `task`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
