@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/hotfix-production-launcher-snapshot-without-stream-only-stripe-changes",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2009,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2009",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2009",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2009/hotfix-production-launcher-snapshot-without-stream-only-stripe-changes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2009",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2009/hotfix-production-launcher-snapshot-without-stream-only-stripe-changes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-production-launcher-snapshot-without-stream-only-stripe-changes",
+  "taskSession": "tsk_78f1a280b963",
+  "tmuxSession": "opensaas-os-hotfix-production-launcher-snapshot-without-stre-78f1a280",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-production-launcher-snapshot-without-stream-only-stripe-changes/.task/os/hotfix-production-launcher-snapshot-without-stream-only-stripe-changes/session.json",
+  "createdAt": "2026-08-15T04:02:54.297Z"
+}
