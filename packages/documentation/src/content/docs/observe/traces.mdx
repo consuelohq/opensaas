@@ -2,7 +2,7 @@
 title: Traces
 description: Follow trace IDs across current local records and the authenticated Trace Sites gateway.
 status: preview
-verifiedAt: 2026-08-12
+verifiedAt: 2026-08-15
 evidence:
   - source: packages/os/scripts/server/routes/traces.ts
     tests:
@@ -19,6 +19,12 @@ evidence:
       - packages/os/tests/trace-persistence.test.ts
       - packages/os/tests/trace-site-inspector-os-owned.test.ts
     runtime: Requested, resolved, default-node, and route-source trace metadata plus node and route inspector labels were verified on 2026-08-12.
+  - source: packages/os/scripts/lib/trace-persistence.ts
+    tests:
+      - packages/os/tests/trace-history-redaction.test.ts
+      - packages/os/tests/trace-search-query.test.ts
+      - packages/os/tests/observability-traces-site.test.ts
+    runtime: Task and work-session labels, sanitized work paths, and session search behavior were verified through focused contracts on 2026-08-15.
 ---
 
 A trace ID is the thread you follow through related evidence. In the current implementation it can connect a request to an OS run, execution events, a tool call, an artifact version, or an error. Which records exist depends on the surface that handled the work.
@@ -40,6 +46,14 @@ Current OS trace records can preserve:
 This is the fastest way to debug a call that ran somewhere unexpected. A task can correctly resolve to its owning node even after the workspace default changes, so the current default alone is not enough to explain historical work.
 
 See [Routing work](/nodes/routing/) for the decision order behind these fields.
+
+## Read the session from the trace
+
+The Observability trace table uses one **Session** column for both kinds of scoped work. Task traces keep their existing branch or task-session value. Work-session traces show the work session's filesystem path in that same column, so ordinary computer work remains attributable without adding a second task-only view.
+
+Browser trace history sanitizes local usernames in work paths before returning them. For example, `/Users/alex/Developer/raycast-extension` is shown as `/Users/[user]/Developer/raycast-extension`.
+
+Use `session:<value>` in trace search to match the existing task branch or task-session fields as well as a work-session ID or work-session path.
 
 ## Trace IDs do not erase storage boundaries
 
