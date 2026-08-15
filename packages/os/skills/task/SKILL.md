@@ -389,17 +389,7 @@ await os.call({
 })
 ```
 
-Ask for the next best action:
-
-```ts
-await os.call({
-  tool: "decideNext",
-  input: {},
-  timeout: 120,
-})
-```
-
-Read recommended files through task-scoped file tools:
+The `explore` response already contains the dependency map, readiness, uncertainty, `next_action`, and `edit_ready`. Follow `next_action` directly. When it recommends a read, inspect that file through task-scoped file tools:
 
 ```ts
 await os.call({
@@ -410,33 +400,9 @@ await os.call({
 })
 ```
 
-Then rerun the loop:
+Then rerun `explore`. Reads and validation evidence are folded into the same hypothesis/readiness policy automatically. Repeat until `edit_ready` is true; then use `edit_target` as the supported implementation root and preserve the returned dependency map as editing context.
 
-```ts
-await os.call({
-  tool: "decideNext",
-  input: {},
-  timeout: 120,
-})
-
-await os.call({
-  tool: "confidenceScore",
-  input: {},
-  timeout: 120,
-})
-```
-
-Repeat until the implementation path is supported by evidence.
-
-Use `exploit` when the path is clear enough to commit to an editing target:
-
-```ts
-await os.call({
-  tool: "exploit",
-  input: {},
-  timeout: 120,
-})
-```
+`decideNext`, `confidenceScore`, and `exploit` remain available for compatibility with older clients. They are projections of the same Explore policy and are not required in the normal loop. `decideNext` may still be used explicitly when you need its manual evidence-label flags.
 
 Use targeted `fs.search` only after the decision engine has narrowed the direction:
 
@@ -1449,34 +1415,32 @@ Use the decision engine to move from broad uncertainty to evidence-backed action
 
 Normal loop:
 
-1. `explore` to get candidate files and graph context.
-2. `decideNext` to choose the next highest-value action.
-3. `fs.read` the recommended file or section.
-4. Mark evidence when useful with `decideNext` input such as `markRead`, `markRelevant`, or `markIrrelevant`.
-5. Run `confidenceScore`.
-6. Repeat until confidence is high enough to exploit.
-7. Run `exploit` to commit to the implementation path.
-8. After implementation, use real validation plus `confirm` when useful.
+1. `explore` to get ranked candidates, the dependency map, categorical readiness, explicit uncertainty, and the next evidence action.
+2. Follow `explore.policy.next_action` with task-scoped `fs.read`, targeted search, or the requested validation evidence.
+3. Rerun `explore`; it folds the accumulated evidence into the same policy automatically.
+4. Repeat until `explore.policy.edit_ready` is true, then edit `explore.policy.edit_target` with the returned dependency map as context.
+5. After implementation, use real validation plus `confirm` when useful.
 
 Important:
 
-- `explore` is retrieval, not proof.
-- `decideNext` is the policy layer.
-- `confidenceScore` is an evidence check, not permission to skip tests.
-- `exploit` means “stop wandering; edit this path.”
+- `explore` owns retrieval plus the investigation policy; retrieval support is still not proof.
+- `explore.policy.next_action` is the normal policy interface.
+- `explore.policy.readiness` is categorical evidence readiness, not a correctness probability.
+- `explore.policy.edit_ready` / `edit_target` mean “stop wandering; this path has enough evidence to edit.”
+- `decideNext`, `confidenceScore`, and `exploit` are compatibility views over that same policy and should not be called as a normal ceremony.
 - `confirm` means “belief meets reality.”
 - `audit` is for tool/docs/index drift, not general confirmation.
 
-## Explore Is a Discovery Command
+## Explore Is the Investigation Policy Front Door
 
 Use `explore` anywhere you would otherwise start guessing paths, grepping broadly, or asking “where is this implemented?”
 
 Treat it as a workspace navigation primitive alongside `fs.read` and `fs.search`.
 
-- `explore` finds likely files, symbols, tests, docs, and related implementation paths.
+- `explore` finds likely files, symbols, tests, docs, and related implementation paths, then evaluates the current evidence state and returns the next action.
 - `fs.read` verifies actual content.
 - `fs.search` follows up with exact targeted symbol/string lookup after direction is narrowed.
-- `decideNext` decides what evidence/action should come next.
+- `explore.policy.next_action` decides what evidence/action should come next.
 - `confirm` proves behavior against reality.
 
 Do not wait until a formal decision-engine loop to use `explore`.

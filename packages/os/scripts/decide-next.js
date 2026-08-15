@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 
 const { resolveGitRoot } = require('./lib/paths');
-const { computeReadiness } = require('./confidence-score');
 const {
   appendEvidenceEvent,
   getEvidenceEvents,
@@ -16,10 +15,9 @@ const {
   writeExploreState,
 } = require('./lib/state/explore-state');
 const {
-  chooseHypothesisTarget,
-  getNextUnreadPath,
-  rankHypotheses,
-} = require('./lib/state/explore-hypothesis-model');
+  evaluateExplorePolicy,
+  projectDecisionRecommendation,
+} = require('./lib/state/explore-policy');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -82,70 +80,11 @@ function parseArgs(argv) {
 }
 
 function summarizeHypothesis(state) {
-  const top = rankHypotheses(state?.hypotheses || [])[0] || null;
-  if (!top) return null;
-  return {
-    id: top.id,
-    root_path: top.root_path,
-    support_state: top.support_state,
-    retrieval_support: top.retrieval_support,
-    calibration_status: top.calibration_status,
-  };
+  return evaluateExplorePolicy(state, []).top_hypothesis;
 }
 
-function buildRecommendation(state, readiness, args) {
-  const hypothesis = summarizeHypothesis(state);
-  const nextUnreadPath = getNextUnreadPath(state);
-  const exploitTarget = chooseHypothesisTarget(state?.hypotheses || []);
-
-  if (readiness.readiness === 'blocked') {
-    return {
-      action: 'inspect contradictory or failed validation evidence',
-      reason: readiness.recommendation,
-      readiness: readiness.readiness,
-      hypothesis_support: hypothesis,
-      alternative: nextUnreadPath ? `read ${nextUnreadPath}` : 'rerun explore after resolving the failure',
-      context: args.context || null,
-      recommendation: 'investigate-failure',
-    };
-  }
-
-  if (readiness.readiness === 'ready-to-edit' && exploitTarget) {
-    return {
-      action: `run exploit --target ${exploitTarget}`,
-      reason: 'the strongest dependency hypothesis has sufficient read coverage to choose an edit target',
-      readiness: readiness.readiness,
-      hypothesis_support: hypothesis,
-      alternative: 'run confirm --verify after editing',
-      context: args.context || null,
-      exploit_target: exploitTarget,
-      recommendation: 'exploit',
-    };
-  }
-
-  if (nextUnreadPath) {
-    return {
-      action: `read ${nextUnreadPath}`,
-      reason: nextUnreadPath === hypothesis?.root_path
-        ? 'observe the strongest hypothesis root before committing to it'
-        : 'cover a connected dependency in the strongest hypothesis before editing',
-      readiness: readiness.readiness,
-      hypothesis_support: hypothesis,
-      alternative: 'rerun explore if the dependency graph is incomplete',
-      context: args.context || null,
-      recommendation: 'read',
-    };
-  }
-
-  return {
-    action: `explore deeper into ${hypothesis?.root_path || state?.query || 'the current task'}`,
-    reason: 'the current hypothesis graph does not contain another unread evidence target',
-    readiness: readiness.readiness,
-    hypothesis_support: hypothesis,
-    alternative: 'rerun explore with a larger budget or a tighter scope',
-    context: args.context || null,
-    recommendation: 'explore',
-  };
+function buildRecommendation(policyResult, args = {}) {
+  return projectDecisionRecommendation(policyResult, args);
 }
 
 function printHuman(recommendation) {
@@ -218,8 +157,8 @@ function main() {
   const events = getEvidenceEvents(repoRoot);
   const state = updateHypothesesWithEvents(rawState, events);
   writeExploreState(repoRoot, state);
-  const readiness = computeReadiness(repoRoot, state, events);
-  const recommendation = buildRecommendation(state, readiness, args);
+  const policyResult = evaluateExplorePolicy(state, events);
+  const recommendation = buildRecommendation(policyResult, args);
 
   appendEvidenceEvent(repoRoot, {
     type: 'decision.taken',

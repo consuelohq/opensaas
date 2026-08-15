@@ -584,6 +584,27 @@ describe('test selection registry', () => {
     expect(suiteNames).toContain('OS Explore retrieval science contracts');
   });
 
+  it('keeps E4 unified Explore policy skill changes on the focused Explore suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/state/explore-policy.js',
+      '--changed-file',
+      'packages/os/skills/senior-engineer/SKILL.md',
+      '--changed-file',
+      'packages/os/skills/task/SKILL.md',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-explore-retrieval-science');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toContain('OS Explore retrieval science contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('uses focused hosted-site reconciliation contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

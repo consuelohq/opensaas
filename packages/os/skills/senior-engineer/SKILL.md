@@ -140,7 +140,7 @@ await os.call({
 })
 ```
 
-Treat `explore` as a prior over where to inspect next. After retrieval narrows the map, use `code.call` in read mode to inspect the likely files, confirm exact symbols, and return a task-shaped evidence packet.
+Treat `explore` as the investigation-policy front door. It retrieves the likely dependency graph and returns the current hypothesis, readiness, uncertainty, next evidence action, and edit-readiness. Follow its structured `next_action`, then use `code.call` or task-scoped file tools to inspect the recommended evidence.
 
 # Decision and evidence principles
 
@@ -148,10 +148,10 @@ Use the decision engine to move from uncertainty to evidence-backed action.
 
 The task workflow skill owns the exact loop. This skill owns the judgment standard:
 
-- `explore` is retrieval, not proof.
-- `decideNext` is the policy layer.
-- `confidenceScore` measures evidence quality, not permission to skip tests.
-- `exploit` means the evidence is concentrated enough to stop wandering and edit.
+- `explore` owns retrieval plus the investigation policy. Retrieval support is still not proof.
+- `explore.next_action` is the normal policy interface; `decideNext` is a compatibility projection of the same policy.
+- `explore.readiness` is categorical evidence readiness, not a correctness probability; `confidenceScore` is a compatibility projection.
+- `explore.edit_ready` and `explore.edit_target` tell you when the evidence is concentrated enough to stop wandering and edit; `exploit` is a compatibility alias.
 - `confirm` means belief meets reality.
 - `audit` checks workspace surface truth: scripts, docs, and index freshness.
 

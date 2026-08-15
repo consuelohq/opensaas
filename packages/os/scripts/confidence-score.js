@@ -10,7 +10,10 @@ const {
   updateHypothesesWithEvents,
   writeExploreState,
 } = require('./lib/state/explore-state');
-const { deriveReadiness, rankHypotheses } = require('./lib/state/explore-hypothesis-model');
+const {
+  evaluateExplorePolicy,
+  projectReadiness,
+} = require('./lib/state/explore-policy');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -41,68 +44,8 @@ function parseArgs(argv) {
   return args;
 }
 
-function computeReadiness(repoRoot, state, events) {
-  const readiness = deriveReadiness(state, events);
-  const hypotheses = rankHypotheses(state?.hypotheses || []);
-  const top = hypotheses[0] || null;
-  const evidenceFor = [];
-  const evidenceAgainst = [];
-  const uncertainties = [...(readiness.reasons || [])];
-  const startingState = [];
-
-  if (top) {
-    startingState.push(`${hypotheses.length} dependency hypothesis${hypotheses.length === 1 ? '' : 'es'} available`);
-    startingState.push(`top hypothesis ${top.root_path}`);
-    startingState.push(`retrieval support ${Number(top.retrieval_support || 0).toFixed(3)} (${top.calibration_status || 'provisional'})`);
-    if ((top.explicit_relevant_paths || []).length > 0) {
-      evidenceFor.push(`explicit relevance: ${(top.explicit_relevant_paths || []).join(', ')}`);
-    }
-    if ((top.explicit_irrelevant_paths || []).length > 0) {
-      evidenceAgainst.push(`explicit irrelevance: ${(top.explicit_irrelevant_paths || []).join(', ')}`);
-    }
-  }
-
-  if (readiness.coverage?.root_read) evidenceFor.push('top hypothesis root read');
-  if ((readiness.coverage?.dependency_read_count || 0) > 0) {
-    evidenceFor.push(`read ${readiness.coverage.dependency_read_count}/${readiness.coverage.dependency_count} connected dependencies`);
-  }
-  if (readiness.validation.test === 'pass') evidenceFor.push('targeted test passed');
-  if (readiness.validation.verify === 'pass') evidenceFor.push('verify passed');
-  if (readiness.validation.runtime === 'pass') evidenceFor.push('runtime evidence clean');
-  if (readiness.validation.test === 'fail') evidenceAgainst.push('targeted test failed');
-  if (readiness.validation.verify === 'fail') evidenceAgainst.push('verify failed');
-  if (readiness.validation.runtime === 'fail') evidenceAgainst.push('runtime evidence failed');
-  if (readiness.contradiction) evidenceAgainst.push('contradiction recorded');
-
-  const recommendation = readiness.state === 'ready-to-edit'
-    ? 'evidence coverage is sufficient to choose an edit target; validation is still required after editing'
-    : readiness.state === 'blocked'
-      ? 'resolve the contradiction or failed validation before editing further'
-      : readiness.state === 'insufficient-evidence'
-        ? 'run explore before choosing an edit path'
-        : 'gather the missing evidence listed under uncertainties';
-
-  return {
-    readiness: readiness.state,
-    top_hypothesis: readiness.top_hypothesis,
-    starting_state: startingState,
-    evidence_for: evidenceFor,
-    evidence_against: evidenceAgainst,
-    uncertainties,
-    coverage: readiness.coverage,
-    validation: readiness.validation,
-    calibration_status: top?.calibration_status || null,
-    evidence_counts: {
-      events: events.length,
-      hypotheses: hypotheses.length,
-      read_top_root: readiness.coverage?.root_read ? 1 : 0,
-      dependency_files: readiness.coverage?.dependency_count || 0,
-      read_dependency_files: readiness.coverage?.dependency_read_count || 0,
-      explicit_relevant_files: top?.explicit_relevant_paths?.length || 0,
-      explicit_irrelevant_files: top?.explicit_irrelevant_paths?.length || 0,
-    },
-    recommendation,
-  };
+function computeReadiness(_repoRoot, state, events) {
+  return projectReadiness(evaluateExplorePolicy(state, events));
 }
 
 function printHuman(result) {
