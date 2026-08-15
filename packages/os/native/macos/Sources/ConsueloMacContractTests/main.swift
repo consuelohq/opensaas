@@ -68,6 +68,8 @@ private struct ContractSuite {
         try pendingUpdatePresentationSurvivesDaemonRestart()
         try lifecycleRequestJSONMatchesTheSharedTaggedUnion()
         try failedUpdatePreservesWorkingVersionAndSurfacesRecovery()
+        try heartbeatMetadataDoesNotInvalidateMenuContent()
+        try menuInstanceLockAllowsOnlyOneOwner()
         try offlineRetainsReadableStateAndFailsMutationsClosed()
         try mapsMenuActionsOnlyToAllowlistedLifecycleRequests()
         try destructiveRepairAndUninstallRequireExplicitConfirmation()
@@ -157,10 +159,39 @@ private struct ContractSuite {
     }
 
     private func failedUpdatePreservesWorkingVersionAndSurfacesRecovery() throws {
-        let failed = snapshot(operation: .init(kind: .update, phase: .failed, message: "health gate failed"))
-        try expect(MenuBarLifecycleState.derive(from: failed), .repairRequired, "failed update recovery state")
+        let message = "platform preflight failed: " + String(repeating: "legacy daemon detail ", count: 30)
+        let failed = snapshot(operation: .init(kind: .update, phase: .failed, message: message))
+        let presentation = MenuBarPresentation(snapshot: failed)
+        try expect(MenuBarLifecycleState.derive(from: failed), .healthy, "historical failed update does not override current healthy runtime")
         try expect(failed.runtime.version, "1.4.0", "previous working release remains visible")
-        try expect(failed.operation?.message, "health gate failed", "failure reason remains available")
+        try expect(presentation.operationSummary, "Last update failed", "failed update remains visible as history")
+        try expectTrue((presentation.operationDetail?.count ?? 0) <= 96, "operation detail is bounded for native menu width")
+        try expectTrue(presentation.operationDetail?.hasSuffix("…") == true, "bounded operation detail signals truncation")
+    }
+
+    private func heartbeatMetadataDoesNotInvalidateMenuContent() throws {
+        let first = snapshot()
+        let heartbeat = first.with(
+            sequence: 8,
+            version: "1.4.0",
+            observedAt: "2026-07-26T20:00:02.000Z"
+        )
+        let changed = first.with(
+            sequence: 9,
+            version: "1.4.1",
+            observedAt: "2026-07-26T20:00:04.000Z"
+        )
+
+        try expectTrue(first.isMenuContentEquivalent(to: heartbeat), "heartbeat metadata alone keeps open menus stable")
+        try expectTrue(!first.isMenuContentEquivalent(to: changed), "visible runtime changes still refresh menu content")
+    }
+
+    private func menuInstanceLockAllowsOnlyOneOwner() throws {
+        let lockName = "consuelo-contract-\(UUID().uuidString)"
+        let first = MenuBarInstanceLock.acquire(name: lockName)
+        try expectTrue(first != nil, "first menu instance acquires singleton lock")
+        let second = MenuBarInstanceLock.acquire(name: lockName)
+        try expectTrue(second == nil, "second menu instance is rejected")
     }
 
     private func offlineRetainsReadableStateAndFailsMutationsClosed() throws {

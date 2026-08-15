@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { executeTool } from '../scripts/lib/facade/executor';
 import type {
@@ -7,6 +9,9 @@ import type {
 } from '../scripts/lib/facade/types';
 
 const TEST_UUID = 'abc123def4567890abc123def4567890';
+const RUNTIME_PACKAGE_ROOT = dirname(
+  fileURLToPath(new URL('../package.json', import.meta.url)),
+);
 
 const successfulRunner = (plans: CommandPlan[]): ToolRunner =>
   async (plan) => {
@@ -36,6 +41,7 @@ describe('lifecycle facade', () => {
     expect(plans[0]).toMatchObject({
       command: 'bun',
       args: ['run', 'lifecycle', '--', 'status', '--json'],
+      cwd: RUNTIME_PACKAGE_ROOT,
     });
   });
 
@@ -61,6 +67,7 @@ describe('lifecycle facade', () => {
         'canary',
         '--json',
       ],
+      cwd: RUNTIME_PACKAGE_ROOT,
     });
   });
 

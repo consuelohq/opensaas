@@ -15,7 +15,7 @@ public enum MenuBarLifecycleState: String, Equatable, Sendable {
         if snapshot.install.state == .installing { return .installing }
         if snapshot.operation?.kind == .install && snapshot.operation?.phase == .running { return .installing }
         if snapshot.operation?.kind == .update && snapshot.operation?.phase == .running { return .updating }
-        if snapshot.services.contains(where: { $0.state == .failed }) || snapshot.operation?.phase == .failed {
+        if snapshot.runtime.state == .failed || snapshot.services.contains(where: { $0.state == .failed }) {
             return .repairRequired
         }
         if snapshot.connection.state == .offline || snapshot.runtime.state == .offline {
@@ -62,6 +62,8 @@ public struct MenuBarPresentation: Equatable, Sendable {
     public var systemImage: String
     public var showsUpdateBadge: Bool
     public var updateActionTitle: String?
+    public var operationSummary: String?
+    public var operationDetail: String?
 
     public init(snapshot: LifecycleSnapshot, pendingUpdate: PendingUpdateContext? = nil) {
         let updateIsPending = pendingUpdate.map { !$0.isResolved(by: snapshot) } ?? false
@@ -83,6 +85,23 @@ public struct MenuBarPresentation: Equatable, Sendable {
         } else {
             updateActionTitle = nil
         }
+        if let operation = snapshot.operation {
+            let action = operation.kind.rawValue
+            switch operation.phase {
+            case .failed:
+                operationSummary = "Last \(action) failed"
+            case .succeeded:
+                operationSummary = "Last \(action) completed"
+            case .running:
+                operationSummary = "\(action.capitalized) in progress"
+            case .queued:
+                operationSummary = "\(action.capitalized) queued"
+            }
+            operationDetail = operation.message.map { Self.compactDetail($0) }
+        } else {
+            operationSummary = nil
+            operationDetail = nil
+        }
         switch lifecycleState {
         case .notInstalled:
             title = "Not installed"; systemImage = "circle.dashed"
@@ -102,6 +121,16 @@ public struct MenuBarPresentation: Equatable, Sendable {
         case .repairRequired:
             title = "Repair required"; systemImage = "wrench.and.screwdriver.fill"
         }
+    }
+
+    public static func compactDetail(_ value: String, maximumLength: Int = 56) -> String {
+        let redacted = DiagnosticsRedactor.redactText(value)
+        let compact = redacted
+            .split(whereSeparator: { $0.isWhitespace })
+            .joined(separator: " ")
+        guard compact.count > maximumLength else { return compact }
+        let prefixLength = max(1, maximumLength - 1)
+        return String(compact.prefix(prefixLength)) + "…"
     }
 }
 

@@ -5,7 +5,17 @@ import SwiftUI
 
 @main
 struct ConsueloMenuBarApplication: App {
+    private static let instanceLock = MenuBarInstanceLock.acquire()
     @StateObject private var model = MenuBarModel()
+
+    init() {
+        guard Self.instanceLock != nil else {
+            DispatchQueue.main.async {
+                NSApplication.shared.terminate(nil)
+            }
+            return
+        }
+    }
 
     var body: some Scene {
         MenuBarExtra {
@@ -29,62 +39,35 @@ private struct ConsueloMenu: View {
 
     var body: some View {
         Group {
-            Text(model.statusTitle)
-            Text(model.connectionLabel)
+            Label(model.statusTitle, systemImage: model.systemImage)
 
             if let snapshot = model.snapshot {
-                Text("Version \(snapshot.runtime.version) · \(snapshot.runtime.channel.rawValue)")
-                if let summary = snapshot.release.summary, !summary.isEmpty {
-                    Text(summary)
-                }
-                if let operation = snapshot.operation {
-                    Text("Operation: \(operation.kind.rawValue) · \(operation.phase.rawValue)")
-                    if let message = operation.message, !message.isEmpty {
-                        Text(DiagnosticsRedactor.redactText(message))
-                    }
-                }
-
-                Divider()
-                ForEach(snapshot.services) { service in
-                    Label(
-                        "\(service.id): \(service.state.rawValue)",
-                        systemImage: service.state == .healthy
-                            ? "checkmark.circle"
-                            : "exclamationmark.triangle"
-                    )
-                }
-                Label(
-                    "Connector: \(snapshot.connector.state.rawValue)",
-                    systemImage: snapshot.connector.state == .connected ? "link" : "link.badge.plus"
-                )
-
-                Divider()
+                Text("\(model.connectionLabel) · v\(snapshot.runtime.version) · \(snapshot.runtime.channel.rawValue.capitalized)")
                 if let updateActionTitle = model.updateActionTitle {
                     Button(updateActionTitle) {
                         model.perform(.update)
                     }
                 }
-                Button("Retry repair") { model.perform(.retryRepair) }
-                if snapshot.updates.rollbackVersion != nil {
-                    Button("Rollback…") { model.perform(.rollback) }
-                }
-                Button("Restart services") { model.perform(.restart) }
 
                 if let workspace = snapshot.workspace {
                     Divider()
-                    Text("Workspace: \(workspace.workspaceHost)")
+                    Label(workspace.workspaceHost, systemImage: "building.2")
                     if let currentNode = workspace.nodes.first(where: { $0.nodeId == workspace.currentNodeId }) {
-                        Text("Current node: \(currentNode.displayName)")
+                        Label("This Mac: \(currentNode.displayName)", systemImage: "desktopcomputer")
                     }
                     Menu("Nodes") {
                         ForEach(workspace.nodes) { node in
                             let nodePresentation = WorkspaceNodePresentation(node: node, workspace: workspace)
                             if nodePresentation.isSelectable {
-                                Button("Make default — \(nodePresentation.title) · \(nodePresentation.subtitle)") {
+                                Button {
                                     model.perform(.setDefaultNode(node.nodeId))
+                                } label: {
+                                    Label(nodeMenuTitle(nodePresentation), systemImage: nodeSystemImage(nodePresentation))
                                 }
                             } else {
-                                Button(nodeMenuTitle(nodePresentation)) {}
+                                Button {} label: {
+                                    Label(nodeMenuTitle(nodePresentation), systemImage: nodeSystemImage(nodePresentation))
+                                }
                                     .disabled(true)
                             }
                         }
@@ -92,46 +75,80 @@ private struct ConsueloMenu: View {
                 }
 
                 Divider()
-                Menu("Notifications") {
-                    Button("On") { model.perform(.setNotifications(.on)) }
-                    Button("Off") { model.perform(.setNotifications(.off)) }
+                Toggle("Notifications", isOn: Binding(
+                    get: { model.notificationsEnabled },
+                    set: { model.perform(.setNotifications($0 ? .on : .off)) }
+                ))
+                Menu("Settings") {
                     Button("Snooze for one hour") { model.snoozeNotificationsForOneHour() }
-                }
-                if snapshot.preferences.channelSelectionAllowed {
-                    Menu("Release channel") {
-                        ForEach(ReleaseChannel.userSelectableCases, id: \.self) { channel in
-                            Button(channel.rawValue.capitalized) {
-                                model.perform(.setChannel(channel))
+                    if snapshot.preferences.channelSelectionAllowed {
+                        Menu("Release channel") {
+                            ForEach(ReleaseChannel.userSelectableCases, id: \.self) { channel in
+                                Button(channel.rawValue.capitalized) {
+                                    model.perform(.setChannel(channel))
+                                }
                             }
                         }
                     }
                 }
 
                 Divider()
-                Button("Open launcher") { model.perform(.openLauncher) }
-                Button("Export diagnostics") { model.perform(.exportDiagnostics) }
-                Menu("Uninstall") {
-                    Button("Keep node and user content…", role: .destructive) {
-                        model.perform(.uninstall(removeNode: false, removeUserContent: false))
+                Button {
+                    model.perform(.openLauncher)
+                } label: {
+                    Label("Open Launcher", systemImage: "arrow.up.right.square")
+                }
+                Menu("Troubleshooting") {
+                    if let operationSummary = model.operationSummary {
+                        Text(operationSummary)
                     }
-                    Button("Remove node registration…", role: .destructive) {
-                        model.perform(.uninstall(removeNode: true, removeUserContent: false))
+                    if let operationDetail = model.operationDetail, !operationDetail.isEmpty {
+                        Text(operationDetail)
                     }
-                    Button("Remove user content…", role: .destructive) {
-                        model.perform(.uninstall(removeNode: true, removeUserContent: true))
+                    if model.requiresRepair {
+                        Button("Retry repair") { model.perform(.retryRepair) }
+                    }
+                    if snapshot.updates.rollbackVersion != nil {
+                        Button("Rollback…") { model.perform(.rollback) }
+                    }
+                    Button("Restart services") { model.perform(.restart) }
+                    Button("Export diagnostics") { model.perform(.exportDiagnostics) }
+                    Button("Refresh status") { model.perform(.refresh) }
+                    Divider()
+                    ForEach(snapshot.services) { service in
+                        Label(
+                            "\(service.id): \(service.state.rawValue.capitalized)",
+                            systemImage: service.state == .healthy
+                                ? "checkmark.circle"
+                                : "exclamationmark.triangle"
+                        )
+                    }
+                    Label(
+                        "Connector: \(snapshot.connector.state.rawValue.capitalized)",
+                        systemImage: snapshot.connector.state == .connected ? "link" : "link.badge.plus"
+                    )
+                    Menu("Uninstall") {
+                        Button("Keep node and user content…", role: .destructive) {
+                            model.perform(.uninstall(removeNode: false, removeUserContent: false))
+                        }
+                        Button("Remove node registration…", role: .destructive) {
+                            model.perform(.uninstall(removeNode: true, removeUserContent: false))
+                        }
+                        Button("Remove user content…", role: .destructive) {
+                            model.perform(.uninstall(removeNode: true, removeUserContent: true))
+                        }
                     }
                 }
             } else {
                 Button("Refresh") { model.perform(.refresh) }
             }
 
-            if let error = model.errorMessage {
+            if let error = model.compactErrorMessage {
                 Divider()
-                Text(error)
+                Label(error, systemImage: "exclamationmark.triangle")
             }
 
             Divider()
-            Button("Refresh") { model.perform(.refresh) }
             Button("Quit Consuelo Menu") { NSApplication.shared.terminate(nil) }
         }
         .confirmationDialog(
@@ -151,6 +168,13 @@ private struct ConsueloMenu: View {
     private func nodeMenuTitle(_ presentation: WorkspaceNodePresentation) -> String {
         let badges = presentation.badges.isEmpty ? "" : " · \(presentation.badges.joined(separator: ", "))"
         return "\(presentation.title)\(badges) · \(presentation.subtitle)"
+    }
+
+    private func nodeSystemImage(_ presentation: WorkspaceNodePresentation) -> String {
+        if presentation.isDefault { return "checkmark.circle.fill" }
+        if presentation.subtitle.contains("Revoked") { return "xmark.circle" }
+        if presentation.subtitle.contains("Online") { return "circle.fill" }
+        return "circle"
     }
 }
 
@@ -200,6 +224,26 @@ private final class MenuBarModel: ObservableObject {
 
     var updateActionTitle: String? {
         presentation?.updateActionTitle
+    }
+
+    var operationSummary: String? {
+        presentation?.operationSummary
+    }
+
+    var operationDetail: String? {
+        presentation?.operationDetail
+    }
+
+    var compactErrorMessage: String? {
+        errorMessage.map { MenuBarPresentation.compactDetail($0) }
+    }
+
+    var notificationsEnabled: Bool {
+        snapshot?.preferences.notifications == .on
+    }
+
+    var requiresRepair: Bool {
+        presentation?.lifecycleState == .repairRequired
     }
 
     var confirmationTitle: String {
@@ -326,6 +370,9 @@ private final class MenuBarModel: ObservableObject {
     private func apply(_ incoming: LifecycleSnapshot) {
         if let pendingUpdate, pendingUpdate.isResolved(by: incoming) {
             self.pendingUpdate = nil
+        }
+        if let snapshot, snapshot.isMenuContentEquivalent(to: incoming) {
+            return
         }
         snapshot = incoming
     }

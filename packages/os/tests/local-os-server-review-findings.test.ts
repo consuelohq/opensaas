@@ -34,6 +34,27 @@ afterEach(() => {
 });
 
 describe('local OS server review findings', () => {
+  it('installs package-local OS dependencies before generic verify when OS changes are selected', () => {
+    const workflow = readFileSync(
+      resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),
+      'utf8',
+    );
+    const verifyStart = workflow.indexOf('\n  verify:\n');
+    const verifyEnd = workflow.indexOf('\n  workspace-contracts:\n', verifyStart);
+    const verifyJob = workflow.slice(verifyStart, verifyEnd);
+    const installStep = [
+      '      - name: Install OS dependencies for verify',
+      "        if: needs.consuelo-changes.outputs.verify == 'true' && needs.consuelo-changes.outputs.os_contracts == 'true'",
+      '        working-directory: packages/os',
+      '        run: bun install --frozen-lockfile',
+    ].join('\n');
+
+    expect(verifyJob).toContain(installStep);
+    expect(verifyJob.indexOf(installStep)).toBeLessThan(
+      verifyJob.indexOf('      - name: Run workspace verify'),
+    );
+  });
+
   it('installs package-local OS dependencies before CI contract tests', () => {
     const workflow = readFileSync(
       resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),

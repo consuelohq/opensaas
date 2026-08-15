@@ -59,18 +59,26 @@ const parseWorkerSecretMetadata = (
   throw new Error(displayName + ' secret list response was not an array');
 };
 
-export const assertRequiredCloudflareWorkerSecrets = (
+export const configuredCloudflareWorkerSecretNames = (
   target: CloudflareWorkerReleaseTarget,
   input: unknown,
-): void => {
+): Set<string> => {
   const config = CLOUDFLARE_WORKER_RELEASE_CONFIGS[target];
-  const configured = new Set(
+  return new Set(
     parseWorkerSecretMetadata(config.displayName, input)
       .map((secret) =>
         typeof secret.name === 'string' ? secret.name.trim() : '',
       )
       .filter(Boolean),
   );
+};
+
+export const assertRequiredCloudflareWorkerSecrets = (
+  target: CloudflareWorkerReleaseTarget,
+  input: unknown,
+): void => {
+  const config = CLOUDFLARE_WORKER_RELEASE_CONFIGS[target];
+  const configured = configuredCloudflareWorkerSecretNames(target, input);
 
   for (const requiredSecret of config.requiredSecrets) {
     if (!configured.has(requiredSecret)) {

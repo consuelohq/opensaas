@@ -265,7 +265,7 @@ ${extraLauncherSections(extraSections)}        <section class="section">
 
     const launcherWorkspaceHost = ${JSON.stringify(workspaceHostname)};
     const workspaceHost = window.location.hostname.toLowerCase();
-    if (launcherWorkspaceHost && workspaceHost === launcherWorkspaceHost) {
+    if (!launcherWorkspaceHost || workspaceHost === launcherWorkspaceHost) {
       const agentStatusUrl = new URL('https://os.consuelohq.com/workspace/agents');
       agentStatusUrl.searchParams.set('workspace_host', workspaceHost);
       fetch(agentStatusUrl.toString(), {
