@@ -60,13 +60,59 @@ function readWorkflow(name) {
 }
 
 describe('GitHub workflow policy', () => {
-  test('makes Consuelo verify authoritative for every non-Twenty package', () => {
+  test('delegates Consuelo routing to the Bun-native CI planner', () => {
     const workflow = readFileSync(join(workflowDir, 'consuelo-ci.yaml'), 'utf8');
 
-    expect(workflow).toContain('has_consuelo_package_change()');
-    expect(workflow).toContain("grep -Ev '^packages/(twenty-[^/]+|create-twenty-app)/'");
-    expect(workflow).toContain('if has_consuelo_package_change; then verify=true; fi');
-    expect(workflow).toContain("if has_change '^packages/twenty-server/src/engine/core-modules/consuelo-api/'; then dialer=true; verify=true; fi");
+    expect(workflow).toContain('bun packages/os/scripts/ci-plan.ts');
+    expect(workflow).not.toContain('has_consuelo_package_change()');
+    expect(workflow).not.toContain('git diff --name-only --diff-filter=ACMR');
+    expect(workflow).not.toContain('workspace_contracts');
+    expect(readWorkflow('consuelo-ci.yaml').jobs['workspace-contracts']).toBeUndefined();
+  });
+
+  test('uses one package-manager-neutral Consuelo CI setup boundary', () => {
+    const workflow = readFileSync(join(workflowDir, 'consuelo-ci.yaml'), 'utf8');
+    const setupAction = readFileSync(
+      join(repoRoot, '.github/actions/consuelo-ci-setup/action.yaml'),
+      'utf8',
+    );
+
+    expect(setupAction).toContain('uses: oven-sh/setup-bun@v2');
+    expect(setupAction).toContain("default: '1.3.14'");
+    expect(setupAction).toContain('uses: actions/setup-node@v4');
+    expect(setupAction).toContain("default: '24'");
+    expect(setupAction).toContain('uses: ./.github/actions/yarn-install');
+    expect(setupAction).toContain('working-directory: packages/os');
+    expect(setupAction).toContain('bun install --frozen-lockfile');
+    expect(workflow).toContain('uses: ./.github/actions/consuelo-ci-setup');
+    expect(workflow).not.toContain('uses: oven-sh/setup-bun@v2');
+    expect(workflow).not.toContain('uses: ./.github/actions/yarn-install');
+    expect(workflow).toContain("setup-node: 'false'");
+  });
+
+  test('includes local composite actions in workflow security policy', () => {
+    const policy = readFileSync(
+      join(repoRoot, 'packages/workspace/scripts/ci/check-github-workflows.cjs'),
+      'utf8',
+    );
+
+    expect(policy).toContain("/^\\.github\\/actions\\/.+\\/action\\.ya?ml$/");
+    expect(policy).toContain('local composite actions must receive credentials explicitly from the caller');
+    expect(policy).toContain('const usesMutableBranch = /@(?:main|master)');
+  });
+
+  test('keeps OS-only Consuelo lanes off the root Yarn install', () => {
+    const workflow = readWorkflow('consuelo-ci.yaml');
+
+    for (const jobName of ['os-contracts', 'sites-gateway-cloudflare']) {
+      const setup = workflow.jobs[jobName].steps.find(
+        (step) => step.uses === './.github/actions/consuelo-ci-setup',
+      );
+
+      expect(setup, jobName).toBeTruthy();
+      expect(setup.with['install-root'], jobName).toBe('false');
+      expect(setup.with['install-os'], jobName).toBe('true');
+    }
   });
 
   test('scopes legacy Twenty pull-request CI to Twenty-owned paths', () => {

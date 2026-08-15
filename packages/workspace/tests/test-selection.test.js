@@ -530,6 +530,24 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses the focused Consuelo CI planner contract instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/ci-plan.ts',
+      '--changed-file',
+      'packages/os/tests/ci-plan.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('consuelo-ci-planner');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(['Consuelo CI planner contracts']);
+  });
+
   it('uses the focused OS runtime-bundle distribution contract instead of the broad OS package suite', () => {
     const result = run([
       'check',

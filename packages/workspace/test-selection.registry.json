@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2629,
-    "mappedTestCount": 2546,
+    "testFileCount": 2630,
+    "mappedTestCount": 2547,
     "unmappedTestCount": 83,
-    "ruleCount": 54,
-    "explicitRuleCount": 35,
+    "ruleCount": 55,
+    "explicitRuleCount": 36,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 254,
+      "packages/os/tests": 255,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 61,
       "packages/twenty-sdk/src/cli": 51,
@@ -634,7 +634,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 536,
+      "test": 537,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -806,6 +806,29 @@
       ],
       "critical": true,
       "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "consuelo-ci-planner",
+      "source": [
+        "packages/os/scripts/ci-plan.ts",
+        "packages/os/tests/ci-plan.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "Consuelo CI planner contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/ci-plan.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Consuelo CI planner changes have a focused routing contract and must not select the broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -3323,6 +3346,11 @@
     },
     {
       "path": "packages/os/tests/canonical-device-identity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/ci-plan.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
