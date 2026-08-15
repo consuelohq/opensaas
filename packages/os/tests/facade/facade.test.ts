@@ -107,6 +107,13 @@ function writeTaskSession(tempRoot: string, taskSession: string, branch: string 
   }, null, 2));
 }
 
+function createManagedTaskWorktree(prefix: string) {
+  const worktreeRoot = join(tmpdir(), 'opensaas-worktrees');
+  mkdirSync(worktreeRoot, { recursive: true });
+  const worktree = mkdtempSync(join(worktreeRoot, `task-${prefix}`));
+  return { worktreeRoot, worktree };
+}
+
 const SNAPSHOT_EXCLUDED_TOOLS = new Set(['fs.read', 'fs.search']);
 
 function executableEntries() {
@@ -692,7 +699,7 @@ describe('typed facade executor', () => {
 
         expect(result.ok).toBe(false);
         expect(result.code).toBe('VALIDATION_ERROR');
-        expect(result.message).toContain('top-level pagination fields cannot be used with files');
+        expect(result.message).toContain('top-level read fields cannot be used with files');
       }
       expect(plans).toHaveLength(0);
     } finally {
@@ -1207,23 +1214,33 @@ describe('typed facade executor', () => {
   });
 
   it('allows matching taskSession and branch for code.call', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-session-'));
+    const { worktreeRoot, worktree } = createManagedTaskWorktree(
+      'workspace-code-call-session-',
+    );
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = worktreeRoot;
     try {
-      writeTaskSession(tempRoot, 'tsk_code_call', TEST_BRANCH);
+      writeTaskSession(worktree, 'tsk_code_call', TEST_BRANCH);
       const result = await executeTool('code.call', {
         taskSession: 'tsk_code_call',
         branch: TEST_BRANCH,
         language: 'python',
         mode: 'read',
         code: 'import os\nprint(os.environ["TASK_BRANCH"])\nprint(os.environ["TASK_WORKTREE"])',
-        cwd: tempRoot,
-      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
+        cwd: worktree,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: worktree,
+        env: { ...process.env, WORKSPACE_WORKTREE_ROOT: worktreeRoot },
+      });
 
       expect(result.ok).toBe(true);
       expect(result.code).toBe('OK');
-      expect(result.data?.stdout?.trim().split('\n')).toEqual([TEST_BRANCH, tempRoot]);
+      expect(result.data?.stdout?.trim().split('\n')).toEqual([TEST_BRANCH, worktree]);
     } finally {
-      rmSync(tempRoot, { recursive: true, force: true });
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(worktree, { recursive: true, force: true });
     }
   });
 
@@ -1291,23 +1308,33 @@ describe('typed facade executor', () => {
   });
 
   it('runs code.call edit mode inside an explicit task worktree', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-edit-session-'));
+    const { worktreeRoot, worktree } = createManagedTaskWorktree(
+      'workspace-code-call-edit-session-',
+    );
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = worktreeRoot;
     try {
-      writeTaskSession(tempRoot, 'tsk_code_call_edit', TEST_BRANCH);
+      writeTaskSession(worktree, 'tsk_code_call_edit', TEST_BRANCH);
       const result = await executeTool('code.call', {
         taskSession: 'tsk_code_call_edit',
         language: 'python',
         mode: 'edit',
         code: 'from pathlib import Path\nPath("edited.txt").write_text("changed")\nprint("edited")',
-        cwd: tempRoot,
-      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
+        cwd: worktree,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: worktree,
+        env: { ...process.env, WORKSPACE_WORKTREE_ROOT: worktreeRoot },
+      });
 
       expect(result.ok).toBe(true);
       expect(result.code).toBe('OK');
       expect(result.data?.stdout?.trim()).toBe('edited');
       expect(result.data?.filesChanged).toContain('edited.txt');
     } finally {
-      rmSync(tempRoot, { recursive: true, force: true });
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(worktree, { recursive: true, force: true });
     }
   });
 

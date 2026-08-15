@@ -541,7 +541,7 @@ describe('typed facade executor', () => {
 
         expect(result.ok).toBe(false);
         expect(result.code).toBe('VALIDATION_ERROR');
-        expect(result.message).toContain('top-level pagination fields cannot be used with files');
+        expect(result.message).toContain('top-level read fields cannot be used with files');
       }
 
       expect(plans).toHaveLength(0);
