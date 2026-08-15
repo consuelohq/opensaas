@@ -8,20 +8,40 @@ const markdownHref = pagePathToMarkdownHref(Astro.url.pathname);
 const breadcrumbs = getBreadcrumbs(Astro.url.pathname);
 const hasToc = Boolean(Astro.locals.starlightRoute.toc);
 const isHome = Astro.url.pathname === '/';
+const homeInstallCommand = 'curl -fsSL https://install.consuelohq.com/os ' + String.fromCharCode(124) + ' bash';
 ---
 
 {isHome && (
   <section class="docs-home-hero" aria-labelledby="_top">
-    <h1 id="_top" aria-label={title}>
-      <span class="docs-home-title-line">Digital workers</span>
-      <span class="docs-home-title-line">built on Consuelo</span>
-    </h1>
-    {description && <p class="docs-home-description">{description}</p>}
-    <div class="docs-home-actions" aria-label="Documentation shortcuts">
-      <a class="docs-home-primary" href="/start/">Get started</a>
-      <a href="/connect/">Connect an agent</a>
-      <a href="/tools/">Browse tools</a>
+    <div class="docs-home-copy">
+      <h1 id="_top" aria-label={title}>
+        <span class="docs-home-title-line">Digital workers</span>
+        <span class="docs-home-title-line">built on Consuelo</span>
+      </h1>
+      {description && <p class="docs-home-description">{description}</p>}
+      <div class="docs-home-actions" aria-label="Documentation shortcuts">
+        <a class="docs-home-primary" href="/start/">Get started</a>
+        <a href="/connect/">Connect an agent</a>
+        <a href="/tools/">Browse tools</a>
+      </div>
     </div>
+    <section class="docs-home-quick-start" aria-labelledby="docs-home-quick-start-title">
+      <h2 id="docs-home-quick-start-title">Start in one command</h2>
+      <p>Install the local OS, then connect whichever agent you already use.</p>
+      <div
+        class="home-install-command docs-home-install-command"
+        data-home-install-command
+        data-command={homeInstallCommand}
+      >
+        <code>{homeInstallCommand}</code>
+        <button type="button" aria-label="Copy install command" data-home-install-copy>
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="11" height="11" rx="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+        </button>
+      </div>
+    </section>
   </section>
 )}
 
@@ -286,6 +306,15 @@ const isHome = Astro.url.pathname === '/';
       display: grid;
       gap: 1.25rem;
       padding: clamp(2rem, 7vw, 5.5rem) 0 clamp(1rem, 3vw, 2rem);
+    }
+
+    .docs-home-copy {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .docs-home-quick-start {
+      display: none;
     }
 
     .docs-home-hero h1 {
@@ -596,6 +625,88 @@ const isHome = Astro.url.pathname === '/';
     @media (min-width: 72rem) {
       .page-toc-trigger {
         display: none;
+      }
+
+      .docs-home-hero {
+        align-items: start;
+        gap: 3rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 0;
+      }
+
+      .docs-home-copy {
+        gap: 1.5rem;
+      }
+
+      .docs-home-hero h1 {
+        font-size: clamp(3.25rem, 4.4vw, 3.75rem);
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+
+      .docs-home-description {
+        font-size: 1rem;
+        line-height: 1.5;
+        max-width: 38rem;
+      }
+
+      .docs-home-actions {
+        gap: 0.75rem;
+        margin-top: 0;
+      }
+
+      .docs-home-actions a {
+        background: transparent;
+        border: 0;
+        border-radius: 0.375rem;
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--docs-ink) 16%, transparent);
+        font-size: 0.875rem;
+        font-weight: 500;
+        min-height: 2.25rem;
+        padding: 0 0.625rem;
+      }
+
+      .docs-home-actions a:hover,
+      .docs-home-actions a:focus-visible {
+        background: color-mix(in srgb, var(--docs-ink) 7%, transparent);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--docs-ink) 20%, transparent);
+        color: var(--docs-ink);
+      }
+
+      .docs-home-actions .docs-home-primary {
+        background: var(--docs-ink);
+        box-shadow: none;
+        color: var(--docs-paper);
+      }
+
+      .docs-home-actions .docs-home-primary:hover,
+      .docs-home-actions .docs-home-primary:focus-visible {
+        background: color-mix(in srgb, var(--docs-ink) 90%, var(--docs-paper));
+        color: var(--docs-paper);
+      }
+
+      .docs-home-quick-start {
+        align-content: start;
+        display: grid;
+        gap: 0.75rem;
+        padding-top: 0.25rem;
+      }
+
+      .docs-home-quick-start h2 {
+        color: var(--docs-ink);
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.04em;
+        line-height: 2rem;
+        margin: 0;
+      }
+
+      .docs-home-quick-start > p {
+        color: var(--docs-muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0;
+        max-width: 34rem;
       }
     }
 
