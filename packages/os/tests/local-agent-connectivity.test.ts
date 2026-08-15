@@ -379,7 +379,7 @@ describe('local agent connectivity', () => {
       materializeSites({ home, dbPath, dryRun: false });
       process.stdout.write(JSON.stringify({
         health: getCapabilityHealth(home),
-        launcher: fs.readFileSync(path.join(home, 'sites', 'index.html'), 'utf8'),
+        root: fs.readFileSync(path.join(home, 'sites', 'index.html'), 'utf8'),
         configuration: fs.readFileSync(path.join(home, 'sites', 'configuration', 'index.html'), 'utf8'),
         configurationSnapshot: JSON.parse(fs.readFileSync(
           path.join(home, 'sites', '.data', 'configuration', 'snapshot.json'),
@@ -393,7 +393,7 @@ describe('local agent connectivity', () => {
       encoding: 'utf8',
     })) as {
       health: Array<{ id: string; status: string; details?: unknown }>;
-      launcher: string;
+      root: string;
       configuration: string;
       configurationSnapshot: {
         localAgents: Array<{ name: string; status: string }>;
@@ -406,10 +406,10 @@ describe('local agent connectivity', () => {
       status: 'connected',
       details: ['opencode'],
     });
-    expect(integration.launcher).toContain("agentStatusUrl.searchParams.set('workspace_host'");
-    expect(integration.launcher).toContain("countElement.textContent = 'Connected to ' + count");
-    expect(integration.launcher).toContain('item.textContent = agent.label');
-    expect(integration.configuration).toContain('<title>Configuration');
+    expect(integration.root).toContain('<title>Nodes - Consuelo OS</title>');
+    expect(integration.root).toContain('data-workspace-shell');
+    expect(integration.root).not.toContain('data-agent-count');
+    expect(integration.configuration).toContain('<title>Overview - Consuelo OS</title>');
     expect(integration.configurationSnapshot.localAgents).toEqual(
       expect.arrayContaining([expect.objectContaining({ name: 'opencode', status: 'verified' })]),
     );
