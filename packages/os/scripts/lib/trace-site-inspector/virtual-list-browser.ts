@@ -9,6 +9,7 @@ import {
 
 import {
   childTraceRecords,
+  branchName,
   clean,
   dedupeTraceRows,
   isBatchChild,
@@ -752,7 +753,7 @@ function createTraceRow(
 }
 
 function appendRootCells(button: HTMLElement, row: TraceRecord): void {
-  const branch = clean(row.branch ?? row.taskSession) || 'no-branch';
+  const branch = branchName(row);
   const formatted = formatTraceTableRow(row);
   const status = formatted.statusLabel;
   const sourceTool = clean(row.name ?? row.traceName ?? row.tool) || 'trace';
@@ -810,7 +811,7 @@ function appendChildCells(
   parent: TraceRecord,
   child: TraceChildRecord,
 ): void {
-  const branch = clean(parent.branch ?? parent.taskSession) || 'no-branch';
+  const branch = branchName(parent);
   const formatted = formatTraceTableRow(child);
   const status = formatted.statusLabel;
   const sourceTool = clean(child.tool ?? child.name ?? child.label) || 'child';
@@ -942,7 +943,7 @@ function renderTraceFilterPanel(): void {
   const fragment = document.createDocumentFragment();
   fragment.append(
     createFilterSection('tools', 'Tools', currentFacets.tools),
-    createFilterSection('branches', 'Branches', currentFacets.branches),
+    createFilterSection('branches', 'Sessions', currentFacets.branches),
     createFilterSection('nodes', 'Nodes', currentFacets.nodes),
     createFilterSection('routes', 'Routing', currentFacets.routes),
     createFilterSection('statuses', 'Status', currentFacets.statuses),
