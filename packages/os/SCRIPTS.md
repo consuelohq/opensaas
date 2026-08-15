@@ -470,7 +470,9 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### explore — repo exploration retrieval
 
-builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semantic-index/<repoHash>/`, embeds chunks and queries with Qwen3-Embedding-4B through the Consuelo hosted embedding gateway by default, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
+builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semantic-index/<repoHash>/`, then retrieves candidates through independent semantic and lexical/exact channels before graph expansion. Candidate channels are fused by reciprocal rank rather than treating incomparable raw scores as one scale; a conservative MMR pass reduces redundant same-role results while preserving complementary implementation/dependency/test context. Explicit path scopes such as `Within packages/os/scripts/lib/search, ...` are hard retrieval boundaries. Explore still writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; retrieval evidence is a prior, not proof.
+
+Semantic retrieval uses Qwen3-Embedding-4B through the Consuelo hosted embedding gateway by default. If query embedding is temporarily unavailable, Explore continues with lexical/exact retrieval and graph expansion instead of failing the whole request. Graph-only candidates do not inherit a synthetic embedding score from their parent, so missing semantic evidence stays missing rather than being fabricated.
 
 The default OS path does not require a user OpenRouter key or a local GGUF model. Raw chunks are sent only to the configured Consuelo embedding gateway for vector generation; vectors and graph/index state remain local in the repo-scoped semantic index DB. Offline users can opt into local embeddings explicitly:
 
@@ -486,10 +488,13 @@ CONSUELO_EMBEDDING_GATEWAY_URL=https://gateway.consuelohq.com/v1/os/semantic-emb
 CONSUELO_EMBEDDING_PROVIDER=openrouter CONSUELO_OPENROUTER_API_KEY=... bun run explore -- "query"
 ```
 
+Structured Explore output is compact by default so agents receive the ranked ownership/dependency packet without paying for scoring internals and the complete graph frontier. Compact results preserve result order, symbols/lines, rationale, evidence state, information value, and up to three typed dependency edges plus the full connection count. The rich payload is still written to Explore state/evidence. Use `--detail full` only when debugging ranking, graph, or scoring internals.
+
 ```bash
 bun run explore -- "how does the dialer queue work?"
 bun run explore -- "where is task metadata verified?" --budget 5
 bun run explore -- "recent workspace changes" --changed-only --json
+bun run explore -- "inspect ranking internals" --json --detail full
 bun run explore -- "refresh everything" --reindex
 ```
 
@@ -500,11 +505,25 @@ bad: sqlite-vec could not be loaded
  → use the root script, which sets Homebrew SQLite on DYLD_LIBRARY_PATH for macOS extension loading.
 
 bad: embedding gateway failed
- → hosted embedding generation is unavailable, over quota, or misconfigured. check CONSUELO_EMBEDDING_GATEWAY_URL or use CONSUELO_EMBEDDING_PROVIDER=local for offline mode.
+ → hosted embedding generation is unavailable, over quota, or misconfigured. Explore continues on lexical/exact + graph retrieval for the current query; check CONSUELO_EMBEDDING_GATEWAY_URL or use CONSUELO_EMBEDDING_PROVIDER=local when semantic retrieval is required offline.
 
 bad: embedding model not found
  → local mode was explicitly selected and the expected model is missing under $CONSUELO_HOME/models/ or CONSUELO_EMBEDDING_MODEL_PATH.
 ```
+
+---
+
+### explore:benchmark — agent-facing Explore retrieval quality
+
+Runs the curated OS-owned ExploreBench corpus directly against the live `packages/os` retriever without writing Explore evidence or belief state. It reports Recall@k, required-node recall, MRR, and nDCG. The default uses the existing semantic index as a frozen corpus so control/challenger comparisons change ranking rather than indexed content; pass `--refresh-index` only when intentionally measuring a refreshed corpus. Use `--case` repeatedly for bounded subsets when diagnosing a single retrieval domain; use `--output-dir` plus `--name` to retain control/challenger reports.
+
+```bash
+bun run explore:benchmark -- --json
+bun run explore:benchmark -- --case explore-ranking --case explicit-search-scope --json
+bun run explore:benchmark -- --output-dir packages/os/explore-bench/reports --name e2-live-control --json
+```
+
+Benchmark labels live in `packages/os/explore-bench/cases.v1.json`. Treat reports as comparative evidence: use the same case file, budget, graph depth, and index configuration for control and challenger runs.
 
 ---
 

@@ -534,6 +534,34 @@ describe('test selection registry', () => {
     );
   });
 
+  it('uses focused OS Explore retrieval contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/search/retrieval-policy.js',
+      '--changed-file',
+      'packages/os/scripts/lib/search/retriever.js',
+      '--changed-file',
+      'packages/os/scripts/lib/index/store.js',
+      '--changed-file',
+      'packages/os/scripts/explore-bench.js',
+      '--changed-file',
+      'packages/os/tests/explore-retrieval-policy.test.ts',
+      '--changed-file',
+      'packages/os/manifests/generated/core.manifest.json',
+      '--changed-file',
+      'packages/os/tools/decision-engine/handler.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-explore-retrieval-science');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toContain('OS Explore retrieval science contracts');
+  });
+
   it('uses focused hosted-site reconciliation contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

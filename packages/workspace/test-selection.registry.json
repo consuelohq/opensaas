@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2632,
-    "mappedTestCount": 2549,
-    "unmappedTestCount": 83,
-    "ruleCount": 59,
-    "explicitRuleCount": 40,
+    "testFileCount": 2637,
+    "mappedTestCount": 2553,
+    "unmappedTestCount": 84,
+    "ruleCount": 60,
+    "explicitRuleCount": 41,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 255,
+      "packages/os/tests": 259,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 61,
+      "packages/workspace/tests": 62,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 538,
+      "test": 543,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -865,6 +865,40 @@
       ],
       "critical": true,
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-explore-retrieval-science",
+      "source": [
+        "packages/os/explore-bench/**",
+        "packages/os/scripts/explore-bench.js",
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/explore-bench.js",
+        "packages/os/scripts/lib/index/store.js",
+        "packages/os/scripts/lib/search/**",
+        "packages/os/tests/explore-bench.test.ts",
+        "packages/os/tests/explore-output-contract.test.ts",
+        "packages/os/tests/explore-retrieval-policy.test.ts",
+        "packages/os/tests/explore-retriever-fallback.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Agent-facing OS Explore retrieval, benchmark, and search-index changes must prove hard scope, missing-semantic fallback, rank fusion, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
       "origin": "explicit"
     },
     {
@@ -1136,6 +1170,7 @@
       "source": [
         "packages/os/SCRIPTS.md",
         "packages/os/TOOLS.md",
+        "packages/os/manifests/generated/core.manifest.json",
         "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
         "packages/os/scripts/lifecycle.ts",
@@ -1160,7 +1195,8 @@
         "packages/os/tests/linux-platform.test.ts",
         "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
         "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
-        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+        "packages/os/tools/decision-engine/handler.ts"
       ],
       "tests": [
         {
@@ -3814,6 +3850,26 @@
     },
     {
       "path": "packages/os/tests/environment-sites-gateway-endpoints.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-bench.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-output-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-retrieval-policy.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-retriever-fallback.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15433,6 +15489,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/explore-bench.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/explore-ranker.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -15717,6 +15778,7 @@
     "packages/workspace/tests/docs-production-release.test.js",
     "packages/workspace/tests/email-package-removal.test.ts",
     "packages/workspace/tests/embedding-config.test.js",
+    "packages/workspace/tests/explore-bench.test.js",
     "packages/workspace/tests/explore-ranker.test.js",
     "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tests/fs-apply-patch.test.ts",

@@ -217,6 +217,39 @@
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior."
     },
     {
+      "id": "os-explore-retrieval-science",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/explore-bench/**",
+        "packages/os/scripts/explore-bench.js",
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/explore-bench.js",
+        "packages/os/scripts/lib/index/store.js",
+        "packages/os/scripts/lib/search/**",
+        "packages/os/tests/explore-bench.test.ts",
+        "packages/os/tests/explore-output-contract.test.ts",
+        "packages/os/tests/explore-retrieval-policy.test.ts",
+        "packages/os/tests/explore-retriever-fallback.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts"
+          ]
+        }
+      ],
+      "reason": "Agent-facing OS Explore retrieval, benchmark, and search-index changes must prove hard scope, missing-semantic fallback, rank fusion, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite."
+    },
+    {
       "id": "os-release-surface-freshness",
       "critical": true,
       "exclusive": true,
@@ -479,6 +512,7 @@
       "source": [
         "packages/os/SCRIPTS.md",
         "packages/os/TOOLS.md",
+        "packages/os/manifests/generated/core.manifest.json",
         "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
         "packages/os/scripts/lifecycle.ts",
@@ -503,7 +537,8 @@
         "packages/os/tests/linux-platform.test.ts",
         "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
         "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
-        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+        "packages/os/tools/decision-engine/handler.ts"
       ],
       "tests": [
         {

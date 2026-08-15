@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-15T10:50:49.419Z",
+  "durationMs": 25381,
+  "benchmark": {
+    "caseCount": 10,
+    "evaluatedCaseCount": 10,
+    "unlabeledCaseCount": 0,
+    "metrics": {
+      "recallAtK": {
+        "1": 0,
+        "3": 0,
+        "5": 0,
+        "10": 0
+      },
+      "requiredRecallAtK": {
+        "1": 0,
+        "3": 0,
+        "5": 0,
+        "10": 0
+      },
+      "mrr": 0,
+      "ndcgAtK": {
+        "1": 0,
+        "3": 0,
+        "5": 0,
+        "10": 0
+      }
+    },
+    "caseResults": [
+      {
+        "id": "explore-ranking",
+        "reciprocalRank": 0,
+        "recallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "topPaths": [],
+        "requiredPaths": [
+          "packages/os/scripts/lib/search/ranker.js",
+          "packages/os/scripts/lib/search/retriever.js",
+          "packages/os/scripts/explore.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/lib/search/ranker.js",
+          "packages/os/scripts/lib/search/retriever.js",
+          "packages/os/scripts/explore.js"
+        ]
+      },
+      {
+        "id": "explore-beliefs",
+        "reciprocalRank": 0,
+        "recallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "topPaths": [],
+        "requiredPaths": [
+          "packages/os/scripts/lib/state/explore-state.js",
+          "packages/os/scripts/lib/state/evidence-log.js",
+          "packages/os/scripts/explore.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/lib/state/explore-state.js",
+          "packages/os/scripts/lib/state/evidence-log.js",
+          "packages/os/scripts/explore.js"
+        ]
+      },
+      {
+        "id": "task-start",
+        "reciprocalRank": 0,
+        "recallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "topPaths": [],
+        "requiredPaths": [
+          "packages/os/scripts/task-start.js",
+          "packages/os/scripts/lib/task-meta.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/task-start.js",
+          "packages/os/scripts/lib/task-meta.js"
+        ]
+      },
+      {
+        "id": "task-push",
+        "reciprocalRank": 0,
+        "recallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "topPaths": [],
+        "requiredPaths": [
+          "packages/os/scripts/task-push.js",
+          "packages/os/scripts/lib/verification.js",
+          "packages/os/scripts/lib/task-selection.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/task-push.js",
+          "packages/os/scripts/lib/verification.js",
+          "packages/os/scripts/lib/task-selection.js"
+        ]
+      },
+      {
+        "id": "stream-sync",
+        "reciprocalRank": 0,
+        "recallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "topPaths": [],
+        "requiredPaths": [
+          "packages/os/scripts/stream-sync.js",
+          "packages/os/scripts/lib/task-meta.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/stream-sync.js",
+          "packages/os/scripts/lib/task-meta.js"
+        ]
+      },
+      {
+        "id": "strict-review",
+        "reciprocalRank": 0,
+        "recallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "topPaths": [],
+        "requiredPaths": [
+          "packages/os/scripts/review.js",
+          "packages/os/scripts/lib/review-run-state.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/review.js",
+          "packages/os/scripts/lib/review-run-state.js"
+        ]
+      },
+      {
+        "id": "code-call",
+        "reciprocalRank": 0,
+        "recallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "topPaths": [],
+        "requiredPaths": [
+          "packages/os/scripts/code-call.ts",
+          "packages/os/scripts/lib/code-call/runtime.ts",
+          "packages/os/scripts/lib/code-call/service.ts"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/code-call.ts",
+          "packages/os/scripts/lib/code-call/runtime.ts",
+          "packages/os/scripts/lib/code-call/service.ts"
+        ]
+      },
+      {
+        "id": "trace-search",
+        "reciprocalRank": 0,
+        "recallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "topPaths": [],
+        "requiredPaths": [
+          "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+          "packages/os/scripts/lib/trace-search-query.ts"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+          "packages/os/scripts/lib/trace-search-query.ts"
+        ]
+      },
+      {
+        "id": "tool-manifest",
+        "reciprocalRank": 0,
+        "recallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "topPaths": [],
+        "requiredPaths": [
+          "packages/os/scripts/generate-tool-manifest.ts",
+          "packages/os/manifests/generated/tool.manifest.json"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/generate-tool-manifest.ts",
+          "packages/os/manifests/generated/tool.manifest.json"
+        ]
+      },
+      {
+        "id": "explicit-search-scope",
+        "reciprocalRank": 0,
+        "recallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "requiredRecallAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "ndcgAtK": {
+          "1": 0,
+          "3": 0,
+          "5": 0,
+          "10": 0
+        },
+        "topPaths": [],
+        "requiredPaths": [
+          "packages/os/scripts/lib/search/retriever.js",
+          "packages/os/scripts/lib/search/ranker.js"
+        ],
+        "missingRequiredPaths": [
+          "packages/os/scripts/lib/search/retriever.js",
+          "packages/os/scripts/lib/search/ranker.js"
+        ]
+      }
+    ]
+  },
+  "metadata": {
+    "retrievalSurface": "packages/os",
+    "commit": "4ca0a2a084ec423f1c56c7ae5ecc60a6860ab160",
+    "caseFile": "packages/os/explore-bench/cases.v1.json",
+    "budget": 10,
+    "depth": 2,
+    "indexMode": "frozen",
+    "index": {
+      "totalFiles": 16673,
+      "totalChunks": 86910,
+      "lastIndexed": "2026-08-15T10:34:59.334Z"
+    },
+    "queryVectorSource": "single-run temporary legacy OpenRouter Qwen3-Embedding-4B 2560d oracle; OS gateway returned WORKSPACE_HOSTNAME_NOT_FOUND",
+    "queryVectorHashes": {
+      "explore-ranking": "3c4a3db96d2e2b3b6bde367d2e1ea539ddf453ba950b99ddbca79be6d907017b",
+      "explore-beliefs": "c21077c952430e7c14342e7ab47e261fc4af6716d7e21d4ccdd7032139c47591",
+      "task-start": "1c192ce16c51dd1ea85f5d11fcd1858ec0ba3195ed4935408f1d49d83d4ab630",
+      "task-push": "b729fcb535d44965f89600cd23d004aec449000c76b9c2ebf93d62823f9274fa",
+      "stream-sync": "d94ea1b167882dc08735b60f6bb498c8898f02ec23deedb8119bbdf5eebc3b11",
+      "strict-review": "2d678e63408599b3ec6a3ebe3bd4dd51e451de660fd0d1f657452e0f28325d9a",
+      "code-call": "dacc3042fe97a4d964cfc8d0bc271670e7deb5dde6ddeaef38587c0c206b7be8",
+      "trace-search": "e0a23c8987b327cccad6cf6e16e8924c6763dce9f19da5135b4883a3c15e73ac",
+      "tool-manifest": "a232939bd26329b800ae12558b7c4e728fe49d805de85cd087217975d7f46145",
+      "explicit-search-scope": "3d7421a83fbdc9ce0e69fd7006a90f9c719d12f01a7cf91d59390a2b7d3f5f31"
+    },
+    "comparisonRunId": "26f002f0707216e4",
+    "variant": "control",
+    "retrieverSha256": "f74da9e0e3832d52408a38310be19c126850ccb2725c7872388f6e356633d9f4"
+  }
+}
