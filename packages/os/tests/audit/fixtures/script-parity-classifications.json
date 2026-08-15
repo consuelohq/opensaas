@@ -533,6 +533,10 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
+    "scripts/lib/google-cloud-public-pricing-refresh.ts": {
+      "status": "os-only-needs-review",
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
+    },
     "scripts/lib/graphql-client.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -730,6 +734,10 @@
       "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/managed-cloud-provisioning.ts": {
+      "status": "os-only-needs-review",
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
+    },
+    "scripts/lib/managed-cloud-public-pricing.ts": {
       "status": "os-only-needs-review",
       "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
@@ -936,6 +944,10 @@
     "scripts/lib/node-sealed-credential-store.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned at-rest credential custody on a node; node-local by design with no workspace counterpart."
+    },
+    "scripts/lib/nodes-site.ts": {
+      "status": "os-only-needs-review",
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/nx-projects.js": {
       "status": "same",
