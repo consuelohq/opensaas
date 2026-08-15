@@ -1151,7 +1151,9 @@
         "packages/os/tests/tool-package-layout.test.ts",
         "packages/os/scripts/lib/windows-platform.ts",
         "packages/os/tools/lifecycle/**",
-        "packages/os/tools/registry.ts"
+        "packages/os/tools/registry.ts",
+        "packages/os/scripts/lib/lifecycle/service.ts",
+        "packages/os/tests/lifecycle-restart-contract.test.ts"
       ],
       "tests": [
         {
@@ -1169,7 +1171,8 @@
             "packages/os/tests/linux-platform.test.ts",
             "packages/os/tests/windows-platform.test.ts",
             "packages/os/tests/tool-manifest.test.ts",
-            "packages/os/tests/tool-package-layout.test.ts"
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts"
           ]
         },
         {
