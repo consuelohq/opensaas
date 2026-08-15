@@ -1,0 +1,296 @@
+{
+  "version": 1,
+  "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+  "events": [
+    {
+      "id": "6234af8a-1fbd-46d3-b724-f81e667b7914",
+      "occurred_at": "2026-08-15T02:57:05.026Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".github/actions/yarn-install/action.yaml",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "41ad5137-c4d4-4447-ac7e-5c6fa2c2028f",
+      "occurred_at": "2026-08-15T02:59:28.854Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/ci/check-github-workflows.cjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "c284c1c6-4381-41b2-9208-65b7753e4464",
+      "occurred_at": "2026-08-15T03:00:14.577Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".github/workflows/consuelo-ci.yaml",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "9c63bf85-733d-45af-8b88-9cc4e827dcd4",
+      "occurred_at": "2026-08-15T03:00:52.052Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "05225dfa-7ee9-4039-9ddd-844f624e0967",
+      "occurred_at": "2026-08-15T03:00:55.037Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "c6e7b66b-2ba5-4447-99c1-b14eaca39c24",
+      "occurred_at": "2026-08-15T03:02:11.614Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/security-gateway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "15f0b275-9ec4-4514-992d-f9c4f1d07d0b",
+      "occurred_at": "2026-08-15T03:02:25.873Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-gateway-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "53030fe0-84f4-4708-8cb0-2654f0b8f401",
+      "occurred_at": "2026-08-15T03:02:31.030Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/consuelo-sites-gateway-policy.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "bd5292ed-b5e6-4305-938b-4c0ddb116a2b",
+      "occurred_at": "2026-08-15T03:04:18.930Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "f4c116aa-29a1-433e-b586-a68ef26f1542",
+      "occurred_at": "2026-08-15T03:04:23.832Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/check-syntax.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "3d016116-6cb4-40f8-bc2b-39a980d7b1eb",
+      "occurred_at": "2026-08-15T03:06:59.201Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/twenty-migration/harden-consuelo-ci-bun-readiness/evidence-log.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "aabb9617-b979-4ed0-a10e-f159af9a2bb2",
+      "occurred_at": "2026-08-15T03:07:17.373Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "fd2acca9-516b-469e-b5fc-38b45c9ddffe",
+      "occurred_at": "2026-08-15T03:07:19.940Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "dad78b99-d2c1-44ce-ad9b-e1cf7e08c26e",
+      "occurred_at": "2026-08-15T03:07:58.139Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "0699e536-6ae3-4713-b4a0-6bea07302c8a",
+      "occurred_at": "2026-08-15T03:08:27.090Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "161df4f0-c079-4e6c-a0bf-edfe8cb1e35b",
+      "occurred_at": "2026-08-15T03:08:33.268Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "a71ec65c-47a6-4f11-8f5e-45cb932c1787",
+      "occurred_at": "2026-08-15T03:10:19.998Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/run-changed-os-native-tests.test.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    },
+    {
+      "id": "7eeb8c1a-bff9-4ab8-bfdc-a5786ef41b7f",
+      "occurred_at": "2026-08-15T03:11:33.000Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/run-changed-server-task.test.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T03:11:33.091Z"
+}

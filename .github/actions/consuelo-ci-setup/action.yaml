@@ -1,0 +1,50 @@
+name: Consuelo CI Setup
+description: Set up the Consuelo CI toolchain while the root dependency graph remains Yarn-owned.
+
+inputs:
+  bun-version:
+    description: Bun version used by Consuelo CI.
+    required: false
+    default: '1.3.14'
+  node-version:
+    description: Node version used by Consuelo CI jobs that need Node but not the root Yarn install.
+    required: false
+    default: '24'
+  setup-node:
+    description: Set up Node when the root Yarn installer is not providing it.
+    required: false
+    default: 'true'
+  install-root:
+    description: Install the root workspace dependency graph.
+    required: false
+    default: 'true'
+  install-os:
+    description: Install the packages/os Bun dependency graph.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: ${{ inputs.bun-version }}
+
+    - name: Setup Node
+      if: ${{ inputs.setup-node == 'true' && inputs.install-root != 'true' }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Install repository dependencies
+      if: ${{ inputs.install-root == 'true' }}
+      uses: ./.github/actions/yarn-install
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Install OS dependencies
+      if: ${{ inputs.install-os == 'true' }}
+      shell: bash
+      working-directory: packages/os
+      run: bun install --frozen-lockfile
