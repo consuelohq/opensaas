@@ -2,7 +2,7 @@
 title: Hosted MCP ingress
 description: Follow a cloud agent through OAuth, workspace resolution, signed connector transport, and local MCP authorization.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-15
 evidence:
   - source: packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts
     tests:
@@ -56,6 +56,8 @@ Inbound callers cannot choose the local connector origin. Internal workspace and
 ## 4. Sign the connector hop
 
 The edge signs the method, path, body digest, workspace, timestamp, and nonce before sending the request through the approved connector. The local gateway rejects body changes, stale timestamps, replayed nonces, bad signatures, and identity mismatches.
+
+The node-local reverse proxy is part of that proof-preservation path: it forwards the trusted signed Workspace Edge identity headers unchanged to the Bun verifier. Edge-only cache and route metadata can be removed locally, but stripping the signature or identity headers turns an otherwise valid upstream authorization into `MISSING_EDGE_SIGNATURE`.
 
 The local MCP adapter then resolves the JSON-RPC operation and required tool scope. OAuth route access alone does not authorize every tool call.
 
