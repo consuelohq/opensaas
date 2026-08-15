@@ -15,6 +15,8 @@ const LOG_FILE = process.env.CONSUELO_DAEMON_LOG_FILE || path.join(HOME, 'Librar
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
 const RELOAD_POLL_MS = 500;
+const PRIMARY_LAUNCH_AGENT_BOOTSTRAP_ATTEMPTS = 4;
+const PRIMARY_LAUNCH_AGENT_BOOTSTRAP_RETRY_SECONDS = 0.2;
 const EXPECTED_SERVER_NAME = 'consuelo-os';
 const CONFLICTING_LABELS = ['com.consuelo.workspace'];
 const CONSUELO_HOME = process.env.CONSUELO_HOME || path.join(HOME, '.consuelo');
@@ -275,7 +277,35 @@ function scrubInheritedLegacyEnvironment() {
 }
 
 function bootstrapLaunchAgent() {
-  runRequired('launchctl', ['bootstrap', LAUNCH_DOMAIN, PLIST], 'launchctl bootstrap');
+  let lastError = null;
+  let bootstrapped = false;
+  for (let attempt = 1; attempt <= PRIMARY_LAUNCH_AGENT_BOOTSTRAP_ATTEMPTS; attempt += 1) {
+    try {
+      runRequired('launchctl', ['bootstrap', LAUNCH_DOMAIN, PLIST], 'launchctl bootstrap');
+      bootstrapped = true;
+      break;
+    } catch (error) {
+      lastError = error;
+      const detail = error instanceof Error ? error.message : String(error);
+      const transientExitFive = /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
+      if (!transientExitFive) throw error;
+
+      // launchd can keep the previous job in a teardown transaction briefly.
+      // If the label is already visible again, the immutable plist was accepted;
+      // otherwise give teardown a moment to settle and retry the same bootstrap.
+      if (isLaunchdLoaded()) {
+        bootstrapped = true;
+        break;
+      }
+      if (attempt < PRIMARY_LAUNCH_AGENT_BOOTSTRAP_ATTEMPTS) {
+        sleep(PRIMARY_LAUNCH_AGENT_BOOTSTRAP_RETRY_SECONDS);
+      }
+    }
+  }
+  if (!bootstrapped) {
+    const detail = lastError instanceof Error ? lastError.message : String(lastError || 'launchctl bootstrap failed');
+    throw new Error(`primary launch agent bootstrap failed for ${LABEL}: ${detail}`);
+  }
   runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
 }
 
