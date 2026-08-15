@@ -831,6 +831,49 @@ describe('typed facade executor', () => {
     expect(plans).toHaveLength(0);
   });
 
+  it('resolves taskSession from the durable registry when local session files are unavailable', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'workspace-durable-session-'));
+    const repo = join(root, 'repo');
+    const worktree = join(root, 'task');
+    const home = join(root, 'home');
+    const branch = 'task/workspace-agents/durable-session';
+    const taskSession = 'tsk_durable_session';
+    try {
+      mkdirSync(repo, { recursive: true });
+      for (const args of [
+        ['init', '-q'],
+        ['config', 'user.email', 'tests@consuelo.local'],
+        ['config', 'user.name', 'Consuelo Tests'],
+      ]) {
+        const result = spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
+        if (result.status !== 0) throw new Error(result.stderr);
+      }
+      writeFileSync(join(repo, 'README.md'), 'fixture\n');
+      for (const args of [['add', 'README.md'], ['commit', '-qm', 'fixture'], ['worktree', 'add', '-qb', branch, worktree]]) {
+        const result = spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
+        if (result.status !== 0) throw new Error(result.stderr);
+      }
+      const registryRoot = join(home, 'node', 'tasks', 'registry');
+      mkdirSync(registryRoot, { recursive: true });
+      writeFileSync(join(registryRoot, `${taskSession}.json`), JSON.stringify({ taskSession, taskBranch: branch, branch, worktreePath: worktree, worktree }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', { taskSession, path: 'README.md' }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: repo,
+        env: { ...process.env, CONSUELO_HOME: home, WORKSPACE_WORKTREE_ROOT: join(root, 'legacy-empty') },
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe(branch);
+      expect(plans[0].env.TASK_WORKTREE).toBe(worktree);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('uses options.env worktree root for taskSession discovery', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-env-'));
     const worktreeRoot = join(tempRoot, 'custom-worktrees');

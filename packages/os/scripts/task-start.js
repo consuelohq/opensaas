@@ -7,7 +7,7 @@ const { execFileSync } = require('child_process');
 const {
   DEFAULT_MAIN_BRANCH,
   DEFAULT_REPO,
-  getWorktreeRoot,
+  getTaskWorktreeRoot,
   resolveGitRoot,
   toWorktreeDirectoryName,
 } = require('./lib/paths');
@@ -68,7 +68,7 @@ function printHelp() {
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --body <text>          pull request body text');
   writeStdout('  --body-file <path>     pull request body markdown file');
-  writeStdout('  --worktree-root <dir>  worktree root (default: $WORKSPACE_WORKTREE_ROOT, $OPENSAAS_WORKTREE_ROOT, or os.tmpdir()/opensaas-worktrees)');
+  writeStdout('  --worktree-root <dir>  worktree root (default: $WORKSPACE_WORKTREE_ROOT, $OPENSAAS_WORKTREE_ROOT, or $CONSUELO_HOME/node/tasks/worktrees)');
   writeStdout('  --json                 print machine-readable json');
   writeStdout('  --help                 show this help message');
 }
@@ -339,7 +339,8 @@ async function main() {
     const stream = args.stream || getDefaultStreamBranch(area);
     const taskBranch = args.branch || getDefaultTaskBranch(area, args.title);
     const repoRoot = resolveGitRoot(process.cwd());
-    const worktreeRoot = getWorktreeRoot(args.worktreeRoot);
+    const worktreeRoot = getTaskWorktreeRoot(args.worktreeRoot);
+    fs.mkdirSync(worktreeRoot, { recursive: true });
     const token = getToken();
 
     assertStreamBranchName(stream, area);

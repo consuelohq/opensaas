@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
 const { getTaskSessionPath: getTaskSessionMetaPath, readTaskMeta } = require('./task-meta');
+const { readDurableTaskSessionMetadata, writeDurableTaskSessionMetadata } = require('./task-registry');
+const { listWorktrees } = require('./git');
 
 const SESSION_FILENAME = 'session.json';
 
@@ -148,7 +150,48 @@ function writeTaskSessionMetadata(input, tmuxCreated = false) {
   const nextMetadata = { ...metadata, sessionPath };
   fs.mkdirSync(path.dirname(sessionPath), { recursive: true });
   fs.writeFileSync(sessionPath, JSON.stringify(nextMetadata, null, 2) + '\n', 'utf8');
+  writeDurableTaskSessionMetadata(nextMetadata);
   return nextMetadata;
+}
+
+function validateDurableTaskSessionMetadata(taskSession, options = {}) {
+  const metadata = readDurableTaskSessionMetadata(taskSession, options);
+  if (!metadata) return null;
+  const worktreePath = metadata.worktreePath || metadata.worktree;
+  const taskBranch = metadata.taskBranch || metadata.branch;
+  if (!worktreePath || !fs.existsSync(worktreePath) || !fs.statSync(worktreePath).isDirectory()) {
+    throw new Error(`registered task worktree is unavailable: ${worktreePath || '(missing)'}`);
+  }
+  const comparablePath = normalizeComparablePath(worktreePath);
+  const registered = listWorktrees(worktreePath).some((worktree) =>
+    worktree.branch === taskBranch && normalizeComparablePath(worktree.path) === comparablePath);
+  if (!registered) {
+    throw new Error(`registered task worktree does not match Git worktree metadata for ${taskBranch || '(missing branch)'}`);
+  }
+  return { ...metadata, taskBranch, branch: taskBranch, worktreePath, worktree: worktreePath };
+}
+
+function recoverDurableTaskSession(taskSession) {
+  const metadata = validateDurableTaskSessionMetadata(taskSession);
+  if (!metadata) return null;
+  const worktreePath = metadata.worktreePath || metadata.worktree;
+  const taskBranch = metadata.taskBranch || metadata.branch;
+  const area = metadata.area || getTaskArea(taskBranch);
+  if (!area) throw new Error(`cannot resolve area for task branch ${taskBranch}`);
+  const tmux = ensureTaskTmuxSession({ area, taskBranch, worktreePath });
+  const recovered = {
+    ...metadata,
+    area,
+    taskBranch,
+    branch: taskBranch,
+    worktreePath,
+    worktree: worktreePath,
+    taskSession,
+    tmuxSession: tmux.tmuxSession,
+    tmuxCreated: tmux.created,
+  };
+  writeDurableTaskSessionMetadata(recovered);
+  return recovered;
 }
 
 function createTaskSessionMetadata(input) {
@@ -375,7 +418,9 @@ module.exports = {
   getTmuxSessionStatus,
   isTmuxAvailable,
   readTaskSessionMetadata,
+  recoverDurableTaskSession,
   resolveTaskTmuxSession,
+  validateDurableTaskSessionMetadata,
   terminateTaskTmuxSession,
   tmuxSessionExists,
   writeTaskSessionMetadata,
