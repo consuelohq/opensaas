@@ -799,26 +799,16 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'sites', 'office', 'index.html'))).toBe(false);
 
     const sitesIndex = readFileSync(sitesIndexPath, 'utf8');
-    expect(sitesIndex).toContain('<title>Consuelo OS</title>');
-    expect(sitesIndex).toContain('Welcome to Consuelo OS');
-    expect(sitesIndex).toContain('Here is the URL to connect');
-    expect(sitesIndex).toContain('to your workspace.');
-    expect(sitesIndex).toContain('https://chatgpt.com/apps#settings/Connectors');
-    expect(sitesIndex).toContain('<code id="mcp-url">https://os.consuelohq.com/mcp</code>');
-    expect(sitesIndex).toContain('support@consuelohq.com');
-    expect(sitesIndex).toContain('Systems Engineer');
-    expect(sitesIndex).not.toContain('Go to market');
-    expect(sitesIndex).toContain('Artifacts');
-    expect(sitesIndex).toContain('Observability');
-    expect(sitesIndex).toContain('Code review');
-    expect(sitesIndex).toContain('Documentation');
-    expect(sitesIndex).toContain('Decision loops');
-    expect(sitesIndex).toContain('Connect to your cloud agents');
-    expect(sitesIndex).toContain('<p data-agent-count>Connected to 0 local agents</p>');
-    expect(sitesIndex).toContain('No local agents connected to workspace yet.');
+    expect(sitesIndex).toContain('<title>Overview - Consuelo OS</title>');
+    expect(sitesIndex).toContain('data-workspace-shell');
+    expect(sitesIndex).toContain('data-workspace-route-trigger');
+    expect(sitesIndex).toContain('<h1>Overview</h1>');
+    expect(sitesIndex).toContain('/gateway/configuration/snapshot');
+    expect(sitesIndex).not.toContain('Welcome to Consuelo OS');
+    expect(sitesIndex).not.toContain('<code id="mcp-url">');
+    expect(sitesIndex).not.toContain('Connected to your cloud agents');
+    expect(sitesIndex).not.toContain('data-agent-count');
     expect(sitesIndex).not.toContain('Consuelo OS Sites');
-    expect(sitesIndex).not.toContain('GitHub Workflows');
-    expect(sitesIndex).not.toContain('[GTM]');
 
     const artifactsSitePage = readFileSync(artifactsSiteIndexPath, 'utf8');
     expect(artifactsSitePage).toContain('Consuelo Artifacts');

@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/land-workspace-overview-shell-on-current-stream",
+  "events": [
+    {
+      "id": "6f54edef-4739-4389-9153-f97ee98d3cdc",
+      "occurred_at": "2026-08-15T07:03:14.578Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/land-workspace-overview-shell-on-current-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/land-workspace-overview-shell-on-current-stream"
+      }
+    },
+    {
+      "id": "24a059cd-320b-4548-b5e1-6d29f76354c7",
+      "occurred_at": "2026-08-15T07:03:32.986Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/land-workspace-overview-shell-on-current-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/land-workspace-overview-shell-on-current-stream"
+      }
+    },
+    {
+      "id": "9751e09c-3985-4b77-935f-a3cc3aaf2ad8",
+      "occurred_at": "2026-08-15T07:04:22.782Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/land-workspace-overview-shell-on-current-stream",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/land-workspace-overview-shell-on-current-stream"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T07:04:22.850Z"
+}
