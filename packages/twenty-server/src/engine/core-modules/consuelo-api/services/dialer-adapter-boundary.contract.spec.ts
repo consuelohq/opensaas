@@ -12,8 +12,11 @@ describe('Twenty dialer adapter architecture', () => {
       'src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts',
     );
 
-    expect(source).toContain('startDialerCall(params)');
+    expect(source).toContain('createDialerCallStartApplication');
+    expect(source).toContain('this.application.start(params)');
     expect(source).toContain('TwentyDialerCallStartInfrastructure');
+    expect(source).not.toContain('liveDialerIdGeneratorLayer');
+    expect(source).not.toContain('Layer.mergeAll');
     expect(source).not.toContain('dataSource.query');
     expect(source).not.toContain('initiateGroup({');
     expect(source).not.toContain('acquireLock(');

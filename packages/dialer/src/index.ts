@@ -46,6 +46,8 @@ export {
   computeDialerCallCapacity,
 } from './application/start-dialer-call.js';
 export type { StartDialerCallCommand } from './application/start-dialer-call.js';
+export { createDialerCallStartApplication } from './application/dialer-call-start-application.js';
+export type { DialerCallStartPorts } from './application/dialer-call-start-application.js';
 export {
   processParallelCallback,
   isSuccessfulParallelCompletion,

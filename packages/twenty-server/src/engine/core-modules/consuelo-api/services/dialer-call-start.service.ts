@@ -8,15 +8,15 @@ import {
 import { InjectDataSource } from '@nestjs/typeorm';
 
 import * as Sentry from '@sentry/node';
+// eslint-disable-next-line @nx/enforce-module-boundaries -- M1 keeps this Twenty wrapper as a temporary compatibility adapter around the Consuelo-owned application.
 import {
-  liveDialerIdGeneratorLayer,
-  startDialerCall,
+  createDialerCallStartApplication,
   type DialerCallStartCapacity,
   type DialerCallStartCall,
   type DialerCallStartResult,
   type StartDialerCallInput,
 } from '@consuelo/dialer';
-import { Effect, Either, Layer } from 'effect';
+import { Effect, Either } from 'effect';
 import { type DataSource } from 'typeorm';
 
 import { TwentyDialerCallStartInfrastructure } from 'src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure';
@@ -32,15 +32,21 @@ export type {
 @Injectable()
 export class DialerCallStartService {
   private readonly logger = new Logger(DialerCallStartService.name);
-  private readonly infrastructure: TwentyDialerCallStartInfrastructure;
+  private readonly application: ReturnType<
+    typeof createDialerCallStartApplication
+  >;
 
   constructor(
     @InjectDataSource() dataSource: DataSource,
     @Inject(LegacyDialerService) legacyDialerService: LegacyDialerService,
   ) {
-    this.infrastructure = new TwentyDialerCallStartInfrastructure(
+    const infrastructure = new TwentyDialerCallStartInfrastructure(
       dataSource,
       legacyDialerService,
+    );
+
+    this.application = createDialerCallStartApplication(
+      infrastructure.createPorts(),
     );
   }
 
@@ -51,31 +57,25 @@ export class DialerCallStartService {
   }): Promise<DialerCallStartResult> {
     try {
       const result = await Effect.runPromise(
-        Effect.either(
-          startDialerCall(params).pipe(
-            Effect.provide(
-              Layer.mergeAll(
-                this.infrastructure.createApplicationLayer(),
-                liveDialerIdGeneratorLayer,
-              ),
-            ),
-          ),
-        ),
+        Effect.either(this.application.start(params)),
       );
 
       if (Either.isRight(result)) {
         return result.right;
       }
+
       if (result.left._tag === 'DialerRequestError') {
         throw new BadRequestException(
           result.left.details ?? result.left.message,
         );
       }
+
       return this.failStart(params, result.left);
     } catch (error: unknown) {
       if (error instanceof BadRequestException) {
         throw error;
       }
+
       return this.failStart(params, error);
     }
   }
