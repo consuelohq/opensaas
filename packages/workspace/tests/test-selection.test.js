@@ -302,12 +302,11 @@ describe('test selection registry', () => {
 
     expect(matchedRuleIds).toContain('os-managed-cloud-one-click-provisioning');
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
-    expect(suiteNames).toEqual(
-      expect.arrayContaining([
-        'OS one-click managed cloud contracts',
-        'OS one-click managed cloud syntax contracts',
-      ]),
-    );
+    expect(suiteNames).toContain('OS one-click managed cloud contracts');
+    expect(suiteNames.some((name) =>
+      name === 'OS one-click managed cloud syntax contracts'
+      || name === 'OS internal workspace shell syntax'
+    )).toBe(true);
   });
 
   it('uses focused managed-cloud checkout observability contracts instead of the broad OS package suite', () => {
@@ -897,6 +896,42 @@ describe('test selection registry', () => {
     expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
       'tests/finish-line-lifecycle-contract.test.ts',
       'tests/daemon-bun-path.test.ts',
+    ]));
+  });
+
+  it('routes internal workspace shell and root Sites changes through loud focused contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/sites.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/settings-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/workspace-chrome.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/observability-traces-site.ts',
+      '--changed-file',
+      'packages/os/tests/launcher-nodes-materialization.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-internal-workspace-shell',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    const suite = data.selectedSuites.find(
+      (candidate) => candidate.ruleId === 'os-internal-workspace-shell'
+        && candidate.name === 'OS internal workspace shell contracts',
+    );
+    expect(suite?.critical).toBe(true);
+    expect(suite?.command).toEqual(expect.arrayContaining([
+      'tests/settings-site.test.ts',
+      'tests/launcher-nodes-materialization.test.ts',
+      'tests/observability-traces-site.test.ts',
+      'tests/sites-cli.test.ts',
+      'tests/launcher-local-customization.test.ts',
     ]));
   });
 
