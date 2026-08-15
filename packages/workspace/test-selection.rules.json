@@ -274,7 +274,9 @@
         "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/tests/install-edge-site-publisher.test.ts",
         "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
-        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/lib/workspace-edge-node-auth.ts"
       ],
       "tests": [
         {
@@ -465,7 +467,10 @@
         "packages/os/scripts/lib/lifecycle/service.ts",
         "packages/os/scripts/lib/platforms/linux.ts",
         "packages/os/tests/lifecycle-restart-contract.test.ts",
-        "packages/os/tests/linux-platform.test.ts"
+        "packages/os/tests/linux-platform.test.ts",
+        "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+        "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
       ],
       "tests": [
         {
@@ -484,7 +489,8 @@
             "packages/os/tests/linux-platform.test.ts",
             "packages/os/tests/windows-platform.test.ts",
             "packages/os/tests/tool-manifest.test.ts",
-            "packages/os/tests/tool-package-layout.test.ts"
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
           ]
         },
         {
