@@ -10,6 +10,8 @@ export const DIALER_DATABASE_BASELINE_MIGRATION_ID =
   '20260810_001_standalone_dialer_baseline';
 export const DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID =
   '20260815_002_predictive_learning_observations';
+export const DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID =
+  '20260815_003_contextual_predictive_science';
 
 const CREATE_MIGRATION_TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS consuelo_dialer_schema_migrations (
@@ -75,6 +77,51 @@ const CREATE_PREDICTIVE_LEARNING_HAZARD_INDEX_SQL = `
     )
 `;
 
+const ADD_CONTEXTUAL_OBSERVATION_FIELDS_SQL = `
+  ALTER TABLE dialer_learning_observations
+    ADD COLUMN IF NOT EXISTS feature_schema_version smallint,
+    ADD COLUMN IF NOT EXISTS decision_id text,
+    ADD COLUMN IF NOT EXISTS decision_context jsonb
+`;
+
+const CREATE_CONTEXTUAL_OBSERVATION_DECISION_INDEX_SQL = `
+  CREATE INDEX IF NOT EXISTS dialer_learning_observations_decision_idx
+    ON dialer_learning_observations (workspace_id, decision_id)
+    WHERE decision_id IS NOT NULL
+`;
+
+const CREATE_PREDICTIVE_DECISIONS_SQL = `
+  CREATE TABLE IF NOT EXISTS dialer_predictive_decisions (
+    decision_id text PRIMARY KEY,
+    workspace_id text NOT NULL,
+    segment_id text NOT NULL,
+    evaluated_at timestamptz NOT NULL,
+    policy_version text NOT NULL,
+    model_version text NOT NULL,
+    feature_schema_version smallint NOT NULL CHECK (feature_schema_version > 0),
+    policy_mode text NOT NULL CHECK (
+      policy_mode IN ('deterministic', 'stochastic')
+    ),
+    eligible_candidates jsonb NOT NULL,
+    ranked_candidates jsonb NOT NULL,
+    suppressed_candidates jsonb NOT NULL,
+    selected_contact_ids jsonb,
+    selection_probabilities jsonb,
+    selected_at timestamptz,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    CHECK (
+      policy_mode <> 'deterministic' OR selection_probabilities IS NULL
+    )
+  )
+`;
+
+const CREATE_PREDICTIVE_DECISIONS_SCOPE_INDEX_SQL = `
+  CREATE INDEX IF NOT EXISTS dialer_predictive_decisions_scope_idx
+    ON dialer_predictive_decisions (
+      workspace_id, segment_id, evaluated_at DESC, decision_id
+    )
+`;
+
 type Migration = {
   id: string;
   up: (database: LeadConnectorDatabase) => Promise<void>;
@@ -105,6 +152,21 @@ const migrations: readonly Migration[] = [
         await database.query(CREATE_PREDICTIVE_LEARNING_HAZARD_INDEX_SQL);
       } catch (cause: unknown) {
         throw new Error('Failed to initialize predictive learning schema', {
+          cause,
+        });
+      }
+    },
+  },
+  {
+    id: DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID,
+    up: async (database) => {
+      try {
+        await database.query(ADD_CONTEXTUAL_OBSERVATION_FIELDS_SQL);
+        await database.query(CREATE_CONTEXTUAL_OBSERVATION_DECISION_INDEX_SQL);
+        await database.query(CREATE_PREDICTIVE_DECISIONS_SQL);
+        await database.query(CREATE_PREDICTIVE_DECISIONS_SCOPE_INDEX_SQL);
+      } catch (cause: unknown) {
+        throw new Error('Failed to initialize contextual predictive science schema', {
           cause,
         });
       }

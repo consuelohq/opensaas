@@ -17,5 +17,20 @@ export { PredictivePriorityService } from './predictive-priority.service.js';
 export { estimateBernoulliWilson } from './binomial-estimate.js';
 export { PredictiveSelectionModel } from './predictive-selection-model.js';
 export { RetryDecisionModel } from './retry-decision-model.js';
+export {
+  ContextualResponseModel,
+  scoreContextualCandidateEconomics,
+} from './contextual-response-model.js';
+export {
+  DiscreteTimeResponseHazardModel,
+  expandDiscreteTimeObservation,
+} from './discrete-time-response-hazard.js';
+export {
+  buildCalibrationBins,
+  compareProbabilisticModels,
+  evaluateProbabilisticPredictions,
+  populationStabilityIndex,
+  splitTemporalEvaluationExamples,
+} from './predictive-evaluation.js';
 
 export { CadenceOptimizerService } from './cadence-optimizer.service.js';

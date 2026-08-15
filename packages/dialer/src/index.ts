@@ -28,6 +28,25 @@ export { PredictivePriorityService } from './services/predictive-priority.servic
 export { estimateBernoulliWilson } from './services/binomial-estimate.js';
 export { PredictiveSelectionModel } from './services/predictive-selection-model.js';
 export { RetryDecisionModel } from './services/retry-decision-model.js';
+export {
+  ContextualResponseModel,
+  scoreContextualCandidateEconomics,
+} from './services/contextual-response-model.js';
+export {
+  DiscreteTimeResponseHazardModel,
+  expandDiscreteTimeObservation,
+} from './services/discrete-time-response-hazard.js';
+export type {
+  DiscreteTimeHazardConfiguration,
+  DiscreteTimeHazardPeriod,
+} from './services/discrete-time-response-hazard.js';
+export {
+  buildCalibrationBins,
+  compareProbabilisticModels,
+  evaluateProbabilisticPredictions,
+  populationStabilityIndex,
+  splitTemporalEvaluationExamples,
+} from './services/predictive-evaluation.js';
 export { CadenceOptimizerService } from './services/cadence-optimizer.service.js';
 export type { LockStore } from './services/caller-id.js';
 export type { NumberPool } from './services/local-presence.js';
@@ -81,6 +100,7 @@ export {
 } from './domain/parallel-group.js';
 export { isHumanLikeAnswer } from './domain/parallel-profile.js';
 export {
+  buildResponseTimeObservation,
   classifyLearningObservation,
   resolveLocalCalendarSlot,
 } from './domain/learning-observation.js';
@@ -89,6 +109,7 @@ export type {
   LearningObservationClassification,
   LearningOutcomeClass,
   LocalCalendarSlot,
+  ResponseTimeObservation,
 } from './domain/learning-observation.js';
 export {
   planProviderCallbackTransition,
@@ -248,6 +269,9 @@ export type {
   PredictiveSelectionCandidate,
   PredictiveSelectionInput,
   PredictiveHazardSource,
+  PredictiveTimezoneSource,
+  PredictiveSourceContext,
+  PredictiveDecisionContext,
   PredictiveRankedCandidate,
   PredictiveSuppressedCandidate,
   PredictiveSelectionResult,

@@ -1,5 +1,6 @@
 import type { ParallelGroup } from '../types';
 import {
+  buildResponseTimeObservation,
   classifyLearningObservation,
   resolveLocalCalendarSlot,
 } from './learning-observation';
@@ -133,6 +134,57 @@ describe('resolveLocalCalendarSlot', () => {
     expect(() => resolveLocalCalendarSlot('not-a-date', 'UTC')).toThrow();
     expect(() =>
       resolveLocalCalendarSlot('2026-08-15T12:00:00.000Z', 'Not/AZone'),
+    ).toThrow();
+  });
+});
+
+describe('buildResponseTimeObservation', () => {
+  it('preserves observed event time for survival and hazard analysis', () => {
+    expect(
+      buildResponseTimeObservation(
+        '2026-08-15T12:00:00.000Z',
+        '2026-08-15T12:00:05.250Z',
+        '2026-08-15T12:00:05.250Z',
+        { outcomeClass: 'response', censorReason: null },
+      ),
+    ).toEqual({
+      durationMs: 5_250,
+      eventObserved: true,
+      outcomeClass: 'response',
+      censorReason: null,
+    });
+  });
+
+  it('preserves right-censor time instead of converting a competing winner into a failure', () => {
+    expect(
+      buildResponseTimeObservation(
+        '2026-08-15T12:00:00.000Z',
+        null,
+        '2026-08-15T12:00:06.000Z',
+        {
+          outcomeClass: 'censored',
+          censorReason: 'competing_winner',
+        },
+      ),
+    ).toEqual({
+      durationMs: 6_000,
+      eventObserved: false,
+      outcomeClass: 'censored',
+      censorReason: 'competing_winner',
+    });
+  });
+
+  it('rejects survival rows whose observation end precedes the attempt', () => {
+    expect(() =>
+      buildResponseTimeObservation(
+        '2026-08-15T12:00:05.000Z',
+        null,
+        '2026-08-15T12:00:04.000Z',
+        {
+          outcomeClass: 'censored',
+          censorReason: 'ambiguous_termination',
+        },
+      ),
     ).toThrow();
   });
 });

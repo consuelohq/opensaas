@@ -172,6 +172,7 @@ export const startDialerCall = (command: StartDialerCallCommand) =>
             ...context,
             queueId: inputQueueId ?? '',
             requestedFanout,
+            preferLocalPresence: command.input.preferLocalPresence !== false,
             fallbackPhonesByContactId: buildTargetPhoneFallbacks(
               command.input.contactIds,
               command.input.targetPhones,
