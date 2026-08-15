@@ -8,7 +8,10 @@ import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
 
 import { createPostgresPredictiveModelStore } from '../learning/postgres-predictive-model-store';
 import { recordLeadConnectorAttemptTelemetry } from '../runtime/lead-connector-learning';
-import { rankPredictiveTargets } from '../runtime/predictive-target-ranking';
+import {
+  rankPredictiveTargets,
+  rankPredictiveTargetsWithDecision,
+} from '../runtime/predictive-target-ranking';
 
 export type LabScaleName = 'smoke' | 'standard' | 'large';
 
@@ -377,7 +380,7 @@ const benchmarkRanking = async (
         iteration += 1
       ) {
         const measurement = await elapsedMilliseconds(() =>
-          rankPredictiveTargets({
+          rankPredictiveTargetsWithDecision({
             database,
             workspaceId,
             segmentId: 'lab-segment',
@@ -387,10 +390,17 @@ const benchmarkRanking = async (
             now: new Date(fixture.baseTime),
           }),
         );
-        if (measurement.value.length !== targets.length) {
+        if (measurement.value.rankedTargets.length !== targets.length) {
           throw new Error(
-            `Ranking returned ${measurement.value.length} targets for ${targets.length} candidates`,
+            `Ranking returned ${measurement.value.rankedTargets.length} targets for ${targets.length} candidates`,
           );
+        }
+        if (
+          measurement.value.rankedTargets.some(
+            (target) => !target.predictiveDecisionId || !target.decisionContext,
+          )
+        ) {
+          throw new Error('Ranking benchmark did not exercise D4 decision context');
         }
         samples.push(measurement.durationMs);
       }

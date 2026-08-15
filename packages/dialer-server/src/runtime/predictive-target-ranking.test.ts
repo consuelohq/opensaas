@@ -96,6 +96,7 @@ describe('canonical predictive target runtime cutover', () => {
     expect(source).not.toContain('WhittleIndexService');
     expect(source).not.toContain('consuelo_lead_connector_call_outcomes');
     expect(source).not.toContain('@consuelo/lead-connector');
+    expect(source).not.toContain('D3 decision evidence is missing for candidate');
   });
 
   it('ranks from canonical observations and never reads the compatibility outcome model', async () => {

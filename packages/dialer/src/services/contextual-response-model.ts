@@ -1,6 +1,6 @@
 import type { PredictiveDecisionContext } from '../types.js';
 
-type ContextualResponseExample = {
+export type ContextualResponseExample = {
   context: PredictiveDecisionContext;
   responded: boolean;
 };
@@ -22,7 +22,6 @@ const TWO_PI = Math.PI * 2;
 const DEFAULT_L2_PENALTY = 1;
 const DEFAULT_LEARNING_RATE = 0.1;
 const DEFAULT_ITERATIONS = 400;
-const FEATURE_COUNT = 15;
 
 const finite = (name: string, value: number): number => {
   if (!Number.isFinite(value)) throw new RangeError(`${name} must be finite`);
@@ -87,6 +86,83 @@ const sigmoid = (value: number): number => {
 const dot = (weights: readonly number[], features: readonly number[]): number =>
   weights.reduce((sum, weight, index) => sum + weight * (features[index] ?? 0), 0);
 
+const encodedExamples = (examples: readonly ContextualResponseExample[]) => {
+  const encoded = examples.map((example) => ({
+    features: encodePredictiveContext(example.context),
+    target: example.responded ? 1 : 0,
+  }));
+  const featureCount = encoded[0]?.features.length ?? 0;
+  if (featureCount === 0) {
+    throw new RangeError('contextual response training requires features');
+  }
+  if (encoded.some((example) => example.features.length !== featureCount)) {
+    throw new RangeError('contextual response feature dimensions must match');
+  }
+  return { encoded, featureCount };
+};
+
+const validateWeightShape = (
+  weights: readonly number[],
+  featureCount: number,
+) => {
+  if (weights.length !== featureCount || weights.some((weight) => !Number.isFinite(weight))) {
+    throw new RangeError('contextual response weights must match finite feature dimensions');
+  }
+};
+
+export const contextualResponseObjective = (
+  weights: readonly number[],
+  examples: readonly ContextualResponseExample[],
+  l2Penalty = DEFAULT_L2_PENALTY,
+): number => {
+  if (examples.length === 0) {
+    throw new RangeError('contextual response objective requires observations');
+  }
+  const lambda = nonNegative('l2Penalty', l2Penalty);
+  const { encoded, featureCount } = encodedExamples(examples);
+  validateWeightShape(weights, featureCount);
+  const epsilon = 1e-15;
+  const meanNll =
+    encoded.reduce((sum, example) => {
+      const predicted = Math.min(
+        Math.max(sigmoid(dot(weights, example.features)), epsilon),
+        1 - epsilon,
+      );
+      return (
+        sum -
+        (example.target * Math.log(predicted) +
+          (1 - example.target) * Math.log(1 - predicted))
+      );
+    }, 0) / encoded.length;
+  const penalty = weights
+    .slice(1)
+    .reduce((sum, weight) => sum + weight * weight, 0);
+  return meanNll + (lambda / 2) * penalty;
+};
+
+export const contextualResponseGradient = (
+  weights: readonly number[],
+  examples: readonly ContextualResponseExample[],
+  l2Penalty = DEFAULT_L2_PENALTY,
+): number[] => {
+  if (examples.length === 0) {
+    throw new RangeError('contextual response gradient requires observations');
+  }
+  const lambda = nonNegative('l2Penalty', l2Penalty);
+  const { encoded, featureCount } = encodedExamples(examples);
+  validateWeightShape(weights, featureCount);
+  const gradient = Array.from({ length: featureCount }, () => 0);
+  for (const example of encoded) {
+    const residual = sigmoid(dot(weights, example.features)) - example.target;
+    for (let index = 0; index < featureCount; index += 1) {
+      gradient[index] += residual * example.features[index]!;
+    }
+  }
+  return gradient.map((value, index) =>
+    value / encoded.length + (index === 0 ? 0 : lambda * weights[index]!),
+  );
+};
+
 export class ContextualResponseModel {
   private constructor(private readonly weights: readonly number[]) {}
 
@@ -113,27 +189,13 @@ export class ContextualResponseModel {
       throw new RangeError('iterations must be a positive integer');
     }
 
-    const encoded = examples.map((example) => ({
-      features: encodePredictiveContext(example.context),
-      target: example.responded ? 1 : 0,
-    }));
-    const weights = Array.from({ length: FEATURE_COUNT }, () => 0);
+    const { featureCount } = encodedExamples(examples);
+    const weights = Array.from({ length: featureCount }, () => 0);
 
     for (let iteration = 0; iteration < iterations; iteration += 1) {
-      const gradient = Array.from({ length: FEATURE_COUNT }, () => 0);
-      for (const example of encoded) {
-        const prediction = sigmoid(dot(weights, example.features));
-        const residual = prediction - example.target;
-        for (let index = 0; index < FEATURE_COUNT; index += 1) {
-          gradient[index] += residual * (example.features[index] ?? 0);
-        }
-      }
-
-      const denominator = encoded.length;
-      for (let index = 0; index < FEATURE_COUNT; index += 1) {
-        const regularization = index === 0 ? 0 : l2Penalty * weights[index]!;
-        const derivative = (gradient[index]! + regularization) / denominator;
-        weights[index] -= learningRate * derivative;
+      const gradient = contextualResponseGradient(weights, examples, l2Penalty);
+      for (let index = 0; index < featureCount; index += 1) {
+        weights[index] -= learningRate * gradient[index]!;
       }
     }
 

@@ -86,6 +86,7 @@ export const resolveCommercialCallTargetInput = async (
 ): Promise<CommercialCallInput> => {
   try {
     if (!leadConnector) throw targetAuthorizationError();
+    const { targetContexts: _untrustedTargetContexts, ...trustedInput } = input;
 
     if (input.source === 'direct') {
       const contactId = readString(input.contactId);
@@ -94,7 +95,7 @@ export const resolveCommercialCallTargetInput = async (
         contactId,
       ]);
       return {
-        ...input,
+        ...trustedInput,
         contactId: target.contactId,
         targetPhone: target.phone,
         targetPhones: undefined,
@@ -146,7 +147,7 @@ export const resolveCommercialCallTargetInput = async (
       );
       if (resolvedTargets.length === 0) throw targetAuthorizationError();
       return {
-        ...input,
+        ...trustedInput,
         queueId: coordinates.pipelineId + ':' + coordinates.stageId,
         pipelineId: coordinates.pipelineId,
         stageId: coordinates.stageId,
@@ -165,7 +166,7 @@ export const resolveCommercialCallTargetInput = async (
       readStringArray(input.contactIds),
     );
     return {
-      ...input,
+      ...trustedInput,
       contactIds: targets.map((target) => target.contactId),
       targetPhones: targets.map((target) => target.phone),
     };

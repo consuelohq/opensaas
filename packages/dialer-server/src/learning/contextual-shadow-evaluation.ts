@@ -19,12 +19,16 @@ export type ContextualShadowEvaluationDatabase = {
 };
 
 type ContextualObservationRow = {
+  contact_id: string;
+  decision_id: string | null;
+  decision_exists: boolean;
   attempted_at: string | Date;
   outcome_class: string;
   decision_context: unknown;
 };
 
 type ContextualShadowExample = {
+  contactId: string;
   evaluatedAt: string;
   context: PredictiveDecisionContext;
   responded: boolean;
@@ -252,7 +256,7 @@ const summarizeCandidateEconomics = (
     meanExpectedNetValue: mean(
       scored.map(({ economics: score }) => score.expectedNetValue),
     ),
-    responseWeightedNetValueProxy: mean(
+    observedNetValueProxy: mean(
       scored.map(({ prediction, economics: score }) =>
         (prediction.responded ? score.valuePerConnection : 0) -
         score.costPerAttempt,
@@ -271,27 +275,61 @@ export const evaluateContextualPredictiveShadow = async (
     throw new RangeError('minSampleSize must be an integer of at least 2');
   }
   const result = await database.query<ContextualObservationRow>(
-    `SELECT attempted_at, outcome_class, decision_context
-     FROM dialer_learning_observations
-     WHERE workspace_id = $1
-       AND segment_id = $2
-       AND feature_schema_version = 2
-       AND decision_context IS NOT NULL
-       AND outcome_class IN ('response', 'non_response')
+    `SELECT
+       observation.contact_id,
+       observation.decision_id,
+       (observation.decision_id IS NULL OR decision.decision_id IS NOT NULL) AS decision_exists,
+       observation.attempted_at,
+       observation.outcome_class,
+       observation.decision_context
+     FROM dialer_learning_observations AS observation
+     LEFT JOIN dialer_predictive_decisions AS decision
+       ON decision.workspace_id = observation.workspace_id
+      AND decision.decision_id = observation.decision_id
+     WHERE observation.workspace_id = $1
+       AND observation.segment_id = $2
+       AND observation.feature_schema_version = 2
+       AND observation.decision_context IS NOT NULL
+       AND observation.outcome_class IN ('response', 'non_response')
      ORDER BY attempted_at, group_id, position`,
     [options.workspaceId, options.segmentId],
   );
-  const examples: ContextualShadowExample[] = result.rows.map((row) => ({
-    evaluatedAt: toIsoString(row.attempted_at),
-    context: parsePredictiveDecisionContext(row.decision_context),
-    responded: row.outcome_class === 'response',
-  }));
+  const examples: ContextualShadowExample[] = [];
+  let invalidContextCount = 0;
+  let invalidObservationCount = 0;
+  let unlinkableDecisionCount = 0;
+  for (const row of result.rows) {
+    if (row.decision_id && row.decision_exists === false) {
+      unlinkableDecisionCount += 1;
+      continue;
+    }
+    let parsedContext: PredictiveDecisionContext;
+    try {
+      parsedContext = parsePredictiveDecisionContext(row.decision_context);
+    } catch (_cause: unknown) {
+      invalidContextCount += 1;
+      continue;
+    }
+    try {
+      examples.push({
+        contactId: String(row.contact_id ?? ''),
+        evaluatedAt: toIsoString(row.attempted_at),
+        context: parsedContext,
+        responded: row.outcome_class === 'response',
+      });
+    } catch (_cause: unknown) {
+      invalidObservationCount += 1;
+    }
+  }
 
   if (examples.length < minSampleSize) {
     return {
       status: 'insufficient_data' as const,
       sampleSize: examples.length,
       requiredSampleSize: minSampleSize,
+      ...(invalidContextCount > 0 ? { invalidContextCount } : {}),
+      ...(invalidObservationCount > 0 ? { invalidObservationCount } : {}),
+      ...(unlinkableDecisionCount > 0 ? { unlinkableDecisionCount } : {}),
     };
   }
 
@@ -301,9 +339,10 @@ export const evaluateContextualPredictiveShadow = async (
   );
   const workspaceEconomics = parseWorkspaceEconomics(economicsResult.rows[0]);
 
+  const trainingFraction = options.trainingFraction ?? DEFAULT_TRAINING_FRACTION;
   const split = splitTemporalEvaluationExamples(
     examples,
-    options.trainingFraction ?? DEFAULT_TRAINING_FRACTION,
+    trainingFraction,
   );
   const model = ContextualResponseModel.fit(split.training);
   const trainingPredictions = split.training.map((example) =>
@@ -329,6 +368,11 @@ export const evaluateContextualPredictiveShadow = async (
       responded: prediction.responded,
     })),
   );
+  const trainingContacts = new Set(split.training.map((example) => example.contactId));
+  const holdoutContacts = new Set(split.holdout.map((example) => example.contactId));
+  const overlappingContactCount = [...trainingContacts].filter((contactId) =>
+    holdoutContacts.has(contactId),
+  ).length;
   const economicHoldout = holdout.flatMap((prediction) => {
     const opportunityValue = prediction.context.source.opportunityValue;
     if (
@@ -372,9 +416,18 @@ export const evaluateContextualPredictiveShadow = async (
     status: 'evaluated' as const,
     trainingSampleSize: split.training.length,
     holdoutSampleSize: split.holdout.length,
+    trainingUniqueContactCount: trainingContacts.size,
+    holdoutUniqueContactCount: holdoutContacts.size,
+    overlappingContactCount,
+    invalidContextCount,
+    invalidObservationCount,
+    unlinkableDecisionCount,
+    minimumSamplePolicy: 'heuristic' as const,
+    trainingFraction,
     controlComparableSampleSize: controlComparableHoldout.length,
     comparison,
     calibration,
+    calibrationEmptyBinCount: 10 - calibration.length,
     candidateEconomics,
     predictionDriftPsi: populationStabilityIndex(
       trainingPredictions,

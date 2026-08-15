@@ -72,4 +72,41 @@ describe('commercial call target authorization science context', () => {
     expect(JSON.stringify(result.targetContexts)).not.toContain('Ada Lovelace');
     expect(JSON.stringify(result.targetContexts)).not.toContain('+15555550100');
   });
+
+  it('removes client scientific context from direct calls after server authorization', async () => {
+    const leadConnector = {
+      getContact: () =>
+        Effect.succeed({
+          id: 'contact-1',
+          firstName: 'Ada',
+          lastName: 'Lovelace',
+          name: 'Ada Lovelace',
+          email: null,
+          phone: '+15555550100',
+          tags: [],
+        }),
+    } as unknown as LeadConnectorServerApplication;
+
+    const result = await resolveCommercialCallTargetInput(
+      {
+        source: 'direct',
+        contactId: 'contact-1',
+        targetPhone: '+19999999999',
+        targetContexts: [
+          {
+            contactId: 'contact-1',
+            context: {
+              contactTimezone: 'Pacific/Kiritimati',
+              opportunityValue: 1_000_000_000,
+            },
+          },
+        ],
+      },
+      identity,
+      leadConnector,
+    );
+
+    expect(result.targetPhone).toBe('+15555550100');
+    expect(result).not.toHaveProperty('targetContexts');
+  });
 });

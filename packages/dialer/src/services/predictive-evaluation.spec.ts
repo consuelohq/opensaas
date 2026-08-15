@@ -93,4 +93,19 @@ describe('predictive evaluation science', () => {
 
     expect(drift).toBeGreaterThan(1);
   });
+
+  it('keeps population-stability smoothing normalized and symmetric with empty bins', () => {
+    const forward = populationStabilityIndex(
+      [0.01, 0.02, 0.03],
+      [0.91, 0.92, 0.93],
+      [0, 0.5, 1],
+    );
+    const reverse = populationStabilityIndex(
+      [0.91, 0.92, 0.93],
+      [0.01, 0.02, 0.03],
+      [0, 0.5, 1],
+    );
+    expect(Number.isFinite(forward)).toBe(true);
+    expect(forward).toBeCloseTo(reverse, 12);
+  });
 });

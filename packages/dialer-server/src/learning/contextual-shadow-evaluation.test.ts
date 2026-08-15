@@ -43,6 +43,9 @@ const createRows = (count: number) =>
       Date.UTC(2026, 7, 1, 0, index),
     ).toISOString();
     return {
+      contact_id: `contact-${index % 10}`,
+      decision_id: `decision-${index}`,
+      decision_exists: true,
       attempted_at: attemptedAt,
       outcome_class: highResponseContext ? 'response' : 'non_response',
       decision_context: context({
@@ -88,6 +91,12 @@ describe('contextual predictive shadow evaluation', () => {
     }
     expect(report.trainingSampleSize).toBe(160);
     expect(report.holdoutSampleSize).toBe(40);
+    expect(report.overlappingContactCount).toBe(10);
+    expect(report.trainingUniqueContactCount).toBe(10);
+    expect(report.holdoutUniqueContactCount).toBe(10);
+    expect(report.minimumSamplePolicy).toBe('heuristic');
+    expect(report.trainingFraction).toBe(0.8);
+    expect(report.calibrationEmptyBinCount).toBeGreaterThanOrEqual(0);
     expect(report.comparison.challenger.brierScore).toBeLessThan(
       report.comparison.control.brierScore,
     );
@@ -123,6 +132,69 @@ describe('contextual predictive shadow evaluation', () => {
     );
     expect(observationQuery?.text).toContain('ORDER BY attempted_at');
     expect(observationQuery?.values).toEqual(['workspace-1', 'segment-1']);
+  });
+
+  it('skips malformed and unlinkable research rows while reporting both data-quality counts', async () => {
+    const rows = createRows(202);
+    rows[200] = {
+      ...rows[200]!,
+      decision_context: {
+        ...rows[200]!.decision_context,
+        schemaVersion: 1,
+      } as never,
+    };
+    rows[201] = {
+      ...rows[201]!,
+      decision_exists: false,
+    };
+    const database: LeadConnectorDatabase = {
+      query: async <T>(text: string) =>
+        text.includes('FROM dialer_workspace_settings')
+          ? ({ rows: [{ avg_close_rate: '0.2', cost_per_attempt: '2' }] as T[] })
+          : ({ rows: rows as T[] }),
+    };
+
+    const report = await evaluateContextualPredictiveShadow(database, {
+      workspaceId: 'workspace-1',
+      segmentId: 'segment-1',
+      minSampleSize: 100,
+    });
+
+    expect(report.status).toBe('evaluated');
+    if (report.status !== 'evaluated') return;
+    expect(report.invalidContextCount).toBe(1);
+    expect(report.unlinkableDecisionCount).toBe(1);
+    expect(report.trainingSampleSize + report.holdoutSampleSize).toBe(200);
+  });
+
+  it('keeps value-weighted scoring null when every immutable opportunity value has zero weight', async () => {
+    const rows = createRows(100).map((row) => ({
+      ...row,
+      decision_context: {
+        ...row.decision_context,
+        source: { ...row.decision_context.source, opportunityValue: 0 },
+      },
+    }));
+    const database: LeadConnectorDatabase = {
+      query: async <T>(text: string) =>
+        text.includes('FROM dialer_workspace_settings')
+          ? ({ rows: [{ avg_close_rate: '0.2', cost_per_attempt: '2' }] as T[] })
+          : ({ rows: rows as T[] }),
+    };
+    const report = await evaluateContextualPredictiveShadow(database, {
+      workspaceId: 'workspace-1',
+      segmentId: 'segment-1',
+      minSampleSize: 100,
+    });
+    expect(report.status).toBe('evaluated');
+    if (report.status !== 'evaluated') return;
+    const challenger = report.candidateEconomics?.challenger;
+    expect(challenger).not.toBeNull();
+    if (!challenger) {
+      throw new Error('zero-weight fixture must still produce descriptive economics');
+    }
+    expect(challenger.valueWeightedBrier).toBeNull();
+    expect(challenger.observedNetValueProxy).toBeDefined();
   });
 
   it('refuses to manufacture challenger evidence from a tiny sample', async () => {

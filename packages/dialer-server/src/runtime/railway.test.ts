@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { readFile } from 'node:fs/promises';
 import { Effect } from 'effect';
 import {
   RedisParallelStore,
@@ -18,6 +19,7 @@ import { recordLeadConnectorAttemptTelemetry } from './lead-connector-learning';
 import {
   createRailwayDialerApplicationLayers,
   createRailwayLeadConnectorApplicationLayer,
+  selectSuccessfullyCreatedTargets,
   selectProviderDialerForGroup,
 } from './railway';
 
@@ -306,6 +308,34 @@ describe('LeadConnector dialer learning', () => {
 });
 
 describe('Railway dialer-server runtime composition', () => {
+  it('finalizes predictive actions only after provider initiation and only for created legs', async () => {
+    const source = await readFile(new URL('./railway.ts', import.meta.url), 'utf8');
+    const liveStart = source.indexOf('initiateProviderCalls: (input) =>');
+    const liveEnd = source.indexOf('generateTwilioCustomerTwiml', liveStart);
+    const liveBlock = source.slice(liveStart, liveEnd);
+    expect(liveBlock.indexOf('dialer.parallel.initiateGroup')).toBeLessThan(
+      liveBlock.indexOf('finalizeSelectedDecisionRecords'),
+    );
+
+    const selected = [
+      {
+        contactId: 'contact-a',
+        phone: '+15550100001',
+        predictiveDecisionId: 'decision-1',
+      },
+      {
+        contactId: 'contact-b',
+        phone: '+15550100002',
+        predictiveDecisionId: 'decision-1',
+      },
+    ];
+    expect(
+      selectSuccessfullyCreatedTargets(selected, [
+        { contactId: 'contact-b', callSid: 'CA_created' },
+      ]).map((target) => target.contactId),
+    ).toEqual(['contact-b']);
+  });
+
   it('selects the test dialer for follow-up operations on test-mode groups', async () => {
     const redis = new MemoryRedis();
     const parallelStore = new RedisParallelStore(redis);
