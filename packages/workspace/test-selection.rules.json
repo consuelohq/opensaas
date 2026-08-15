@@ -461,7 +461,11 @@
         "packages/os/tests/tool-package-layout.test.ts",
         "packages/os/scripts/lib/windows-platform.ts",
         "packages/os/tools/lifecycle/**",
-        "packages/os/tools/registry.ts"
+        "packages/os/tools/registry.ts",
+        "packages/os/scripts/lib/lifecycle/service.ts",
+        "packages/os/scripts/lib/platforms/linux.ts",
+        "packages/os/tests/lifecycle-restart-contract.test.ts",
+        "packages/os/tests/linux-platform.test.ts"
       ],
       "tests": [
         {
@@ -472,6 +476,7 @@
             "vitest",
             "run",
             "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
             "packages/os/tests/lifecycle-facade.test.ts",
             "packages/os/tests/native-lifecycle-operation.test.ts",
             "packages/os/tests/lifecycle-tool-surface.test.ts",

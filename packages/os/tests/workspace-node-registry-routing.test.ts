@@ -1628,6 +1628,135 @@ describe('workspace node management and presence', () => {
     });
   });
 
+  it('preserves a newer published launcher snapshot during signed heartbeat reconciliation', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const { memberKey } = await seedWorkspace(store);
+    const routes = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routes);
+    await upsertWorkspaceHostnameInD1(routes, {
+      workspaceId,
+      workspaceSlug,
+      hostname: workspaceHost,
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      defaultNodeId: 'node-home',
+      nodeTargets: [
+        {
+          nodeId: 'node-home',
+          connectorId: 'connector_node_home',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://home.connector.test',
+          state: 'active',
+          lastSeenAt: baseNow,
+          heartbeatTtlMs,
+        },
+        {
+          nodeId: 'node-member',
+          connectorId: 'connector_node_member',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://member.connector.test',
+          state: 'active',
+          lastSeenAt: baseNow,
+          heartbeatTtlMs,
+        },
+      ],
+      routes: [
+        {
+          surface: 'sites',
+          pathPrefix: '/',
+          auth: 'workspace-session',
+          status: 'active',
+          target: {
+            kind: 'site-snapshot',
+            siteId: 'launcher',
+            versionId: 'sha256-newer-launcher',
+            manifestKey:
+              'sites/workspace_testing/launcher/sha256-newer-launcher/index.html',
+            htmlKey:
+              'sites/workspace_testing/launcher/sha256-newer-launcher/index.html',
+            cachePolicy: 'private-preview',
+          },
+        },
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_node_home',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://home.connector.test',
+          },
+        },
+      ],
+    } as Parameters<typeof upsertWorkspaceHostnameInD1>[1]);
+
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routes,
+      defaultSiteSnapshot: {
+        key: 'sites/workspace_testing/launcher/sha256-stale-default/index.html',
+        versionId: 'sha256-stale-default',
+      },
+    });
+    const body = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: baseNow,
+      nonce: 'heartbeat-preserve-newer-launcher',
+      connectorStatus: 'connected',
+      capabilities: ['mcp', 'tools'],
+    });
+    const signature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: body,
+    });
+
+    const heartbeat = await handler(
+      new Request(origin + '/workspace/nodes/heartbeat', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': signature,
+        },
+        body,
+      }),
+    );
+
+    expect(heartbeat.status).toBe(200);
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      target: {
+        kind: 'site-snapshot',
+        siteId: 'launcher',
+        versionId: 'sha256-newer-launcher',
+      },
+    });
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nodeId: 'node-member',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-member',
+      target: { connectorId: 'connector_node_member' },
+    });
+  });
+
   it('repairs a legacy default node to the signed current node and preserves that real default on later heartbeats', async () => {
     const store = createMemoryDeviceGrantStore();
     const { homeKey, memberKey } = await seedWorkspace(store);

@@ -2,14 +2,15 @@
 title: CLI
 description: User-facing Consuelo OS lifecycle, update, channel, and skill-management commands.
 status: preview
-verifiedAt: 2026-08-11
+verifiedAt: 2026-08-14
 evidence:
   - source: packages/os/scripts/lifecycle.ts
     tests:
       - packages/os/tests/lifecycle-help.test.ts
       - packages/os/tests/lifecycle-engine.test.ts
+      - packages/os/tests/lifecycle-restart-contract.test.ts
       - packages/os/tests/skill-selection-cli.test.ts
-    runtime: Root help plus lifecycle and skill-management command contracts were verified on 2026-08-11.
+    runtime: Root help plus lifecycle, gateway-restart, and skill-management command contracts were verified on 2026-08-14.
 ---
 
 The installed user-facing command is `consuelo`.
@@ -64,6 +65,10 @@ consuelo update --channel beta --check
 ```
 
 Available release channels are `stable`, `beta`, `canary`, `dev`, and `nightly`.
+
+`consuelo restart` runs lifecycle preflight before restarting the local OS. A completed restart also reloads installed local gateway sidecars such as the Cloudflare connector, node heartbeat, Caddy or Portless, watchdog, and availability service, then waits for local health and connector readiness.
+
+`consuelo update` performs the same service reconciliation after activation. If the installed release is already current, a normal update still reconciles the local gateway/service topology instead of returning early; `consuelo update --check` remains read-only. This prevents an otherwise healthy OS process from continuing alongside stale gateway definitions.
 
 ## Common options
 
