@@ -1324,7 +1324,8 @@ describe('workspace node management and presence', () => {
 
     const heartbeat = await handler(heartbeatRequest());
     expect(heartbeat.status).toBe(200);
-    await expect(heartbeat.json()).resolves.toMatchObject({
+    const heartbeatJson = await heartbeat.json() as Record<string, unknown>;
+    expect(heartbeatJson).toMatchObject({
       nodeId: 'node-member',
       presence: 'online',
       connectorId: 'connector_node_member',
@@ -1335,7 +1336,20 @@ describe('workspace node management and presence', () => {
         connectorId: 'connector_node_member',
       }),
       agents: ['codex', 'opencode'],
+      workspace: {
+        workspaceId,
+        workspaceHost,
+        currentNodeId: 'node-member',
+        defaultNodeId: 'node-home',
+        nodes: [
+          { nodeId: 'node-home', presence: 'offline' },
+          { nodeId: 'node-member', presence: 'online' },
+        ],
+      },
     });
+    expect(JSON.stringify(heartbeatJson.workspace)).not.toMatch(
+      /connectorId|publicKeyThumbprint|edgeRequestSigningSecret|token|secret/i,
+    );
     expect(
       (await store.byWorkspaceNode(accountId, 'node-member'))?.agents,
     ).toEqual(['codex', 'opencode']);
