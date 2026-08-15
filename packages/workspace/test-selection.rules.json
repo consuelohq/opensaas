@@ -96,6 +96,65 @@
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy."
     },
     {
+      "id": "os-work-session-fs",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/generated/core.manifest.json",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/scripts/fs.js",
+        "packages/os/scripts/generate-docs.ts",
+        "packages/os/scripts/generate-types.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/facade/types.ts",
+        "packages/os/scripts/lib/fs/mutation-path.ts",
+        "packages/os/scripts/lib/work-session-fs.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/work-session-fs.test.ts",
+        "packages/os/tools/filesystem/schema.ts",
+        "packages/os/workflows/generated/workflow-bundles.json"
+      ],
+      "tests": [
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ]
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write)"
+          ]
+        },
+        {
+          "name": "OS work-session filesystem syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "trace-watch",
       "critical": true,
       "source": [
