@@ -24,6 +24,8 @@ const DEVICE_CODE_URL = 'https://os.consuelohq.com/login/device/code';
 const REQUEST_TIMEOUT_MS = 30_000;
 const DEFAULT_VERIFY_ATTEMPTS = 12;
 const DEFAULT_VERIFY_DELAY_MS = 5_000;
+const RELEASE_SITE_REFRESH_ATTEMPTS = 12;
+const RELEASE_SITE_REFRESH_RETRY_MS = 1_000;
 const SNAPSHOT_BUCKET = 'consuelo-sites-snapshots';
 const DEFAULT_SNAPSHOT_WORKSPACE_ID = 'workspace_testing';
 const SNAPSHOT_CONTENT_TYPE = 'text/html; charset=utf-8';
@@ -362,38 +364,59 @@ async function refreshReleaseManagedWorkspaceSiteRoutes(
     return;
   }
   const releaseRouteSecret = releaseManagedRouteRefreshSecret();
-  let response: Response;
-  try {
-    response = await fetchWithDefaults(RELEASE_SITE_REFRESH_URL, deps.fetchImpl, {
-      method: 'POST',
-      headers: {
-        authorization: `Bearer ${releaseRouteSecret}`,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        versionId: snapshot.versionId,
-        snapshotWorkspaceId: DEFAULT_SNAPSHOT_WORKSPACE_ID,
-        siteContentHashes: Object.fromEntries(
-          WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS.map((siteId) => [
-            siteId,
-            snapshot.siteContentHashes[siteId],
-          ]),
-        ),
-      }),
-    });
-  } catch (error: unknown) {
-    throw new Error(
-      `workspace route refresh request failed: ${error instanceof Error ? error.message : String(error)}`,
-      { cause: error },
+  const requestInit: RequestInit = {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${releaseRouteSecret}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      versionId: snapshot.versionId,
+      snapshotWorkspaceId: DEFAULT_SNAPSHOT_WORKSPACE_ID,
+      siteContentHashes: Object.fromEntries(
+        WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS.map((siteId) => [
+          siteId,
+          snapshot.siteContentHashes[siteId],
+        ]),
+      ),
+    }),
+  };
+  for (let attempt = 1; attempt <= RELEASE_SITE_REFRESH_ATTEMPTS; attempt += 1) {
+    deps.writeOut(
+      `Refreshing ${RELEASE_SITE_REFRESH_URL} (attempt ${attempt}/${RELEASE_SITE_REFRESH_ATTEMPTS})`,
     );
-  }
-  if (!response.ok) {
+    let response: Response;
+    try {
+      response = await fetchWithDefaults(RELEASE_SITE_REFRESH_URL, deps.fetchImpl, requestInit);
+    } catch (error: unknown) {
+      if (attempt < RELEASE_SITE_REFRESH_ATTEMPTS) {
+        await deps.sleepImpl(RELEASE_SITE_REFRESH_RETRY_MS);
+        continue;
+      }
+      throw new Error(
+        `workspace route refresh request failed: ${requestFailureMessage(error)}`,
+        { cause: error },
+      );
+    }
+    if (response.ok) {
+      deps.writeOut(`refreshedRoutes=workspace_route_registry:${snapshot.versionId}`);
+      return;
+    }
     const detail = (await response.text()).trim();
+    const transient = response.status === 404
+      || response.status === 408
+      || response.status === 425
+      || response.status === 429
+      || response.status >= 500;
+    if (transient && attempt < RELEASE_SITE_REFRESH_ATTEMPTS) {
+      await deps.sleepImpl(RELEASE_SITE_REFRESH_RETRY_MS);
+      continue;
+    }
     throw new Error(
       `workspace route refresh failed with HTTP ${response.status}${detail ? `: ${detail}` : ''}`,
     );
   }
-  deps.writeOut(`refreshedRoutes=workspace_route_registry:${snapshot.versionId}`);
+  throw new Error('workspace route refresh attempts exhausted');
 }
 
 async function fetchWithDefaults(
