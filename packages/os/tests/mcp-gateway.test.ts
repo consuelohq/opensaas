@@ -547,6 +547,18 @@ describe('MCP gateway adapter', () => {
       'get_steering',
       'call',
     ]);
+    const callTool = tools.find((tool) => isJsonObject(tool) && tool.name === 'call');
+    expect(callTool).toMatchObject({
+      inputSchema: {
+        properties: {
+          nodeId: {
+            type: 'string',
+            description: expect.stringContaining('top-level'),
+          },
+        },
+      },
+    });
+
     for (const tool of tools) {
       expect(tool).toMatchObject({
         inputSchema: { type: 'object' },

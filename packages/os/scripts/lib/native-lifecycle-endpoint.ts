@@ -736,9 +736,27 @@ export const createNativeLifecycleEndpointController = (
           case 'workspace.default-node.set':
             if (!input.setDefaultNode)
               throw new Error('workspace node authority is unavailable');
-            return runOperation('repair', () =>
-              input.setDefaultNode!(request.nodeId),
-            );
+            {
+              const id = nextOperationId();
+              const generation = ++localOperationGeneration;
+              currentOperation = { kind: 'repair', phase: 'running' };
+              try {
+                await input.setDefaultNode(request.nodeId);
+                if (generation === localOperationGeneration) {
+                  currentOperation = { kind: 'repair', phase: 'succeeded' };
+                }
+                return { accepted: true, operationId: id };
+              } catch (error: unknown) {
+                if (generation === localOperationGeneration) {
+                  currentOperation = {
+                    kind: 'repair',
+                    phase: 'failed',
+                    message: safeMessage(error),
+                  };
+                }
+                throw error;
+              }
+            }
           case 'diagnostics.export':
             return runOperation('repair', exportDiagnostics);
           case 'uninstall.execute':

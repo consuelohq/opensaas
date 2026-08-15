@@ -5,9 +5,6 @@ import type {
   LifecycleHealthAcceptance,
   LifecycleServiceController,
 } from './types';
-import { reconcileCaddyWorkerPoolConfig } from '../caddy-worker-pool-reconciliation';
-
-const CADDY_SERVICE_LABEL = 'com.consuelo.caddy';
 const LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT = 'retire-legacy-system-daemons.sh';
 const MAC_GATEWAY_SERVICE_LABELS = new Set([
   'com.consuelo.caddy',
@@ -83,30 +80,52 @@ function installedMacGatewayLaunchAgents(environment?: NodeJS.ProcessEnv): Array
 }
 export function createReloadServiceController(input: {
   osRoot: string;
+  activeRuntimeRoot?: string;
+  home?: string;
   nodeHome?: string;
+  runtimeExecutable?: string;
   run?: LifecycleProcessRunner;
   platform?: NodeJS.Platform;
   environment?: NodeJS.ProcessEnv;
   userId?: number;
 }): LifecycleServiceController {
-  const reloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
+  const bootstrapReloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
+  const activeRuntimeRoot = input.activeRuntimeRoot ?? input.osRoot;
+  const activeReloadScript = resolve(activeRuntimeRoot, 'scripts', 'consuelo-reload.js');
+  const caddyReconcileScript = resolve(
+    activeRuntimeRoot,
+    'scripts',
+    'migrations',
+    'reconcile-caddy-worker-pool.ts',
+  );
+  const lifecycleHome = input.home ?? (input.nodeHome ? resolve(input.nodeHome, '..') : undefined);
+  const runtimeExecutable = input.runtimeExecutable ?? process.execPath;
   const legacySystemDaemonRetirementScript = resolve(input.osRoot, 'scripts', LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT);
   const uninstallScript = resolve(input.osRoot, 'scripts', 'uninstall-system-daemons.sh');
   const run = input.run ?? defaultRunner;
   const platform = input.platform ?? process.platform;
-  let caddyTopologyChanged = false;
-  const reconcileCaddy = (): void => {
-    if (platform !== 'darwin' || !input.nodeHome) return;
-    caddyTopologyChanged =
-      reconcileCaddyWorkerPoolConfig({
-        nodeHome: input.nodeHome,
-        env: input.environment ?? process.env,
-      }).changed || caddyTopologyChanged;
+  const reconcileCaddy = async (): Promise<void> => {
+    if (platform !== 'darwin' || !lifecycleHome) return;
+    try {
+      const result = await run(
+        runtimeExecutable,
+        [caddyReconcileScript, lifecycleHome],
+        input.environment ?? process.env,
+      );
+      if (result.exitCode !== 0) {
+        throw commandFailure(result, `Caddy reconciliation exited ${result.exitCode}`);
+      }
+    } catch (error: unknown) {
+      throw new Error(
+        `activated runtime Caddy reconciliation failed: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
   };
   return {
     async preflight() {
-      if (!existsSync(reloadScript)) {
-        throw new Error(`canonical reload adapter is missing: ${reloadScript}`);
+      if (!existsSync(bootstrapReloadScript)) {
+        throw new Error(`canonical reload adapter is missing: ${bootstrapReloadScript}`);
       }
       if (platform === 'darwin') {
         if (!existsSync(legacySystemDaemonRetirementScript)) {
@@ -120,17 +139,16 @@ export function createReloadServiceController(input: {
           throw commandFailure(legacy, `legacy system-daemon check exited ${legacy.exitCode}`);
         }
       }
-      reconcileCaddy();
+      if (existsSync(caddyReconcileScript)) await reconcileCaddy();
     },
     async restart(options = {}) {
       try {
-        reconcileCaddy();
+        await reconcileCaddy();
         const command = options.waitForCompletion ? 'restart-now' : 'restart';
-        const result = await run(process.execPath, [reloadScript, command]);
+        const result = await run(runtimeExecutable, [activeReloadScript, command]);
         if (result.exitCode !== 0) {
           throw commandFailure(result, `reload adapter exited ${result.exitCode}`);
         }
-        const restartedGatewayLabels = new Set<string>();
         if (platform === 'darwin' && options.waitForCompletion) {
           const userId = input.userId ?? process.getuid?.();
           if (userId === undefined) {
@@ -161,24 +179,8 @@ export function createReloadServiceController(input: {
                 'gateway restart exited ' + String(kickstart.exitCode) + ': ' + gateway.label,
               );
             }
-            restartedGatewayLabels.add(gateway.label);
           }
         }
-        if (caddyTopologyChanged && !restartedGatewayLabels.has(CADDY_SERVICE_LABEL)) {
-          const userId = input.userId ?? process.getuid?.();
-          if (userId === undefined) {
-            throw new Error('cannot resolve the user id for Caddy restart');
-          }
-          const caddy = await run('launchctl', [
-            'kickstart',
-            '-k',
-            'gui/' + String(userId) + '/' + CADDY_SERVICE_LABEL,
-          ]);
-          if (caddy.exitCode !== 0) {
-            throw commandFailure(caddy, `Caddy restart exited ${caddy.exitCode}`);
-          }
-        }
-        caddyTopologyChanged = false;
       } catch (error: unknown) {
         throw new Error(
           `canonical reload adapter failed: ${error instanceof Error ? error.message : String(error)}`,
