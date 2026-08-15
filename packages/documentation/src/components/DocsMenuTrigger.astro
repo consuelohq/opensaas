@@ -74,7 +74,7 @@
       if (this.reducedMotion?.matches) {
         gsap.set(this.pane, { xPercent: 0 });
       } else {
-        gsap.fromTo(this.pane, { xPercent: -100 }, { xPercent: 0, duration: 0.4, ease: 'power3.out' });
+        gsap.fromTo(this.pane, { xPercent: -100 }, { xPercent: 0, duration: 0.22, ease: 'power2.out' });
       }
     }
 
@@ -92,7 +92,7 @@
       if (this.reducedMotion?.matches) {
         finish();
       } else {
-        gsap.to(this.pane, { xPercent: -100, duration: 0.3, ease: 'power3.in', onComplete: finish });
+        gsap.to(this.pane, { xPercent: -100, duration: 0.2, ease: 'power2.in', onComplete: finish });
       }
     }
 
@@ -122,12 +122,14 @@
       height: 2rem;
       justify-content: center;
       padding: 0 0.3rem;
+      transition: background-color 150ms ease, color 150ms ease;
       width: 2.15rem;
     }
 
     button:hover,
     button:focus-visible {
-      color: var(--docs-accent);
+      background: var(--docs-panel);
+      color: var(--sl-color-white);
     }
 
     .docs-menu-dots {

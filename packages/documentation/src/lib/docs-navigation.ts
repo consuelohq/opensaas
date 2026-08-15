@@ -30,7 +30,7 @@ const connectItems: SidebarItem[] = [
       { label: 'Cursor', slug: 'connect/agents/cursor' },
       { label: 'OpenCode', slug: 'connect/agents/opencode' },
       { label: 'Gemini', slug: 'connect/agents/gemini' },
-      { label: 'Create your own', slug: 'connect/agents/create-your-own' },
+      { label: 'Bring your own', slug: 'connect/agents/create-your-own' },
     ],
   },
   {
@@ -57,7 +57,7 @@ const connectItems: SidebarItem[] = [
       { label: 'Supabase', slug: 'connect/apps-and-services/supabase' },
       { label: 'Twilio', slug: 'connect/apps-and-services/twilio' },
       { label: 'Vercel', slug: 'connect/apps-and-services/vercel' },
-      { label: 'Create your own', slug: 'connect/apps-and-services/create-your-own' },
+      { label: 'Bring your own', slug: 'connect/apps-and-services/create-your-own' },
     ],
   },
 ];
@@ -356,6 +356,23 @@ function expandEntry(entry: DocsSidebarEntry): DocsSidebarEntry {
     collapsed: false,
     entries: entry.entries.map(expandEntry),
   };
+}
+
+function entryContainsCurrent(entry: DocsSidebarEntry): boolean {
+  if (entry.type === 'link') return Boolean(entry.isCurrent);
+  return entry.entries.some(entryContainsCurrent);
+}
+
+export function expandCurrentSidebarPath(entries: DocsSidebarEntry[]): DocsSidebarEntry[] {
+  return entries.map((entry) => {
+    if (entry.type === 'link') return { ...entry };
+    const expandedEntries = expandCurrentSidebarPath(entry.entries);
+    return {
+      ...entry,
+      collapsed: entryContainsCurrent(entry) ? false : entry.collapsed,
+      entries: expandedEntries,
+    };
+  });
 }
 
 export function selectSectionSidebar(

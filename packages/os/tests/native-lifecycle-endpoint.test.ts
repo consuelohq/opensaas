@@ -392,7 +392,15 @@ describe('native lifecycle endpoint', () => {
     } finally {
       await endpoint.close();
     }
-    expect(fetchMock).not.toHaveBeenCalled();
+    const fetchedUrls = fetchMock.mock.calls.map(([url]) => String(url));
+    expect(fetchedUrls).toEqual([
+      expect.stringMatching(
+        /^https:\/\/install\.consuelohq\.com\/os\/releases\/channels\//,
+      ),
+    ]);
+    expect(
+      fetchedUrls.some((url) => url.includes('/workspace/nodes')),
+    ).toBe(false);
   });
 
   it('builds a safe monotonic snapshot from the canonical lifecycle engine and local identity', async () => {

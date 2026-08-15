@@ -453,6 +453,35 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused ChatGPT node-routing facade contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/mcp-gateway.ts',
+      '--changed-file',
+      'packages/os/scripts/os.ts',
+      '--changed-file',
+      'packages/os/tests/mcp-gateway.test.ts',
+      '--changed-file',
+      'packages/os/tests/os-get-steering-trace.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-chatgpt-node-routing-facade');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS ChatGPT node-routing facade contracts',
+      'OS ChatGPT node-routing authority contracts',
+    ]));
+    expect(suiteNames.some((name) =>
+      name === 'OS ChatGPT node-routing syntax contracts'
+      || name === 'OS MCP admission syntax contracts'
+    )).toBe(true);
+  });
+
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -913,48 +942,6 @@ describe('test selection registry', () => {
     ]));
   });
 
-  it('routes lifecycle updater and gateway restart changes through the focused universal handoff contracts', () => {
-    const data = json(run([
-      'check',
-      '--changed-file',
-      'packages/os/scripts/lifecycle.ts',
-      '--changed-file',
-      'packages/os/scripts/lib/lifecycle/service.ts',
-      '--changed-file',
-      'packages/os/scripts/lib/platforms/linux.ts',
-      '--changed-file',
-      'packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts',
-      '--changed-file',
-      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
-      '--changed-file',
-      'packages/os/tests/lifecycle-restart-contract.test.ts',
-      '--changed-file',
-      'packages/os/tests/linux-platform.test.ts',
-      '--json',
-    ]));
-
-    expect(data.matchedRules.map((rule) => rule.id)).toContain(
-      'os-lifecycle-update-handoff',
-    );
-    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
-      'auto:@consuelo/os:package-test',
-    );
-    expect(data.selectedSuites.map((suite) => suite.name)).toEqual(
-      expect.arrayContaining([
-        'OS lifecycle update handoff contracts',
-        'OS lifecycle syntax contracts',
-      ]),
-    );
-    const lifecycleSuite = data.selectedSuites.find(
-      (suite) => suite.name === 'OS lifecycle update handoff contracts',
-    );
-    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
-      'packages/os/tests/lifecycle-restart-contract.test.ts',
-      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
-      'packages/os/tests/linux-platform.test.ts',
-    ]));
-  });
-
   it('routes internal workspace shell and root Sites changes through loud focused contracts', () => {
     const data = json(run([
       'check',
@@ -991,6 +978,74 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes gateway security and Caddy handoff changes through focused contracts instead of the broad OS package suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/security-gateway.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts',
+      '--changed-file',
+      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-gateway-security-caddy-handoff',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual(
+      expect.arrayContaining([
+        'OS gateway security and Caddy contracts',
+        'OS gateway security syntax contracts',
+      ]),
+    );
+  });
+
+  it('routes lifecycle updater and gateway restart changes through the focused universal handoff contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lifecycle.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/lifecycle/service.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/platforms/linux.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts',
+      '--changed-file',
+      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-restart-contract.test.ts',
+      '--changed-file',
+      'packages/os/tests/linux-platform.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-lifecycle-update-handoff',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    expect(suiteNames).toContain('OS lifecycle update handoff contracts');
+    expect(suiteNames.some((name) =>
+      name === 'OS lifecycle syntax contracts'
+      || name === 'OS gateway security syntax contracts'
+    )).toBe(true);
+    const lifecycleSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS lifecycle update handoff contracts',
+    );
+    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
+      'packages/os/tests/lifecycle-restart-contract.test.ts',
+      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      'packages/os/tests/linux-platform.test.ts',
+    ]));
+  });
+
   it('routes native macOS menu changes through focused Mac contracts', () => {
     const data = json(run([
       'check',
@@ -1014,6 +1069,36 @@ describe('test selection registry', () => {
       'macOS menu platform contracts',
       'macOS alpha package syntax',
     ]);
+  });
+
+  it('uses focused native menu node discovery contracts instead of the broad OS package suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/native-lifecycle-endpoint.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/operator-token-store.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/workspace-node-heartbeat-client.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-native-menu-node-discovery',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual(
+      expect.arrayContaining([
+        'OS native lifecycle node discovery contracts',
+        'OS node heartbeat script contracts',
+        'OS operator login contracts',
+        'OS node heartbeat client contracts',
+        'OS workspace node routing contracts',
+        'OS native menu node discovery syntax contracts',
+      ]),
+    );
   });
 
   it('runs focused Consuelo OS contracts with Bun, OS cwd, and root Vitest', () => {

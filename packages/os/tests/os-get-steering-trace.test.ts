@@ -166,6 +166,9 @@ describe('OS steering execution recording', () => {
     expect(steering).toContain('"routeSource": "explicit"');
     expect(steering).toContain('"displayName": "Cloud Node"');
     expect(steering).toContain('"presence": "online"');
+    expect(steering).toContain('pass `nodeId` at the top level of `os.call`');
+    expect(steering).toContain('Nodes are routing targets, not tools');
+    expect(steering).toContain('Omit `nodeId` to use the workspace default node');
   });
 
   it('appends installed skill metadata without inlining skill bodies', () => {
