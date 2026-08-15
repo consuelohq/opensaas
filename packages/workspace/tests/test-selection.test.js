@@ -387,6 +387,32 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused ChatGPT node-routing facade contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/mcp-gateway.ts',
+      '--changed-file',
+      'packages/os/scripts/os.ts',
+      '--changed-file',
+      'packages/os/tests/mcp-gateway.test.ts',
+      '--changed-file',
+      'packages/os/tests/os-get-steering-trace.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-chatgpt-node-routing-facade');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS ChatGPT node-routing facade contracts',
+      'OS ChatGPT node-routing authority contracts',
+      'OS ChatGPT node-routing syntax contracts',
+    ]);
+  });
+
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

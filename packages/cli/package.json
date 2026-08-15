@@ -12,7 +12,8 @@
     "build": "npx tsc",
     "dev": "npx tsc --watch",
     "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "npx vitest run tests"
   },
   "dependencies": {
     "@clack/prompts": "^1.0.1",

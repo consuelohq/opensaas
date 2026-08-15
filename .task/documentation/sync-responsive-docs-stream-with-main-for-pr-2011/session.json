@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ccf471d7c742",
+  "tmuxSession": "opensaas-documentation-sync-responsive-docs-stream-with-main-for-pr-201-ccf471d7",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011",
+  "branch": "task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-responsive-docs-stream-with-main-for-pr-2011",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-responsive-docs-stream-with-main-for-pr-2011",
+  "prNumber": 2012,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2012",
+  "createdAt": "2026-08-15T04:06:18.589Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-responsive-docs-stream-with-main-for-pr-2011/.task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011/session.json"
+}

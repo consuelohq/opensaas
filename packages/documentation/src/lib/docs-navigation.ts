@@ -358,6 +358,23 @@ function expandEntry(entry: DocsSidebarEntry): DocsSidebarEntry {
   };
 }
 
+function entryContainsCurrent(entry: DocsSidebarEntry): boolean {
+  if (entry.type === 'link') return Boolean(entry.isCurrent);
+  return entry.entries.some(entryContainsCurrent);
+}
+
+export function expandCurrentSidebarPath(entries: DocsSidebarEntry[]): DocsSidebarEntry[] {
+  return entries.map((entry) => {
+    if (entry.type === 'link') return { ...entry };
+    const expandedEntries = expandCurrentSidebarPath(entry.entries);
+    return {
+      ...entry,
+      collapsed: entryContainsCurrent(entry) ? false : entry.collapsed,
+      entries: expandedEntries,
+    };
+  });
+}
+
 export function selectSectionSidebar(
   entries: DocsSidebarEntry[],
   pathname: string,

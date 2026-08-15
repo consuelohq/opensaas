@@ -2,14 +2,14 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2632,
-    "mappedTestCount": 2549,
+    "testFileCount": 2635,
+    "mappedTestCount": 2552,
     "unmappedTestCount": 83,
-    "ruleCount": 56,
-    "explicitRuleCount": 37,
-    "autoRuleCount": 19,
+    "ruleCount": 58,
+    "explicitRuleCount": 38,
+    "autoRuleCount": 20,
     "projectCount": 15,
-    "packageTestScriptCount": 19,
+    "packageTestScriptCount": 20,
     "byGroup": {
       "packages/os/tests": 255,
       "packages/twenty-server/test/integration/graphql/utils": 65,
@@ -235,6 +235,7 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
+      "packages/dialer-server/src/lab": 2,
       "packages/dialer/src/domain": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
@@ -325,6 +326,7 @@
       "packages/twenty-ui/src/utilities/device": 2,
       "cron_jobs": 1,
       "packages/agent/src/pi-extensions": 1,
+      "packages/cli/tests": 1,
       "packages/coaching": 1,
       "packages/consuelo-core/tests": 1,
       "packages/consuelo-design/scripts": 1,
@@ -634,12 +636,12 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 539,
+      "test": 541,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
-      "e2e": 1,
-      "integration": 1
+      "integration": 2,
+      "e2e": 1
     }
   },
   "rules": [
@@ -1321,6 +1323,52 @@
       "origin": "explicit"
     },
     {
+      "id": "os-chatgpt-node-routing-facade",
+      "source": [
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/os-get-steering-trace.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT node-routing syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
       "id": "os-device-approval-canonical-identity",
       "source": [
         "packages/consuelo-website/src/pages/login/device.astro",
@@ -1932,6 +1980,27 @@
       "origin": "explicit"
     },
     {
+      "id": "auto:@consuelo/cli:package-test",
+      "source": [
+        "packages/cli/**"
+      ],
+      "tests": [
+        {
+          "name": "@consuelo/cli package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/cli",
+            "test"
+          ]
+        }
+      ],
+      "critical": false,
+      "reason": "Auto-discovered package test script for packages/cli.",
+      "origin": "auto"
+    },
+    {
       "id": "auto:@consuelo/core:package-test",
       "source": [
         "packages/consuelo-core/**"
@@ -2403,6 +2472,11 @@
       "kind": "spec"
     },
     {
+      "path": "packages/cli/tests/auth.test.ts",
+      "group": "packages/cli/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/coaching/package-contract.test.ts",
       "group": "packages/coaching",
       "kind": "test"
@@ -2870,6 +2944,16 @@
     {
       "path": "packages/dialer-server/src/embed-boundary.test.ts",
       "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+      "group": "packages/dialer-server/src/lab",
       "kind": "test"
     },
     {
@@ -15743,6 +15827,14 @@
         "test-selection": "node packages/workspace/scripts/test-selection.js",
         "test:reader": "bun run --cwd packages/consuelo-design test:reader",
         "docs:test-translation": "bun run --cwd packages/documentation test:translation"
+      }
+    },
+    {
+      "name": "@consuelo/cli",
+      "root": "packages/cli",
+      "file": "packages/cli/package.json",
+      "scripts": {
+        "test": "npx vitest run tests"
       }
     },
     {
