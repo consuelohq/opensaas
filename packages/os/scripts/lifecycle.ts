@@ -581,6 +581,7 @@ export function createDefaultLifecycleServiceController(input: {
     osRoot: input.osRoot,
     nodeHome: lifecyclePaths.nodeDir,
     platform,
+    environment: process.env,
   });
 }
 
@@ -833,30 +834,26 @@ export async function runLifecycleCli(
         check: true,
         yes: parsed.yes,
       });
-      if (checked.updateAvailable !== true) {
-        result = checked;
-      } else {
-        if (!checked.version) {
-          throw lifecycleError(
-            'MANIFEST_INVALID',
-            'update check did not return a target release version',
-          );
-        }
-        const accepted = await operationLauncher.launch({
-          kind: 'update',
-          targetVersion: checked.version,
-          ...(parsed.channel ? { channel: parsed.channel } : {}),
-        });
-        result = {
-          ...checked,
-          detail: {
-            ...checked.detail,
-            detached: true,
-            accepted: accepted.accepted,
-            operationId: accepted.operationId,
-          },
-        };
+      if (!checked.version) {
+        throw lifecycleError(
+          'MANIFEST_INVALID',
+          'update check did not return a target release version',
+        );
       }
+      const accepted = await operationLauncher.launch({
+        kind: 'update',
+        targetVersion: checked.version,
+        ...(parsed.channel ? { channel: parsed.channel } : {}),
+      });
+      result = {
+        ...checked,
+        detail: {
+          ...checked.detail,
+          detached: true,
+          accepted: accepted.accepted,
+          operationId: accepted.operationId,
+        },
+      };
     } else {
       result = await executeCommand(parsed, engine);
     }

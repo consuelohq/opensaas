@@ -510,7 +510,12 @@ describe('unified lifecycle engine', () => {
       version: '1.0.0',
     });
 
-    expect(current.serviceOperations).toEqual(['connector-readiness']);
+    expect(current.serviceOperations).toEqual([
+      'preflight',
+      'restart',
+      'health',
+      'connector-readiness',
+    ]);
   });
 
   it('keeps current-version check-only updates free of hosted reconciliation side effects', async () => {
@@ -545,7 +550,12 @@ describe('unified lifecycle engine', () => {
 
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
     expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
-    expect(recovery.serviceOperations).toEqual(['health']);
+    expect(recovery.serviceOperations).toEqual([
+      'health',
+      'preflight',
+      'restart',
+      'health',
+    ]);
   });
 
   it('re-inspects post-recovery state before applying an interrupted unhealthy candidate', async () => {
@@ -878,7 +888,7 @@ describe('unified lifecycle engine', () => {
       detail: { scheduled: false, localHealthy: true, connectorReady: true },
     });
     expect(engine.onboardingCalls).toBe(0);
-    expect(engine.serviceOperations).toEqual(['restart', 'health']);
+    expect(engine.serviceOperations).toEqual(['preflight', 'restart', 'health']);
   });
 
   it('fails restart closed when the public MCP connector is not ready after local health', async () => {
@@ -889,6 +899,7 @@ describe('unified lifecycle engine', () => {
       code: 'CONNECTOR_READINESS_FAILED',
     });
     expect(engine.serviceOperations).toEqual([
+      'preflight',
       'restart',
       'health',
       'connector-readiness',
@@ -1174,6 +1185,61 @@ describe('unified lifecycle engine', () => {
           detached: true,
           accepted: true,
           operationId: 'daemon-update-1',
+        },
+      },
+    });
+  });
+
+  it('hands a same-version self-hosted update to the durable worker for gateway reconciliation', async () => {
+    const engine = createEngine();
+    const update = vi.spyOn(engine, 'update').mockResolvedValue({
+      operation: 'update',
+      changed: false,
+      updateAvailable: false,
+      version: '1.5.0',
+      bundleId: 'bundle-1.5.0',
+    });
+    const launch = vi.fn(async () => ({
+      accepted: true as const,
+      operationId: 'daemon-update-reconcile-1',
+    }));
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+
+    const exitCode = await runLifecycleCli(
+      ['update', '--channel', 'dev', '--yes', '--json'],
+      {
+        engine,
+        environment: { XPC_SERVICE_NAME: 'com.consuelo.system' },
+        operationLauncher: { launch, read: () => undefined },
+        stdout: (value) => stdout.push(value),
+        stderr: (value) => stderr.push(value),
+      },
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderr).toEqual([]);
+    expect(update).toHaveBeenCalledWith({
+      channel: 'dev',
+      check: true,
+      yes: true,
+    });
+    expect(launch).toHaveBeenCalledWith({
+      kind: 'update',
+      targetVersion: '1.5.0',
+      channel: 'dev',
+    });
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
+      command: 'update',
+      ok: true,
+      result: {
+        operation: 'update',
+        changed: false,
+        version: '1.5.0',
+        detail: {
+          detached: true,
+          accepted: true,
+          operationId: 'daemon-update-reconcile-1',
         },
       },
     });

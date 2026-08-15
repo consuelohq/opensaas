@@ -545,6 +545,62 @@ export const createWorkspaceEdgeRouteSeedRecord = (
     updatedAt: new Date().toISOString(),
   };
 };
+export const createWorkspaceReleaseManagedSiteRefreshSql = (input: {
+  versionId: string;
+  snapshotWorkspaceId: string;
+  siteContentHashes: Record<string, string>;
+}): string => {
+  const versionId = trimmedValue(input.versionId);
+  const snapshotWorkspaceId = trimmedValue(input.snapshotWorkspaceId);
+  if (!versionId || !snapshotWorkspaceId) {
+    throw new Error('workspace release site refresh requires snapshot workspace and version');
+  }
+  const contentHashes = Object.fromEntries(
+    WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS.map((siteId) => {
+      const contentHash = normalizedContentHash(input.siteContentHashes[siteId]);
+      if (!contentHash) {
+        throw new Error(`workspace release site refresh requires content hash for ${siteId}`);
+      }
+      return [siteId, contentHash] as const;
+    }),
+  ) as Record<(typeof WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS)[number], string>;
+  const managedSiteIds = WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS
+    .map((siteId) => sqlText(siteId))
+    .join(', ');
+  const hashCase =
+    `CASE json_extract(route.value, '$.target.siteId') `
+    + WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS
+      .map((siteId) => `WHEN ${sqlText(siteId)} THEN ${sqlText(contentHashes[siteId])} `)
+      .join('')
+    + `ELSE json_extract(route.value, '$.target.contentHash') END`;
+  const snapshotKey =
+    `${sqlText('sites/' + snapshotWorkspaceId + '/')} || `
+    + `json_extract(route.value, '$.target.siteId') || `
+    + `${sqlText('/' + versionId + '/index.html')}`;
+  const matchesManagedSite =
+    `json_extract(route.value, '$.target.kind') = 'site-snapshot' `
+    + `AND json_extract(route.value, '$.target.siteId') IN (${managedSiteIds})`;
+  const refreshedRoute =
+    `json_set(route.value, `
+    + `'$.target.versionId', ${sqlText(versionId)}, `
+    + `'$.target.manifestKey', ${snapshotKey}, `
+    + `'$.target.htmlKey', ${snapshotKey}, `
+    + `'$.target.contentHash', ${hashCase})`;
+  const refreshedRoutes =
+    `(SELECT json_group_array(json(CASE WHEN ${matchesManagedSite} `
+    + `THEN ${refreshedRoute} ELSE route.value END)) `
+    + `FROM json_each(workspace_route_registry.record_json, '$.routes') AS route)`;
+  return (
+    `UPDATE workspace_route_registry SET `
+    + `record_json = json_set(record_json, '$.routes', json(${refreshedRoutes})), `
+    + `updated_at = datetime('now') `
+    + `WHERE revoked_at IS NULL AND json_valid(record_json) AND EXISTS (`
+    + `SELECT 1 FROM json_each(workspace_route_registry.record_json, '$.routes') AS route `
+    + `WHERE ${matchesManagedSite}`
+    + `);`
+  );
+};
+
 const createConnectorSql = (input: {
   record: WorkspaceEdgeSeedRecord;
   connectorTarget: Extract<WorkspaceRouteD1RouteTarget, { kind: 'os-connector' }>;

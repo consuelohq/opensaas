@@ -525,7 +525,7 @@ export function createLifecycleEngine(
       }
 
       if (!updateAvailable && current.kind === 'valid') {
-        if (input.operation === 'install') {
+        if (input.operation === 'install' || input.operation === 'update') {
           yield* tryPromise({
             try: () => dependencies.service.preflight(),
             code: 'SERVICE_PREFLIGHT_FAILED',
@@ -853,6 +853,17 @@ export function createLifecycleEngine(
         );
       }
       const operationId = nextOperationId();
+      emit('service-preflight', { reconcile: true });
+      try {
+        await dependencies.service.preflight();
+      } catch (error: unknown) {
+        throw asLifecycleError(
+          error,
+          'SERVICE_PREFLIGHT_FAILED',
+          'Consuelo service preflight failed',
+          'service-preflight',
+        );
+      }
       emit('service-restart', { waitForCompletion: true });
       try {
         await dependencies.service.restart({
