@@ -404,6 +404,21 @@ describe('foundation source contract', () => {
     expect(docsMenuTrigger).toContain('duration: 0.2');
   });
 
+  test('keeps the responsive Browse menu collapsed, divider-free, and compact', () => {
+    const browseMenu = read('src/components/BrowseMenu.astro');
+
+    expect(browseMenu).not.toContain('data-docs-browse-group open');
+    expect(browseMenu).toContain('.docs-browse-header {');
+    expect(browseMenu).toContain('border-bottom: 0;');
+    expect(browseMenu).toContain('.docs-browse-group {');
+    expect(browseMenu).not.toContain('border-bottom: 1px solid var(--docs-line);');
+    expect(browseMenu).toContain('font-size: 1rem;');
+    expect(browseMenu).toContain('line-height: 1.5rem;');
+    expect(browseMenu).toContain('font-size: 0.9375rem;');
+    expect(browseMenu).toContain('min-height: 2.25rem;');
+    expect(browseMenu).toContain('border-radius: 0.375rem;');
+  });
+
   test('uses compact neutral desktop docs chrome and a two-column home', () => {
     const css = read('src/styles/docs.css');
     const sidebar = read('src/components/Sidebar.astro');

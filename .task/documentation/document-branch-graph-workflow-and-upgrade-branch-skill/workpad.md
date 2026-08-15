@@ -21,16 +21,42 @@ started: 2026-08-15
 ## files changed
 
 - `packages/documentation/public/images/workflows/branch-in-new-chat.jpg`
+- `packages/documentation/src/content/docs/build/skills/bundled/branch.mdx`
+- `packages/documentation/src/content/docs/build/skills/bundled/index.mdx`
 - `packages/documentation/src/content/docs/reference/workflows/branch-graph.mdx`
 - `packages/documentation/src/content/docs/workflows/branch-graph.mdx`
 - `packages/documentation/src/content/docs/workflows/index.mdx`
+- `packages/documentation/src/lib/docs-navigation.ts`
+- `packages/documentation/tests/foundation.test.ts`
+- `packages/documentation/tests/navigation-memory.test.ts`
+- `packages/documentation/tests/reference.test.ts`
+- `packages/os/skills/branch/skill.json`
+- `packages/os/skills/branch/SKILL.md`
+- `packages/os/skills/skills.json`
+- `packages/os/tests/branch-skill.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## workspace-owned: files changed
 
 - `packages/documentation/public/images/workflows/branch-in-new-chat.jpg`
+- `packages/documentation/src/content/docs/build/skills/bundled/branch.mdx`
+- `packages/documentation/src/content/docs/build/skills/bundled/index.mdx`
 - `packages/documentation/src/content/docs/reference/workflows/branch-graph.mdx`
 - `packages/documentation/src/content/docs/workflows/branch-graph.mdx`
 - `packages/documentation/src/content/docs/workflows/index.mdx`
+- `packages/documentation/src/lib/docs-navigation.ts`
+- `packages/documentation/tests/foundation.test.ts`
+- `packages/documentation/tests/navigation-memory.test.ts`
+- `packages/documentation/tests/reference.test.ts`
+- `packages/os/skills/branch/skill.json`
+- `packages/os/skills/branch/SKILL.md`
+- `packages/os/skills/skills.json`
+- `packages/os/tests/branch-skill.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## workspace-owned: activity log
 
@@ -43,6 +69,7 @@ started: 2026-08-15
 - 2026-08-15 09:18:26 fs.write: `.task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/workpad.md`
 - 2026-08-15 09:21:15 fs.write: `.task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/workpad.md`
 - 2026-08-15 09:31:17 fs.write: `.task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/workpad.md`
+- 2026-08-15 09:35:55 fs.write: `.task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -181,3 +208,23 @@ TDD evidence:
 Removed unrelated test-generated/local drift from this task (`packages/os/tests/facade/__snapshots__/facade.test.ts.snap`, Reference browser script, and Reference claim ledger) before final verification.
 
 - 2026-08-15 09:31:17 append: `.task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/workpad.md`
+
+- 2026-08-15 09:35:30 apply-patch: `packages/workspace/tests/test-selection.test.js`
+## Stream reconciliation — 2026-08-15
+
+Before promotion, `stream/documentation` advanced from `aa578d75…` to `a6a0dcf1…`. `task.pr` correctly failed closed with merge conflicts.
+
+Reconciled the current stream into DEV-1611 semantically:
+- preserved newer documentation navigation/foundation changes while retaining the new top-level Workflows section;
+- preserved newer OS/checkout/test-selection rules from the stream;
+- retained the new `os-bundled-skill-contract` focused selector;
+- regenerated `packages/workspace/test-selection.registry.json` from the merged 59-rule rule set instead of choosing either generated side;
+- widened only the test-inventory discovery test timeout to 15s because the merged inventory had grown past the default 5s wall clock without assertion failure.
+
+Post-reconciliation validation:
+- bundled skill lifecycle suite → 5 files / 22 tests passed;
+- documentation full suite → 101/101 tests passed;
+- test-selection full suite → 38/38 tests passed;
+- documentation build → passed, including `/workflows/` and `/workflows/branch-graph/`.
+
+- 2026-08-15 09:35:55 append: `.task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/workpad.md`

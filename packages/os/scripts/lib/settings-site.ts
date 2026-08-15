@@ -1,5 +1,11 @@
 import { listManagedCloudPlans, listManagedCloudRegions } from './managed-cloud-pricing';
 import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
+import {
+  renderWorkspaceChromeBar,
+  workspaceChromeClientScript,
+  workspaceRouteSwitcherStyles,
+  type WorkspaceSurfaceId,
+} from './workspace-chrome';
 
 export type ConfigurationPageId =
   | 'configuration'
@@ -8,23 +14,12 @@ export type ConfigurationPageId =
   | 'environments'
   | 'secrets';
 
-const CONFIGURATION_PAGES: Array<{
-  id: ConfigurationPageId;
-  label: string;
-  href: string;
-}> = [
-  { id: 'configuration', label: 'Overview', href: '/configuration' },
-  { id: 'tools', label: 'Tools', href: '/tools' },
-  { id: 'nodes', label: 'Nodes', href: '/nodes' },
-  { id: 'secrets', label: 'Secrets', href: '/secrets' },
-];
-
 const PAGE_COPY: Record<ConfigurationPageId, {
   title: string;
   description: string;
 }> = {
   configuration: {
-    title: 'Configuration',
+    title: 'Overview',
     description: 'See what is connected to your workspace and what agents can use here.',
   },
   tools: {
@@ -52,13 +47,6 @@ function escapeHtml(value: string): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
-}
-
-function renderNav(activePage: ConfigurationPageId): string {
-  return `<nav class="nav" aria-label="Configuration navigation">${CONFIGURATION_PAGES.map((page) => {
-    const active = page.id === activePage ? ' class="is-active" aria-current="page"' : '';
-    return `<a href="${page.href}"${active}>${escapeHtml(page.label)}</a>`;
-  }).join('')}</nav>`;
 }
 
 function configurationStyles(): string {
@@ -94,9 +82,23 @@ function configurationStyles(): string {
       }
     }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: var(--site-color-paper); color: var(--site-color-ink); }
-    .shell { min-height: 100vh; display: grid; grid-template-columns: 240px minmax(0, 1fr); }
-    .sidebar { border-right: 1px solid var(--site-color-line); background: var(--site-color-panel); padding: 28px 18px; display: grid; align-content: start; gap: 28px; }
+    html { background: #0d0d0c; }
+    body { margin: 0; min-height: 100vh; padding: 14px; background: #0d0d0c; color: var(--site-color-ink); }
+    .workspace-window { width: min(1880px, calc(100vw - 28px)); min-height: calc(100vh - 28px); margin: 0 auto; overflow: clip; border: 1px solid rgba(241, 231, 213, 0.16); border-radius: 18px; background: var(--site-color-paper); box-shadow: 0 34px 110px rgba(0, 0, 0, 0.42); display: grid; grid-template-rows: 42px minmax(0, 1fr); }
+    .trxChrome { position: relative; z-index: 70; display: grid; grid-template-columns: minmax(84px, 1fr) auto minmax(84px, 1fr); align-items: center; height: 42px; padding: 0 14px; border-bottom: 1px solid rgba(241, 231, 213, 0.10); background: #151411; color: #d8d0c1; view-transition-name: workspace-chrome; }
+    .trxDots { display: flex; align-items: center; gap: 8px; justify-self: start; }
+    .trxDot { width: 12px; height: 12px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.22); }
+    .trxDot.red { background: #d85e54; }
+    .trxDot.yellow { background: #d5ad49; }
+    .trxDot.green { background: #64a866; }
+    .trxChromeTitle { justify-self: center; color: #d8d0c1; font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .01em; }
+    .trxChromeActions { justify-self: end; min-width: 72px; text-align: right; }
+    .trxClock { color: #918a7f; font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .workspace-view { min-width: 0; min-height: 0; background: var(--site-color-paper); view-transition-name: workspace-body; }
+    @view-transition { navigation: auto; }
+    ::view-transition-old(workspace-chrome), ::view-transition-new(workspace-chrome) { animation-duration: 90ms; }
+    ::view-transition-old(workspace-body), ::view-transition-new(workspace-body) { animation-duration: 140ms; animation-timing-function: ease-out; }
+    @media (prefers-reduced-motion: reduce) { ::view-transition-group(*) { animation-duration: 0.01ms !important; } }
     .identity, .status-pill, code, h3 { font-family: var(--site-font-mono); }
     .identity { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
     .nav { display: grid; gap: 8px; }
@@ -104,7 +106,7 @@ function configurationStyles(): string {
     .nav a:hover, .nav a.is-active { color: var(--site-color-accent); border-left-color: var(--site-color-accent); }
     .nav a:focus:not(:focus-visible) { outline: none; }
     .nav a:focus-visible { outline: 2px solid var(--site-color-accent); outline-offset: 2px; }
-    .content { padding: clamp(24px, 4vw, 48px); display: grid; align-content: start; gap: 42px; }
+    .content { padding: clamp(24px, 4vw, 48px); display: grid; align-content: start; gap: 34px; min-width: 0; }
     h1, h2, h3, p, dl, dd, dt, ul, li { margin: 0; }
     h1 { font-size: clamp(34px, 5vw, 56px); line-height: 0.95; font-weight: 500; }
     h2 { font-size: 24px; font-weight: 500; }
@@ -144,6 +146,61 @@ function configurationStyles(): string {
     button:hover { border-color: var(--site-color-accent); color: var(--site-color-accent); }
     button:disabled { cursor: wait; opacity: 0.55; }
     .danger-button { color: var(--site-color-accent); }
+    .tools-surface { display: grid; gap: 28px; max-width: 1240px; }
+    .tools-lede { display: grid; grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr); gap: 42px; align-items: start; border-bottom: 1px solid var(--site-color-line); padding-bottom: 24px; }
+    .tools-finding { display: grid; gap: 7px; }
+    .tools-finding h2 { font-size: clamp(25px, 3vw, 38px); line-height: 1.04; font-weight: 500; letter-spacing: -.025em; }
+    .tools-finding p { color: var(--site-color-muted); max-width: 570px; line-height: 1.45; }
+    .availability-plot { display: grid; gap: 13px; min-width: 0; }
+    .availability-row { display: grid; grid-template-columns: 88px minmax(160px, 1fr) 78px; gap: 12px; align-items: center; }
+    .availability-label, .availability-value { font-family: var(--site-font-mono); font-size: 11px; }
+    .availability-label { color: var(--site-color-ink); }
+    .availability-value { color: var(--site-color-muted); text-align: right; font-variant-numeric: tabular-nums; }
+    .availability-track { height: 6px; background: color-mix(in srgb, var(--site-color-muted) 16%, transparent); overflow: hidden; }
+    .availability-fill { display: block; height: 100%; background: var(--site-color-muted); transform-origin: left center; }
+    .availability-row[data-complete="true"] .availability-fill { background: var(--site-color-secondary); }
+    .tool-controls { display: grid; grid-template-columns: minmax(240px, 1fr) auto auto minmax(150px, .48fr); gap: 12px; align-items: center; }
+    .tool-search-wrap { position: relative; }
+    .tool-search-wrap span { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--site-color-muted); font-family: var(--site-font-mono); font-size: 11px; pointer-events: none; }
+    #tool-search { padding-left: 72px; min-height: 38px; }
+    .filter-cluster { display: inline-flex; border: 1px solid var(--site-color-line); padding: 2px; gap: 2px; }
+    .filter-cluster button { border: 0; padding: 7px 9px; background: transparent; color: var(--site-color-muted); font-family: var(--site-font-mono); font-size: 10px; text-transform: uppercase; }
+    .filter-cluster button[aria-pressed="true"] { background: var(--site-color-panel); color: var(--site-color-ink); }
+    .inventory-summary { min-height: 18px; color: var(--site-color-muted); font-family: var(--site-font-mono); font-size: 11px; }
+    .tool-inventory { display: grid; border-top: 1px solid var(--site-color-line-strong); }
+    .inventory-row { display: grid; grid-template-columns: minmax(190px, 1.15fr) 92px minmax(140px, .85fr) 150px 138px; gap: 16px; align-items: center; min-height: 58px; padding: 10px 0; border-bottom: 1px solid var(--site-color-line); }
+    .inventory-row[hidden] { display: none; }
+    .inventory-name { min-width: 0; display: grid; gap: 3px; }
+    .inventory-name strong { font-size: 16px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .inventory-name small, .inventory-kind, .inventory-meta, .inventory-state { font-family: var(--site-font-mono); font-size: 10px; line-height: 1.35; }
+    .inventory-name small, .inventory-kind, .inventory-meta { color: var(--site-color-muted); }
+    .inventory-kind { text-transform: uppercase; letter-spacing: .06em; }
+    .inventory-state { color: var(--site-color-secondary); }
+    .inventory-row[data-enabled="false"] .inventory-state { color: var(--site-color-accent); }
+    .inventory-toggle { justify-self: end; display: inline-flex; align-items: center; gap: 8px; color: var(--site-color-ink); font-family: var(--site-font-mono); font-size: 10px; }
+    .inventory-toggle input { appearance: none; width: 30px; height: 17px; padding: 0; border: 1px solid var(--site-color-line-strong); border-radius: 999px; background: transparent; position: relative; transition: background 140ms ease; }
+    .inventory-toggle input::after { content: ''; position: absolute; width: 11px; height: 11px; top: 2px; left: 2px; border-radius: 50%; background: var(--site-color-muted); transition: transform 140ms ease, background 140ms ease; }
+    .inventory-toggle input:checked { background: color-mix(in srgb, var(--site-color-secondary) 18%, transparent); }
+    .inventory-toggle input:checked::after { transform: translateX(13px); background: var(--site-color-secondary); }
+    .inventory-toggle input:focus-visible { outline: 2px solid var(--site-color-accent); outline-offset: 2px; }
+    .inventory-empty { padding: 28px 0; color: var(--site-color-muted); }
+    .overview-tool-link { display: flex; align-items: baseline; justify-content: space-between; gap: 22px; max-width: 1080px; border-top: 1px solid var(--site-color-line); border-bottom: 1px solid var(--site-color-line); padding: 18px 0; }
+    .overview-tool-link a { color: var(--site-color-ink); font-family: var(--site-font-mono); font-size: 11px; }
+    @media (max-width: 980px) {
+      .tools-lede { grid-template-columns: 1fr; gap: 22px; }
+      .tool-controls { grid-template-columns: 1fr; }
+      .filter-cluster { width: 100%; overflow-x: auto; }
+      .inventory-row { grid-template-columns: minmax(0, 1fr) 80px 120px; }
+      .inventory-meta { display: none; }
+      .inventory-toggle { grid-column: 3; }
+    }
+    @media (max-width: 620px) {
+      .availability-row { grid-template-columns: 72px minmax(90px, 1fr) 68px; }
+      .inventory-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; padding: 13px 0; }
+      .inventory-kind { grid-column: 1; }
+      .inventory-state { grid-column: 1; }
+      .inventory-toggle { grid-column: 2; grid-row: 1 / span 3; }
+    }
     .environment-card { border: 1px solid var(--site-color-line); background: var(--site-color-panel); padding: 18px; display: grid; gap: 14px; }
     .environment-card-header { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
     .environment-list { display: grid; gap: 14px; }
@@ -196,9 +253,10 @@ function configurationStyles(): string {
     .provisioning-progress strong { font-weight: 500; }
     label { cursor: pointer; }
     [hidden] { display: none !important; }
+    .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
     @media (max-width: 900px) {
-      .shell { grid-template-columns: 1fr; }
-      .sidebar { border-right: 0; border-bottom: 1px solid var(--site-color-line); }
+      body { padding: 0; }
+      .workspace-window { width: 100vw; min-height: 100dvh; border: 0; border-radius: 0; }
       .detail-grid { grid-template-columns: 1fr; }
       .form-grid { grid-template-columns: 1fr; }
       .field-wide { grid-column: auto; }
@@ -212,7 +270,7 @@ function configurationStyles(): string {
       .plan-grid { grid-template-columns: 1fr; }
       .node-meta { grid-template-columns: 1fr; }
     }
-  `;
+  ` + workspaceRouteSwitcherStyles();
 }
 
 function configurationClientScript(): string {
@@ -428,11 +486,117 @@ function configurationClientScript(): string {
       });
     }
 
-    function toggleRow(kind, name, enabled, category, configurable = true) {
-      const control = configurable
-        ? '<input type="checkbox" class="configuration-toggle" data-kind="' + escapeHtml(kind) + '" data-name="' + escapeHtml(name) + '" ' + (enabled ? 'checked' : '') + '>'
-        : '<input type="checkbox" ' + (enabled ? 'checked ' : '') + 'disabled aria-label="' + escapeHtml(name + ' is managed locally') + '">';
-      return '<tr><td><label>' + control + ' ' + escapeHtml(name) + '</label></td><td>' + escapeHtml(kind) + '</td><td>' + pill(enabled ? 'connected' : 'disabled') + '</td><td>' + (category ? '<code>' + escapeHtml(category) + '</code>' : '<span class="muted">—</span>') + '</td></tr>';
+    let toolInventoryItems = [];
+    const toolInventoryFilters = { query: '', kind: 'all', state: 'all', category: 'all' };
+
+    function inventoryItems(snapshot) {
+      const tools = (Array.isArray(snapshot.tools) ? snapshot.tools : []).map((item) => ({
+        id: 'tool:' + item.name,
+        name: item.name,
+        kind: 'tool',
+        category: item.category || (item.core ? 'core' : 'tool'),
+        enabled: item.enabled !== false,
+        configurable: item.configurable !== false,
+        detail: item.core ? 'Core facade tool' : 'Facade tool',
+      }));
+      const skills = (Array.isArray(snapshot.skills) ? snapshot.skills : []).map((item) => ({
+        id: 'skill:' + item.name,
+        name: item.name,
+        kind: 'skill',
+        category: item.category || 'skill',
+        enabled: item.enabled !== false,
+        configurable: item.configurable !== false,
+        detail: item.configurable === false ? 'Managed locally' : 'OS skill',
+      }));
+      const workflows = (Array.isArray(snapshot.runBooks) ? snapshot.runBooks : []).map((item) => ({
+        id: 'workflow:' + item.id,
+        name: item.id,
+        kind: 'workflow',
+        category: 'workflow',
+        enabled: item.enabled !== false,
+        configurable: true,
+        detail: (Array.isArray(item.aliases) && item.aliases.length ? item.aliases.join(', ') : 'No aliases') + ' · ' + String(item.roleCount || 0) + ' roles · ' + String(item.toolCount || 0) + ' tools',
+      }));
+      return tools.concat(skills, workflows).sort((left, right) => left.name.localeCompare(right.name));
+    }
+
+    function renderAvailabilityPlot(items) {
+      const plot = byId('tool-availability-plot');
+      if (!plot) return;
+      const groups = [
+        ['Tools', items.filter((item) => item.kind === 'tool')],
+        ['Skills', items.filter((item) => item.kind === 'skill')],
+        ['Workflows', items.filter((item) => item.kind === 'workflow')],
+      ];
+      plot.innerHTML = groups.map(([label, group]) => {
+        const total = group.length;
+        const enabled = group.filter((item) => item.enabled).length;
+        const percent = total ? Math.round((enabled / total) * 100) : 0;
+        return '<div class="availability-row" data-complete="' + String(total > 0 && enabled === total) + '">' +
+          '<span class="availability-label">' + escapeHtml(label) + '</span>' +
+          '<span class="availability-track" aria-hidden="true"><span class="availability-fill" style="width:' + String(percent) + '%"></span></span>' +
+          '<span class="availability-value">' + String(enabled) + ' / ' + String(total) + '</span>' +
+        '</div>';
+      }).join('');
+      const enabled = items.filter((item) => item.enabled).length;
+      setText('tool-availability-title', enabled === items.length && items.length > 0
+        ? 'Every agent surface is available'
+        : String(enabled) + ' of ' + String(items.length) + ' agent surfaces are enabled');
+    }
+
+    function inventoryToggle(item) {
+      if (!item.configurable) {
+        return '<span class="inventory-toggle"><span>Managed locally</span></span>';
+      }
+      const action = item.enabled ? 'Disable' : 'Re-enable';
+      return '<label class="inventory-toggle"><input type="checkbox" class="configuration-toggle" data-kind="' + escapeHtml(item.kind) + '" data-name="' + escapeHtml(item.name) + '" ' + (item.enabled ? 'checked' : '') + ' aria-label="' + escapeHtml(action + ' ' + item.name) + '"><span>' + action + '</span></label>';
+    }
+
+    function inventoryRow(item) {
+      const state = item.enabled ? 'Enabled' : 'Available to re-enable';
+      return '<article class="inventory-row" data-inventory-row data-enabled="' + String(item.enabled) + '" data-kind="' + escapeHtml(item.kind) + '" data-category="' + escapeHtml(item.category || '') + '">' +
+        '<div class="inventory-name"><strong>' + escapeHtml(item.name) + '</strong><small>' + escapeHtml(item.detail || '') + '</small></div>' +
+        '<span class="inventory-kind">' + escapeHtml(item.kind) + '</span>' +
+        '<span class="inventory-meta">' + escapeHtml(item.category || 'uncategorized') + '</span>' +
+        '<span class="inventory-state">' + escapeHtml(state) + '</span>' +
+        inventoryToggle(item) +
+      '</article>';
+    }
+
+    function renderInventoryCategories(items) {
+      const select = byId('tool-category-filter');
+      if (!(select instanceof HTMLSelectElement)) return;
+      const selected = toolInventoryFilters.category;
+      const categories = Array.from(new Set(items.map((item) => item.category).filter(Boolean))).sort();
+      select.innerHTML = '<option value="all">All categories</option>' + categories.map((category) => '<option value="' + escapeHtml(category) + '">' + escapeHtml(category) + '</option>').join('');
+      select.value = categories.includes(selected) ? selected : 'all';
+      if (select.value !== selected) toolInventoryFilters.category = select.value;
+    }
+
+    function renderToolInventory() {
+      const container = byId('tool-inventory');
+      if (!container) return;
+      const query = toolInventoryFilters.query.trim().toLowerCase();
+      const visible = toolInventoryItems.filter((item) => {
+        if (toolInventoryFilters.kind !== 'all' && item.kind !== toolInventoryFilters.kind) return false;
+        if (toolInventoryFilters.state === 'enabled' && !item.enabled) return false;
+        if (toolInventoryFilters.state === 'disabled' && item.enabled) return false;
+        if (toolInventoryFilters.category !== 'all' && item.category !== toolInventoryFilters.category) return false;
+        if (!query) return true;
+        return [item.name, item.kind, item.category, item.detail].join(' ').toLowerCase().includes(query);
+      });
+      container.innerHTML = visible.length
+        ? visible.map(inventoryRow).join('')
+        : '<p class="inventory-empty">No agent surfaces match these filters.</p>';
+      const disabled = toolInventoryItems.filter((item) => !item.enabled).length;
+      setText('tool-summary', String(toolInventoryItems.length - disabled) + ' enabled · ' + String(disabled) + ' disabled · ' + String(visible.length) + ' shown');
+      bindToggles();
+    }
+
+    function setFilterPressed(selector, attribute, value) {
+      document.querySelectorAll(selector).forEach((button) => {
+        if (button instanceof HTMLButtonElement) button.setAttribute('aria-pressed', button.getAttribute(attribute) === value ? 'true' : 'false');
+      });
     }
 
     function renderSnapshot(snapshot) {
@@ -455,24 +619,18 @@ function configurationClientScript(): string {
       const local = Array.isArray(snapshot.localAgents) ? snapshot.localAgents : [];
       setHtml('local-agent-rows', local.length ? local.map((agent) => '<tr><td>' + escapeHtml(agent.label) + '</td><td>' + escapeHtml(agent.kind) + '</td><td>' + pill(agent.status) + '</td><td>' + escapeHtml(agent.detected ? 'Detected' : 'Not detected') + '</td><td>' + escapeHtml(agent.message || 'Connection not verified.') + '</td></tr>').join('') : emptyRow(5, 'No local agents detected on this node.'));
 
-      const tools = Array.isArray(snapshot.tools) ? snapshot.tools : [];
-      setHtml('tool-summary', detail('Enabled tools', String(tools.filter((tool) => tool.enabled).length)) + detail('Disabled tools', String((overlay.disabledTools || []).length)));
-      setHtml('tool-rows', tools.length ? tools.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category, item.configurable !== false)).join('') : emptyRow(4, 'No tools found.'));
-
-      const skills = Array.isArray(snapshot.skills) ? snapshot.skills : [];
-      setHtml('skill-summary', detail('Enabled skills', String(skills.filter((skill) => skill.enabled).length)) + detail('Disabled skills', String((overlay.disabledSkills || []).length)));
-      setHtml('skill-rows', skills.length ? skills.map((item) => toggleRow(item.kind, item.name, item.enabled, item.category, item.configurable !== false)).join('') : emptyRow(4, 'No skills found.'));
-
-      const workflows = Array.isArray(snapshot.runBooks) ? snapshot.runBooks : [];
-      setHtml('workflow-rows', workflows.length ? workflows.map((workflow) => '<tr><td><label><input type="checkbox" class="configuration-toggle" data-kind="workflow" data-name="' + escapeHtml(workflow.id) + '" ' + (workflow.enabled ? 'checked' : '') + '> ' + escapeHtml(workflow.id) + '</label></td><td><code>' + escapeHtml((workflow.aliases || []).join(', ') || '—') + '</code></td><td>' + pill(workflow.enabled ? 'connected' : 'disabled') + '</td><td>' + escapeHtml(workflow.roleCount) + '</td><td>' + escapeHtml(workflow.toolCount) + '</td></tr>').join('') : emptyRow(5, 'No workflow bundles found.'));
+      toolInventoryItems = inventoryItems(snapshot);
+      renderInventoryCategories(toolInventoryItems);
+      renderAvailabilityPlot(toolInventoryItems);
+      renderToolInventory();
 
       const capabilities = Array.isArray(snapshot.capabilities) ? snapshot.capabilities : [];
       setHtml('capability-rows', capabilities.length ? capabilities.map((capability) => '<tr><td>' + escapeHtml(capability.title) + '</td><td><code>' + escapeHtml(capability.id) + '</code></td><td>' + pill(capability.status) + '</td><td>' + escapeHtml(capability.message) + '</td></tr>').join('') : emptyRow(4, 'No capability checks returned.'));
 
       setHidden('configuration-loading', true);
       setHidden('configuration-error', true);
-      setHidden('configuration-content', false);
-      bindToggles();
+      const configurationContent = byId('configuration-content');
+      if (configurationContent) configurationContent.setAttribute('aria-busy', 'false');
     }
 
     async function loadConfiguration() {
@@ -484,10 +642,30 @@ function configurationClientScript(): string {
         renderSnapshot(payload.snapshot);
       } catch {
         setHidden('configuration-loading', true);
-        setHidden('configuration-content', true);
         setHidden('configuration-error', false);
+        const configurationContent = byId('configuration-content');
+        if (configurationContent) configurationContent.setAttribute('aria-busy', 'false');
       }
     }
+
+    byId('tool-search')?.addEventListener('input', (event) => {
+      toolInventoryFilters.query = event.currentTarget instanceof HTMLInputElement ? event.currentTarget.value : '';
+      renderToolInventory();
+    });
+    document.querySelectorAll('[data-inventory-kind]').forEach((button) => button.addEventListener('click', () => {
+      toolInventoryFilters.kind = button.getAttribute('data-inventory-kind') || 'all';
+      setFilterPressed('[data-inventory-kind]', 'data-inventory-kind', toolInventoryFilters.kind);
+      renderToolInventory();
+    }));
+    document.querySelectorAll('[data-inventory-state]').forEach((button) => button.addEventListener('click', () => {
+      toolInventoryFilters.state = button.getAttribute('data-inventory-state') || 'all';
+      setFilterPressed('[data-inventory-state]', 'data-inventory-state', toolInventoryFilters.state);
+      renderToolInventory();
+    }));
+    byId('tool-category-filter')?.addEventListener('change', (event) => {
+      toolInventoryFilters.category = event.currentTarget instanceof HTMLSelectElement ? event.currentTarget.value : 'all';
+      renderToolInventory();
+    });
 
     void loadConfiguration();
     void loadSourceControl();
@@ -554,7 +732,8 @@ function environmentClientScript(): string {
       setText('environment-summary', currentEnvironments.length + ' environment' + (currentEnvironments.length === 1 ? '' : 's'));
       setHidden('environment-loading', true);
       setHidden('environment-error', true);
-      setHidden('environment-content', false);
+      const content = byId('environment-content');
+      if (content) content.setAttribute('aria-busy', 'false');
       bindEnvironmentCards();
     }
 
@@ -661,8 +840,9 @@ function environmentClientScript(): string {
         renderEnvironmentSnapshot(payload.snapshot);
       } catch {
         setHidden('environment-loading', true);
-        setHidden('environment-content', true);
         setHidden('environment-error', false);
+        const content = byId('environment-content');
+        if (content) content.setAttribute('aria-busy', 'false');
       }
     }
 
@@ -714,7 +894,7 @@ function renderOverviewPanels(): string {
           <div class="subsection"><h3>Cloud agents</h3><div class="table-wrap"><table><thead><tr><th>Name</th><th>Kind</th><th>Status</th><th>Notes</th><th>MCP URL</th></tr></thead><tbody id="cloud-agent-rows"></tbody></table></div></div>
           <div class="subsection"><h3>Local agents</h3><div class="table-wrap"><table><thead><tr><th>Name</th><th>Kind</th><th>Status</th><th>Detection</th><th>Notes</th></tr></thead><tbody id="local-agent-rows"></tbody></table></div></div>
         </section>
-        ${renderToolPanels()}
+        <section class="overview-tool-link" aria-label="Tool management"><div><h2>Agent surfaces</h2><p class="muted">Tools, skills, and workflows are managed in one inventory.</p></div><a href="/tools">Open Tools →</a></section>
         <section class="panel-section" id="capabilities">
           <header class="panel-header"><h2>Capabilities</h2><p>Node capability checks for this OS home.</p></header>
           <div class="table-wrap"><table><thead><tr><th>Capability</th><th>ID</th><th>Status</th><th>Message</th></tr></thead><tbody id="capability-rows"></tbody></table></div>
@@ -723,19 +903,34 @@ function renderOverviewPanels(): string {
 
 function renderToolPanels(): string {
   return `
-        <section class="panel-section" id="tools">
-          <header class="panel-header"><h2>Tools</h2><p>Enable or disable facade tools without editing generated manifests.</p></header>
-          <dl class="detail-grid" id="tool-summary"></dl>
-          <div class="table-wrap"><table><thead><tr><th>Name</th><th>Kind</th><th>Status</th><th>Category</th></tr></thead><tbody id="tool-rows"></tbody></table></div>
-        </section>
-        <section class="panel-section" id="skills">
-          <header class="panel-header"><h2>Skills</h2><p>Control the OS skills exposed through MCP and steering.</p></header>
-          <dl class="detail-grid" id="skill-summary"></dl>
-          <div class="table-wrap"><table><thead><tr><th>Name</th><th>Kind</th><th>Status</th><th>Category</th></tr></thead><tbody id="skill-rows"></tbody></table></div>
-        </section>
-        <section class="panel-section" id="run-books">
-          <header class="panel-header"><h2>Run Books</h2><p>Disabled workflow bundles are rejected by workflow intent routing.</p></header>
-          <div class="table-wrap"><table><thead><tr><th>Workflow</th><th>Aliases</th><th>Status</th><th>Roles</th><th>Tools</th></tr></thead><tbody id="workflow-rows"></tbody></table></div>
+        <section class="tools-surface" id="tools">
+          <div class="tools-lede">
+            <div class="tools-finding">
+              <p class="identity">Agent surface</p>
+              <h2 id="tool-availability-title">Availability across tools, skills, and workflows</h2>
+              <p>Disabled items stay in this inventory so you can re-enable them at any time. Nothing disappears when you turn it off.</p>
+              <p id="tool-summary" class="inventory-summary" aria-live="polite">Loading current availability…</p>
+            </div>
+            <div id="tool-availability-plot" class="availability-plot" role="img" aria-label="Tool availability by surface"></div>
+          </div>
+          <div class="tool-controls" aria-label="Tool inventory filters">
+            <label class="tool-search-wrap" for="tool-search"><span>Search</span><input id="tool-search" type="search" autocomplete="off" placeholder="name or category" /></label>
+            <div class="filter-cluster" data-tool-kind-filter role="group" aria-label="Surface type">
+              <button type="button" data-inventory-kind="all" aria-pressed="true">All</button>
+              <button type="button" data-inventory-kind="tool" aria-pressed="false">Tools</button>
+              <button type="button" data-inventory-kind="skill" aria-pressed="false">Skills</button>
+              <button type="button" data-inventory-kind="workflow" aria-pressed="false">Workflows</button>
+            </div>
+            <div class="filter-cluster" data-tool-state-filter role="group" aria-label="Availability state">
+              <button type="button" data-inventory-state="all" aria-pressed="true">All</button>
+              <button type="button" data-inventory-state="enabled" aria-pressed="false">Enabled</button>
+              <button type="button" data-inventory-state="disabled" aria-pressed="false">Disabled</button>
+            </div>
+            <label class="field"><span class="sr-only">Category</span><select id="tool-category-filter" aria-label="Category"><option value="all">All categories</option></select></label>
+          </div>
+          <p id="toggle-status" class="inventory-summary" aria-live="polite">Toggle an item to change its workspace availability.</p>
+          <div id="tool-inventory" class="tool-inventory" aria-live="polite"></div>
+          <p class="sr-only">Disabled items are Available to re-enable. Use the Re-enable toggle beside the item.</p>
         </section>`;
 }
 
@@ -780,27 +975,26 @@ function secretsClientScript(): string {
         setText('secret-summary', bindings.length + (bindings.length === 1 ? ' binding' : ' bindings'));
         setHidden('secret-loading', true);
         setHidden('secret-error', true);
-        setHidden('secret-content', false);
+        const content = byId('secret-content');
+        if (content) content.setAttribute('aria-busy', 'false');
       })
       .catch(() => {
         setHidden('secret-loading', true);
-        setHidden('secret-content', true);
         setHidden('secret-error', false);
+        const content = byId('secret-content');
+        if (content) content.setAttribute('aria-busy', 'false');
       });
   `;
 }
 
 function renderSecretsContent(): string {
   return `
-      <section id="secret-loading" class="state-panel" aria-live="polite">
-        <strong>Loading secret connections</strong>
-        <p class="muted">Checking your workspace session and node connection.</p>
-      </section>
+      <p id="secret-loading" class="sr-only" aria-live="polite">Loading secret connections</p>
       <section id="secret-error" class="state-panel" aria-live="polite" hidden>
         <strong>Secret connections unavailable</strong>
         <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
       </section>
-      <div id="secret-content" hidden>
+      <div id="secret-content" aria-busy="true">
         <section class="panel-section">
           <header class="panel-header"><h2>Connected credentials</h2><p id="secret-summary" class="muted">0 bindings</p></header>
           <p class="muted">Values are never returned to this page or to an agent. Never paste a credential into an agent conversation.</p>
@@ -822,15 +1016,12 @@ function renderNodesContent(): string {
     '<option value="' + escapeHtml(region.id) + '">' + escapeHtml(region.name) + '</option>',
   ).join('');
   return [
-    '<section id="node-loading" class="state-panel" aria-live="polite">',
-    '  <strong>Loading workspace nodes</strong>',
-    '  <p class="muted">Checking node presence and your workspace default.</p>',
-    '</section>',
+    '<p id="node-loading" class="sr-only" aria-live="polite">Loading workspace nodes</p>',
     '<section id="node-error" class="state-panel" aria-live="polite" hidden>',
     '  <strong>Nodes unavailable</strong>',
     '  <p class="muted">Sign in again or verify the workspace control plane is available.</p>',
     '</section>',
-    '<div id="node-content" hidden>',
+    '<div id="node-content" aria-busy="true">',
     '  <section class="panel-section">',
     '    <div class="nodes-toolbar">',
     '      <div class="nodes-toolbar-copy"><h2>Workspace nodes</h2><p id="node-summary" class="muted">Loading node presence…</p></div>',
@@ -879,8 +1070,8 @@ function nodesClientScript(): string {
     "const selectedQuote = () => { const planId = selectedPlanId(); const region = selectedRegionId(); const quotes = currentPricing && Array.isArray(currentPricing.quotes) ? currentPricing.quotes : []; return quotes.find((quote) => quote && quote.plan && quote.plan.id === planId && quote.region && quote.region.id === region) || null; };",
     "const nodeCard = (node) => { const isDefault = currentNodeSnapshot && currentNodeSnapshot.defaultNodeId === node.nodeId; const isCurrent = currentNodeSnapshot && currentNodeSnapshot.currentNodeId === node.nodeId; const online = node.presence === 'online' && node.state === 'active'; const badges = [isDefault ? '<span class=\"status-pill status-connected\">Default</span>' : '', isCurrent ? '<span class=\"status-pill\">Current</span>' : '', node.role === 'home' ? '<span class=\"status-pill\">Home</span>' : ''].filter(Boolean).join(''); const action = isDefault ? '<button type=\"button\" disabled>Default node</button>' : '<button type=\"button\" data-make-default=\"' + escapeHtml(node.nodeId) + '\" ' + (online ? '' : 'disabled') + '>Make default</button>'; return '<article class=\"node-card' + (isDefault ? ' is-default' : '') + '\">' + '<header class=\"node-card-header\"><div class=\"node-card-title\"><strong>' + escapeHtml(node.displayName || node.nodeId) + '</strong><code>' + escapeHtml(node.nodeId) + '</code></div><div class=\"node-badges\">' + badges + '</div></header>' + '<div class=\"node-meta\"><div class=\"node-meta-item\"><span>Platform</span><span>' + escapeHtml(prettyPlatform(node.platform)) + '</span></div><div class=\"node-meta-item\"><span>Channel</span><span>' + escapeHtml(node.channel || 'standard') + '</span></div></div>' + '<footer class=\"node-card-footer\"><span class=\"presence presence-' + escapeHtml(node.presence || 'offline') + '\"><span class=\"presence-dot\"></span>' + escapeHtml(prettyPresence(node.presence)) + '</span>' + action + '</footer>' + '</article>'; };",
     "function bindDefaultButtons() { document.querySelectorAll('[data-make-default]').forEach((button) => { button.addEventListener('click', () => void makeDefault(button.getAttribute('data-make-default') || '', button)); }); }",
-    "function renderNodes(snapshot) { currentNodeSnapshot = snapshot; const nodes = Array.isArray(snapshot.nodes) ? snapshot.nodes : []; const list = byId('node-list'); if (list) list.innerHTML = nodes.length ? nodes.map(nodeCard).join('') : '<section class=\"state-panel\"><strong>No nodes yet</strong><p class=\"muted\">Add a cloud node to start using Consuelo without installing it on a computer.</p></section>'; const presence = snapshot.presence || {}; setText('node-summary', nodes.length + (nodes.length === 1 ? ' node' : ' nodes') + ' · ' + String(presence.online || 0) + ' online'); setHidden('node-loading', true); setHidden('node-error', true); setHidden('node-content', false); bindDefaultButtons(); }",
-    "async function loadNodes() { try { const response = await fetch('/gateway/nodes/snapshot', { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' }); if (!response.ok) throw new Error('nodes unavailable'); renderNodes(await response.json()); } catch { setHidden('node-loading', true); setHidden('node-content', true); setHidden('node-error', false); } }",
+    "function renderNodes(snapshot) { currentNodeSnapshot = snapshot; const nodes = Array.isArray(snapshot.nodes) ? snapshot.nodes : []; const list = byId('node-list'); if (list) list.innerHTML = nodes.length ? nodes.map(nodeCard).join('') : '<section class=\"state-panel\"><strong>No nodes yet</strong><p class=\"muted\">Add a cloud node to start using Consuelo without installing it on a computer.</p></section>'; const presence = snapshot.presence || {}; setText('node-summary', nodes.length + (nodes.length === 1 ? ' node' : ' nodes') + ' · ' + String(presence.online || 0) + ' online'); setHidden('node-loading', true); setHidden('node-error', true); const content = byId('node-content'); if (content) content.setAttribute('aria-busy', 'false'); bindDefaultButtons(); }",
+    "async function loadNodes() { try { const response = await fetch('/gateway/nodes/snapshot', { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' }); if (!response.ok) throw new Error('nodes unavailable'); renderNodes(await response.json()); } catch { setHidden('node-loading', true); setHidden('node-error', false); const content = byId('node-content'); if (content) content.setAttribute('aria-busy', 'false'); } }",
     "async function makeDefault(nodeId, button) { const csrf = csrfToken(); if (!nodeId || !csrf) { setText('node-feedback', 'Your workspace session needs to be refreshed before changing the default node.'); return; } if (button instanceof HTMLButtonElement) button.disabled = true; setText('node-feedback', 'Updating workspace default…'); try { const response = await fetch('/gateway/nodes/default', { method: 'POST', credentials: 'same-origin', headers: { accept: 'application/json', 'content-type': 'application/json', 'x-consuelo-csrf-token': csrf }, body: JSON.stringify({ nodeId }) }); if (!response.ok) throw new Error('default update denied'); await loadNodes(); setText('node-feedback', 'Default node updated. New untargeted OS calls will route there.'); } catch { if (button instanceof HTMLButtonElement) button.disabled = false; setText('node-feedback', 'Default node update failed. The existing default was kept.'); } }",
     "const formatMonthlyPrice = (quote) => { if (!quote || !Number.isSafeInteger(quote.monthlyPriceCents)) return 'Price available soon'; const value = quote.monthlyPriceCents / 100; try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: quote.currency || 'USD', maximumFractionDigits: 0 }).format(value) + '<small>/month</small>'; } catch { return '$' + String(Math.ceil(value)) + '<small>/month</small>'; } };",
     "function updateCreateButton() { const button = byId('create-cloud-node-button'); if (!(button instanceof HTMLButtonElement)) return; const ready = Boolean(selectedQuote()) && !currentProvisioningJobId; button.disabled = !ready; button.textContent = currentProvisioningJobId ? 'Creating cloud node…' : 'Create cloud node'; }",
@@ -903,15 +1094,12 @@ function nodesClientScript(): string {
 
 function renderEnvironmentContent(): string {
   return `
-      <section id="environment-loading" class="state-panel" aria-live="polite">
-        <strong>Loading environments</strong>
-        <p class="muted">Checking your workspace session and node connection.</p>
-      </section>
+      <p id="environment-loading" class="sr-only" aria-live="polite">Loading environments</p>
       <section id="environment-error" class="state-panel" aria-live="polite" hidden>
         <strong>Environments unavailable</strong>
         <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
       </section>
-      <div id="environment-content" hidden>
+      <div id="environment-content" aria-busy="true">
         <section class="panel-section">
           <header class="panel-header"><h2>Workspace environments</h2><p id="environment-summary" class="muted">0 environments</p></header>
           <div id="environment-list" class="environment-list"></div>
@@ -939,15 +1127,19 @@ function renderEnvironmentContent(): string {
 function renderHydratedContent(page: 'configuration' | 'tools'): string {
   const panels = page === 'tools' ? renderToolPanels() : renderOverviewPanels();
   return `
-      <section id="configuration-loading" class="state-panel" aria-live="polite">
-        <strong>Loading workspace configuration</strong>
-        <p class="muted">Checking your workspace session and node connection.</p>
-      </section>
+      <p id="configuration-loading" class="sr-only" aria-live="polite">Loading workspace configuration</p>
       <section id="configuration-error" class="state-panel" aria-live="polite" hidden>
         <strong>Configuration unavailable</strong>
         <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
       </section>
-      <div id="configuration-content" hidden>${panels}</div>`;
+      <div id="configuration-content" aria-busy="true">${panels}</div>`;
+}
+
+function configurationSurface(page: ConfigurationPageId): WorkspaceSurfaceId {
+  if (page === 'tools') return 'tools';
+  if (page === 'nodes') return 'nodes';
+  if (page === 'secrets') return 'secrets';
+  return 'overview';
 }
 
 export function renderConfigurationSite(page: ConfigurationPageId = 'configuration'): string {
@@ -977,21 +1169,19 @@ export function renderConfigurationSite(page: ConfigurationPageId = 'configurati
   <style>${configurationStyles()}</style>
 </head>
 <body>
-  <div class="shell">
-    <aside class="sidebar" aria-label="Configuration sidebar">
-      <div class="identity">Consuelo OS</div>
-      ${renderNav(page)}
-      <p class="muted">Private workspace state loads through authenticated Configuration APIs.</p>
-    </aside>
-    <main class="content">
-      <header class="hero">
-        <h1>${copy.title}</h1>
-        <p>${copy.description}</p>
-      </header>
-      ${content}
-    </main>
+  <div class="workspace-window" data-workspace-shell>
+    ${renderWorkspaceChromeBar(configurationSurface(page), copy.title)}
+    <div class="workspace-view" data-workspace-view>
+      <main class="content">
+        <header class="hero">
+          <h1>${copy.title}</h1>
+          <p>${copy.description}</p>
+        </header>
+        ${content}
+      </main>
+    </div>
   </div>
-  ${clientScript ? `<script>${PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT}\n${clientScript}</script>` : ''}
+  <script>${PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT}\n${workspaceChromeClientScript()}\n${clientScript}</script>
 </body>
 </html>`;
 }
