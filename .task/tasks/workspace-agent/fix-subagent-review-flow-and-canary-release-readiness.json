@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/fix-subagent-review-flow-and-canary-release-readiness",
+  "baseBranch": "stream/workspace-agent",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": null,
+  "prUrl": "",
+  "worktreePath": "/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-fix-subagent-review-flow-and-canary-release-readiness",
+  "createdAt": "2026-08-15T10:27:25.567Z"
+}

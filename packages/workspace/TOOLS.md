@@ -3230,7 +3230,7 @@ Canonical session constructor. Use kind=task for managed repo work that needs a 
 | Field | Value |
 | --- | --- |
 | Category | session lifecycle |
-| Signature | `workspace.session.start(({ kind: "task"; stream?: string; area?: string; title: string; workflow?: "task"; description?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string } &#124; { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.session.start(({ kind: "task"; stream?: string; area?: string; title: string; workflow?: "task"; description?: string; bodyFile?: string; startFrom?: "main" &#124; "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string } &#124; { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })) => Promise<ToolResult<({ sessionKind: "task"; taskSession: string; taskBranch: string; worktreePath: string; [key: string]: unknown } &#124; { sessionKind: "work"; workSession: string; ownerNodeId: string; path: string; [key: string]: unknown })>>` |
 | Runtime | `workspace session.start` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |
@@ -3257,7 +3257,10 @@ await workspace.call({
   "code": "OK",
   "message": "command completed",
   "data": {
-    "raw": "example"
+    "sessionKind": "task",
+    "taskSession": "tsk_example123",
+    "taskBranch": "task/workspace-agents/example",
+    "worktreePath": "/Users/example/.consuelo/node/tasks/worktrees/task-workspace-agents-example"
   },
   "stderr": "",
   "exitCode": 0,

@@ -283,6 +283,11 @@ async function main() {
   let removedWorktree = null;
   const taskSession = context.taskMeta?.data?.taskSession || null;
   const durableTask = taskSession ? readDurableTaskSessionMetadata(taskSession) : null;
+  if (durableTask?.recovery?.bundlePath) {
+    throw new Error(
+      `cannot finish ${context.branch}: recovery archive contains uncommitted task state at ${durableTask.recovery.bundlePath}. Restore the task session and review that work before finishing.`,
+    );
+  }
   const tmuxCleanup = terminateTaskTmuxSession(
     [durableTask, context.taskMeta?.data].filter(Boolean),
     {

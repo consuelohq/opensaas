@@ -238,6 +238,8 @@ describe('subagent orchestration contract', () => {
       const started = await executeTool('subagent', startInput, options(worktree, env));
       expect(started.ok).toBe(true);
       expect(started.data.status).toBe('running');
+      expect(started.exitCode).toBe(0);
+      expect(started.data.exitCode).toBe(0);
       expect(started.data.runId).toMatch(/^run_/);
 
       const retried = await executeTool('subagent', startInput, options(worktree, env));
@@ -411,6 +413,8 @@ describe('subagent orchestration contract', () => {
       expect(waited.data.runId).toBe(started.data.runId);
       expect(['running', 'completion_unknown']).toContain(waited.data.status);
       expect(waited.code).toBe('WAIT_TIMEOUT');
+      expect(waited.exitCode).toBe(0);
+      expect(waited.data.exitCode).toBe(0);
 
       const cancelled = await executeTool('subagent', { action: 'cancel', runId: started.data.runId }, options(durableHome, env));
       expect(cancelled.data.runId).toBe(started.data.runId);
@@ -646,7 +650,9 @@ describe('subagent orchestration contract', () => {
   });
 
   it('documents attach-only lifecycle and merge-sensitive task boundaries', () => {
-    const description = getToolManifestEntry('subagent')?.description || '';
+    const entry = getToolManifestEntry('subagent');
+    const description = entry?.description || '';
+    expect(entry?.defaultTimeout).toBe(900_000);
     expect(description).toContain('task.push publishes only the task branch');
     expect(description).toContain('task.pr merges to the stream');
     expect(description).toContain('status/wait/logs attach');

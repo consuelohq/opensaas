@@ -9,6 +9,7 @@ import { executeCodeCall } from '../scripts/lib/code-call/runtime';
 import { createDefaultNodeYamlConfig, resolveConsueloHomeLayout, writeYamlConfig } from '../scripts/lib/consuelo-home';
 import { executeTool } from '../scripts/lib/facade/executor';
 import { createWorkSession } from '../scripts/lib/work-session';
+import { managedWorktreeRoots } from '../scripts/lib/work-session-protection';
 
 const tempRoots: string[] = [];
 const TEST_UUID = '12345678-1234-4234-9234-123456789abc';
@@ -415,4 +416,11 @@ describe('work-session code.call authority', () => {
     expect(result.code).toBe('CODE_CALL_VALIDATION_ERROR');
     expect(result.message).toContain('managed task worktree');
   });
+
+  it('fails closed when managed Git worktree discovery fails', () => {
+    const ordinaryDirectory = tempRoot('consuelo-code-call-not-a-git-repo-');
+    expect(() => managedWorktreeRoots(ordinaryDirectory))
+      .toThrow(/failed to enumerate managed Git worktrees/i);
+  });
+
 });

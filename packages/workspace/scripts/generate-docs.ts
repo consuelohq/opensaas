@@ -18,6 +18,11 @@ function renderSignature(entry: ToolManifestEntry): string {
 }
 
 function exampleData(entry: ToolManifestEntry): unknown {
+  if (entry.outputSchema === 'SessionStartOutput') {
+    return entry.exampleInput.kind === 'work'
+      ? { sessionKind: 'work', workSession: 'wrk_example123', ownerNodeId: 'node_example', path: '/Users/example/work' }
+      : { sessionKind: 'task', taskSession: 'tsk_example123', taskBranch: 'task/workspace-agents/example', worktreePath: '/Users/example/.consuelo/node/tasks/worktrees/task-workspace-agents-example' };
+  }
   if (entry.outputSchema === 'ToolsSearchOutput') {
     return {
       query: 'linear issue',

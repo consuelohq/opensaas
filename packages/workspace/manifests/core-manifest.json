@@ -679,7 +679,7 @@
         },
         "defaultTimeout": 60000,
         "inputSchema": "SessionStartInput",
-        "outputSchema": "RawOutput",
+        "outputSchema": "SessionStartOutput",
         "command": {
           "script": "session:start",
           "branchMode": "none",

@@ -18,7 +18,10 @@ describe('Workspace task hook guidance', () => {
       'stream.context → session.start({ kind: "task" }) → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish',
     );
     expect(guidance.skillAnchors).toContain(
-      'For task-scoped work, `session.start({ kind: "task" })` returns `data.taskSession`. `task.start` remains a compatibility alias.',
+      'For task-scoped work, `session.start({ kind: "task" })` returns `data.taskSession`.',
+    );
+    expect(guidance.skillAnchors).toContain(
+      '`session.start({ kind: "task" })` is the canonical constructor for repository tasks. `task.start` remains a compatibility alias for existing callers.',
     );
     expect(guidance.skillAnchors).toContain(
       'Pass `taskSession` at the top level of every task-scoped `workspace.call`:',

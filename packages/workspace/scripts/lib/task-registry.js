@@ -5,6 +5,9 @@ const crypto = require('crypto');
 const { getConsueloHome } = require('./paths');
 
 const TASK_SESSION_PATTERN = /^tsk_[A-Za-z0-9_-]{4,200}$/;
+const TASK_REGISTRY_LOCK_STALE_MS = 60_000;
+const TASK_REGISTRY_LOCK_RETRIES = 200;
+const TASK_REGISTRY_LOCK_WAIT_MS = 5;
 
 function validateTaskSession(taskSession) {
   const value = String(taskSession || '').trim();
@@ -31,6 +34,42 @@ function atomicWriteJson(filePath, value) {
   } finally {
     try { fs.rmSync(temporaryPath, { force: true }); } catch {}
   }
+}
+
+function sleepSync(milliseconds) {
+  const waitArray = new Int32Array(new SharedArrayBuffer(4));
+  Atomics.wait(waitArray, 0, 0, milliseconds);
+}
+
+function withTaskSessionLock(taskSession, options, callback) {
+  if (options?._lockHeld) return callback();
+  const filePath = getDurableTaskSessionPath(taskSession, options?.home);
+  const lockPath = `${filePath}.lock`;
+  fs.mkdirSync(path.dirname(lockPath), { recursive: true });
+  for (let attempt = 0; attempt < TASK_REGISTRY_LOCK_RETRIES; attempt += 1) {
+    try {
+      fs.mkdirSync(lockPath, { mode: 0o700 });
+      try {
+        fs.writeFileSync(path.join(lockPath, 'owner.json'), `${JSON.stringify({ pid: process.pid, acquiredAt: new Date().toISOString() })}\n`, { mode: 0o600 });
+      } catch {}
+      try {
+        return callback();
+      } finally {
+        fs.rmSync(lockPath, { recursive: true, force: true });
+      }
+    } catch (error) {
+      if (error?.code !== 'EEXIST') throw error;
+      try {
+        const ageMs = Date.now() - fs.statSync(lockPath).mtimeMs;
+        if (ageMs > TASK_REGISTRY_LOCK_STALE_MS) {
+          fs.rmSync(lockPath, { recursive: true, force: true });
+          continue;
+        }
+      } catch {}
+      sleepSync(TASK_REGISTRY_LOCK_WAIT_MS);
+    }
+  }
+  throw new Error(`timed out acquiring durable task registry lock for ${taskSession}`);
 }
 
 function nowIso(now = Date.now) {
@@ -64,17 +103,33 @@ function normalizeDurableTaskMetadata(metadata) {
 }
 
 function writeDurableTaskSessionMetadata(metadata, options = {}) {
-  const timestamp = nowIso(options.now);
   const base = normalizeDurableTaskMetadata(metadata);
-  const normalized = {
-    ...base,
-    createdAt: base.createdAt || timestamp,
-    lastActiveAt: base.lastActiveAt || base.updatedAt || base.createdAt || timestamp,
-    updatedAt: timestamp,
-  };
-  const filePath = getDurableTaskSessionPath(normalized.taskSession, options.home);
-  atomicWriteJson(filePath, normalized);
-  return { ...normalized, registryPath: filePath };
+  return withTaskSessionLock(base.taskSession, options, () => {
+    const timestamp = nowIso(options.now);
+    const normalized = {
+      ...base,
+      createdAt: base.createdAt || timestamp,
+      lastActiveAt: base.lastActiveAt || base.updatedAt || base.createdAt || timestamp,
+      updatedAt: timestamp,
+    };
+    const filePath = getDurableTaskSessionPath(normalized.taskSession, options.home);
+    atomicWriteJson(filePath, normalized);
+    return { ...normalized, registryPath: filePath };
+  });
+}
+
+function transitionDurableTaskSessionMetadata(taskSession, expectedStatus, update, options = {}) {
+  const expected = validateTaskSession(taskSession);
+  return withTaskSessionLock(expected, options, () => {
+    const current = readDurableTaskSessionMetadata(expected, options);
+    if (!current) throw new Error(`durable task session not found: ${expected}`);
+    const allowed = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
+    if (allowed.length > 0 && !allowed.includes(current.status)) {
+      throw new Error(`durable task session ${expected} expected status ${allowed.join('|')} but found ${current.status}`);
+    }
+    const patch = typeof update === 'function' ? update(current) : update;
+    return writeDurableTaskSessionMetadata({ ...current, ...patch, taskSession: expected }, { ...options, _lockHeld: true });
+  });
 }
 
 function readDurableTaskSessionMetadata(taskSession, options = {}) {
@@ -113,19 +168,25 @@ function listDurableTaskSessionMetadata(options = {}) {
 }
 
 function touchDurableTaskSessionMetadata(taskSession, options = {}) {
-  const metadata = readDurableTaskSessionMetadata(taskSession, options);
-  if (!metadata) return null;
-  const timestamp = nowIso(options.now);
-  return writeDurableTaskSessionMetadata({
-    ...metadata,
-    lastActiveAt: timestamp,
-  }, { ...options, now: () => Date.parse(timestamp) });
+  const expected = validateTaskSession(taskSession);
+  return withTaskSessionLock(expected, options, () => {
+    const metadata = readDurableTaskSessionMetadata(expected, options);
+    if (!metadata) return null;
+    const timestamp = nowIso(options.now);
+    return writeDurableTaskSessionMetadata({
+      ...metadata,
+      lastActiveAt: timestamp,
+    }, { ...options, _lockHeld: true, now: () => Date.parse(timestamp) });
+  });
 }
 
 function deleteDurableTaskSessionMetadata(taskSession, options = {}) {
-  const filePath = getDurableTaskSessionPath(taskSession, options.home);
-  fs.rmSync(filePath, { force: true });
-  return filePath;
+  const expected = validateTaskSession(taskSession);
+  return withTaskSessionLock(expected, options, () => {
+    const filePath = getDurableTaskSessionPath(expected, options.home);
+    fs.rmSync(filePath, { force: true });
+    return filePath;
+  });
 }
 
 module.exports = {
@@ -135,6 +196,7 @@ module.exports = {
   listDurableTaskSessionMetadata,
   readDurableTaskSessionMetadata,
   touchDurableTaskSessionMetadata,
+  transitionDurableTaskSessionMetadata,
   validateTaskSession,
   writeDurableTaskSessionMetadata,
 };

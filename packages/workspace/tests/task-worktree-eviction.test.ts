@@ -213,6 +213,56 @@ test('an evicting task with its worktree still present rejects recovery instead 
   expect(fs.existsSync(fixture.worktreePath)).toBe(true);
 });
 
+
+
+test('durable registry transitions reject stale status writers', () => {
+  const fixture = createTaskFixture();
+  const evicting = taskRegistry.transitionDurableTaskSessionMetadata(
+    fixture.taskSession,
+    'active',
+    { status: 'evicting' },
+    { home: fixture.home },
+  );
+  expect(evicting.status).toBe('evicting');
+  expect(() => taskRegistry.transitionDurableTaskSessionMetadata(
+    fixture.taskSession,
+    'active',
+    { status: 'evicted' },
+    { home: fixture.home },
+  )).toThrow(/expected status active but found evicting/i);
+  expect(taskRegistry.readDurableTaskSessionMetadata(fixture.taskSession, { home: fixture.home })?.status)
+    .toBe('evicting');
+});
+
+test('corrupt recovery manifest reports the manifest path', () => {
+  const fixture = createTaskFixture();
+  fs.writeFileSync(path.join(fixture.worktreePath, 'untracked.txt'), 'recoverable\n');
+  const evicted = evictDurableTaskWorktree({
+    taskSession: fixture.taskSession,
+    home: fixture.home,
+    terminateTmux: () => ({ status: 'not-found', terminated: false }),
+  });
+  const manifestPath = evicted.recovery?.manifestPath;
+  expect(manifestPath).toBeTruthy();
+  fs.writeFileSync(manifestPath!, '{ definitely-not-json');
+  expect(() => restoreEvictedTaskWorktree(fixture.taskSession, { home: fixture.home }))
+    .toThrow(new RegExp(`failed to parse task recovery manifest ${manifestPath!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+});
+
+test('evicting task rejects recovery even after its worktree has been removed', () => {
+  const fixture = createTaskFixture();
+  taskRegistry.transitionDurableTaskSessionMetadata(
+    fixture.taskSession,
+    'active',
+    { status: 'evicting', repoRoot: fixture.repoRoot },
+    { home: fixture.home },
+  );
+  git(fixture.repoRoot, ['worktree', 'remove', '--force', fixture.worktreePath]);
+  expect(fs.existsSync(fixture.worktreePath)).toBe(false);
+  expect(() => restoreEvictedTaskWorktree(fixture.taskSession, { home: fixture.home }))
+    .toThrow(/eviction is in progress/i);
+});
+
 test('final recovery cleanup deletes only task-owned archive and registry state', () => {
   const fixture = createTaskFixture();
   fs.writeFileSync(path.join(fixture.worktreePath, 'untracked.txt'), 'recoverable\n');

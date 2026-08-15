@@ -19,6 +19,7 @@ const {
   deleteDurableTaskSessionMetadata,
   getDurableTaskSessionPath,
   readDurableTaskSessionMetadata,
+  transitionDurableTaskSessionMetadata,
   writeDurableTaskSessionMetadata,
 } = require('./task-registry');
 
@@ -231,7 +232,12 @@ function readRecoveryManifest(metadata, options = {}) {
   const recovery = metadata.recovery;
   const home = options.home || getConsueloHome();
   const manifestPath = assertTaskRecoveryPath(recovery.manifestPath, metadata.taskSession, home);
-  const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  } catch (error) {
+    throw new Error(`failed to parse task recovery manifest ${manifestPath}: ${error instanceof Error ? error.message : String(error)}`);
+  }
   if (
     parsed.schemaVersion !== RECOVERY_SCHEMA_VERSION
     || parsed.taskSession !== metadata.taskSession
@@ -276,8 +282,7 @@ function evictDurableTaskWorktree(input) {
   if (!registered) throw new Error(`task worktree is not registered for ${metadata.taskBranch}`);
 
   let recovery = metadata.recovery || null;
-  let evicting = writeDurableTaskSessionMetadata({
-    ...metadata,
+  let evicting = transitionDurableTaskSessionMetadata(metadata.taskSession, 'active', {
     repoRoot,
     status: 'evicting',
     recovery,
@@ -286,6 +291,10 @@ function evictDurableTaskWorktree(input) {
   const createRecoveryArchive = input.createRecoveryArchive || createVerifiedTaskRecoveryArchive;
   try {
     let state = inspectTaskWorktreeState({ repoRoot, worktreePath, taskBranch: metadata.taskBranch });
+    if (!state.needsRecovery) {
+      // Re-inspect immediately before removal so a last-moment edit is not discarded.
+      state = inspectTaskWorktreeState({ repoRoot, worktreePath, taskBranch: metadata.taskBranch });
+    }
     if (state.needsRecovery) {
       recovery = createRecoveryArchive({
         taskSession: metadata.taskSession,
@@ -295,37 +304,25 @@ function evictDurableTaskWorktree(input) {
         home,
         now: input.now,
       });
-    } else {
-      state = inspectTaskWorktreeState({ repoRoot, worktreePath, taskBranch: metadata.taskBranch });
-      if (state.needsRecovery) {
-        recovery = createRecoveryArchive({
-          taskSession: metadata.taskSession,
-          taskBranch: metadata.taskBranch,
-          worktreePath,
-          repoRoot,
-          home,
-          now: input.now,
-        });
-      }
     }
-    evicting = writeDurableTaskSessionMetadata({ ...evicting, recovery }, { home, now: input.now });
+    evicting = transitionDurableTaskSessionMetadata(metadata.taskSession, 'evicting', { recovery }, { home, now: input.now });
     const terminateTmux = input.terminateTmux || defaultTerminateTmux;
     const tmux = terminateTmux(evicting);
     assertSafeTmuxCleanup(tmux);
     removeWorktree(repoRoot, worktreePath);
     const evictedAt = nowIso(input.now);
-    return writeDurableTaskSessionMetadata({
-      ...evicting,
+    return transitionDurableTaskSessionMetadata(metadata.taskSession, 'evicting', {
       status: 'evicted',
       evictedAt,
       recovery,
     }, { home, now: input.now });
   } catch (error) {
-    writeDurableTaskSessionMetadata({
-      ...evicting,
-      status: 'active',
-      recovery,
-    }, { home, now: input.now });
+    try {
+      transitionDurableTaskSessionMetadata(metadata.taskSession, 'evicting', {
+        status: 'active',
+        recovery,
+      }, { home, now: input.now });
+    } catch {}
     throw error;
   }
 }
@@ -393,7 +390,7 @@ function restoreEvictedTaskWorktree(taskSession, options = {}) {
   const metadata = readDurableTaskSessionMetadata(taskSession, { home });
   if (!metadata) throw new Error(`durable task session not found: ${taskSession}`);
   const worktreePath = path.resolve(metadata.worktreePath);
-  if (metadata.status === 'evicting' && fs.existsSync(worktreePath)) {
+  if (metadata.status === 'evicting') {
     throw new Error(`task eviction is in progress: ${taskSession}`);
   }
   if (fs.existsSync(worktreePath) && metadata.status !== 'evicted' && metadata.status !== 'evicting') {
@@ -437,8 +434,7 @@ function restoreEvictedTaskWorktree(taskSession, options = {}) {
     if (recovery) applyRecoveryCheckpoint(worktreePath, recovery);
 
     const restoredAt = nowIso(options.now);
-    const restored = writeDurableTaskSessionMetadata({
-      ...metadata,
+    const restored = transitionDurableTaskSessionMetadata(taskSession, ['evicted', 'active'], {
       repoRoot,
       status: 'active',
       recovery: null,

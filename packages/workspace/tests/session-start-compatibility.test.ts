@@ -34,7 +34,7 @@ describe('workspace session.start compatibility', () => {
       nodeName: 'Workspace Session Test',
       workspaceId: 'workspace_session_test',
     });
-    writeYamlConfig(layout.nodeConfigPath, config);
+    writeYamlConfig(layout.nodeConfigPath, config, false);
 
     const result = spawnSync(
       'bun',
@@ -83,7 +83,7 @@ describe('workspace session.start compatibility', () => {
       nodeName: 'Workspace Session Test',
       workspaceId: 'workspace_session_test',
     });
-    writeYamlConfig(layout.nodeConfigPath, config);
+    writeYamlConfig(layout.nodeConfigPath, config, false);
 
     const result = spawnSync(
       'bun',

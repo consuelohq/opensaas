@@ -304,7 +304,7 @@ const SessionTaskStartInput = z.object({
   bodyFile: optionalString,
   startFrom: z.enum(['main', 'stream']).optional(),
   createStream: z.boolean().optional(),
-}).refine((input) => Boolean(input.area || input.stream), {
+}).strict().refine((input) => Boolean(input.area || input.stream), {
   message: 'provide area or stream',
   path: ['area'],
 });
@@ -314,7 +314,7 @@ const SessionWorkStartInput = z.object({
   ...dryRunField,
   kind: z.literal('work'),
   path: z.string().min(1),
-});
+}).strict();
 
 export const SessionStartInput = z.union([
   SessionTaskStartInput,
@@ -1264,6 +1264,7 @@ export const schemaTypeSignatures: Record<string, string> = {
 
 export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
+  SessionStartOutput: '({ sessionKind: \"task\"; taskSession: string; taskBranch: string; worktreePath: string; [key: string]: unknown } | { sessionKind: \"work\"; workSession: string; ownerNodeId: string; path: string; [key: string]: unknown })',
   BatchOutput: '{ results: Array<ToolResult<unknown>>; completed: number }',
   FsReadOutput: '({ type: "text-full"; path: string; mime: string; encoding: "utf8"; sizeBytes: number; lines: number; content: string } | { type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-full"; path: string; mime: string; encoding: "utf8"; sizeBytes: number; lines: number; content: string } | { type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } }> }',
   FsSearchOutput: '{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: unknown } | { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: unknown }> }',

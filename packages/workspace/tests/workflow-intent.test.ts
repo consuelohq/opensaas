@@ -162,10 +162,13 @@ describe('Workspace workflow intent bundles', () => {
       description: expect.stringMatching(/compatibility alias/i),
       command: expect.objectContaining({ script: 'task:start' }),
     }));
-    expect(getInputSchema('SessionStartInput').parse({
+    const sessionStartSchema = getInputSchema('SessionStartInput');
+    expect(sessionStartSchema).not.toBeNull();
+    if (!sessionStartSchema) throw new Error('SessionStartInput schema is unavailable');
+    expect(sessionStartSchema.parse({
       kind: 'task', area: 'workspace-agents', title: 'canonical task start',
     })).toMatchObject({ kind: 'task' });
-    const canonicalTask = getInputSchema('SessionStartInput').parse({
+    const canonicalTask = sessionStartSchema.parse({
       kind: 'task',
       area: 'workspace-agents',
       title: 'canonical task start',
@@ -182,9 +185,15 @@ describe('Workspace workflow intent bundles', () => {
       createStream: true,
     });
 
-    expect(getInputSchema('SessionStartInput').parse({
+    expect(sessionStartSchema.parse({
       kind: 'work', path: '/tmp/example-work-root',
     })).toMatchObject({ kind: 'work' });
+    expect(() => sessionStartSchema.parse({
+      kind: 'work', path: '/tmp/example-work-root', area: 'workspace-agents',
+    })).toThrow();
+    expect(() => sessionStartSchema.parse({
+      kind: 'task', area: 'workspace-agents', path: '/tmp/should-not-be-accepted',
+    })).toThrow();
   });
 
   test('should accept workflow selection through the combined task.start input', () => {

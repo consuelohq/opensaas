@@ -7,12 +7,21 @@ import paths from '../scripts/lib/paths.js';
 import taskRegistry from '../scripts/lib/task-registry.js';
 import taskSession from '../scripts/lib/task-session.js';
 
+const trackedEnvKeys = [
+  'CONSUELO_HOME',
+  'CONSUELO_OS_HOME',
+  'WORKSPACE_WORKTREE_ROOT',
+  'OPENSAAS_WORKTREE_ROOT',
+] as const;
+const originalEnv = Object.fromEntries(trackedEnvKeys.map((key) => [key, process.env[key]]));
+
 afterEach(() => {
   vi.restoreAllMocks();
-  delete process.env.CONSUELO_HOME;
-  delete process.env.CONSUELO_OS_HOME;
-  delete process.env.WORKSPACE_WORKTREE_ROOT;
-  delete process.env.OPENSAAS_WORKTREE_ROOT;
+  for (const key of trackedEnvKeys) {
+    const value = originalEnv[key];
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
 });
 
 test('task worktrees default to durable Consuelo node storage without changing generic temp worktrees', () => {

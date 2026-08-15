@@ -21,8 +21,8 @@ function normalizeConsueloHome(value) {
     : resolved;
 }
 
-function getConsueloHome() {
-  return normalizeConsueloHome(process.env.CONSUELO_HOME || process.env.CONSUELO_OS_HOME || '~/.consuelo');
+function getConsueloHome(env = process.env) {
+  return normalizeConsueloHome(env.CONSUELO_HOME || env.CONSUELO_OS_HOME || '~/.consuelo');
 }
 
 function readYamlObject(filePath) {
@@ -83,8 +83,8 @@ function getWorktreeRoot(override) {
   return override || process.env.WORKSPACE_WORKTREE_ROOT || process.env.OPENSAAS_WORKTREE_ROOT || DEFAULT_WORKTREE_ROOT;
 }
 
-function getTaskWorktreeRoot(override) {
-  return override || process.env.WORKSPACE_WORKTREE_ROOT || process.env.OPENSAAS_WORKTREE_ROOT || path.join(getConsueloHome(), 'node', 'tasks', 'worktrees');
+function getTaskWorktreeRoot(override, env = process.env) {
+  return override || env.WORKSPACE_WORKTREE_ROOT || env.OPENSAAS_WORKTREE_ROOT || path.join(getConsueloHome(env), 'node', 'tasks', 'worktrees');
 }
 
 function toWorktreeDirectoryName(branch) {

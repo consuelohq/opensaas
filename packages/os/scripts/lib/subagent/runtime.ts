@@ -626,7 +626,7 @@ function durableSubagentResult(
     command: run.command,
     stdout: logs.stdout,
     stderr: responseStderr,
-    exitCode: successfulCancel ? 0 : run.exitCode ?? (status === 'completed' ? 0 : 1),
+    exitCode: successfulCancel ? 0 : run.exitCode ?? (status === 'completed' || status === 'starting' || status === 'running' ? 0 : 1),
     ...(run.finalMessage ? { finalMessage: run.finalMessage } : {}),
     ...(run.summary !== undefined ? { summary: run.summary as SubagentData['summary'] } : {}),
     ...(run.usage ? { usage: run.usage } : {}),
