@@ -247,7 +247,7 @@ describe('durable subagent lifecycle regressions', () => {
       writeFileSync(instructionPath, 'instruction');
       mkdirSync(barrierPath);
       writeFileSync(join(barrierPath, '.keep'), '');
-      const modulePath = join(process.cwd(), 'packages/os/scripts/lib/subagent/lifecycle.ts');
+      const modulePath = fileURLToPath(new URL('../scripts/lib/subagent/lifecycle.ts', import.meta.url));
       const values = { executable, home, instructionPath };
       const code = [
         "import { readdirSync, writeFileSync } from 'node:fs';",
