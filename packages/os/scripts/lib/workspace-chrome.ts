@@ -5,13 +5,18 @@ export type WorkspaceSurfaceId =
   | 'overview'
   | 'secrets';
 
-const WORKSPACE_ROUTES: Array<{
-  id: WorkspaceSurfaceId;
+type WorkspaceRouteGroup = 'Observe' | 'Configure' | 'Connect' | 'Guides';
+
+type WorkspaceRoute = {
+  id: WorkspaceSurfaceId | 'chatgpt-connect' | 'claude-connect' | 'documentation';
   label: string;
   href: string;
-  group: 'Observe' | 'Configure';
+  group: WorkspaceRouteGroup;
   description: string;
-}> = [
+  external?: boolean;
+};
+
+const WORKSPACE_ROUTES: WorkspaceRoute[] = [
   {
     id: 'tracing',
     label: 'Tracing',
@@ -35,7 +40,7 @@ const WORKSPACE_ROUTES: Array<{
   },
   {
     id: 'overview',
-    label: 'Overview',
+    label: 'Home',
     href: '/configuration',
     group: 'Configure',
     description: 'Review workspace connections and source control.',
@@ -46,6 +51,29 @@ const WORKSPACE_ROUTES: Array<{
     href: '/secrets',
     group: 'Configure',
     description: 'Manage credential bindings without revealing values.',
+  },
+  {
+    id: 'chatgpt-connect',
+    label: 'ChatGPT',
+    href: 'https://chatgpt.com/plugins#settings/Connectors?create-connector=true&redirectAfter=%2Fplugins',
+    group: 'Connect',
+    description: 'Add Consuelo as a custom MCP connector.',
+    external: true,
+  },
+  {
+    id: 'claude-connect',
+    label: 'Claude',
+    href: 'https://claude.ai/customize/connectors',
+    group: 'Connect',
+    description: 'Add Consuelo as a custom MCP connector.',
+    external: true,
+  },
+  {
+    id: 'documentation',
+    label: 'Documentation',
+    href: '/docs',
+    group: 'Guides',
+    description: 'Open Consuelo documentation and setup guides.',
   },
 ];
 
@@ -59,17 +87,19 @@ function escapeHtml(value: string): string {
 }
 
 function renderRouteGroup(
-  group: 'Observe' | 'Configure',
+  group: WorkspaceRouteGroup,
   active: WorkspaceSurfaceId,
 ): string {
   const links = WORKSPACE_ROUTES
     .filter((route) => route.group === group)
     .map((route) => {
       const current = route.id === active ? ' aria-current="page"' : '';
-      return `<a class="workspace-route-option" role="menuitem"${current} href="${route.href}"><span>${escapeHtml(route.label)}</span><small>${escapeHtml(route.description)}</small></a>`;
+      const external = route.external ? ' target="_blank" rel="noopener noreferrer"' : '';
+      const cardClass = group === 'Connect' ? ' workspace-route-card' : '';
+      return `<a class="workspace-route-option${cardClass}" role="menuitem"${current}${external} href="${escapeHtml(route.href)}"><span>${escapeHtml(route.label)}</span><small>${escapeHtml(route.description)}</small></a>`;
     })
     .join('');
-  return `<section class="workspace-route-group"><p>${group}</p>${links}</section>`;
+  return `<section class="workspace-route-group" data-route-group="${group}"><p>${group}</p>${links}</section>`;
 }
 
 export function renderWorkspaceChromeBar(
@@ -92,6 +122,8 @@ export function renderWorkspaceChromeBar(
       <div id="workspace-route-menu" class="workspace-route-menu" data-workspace-route-menu role="menu" aria-label="Workspace routes" hidden>
         ${renderRouteGroup('Observe', active)}
         ${renderRouteGroup('Configure', active)}
+        ${renderRouteGroup('Connect', active)}
+        ${renderRouteGroup('Guides', active)}
       </div>
     </div>
     <div class="trxChromeActions"><span class="trxClock" data-workspace-clock>--:--</span></div>
@@ -120,6 +152,10 @@ export function workspaceRouteSwitcherStyles(): string {
     .workspace-route-option[aria-current="page"] { color: #f0d18a; background: rgba(197, 164, 109, 0.1); }
     .workspace-route-option span { font: 13px/1.25 Georgia, "Times New Roman", serif; }
     .workspace-route-option small { color: #918a7f; font: 10px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .workspace-route-group[data-route-group="Connect"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+    .workspace-route-group[data-route-group="Connect"] > p { grid-column: 1 / -1; }
+    .workspace-route-card { grid-template-columns: 1fr; gap: 5px; align-content: start; min-height: 72px; border: 1px solid rgba(241, 231, 213, 0.10); padding: 10px; }
+    .workspace-route-card span { font-size: 15px; }
     @media (max-width: 560px) {
       .workspace-route-menu { left: auto; right: -70px; transform: none; }
       .workspace-route-option { grid-template-columns: 70px minmax(0, 1fr); }

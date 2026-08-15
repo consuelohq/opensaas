@@ -4,6 +4,8 @@ import { pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { createDefaultManagedCloudPricingRuntime } from '../scripts/lib/managed-cloud-public-pricing';
+
 type WorkerSecretMetadata = Array<{ name: string; type?: string }>;
 
 type ReadinessModule = {
@@ -36,6 +38,7 @@ type ReleaseModule = {
       writeErr: (message?: string) => void;
       fetchImpl?: typeof fetch;
       sleepImpl?: (ms: number) => Promise<void>;
+      managedCloudPricingLoader?: () => Promise<ReturnType<typeof createDefaultManagedCloudPricingRuntime>>;
     },
   ) => Promise<number>;
   assertDeviceAuthorityHealth: (health: {
@@ -369,6 +372,72 @@ describe('OS device authority release contract', () => {
     expect(commands.at(-1)).toMatchObject({
       command: 'wrangler',
       args: expect.arrayContaining(['deploy', '--dry-run']),
+    });
+    expect(output.join('\n')).not.toContain('targetGrossMarginBps');
+    expect(output.join('\n')).not.toContain('computeHourlyMicrosByPlan');
+  });
+
+  it('should load fresh Google pricing and deploy it as versioned Worker pricing vars', async () => {
+    const { runDeviceAuthorityReleaseCli } = await loadReleaseModule();
+    const runtime = createDefaultManagedCloudPricingRuntime();
+    runtime.policy.pricingVersion = 'managed-cloud-google-public-live-test';
+    runtime.rateCards['us-east1'].version = 'gcp-public-list-live-test';
+    const commands: ReleaseCommand[] = [];
+    let pricingLoads = 0;
+
+    const exitCode = await runDeviceAuthorityReleaseCli(['--no-verify'], {
+      commandRunner(command) {
+        commands.push(command);
+        if (
+          command.command === 'wrangler' &&
+          command.args.join(' ') ===
+            'secret list --name consuelo-os-device-authority --format json'
+        ) {
+          return {
+            status: 0,
+            stdout: JSON.stringify([
+              { name: 'CLOUDFLARE_API_TOKEN', type: 'secret_text' },
+              { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
+              { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+            ]),
+            stderr: '',
+          };
+        }
+        if (command.command === 'wrangler' && command.args[0] === 'r2') {
+          return { status: 0, stdout: '', stderr: '' };
+        }
+        if (command.command === 'wrangler' && command.args[0] === 'deploy') {
+          return { status: 0, stdout: '', stderr: '' };
+        }
+        throw new Error(`unexpected release mutation: ${command.command} ${command.args.join(' ')}`);
+      },
+      async managedCloudPricingLoader() {
+        pricingLoads += 1;
+        return runtime;
+      },
+      writeOut() {},
+      writeErr() {},
+    });
+
+    expect(exitCode).toBe(0);
+    expect(pricingLoads).toBe(1);
+    const deploy = commands.find(
+      (command) => command.command === 'wrangler' && command.args[0] === 'deploy',
+    );
+    expect(deploy).toBeTruthy();
+    const vars = new Map<string, string>();
+    for (let index = 0; index < (deploy?.args.length ?? 0); index += 1) {
+      if (deploy?.args[index] !== '--var') continue;
+      const assignment = deploy.args[index + 1] ?? '';
+      const separator = assignment.indexOf(':');
+      vars.set(assignment.slice(0, separator), assignment.slice(separator + 1));
+    }
+    expect(JSON.parse(vars.get('OS_MANAGED_CLOUD_PRICING_POLICY_JSON') ?? '{}')).toMatchObject({
+      pricingVersion: 'managed-cloud-google-public-live-test',
+    });
+    expect(JSON.parse(vars.get('OS_MANAGED_CLOUD_RATE_CARDS_JSON') ?? '{}')).toMatchObject({
+      'us-east1': { version: 'gcp-public-list-live-test' },
     });
   });
 

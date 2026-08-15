@@ -12,6 +12,7 @@ import {
 } from './constants';
 import { createCheckoutObservability } from './services/checkout-observability';
 import { createWorkspaceConnectorProvisionerFromEnv } from './services/connectors';
+import { createDefaultManagedCloudPricingRuntime } from '../../../scripts/lib/managed-cloud-public-pricing';
 import { managedCloudPricingFromJson } from './services/managed-cloud-pricing';
 import { DurableStore } from './stores';
 import type { Env, StateLike } from './types';
@@ -86,6 +87,7 @@ export class OsDeviceGrantDurableObject {
       managedCloudPricing: managedCloudPricingFromJson({
         policyJson: env.OS_MANAGED_CLOUD_PRICING_POLICY_JSON,
         rateCardsJson: env.OS_MANAGED_CLOUD_RATE_CARDS_JSON,
+        fallback: createDefaultManagedCloudPricingRuntime(),
       }),
       defaultSiteSnapshot: {
         key:

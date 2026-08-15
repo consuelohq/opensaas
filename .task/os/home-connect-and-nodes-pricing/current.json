@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/home-connect-and-nodes-pricing",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2043,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2043",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2043",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2043/home-connect-and-nodes-pricing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2043",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2043/home-connect-and-nodes-pricing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-home-connect-and-nodes-pricing",
+  "taskSession": "tsk_f05e1dc05995",
+  "tmuxSession": "opensaas-os-home-connect-and-nodes-pricing-f05e1dc0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-home-connect-and-nodes-pricing/.task/os/home-connect-and-nodes-pricing/session.json",
+  "createdAt": "2026-08-15T07:33:18.730Z"
+}

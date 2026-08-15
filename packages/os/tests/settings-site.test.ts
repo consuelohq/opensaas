@@ -36,7 +36,7 @@ describe('configuration site', () => {
 
     expect(snapshot.skills).toEqual([]);
     expect(snapshot.runBooks.length).toBeGreaterThan(0);
-    expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
     expect(html).toContain('data-workspace-shell');
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).toContain('aria-label="Workspace routes"');
@@ -336,5 +336,43 @@ describe('configuration site', () => {
       enabled: true,
     });
     expect(snapshot.skills.find((skill) => skill.name === 'sites')).toBeUndefined();
+  });
+});
+
+
+describe('workspace Home, Connect, and compact Nodes surface', () => {
+  it('labels the overview surface Home and exposes direct connector destinations before Guides', () => {
+    const html = renderConfigurationSite('configuration');
+
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
+    expect(html).toContain('<h1>Home</h1>');
+    expect(html).not.toContain('<h1>Overview</h1>');
+    expect(html).toContain('data-route-group="Connect"');
+    expect(html).toContain('data-route-group="Guides"');
+    expect(html).toContain('>ChatGPT<');
+    expect(html).toContain('>Claude<');
+    expect(html).toContain('href="https://chatgpt.com/plugins#settings/Connectors?create-connector=true&amp;redirectAfter=%2Fplugins"');
+    expect(html).toContain('href="https://claude.ai/customize/connectors"');
+    expect(html).toContain('href="/docs"');
+    expect(html.indexOf('data-route-group="Connect"')).toBeLessThan(
+      html.indexOf('data-route-group="Guides"'),
+    );
+  });
+
+  it('renders Nodes as a compact searchable inventory and never promises missing prices', () => {
+    const html = renderConfigurationSite('nodes' as never);
+
+    expect(html).toContain('id="node-search"');
+    expect(html).toContain('id="node-rows"');
+    expect(html).toContain('aria-label="Workspace nodes"');
+    expect(html).toContain('+ Add node');
+    expect(html).toContain('id="add-node-dialog"');
+    expect(html).toContain('data-plan-price=');
+    expect(html).not.toContain('Price available soon');
+    expect(html).not.toContain('Always available. One flat monthly price.');
+    expect(html).not.toContain('e2-medium');
+    expect(html).not.toContain('machineType');
+    expect(html).not.toContain('providerCost');
+    expect(html).not.toContain('targetGrossMargin');
   });
 });

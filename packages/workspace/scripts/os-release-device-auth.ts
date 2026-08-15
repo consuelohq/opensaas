@@ -8,6 +8,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertRequiredDeviceAuthorityWorkerSecrets } from '../../os/scripts/lib/device-authority-release-readiness';
+import { fetchGoogleCloudPublicPricingRuntime } from '../../os/scripts/lib/google-cloud-public-pricing-refresh';
+import { createDefaultManagedCloudPricingRuntime, type DefaultManagedCloudPricingRuntime } from '../../os/scripts/lib/managed-cloud-public-pricing';
 import { getSitesPaths, materializeSites } from '../../os/scripts/lib/sites';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -57,6 +59,7 @@ type ReleaseDependencies = {
   writeErr: (message?: string) => void;
   fetchImpl: typeof fetch;
   sleepImpl: (ms: number) => Promise<void>;
+  managedCloudPricingLoader: () => Promise<DefaultManagedCloudPricingRuntime>;
 };
 
 type ReleaseDependencyOverrides = Partial<ReleaseDependencies>;
@@ -102,12 +105,16 @@ function defaultCommandRunner(input: ReleaseCommand): ReleaseCommandResult {
 function dependencies(
   overrides: ReleaseDependencyOverrides = {},
 ): ReleaseDependencies {
+  const fetchImpl = overrides.fetchImpl ?? fetch;
   return {
     commandRunner: overrides.commandRunner ?? defaultCommandRunner,
     writeOut: overrides.writeOut ?? defaultWriteOut,
     writeErr: overrides.writeErr ?? defaultWriteErr,
-    fetchImpl: overrides.fetchImpl ?? fetch,
+    fetchImpl,
     sleepImpl: overrides.sleepImpl ?? defaultSleep,
+    managedCloudPricingLoader:
+      overrides.managedCloudPricingLoader ??
+      (() => fetchGoogleCloudPublicPricingRuntime({ fetchImpl })),
   };
 }
 
@@ -204,13 +211,23 @@ function snapshotVersionId(html: string): string {
   return `sha256-${createHash('sha256').update(html).digest('hex').slice(0, 16)}`;
 }
 
+function commandForLog(input: ReleaseCommand): string {
+  const args = input.args.map((arg, index) => {
+    if (input.args[index - 1] !== '--var') return arg;
+    if (!arg.startsWith('OS_MANAGED_CLOUD_')) return arg;
+    const separator = arg.indexOf(':');
+    return separator < 0 ? '<managed-cloud-pricing>' : `${arg.slice(0, separator)}:<redacted-pricing>`;
+  });
+  return [input.command, ...args].join(' ');
+}
+
 function runCommand(
   input: ReleaseCommand,
   deps: ReleaseDependencies,
   options: { announce?: boolean } = {},
 ): ReleaseCommandResult {
   if (options.announce !== false) {
-    deps.writeOut(`$ ${[input.command, ...input.args].join(' ')}`);
+    deps.writeOut(`$ ${commandForLog(input)}`);
   }
   const result = deps.commandRunner(input);
 
@@ -442,44 +459,57 @@ async function runDeviceAuthorityRelease(
   argv: string[],
   deps: ReleaseDependencies,
 ): Promise<void> {
-  const options = parseArgs(argv);
-  if (options.help) {
-    deps.writeOut(helpText());
-    return;
-  }
+  try {
+    const options = parseArgs(argv);
+    if (options.help) {
+      deps.writeOut(helpText());
+      return;
+    }
 
-  if (!options.verifyOnly) {
-    assertRemoteWorkerReleaseReadiness(deps);
-  }
+    if (!options.verifyOnly) {
+      assertRemoteWorkerReleaseReadiness(deps);
+    }
 
-  deps.writeOut(`workerDir=${WORKER_DIR}`);
-  deps.writeOut(`worker=${WORKER_NAME}`);
-  deps.writeOut('route=os.consuelohq.com/*');
+    deps.writeOut(`workerDir=${WORKER_DIR}`);
+    deps.writeOut(`worker=${WORKER_NAME}`);
+    deps.writeOut('route=os.consuelohq.com/*');
 
-  if (!options.verifyOnly) {
-    const defaultSiteSnapshot = releaseDefaultSiteSnapshots(options.dryRun, deps);
-    deps.writeOut(`defaultSiteSnapshotKey=${defaultSiteSnapshot.key}`);
-    deps.writeOut(`defaultSiteSnapshotVersion=${defaultSiteSnapshot.versionId}`);
+    if (!options.verifyOnly) {
+      const defaultSiteSnapshot = releaseDefaultSiteSnapshots(options.dryRun, deps);
+      deps.writeOut(`defaultSiteSnapshotKey=${defaultSiteSnapshot.key}`);
+      deps.writeOut(`defaultSiteSnapshotVersion=${defaultSiteSnapshot.versionId}`);
+      const managedCloudPricing = options.dryRun
+        ? createDefaultManagedCloudPricingRuntime()
+        : await deps.managedCloudPricingLoader();
+      deps.writeOut(`managedCloudPricingVersion=${managedCloudPricing.policy.pricingVersion}`);
 
-    const deployArgs = [
-      'deploy',
-      '--keep-vars',
-      '--var',
-      `OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY:${defaultSiteSnapshot.key}`,
-      '--var',
-      `OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID:${defaultSiteSnapshot.versionId}`,
-    ];
-    if (options.dryRun) deployArgs.push('--dry-run');
-    runCommand({
-      command: 'wrangler',
-      args: deployArgs,
-      cwd: WORKER_DIR,
-      stdio: 'inherit',
-    }, deps);
-  }
+      const deployArgs = [
+        'deploy',
+        '--keep-vars',
+        '--var',
+        `OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY:${defaultSiteSnapshot.key}`,
+        '--var',
+        `OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID:${defaultSiteSnapshot.versionId}`,
+        '--var',
+        `OS_MANAGED_CLOUD_PRICING_POLICY_JSON:${JSON.stringify(managedCloudPricing.policy)}`,
+        '--var',
+        `OS_MANAGED_CLOUD_RATE_CARDS_JSON:${JSON.stringify(managedCloudPricing.rateCards)}`,
+      ];
+      if (options.dryRun) deployArgs.push('--dry-run');
+      runCommand({
+        command: 'wrangler',
+        args: deployArgs,
+        cwd: WORKER_DIR,
+        stdio: 'inherit',
+      }, deps);
+    }
 
-  if (!options.dryRun && !options.noVerify) {
-    await verifyDeviceAuthority(options, deps);
+    if (!options.dryRun && !options.noVerify) {
+      await verifyDeviceAuthority(options, deps);
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) throw error;
+    throw new Error(String(error));
   }
 }
 

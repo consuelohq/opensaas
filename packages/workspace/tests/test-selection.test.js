@@ -293,7 +293,17 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts',
       '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/managed-cloud-public-pricing.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/nodes-site.ts',
+      '--changed-file',
       'packages/os/scripts/lib/settings-site.ts',
+      '--changed-file',
+      'packages/os/tests/managed-cloud-public-pricing.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -303,6 +313,10 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).toContain('os-managed-cloud-one-click-provisioning');
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(suiteNames).toContain('OS one-click managed cloud contracts');
+    const managedCloudSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS one-click managed cloud contracts',
+    );
+    expect(managedCloudSuite?.command).toContain('tests/managed-cloud-public-pricing.test.ts');
     expect(suiteNames.some((name) =>
       name === 'OS one-click managed cloud syntax contracts'
       || name === 'OS internal workspace shell syntax'
