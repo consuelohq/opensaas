@@ -9,10 +9,13 @@ import { fileURLToPath } from 'node:url';
 
 import { assertRequiredDeviceAuthorityWorkerSecrets } from '../../os/scripts/lib/device-authority-release-readiness';
 import { getSitesPaths, materializeSites } from '../../os/scripts/lib/sites';
+import { createWorkspaceReleaseManagedSiteRefreshSql } from '../../os/scripts/lib/workspace-edge-route-seed';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '..', '..', '..');
 const WORKER_DIR = resolve(REPO_ROOT, 'packages/os/cloudflare/os-device-authority');
+const WORKSPACE_EDGE_CONFIG = resolve(REPO_ROOT, 'packages/os/cloudflare/workspace-edge/wrangler.toml');
+const ROUTE_REGISTRY_DATABASE = 'consuelo-workspace-route-registry';
 const WORKER_NAME = 'consuelo-os-device-authority';
 const HEALTH_URL = 'https://os.consuelohq.com/health';
 const DEVICE_PAGE_URL = 'https://os.consuelohq.com/login/device?user_code=RELSMOKE';
@@ -64,6 +67,7 @@ type ReleaseDependencyOverrides = Partial<ReleaseDependencies>;
 type DefaultSiteSnapshot = {
   key: string;
   versionId: string;
+  siteContentHashes: Record<string, string>;
 };
 
 type HealthResponse = {
@@ -268,12 +272,18 @@ function releaseDefaultSiteSnapshots(
       { siteId: 'environments', filePath: paths.environmentsIndexPath },
       { siteId: 'secrets', filePath: paths.secretsIndexPath },
     ];
+    const siteContentHashes = Object.fromEntries(
+      snapshots.map((snapshot) => [
+        snapshot.siteId,
+        createHash('sha256')
+          .update(readFileSync(snapshot.filePath, 'utf8'))
+          .digest('hex'),
+      ]),
+    ) as Record<string, string>;
     const snapshotFingerprint = JSON.stringify(
       snapshots.map((snapshot) => ({
         siteId: snapshot.siteId,
-        sha256: createHash('sha256')
-          .update(readFileSync(snapshot.filePath, 'utf8'))
-          .digest('hex'),
+        sha256: siteContentHashes[snapshot.siteId],
       })),
     );
     const versionId = snapshotVersionId(snapshotFingerprint);
@@ -305,10 +315,44 @@ function releaseDefaultSiteSnapshots(
     return {
       key: `sites/${DEFAULT_SNAPSHOT_WORKSPACE_ID}/launcher/${versionId}/index.html`,
       versionId,
+      siteContentHashes,
     };
   } finally {
     rmSync(tempHome, { recursive: true, force: true });
   }
+}
+
+function refreshReleaseManagedWorkspaceSiteRoutes(
+  snapshot: DefaultSiteSnapshot,
+  dryRun: boolean,
+  deps: ReleaseDependencies,
+): void {
+  if (dryRun) {
+    deps.writeOut(
+      `plannedRouteRefresh=workspace_route_registry:${snapshot.versionId}`,
+    );
+    return;
+  }
+  const sql = createWorkspaceReleaseManagedSiteRefreshSql({
+    versionId: snapshot.versionId,
+    snapshotWorkspaceId: DEFAULT_SNAPSHOT_WORKSPACE_ID,
+    siteContentHashes: snapshot.siteContentHashes,
+  });
+  runCommand({
+    command: 'wrangler',
+    args: [
+      'd1',
+      'execute',
+      ROUTE_REGISTRY_DATABASE,
+      '--remote',
+      '--config',
+      WORKSPACE_EDGE_CONFIG,
+      '--command',
+      sql,
+    ],
+    cwd: WORKER_DIR,
+    stdio: 'inherit',
+  }, deps);
 }
 
 async function fetchWithDefaults(
@@ -476,6 +520,11 @@ async function runDeviceAuthorityRelease(
       cwd: WORKER_DIR,
       stdio: 'inherit',
     }, deps);
+    refreshReleaseManagedWorkspaceSiteRoutes(
+      defaultSiteSnapshot,
+      options.dryRun,
+      deps,
+    );
   }
 
   if (!options.dryRun && !options.noVerify) {

@@ -799,11 +799,11 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'sites', 'office', 'index.html'))).toBe(false);
 
     const sitesIndex = readFileSync(sitesIndexPath, 'utf8');
-    expect(sitesIndex).toContain('<title>Nodes - Consuelo OS</title>');
+    expect(sitesIndex).toContain('<title>Overview - Consuelo OS</title>');
     expect(sitesIndex).toContain('data-workspace-shell');
     expect(sitesIndex).toContain('data-workspace-route-trigger');
-    expect(sitesIndex).toContain('<h1>Nodes</h1>');
-    expect(sitesIndex).toContain('/gateway/nodes/snapshot');
+    expect(sitesIndex).toContain('<h1>Overview</h1>');
+    expect(sitesIndex).toContain('/gateway/configuration/snapshot');
     expect(sitesIndex).not.toContain('Welcome to Consuelo OS');
     expect(sitesIndex).not.toContain('<code id="mcp-url">');
     expect(sitesIndex).not.toContain('Connected to your cloud agents');

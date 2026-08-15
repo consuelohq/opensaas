@@ -31,6 +31,11 @@ describe('Caddy worker-pool reconciliation', () => {
       workspaceHost: 'acme.example.test',
       upstreamPort: 48_100,
       ingressPort: 48_000,
+      edgeProxy: {
+        nodeId: 'node_acme',
+        connectorId: 'connector_acme',
+        signingSecret: 'edge-test-secret',
+      },
     });
     const token = issueAgentAppToken({
       config,
@@ -64,6 +69,16 @@ describe('Caddy worker-pool reconciliation', () => {
     for (const header of Object.values(WORKSPACE_EDGE_NODE_HEADERS)) {
       expect(caddyfile.toLowerCase()).not.toContain(`header_up -${header.toLowerCase()}`);
     }
+    expect(caddyfile).toContain('header_up -X-Consuelo-Edge-Cache-Authority');
+    expect(caddyfile).toContain('header_up -X-Consuelo-Route');
+    const auth = JSON.parse(
+      readFileSync(join(nodeHome, 'security', 'generated', 'auth.json'), 'utf8'),
+    ) as { edgeProxy?: { nodeId?: string; connectorId?: string; signingSecret?: string } };
+    expect(auth.edgeProxy).toMatchObject({
+      nodeId: 'node_acme',
+      connectorId: 'connector_acme',
+      signingSecret: 'edge-test-secret',
+    });
     expect(getAgentAppCredentialStatus({ config, tokenId: token.tokenId })).not.toBeNull();
     expect(reconcileCaddyWorkerPoolConfig({
       nodeHome,

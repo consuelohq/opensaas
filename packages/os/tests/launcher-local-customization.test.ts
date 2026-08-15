@@ -46,14 +46,14 @@ describe('workspace root isolation from legacy launcher customization', () => {
     });
 
     const html = readFileSync(join(home, 'sites', 'index.html'), 'utf8');
-    expect(html).toContain('<title>Nodes - Consuelo OS</title>');
+    expect(html).toContain('<title>Overview - Consuelo OS</title>');
     expect(html).toContain('data-workspace-shell');
-    expect(html).toContain('<h1>Nodes</h1>');
+    expect(html).toContain('<h1>Overview</h1>');
     expect(html).not.toContain('<h2 class="section-title">Internal</h2>');
     expect(html).not.toContain('href="https://internal.consuelohq.com/users"');
   });
 
-  it('keeps the Nodes workspace root stable when no launcher overlay exists', () => {
+  it('keeps the Overview workspace root stable when no launcher overlay exists', () => {
     writeFileSync(
       join(home, 'consuelo.yaml'),
       [
@@ -74,7 +74,7 @@ describe('workspace root isolation from legacy launcher customization', () => {
     });
 
     const html = readFileSync(join(home, 'sites', 'index.html'), 'utf8');
-    expect(html).toContain('<title>Nodes - Consuelo OS</title>');
+    expect(html).toContain('<title>Overview - Consuelo OS</title>');
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).not.toContain('Welcome to Consuelo OS');
     expect(html).not.toContain('<h2 class="section-title">Internal</h2>');

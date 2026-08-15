@@ -195,15 +195,15 @@ describe('Sites CLI', () => {
   });
 
 
-  it('materializes Nodes as the durable workspace root on every Sites refresh', () => {
+  it('materializes Overview as the durable workspace root on every Sites refresh', () => {
     const first = runSitesCommand(['refresh', '--json']);
     const firstHtml = readFileSync(first.indexPath, 'utf8');
 
-    expect(firstHtml).toContain('<title>Nodes - Consuelo OS</title>');
+    expect(firstHtml).toContain('<title>Overview - Consuelo OS</title>');
     expect(firstHtml).toContain('data-workspace-shell');
     expect(firstHtml).toContain('data-workspace-route-trigger');
-    expect(firstHtml).toContain('aria-current="page" href="/nodes"');
-    expect(firstHtml).toContain('/gateway/nodes/snapshot');
+    expect(firstHtml).toContain('aria-current="page" href="/"');
+    expect(firstHtml).toContain('/gateway/configuration/snapshot');
     expect(firstHtml).not.toContain('Welcome to Consuelo OS');
     expect(firstHtml).not.toContain('data-agent-count');
 
@@ -212,7 +212,7 @@ describe('Sites CLI', () => {
     expect(secondHtml).toBe(firstHtml);
   });
 
-  it('keeps the workspace root on Nodes regardless of the authenticated workspace host', () => {
+  it('keeps the workspace root on Overview regardless of the authenticated workspace host', () => {
     writeFileSync(
       join(tempHome, 'config.json'),
       JSON.stringify({ workspace: { host: 'acme.consuelohq.com' } }, null, 2),
@@ -221,11 +221,13 @@ describe('Sites CLI', () => {
     const refreshResult = runSitesCommand(['refresh', '--json']);
     const html = readFileSync(refreshResult.indexPath, 'utf8');
 
-    expect(html).toContain('<title>Nodes - Consuelo OS</title>');
+    expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('href="/"');
     expect(html).toContain('href="/tracing"');
     expect(html).toContain('href="/tools"');
-    expect(html).toContain('href="/configuration"');
+    expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/secrets"');
+    expect(html).toContain('href="/docs"');
     expect(html).not.toContain('Welcome to Consuelo OS');
     expect(html).not.toContain('https://sites.consuelohq.com/');
   });
@@ -249,7 +251,7 @@ describe('Sites CLI', () => {
     const html = readFileSync(refreshResult.indexPath, 'utf8');
     const persisted = JSON.parse(readFileSync(configPath, 'utf8'));
 
-    expect(html).toContain('<title>Nodes - Consuelo OS</title>');
+    expect(html).toContain('<title>Overview - Consuelo OS</title>');
     expect(html).not.toContain('https://legacy-workspace.consuelohq.com/mcp');
     expect(persisted).toMatchObject({
       url: 'https://legacy-workspace.consuelohq.com/mcp',

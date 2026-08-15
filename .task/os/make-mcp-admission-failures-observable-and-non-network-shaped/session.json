@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_48405e22792d",
+  "tmuxSession": "opensaas-os-make-mcp-admission-failures-observable-and-non-n-48405e22",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-mcp-admission-failures-observable-and-non-network-shaped",
+  "branch": "task/os/make-mcp-admission-failures-observable-and-non-network-shaped",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-mcp-admission-failures-observable-and-non-network-shaped",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-mcp-admission-failures-observable-and-non-network-shaped",
+  "prNumber": 2013,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2013",
+  "createdAt": "2026-08-15T04:09:51.746Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-mcp-admission-failures-observable-and-non-network-shaped/.task/os/make-mcp-admission-failures-observable-and-non-network-shaped/session.json"
+}
