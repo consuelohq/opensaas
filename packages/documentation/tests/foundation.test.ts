@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { normalizeMdxToMarkdown, pagePathToMarkdownHref, sourcePathToMarkdownSlug } from '../src/lib/markdown-pages';
 import {
+  expandCurrentSidebarPath,
   footerSections,
   getBreadcrumbs,
   globalSectionLinks,
@@ -169,6 +170,19 @@ describe('documentation navigation', () => {
     if (selectedGroup?.type !== 'group') throw new Error('Expected a section group');
     expect(selectedGroup.collapsed).toBe(false);
   });
+
+  test('keeps the full global tree on responsive routes and expands the current path', () => {
+    const expanded = expandCurrentSidebarPath(sidebar);
+    expect(expanded).toHaveLength(3);
+    const connect = expanded[1];
+    expect(connect?.type).toBe('group');
+    if (connect?.type !== 'group') throw new Error('Expected Connect group');
+    expect(connect.collapsed).toBe(false);
+    const start = expanded[0];
+    expect(start?.type).toBe('group');
+    if (start?.type !== 'group') throw new Error('Expected Start group');
+    expect(start.collapsed).toBe(true);
+  });
 });
 
 describe('foundation source contract', () => {
@@ -232,7 +246,8 @@ describe('foundation source contract', () => {
     expect(sidebar).toContain('global-section-link');
     expect(sidebar).toContain('globalSectionLinks');
     expect(sidebar).toContain('global-sidebar-mobile');
-    expect(sidebar).toContain('SidebarSublist sublist={navigation.entries}');
+    expect(sidebar).toContain('SidebarSublist sublist={mobileNavigation}');
+    expect(sidebar).toContain('expandCurrentSidebarPath');
     expect(footer).toContain('SiteFooter');
     expect(footer).toContain('data-docs-site-footer-home');
     expect(siteFooter).toContain('footerSections');
@@ -333,7 +348,7 @@ describe('foundation source contract', () => {
     const home = read('src/content/docs/index.mdx');
     expect(css).toContain('left: 0');
     expect(css).toContain('right: auto');
-    expect(css).toContain('border-right: 1px solid var(--docs-line)');
+    expect(css).toContain('border-right: 0');
     expect(css).toContain('.content-panel + .content-panel');
     expect(css).toContain('border-top: 0');
     expect(css).toContain('.page > header.header');
@@ -355,6 +370,33 @@ describe('foundation source contract', () => {
     expect(css).toContain('overflow-wrap: anywhere');
     expect(css).toContain('.home-install-command button');
     expect(pageTitle).toContain("closest('[data-home-install-copy]')");
+  });
+
+  test('uses the approved Vercel-derived responsive type, controls, canvas, and drawer', () => {
+    const css = read('src/styles/docs.css');
+    const sidebar = read('src/components/Sidebar.astro');
+    const pageTitle = read('src/components/PageTitle.astro');
+    const docsMenuTrigger = read('src/components/DocsMenuTrigger.astro');
+
+    expect(sidebar).toContain('SidebarSublist sublist={mobileNavigation}');
+    expect(sidebar).toContain('expandCurrentSidebarPath');
+    expect(sidebar).toContain('.section-sidebar');
+    expect(sidebar).toContain('display: none');
+    expect(css).toContain('width: min(75vw, 25rem)');
+    expect(css).toContain('box-shadow: 0 18px 55px');
+    expect(css).toContain('body[data-mobile-menu-expanded]::after');
+    expect(css).toContain('transition: opacity 300ms ease');
+    expect(css).toContain('animation: none;');
+    expect(css).toContain('font-size: 1.5rem');
+    expect(css).toContain('line-height: 2rem');
+    expect(pageTitle).toContain('font-size: 2.5rem');
+    expect(pageTitle).toContain('line-height: 3rem');
+    expect(css).toContain('max-width: none');
+    expect(pageTitle).toContain('min-height: 2.25rem');
+    expect(pageTitle).toContain('font-weight: 500');
+    expect(pageTitle).toContain('transition: background-color 150ms ease');
+    expect(docsMenuTrigger).toContain('duration: 0.22');
+    expect(docsMenuTrigger).toContain('duration: 0.2');
   });
 
   test('uses compact neutral desktop docs chrome and a two-column home', () => {
