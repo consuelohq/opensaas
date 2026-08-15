@@ -9,6 +9,12 @@ import {
   exchangeAuthorizationCode,
   startLoopbackCapture,
 } from './lib/operator-login';
+import {
+  operatorTokenPath,
+  readStoredOperatorToken,
+  type StoredOperatorToken,
+  writeStoredOperatorToken,
+} from './lib/operator-token-store';
 
 /**
  * `consuelo login` — obtain an operator workspace token without reinstalling.
@@ -30,7 +36,6 @@ const USAGE = `usage: login [--status | --logout]
 The value is never printed. Use --status to check without revealing it.
 `;
 
-const TOKEN_FILE = path.join('security', 'generated', 'operator-token.json');
 const DEFAULT_AUTHORITY = 'https://os.consuelohq.com';
 const SCOPES = [
   'mcp:read',
@@ -39,24 +44,10 @@ const SCOPES = [
   'os:tools',
 ] as const;
 
-type StoredToken = {
-  version: 1;
-  kind: 'consuelo-operator-token';
-  authorityOrigin: string;
-  workspaceHost: string;
-  accessToken: string;
-  refreshToken?: string;
-  expiresAt?: number;
-  scope: string[];
-  createdAt: string;
-};
-
 const die = (message: string, code = 1): never => {
   process.stderr.write(`${message}\n`);
   process.exit(code);
 };
-
-const tokenPath = (home: string): string => path.join(home, 'node', TOKEN_FILE);
 
 const readWorkspaceHost = (home: string): string => {
   const configPath = path.join(home, 'config.json');
@@ -76,17 +67,6 @@ const readWorkspaceHost = (home: string): string => {
   }
 };
 
-const readStoredToken = (home: string): StoredToken | undefined => {
-  const file = tokenPath(home);
-  if (!fs.existsSync(file)) return undefined;
-  try {
-    return JSON.parse(fs.readFileSync(file, 'utf8')) as StoredToken;
-  } catch (_error: unknown) {
-    // A corrupt token file is equivalent to being signed out; login overwrites it.
-    return undefined;
-  }
-};
-
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
   if (argv.includes('--help') || argv.includes('-h')) {
@@ -97,13 +77,13 @@ async function main(): Promise<void> {
   const home = resolveConsueloHomeLayout().home;
 
   if (argv.includes('--logout')) {
-    fs.rmSync(tokenPath(home), { force: true });
+    fs.rmSync(operatorTokenPath(home), { force: true });
     process.stdout.write('signed out\n');
     return;
   }
 
   if (argv.includes('--status')) {
-    const stored = readStoredToken(home);
+    const stored = readStoredOperatorToken({ home, allowExpired: true });
     if (!stored) {
       process.stdout.write('signed out\n');
       process.exitCode = 1;
@@ -166,7 +146,7 @@ async function main(): Promise<void> {
     );
   }
 
-  const stored: StoredToken = {
+  const stored: StoredOperatorToken = {
     version: 1,
     kind: 'consuelo-operator-token',
     authorityOrigin,
@@ -177,10 +157,7 @@ async function main(): Promise<void> {
     scope: result.scope,
     createdAt: new Date().toISOString(),
   };
-  const file = tokenPath(home);
-  fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
-  fs.writeFileSync(file, `${JSON.stringify(stored, null, 2)}\n`, { mode: 0o600 });
-  fs.chmodSync(file, 0o600);
+  writeStoredOperatorToken(home, stored);
 
   process.stdout.write(
     `signed in · ${workspaceHost} · scopes: ${result.scope.join(' ') || 'none'}\n`,

@@ -21,20 +21,24 @@ describe('macOS menu-bar platform', () => {
     expect(source).toContain('model.showsUpdateBadge');
     expect(source).toContain('accessibilityLabel("Update available")');
     expect(source).toContain('pendingUpdate');
-    expect(source).toContain('Make default —');
+    expect(source).toContain('Menu("Troubleshooting")');
+    expect(source).toContain('Label(');
+    expect(source).toContain('model.operationSummary');
+    expect(source).not.toContain('Text(DiagnosticsRedactor.redactText(message))');
+    expect(source).not.toContain('Text("Operation:');
     expect(source).toContain('WorkspaceNodePresentation');
     expect(source).not.toContain('node.capabilities');
     expect(source).not.toContain('node.agents');
     expect(source).toContain('ReleaseChannel.userSelectableCases');
     expect(source).not.toContain('ForEach(ReleaseChannel.allCases');
     expect(source).not.toContain('Button("Destructive repair…")');
-    expect(source).toContain('DiagnosticsRedactor.redactText(message)');
-    expect(source).toContain('Operation:');
     expect(source).toContain('Remove node registration');
     expect(source).toContain('Remove user content');
     expect(source).not.toContain('launchctl');
     expect(source).not.toContain('Process(');
     expect(source).not.toContain('/bin/');
+    expect(source).toContain('MenuBarInstanceLock.acquire');
+    expect(source).toContain('isMenuContentEquivalent');
   });
 
   it('packages an unsigned development app with an opt-in user-local install path', async () => {
