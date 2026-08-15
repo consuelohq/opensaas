@@ -4,6 +4,8 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { readFullToolManifest } from '../scripts/lib/manifest';
+import { patchManifestOverlay } from '../scripts/lib/manifest-overlay';
 import { buildSettingsSnapshot } from '../scripts/lib/settings-snapshot';
 import { buildConfigurationSite, renderConfigurationSite, renderSettingsSite } from '../scripts/lib/settings-site';
 
@@ -34,13 +36,16 @@ describe('configuration site', () => {
 
     expect(snapshot.skills).toEqual([]);
     expect(snapshot.runBooks.length).toBeGreaterThan(0);
-    expect(html).toContain('<title>Configuration - Consuelo OS</title>');
-    expect(html).toContain('aria-label="Configuration navigation"');
-    expect(html).toContain('href="/configuration" class="is-active"');
+    expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('data-workspace-shell');
+    expect(html).toContain('data-workspace-route-trigger');
+    expect(html).toContain('aria-label="Workspace routes"');
+    expect(html).toContain('href="/tracing"');
+    expect(html).toContain('href="/configuration"');
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/nodes"');
-    expect(html).not.toContain('href="/environments"');
     expect(html).toContain('href="/secrets"');
+    expect(html).not.toContain('aria-label="Configuration sidebar"');
     expect(html).toContain('/gateway/configuration/snapshot');
     expect(html).toContain('Loading workspace configuration');
     expect(html).toContain('Configuration unavailable');
@@ -67,6 +72,37 @@ describe('configuration site', () => {
   });
 
 
+  it('keeps disabled tools in the private snapshot so the Tools inventory can re-enable them', () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-disabled-tool-'));
+    fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({
+      version: 1,
+      mode: 'local',
+      home,
+      port: 8787,
+      artifactStorage: 'local',
+      workspace: { id: 'ws_tools', slug: 'tools', host: 'tools.consuelohq.com' },
+      agents: [],
+      createdAt: '2026-08-15T00:00:00.000Z',
+      updatedAt: '2026-08-15T00:00:00.000Z',
+    }));
+    const tool = readFullToolManifest().tools.find((entry) => entry.kind === 'facade-tool');
+    expect(tool).toBeTruthy();
+    patchManifestOverlay(home, { kind: 'tool', name: tool!.name, enabled: false });
+
+    const snapshot = buildSettingsSnapshot(home);
+    expect(snapshot.overlay.disabledTools).toContain(tool!.name);
+    expect(snapshot.tools.find((item) => item.name === tool!.name)).toMatchObject({
+      name: tool!.name,
+      enabled: false,
+      configurable: true,
+    });
+
+    const html = renderConfigurationSite('tools');
+    expect(html).toContain("const action = item.enabled ? 'Disable' : 'Re-enable'");
+    expect(html).toContain("const state = item.enabled ? 'Enabled' : 'Available to re-enable'");
+    expect(html).toContain('toolInventoryItems = inventoryItems(snapshot)');
+  });
+
   it('renders route-aware Tools, Nodes, and Secrets shells without private embedded data', () => {
     const toolsHtml = renderConfigurationSite('tools');
     const nodesHtml = renderConfigurationSite('nodes' as never);
@@ -74,18 +110,24 @@ describe('configuration site', () => {
 
     expect(toolsHtml).toContain('<title>Tools - Consuelo OS</title>');
     expect(toolsHtml).toContain('<h1>Tools</h1>');
-    expect(toolsHtml).toContain('href="/tools" class="is-active"');
+    expect(toolsHtml).toContain('data-workspace-route-trigger');
+    expect(toolsHtml).toContain('aria-current="page" href="/tools"');
     expect(toolsHtml).toContain('/gateway/configuration/snapshot');
     expect(toolsHtml).toContain('/gateway/configuration/overlay');
-    expect(toolsHtml).toContain('id="tools"');
-    expect(toolsHtml).toContain('id="skills"');
-    expect(toolsHtml).toContain('id="run-books"');
+    expect(toolsHtml).toContain('id="tool-search"');
+    expect(toolsHtml).toContain('data-tool-kind-filter');
+    expect(toolsHtml).toContain('data-tool-state-filter');
+    expect(toolsHtml).toContain('id="tool-availability-plot"');
+    expect(toolsHtml).toContain('id="tool-inventory"');
+    expect(toolsHtml).toContain('Re-enable');
+    expect(toolsHtml).toContain('Available to re-enable');
+    expect(toolsHtml).toContain('aria-label="Tool availability by surface"');
     expect(toolsHtml).not.toContain('id="connections"');
     expect(toolsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
 
     expect(nodesHtml).toContain('<title>Nodes - Consuelo OS</title>');
     expect(nodesHtml).toContain('<h1>Nodes</h1>');
-    expect(nodesHtml).toContain('href="/nodes" class="is-active"');
+    expect(nodesHtml).toContain('aria-current="page" href="/nodes"');
     expect(nodesHtml).toContain('id="node-list"');
     expect(nodesHtml).toContain('id="add-node-dialog"');
     expect(nodesHtml).toContain('Create cloud node');
@@ -123,7 +165,7 @@ describe('configuration site', () => {
 
     expect(secretsHtml).toContain('<title>Secrets - Consuelo OS</title>');
     expect(secretsHtml).toContain('<h1>Secrets</h1>');
-    expect(secretsHtml).toContain('href="/secrets" class="is-active"');
+    expect(secretsHtml).toContain('aria-current="page" href="/secrets"');
     expect(secretsHtml).toContain('Connected credentials');
     expect(secretsHtml).toContain('/gateway/secrets/bindings');
     expect(secretsHtml).toContain('Values are never returned to this page or to an agent');

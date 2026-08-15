@@ -302,10 +302,36 @@ describe('test selection registry', () => {
 
     expect(matchedRuleIds).toContain('os-managed-cloud-one-click-provisioning');
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toContain('OS one-click managed cloud contracts');
+    expect(suiteNames.some((name) =>
+      name === 'OS one-click managed cloud syntax contracts'
+      || name === 'OS internal workspace shell syntax'
+    )).toBe(true);
+  });
+
+  it('uses focused managed-cloud checkout observability contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts',
+      '--changed-file',
+      'packages/os/tests/managed-cloud-checkout-observability.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-managed-cloud-checkout-observability');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(suiteNames).toEqual(
       expect.arrayContaining([
-        'OS one-click managed cloud contracts',
-        'OS one-click managed cloud syntax contracts',
+        'OS managed cloud checkout observability contracts',
+        'OS managed cloud checkout observability syntax contracts',
       ]),
     );
   });
@@ -873,11 +899,75 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes internal workspace shell and root Sites changes through loud focused contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/sites.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/settings-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/workspace-chrome.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/observability-traces-site.ts',
+      '--changed-file',
+      'packages/os/tests/launcher-nodes-materialization.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-internal-workspace-shell',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    const suite = data.selectedSuites.find(
+      (candidate) => candidate.ruleId === 'os-internal-workspace-shell'
+        && candidate.name === 'OS internal workspace shell contracts',
+    );
+    expect(suite?.critical).toBe(true);
+    expect(suite?.command).toEqual(expect.arrayContaining([
+      'tests/settings-site.test.ts',
+      'tests/launcher-nodes-materialization.test.ts',
+      'tests/observability-traces-site.test.ts',
+      'tests/sites-cli.test.ts',
+      'tests/launcher-local-customization.test.ts',
+    ]));
+  });
+
+  it('routes gateway security and Caddy handoff changes through focused contracts instead of the broad OS package suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/security-gateway.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts',
+      '--changed-file',
+      'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-gateway-security-caddy-handoff',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'OS gateway security and Caddy contracts',
+      'OS gateway security syntax contracts',
+    ]);
+  });
+
   it('routes lifecycle updater changes through the focused universal handoff contracts', () => {
     const data = json(run([
       'check',
       '--changed-file',
       'packages/os/scripts/lifecycle.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/lifecycle/service.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-restart-contract.test.ts',
       '--json',
     ]));
 
@@ -893,6 +983,12 @@ describe('test selection registry', () => {
         'OS lifecycle syntax contracts',
       ]),
     );
+    const lifecycleSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS lifecycle update handoff contracts',
+    );
+    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
+      'packages/os/tests/lifecycle-restart-contract.test.ts',
+    ]));
   });
 
   it('routes native macOS menu changes through focused Mac contracts', () => {

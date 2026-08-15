@@ -438,6 +438,39 @@
       "reason": "Lifecycle daemon/reload changes must prove inherited-secret scrub, activated-runtime managed Sites refresh, Bun path resolution, and fail-open startup without selecting the broad OS package suite."
     },
     {
+      "id": "os-gateway-security-caddy-handoff",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/security-gateway.ts",
+        "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+        "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+        "packages/os/tests/security-gateway.test.ts",
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS gateway security and Caddy contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/security-gateway.test.ts",
+            "tests/caddy-worker-pool-reconciliation.test.ts"
+          ]
+        },
+        {
+          "name": "OS gateway security syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Gateway security and Caddy handoff changes must prove signed Workspace Edge headers survive local proxying, gateway authorization remains fail-closed, worker-pool reconciliation is idempotent, and syntax stays valid without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "os-lifecycle-update-handoff",
       "critical": true,
       "exclusive": true,
@@ -461,7 +494,9 @@
         "packages/os/tests/tool-package-layout.test.ts",
         "packages/os/scripts/lib/windows-platform.ts",
         "packages/os/tools/lifecycle/**",
-        "packages/os/tools/registry.ts"
+        "packages/os/tools/registry.ts",
+        "packages/os/scripts/lib/lifecycle/service.ts",
+        "packages/os/tests/lifecycle-restart-contract.test.ts"
       ],
       "tests": [
         {
@@ -479,7 +514,8 @@
             "packages/os/tests/linux-platform.test.ts",
             "packages/os/tests/windows-platform.test.ts",
             "packages/os/tests/tool-manifest.test.ts",
-            "packages/os/tests/tool-package-layout.test.ts"
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts"
           ]
         },
         {
@@ -552,6 +588,47 @@
         }
       ],
       "reason": "Launcher onboarding copy-interaction changes must prove generated UI behavior, Sites materialization, and Astro source validity without selecting the historically red unrelated OS package suite."
+    },
+    {
+      "id": "os-managed-cloud-checkout-observability",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts",
+        "packages/os/scripts/lib/device-authority-release-readiness.ts",
+        "packages/os/tests/managed-cloud-checkout-observability.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS managed cloud checkout observability contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "vitest",
+            "run",
+            "tests/managed-cloud-checkout-observability.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/os-web-auth-contract.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-universal-login.test.ts",
+            "tests/security-scan.test.ts"
+          ]
+        },
+        {
+          "name": "OS managed cloud checkout observability syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Managed-cloud checkout, Stripe synthetic testing, PostHog funnel instrumentation, Sentry error reporting, and checkout security changes must prove focused billing/auth/release contracts without selecting the historically noisy unrelated OS package suite."
     },
     {
       "id": "os-cloud-first-auth-onboarding",
@@ -729,6 +806,52 @@
         }
       ],
       "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-internal-workspace-shell",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/scripts/lib/settings-snapshot.ts",
+        "packages/os/scripts/lib/settings-materialization.ts",
+        "packages/os/scripts/lib/workspace-chrome.ts",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/tests/settings-site.test.ts",
+        "packages/os/tests/launcher-nodes-materialization.test.ts",
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/sites-cli.test.ts",
+        "packages/os/tests/launcher-local-customization.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/local-agent-connectivity.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/settings-site.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts"
+          ]
+        },
+        {
+          "name": "OS internal workspace shell syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Nodes across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid without falling back to the broad OS package suite."
     },
     {
       "id": "os-managed-cloud-one-click-provisioning",

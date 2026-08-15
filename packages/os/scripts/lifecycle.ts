@@ -579,7 +579,10 @@ export function createDefaultLifecycleServiceController(input: {
   }
   return createReloadServiceController({
     osRoot: input.osRoot,
+    activeRuntimeRoot: lifecyclePaths.currentLink,
+    home: lifecycleHome,
     nodeHome: lifecyclePaths.nodeDir,
+    runtimeExecutable: bunExecutable,
     platform,
   });
 }

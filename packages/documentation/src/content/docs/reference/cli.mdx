@@ -2,14 +2,15 @@
 title: CLI
 description: User-facing Consuelo OS lifecycle, update, channel, and skill-management commands.
 status: preview
-verifiedAt: 2026-08-11
+verifiedAt: 2026-08-15
 evidence:
   - source: packages/os/scripts/lifecycle.ts
     tests:
       - packages/os/tests/lifecycle-help.test.ts
       - packages/os/tests/lifecycle-engine.test.ts
+      - packages/os/tests/lifecycle-restart-contract.test.ts
       - packages/os/tests/skill-selection-cli.test.ts
-    runtime: Root help plus lifecycle and skill-management command contracts were verified on 2026-08-11.
+    runtime: Root help, lifecycle handoff/restart, and skill-management command contracts were verified on 2026-08-15.
 ---
 
 The installed user-facing command is `consuelo`.
@@ -64,6 +65,12 @@ consuelo update --channel beta --check
 ```
 
 Available release channels are `stable`, `beta`, `canary`, `dev`, and `nightly`.
+
+### Restart and update gateway reconciliation
+
+`consuelo restart` reconciles the local gateway from the currently active runtime before reloading services. A successful `consuelo update` activates the verified candidate first, then runs gateway reconciliation and reload from that newly active runtime rather than from the older process that initiated the update. This prevents stale proxy configuration from being restored after an otherwise successful update.
+
+Private workspace pages depend on signed Workspace Edge headers surviving that local gateway hop. A lifecycle command now fails if the activated runtime cannot complete its gateway reconciliation instead of silently continuing with stale configuration.
 
 ## Common options
 

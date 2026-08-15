@@ -2,7 +2,7 @@
 title: Security model
 description: Follow the current trust boundaries from an agent or browser to the Consuelo OS node selected for a request.
 status: preview
-verifiedAt: 2026-08-12
+verifiedAt: 2026-08-15
 evidence:
   - source: packages/os/scripts/lib/workspace-cloudflare-edge-router.ts
     tests:
@@ -12,7 +12,7 @@ evidence:
   - source: packages/os/scripts/lib/security-gateway.ts
     tests:
       - packages/os/tests/security-gateway.test.ts
-    runtime: Local request verification, scope checks, Caddy generation, and replay rejection were exercised by focused contracts on 2026-07-13.
+    runtime: Local request verification, scope checks, complete Workspace Edge header preservation through Caddy, and replay rejection were exercised by focused contracts on 2026-08-15.
   - source: packages/os/cloudflare/os-device-authority/src/app.ts
     tests:
       - packages/os/tests/workspace-node-registry-routing.test.ts
@@ -39,6 +39,8 @@ A **trust boundary** is where one kind of proof stops and another begins. Do not
 A public static Sites snapshot is an immutable published object served from managed edge storage after route policy is resolved. It does not query the local database or execute a tool.
 
 A live OS route reaches the **selected node** through an authenticated or signed route. It can read current workspace state or call tools, so it requires stronger proof and authorization at the runtime that actually receives the request.
+
+For private workspace pages, the browser session is checked at the Workspace Edge first. The edge then creates the signed node request. The local Caddy gateway must preserve that complete signed Workspace Edge identity set while forwarding to Bun; it may remove edge-only cache or route metadata, but it must not remove the request signature, surface, connector, workspace, node, timestamp, nonce, or body-digest proof. A browser can therefore be signed in correctly while a broken edge-to-node handoff still produces `MISSING_EDGE_SIGNATURE`; that error identifies the transport proof boundary, not a missing browser login.
 
 ```text
 public static Sites snapshot

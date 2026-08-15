@@ -12,6 +12,7 @@ import {
   getAgentAppCredentialStatus,
   issueAgentAppToken,
 } from '../scripts/lib/security-gateway';
+import { WORKSPACE_EDGE_NODE_HEADERS } from '../scripts/lib/workspace-edge-node-auth';
 
 describe('Caddy worker-pool reconciliation', () => {
   const homes: string[] = [];
@@ -60,6 +61,9 @@ describe('Caddy worker-pool reconciliation', () => {
     );
     expect(caddyfile).toContain('lb_policy round_robin');
     expect(caddyfile).toContain('health_uri /ready');
+    for (const header of Object.values(WORKSPACE_EDGE_NODE_HEADERS)) {
+      expect(caddyfile.toLowerCase()).not.toContain(`header_up -${header.toLowerCase()}`);
+    }
     expect(getAgentAppCredentialStatus({ config, tokenId: token.tokenId })).not.toBeNull();
     expect(reconcileCaddyWorkerPoolConfig({
       nodeHome,

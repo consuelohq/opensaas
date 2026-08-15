@@ -357,8 +357,41 @@ export async function startManagedCloudCheckout(input: {
     updatedAt: input.runtime.now(),
   };
     await input.runtime.store.putManagedCloudCheckout(updated);
+    await input.runtime.checkoutObservability?.observe({
+      name: 'checkout_session_created',
+      accountId: updated.accountId,
+      checkoutId: updated.checkoutId,
+      stripeSessionId: updated.stripeCheckoutSessionId,
+      planId: updated.planId,
+      pricingVersion: updated.pricingVersion,
+      monthlyPriceCents: updated.monthlyPriceCents,
+      currency: updated.currency,
+      synthetic: false,
+      outcome: 'success',
+    });
     return updated;
   } catch (error: unknown) {
+    const errorCode = error instanceof ManagedCloudBillingError
+      ? error.code
+      : 'BILLING_UNAVAILABLE';
+    await input.runtime.checkoutObservability?.observe({
+      name: 'checkout_failed',
+      accountId: input.accountId,
+      planId: input.planId,
+      synthetic: false,
+      outcome: 'error',
+      errorCode,
+    });
+    if (errorCode === 'BILLING_UNAVAILABLE') {
+      await input.runtime.checkoutObservability?.captureException(error, {
+        name: 'checkout_failed',
+        accountId: input.accountId,
+        planId: input.planId,
+        synthetic: false,
+        outcome: 'error',
+        errorCode,
+      });
+    }
     if (error instanceof ManagedCloudBillingError) throw error;
     throw new ManagedCloudBillingError(
       'BILLING_UNAVAILABLE',
@@ -395,7 +428,7 @@ async function stripeWebhookSignatureHex(secret: string, payload: string): Promi
   }
 }
 
-async function verifyStripeWebhookSignature(input: {
+export async function verifyStripeWebhookSignature(input: {
   secret: string;
   header: string;
   payload: string;
@@ -596,10 +629,55 @@ export async function handleManagedCloudStripeWebhook(input: {
   if (!event?.checkoutId) {
     throw new ManagedCloudBillingError('PAYMENT_INVALID', 400, 'Invalid Stripe checkout event.');
   }
-  return {
-    handled: true,
-    checkout: await fulfillPaidManagedCloudCheckout({ runtime: input.runtime, event }),
-  };
+  try {
+    const checkout = await fulfillPaidManagedCloudCheckout({
+      runtime: input.runtime,
+      event,
+    });
+    await input.runtime.checkoutObservability?.observe({
+      name: 'checkout_completed',
+      accountId: checkout.accountId,
+      checkoutId: checkout.checkoutId,
+      stripeSessionId: checkout.stripeCheckoutSessionId,
+      planId: checkout.planId,
+      pricingVersion: checkout.pricingVersion,
+      monthlyPriceCents: checkout.monthlyPriceCents,
+      currency: checkout.currency,
+      synthetic: false,
+      outcome: 'success',
+    });
+    return { handled: true, checkout };
+  } catch (error: unknown) {
+    const errorCode = error instanceof ManagedCloudBillingError
+      ? error.code
+      : 'BILLING_UNAVAILABLE';
+    await input.runtime.checkoutObservability?.observe({
+      name: 'checkout_failed',
+      accountId: event.accountId,
+      checkoutId: event.checkoutId,
+      stripeSessionId: event.id,
+      planId: event.planId,
+      pricingVersion: event.pricingVersion,
+      monthlyPriceCents: event.amountTotal,
+      currency: event.currency.toUpperCase(),
+      synthetic: false,
+      outcome: 'error',
+      errorCode,
+    });
+    if (errorCode === 'BILLING_UNAVAILABLE') {
+      await input.runtime.checkoutObservability?.captureException(error, {
+        name: 'checkout_failed',
+        accountId: event.accountId,
+        checkoutId: event.checkoutId,
+        stripeSessionId: event.id,
+        planId: event.planId,
+        synthetic: false,
+        outcome: 'error',
+        errorCode,
+      });
+    }
+    throw error;
+  }
 }
 
 export async function managedCloudCheckoutStatus(input: {
