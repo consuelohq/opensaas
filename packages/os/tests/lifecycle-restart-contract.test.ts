@@ -441,12 +441,11 @@ describe('lifecycle restart parity', () => {
     );
   });
 
-  it('reapplies reconciled Caddy config with a zero-downtime config-file signal', () => {
+  it('signals Caddy only when worker topology actually changes', () => {
     const migration = source('scripts/migrations/reconcile-caddy-worker-pool.ts');
 
-    expect(migration).toContain("['launchctl', 'kill', 'SIGUSR1', service]");
-    expect(migration).toContain("result.reason !== 'gateway-not-configured'");
-    expect(migration).not.toContain("if (result.changed && process.platform === 'darwin')");
+    expect(migration).toContain("if (!input.result.changed || input.result.reason === 'gateway-not-configured') return");
+    expect(migration).toContain("runLaunchctl(['kill', 'SIGUSR1', service])");
     expect(migration).not.toContain("['launchctl', 'kickstart', '-k', service]");
   });
 
