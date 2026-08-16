@@ -100,6 +100,38 @@ function createTemporaryStreamWorktree(repoRoot, streamBranch) {
   return worktreePath;
 }
 
+function isManagedTemporaryStreamWorktree(worktreePath, streamBranch) {
+  const worktreeRoot = fs.realpathSync.native(path.resolve(getWorktreeRoot()));
+  const resolvedWorktreePath = fs.realpathSync.native(path.resolve(worktreePath));
+  const relativePath = path.relative(worktreeRoot, resolvedWorktreePath);
+  const expectedPrefix = `${toWorktreeDirectoryName(streamBranch)}-sync-`;
+
+  return (
+    relativePath.length > 0 &&
+    !relativePath.startsWith('..') &&
+    !path.isAbsolute(relativePath) &&
+    path.basename(resolvedWorktreePath).startsWith(expectedPrefix)
+  );
+}
+
+function recoverStaleConflictedStreamWorktree(repoRoot, existingWorktree, streamBranch) {
+  if (!existingWorktree || !isManagedTemporaryStreamWorktree(existingWorktree.path, streamBranch)) {
+    return null;
+  }
+
+  const conflictFiles = getConflictFiles(repoRoot, existingWorktree.path);
+  if (conflictFiles.length === 0) {
+    return null;
+  }
+
+  removeWorktree(repoRoot, existingWorktree.path, true);
+  pruneWorktrees(repoRoot);
+  return {
+    path: existingWorktree.path,
+    conflictFiles,
+  };
+}
+
 function resolveMainWorktreeRoot(repoRoot) {
   const output = runGit(['worktree', 'list', '--porcelain'], { cwd: repoRoot });
   const blocks = output.split(/\n\n+/).filter(Boolean);
@@ -270,7 +302,15 @@ async function main() {
   }
   pruneWorktrees(repoRoot);
 
-  const existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+  let existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+  const recoveredStaleWorktree = recoverStaleConflictedStreamWorktree(
+    repoRoot,
+    existingWorktree,
+    streamBranch,
+  );
+  if (recoveredStaleWorktree) {
+    existingWorktree = null;
+  }
 
   if (!existingWorktree) {
     createOrResetLocalBranch(repoRoot, streamBranch, `origin/${streamBranch}`);
@@ -316,6 +356,7 @@ async function main() {
         temporaryWorktree: createdTemporaryWorktree,
         mergeOutput,
         conflictFiles: [],
+        recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
         checks,
         pushed,
       },
@@ -357,6 +398,7 @@ async function main() {
         temporaryWorktree: createdTemporaryWorktree,
         mergeOutput,
         conflictFiles: [],
+        recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
         autoResolvedGeneratedFiles: generatedResolution.files,
         checks,
         pushed,
@@ -392,6 +434,7 @@ async function main() {
           temporaryWorktree: createdTemporaryWorktree,
           mergeOutput,
           conflictFiles: [],
+          recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
           autoResolvedMetadata: resolution,
           checks,
           pushed,
@@ -420,6 +463,7 @@ async function main() {
       temporaryWorktree: createdTemporaryWorktree,
       mergeOutput,
       conflictFiles,
+      recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
       checks,
     },
     args.json,

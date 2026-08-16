@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -120,5 +120,31 @@ describe('stream sync generated registry conflict recovery', () => {
     expect(payload.temporaryWorktree).toBe(true);
     expect(existsSync(payload.worktreePath)).toBe(false);
     expect(readFileSync(join(fixture.repo, 'conflict.txt'), 'utf8')).toBe('main\n');
+  });
+
+  test('recovers a stale conflicted temporary stream worktree before syncing', () => {
+    const fixture = setupFixture({ extraConflict: true });
+    const staleWorktreePath = join(fixture.worktrees, 'stream-fixture-sync-stale');
+    git(fixture.repo, 'worktree', 'add', staleWorktreePath, 'stream/fixture');
+
+    const staleMerge = spawnSync('git', ['merge', '--no-ff', '--no-edit', 'origin/main'], {
+      cwd: staleWorktreePath,
+      encoding: 'utf8',
+    });
+    expect(staleMerge.status).not.toBe(0);
+    expect(existsSync(staleWorktreePath)).toBe(true);
+    const canonicalStaleWorktreePath = realpathSync.native(staleWorktreePath);
+
+    const result = runSync(fixture);
+
+    expect(result.status).toBe(1);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.status).toBe('conflict');
+    expect(payload.recoveredStaleWorktree).toBe(canonicalStaleWorktreePath);
+    expect(existsSync(staleWorktreePath)).toBe(false);
+    expect(payload.conflictFiles).toEqual(expect.arrayContaining([
+      'conflict.txt',
+      'packages/workspace/test-selection.registry.json',
+    ]));
   });
 });
