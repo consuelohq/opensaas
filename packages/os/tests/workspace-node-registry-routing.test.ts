@@ -1324,7 +1324,8 @@ describe('workspace node management and presence', () => {
 
     const heartbeat = await handler(heartbeatRequest());
     expect(heartbeat.status).toBe(200);
-    await expect(heartbeat.json()).resolves.toMatchObject({
+    const heartbeatJson = await heartbeat.json() as Record<string, unknown>;
+    expect(heartbeatJson).toMatchObject({
       nodeId: 'node-member',
       presence: 'online',
       connectorId: 'connector_node_member',
@@ -1335,7 +1336,20 @@ describe('workspace node management and presence', () => {
         connectorId: 'connector_node_member',
       }),
       agents: ['codex', 'opencode'],
+      workspace: {
+        workspaceId,
+        workspaceHost,
+        currentNodeId: 'node-member',
+        defaultNodeId: 'node-home',
+        nodes: [
+          { nodeId: 'node-home', presence: 'offline' },
+          { nodeId: 'node-member', presence: 'online' },
+        ],
+      },
     });
+    expect(JSON.stringify(heartbeatJson.workspace)).not.toMatch(
+      /connectorId|publicKeyThumbprint|edgeRequestSigningSecret|token|secret/i,
+    );
     expect(
       (await store.byWorkspaceNode(accountId, 'node-member'))?.agents,
     ).toEqual(['codex', 'opencode']);
@@ -1612,6 +1626,259 @@ describe('workspace node management and presence', () => {
       nodeId: 'node-home',
       target: { connectorId: 'connector_node_home' },
     });
+  });
+
+  it('preserves a newer published launcher snapshot during signed heartbeat reconciliation', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const { memberKey } = await seedWorkspace(store);
+    const routes = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routes);
+    await upsertWorkspaceHostnameInD1(routes, {
+      workspaceId,
+      workspaceSlug,
+      hostname: workspaceHost,
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      defaultNodeId: 'node-home',
+      nodeTargets: [
+        {
+          nodeId: 'node-home',
+          connectorId: 'connector_node_home',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://home.connector.test',
+          state: 'active',
+          lastSeenAt: baseNow,
+          heartbeatTtlMs,
+        },
+        {
+          nodeId: 'node-member',
+          connectorId: 'connector_node_member',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://member.connector.test',
+          state: 'active',
+          lastSeenAt: baseNow,
+          heartbeatTtlMs,
+        },
+      ],
+      routes: [
+        {
+          surface: 'sites',
+          pathPrefix: '/',
+          auth: 'workspace-session',
+          status: 'active',
+          target: {
+            kind: 'site-snapshot',
+            siteId: 'launcher',
+            versionId: 'sha256-newer-launcher',
+            manifestKey:
+              'sites/workspace_testing/launcher/sha256-newer-launcher/index.html',
+            htmlKey:
+              'sites/workspace_testing/launcher/sha256-newer-launcher/index.html',
+            cachePolicy: 'private-preview',
+          },
+        },
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_node_home',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://home.connector.test',
+          },
+        },
+      ],
+    } as Parameters<typeof upsertWorkspaceHostnameInD1>[1]);
+
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routes,
+      defaultSiteSnapshot: {
+        key: 'sites/workspace_testing/launcher/sha256-stale-default/index.html',
+        versionId: 'sha256-stale-default',
+      },
+    });
+    const body = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: baseNow,
+      nonce: 'heartbeat-preserve-newer-launcher',
+      connectorStatus: 'connected',
+      capabilities: ['mcp', 'tools'],
+    });
+    const signature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: body,
+    });
+
+    const heartbeat = await handler(
+      new Request(origin + '/workspace/nodes/heartbeat', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': signature,
+        },
+        body,
+      }),
+    );
+
+    expect(heartbeat.status).toBe(200);
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      target: {
+        kind: 'site-snapshot',
+        siteId: 'launcher',
+        versionId: 'sha256-newer-launcher',
+      },
+    });
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nodeId: 'node-member',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-member',
+      target: { connectorId: 'connector_node_member' },
+    });
+  });
+
+  it('repairs a legacy default node to the signed current node and preserves that real default on later heartbeats', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const { homeKey, memberKey } = await seedWorkspace(store);
+    await store.putAccountWorkspace({
+      accountId,
+      workspaceId,
+      workspaceSlug,
+      workspaceHost,
+      homeNodeId: 'node-home',
+      defaultNodeId: 'internal',
+      updatedAt: baseNow,
+    });
+    const routes = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routes);
+    await upsertWorkspaceHostnameInD1(routes, {
+      workspaceId,
+      workspaceSlug,
+      hostname: workspaceHost,
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      defaultNodeId: 'internal',
+      nodeTargets: [
+        {
+          nodeId: 'node-home',
+          connectorId: 'connector_node_home',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://home.connector.test',
+          state: 'active',
+          lastSeenAt: baseNow,
+          heartbeatTtlMs,
+        },
+        {
+          nodeId: 'node-member',
+          connectorId: 'connector_node_member',
+          connectorStatus: 'connected',
+          tunnelOriginUrl: 'https://member.connector.test',
+          state: 'active',
+          lastSeenAt: baseNow,
+          heartbeatTtlMs,
+        },
+      ],
+      routes: [
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_node_home',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://home.connector.test',
+          },
+        },
+      ],
+    });
+    let nowMs = baseNow;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => nowMs,
+      workspaceRouteRegistry: routes,
+    });
+
+    const sendHeartbeat = async (input: {
+      nodeId: 'node-home' | 'node-member';
+      nonce: string;
+      key: ReturnType<typeof generateWorkspaceDeviceKeyPair>;
+    }) => {
+      const body = JSON.stringify({
+        workspaceId,
+        nodeId: input.nodeId,
+        timestamp: nowMs,
+        nonce: input.nonce,
+        connectorStatus: 'connected',
+        capabilities: ['mcp', 'tools'],
+      });
+      const signature = createDevicePublicKeyProof({
+        deviceKeyPair: input.key,
+        payload: body,
+      });
+      return handler(
+        new Request(`${origin}/workspace/nodes/heartbeat`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-consuelo-node-signature': signature,
+          },
+          body,
+        }),
+      );
+    };
+
+    const repaired = await sendHeartbeat({
+      nodeId: 'node-member',
+      nonce: 'heartbeat-repair-legacy-default',
+      key: memberKey,
+    });
+    expect(repaired.status).toBe(200);
+    expect((await store.byAccountWorkspace(accountId))?.defaultNodeId).toBe('node-member');
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-member',
+      target: { connectorId: 'connector_node_member' },
+    });
+
+    nowMs += 1_000;
+    const laterHomeHeartbeat = await sendHeartbeat({
+      nodeId: 'node-home',
+      nonce: 'heartbeat-preserve-real-default',
+      key: homeKey,
+    });
+    expect(laterHomeHeartbeat.status).toBe(200);
+    expect((await store.byAccountWorkspace(accountId))?.defaultNodeId).toBe('node-member');
   });
 
   it('rejects cross-workspace node listing', async () => {

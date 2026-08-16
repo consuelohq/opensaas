@@ -832,6 +832,54 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('resolves task.current from an explicit surviving taskSession', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-current-session-'));
+    const branch = 'task/os/session-current';
+    try {
+      writeTaskSession(tempRoot, 'tsk_current_session', branch);
+      const result = await executeTool('task.current', {
+        taskSession: 'tsk_current_session',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data).toMatchObject({ branch, area: 'os', worktree: tempRoot });
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('runs session-scoped task lifecycle commands from the task worktree', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-lifecycle-session-'));
+    const worktreeRoot = join(tempRoot, 'worktrees');
+    const worktree = join(worktreeRoot, 'task-os-lifecycle-session');
+    const plans: CommandPlan[] = [];
+    try {
+      mkdirSync(worktree, { recursive: true });
+      writeTaskSession(worktree, 'tsk_lifecycle_session', 'task/os/lifecycle-session');
+      const result = await executeTool('task.push', {
+        taskSession: 'tsk_lifecycle_session',
+        message: 'fix(os): lifecycle session fixture',
+        changed: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: process.cwd(),
+        env: { ...process.env, WORKSPACE_WORKTREE_ROOT: worktreeRoot },
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].cwd).toBe(worktree);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('resolves taskSession metadata before branch planning', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-'));
     const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;

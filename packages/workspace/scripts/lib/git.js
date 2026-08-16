@@ -286,20 +286,26 @@ function getTrackedChanges(repoRoot) {
   });
   if (!output || !output.trim()) return [];
 
-  return output.split('\0').filter(Boolean).map((entry) => {
+  const entries = output.split('\0').filter(Boolean);
+  const changes = [];
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index];
     const status = entry.slice(0, 2).trim();
-    let filePath = entry.slice(3);
+    const filePath = entry.slice(3);
 
-    if ((status.startsWith('R') || status.startsWith('C')) && filePath.includes(' -> ')) {
-      filePath = filePath.split(' -> ').pop();
-    }
+    // With porcelain -z, rename/copy records are emitted as two NUL-delimited
+    // path fields (destination first, source second) rather than `old -> new`.
+    // Consume the source path so it is not misparsed as another status record.
+    if (status.startsWith('R') || status.startsWith('C')) index += 1;
 
-    return {
+    changes.push({
       path: filePath,
       status,
       deleted: status === 'D',
-    };
-  }).filter((change) => change.path !== 'node_modules' && !change.path.startsWith('node_modules/'));
+    });
+  }
+
+  return changes.filter((change) => change.path !== 'node_modules' && !change.path.startsWith('node_modules/'));
 }
 
 module.exports = {

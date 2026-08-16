@@ -103,7 +103,6 @@ function findActiveTaskCandidates(repoRoot) {
   const tasks = [];
 
   for (const worktree of worktrees) {
-    if (worktree.path === repoRoot) continue;
     const meta = readValidTaskMetaForWorktree(worktree.path, worktree.branch);
     if (!meta) continue;
     tasks.push({ worktreePath: worktree.path, meta, branch: worktree.branch });

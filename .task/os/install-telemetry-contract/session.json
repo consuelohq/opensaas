@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3bbca90075f0",
+  "tmuxSession": "opensaas-os-install-telemetry-contract-3bbca900",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/install-telemetry-contract",
+  "branch": "task/os/install-telemetry-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-telemetry-contract",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-telemetry-contract",
+  "prNumber": 1900,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1900",
+  "createdAt": "2026-08-13T16:23:35.667Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-telemetry-contract/.task/os/install-telemetry-contract/session.json"
+}

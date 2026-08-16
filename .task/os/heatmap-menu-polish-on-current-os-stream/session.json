@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ca7ae2297a11",
+  "tmuxSession": "opensaas-os-heatmap-menu-polish-on-current-os-stream-ca7ae229",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/heatmap-menu-polish-on-current-os-stream",
+  "branch": "task/os/heatmap-menu-polish-on-current-os-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-heatmap-menu-polish-on-current-os-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-heatmap-menu-polish-on-current-os-stream",
+  "prNumber": 2075,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2075",
+  "createdAt": "2026-08-15T18:30:18.542Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-heatmap-menu-polish-on-current-os-stream/.task/os/heatmap-menu-polish-on-current-os-stream/session.json"
+}

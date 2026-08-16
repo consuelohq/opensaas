@@ -30,70 +30,34 @@ const connectItems: SidebarItem[] = [
       { label: 'Cursor', slug: 'connect/agents/cursor' },
       { label: 'OpenCode', slug: 'connect/agents/opencode' },
       { label: 'Gemini', slug: 'connect/agents/gemini' },
-      { label: 'Other agents', slug: 'connect/agents/other-agents' },
+      { label: 'Bring your own', slug: 'connect/agents/create-your-own' },
     ],
   },
   {
-    label: 'Apps and services',
+    label: 'Applications',
     items: [
-      { label: 'Overview', slug: 'connect/apps-and-services' },
-      {
-        label: 'Productivity and communication',
-        items: [
-          { label: 'Google Workspace', slug: 'connect/apps-and-services/google-workspace' },
-          { label: 'Gmail', slug: 'connect/apps-and-services/gmail' },
-          { label: 'Google Drive', slug: 'connect/apps-and-services/google-drive' },
-          { label: 'Google Calendar', slug: 'connect/apps-and-services/google-calendar' },
-          { label: 'Slack', slug: 'connect/apps-and-services/slack' },
-          { label: 'Notion', slug: 'connect/apps-and-services/notion' },
-        ],
-      },
-      {
-        label: 'Code and development',
-        items: [
-          { label: 'GitHub', slug: 'connect/apps-and-services/github' },
-          { label: 'Linear', slug: 'connect/apps-and-services/linear' },
-        ],
-      },
-      {
-        label: 'Deploy and infrastructure',
-        items: [
-          { label: 'Cloudflare', slug: 'connect/apps-and-services/cloudflare' },
-          { label: 'Railway', slug: 'connect/apps-and-services/railway' },
-          { label: 'Vercel', slug: 'connect/apps-and-services/vercel' },
-        ],
-      },
-      {
-        label: 'Observe and monitor',
-        items: [
-          { label: 'Datadog', slug: 'connect/apps-and-services/datadog' },
-          { label: 'Sentry', slug: 'connect/apps-and-services/sentry' },
-        ],
-      },
-      {
-        label: 'Data and analytics',
-        items: [
-          { label: 'Snowflake', slug: 'connect/apps-and-services/snowflake' },
-          { label: 'Supabase', slug: 'connect/apps-and-services/supabase' },
-        ],
-      },
-      {
-        label: 'Sales and CRM',
-        items: [
-          { label: 'GoHighLevel', slug: 'connect/apps-and-services/gohighlevel' },
-          { label: 'LeadConnector dialer', slug: 'connect/apps-and-services/leadconnector-dialer' },
-          { label: 'Salesforce', slug: 'connect/apps-and-services/salesforce' },
-          { label: 'HubSpot', slug: 'connect/apps-and-services/hubspot' },
-        ],
-      },
-      {
-        label: 'Payments and communication',
-        items: [
-          { label: 'Stripe', slug: 'connect/apps-and-services/stripe' },
-          { label: 'Twilio', slug: 'connect/apps-and-services/twilio' },
-        ],
-      },
-      { label: 'Additional services', slug: 'connect/apps-and-services/additional-services' },
+      { label: 'Cloudflare', slug: 'connect/apps-and-services/cloudflare' },
+      { label: 'Datadog', slug: 'connect/apps-and-services/datadog' },
+      { label: 'GitHub', slug: 'connect/apps-and-services/github' },
+      { label: 'Gmail', slug: 'connect/apps-and-services/gmail' },
+      { label: 'GoHighLevel', slug: 'connect/apps-and-services/gohighlevel' },
+      { label: 'Google Calendar', slug: 'connect/apps-and-services/google-calendar' },
+      { label: 'Google Drive', slug: 'connect/apps-and-services/google-drive' },
+      { label: 'Google Workspace', slug: 'connect/apps-and-services/google-workspace' },
+      { label: 'HubSpot', slug: 'connect/apps-and-services/hubspot' },
+      { label: 'LeadConnector dialer', slug: 'connect/apps-and-services/leadconnector-dialer' },
+      { label: 'Linear', slug: 'connect/apps-and-services/linear' },
+      { label: 'Notion', slug: 'connect/apps-and-services/notion' },
+      { label: 'Railway', slug: 'connect/apps-and-services/railway' },
+      { label: 'Salesforce', slug: 'connect/apps-and-services/salesforce' },
+      { label: 'Sentry', slug: 'connect/apps-and-services/sentry' },
+      { label: 'Slack', slug: 'connect/apps-and-services/slack' },
+      { label: 'Snowflake', slug: 'connect/apps-and-services/snowflake' },
+      { label: 'Stripe', slug: 'connect/apps-and-services/stripe' },
+      { label: 'Supabase', slug: 'connect/apps-and-services/supabase' },
+      { label: 'Twilio', slug: 'connect/apps-and-services/twilio' },
+      { label: 'Vercel', slug: 'connect/apps-and-services/vercel' },
+      { label: 'Bring your own', slug: 'connect/apps-and-services/create-your-own' },
     ],
   },
 ];
@@ -182,12 +146,16 @@ const toolsItems: SidebarItem[] = [
   { label: 'Subagents', slug: 'tools/subagents' },
   ...buildToolItems.slice(1),
   { label: 'Workflows', slug: 'build/workflows' },
-  { label: 'Sites', items: sitesItems },
 ];
 
 const skillsItems: SidebarItem[] = [
   { label: 'Overview', slug: 'skills' },
   ...buildGroupItems('Skills'),
+];
+
+const workflowsItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'workflows' },
+  { label: 'Branch Graph', slug: 'workflows/branch-graph' },
 ];
 
 const steeringItems: SidebarItem[] = [
@@ -254,8 +222,10 @@ export const docsSections = [
   { label: 'Start', slug: 'start', description: 'Install Consuelo OS, create a workspace, and connect your first agent.' },
   { label: 'Connect', slug: 'connect', description: 'Connect agents, apps, and services to the same workspace.' },
   { label: 'Nodes', slug: 'nodes', description: 'Choose where Consuelo runs and how work routes across local and cloud nodes.' },
-  { label: 'Tools', slug: 'tools', description: 'Find the operations agents can call, including workspace, browser, media, workflows, sites, and more.' },
+  { label: 'Tools', slug: 'tools', description: 'Find the operations agents can call, including workspace, browser, media, workflows, and more.' },
+  { label: 'Sites', slug: 'sites', description: 'Create, preview, publish, and manage sites from workspace content.' },
   { label: 'Skills', slug: 'skills', description: 'Install, use, and create reusable agent instructions and scripts.' },
+  { label: 'Workflows', slug: 'workflows', description: 'Shape long-running work so people and agents can split context safely, execute in parallel, and rejoin cleanly.' },
   { label: 'Steering', slug: 'steering', description: 'Control the workspace and project instructions every agent starts from.' },
   { label: 'Memory', slug: 'memory', description: 'Carry durable work state across agents with workpads, handoffs, streams, files, and saved memory.' },
   { label: 'Observe', slug: 'observe', description: 'Inspect runs, traces, tool calls, artifacts, and logs.' },
@@ -276,7 +246,9 @@ const sectionItemsBySlug: Record<string, SidebarItem[]> = {
   connect: connectItems,
   nodes: nodesItems,
   tools: toolsItems,
+  sites: sitesItems,
   skills: skillsItems,
+  workflows: workflowsItems,
   steering: steeringItems,
   memory: memoryItems,
   observe: observeItems,
@@ -391,6 +363,23 @@ function expandEntry(entry: DocsSidebarEntry): DocsSidebarEntry {
     collapsed: false,
     entries: entry.entries.map(expandEntry),
   };
+}
+
+function entryContainsCurrent(entry: DocsSidebarEntry): boolean {
+  if (entry.type === 'link') return Boolean(entry.isCurrent);
+  return entry.entries.some(entryContainsCurrent);
+}
+
+export function expandCurrentSidebarPath(entries: DocsSidebarEntry[]): DocsSidebarEntry[] {
+  return entries.map((entry) => {
+    if (entry.type === 'link') return { ...entry };
+    const expandedEntries = expandCurrentSidebarPath(entry.entries);
+    return {
+      ...entry,
+      collapsed: entryContainsCurrent(entry) ? false : entry.collapsed,
+      entries: expandedEntries,
+    };
+  });
 }
 
 export function selectSectionSidebar(

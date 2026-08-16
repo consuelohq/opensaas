@@ -1,0 +1,7 @@
+{
+  "files": [
+    ".github/workflows/ci-server.yaml",
+    "packages/twenty-front/src/modules/client-config/types/ClientConfig.ts"
+  ],
+  "updatedAt": "2026-08-14T03:43:05.734Z"
+}

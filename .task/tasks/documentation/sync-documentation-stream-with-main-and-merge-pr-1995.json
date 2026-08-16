@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 2003,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2003",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2003",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2003/sync-documentation-stream-with-main-and-merge-pr-1995",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2003",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2003/sync-documentation-stream-with-main-and-merge-pr-1995",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-documentation-stream-with-main-and-merge-pr-1995",
+  "taskSession": "tsk_c8f8f53e7279",
+  "tmuxSession": "opensaas-documentation-sync-documentation-stream-with-main-and-merge-pr-c8f8f53e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-documentation-stream-with-main-and-merge-pr-1995/.task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/session.json",
+  "createdAt": "2026-08-15T03:26:49.552Z"
+}

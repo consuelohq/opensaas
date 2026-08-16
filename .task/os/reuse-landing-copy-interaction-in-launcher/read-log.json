@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/os/reuse-landing-copy-interaction-in-launcher/workpad.md",
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/src/pages/os/launcher.astro",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/tests/launcher-astro-source.test.ts",
+    "packages/os/tests/launcher-onboarding.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-14T00:12:01.508Z"
+}

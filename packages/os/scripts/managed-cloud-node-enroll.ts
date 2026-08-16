@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { readFileSync } from 'node:fs';
+import { chmodSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
@@ -94,7 +94,23 @@ const readOnboarding = (path: string): ManagedCloudNodeOnboarding => {
     ...(typeof record.authorityOrigin === 'string' && record.authorityOrigin.trim()
       ? { authorityOrigin: record.authorityOrigin.trim() }
       : {}),
+    ...(typeof record.provisioningJobId === 'string' && record.provisioningJobId.trim()
+      ? { provisioningJobId: record.provisioningJobId.trim() }
+      : {}),
+    ...(typeof record.provisioningEnrollmentToken === 'string' && record.provisioningEnrollmentToken.trim()
+      ? { provisioningEnrollmentToken: record.provisioningEnrollmentToken.trim() }
+      : {}),
   };
+};
+
+const scrubProvisioningCredential = (path: string, onboarding: ManagedCloudNodeOnboarding): void => {
+  if (!onboarding.provisioningEnrollmentToken && !onboarding.provisioningJobId) return;
+  const { provisioningEnrollmentToken: _token, provisioningJobId: _jobId, ...safe } = onboarding;
+  const temporaryPath = path + '.tmp';
+  writeFileSync(temporaryPath, JSON.stringify({ schemaVersion: 1, ...safe }, null, 2) + '\n', { mode: 0o600 });
+  chmodSync(temporaryPath, 0o600);
+  renameSync(temporaryPath, path);
+  chmodSync(path, 0o600);
 };
 
 const main = async (): Promise<void> => {
@@ -108,6 +124,7 @@ const main = async (): Promise<void> => {
         writeManagedCloudNodeEnrollmentStatus(options.statusPath, status),
     },
   });
+  scrubProvisioningCredential(options.onboardingPath, onboarding);
   process.stdout.write(`${JSON.stringify(result)}\n`);
 };
 

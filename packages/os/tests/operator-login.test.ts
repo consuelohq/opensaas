@@ -6,6 +6,7 @@ import {
   buildAuthorizeUrl,
   createPkcePair,
   exchangeAuthorizationCode,
+  exchangeRefreshToken,
   OPERATOR_CLIENT_ID,
   startLoopbackCapture,
 } from '../scripts/lib/operator-login';
@@ -84,27 +85,29 @@ describe('operator login', () => {
 
     it('rejects a callback whose state does not match', async () => {
       const capture = await startLoopbackCapture({ state: 'expected' });
-      const pending = capture.waitForCode();
+      const pending = expect(capture.waitForCode()).rejects.toMatchObject({
+        code: 'StateMismatch',
+      });
       await fetch(`${capture.redirectUri}?code=abc123&state=forged`);
-      await expect(pending).rejects.toMatchObject({ code: 'StateMismatch' });
+      await pending;
     });
 
     it('rejects a denied authorization', async () => {
       const capture = await startLoopbackCapture({ state: 's' });
-      const pending = capture.waitForCode();
-      await fetch(`${capture.redirectUri}?error=access_denied&state=s`);
-      await expect(pending).rejects.toMatchObject({
+      const pending = expect(capture.waitForCode()).rejects.toMatchObject({
         code: 'AuthorizationDenied',
       });
+      await fetch(`${capture.redirectUri}?error=access_denied&state=s`);
+      await pending;
     });
 
     it('rejects a callback carrying no code', async () => {
       const capture = await startLoopbackCapture({ state: 's' });
-      const pending = capture.waitForCode();
-      await fetch(`${capture.redirectUri}?state=s`);
-      await expect(pending).rejects.toMatchObject({
+      const pending = expect(capture.waitForCode()).rejects.toMatchObject({
         code: 'AuthorizationDenied',
       });
+      await fetch(`${capture.redirectUri}?state=s`);
+      await pending;
     });
 
     it('times out rather than waiting forever', async () => {
@@ -147,6 +150,35 @@ describe('operator login', () => {
         scope: ['mcp:read', 'workspace:nodes:manage'],
       });
       expect(result.expiresAt).toBeGreaterThan(Date.now());
+    });
+
+    it('rotates an operator refresh token without requesting broader scopes', async () => {
+      let body: URLSearchParams | undefined;
+      const result = await exchangeRefreshToken({
+        authorityOrigin: AUTHORITY,
+        refreshToken: 'ref_operator',
+        resource: RESOURCE,
+        fetchImpl: async (_url, init) => {
+          body = new URLSearchParams((init as RequestInit).body as string);
+          return Response.json({
+            access_token: 'tok_operator_2',
+            refresh_token: 'ref_operator_2',
+            expires_in: 3600,
+            scope: 'mcp:read workspace:read workspace:nodes:manage',
+          });
+        },
+      });
+
+      expect(body?.get('grant_type')).toBe('refresh_token');
+      expect(body?.get('client_id')).toBe(OPERATOR_CLIENT_ID);
+      expect(body?.get('refresh_token')).toBe('ref_operator');
+      expect(body?.get('resource')).toBe(RESOURCE);
+      expect(body?.has('scope')).toBe(false);
+      expect(result).toMatchObject({
+        accessToken: 'tok_operator_2',
+        refreshToken: 'ref_operator_2',
+        scope: ['mcp:read', 'workspace:read', 'workspace:nodes:manage'],
+      });
     });
 
     it('surfaces an OAuth error description without the request body', async () => {
