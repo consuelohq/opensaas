@@ -233,6 +233,13 @@ describe('typed facade executor', () => {
     expect(result.message).toContain('readOnly and mutating cannot both be true');
   });
 
+  it('rejects tools.search limits above the public maximum of 5', async () => {
+    const result = await executeTool('tools.search', { query: 'linear issue', limit: 8 }, stableOptions(successfulRunner()));
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('expected number to be <=5');
+  });
+
   it('provides fs.patch facade guidance with the fs.apply_patch manifest entry', async () => {
     const result = await executeTool('fs.patch', { path: 'tmp/example.txt' }, stableOptions(successfulRunner()));
 

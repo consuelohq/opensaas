@@ -997,7 +997,7 @@
       "source": "workspace-tooling",
       "sourcePath": "packages/workspace/tooling/tool-manifest.json",
       "category": "tooling",
-      "description": "search workspace tools by intent and return ranked usage guidance",
+      "description": "search workspace tools by intent and return ranked usage guidance; limit is capped at 5",
       "core": true,
       "definition": {
         "name": "tools.search",
@@ -1005,7 +1005,7 @@
           "tools",
           "search"
         ],
-        "description": "search workspace tools by intent and return ranked usage guidance",
+        "description": "search workspace tools by intent and return ranked usage guidance; limit is capped at 5",
         "category": "tooling",
         "underlying": "workspace tools.search",
         "capabilities": {

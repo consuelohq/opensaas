@@ -23,7 +23,7 @@ export const toolSchemas = [
         "tools",
         "search"
       ],
-      "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
+      "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback; limit is capped at 5",
       "category": "tooling",
       "underlying": "Consuelo OS tools.search",
       "capabilities": {

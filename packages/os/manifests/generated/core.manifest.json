@@ -1050,7 +1050,7 @@
       "source": "tool-discovery",
       "sourcePath": "packages/os/tools/tool-discovery/manifest.ts",
       "category": "tooling",
-      "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
+      "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback; limit is capped at 5",
       "core": true,
       "definition": {
         "name": "tools.search",
@@ -1058,7 +1058,7 @@
           "tools",
           "search"
         ],
-        "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
+        "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback; limit is capped at 5",
         "category": "tooling",
         "underlying": "Consuelo OS tools.search",
         "capabilities": {
