@@ -1,0 +1,280 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+  "events": [
+    {
+      "id": "9cf9ecb4-c632-4fe6-8497-d8f35140fc08",
+      "occurred_at": "2026-08-16T05:18:05.887Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "537b8096-8ca2-4252-925d-064fa6dff1a8",
+      "occurred_at": "2026-08-16T05:18:12.577Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/worker-runtime-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "f9d1235a-a49f-42a3-9873-43d662a21048",
+      "occurred_at": "2026-08-16T05:18:27.627Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/app.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "3e66c452-aac2-4b84-b92a-319ddd16d0c9",
+      "occurred_at": "2026-08-16T05:18:48.157Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/worker-pool.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "3a752145-56c0-4b6d-bae0-122a8a4d22cc",
+      "occurred_at": "2026-08-16T05:18:55.648Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/routes/mcp.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "6f30d1e3-d150-4d8d-b46c-93d222045474",
+      "occurred_at": "2026-08-16T05:19:15.104Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/routes/health.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "517057cf-3600-435f-a80e-4204d55ba5e9",
+      "occurred_at": "2026-08-16T05:26:04.828Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/health-readiness.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "0e2b96f9-d8d1-4a09-b6d5-c9ef20916994",
+      "occurred_at": "2026-08-16T05:54:27.388Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/senior-engineer.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "85e5a70b-8687-4f4e-a6b8-48bdc235b116",
+      "occurred_at": "2026-08-16T05:54:34.748Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "58044499-9bf5-44b0-8304-f226acdc03bd",
+      "occurred_at": "2026-08-16T05:54:52.672Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "082911f2-08d6-4ebc-a192-ac3bc73a3240",
+      "occurred_at": "2026-08-16T05:55:06.186Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/health-readiness.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "550b8828-1eff-491e-8efa-450008ce1f8a",
+      "occurred_at": "2026-08-16T05:55:20.382Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "48d2aaa0-3069-41cf-b2c2-4e79d1dcf946",
+      "occurred_at": "2026-08-16T05:59:07.492Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/prevent-mcp-eof-during-rolling-worker-evacuation/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "e38d3075-03d0-4d60-8055-9036a916742a",
+      "occurred_at": "2026-08-16T06:00:04.905Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/prevent-mcp-eof-during-rolling-worker-evacuation/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "c5e49430-95c5-4944-aa0e-067761b0f295",
+      "occurred_at": "2026-08-16T06:01:50.415Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-restart-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "7a1313fa-00cb-4930-b292-fc168c8fe319",
+      "occurred_at": "2026-08-16T06:04:04.975Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    },
+    {
+      "id": "0153d2b0-f09b-4022-9e54-fd2d2325153a",
+      "occurred_at": "2026-08-16T06:04:25.243Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-16T06:04:25.301Z"
+}

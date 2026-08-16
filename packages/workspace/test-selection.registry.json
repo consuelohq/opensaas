@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2650,
-    "mappedTestCount": 2565,
+    "testFileCount": 2652,
+    "mappedTestCount": 2567,
     "unmappedTestCount": 85,
     "ruleCount": 65,
     "explicitRuleCount": 46,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 270,
+      "packages/os/tests": 272,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 64,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 556,
+      "test": 558,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -4350,6 +4350,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/internal-dashboard-astro-source.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/internal-dashboard-integration.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -5351,6 +5356,11 @@
     },
     {
       "path": "packages/os/tests/workflow-intent.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-chrome.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
