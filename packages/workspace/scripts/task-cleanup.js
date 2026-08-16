@@ -26,6 +26,7 @@ const {
   evictDurableTaskWorktree,
   getTaskInactivityAgeMs,
   inspectTaskWorktreeState,
+  removeDurableTaskRecoveryState,
 } = require('./lib/task-worktree-eviction');
 
 function writeStdout(value = '') {
@@ -315,7 +316,7 @@ async function main() {
       continue;
     }
 
-    const staleOnly = args.staleDays !== undefined && !explicitBranchCleanup && !args.merged && !args.force;
+    const staleOnly = args.staleDays !== undefined && !explicitBranchCleanup && !args.merged;
     if (staleOnly) {
       if (!durable) {
         result.skipped.push({ branch, reason: 'stale eviction requires durable task registry metadata' });
@@ -419,6 +420,7 @@ async function main() {
     }
 
     deleteLocalBranch(repoRoot, branch, true);
+    if (durable) removeDurableTaskRecoveryState(durable.taskSession);
     result.removedBranches.push(branch);
   }
 
