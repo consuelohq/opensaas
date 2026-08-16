@@ -315,6 +315,42 @@ describe('lifecycle restart parity', () => {
     }
   });
 
+  it('retries launchd operation-in-progress while restarting the watchdog', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-watchdog-kickstart-retry-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.watchdog';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    let kickstartAttempts = 0;
+    const sleepCalls: number[] = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        sleep: async (milliseconds) => {
+          sleepCalls.push(milliseconds);
+        },
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'kickstart') {
+            kickstartAttempts += 1;
+            if (kickstartAttempts === 1) {
+              return { exitCode: 37, stdout: '', stderr: '' };
+            }
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      expect(kickstartAttempts).toBe(2);
+      expect(sleepCalls).toEqual([200]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('includes the sidecar label when transient kickstart retries are exhausted', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-kickstart-failure-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
