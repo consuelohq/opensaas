@@ -1,6 +1,7 @@
 name: Consuelo OS runtime publish
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -195,6 +196,7 @@ jobs:
             --source-commit "${GITHUB_SHA}" \
             --minimum-updater-version "${{ vars.CONSUELO_OS_MINIMUM_UPDATER_VERSION || '0.1.0' }}" \
             --migration "2026-08-13-reconcile-caddy-worker-pool:scripts/migrations/reconcile-caddy-worker-pool.ts" \
+            --migration "release-${{ needs.plan.outputs.version }}-reconcile-caddy-gateway:scripts/migrations/reconcile-caddy-worker-pool.ts" \
             --migration "2026-08-13-reconcile-caddy-ha-watchdog:scripts/migrations/reconcile-caddy-ha-watchdog.ts" \
             --vendored-source "scripts/server/vendor/diff-cockpit.ts=../diff-cockpit/src/index.ts" \
             --output "../../${OUTPUT_PATH}"

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f7ee1bd6e6ba",
+  "tmuxSession": "opensaas-os-sync-os-stream-with-main-and-ship-tracing-polish-f7ee1bd6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-os-stream-with-main-and-ship-tracing-polish",
+  "branch": "task/os/sync-os-stream-with-main-and-ship-tracing-polish",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish",
+  "prNumber": 2042,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2042",
+  "createdAt": "2026-08-15T07:32:58.405Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish/.task/os/sync-os-stream-with-main-and-ship-tracing-polish/session.json"
+}

@@ -3,15 +3,18 @@ set -euo pipefail
 
 dry_run=0
 quiet=0
+definitions_only=0
 debug="${CONSUELO_OS_DEBUG:-0}"
 for arg in "$@"; do
   case "$arg" in
     --dry-run) dry_run=1 ;;
     --quiet) quiet=1 ;;
+    --definitions-only) definitions_only=1 ;;
     --debug) debug=1 ;;
     --help|-h)
-      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--quiet] [--debug]"
+      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--definitions-only] [--quiet] [--debug]"
       echo "installs Consuelo OS user LaunchAgents in ~/Library/LaunchAgents"
+      echo "  --definitions-only  refresh plist definitions without restarting live services"
       echo "  --quiet  suppress normal success details for hosted bootstrap output"
       exit 0
       ;;
@@ -26,6 +29,34 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
 env_file="$root_dir/.env"
 log_prefix="[consuelo-os-launchagent-install]"
+install_id="${CONSUELO_INSTALL_ID:-}"
+background_service_result_file="${CONSUELO_BACKGROUND_SERVICE_RESULT_FILE:-}"
+background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
+stage_pid=""
+
+record_background_service_failure() {
+  local status="$1"
+  [ "$status" -ne 0 ] || return 0
+  if [ -n "$background_service_result_file" ]; then
+    {
+      printf 'install_id=%s\n' "$install_id"
+      printf 'error_code=%s\n' "$background_service_failure_code"
+    } > "$background_service_result_file" 2>/dev/null || true
+  fi
+  if [ -n "$install_id" ]; then
+    printf '%s install_id=%s error_code=%s\n' "$log_prefix" "$install_id" "$background_service_failure_code" >&2
+  fi
+}
+
+cleanup_background_service_install() {
+  local status=$?
+  if [ -n "$stage_pid" ]; then
+    kill "$stage_pid" 2>/dev/null || true
+  fi
+  record_background_service_failure "$status"
+}
+
+trap cleanup_background_service_install EXIT
 
 daemon_user="${CONSUELO_DAEMON_USER:-${USER:-$(id -un)}}"
 if ! id -u "$daemon_user" >/dev/null 2>&1; then
@@ -496,6 +527,24 @@ run_plutil_lint() {
   fi
 }
 
+install_launch_agent_definitions() {
+  install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
+  install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
+  if [ "$portless_enabled" = "1" ]; then
+    install -m 644 "$portless_generated_plist" "$portless_agent_plist"
+  fi
+  install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
+  if [ "$availability_enabled" = "1" ]; then
+    install -m 644 "$availability_generated_plist" "$availability_agent_plist"
+  fi
+  for index in "${!cloudflared_generated_plists[@]}"; do
+    install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
+  done
+  for index in "${!heartbeat_generated_plists[@]}"; do
+    install -m 600 "${heartbeat_generated_plists[$index]}" "${heartbeat_agent_plists[$index]}"
+  done
+}
+
 if [ "$dry_run" -eq 0 ]; then
   mkdir -p "$launch_agent_dir" "$log_dir" "$consuelo_data_home/node/runtime/watchdog"
 fi
@@ -524,6 +573,13 @@ if [ "$dry_run" -eq 1 ]; then
   exit 0
 fi
 
+if [ "$definitions_only" -eq 1 ]; then
+  background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
+  install_launch_agent_definitions
+  log "LaunchAgent definitions refreshed without restarting services"
+  exit 0
+fi
+
 caddy_bin="$(resolve_caddy_bin)"
 if [ -z "$caddy_bin" ] || [ ! -x "$caddy_bin" ]; then
   log "managed Caddy binary is missing or not executable"
@@ -539,36 +595,25 @@ if ! "$caddy_bin" validate --config "$caddyfile" --adapter caddyfile >/dev/null;
 fi
 
 [ "$quiet" = "1" ] || log "running Consuelo OS smoke test on port $stage_port"
+background_service_failure_code="BACKGROUND_SERVICE_START_FAILED"
 WORKSPACE_DAEMON_PORT="$stage_port" bash "$script_dir/start-consuelo-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
 stage_pid=$!
-trap 'kill "$stage_pid" 2>/dev/null || true' EXIT
+background_service_failure_code="BACKGROUND_SERVICE_HEALTHCHECK_FAILED"
 if ! wait_for_health "http://127.0.0.1:${stage_port}/health" 20 1; then
   log "stage Consuelo OS service did not become healthy"
   exit 1
 fi
 kill "$stage_pid" 2>/dev/null || true
 wait "$stage_pid" 2>/dev/null || true
-trap - EXIT
+stage_pid=""
 
 retire_legacy_portless_services
 
-install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
-install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
-if [ "$portless_enabled" = "1" ]; then
-  install -m 644 "$portless_generated_plist" "$portless_agent_plist"
-fi
-install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
-if [ "$availability_enabled" = "1" ]; then
-  install -m 644 "$availability_generated_plist" "$availability_agent_plist"
-else
+background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
+install_launch_agent_definitions
+if [ "$availability_enabled" != "1" ]; then
   remove_disabled_agent "$availability_label" "$availability_agent_plist"
 fi
-for index in "${!cloudflared_generated_plists[@]}"; do
-  install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
-done
-for index in "${!heartbeat_generated_plists[@]}"; do
-  install -m 600 "${heartbeat_generated_plists[$index]}" "${heartbeat_agent_plists[$index]}"
-done
 
 for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
   bootout_agent "$label"
@@ -586,6 +631,7 @@ fi
 bootout_agent "$caddy_label"
 bootout_agent "$workspace_label"
 
+background_service_failure_code="BACKGROUND_SERVICE_START_FAILED"
 if [ "$availability_enabled" = "1" ]; then
   bootstrap_agent "$availability_label" "$availability_agent_plist"
 fi
@@ -602,6 +648,7 @@ for index in "${!heartbeat_labels[@]}"; do
 done
 bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
 
+background_service_failure_code="BACKGROUND_SERVICE_HEALTHCHECK_FAILED"
 if ! wait_for_workspace_health; then
   log "local Consuelo OS health failed after LaunchAgent cutover"
   print_repair_hint

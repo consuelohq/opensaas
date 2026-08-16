@@ -9,6 +9,7 @@ import {
 } from '../constants';
 import { json } from '../http';
 import type {
+  DeviceAuthorityRuntime,
   McpOAuthAccessToken,
   McpOAuthCode,
   McpOAuthRefreshToken,
@@ -34,6 +35,70 @@ import {
   googleIdentity,
   redirectUri,
 } from './google-oauth';
+import {
+  CloudFirstOnboardingError,
+  resolveCanonicalWebUser,
+  resolveWebOperatingAccountId,
+} from './cloud-first-onboarding';
+
+const CHATGPT_CALLBACK_ID_PATTERN = /^[A-Za-z0-9_-]{1,160}$/u;
+
+function chatGptClientMetadataCallbackId(value: string): string | undefined {
+  try {
+    const url = new URL(value);
+    if (
+      url.origin !== 'https://chatgpt.com' ||
+      url.username !== '' ||
+      url.password !== '' ||
+      url.search !== '' ||
+      url.hash !== ''
+    ) {
+      return undefined;
+    }
+    const match = /^\/oauth\/([^/]+)\/client\.json$/u.exec(url.pathname);
+    const callbackId = match?.[1];
+    return callbackId && CHATGPT_CALLBACK_ID_PATTERN.test(callbackId)
+      ? callbackId
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function chatGptRedirectCallbackId(value: string): string | undefined {
+  try {
+    const url = new URL(value);
+    if (
+      url.origin !== 'https://chatgpt.com' ||
+      url.username !== '' ||
+      url.password !== '' ||
+      url.search !== '' ||
+      url.hash !== ''
+    ) {
+      return undefined;
+    }
+    const match = /^\/connector\/oauth\/([^/]+)$/u.exec(url.pathname);
+    const callbackId = match?.[1];
+    return callbackId && CHATGPT_CALLBACK_ID_PATTERN.test(callbackId)
+      ? callbackId
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function validChatGptClientMetadataBinding(
+  clientId: string,
+  redirectUri: string,
+): boolean {
+  const clientCallbackId = chatGptClientMetadataCallbackId(clientId);
+  const redirectCallbackId = chatGptRedirectCallbackId(redirectUri);
+  return (
+    clientCallbackId !== undefined &&
+    redirectCallbackId !== undefined &&
+    clientCallbackId === redirectCallbackId
+  );
+}
 
 export function authorizationServerMetadata(
   origin: string,
@@ -188,7 +253,6 @@ export async function startMcpOAuthAuthorization(input: {
   store: Store;
   origin: string;
   googleClientId: string;
-  fetchImpl: typeof fetch;
   nowMs: number;
 }): Promise<Response> {
   const url = new URL(input.request.url);
@@ -222,40 +286,18 @@ export async function startMcpOAuthAuthorization(input: {
       'invalid_request',
       'redirect_uri is not allowed.',
     );
-  if (isChatGptClientMetadataDocumentId(clientId)) {
-    try {
-      const metadataResponse = await input.fetchImpl(clientId, {
-        method: 'GET',
-        headers: { accept: 'application/json' },
-        redirect: 'error',
-      });
-      const metadata = (await metadataResponse.json().catch(() => null)) as
-        | Record<string, unknown>
-        | null;
-      const metadataRedirectUris = Array.isArray(metadata?.redirect_uris)
-        ? metadata.redirect_uris.filter(
-            (value): value is string => typeof value === 'string',
-          )
-        : [];
-      if (
-        !metadataResponse.ok ||
-        !metadata ||
-        metadata.client_id !== clientId ||
-        metadataRedirectUris.length === 0 ||
-        !metadataRedirectUris.includes(redirectUriValue)
-      ) {
-        return invalidOauthRequest(
-          'invalid_client',
-          'Client ID Metadata Document validation failed.',
-        );
-      }
-    } catch {
-      return invalidOauthRequest(
-        'invalid_client',
-        'Client ID Metadata Document validation failed.',
-      );
-    }
-  }
+  // Cloudflare Worker subrequests add provider headers that ChatGPT may reject when fetching a
+  // Client ID Metadata Document. For ChatGPT-owned URL client IDs, both URLs carry the same opaque
+  // callback id on the trusted chatgpt.com origin, so bind those ids locally instead of depending
+  // on an external metadata fetch at authorization time.
+  if (
+    isChatGptClientMetadataDocumentId(clientId) &&
+    !validChatGptClientMetadataBinding(clientId, redirectUriValue)
+  )
+    return invalidOauthRequest(
+      'invalid_client',
+      'Client ID Metadata Document validation failed.',
+    );
   if (!codeChallenge || codeChallengeMethod !== 'S256')
     return invalidOauthRequest('invalid_request', 'PKCE S256 is required.');
   let workspaceHost: string;
@@ -298,6 +340,7 @@ export async function startMcpOAuthAuthorization(input: {
 
 export async function finishMcpOAuthGoogleCallback(input: {
   request: Request;
+  runtime: DeviceAuthorityRuntime;
   store: Store;
   origin: string;
   googleClientId: string;
@@ -309,8 +352,18 @@ export async function finishMcpOAuthGoogleCallback(input: {
   const url = new URL(input.request.url);
   const stateValue = url.searchParams.get('state') ?? '';
   const authCode = url.searchParams.get('code') ?? '';
-  const oauthState = await input.store.byMcpOAuthState(stateValue);
-  if (!stateValue || !authCode || !oauthState)
+  const providerError = url.searchParams.get('error') ?? '';
+  let oauthState;
+  try {
+    oauthState = await input.store.byMcpOAuthState(stateValue);
+  } catch {
+    return invalidOauthRequest(
+      'temporarily_unavailable',
+      'OAuth session storage is temporarily unavailable.',
+      503,
+    );
+  }
+  if (!stateValue || !oauthState)
     return invalidOauthRequest(
       'invalid_request',
       'OAuth session was not found.',
@@ -321,6 +374,24 @@ export async function finishMcpOAuthGoogleCallback(input: {
       'OAuth session expired.',
       410,
     );
+  if (providerError || !authCode) {
+    await input.store.delMcpOAuthState(stateValue);
+    const error = providerError
+      ? providerError === 'server_error' || providerError === 'temporarily_unavailable'
+        ? 'temporarily_unavailable'
+        : 'access_denied'
+      : 'invalid_request';
+    const errorDescription = providerError
+      ? error === 'temporarily_unavailable'
+        ? 'Google sign-in is temporarily unavailable.'
+        : 'Google approval was not completed.'
+      : 'Google authorization code was not returned.';
+    return redirectWithParams(oauthState.redirectUri, {
+      error,
+      error_description: errorDescription,
+      ...(oauthState.requestedState ? { state: oauthState.requestedState } : {}),
+    });
+  }
   let identity: { sub: string; email: string; emailVerified: boolean };
   try {
     identity = await googleIdentity({
@@ -338,7 +409,32 @@ export async function finishMcpOAuthGoogleCallback(input: {
       502,
     );
   }
-  const accountId = 'google:' + identity.sub;
+  let accountId: string;
+  try {
+    const resolved = await resolveCanonicalWebUser({
+      runtime: input.runtime,
+      email: identity.email,
+      intent: 'login',
+    });
+    accountId = await resolveWebOperatingAccountId({
+      runtime: input.runtime,
+      user: resolved.user,
+      googleSubject: identity.sub,
+    });
+  } catch (error: unknown) {
+    if (error instanceof CloudFirstOnboardingError && error.status < 500) {
+      return invalidOauthRequest(
+        'access_denied',
+        'This Google account is not connected to Consuelo OS.',
+        403,
+      );
+    }
+    return invalidOauthRequest(
+      'temporarily_unavailable',
+      'Consuelo identity is temporarily unavailable.',
+      503,
+    );
+  }
   const workspaceResolution = await resolveMcpOAuthWorkspaceHost({
     store: input.store,
     accountId,

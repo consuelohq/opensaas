@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/polish-tracing-chrome-and-responsive-table",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2041,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2041",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2041",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2041/polish-tracing-chrome-and-responsive-table",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2041",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2041/polish-tracing-chrome-and-responsive-table",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-tracing-chrome-and-responsive-table",
+  "taskSession": "tsk_0fdc77a29a78",
+  "tmuxSession": "opensaas-os-polish-tracing-chrome-and-responsive-table-0fdc77a2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-tracing-chrome-and-responsive-table/.task/os/polish-tracing-chrome-and-responsive-table/session.json",
+  "createdAt": "2026-08-15T07:18:03.796Z"
+}

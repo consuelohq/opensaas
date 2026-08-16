@@ -160,6 +160,10 @@ function isVendoredThirdPartyFile(filePath) {
   return filePath.includes('/upstream/') || filePath.includes('/vendor/');
 }
 
+function isGeneratedArtifactFile(filePath) {
+  return filePath.includes('/generated/') || filePath.includes('/generated-metadata/');
+}
+
 function isReviewableFile(filePath) {
   return filePath.startsWith('packages/')
     && !isVendoredThirdPartyFile(filePath)
@@ -988,6 +992,7 @@ async function main() {
   const allFindings = [];
   const checkResults = {};
   for (const file of files) {
+    if (isGeneratedArtifactFile(file)) continue;
     const lines = readFileLines(file);
     for (const check of ALL_CHECKS) {
       const results = check(file, lines);

@@ -14,12 +14,25 @@ type WorkspaceRouteD1RouteTarget =
       connectorId: string;
       connectorStatus: 'connected' | 'disconnected';
       tunnelOriginUrl: string;
+    }
+  | {
+      kind: 'site-snapshot';
+      siteId: string;
+      versionId: string;
+      manifestKey: string;
+      cachePolicy: 'static-shell' | 'versioned-asset' | 'mutable-artifact' | 'private-preview';
+    }
+  | {
+      kind: 'consuelo-gateway-service';
+      serviceName: string;
+      gatewayRouteFamily: string;
+      publicSiteRouteFamily: string;
     };
 
 type WorkspaceRouteD1Route = {
   surface: 'os' | 'dialer' | 'app' | 'sites' | 'twenty';
   pathPrefix: string;
-  auth: 'required' | 'workspace-session';
+  auth: 'public' | 'required' | 'workspace-session' | 'signed-connector';
   status: 'active' | 'disabled';
   target: WorkspaceRouteD1RouteTarget;
 };
@@ -102,6 +115,7 @@ type WorkspaceRouteD1RegistryContract = {
       target: NonNullable<WorkspaceRouteD1RecordInput['nodeTargets']>[number];
       makeDefault?: boolean;
       localServiceUrl?: string;
+      refreshSiteSnapshots?: boolean;
     },
   ) => Promise<void>;
 };
@@ -727,6 +741,289 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
       route: '/',
       surface: 'app',
     });
+  });
+
+  it('should refresh active release-managed site snapshots without replacing published public sites', async () => {
+    const registry = await loadWorkspaceRouteD1RegistryContract();
+    const db = registry.createInMemoryWorkspaceRouteD1();
+    await registry.migrateWorkspaceRouteD1(db);
+    const nowMs = Date.parse('2026-08-14T09:30:00.000Z');
+
+    const siteRoute = (pathPrefix: string, siteId: string, versionId: string, workspaceId: string, auth: WorkspaceRouteD1Route['auth']): WorkspaceRouteD1Route => ({
+      surface: 'sites',
+      pathPrefix,
+      auth,
+      status: 'active',
+      target: {
+        kind: 'site-snapshot',
+        siteId,
+        versionId,
+        manifestKey: `sites/${workspaceId}/${siteId}/${versionId}/index.html`,
+        cachePolicy: pathPrefix === '/' ? 'private-preview' : 'static-shell',
+      },
+    });
+
+    await registry.upsertWorkspaceHostnameInD1(db, {
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        siteRoute('/', 'launcher', 'old-shell', 'workspace_internal', 'workspace-session'),
+        siteRoute('/observability', 'traces', 'old-shell', 'workspace_internal', 'workspace-session'),
+        siteRoute('/artifacts', 'artifacts', 'customer-artifact-version', 'workspace_internal', 'public'),
+      ],
+    });
+
+    await registry.upsertWorkspaceNodeTargetInD1(db, {
+      record: {
+        workspaceId: 'workspace_internal',
+        workspaceSlug: 'internal',
+        hostname: 'internal.consuelohq.com',
+        baseDomain: 'consuelohq.com',
+        provider: 'cloudflare',
+        owner: 'consuelo-os-cloud',
+        status: 'active',
+        routes: [
+          siteRoute('/', 'launcher', 'new-shell', 'workspace_testing', 'workspace-session'),
+          siteRoute('/observability', 'traces', 'new-shell', 'workspace_testing', 'workspace-session'),
+          { surface: 'sites', pathPrefix: '/artifacts', auth: 'public', status: 'disabled', target: { kind: 'site-snapshot', siteId: 'artifacts', versionId: 'new-shell', manifestKey: 'sites/workspace_testing/artifacts/new-shell/index.html', cachePolicy: 'static-shell' } },
+        ],
+      },
+      target: {
+        nodeId: 'node-current',
+        connectorId: 'connector_current',
+        connectorStatus: 'connected',
+        tunnelOriginUrl: 'https://current.connector.test',
+        state: 'active',
+        lastSeenAt: nowMs,
+        heartbeatTtlMs: 60_000,
+      },
+      makeDefault: true,
+      refreshSiteSnapshots: true,
+      localServiceUrl: 'http://127.0.0.1:46320',
+    });
+
+    await expect(registry.resolveWorkspaceRouteFromD1(db, {
+      host: 'internal.consuelohq.com',
+      path: '/observability',
+      nowMs,
+    })).resolves.toMatchObject({
+      allowed: true,
+      target: {
+        kind: 'site-snapshot',
+        versionId: 'new-shell',
+        manifestKey: 'sites/workspace_testing/traces/new-shell/index.html',
+      },
+    });
+    await expect(registry.resolveWorkspaceRouteFromD1(db, {
+      host: 'internal.consuelohq.com',
+      path: '/artifacts',
+      nowMs,
+    })).resolves.toMatchObject({
+      allowed: true,
+      target: {
+        kind: 'site-snapshot',
+        versionId: 'customer-artifact-version',
+        manifestKey: 'sites/workspace_internal/artifacts/customer-artifact-version/index.html',
+      },
+    });
+  });
+
+  it('reconciles canonical gateway routes over stale snapshots without replacing published static sites', async () => {
+    const registry = await loadWorkspaceRouteD1RegistryContract();
+    const db = registry.createInMemoryWorkspaceRouteD1();
+    await registry.migrateWorkspaceRouteD1(db);
+    const nowMs = Date.parse('2026-08-13T18:00:00.000Z');
+    const rootSnapshot = {
+      kind: 'site-snapshot' as const,
+      siteId: 'launcher',
+      versionId: 'sha256-current-sites',
+      manifestKey: 'sites/workspace_internal/launcher/sha256-current-sites/index.html',
+      cachePolicy: 'static-shell' as const,
+    };
+    const staleDiffsSnapshot = {
+      kind: 'site-snapshot' as const,
+      siteId: 'diffs',
+      versionId: 'sha256-reserved-diffs',
+      manifestKey: 'sites/workspace_internal/diffs/sha256-reserved-diffs/index.html',
+      cachePolicy: 'static-shell' as const,
+    };
+    const nodesSnapshot = {
+      kind: 'site-snapshot' as const,
+      siteId: 'nodes',
+      versionId: rootSnapshot.versionId,
+      manifestKey: `sites/workspace_internal/nodes/${rootSnapshot.versionId}/index.html`,
+      cachePolicy: 'static-shell' as const,
+    };
+    const observabilitySnapshot = {
+      kind: 'site-snapshot' as const,
+      siteId: 'traces',
+      versionId: rootSnapshot.versionId,
+      manifestKey: `sites/workspace_internal/traces/${rootSnapshot.versionId}/index.html`,
+      cachePolicy: 'static-shell' as const,
+    };
+    const canonicalRecord: WorkspaceRouteD1RecordInput = {
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_current',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://current.connector.test',
+          },
+        },
+        {
+          surface: 'sites',
+          pathPrefix: '/gateway/diffs',
+          auth: 'signed-connector',
+          status: 'active',
+          target: {
+            kind: 'consuelo-gateway-service',
+            serviceName: 'diffs-sites-gateway-endpoints',
+            gatewayRouteFamily: '/gateway/diffs',
+            publicSiteRouteFamily: '/diffs',
+          },
+        },
+        {
+          surface: 'sites',
+          pathPrefix: '/diffs',
+          auth: 'workspace-session',
+          status: 'active',
+          target: {
+            kind: 'consuelo-gateway-service',
+            serviceName: 'diffs-sites-gateway-endpoints',
+            gatewayRouteFamily: '/gateway/diffs',
+            publicSiteRouteFamily: '/diffs',
+          },
+        },
+      ],
+    };
+    const target = {
+      nodeId: 'node-current',
+      connectorId: 'connector_current',
+      connectorStatus: 'connected' as const,
+      tunnelOriginUrl: 'https://current.connector.test',
+      state: 'active' as const,
+      lastSeenAt: nowMs,
+      heartbeatTtlMs: 60_000,
+    };
+
+    await registry.upsertWorkspaceHostnameInD1(db, {
+      ...canonicalRecord,
+      defaultNodeId: 'node-current',
+      nodeTargets: [target],
+      routes: [
+        {
+          surface: 'sites',
+          pathPrefix: '/',
+          auth: 'public',
+          status: 'active',
+          target: rootSnapshot,
+        },
+        {
+          surface: 'sites',
+          pathPrefix: '/diffs',
+          auth: 'public',
+          status: 'active',
+          target: staleDiffsSnapshot,
+        },
+        {
+          surface: 'sites',
+          pathPrefix: '/nodes',
+          auth: 'workspace-session',
+          status: 'active',
+          target: nodesSnapshot,
+        },
+        {
+          surface: 'sites',
+          pathPrefix: '/observability',
+          auth: 'workspace-session',
+          status: 'active',
+          target: observabilitySnapshot,
+        },
+      ],
+    });
+
+    await registry.upsertWorkspaceNodeTargetInD1(db, {
+      record: canonicalRecord,
+      target,
+      makeDefault: true,
+    });
+    await registry.upsertWorkspaceNodeTargetInD1(db, {
+      record: canonicalRecord,
+      target,
+      makeDefault: true,
+    });
+
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'internal.consuelohq.com',
+        path: '/diffs',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      route: '/diffs',
+      auth: 'workspace-session',
+      target: {
+        kind: 'consuelo-gateway-service',
+        serviceName: 'diffs-sites-gateway-endpoints',
+      },
+    });
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'internal.consuelohq.com',
+        path: '/',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      route: '/',
+      target: rootSnapshot,
+    });
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'internal.consuelohq.com',
+        path: '/nodes',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      route: '/nodes',
+      target: nodesSnapshot,
+    });
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'internal.consuelohq.com',
+        path: '/observability',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      route: '/observability',
+      target: observabilitySnapshot,
+    });
+
+    const stored = (await db.dumpHostnameRow?.('internal.consuelohq.com')) as
+      | { routes?: Array<{ pathPrefix: string }> }
+      | undefined;
+    expect(stored?.routes?.filter((route) => route.pathPrefix === '/diffs')).toHaveLength(1);
+    expect(stored?.routes?.filter((route) => route.pathPrefix === '/gateway/diffs')).toHaveLength(1);
   });
 
   it('should update node heartbeat state through a production-shaped prepare-only D1 binding', async () => {

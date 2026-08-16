@@ -64,7 +64,9 @@
             "bun",
             "test",
             "packages/workspace/tests/task-session.test.js",
-            "packages/workspace/tests/task-meta.test.ts"
+            "packages/workspace/tests/task-meta.test.ts",
+            "packages/workspace/tests/task-init.test.js",
+            "packages/workspace/tests/task-selection.test.js"
           ]
         }
       ],
@@ -215,6 +217,56 @@
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior."
     },
     {
+      "id": "os-release-surface-freshness",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        ".github/workflows/consuelo-os-runtime-publish.yaml",
+        "packages/os/package.json",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/tests/distribution/release-channel-workflows.test.ts",
+        "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/workspace/scripts/os-release.ts",
+        "packages/workspace/scripts/os-release-device-auth.ts",
+        "packages/workspace/scripts/os-release-workspace-edge.ts",
+        "packages/workspace/tests/website-deploy.test.js"
+      ],
+      "tests": [
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts"
+          ]
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ]
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ]
+        }
+      ],
+      "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "os-workspace-edge-rollout",
       "critical": true,
       "source": [
@@ -222,7 +274,9 @@
         "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/tests/install-edge-site-publisher.test.ts",
         "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
-        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/lib/workspace-edge-node-auth.ts"
       ],
       "tests": [
         {
@@ -256,6 +310,111 @@
       "reason": "Workspace edge rollout changes must preserve immutable snapshots and live node/connector route state without relying on a broad package test."
     },
     {
+      "id": "os-hosted-site-update-reconciliation",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+        "packages/os/scripts/lib/lifecycle/engine.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/tests/cloudflare-d1-route-registry.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ]
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ]
+        }
+      ],
+      "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite."
+    },
+    {
+      "id": "os-bun-lockfile-consistency",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/bun.lock"
+      ],
+      "tests": [
+        {
+          "name": "OS Bun frozen lockfile contract",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/os",
+            "--frozen-lockfile",
+            "--lockfile-only",
+            "--dry-run"
+          ]
+        }
+      ],
+      "reason": "OS dependency lock changes must prove the exact frozen Bun install contract used by distribution and release workflows without selecting unrelated package-wide tests."
+    },
+    {
+      "id": "os-install-state-tool-inventory",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tests/install-state.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS install-state tool inventory contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/install-state.test.ts"
+          ]
+        }
+      ],
+      "reason": "Install-state tool inventory regressions must run the focused manifest/install contract without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-runtime-bundle-distribution-contract",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tests/distribution/runtime-bundle.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS runtime-bundle distribution contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/distribution/runtime-bundle.test.ts"
+          ]
+        }
+      ],
+      "reason": "Runtime-bundle distribution harness changes must run the exact runtime-bundle contract without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "os-lifecycle-legacy-mcp-scrub",
       "critical": true,
       "source": [
@@ -279,6 +438,729 @@
         }
       ],
       "reason": "Lifecycle daemon/reload changes must prove inherited-secret scrub, activated-runtime managed Sites refresh, Bun path resolution, and fail-open startup without selecting the broad OS package suite."
+    },
+    {
+      "id": "os-gateway-security-caddy-handoff",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/security-gateway.ts",
+        "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+        "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+        "packages/os/tests/security-gateway.test.ts",
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS gateway security and Caddy contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/security-gateway.test.ts",
+            "tests/caddy-worker-pool-reconciliation.test.ts"
+          ]
+        },
+        {
+          "name": "OS gateway security syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Gateway security and Caddy handoff changes must prove signed Workspace Edge headers survive local proxying, gateway authorization remains fail-closed, worker-pool reconciliation is idempotent, and syntax stays valid without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-lifecycle-update-handoff",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/SCRIPTS.md",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/native/windows-service/**",
+        "packages/os/scripts/consuelo-reload.js",
+        "packages/os/scripts/generate-system-daemons.sh",
+        "packages/os/scripts/install-system-daemons.sh",
+        "packages/os/scripts/lifecycle.ts",
+        "packages/os/scripts/lib/lifecycle/engine.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/native-lifecycle-operation.ts",
+        "packages/os/scripts/lib/lifecycle/types.ts",
+        "packages/os/scripts/lib/worker-pool.ts",
+        "packages/os/scripts/server/routes/health.ts",
+        "packages/os/scripts/server/supervisor.ts",
+        "packages/os/scripts/start-consuelo-daemon.sh",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/cli-update-routing.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/lifecycle-facade.test.ts",
+        "packages/os/tests/lifecycle-tool-surface.test.ts",
+        "packages/os/tests/native-lifecycle-operation.test.ts",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/tool-package-layout.test.ts",
+        "packages/os/scripts/lib/windows-platform.ts",
+        "packages/os/tools/lifecycle/**",
+        "packages/os/tools/registry.ts",
+        "packages/os/scripts/lib/lifecycle/service.ts",
+        "packages/os/scripts/lib/platforms/linux.ts",
+        "packages/os/tests/lifecycle-restart-contract.test.ts",
+        "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+        "packages/os/tests/linux-ingress-continuity.test.ts",
+        "packages/os/tests/daemon-bun-path.test.ts",
+        "packages/os/tests/system-daemon-reliability.test.ts",
+        "packages/os/tests/worker-pool-lifecycle.test.ts",
+        "packages/os/tests/linux-platform.test.ts",
+        "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+        "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+        "packages/os/scripts/server/main.ts",
+        "packages/os/scripts/server/worker-runtime-state.ts",
+        "packages/os/tests/health-readiness.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+          ]
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ]
+        }
+      ],
+      "reason": "Lifecycle updater, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-launcher-copy-interaction",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/consuelo-website/src/pages/os/launcher.astro",
+        "packages/os/scripts/lib/launcher-onboarding.ts",
+        "packages/os/tests/launcher-astro-source.test.ts",
+        "packages/os/tests/launcher-onboarding.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS launcher copy interaction contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/launcher-onboarding.test.ts",
+            "tests/launcher-astro-source.test.ts"
+          ]
+        },
+        {
+          "name": "OS launcher Sites materialization contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/sites-cli.test.ts",
+            "-t",
+            "launcher"
+          ]
+        },
+        {
+          "name": "Consuelo website launcher Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ]
+        }
+      ],
+      "reason": "Launcher onboarding copy-interaction changes must prove generated UI behavior, Sites materialization, and Astro source validity without selecting the historically red unrelated OS package suite."
+    },
+    {
+      "id": "os-managed-cloud-checkout-observability",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts",
+        "packages/os/scripts/lib/device-authority-release-readiness.ts",
+        "packages/os/tests/managed-cloud-checkout-observability.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS managed cloud checkout observability contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "vitest",
+            "run",
+            "tests/managed-cloud-checkout-observability.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/os-web-auth-contract.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-universal-login.test.ts",
+            "tests/security-scan.test.ts"
+          ]
+        },
+        {
+          "name": "OS managed cloud checkout observability syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Managed-cloud checkout, Stripe synthetic testing, PostHog funnel instrumentation, Sentry error reporting, and checkout security changes must prove focused billing/auth/release contracts without selecting the historically noisy unrelated OS package suite."
+    },
+    {
+      "id": "os-cloud-first-auth-onboarding",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/health.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/cloud-first-onboarding.ts",
+        "packages/os/tests/cloud-first-web-onboarding.test.ts",
+        "packages/os/tests/os-universal-login.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS cloud-first auth onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-universal-login.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-lifecycle-onboarding.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/managed-cloud-pricing.test.ts"
+          ]
+        },
+        {
+          "name": "OS cloud-first auth onboarding Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS cloud-first auth onboarding syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Cloud-first Consuelo OS login, canonical signup, workspace trial, and provisioning handoff changes must prove the exact browser auth, managed-cloud, installer-lifecycle, launcher, Worker, and syntax contracts without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-mcp-admission-error-contract",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/scripts/server/middleware/dangerous-material.ts",
+        "packages/os/scripts/server/logger.ts",
+        "packages/os/scripts/lib/dangerous-material-policy.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/mcp-openai-session-receipt.test.ts",
+        "packages/os/tests/dangerous-material-policy.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS MCP admission contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/mcp-openai-session-receipt.test.ts"
+          ]
+        },
+        {
+          "name": "OS dangerous material ingress contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dangerous-material-policy.test.ts"
+          ]
+        },
+        {
+          "name": "OS MCP admission syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "MCP request admission and dangerous-material boundary changes must prove JSON-RPC transport/error behavior, fail-closed safety, authentication/gateway compatibility, and syntax without selecting the historically broad OS package suite."
+    },
+    {
+      "id": "os-chatgpt-mcp-oauth",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+        "packages/os/tests/operator-oauth-client.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS ChatGPT MCP OAuth contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/operator-oauth-client.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "ChatGPT MCP OAuth client binding and authorization changes must prove the exact client/redirect, Worker, architecture, release, and syntax contracts without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-chatgpt-node-routing-facade",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/os-get-steering-trace.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS ChatGPT node-routing syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-device-approval-canonical-identity",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/consuelo-website/src/pages/login/device.astro",
+        "packages/os/cloudflare/os-device-authority/src/routes/device.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/canonical-device-identity.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/install-identity.ts",
+        "packages/os/cloudflare/workspace-edge/migrations/0005_install_user_workspace_verification.sql",
+        "packages/os/scripts/lib/install-control-plane-d1.ts",
+        "packages/os/scripts/lib/install-control-plane.ts",
+        "packages/os/tests/canonical-device-identity.test.ts",
+        "packages/os/tests/install-control-plane-d1.test.ts",
+        "packages/os/tests/install-control-plane.test.ts",
+        "packages/os/tests/internal-dashboard-integration.test.ts",
+        "packages/os/tests/native-google-device-approval.test.ts",
+        "packages/os/tests/oauth-device-page-contract.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS canonical device approval syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-internal-workspace-shell",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/scripts/lib/settings-snapshot.ts",
+        "packages/os/scripts/lib/settings-materialization.ts",
+        "packages/os/scripts/lib/workspace-chrome.ts",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/tests/settings-site.test.ts",
+        "packages/os/tests/launcher-nodes-materialization.test.ts",
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/sites-cli.test.ts",
+        "packages/os/tests/launcher-local-customization.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/local-agent-connectivity.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/settings-site.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts"
+          ]
+        },
+        {
+          "name": "OS internal workspace shell syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid without falling back to the broad OS package suite."
+    },
+    {
+      "id": "os-managed-cloud-one-click-provisioning",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
+        "packages/os/cloudflare/os-device-authority/src/security/route-policies.ts",
+        "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/os-device-authority/src/worker.ts",
+        "packages/os/cloudflare/workspace-edge/src/index.ts",
+        "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
+        "packages/os/scripts/lib/managed-cloud-node-enrollment.ts",
+        "packages/os/scripts/lib/managed-cloud-node.ts",
+        "packages/os/scripts/lib/managed-cloud-provisioning-runner.ts",
+        "packages/os/scripts/lib/managed-cloud-provisioning.ts",
+        "packages/os/scripts/lib/platform-managed-cloud-node.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/scripts/managed-cloud-node-enroll.ts",
+        "packages/os/scripts/managed-cloud-provisioning-runner.ts",
+        "packages/os/tests/cloudflare-worker-release-readiness.test.ts",
+        "packages/os/tests/launcher-nodes-control-plane.test.ts",
+        "packages/os/tests/managed-cloud-one-click-provisioning.test.ts",
+        "packages/os/tests/managed-cloud-one-click-runner.test.ts",
+        "packages/os/tests/os-device-authority-architecture.test.ts",
+        "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/os/tests/settings-site.test.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts",
+        "packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts",
+        "packages/os/scripts/lib/managed-cloud-public-pricing.ts",
+        "packages/os/scripts/lib/nodes-site.ts",
+        "packages/os/tests/managed-cloud-public-pricing.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ]
+        },
+        {
+          "name": "OS device authority Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ]
+        },
+        {
+          "name": "OS one-click managed cloud syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "One-click managed-cloud control-plane, launcher, provisioning-runner, enrollment, and Worker changes must prove their focused security and lifecycle contracts without selecting the historically red unrelated OS package suite."
+    },
+    {
+      "id": "os-vitest-runtime-regressions",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tests/operator-login.test.ts",
+        "packages/os/tests/runtime-state.test.ts",
+        "packages/os/tests/node-resource-lock.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Vitest runtime regression contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/operator-login.test.ts",
+            "tests/runtime-state.test.ts",
+            "tests/node-resource-lock.test.ts"
+          ]
+        }
+      ],
+      "reason": "Verifier-only OS test fixes must prove rejection observation, child-process coordination, and lock-wait cleanup in the package's native Vitest runtime without selecting unrelated full OS package tests."
+    },
+    {
+      "id": "os-macos-menu-app",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/docs/macos-platform.md",
+        "packages/os/native/macos/**",
+        "packages/os/scripts/testing/macos-alpha-package.sh",
+        "packages/os/tests/macos-platform.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "macOS menu Swift contracts",
+          "command": [
+            "swift",
+            "run",
+            "--package-path",
+            "packages/os/native/macos",
+            "--scratch-path",
+            "/tmp/consuelo-os-macos-contract-tests",
+            "ConsueloMacContractTests"
+          ]
+        },
+        {
+          "name": "macOS menu platform contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/macos-platform.test.ts"
+          ]
+        },
+        {
+          "name": "macOS alpha package syntax",
+          "command": [
+            "bash",
+            "-n",
+            "packages/os/scripts/testing/macos-alpha-package.sh"
+          ]
+        }
+      ],
+      "reason": "Native macOS menu, lifecycle presentation, and alpha packaging changes must run the focused Swift and platform contracts without selecting the broad OS package suite."
+    },
+    {
+      "id": "os-native-menu-node-discovery",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+        "packages/os/scripts/lib/operator-login.ts",
+        "packages/os/scripts/lib/operator-token-store.ts",
+        "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
+        "packages/os/scripts/lib/workspace-node-snapshot-cache.ts",
+        "packages/os/scripts/login.ts",
+        "packages/os/scripts/workspace-node-heartbeat.ts",
+        "packages/os/tests/native-lifecycle-endpoint.test.ts",
+        "packages/os/tests/operator-login.test.ts",
+        "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+        "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS operator login contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/operator-login.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        },
+        {
+          "name": "OS native menu node discovery syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Native menu lifecycle/auth/heartbeat changes must prove read-only enrolled-node discovery, privileged operator mutations, refresh-token persistence, heartbeat snapshot safety, and lifecycle presentation without selecting the historically red unrelated OS package suite."
     },
     {
       "id": "frontend-lint-config-contract",
@@ -353,6 +1235,40 @@
         }
       ],
       "reason": "Removal of the obsolete metering package from the deployed artifact manifest must retain the canonical Artifacts boundary without selecting unrelated OS suites."
+    },
+    {
+      "id": "os-bundled-skill-contract",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/skills/**",
+        "packages/os/tests/branch-skill.test.ts",
+        "packages/os/tests/cli-skill-routing.test.ts",
+        "packages/os/tests/onboarding-skills.test.ts",
+        "packages/os/tests/senior-engineer-skill.test.ts",
+        "packages/os/tests/skill-migration.test.ts",
+        "packages/os/tests/skill-selection-cli.test.ts",
+        "packages/os/tests/skills-registry.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS bundled skill contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--",
+            "tests/branch-skill.test.ts",
+            "tests/cli-skill-routing.test.ts",
+            "tests/onboarding-skills.test.ts",
+            "tests/skill-selection-cli.test.ts",
+            "tests/skills-registry.test.ts"
+          ]
+        }
+      ],
+      "reason": "Bundled skill instructions, metadata, registry output, and skill-routing contracts must run the focused skill lifecycle suite without selecting unrelated historically red package-wide OS tests."
     },
     {
       "id": "native-os-workflow-contract",

@@ -1,6 +1,23 @@
 import type { WorkspaceRouteD1Database } from '../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import type { WorkspaceSiteSnapshotId } from '../../../scripts/lib/workspace-edge-route-seed';
 import type { ManagedCloudPricingRuntime } from './services/managed-cloud-pricing';
+import type { ManagedCloudPlanId, ManagedCloudRegionId } from '../../../scripts/lib/managed-cloud-pricing';
+import type {
+  ManagedCloudProvisioningClaimResult,
+  ManagedCloudProvisioningCreateResult,
+  ManagedCloudProvisioningJob,
+  ManagedCloudProvisioningStatus,
+} from '../../../scripts/lib/managed-cloud-provisioning';
+import type { InstallControlPlaneRepository } from '../../../scripts/lib/install-control-plane';
+import type {
+  InstallEventId,
+  InstallId,
+} from '../../../scripts/lib/install-telemetry-contract';
+import type {
+  InstallDiagnosticBundleStore,
+  InstallDiagnosticR2Bucket,
+} from '../../../scripts/lib/install-control-plane-r2';
+import type { InstallTelemetryObserver } from '../../../scripts/lib/install-observability';
 
 export type GrantStatus = 'pending' | 'approved' | 'denied' | 'failed';
 export type GrantFailureCode = 'workspace_route_setup_failed';
@@ -11,11 +28,16 @@ export type StrongerAuthMethod =
   | 'passkey'
   | 'magic_link'
   | 'hardware_key'
-  | 'admin_invite';
+  | 'admin_invite'
+  | 'managed_cloud_provisioning';
 
 export type Grant = {
   hash: string;
   userCode: string;
+  installId?: InstallId;
+  installIdentityEventId?: InstallEventId;
+  canonicalUserId?: string;
+  canonicalWorkspaceId?: string;
   workspaceId?: string;
   workspaceSlug?: string;
   workspaceHost?: string;
@@ -64,6 +86,7 @@ export type Grant = {
 export type AccountWorkspace = {
   accountId: string;
   workspaceId?: string;
+  displayName?: string;
   workspaceSlug: string;
   workspaceHost: string;
   homeNodeId?: string;
@@ -154,8 +177,45 @@ export type OAuthState = {
 export type WebOAuthState = {
   state: string;
   nonce: string;
+  intent: 'login' | 'signup';
   returnPath: string;
   expiresAt: number;
+};
+
+export type WorkspaceCloudTrial = {
+  accountId: string;
+  workspaceId: string;
+  planId: 'standard';
+  provisioningJobId: string;
+  startedAt: number;
+  endsAt: number;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type ManagedCloudCheckout = {
+  checkoutId: string;
+  accountId: string;
+  email: string;
+  displayName: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  planId: ManagedCloudPlanId;
+  region: ManagedCloudRegionId;
+  pricingVersion: string;
+  monthlyPriceCents: number;
+  currency: 'USD';
+  status: 'pending' | 'paid';
+  stripeCheckoutSessionId?: string;
+  stripeCheckoutUrl?: string;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  provisioningJobId?: string;
+  createdAt: number;
+  updatedAt: number;
+  expiresAt: number;
+  paidAt?: number;
 };
 
 export type WorkspaceMembership = {
@@ -172,6 +232,7 @@ export type AuthoritySession = {
   tokenHash: string;
   accountId: string;
   email: string;
+  cloudOnboardingEligible?: boolean;
   csrfToken: string;
   issuedAt: number;
   expiresAt: number;
@@ -256,6 +317,7 @@ export type DefaultSiteSnapshot = {
   key: string;
   versionId: string;
   siteId?: WorkspaceSiteSnapshotId;
+  siteIds?: WorkspaceSiteSnapshotId[];
   contentType?: string;
   cachePolicy?:
     | 'static-shell'
@@ -311,6 +373,15 @@ export type Store = {
   delMcpOAuthRefreshToken(tokenHash: string): Promise<void>;
   putAccountWorkspace(workspace: AccountWorkspace): Promise<void>;
   byAccountWorkspace(accountId: string): Promise<AccountWorkspace | undefined>;
+  createWorkspaceCloudTrial(
+    trial: WorkspaceCloudTrial,
+  ): Promise<WorkspaceCloudTrial>;
+  byWorkspaceCloudTrial(
+    workspaceId: string,
+  ): Promise<WorkspaceCloudTrial | undefined>;
+  putManagedCloudCheckout(checkout: ManagedCloudCheckout): Promise<void>;
+  byManagedCloudCheckout(checkoutId: string): Promise<ManagedCloudCheckout | undefined>;
+  byAccountManagedCloudCheckout(accountId: string): Promise<ManagedCloudCheckout | undefined>;
   putWorkspaceMembership(membership: WorkspaceMembership): Promise<void>;
   listWorkspaceMemberships(accountId: string): Promise<WorkspaceMembership[]>;
   putAuthoritySession(session: AuthoritySession): Promise<void>;
@@ -342,6 +413,7 @@ export type Store = {
   byWorkspaceNodeId(nodeId: string): Promise<WorkspaceNode | undefined>;
   listWorkspaceNodes(accountId: string): Promise<WorkspaceNode[]>;
   listWorkspaceNodesByHost(workspaceHost: string): Promise<WorkspaceNode[]>;
+  listAllWorkspaceNodes(): Promise<WorkspaceNode[]>;
   claimWorkspaceNodeNonce(
     nodeId: string,
     nonce: string,
@@ -374,6 +446,35 @@ export type Store = {
   byWorkspaceAgentStatus(
     workspaceHost: string,
   ): Promise<WorkspaceAgentStatus | undefined>;
+  createManagedCloudProvisioningJob(
+    job: ManagedCloudProvisioningJob,
+  ): Promise<ManagedCloudProvisioningCreateResult>;
+  byManagedCloudProvisioningJob(
+    jobId: string,
+  ): Promise<ManagedCloudProvisioningJob | undefined>;
+  claimNextManagedCloudProvisioningJob(input: {
+    leaseId: string;
+    nowMs: number;
+    leaseExpiresAt: number;
+    enrollmentNonce: string;
+    enrollmentExpiresAt: number;
+  }): Promise<ManagedCloudProvisioningClaimResult>;
+  updateManagedCloudProvisioningJob(input: {
+    jobId: string;
+    leaseId?: string;
+    status: ManagedCloudProvisioningStatus;
+    nowMs: number;
+    errorCode?: string;
+    errorMessage?: string;
+  }): Promise<ManagedCloudProvisioningJob | undefined>;
+  consumeManagedCloudProvisioningEnrollment(input: {
+    jobId: string;
+    nowMs: number;
+  }): Promise<ManagedCloudProvisioningJob | undefined>;
+  markManagedCloudProvisioningReadyByNode(input: {
+    nodeId: string;
+    nowMs: number;
+  }): Promise<ManagedCloudProvisioningJob | undefined>;
 };
 export type StorageTransactionLike = {
   get<T>(key: string): Promise<T | undefined>;
@@ -412,7 +513,53 @@ export type Env = {
   OS_DEVICE_AUTH_CLOUDFLARE_API_BASE_URL?: string;
   OS_MANAGED_CLOUD_PRICING_POLICY_JSON?: string;
   OS_MANAGED_CLOUD_RATE_CARDS_JSON?: string;
+  OS_MANAGED_CLOUD_PROVISIONER_SECRET?: string;
+  OS_MANAGED_CLOUD_ENROLLMENT_SECRET?: string;
+  OS_STRIPE_SECRET_KEY?: string;
+  OS_STRIPE_WEBHOOK_SECRET?: string;
+  OS_STRIPE_API_BASE_URL?: string;
+  OS_STRIPE_SYNTHETIC_SECRET_KEY?: string;
+  OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET?: string;
+  OS_STRIPE_SYNTHETIC_ACCOUNT_IDS?: string;
+  OS_STRIPE_SYNTHETIC_WORKSPACE_IDS?: string;
   OS_DEVICE_AUTH_LOGGER?: DeviceAuthorityLogger;
+  INSTALL_DIAGNOSTICS?: InstallDiagnosticR2Bucket;
+  OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS?: string;
+  SENTRY_DSN?: string;
+  POSTHOG_API_KEY?: string;
+  POSTHOG_HOST?: string;
+};
+
+export type CheckoutTelemetryEventName =
+  | 'checkout_catalog_viewed'
+  | 'checkout_plan_selected'
+  | 'checkout_session_created'
+  | 'checkout_cancelled'
+  | 'checkout_completed'
+  | 'checkout_failed'
+  | 'checkout_synthetic_session_created'
+  | 'checkout_synthetic_completed'
+  | 'checkout_synthetic_failed';
+
+export type CheckoutTelemetryEvent = {
+  name: CheckoutTelemetryEventName;
+  accountId?: string;
+  checkoutId?: string;
+  stripeSessionId?: string;
+  planId?: string;
+  pricingVersion?: string;
+  monthlyPriceCents?: number;
+  currency?: string;
+  synthetic: boolean;
+  outcome?: 'started' | 'success' | 'cancelled' | 'error';
+  errorCode?: string;
+  durationMs?: number;
+  cloudflareRayId?: string;
+};
+
+export type CheckoutObservability = {
+  observe(event: CheckoutTelemetryEvent): Promise<void>;
+  captureException(error: unknown, event: CheckoutTelemetryEvent): Promise<void>;
 };
 
 export type DeviceAuthorityOperationalLogContext = {
@@ -444,5 +591,19 @@ export type DeviceAuthorityRuntime = {
   workspaceEdgeInternalSigningSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
+  managedCloudProvisionerSecret?: string;
+  managedCloudEnrollmentSecret?: string;
+  stripeSecretKey?: string;
+  stripeWebhookSecret?: string;
+  stripeApiBaseUrl?: string;
+  stripeSyntheticSecretKey?: string;
+  stripeSyntheticWebhookSecret?: string;
+  stripeSyntheticAccountIds?: string;
+  stripeSyntheticWorkspaceIds?: string;
+  checkoutObservability?: CheckoutObservability;
   operationalLogger?: DeviceAuthorityLogger;
+  installControlPlaneRepository?: InstallControlPlaneRepository;
+  installDiagnosticBundleStore?: InstallDiagnosticBundleStore;
+  installTelemetryObserver?: InstallTelemetryObserver;
+  installSentryDsn?: string;
 };

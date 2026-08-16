@@ -1,0 +1,385 @@
+---
+import { globalSectionLinks } from '../lib/docs-navigation';
+
+const osHref = 'https://os.consuelohq.com/';
+const learnLinks = [
+  { label: 'Changelog', href: 'https://consuelohq.com/changelog', external: true },
+  { label: 'Blog', href: 'https://consuelohq.com/blog', external: true },
+  { label: 'Community', href: 'https://discord.gg/87YtkVUBvc', external: true },
+  { label: 'Templates', href: '/build/skills/bundled/', external: false },
+] as const;
+---
+
+<div class="docs-browse" data-docs-browse-root>
+  <button
+    class="docs-browse-trigger"
+    type="button"
+    aria-label="Open build menu"
+    aria-expanded="false"
+    data-docs-build-trigger
+  >
+    <svg class="docs-build-menu-icon" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M4 9h16" />
+      <path d="M4 15h16" />
+    </svg>
+  </button>
+
+  <div class="docs-browse-overlay" data-docs-browse-overlay hidden aria-hidden="true">
+    <div class="docs-browse-surface" data-docs-browse-surface>
+      <header class="docs-browse-header">
+        <strong>Browse</strong>
+        <button class="docs-browse-close" type="button" aria-label="Close browse menu" data-docs-browse-close>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
+        </button>
+      </header>
+
+      <div class="docs-browse-body">
+        <details class="docs-browse-group" data-docs-browse-group>
+          <summary>
+            <span>Build</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m8 10 4 4 4-4" /></svg>
+          </summary>
+          <ul>
+            {globalSectionLinks.map((item) => (
+              <li><a href={item.href}>{item.label}</a></li>
+            ))}
+          </ul>
+        </details>
+
+        <details class="docs-browse-group" data-docs-browse-group>
+          <summary>
+            <span>Learn</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m8 10 4 4 4-4" /></svg>
+          </summary>
+          <ul>
+            {learnLinks.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
+                >
+                  <span>{item.label}</span>
+                  {item.external && <span class="external-arrow" aria-hidden="true">↗</span>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+
+        <section class="docs-browse-getting-started" aria-labelledby="docs-browse-getting-started">
+          <a id="docs-browse-getting-started" class="getting-started-link" href={osHref}>Getting started</a>
+          <div class="docs-browse-actions">
+            <a href={osHref}>Sign up</a>
+            <a href={osHref}>Log in</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { gsap } from 'gsap';
+
+  const setupBrowseMenus = () => {
+    document.querySelectorAll('[data-docs-browse-root]').forEach((root) => {
+      if (!(root instanceof HTMLElement) || root.dataset.bound === 'true') return;
+      root.dataset.bound = 'true';
+
+      const trigger = root.querySelector('[data-docs-build-trigger]');
+      const overlay = root.querySelector('[data-docs-browse-overlay]');
+      const surface = root.querySelector('[data-docs-browse-surface]');
+      const closeButton = root.querySelector('[data-docs-browse-close]');
+      if (!(trigger instanceof HTMLButtonElement) || !(overlay instanceof HTMLElement) || !(surface instanceof HTMLElement)) return;
+
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let closing = false;
+
+      const finishClose = () => {
+        overlay.hidden = true;
+        overlay.setAttribute('aria-hidden', 'true');
+        trigger.setAttribute('aria-expanded', 'false');
+        document.body.removeAttribute('data-docs-browse-open');
+        gsap.set(surface, { clearProps: 'transform,opacity' });
+        closing = false;
+      };
+
+      const close = (restoreFocus = false) => {
+        if (overlay.hidden || closing) return;
+        closing = true;
+        if (reducedMotion.matches) {
+          finishClose();
+          if (restoreFocus) trigger.focus();
+          return;
+        }
+        gsap.to(surface, {
+          yPercent: 100,
+          duration: 0.34,
+          ease: 'power3.in',
+          onComplete: () => {
+            finishClose();
+            if (restoreFocus) trigger.focus();
+          },
+        });
+      };
+
+      const open = () => {
+        closing = false;
+        overlay.hidden = false;
+        overlay.setAttribute('aria-hidden', 'false');
+        trigger.setAttribute('aria-expanded', 'true');
+        document.body.setAttribute('data-docs-browse-open', '');
+        if (reducedMotion.matches) {
+          gsap.set(surface, { clearProps: 'transform,opacity' });
+        } else {
+          gsap.fromTo(surface, { yPercent: 100 }, { yPercent: 0, duration: 0.48, ease: 'power3.out' });
+        }
+        requestAnimationFrame(() => {
+          const focusTarget = overlay.querySelector('[data-docs-browse-close]');
+          if (focusTarget instanceof HTMLElement) focusTarget.focus({ preventScroll: true });
+        });
+      };
+
+      trigger.addEventListener('click', () => overlay.hidden ? open() : close());
+      closeButton?.addEventListener('click', () => close(true));
+      overlay.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target instanceof HTMLAnchorElement) close();
+      });
+
+      root.querySelectorAll('[data-docs-browse-group]').forEach((group) => {
+        if (!(group instanceof HTMLDetailsElement)) return;
+        group.addEventListener('toggle', () => {
+          const list = group.querySelector('ul');
+          if (!(list instanceof HTMLElement) || !group.open || reducedMotion.matches) return;
+          gsap.fromTo(list, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.24, ease: 'power2.out' });
+        });
+      });
+
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !overlay.hidden) close(true);
+      });
+    });
+  };
+
+  setupBrowseMenus();
+  document.addEventListener('astro:page-load', setupBrowseMenus);
+</script>
+
+<style>
+  @layer starlight.core {
+    .docs-browse {
+      display: block;
+    }
+
+    .docs-browse-trigger,
+    .docs-browse-close {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      color: var(--sl-color-white);
+      cursor: pointer;
+      display: inline-flex;
+      font: inherit;
+      justify-content: center;
+      margin: 0;
+    }
+
+    .docs-browse-trigger {
+      border-radius: 0;
+      height: 2.5rem;
+      padding: 0.45rem;
+      position: fixed;
+      right: var(--sl-nav-pad-x);
+      top: calc((var(--sl-nav-height) - 2.5rem) / 2);
+      width: 2.5rem;
+      z-index: var(--sl-z-index-navbar);
+    }
+
+    .docs-build-menu-icon {
+      fill: none;
+      height: 1.45rem;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-width: 1.65;
+      width: 1.45rem;
+    }
+
+    .docs-browse-trigger:hover,
+    .docs-browse-trigger:focus-visible,
+    .docs-browse-close:hover,
+    .docs-browse-close:focus-visible {
+      color: var(--docs-accent);
+    }
+
+    .docs-browse-overlay {
+      background: var(--docs-paper);
+      color: var(--docs-ink);
+      inset: 0;
+      overflow-y: auto;
+      position: fixed;
+      z-index: 80;
+    }
+
+    .docs-browse-surface {
+      background: var(--docs-paper);
+      min-height: 100%;
+      padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
+
+    .docs-browse-header {
+      align-items: center;
+      border-bottom: 0;
+      display: flex;
+      height: var(--sl-nav-height);
+      justify-content: space-between;
+      padding-inline: var(--sl-nav-pad-x);
+    }
+
+    .docs-browse-header strong {
+      font-size: 1.125rem;
+      font-weight: 600;
+      line-height: 1.25rem;
+    }
+
+    .docs-browse-close {
+      height: 2.5rem;
+      width: 2.5rem;
+    }
+
+    .docs-browse-close svg,
+    .docs-browse-group summary svg {
+      fill: none;
+      height: 1.1rem;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.8;
+      width: 1.1rem;
+    }
+
+    .docs-browse-body {
+      display: grid;
+      gap: 0;
+      margin-inline: auto;
+      max-width: 52rem;
+      padding: 1rem var(--sl-nav-pad-x) 2.5rem;
+    }
+
+    .docs-browse-group {
+      margin: 0;
+      padding: 0;
+    }
+
+    .docs-browse-group summary {
+      align-items: center;
+      color: var(--docs-muted);
+      cursor: pointer;
+      display: flex;
+      font-size: 1rem;
+      justify-content: space-between;
+      line-height: 1.5rem;
+      list-style: none;
+      min-height: 2.25rem;
+      padding: 0.375rem 0;
+    }
+
+    .docs-browse-group summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .docs-browse-group[open] summary {
+      color: var(--docs-ink);
+    }
+
+    .docs-browse-group[open] summary svg {
+      transform: rotate(180deg);
+    }
+
+    .docs-browse-group ul {
+      display: grid;
+      gap: 0;
+      list-style: none;
+      margin: 0;
+      padding: 0 0 0.75rem;
+    }
+
+    .docs-browse-group a,
+    .getting-started-link {
+      color: var(--docs-ink);
+      text-decoration: none;
+    }
+
+    .docs-browse-group a {
+      align-items: center;
+      display: flex;
+      font-size: 0.9375rem;
+      justify-content: space-between;
+      line-height: 1.5rem;
+      min-height: 2.25rem;
+      padding: 0.375rem 0;
+    }
+
+    .docs-browse-group a:hover,
+    .docs-browse-group a:focus-visible,
+    .getting-started-link:hover,
+    .getting-started-link:focus-visible {
+      color: var(--docs-accent);
+    }
+
+    .external-arrow {
+      font-size: 0.9em;
+      margin-inline-start: 0.5rem;
+    }
+
+    .docs-browse-getting-started {
+      display: grid;
+      gap: 0.75rem;
+      padding-top: 0.75rem;
+    }
+
+    .getting-started-link {
+      color: var(--docs-muted);
+      font-size: 1rem;
+      line-height: 1.5rem;
+    }
+
+    .docs-browse-actions {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .docs-browse-actions a {
+      align-items: center;
+      border: 1px solid var(--docs-line-strong);
+      border-radius: 0.375rem;
+      color: var(--docs-ink);
+      display: flex;
+      font-size: 0.875rem;
+      font-weight: 500;
+      justify-content: center;
+      line-height: 1.25rem;
+      min-height: 2.25rem;
+      text-decoration: none;
+      transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+    }
+
+    .docs-browse-actions a:first-child {
+      background: var(--docs-ink);
+      border-color: var(--docs-ink);
+      color: var(--docs-paper);
+    }
+
+    .docs-browse-actions a:hover,
+    .docs-browse-actions a:focus-visible {
+      border-color: var(--docs-accent);
+    }
+
+    @media (min-width: 72rem) {
+      .docs-browse {
+        display: none;
+      }
+    }
+  }
+</style>

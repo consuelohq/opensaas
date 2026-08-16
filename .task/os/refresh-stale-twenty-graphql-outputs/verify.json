@@ -1,0 +1,241 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/refresh-stale-twenty-graphql-outputs",
+  "base": "origin/stream/os",
+  "headSha": "f68094de08e4e7b06ae9c77b4f09e0e07a2f8e01",
+  "changeHash": "62964fc7d98b34b3000d3bbc322bd4109fa6c8edff5d1dab266b2dadd1a0282c",
+  "changedFiles": [
+    "packages/twenty-front/src/generated-metadata/graphql.ts",
+    "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx",
+    "packages/twenty-front/src/modules/captcha/components/CaptchaProviderScriptLoaderEffect.tsx",
+    "packages/twenty-front/src/modules/captcha/hooks/__tests__/useRequestFreshCaptchaToken.test.tsx",
+    "packages/twenty-front/src/modules/captcha/hooks/useRequestFreshCaptchaToken.ts",
+    "packages/twenty-front/src/modules/captcha/utils/__tests__/getCaptchaUrlByProvider.test.ts",
+    "packages/twenty-front/src/modules/captcha/utils/getCaptchaUrlByProvider.ts",
+    "packages/twenty-front/src/modules/client-config/states/aiModelsState.ts",
+    "packages/twenty-front/src/modules/client-config/states/apiConfigState.ts",
+    "packages/twenty-front/src/modules/client-config/states/billingState.ts",
+    "packages/twenty-front/src/modules/client-config/states/captchaState.ts",
+    "packages/twenty-front/src/modules/client-config/states/labPublicFeatureFlagsState.ts",
+    "packages/twenty-front/src/modules/client-config/states/sentryConfigState.ts",
+    "packages/twenty-front/src/modules/client-config/states/supportChatState.ts",
+    "packages/twenty-front/src/modules/client-config/types/ClientConfig.ts",
+    "packages/twenty-front/src/modules/object-record/graphql/record-gql-fields/utils/__tests__/__snapshots__/generateDepthRecordGqlFieldsFromObject.test.ts.snap",
+    "packages/twenty-front/src/modules/object-record/record-drag/utils/__tests__/processSingleDrag.test.ts",
+    "packages/twenty-front/src/modules/settings/hooks/__tests__/useSettingsNavigationItems.test.tsx",
+    "packages/twenty-front/src/modules/settings/security/hooks/__tests__/useCreateSSOIdentityProvider.test.tsx",
+    "packages/twenty-front/src/modules/workflow/workflow-trigger/utils/__tests__/getCronTriggerDefaultSettings.test.ts",
+    "packages/twenty-front/src/modules/workflow/workflow-trigger/utils/__tests__/getWebhookTriggerDefaultSettings.test.ts",
+    "packages/twenty-front/src/pages/onboarding/internal/ChooseYourPlanContent.tsx",
+    "packages/twenty-front/src/testing/mock-data/config.ts",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/tests/review-generated-artifact-contract.test.js"
+  ],
+  "verifiedAt": "2026-08-14T03:53:36.173Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/refresh-stale-twenty-graphql-outputs/current.json",
+        ".task/os/refresh-stale-twenty-graphql-outputs/evidence-log.json",
+        ".task/os/refresh-stale-twenty-graphql-outputs/read-log.json",
+        ".task/os/refresh-stale-twenty-graphql-outputs/session.json",
+        ".task/os/refresh-stale-twenty-graphql-outputs/verify.json",
+        ".task/os/refresh-stale-twenty-graphql-outputs/workpad.md",
+        ".task/tasks/os/refresh-stale-twenty-graphql-outputs.json",
+        "packages/twenty-front/src/generated-metadata/graphql.ts",
+        "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx",
+        "packages/twenty-front/src/modules/captcha/components/CaptchaProviderScriptLoaderEffect.tsx",
+        "packages/twenty-front/src/modules/captcha/hooks/__tests__/useRequestFreshCaptchaToken.test.tsx",
+        "packages/twenty-front/src/modules/captcha/hooks/useRequestFreshCaptchaToken.ts",
+        "packages/twenty-front/src/modules/captcha/utils/__tests__/getCaptchaUrlByProvider.test.ts",
+        "packages/twenty-front/src/modules/captcha/utils/getCaptchaUrlByProvider.ts",
+        "packages/twenty-front/src/modules/client-config/states/aiModelsState.ts",
+        "packages/twenty-front/src/modules/client-config/states/apiConfigState.ts",
+        "packages/twenty-front/src/modules/client-config/states/billingState.ts",
+        "packages/twenty-front/src/modules/client-config/states/captchaState.ts",
+        "packages/twenty-front/src/modules/client-config/states/labPublicFeatureFlagsState.ts",
+        "packages/twenty-front/src/modules/client-config/states/sentryConfigState.ts",
+        "packages/twenty-front/src/modules/client-config/states/supportChatState.ts",
+        "packages/twenty-front/src/modules/client-config/types/ClientConfig.ts",
+        "packages/twenty-front/src/modules/object-record/graphql/record-gql-fields/utils/__tests__/__snapshots__/generateDepthRecordGqlFieldsFromObject.test.ts.snap",
+        "packages/twenty-front/src/modules/object-record/record-drag/utils/__tests__/processSingleDrag.test.ts",
+        "packages/twenty-front/src/modules/settings/hooks/__tests__/useSettingsNavigationItems.test.tsx",
+        "packages/twenty-front/src/modules/settings/security/hooks/__tests__/useCreateSSOIdentityProvider.test.tsx",
+        "packages/twenty-front/src/modules/workflow/workflow-trigger/utils/__tests__/getCronTriggerDefaultSettings.test.ts",
+        "packages/twenty-front/src/modules/workflow/workflow-trigger/utils/__tests__/getWebhookTriggerDefaultSettings.test.ts",
+        "packages/twenty-front/src/pages/onboarding/internal/ChooseYourPlanContent.tsx",
+        "packages/twenty-front/src/testing/mock-data/config.ts",
+        "packages/workspace/scripts/review.js",
+        "packages/workspace/tests/review-generated-artifact-contract.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/review.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "twenty-front-project",
+          "critical": false,
+          "reason": "Frontend package changes should run the project test target.",
+          "matchedFiles": [
+            "packages/twenty-front/src/generated-metadata/graphql.ts",
+            "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx",
+            "packages/twenty-front/src/modules/captcha/components/CaptchaProviderScriptLoaderEffect.tsx",
+            "packages/twenty-front/src/modules/captcha/hooks/__tests__/useRequestFreshCaptchaToken.test.tsx",
+            "packages/twenty-front/src/modules/captcha/hooks/useRequestFreshCaptchaToken.ts",
+            "packages/twenty-front/src/modules/captcha/utils/__tests__/getCaptchaUrlByProvider.test.ts",
+            "packages/twenty-front/src/modules/captcha/utils/getCaptchaUrlByProvider.ts",
+            "packages/twenty-front/src/modules/client-config/states/aiModelsState.ts",
+            "packages/twenty-front/src/modules/client-config/states/apiConfigState.ts",
+            "packages/twenty-front/src/modules/client-config/states/billingState.ts",
+            "packages/twenty-front/src/modules/client-config/states/captchaState.ts",
+            "packages/twenty-front/src/modules/client-config/states/labPublicFeatureFlagsState.ts",
+            "packages/twenty-front/src/modules/client-config/states/sentryConfigState.ts",
+            "packages/twenty-front/src/modules/client-config/states/supportChatState.ts",
+            "packages/twenty-front/src/modules/client-config/types/ClientConfig.ts",
+            "packages/twenty-front/src/modules/object-record/graphql/record-gql-fields/utils/__tests__/__snapshots__/generateDepthRecordGqlFieldsFromObject.test.ts.snap",
+            "packages/twenty-front/src/modules/object-record/record-drag/utils/__tests__/processSingleDrag.test.ts",
+            "packages/twenty-front/src/modules/settings/hooks/__tests__/useSettingsNavigationItems.test.tsx",
+            "packages/twenty-front/src/modules/settings/security/hooks/__tests__/useCreateSSOIdentityProvider.test.tsx",
+            "packages/twenty-front/src/modules/workflow/workflow-trigger/utils/__tests__/getCronTriggerDefaultSettings.test.ts",
+            "packages/twenty-front/src/modules/workflow/workflow-trigger/utils/__tests__/getWebhookTriggerDefaultSettings.test.ts",
+            "packages/twenty-front/src/pages/onboarding/internal/ChooseYourPlanContent.tsx",
+            "packages/twenty-front/src/testing/mock-data/config.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:twenty-front:test",
+          "critical": false,
+          "reason": "Auto-discovered Nx test target for packages/twenty-front.",
+          "matchedFiles": [
+            "packages/twenty-front/src/generated-metadata/graphql.ts",
+            "packages/twenty-front/src/modules/auth/hooks/__tests__/useAuth.test.tsx",
+            "packages/twenty-front/src/modules/captcha/components/CaptchaProviderScriptLoaderEffect.tsx",
+            "packages/twenty-front/src/modules/captcha/hooks/__tests__/useRequestFreshCaptchaToken.test.tsx",
+            "packages/twenty-front/src/modules/captcha/hooks/useRequestFreshCaptchaToken.ts",
+            "packages/twenty-front/src/modules/captcha/utils/__tests__/getCaptchaUrlByProvider.test.ts",
+            "packages/twenty-front/src/modules/captcha/utils/getCaptchaUrlByProvider.ts",
+            "packages/twenty-front/src/modules/client-config/states/aiModelsState.ts",
+            "packages/twenty-front/src/modules/client-config/states/apiConfigState.ts",
+            "packages/twenty-front/src/modules/client-config/states/billingState.ts",
+            "packages/twenty-front/src/modules/client-config/states/captchaState.ts",
+            "packages/twenty-front/src/modules/client-config/states/labPublicFeatureFlagsState.ts",
+            "packages/twenty-front/src/modules/client-config/states/sentryConfigState.ts",
+            "packages/twenty-front/src/modules/client-config/states/supportChatState.ts",
+            "packages/twenty-front/src/modules/client-config/types/ClientConfig.ts",
+            "packages/twenty-front/src/modules/object-record/graphql/record-gql-fields/utils/__tests__/__snapshots__/generateDepthRecordGqlFieldsFromObject.test.ts.snap",
+            "packages/twenty-front/src/modules/object-record/record-drag/utils/__tests__/processSingleDrag.test.ts",
+            "packages/twenty-front/src/modules/settings/hooks/__tests__/useSettingsNavigationItems.test.tsx",
+            "packages/twenty-front/src/modules/settings/security/hooks/__tests__/useCreateSSOIdentityProvider.test.tsx",
+            "packages/twenty-front/src/modules/workflow/workflow-trigger/utils/__tests__/getCronTriggerDefaultSettings.test.ts",
+            "packages/twenty-front/src/modules/workflow/workflow-trigger/utils/__tests__/getWebhookTriggerDefaultSettings.test.ts",
+            "packages/twenty-front/src/pages/onboarding/internal/ChooseYourPlanContent.tsx",
+            "packages/twenty-front/src/testing/mock-data/config.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        },
+        {
+          "name": "twenty-front test target",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-front",
+            "--coverage=false"
+          ],
+          "ruleId": "twenty-front-project",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 551,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refresh-stale-twenty-graphql-outputs\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 230\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:53:34\n\u001b[2m   Duration \u001b[22m 307ms\u001b[2m (transform 9ms, setup 0ms, import 15ms, tests 230ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "twenty-front test target",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-front",
+            "--coverage=false"
+          ],
+          "ruleId": "twenty-front-project",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 830,
+          "outputTail": "y-front/src/utils/file/__tests__/\u001b[22m\u001b[1mgetFileNameAndExtension.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/utils/__tests__/\u001b[22m\u001b[1msleep.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/modules/page-layout/widgets/graph/utils/__tests__/\u001b[22m\u001b[1mcalculateValueRangeFromValues.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/modules/page-layout/utils/__tests__/\u001b[22m\u001b[1mgetDefaultWidgetPosition.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/utils/array/__tests__/\u001b[22m\u001b[1mgroupArrayItemsBy.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/utils/array/__tests__/\u001b[22m\u001b[1mgetIndexNeighboursElementsFromArray.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/utils/__tests__/\u001b[22m\u001b[1mcreateApolloStoreFieldName.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/modules/workflow/workflow-diagram/utils/__tests__/\u001b[22m\u001b[1mgetWorkflowNodeIconKey.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/modules/page-layout/widgets/graph/graphWidgetBarChart/utils/__tests__/\u001b[22m\u001b[1mhasNegativeValuesInData.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/modules/workflow/utils/__tests__/\u001b[22m\u001b[1msplitWorkflowTriggerEventName.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/modules/auth/utils/__tests__/\u001b[22m\u001b[1mpasswordRegex.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/utils/__tests__/\u001b[22m\u001b[1mlogDebug.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/utils/__tests__/\u001b[22m\u001b[1mlogError.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/modules/ui/input/editor/utils/__tests__/\u001b[22m\u001b[1mparseInitialBlocknote.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/modules/settings/developers/utils/__tests__/\u001b[22m\u001b[1maddEmptyOperationIfNecessary.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/utils/__tests__/\u001b[22m\u001b[1mfilterBySearchQuery.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/utils/string/__tests__/\u001b[22m\u001b[1mturnIntoEmptyStringIfWhitespacesOnly.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/modules/apollo/utils/__tests__/\u001b[22m\u001b[1mgetTokenPair.test.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-front \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-front/src/modules/object-record/record-drag/utils/__tests__/\u001b[22m\u001b[1mgetDragOperationType.test.ts\u001b[22m\n\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m1 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m719 passed\u001b[39m\u001b[22m, 719 of 720 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m1 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m4270 passed\u001b[39m\u001b[22m, 4271 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m85 passed\u001b[39m\u001b[22m, 85 total\n\u001b[1mTime:\u001b[22m        16.594 s, estimated 17 s\n\n\n\n NX   Successfully ran target test for project twenty-front and 7 tasks it depends on\n\nNx read the output from the cache instead of running the command for 8 out of 8 tasks.\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "graphql-codegen",
+        "file": "packages/twenty-front/src/modules/object-record/graphql/record-gql-fields/utils/__tests__/__snapshots__/generateDepthRecordGqlFieldsFromObject.test.ts.snap",
+        "severity": "warning",
+        "message": "graphql codegen/generated file changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

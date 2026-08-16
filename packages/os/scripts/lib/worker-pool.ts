@@ -38,6 +38,7 @@ export type WorkerPoolSnapshot = {
   desiredWorkers: number;
   basePort: number;
   supervisorPid?: number;
+  supportsRuntimeCurrentRollingReload?: true;
   generatedAt: string;
   workers: WorkerPoolWorkerSnapshot[];
 };
@@ -83,7 +84,10 @@ export function resolveWorkerPoolConfiguration(
     max: MAX_OS_WORKERS,
   });
   const basePort = integerFromEnv({
-    raw: env.CONSUELO_OS_PORT ?? env.PORT ?? env.WORKSPACE_DAEMON_PORT,
+    raw: env.CONSUELO_OS_WORKER_BASE_PORT
+      ?? env.WORKSPACE_DAEMON_PORT
+      ?? env.CONSUELO_OS_PORT
+      ?? env.PORT,
     fallback: 46321,
     label: 'OS worker base port',
     min: 1,
@@ -134,6 +138,7 @@ export function createWorkerPoolSupervisor(input: {
   sleep?: (milliseconds: number) => Promise<void>;
   now?: () => Date;
   supervisorPid?: number;
+  supportsRuntimeCurrentRollingReload?: boolean;
 }): WorkerPoolSupervisor {
   const slots = new Map<number, WorkerSlot>();
   const instanceId = input.instanceId ?? (() => crypto.randomUUID());
@@ -148,6 +153,9 @@ export function createWorkerPoolSupervisor(input: {
     desiredWorkers: input.configuration.desiredWorkers,
     basePort: input.configuration.basePort,
     ...(input.supervisorPid ? { supervisorPid: input.supervisorPid } : {}),
+    ...(input.supportsRuntimeCurrentRollingReload
+      ? { supportsRuntimeCurrentRollingReload: true as const }
+      : {}),
     generatedAt: now().toISOString(),
     workers: [...slots.values()]
       .sort((left, right) => left.slot - right.slot)
@@ -317,30 +325,22 @@ export function createWorkerPoolSupervisor(input: {
       stopping = true;
       const active = [...slots.values()];
       for (const slot of active) {
+        if (!slot.process) continue;
         if (slot.state === 'ready' || slot.state === 'starting') slot.state = 'draining';
-      }
-      publish();
-      for (const slot of active) {
+        publish();
         try {
           slot.process?.kill('SIGTERM');
         } catch {
           // The worker may already be gone; its exit handler will normalize state.
         }
-      }
-      const exits = active
-        .map((slot) => slot.process?.exited)
-        .filter((value): value is Promise<number> => Boolean(value));
-      if (exits.length > 0) {
-        const completed = Promise.allSettled(exits).then(() => true);
+        const completed = slot.process.exited.then(() => true, () => true);
         const timedOut = sleep(input.configuration.drainTimeoutMs).then(() => false);
         const graceful = await Promise.race([completed, timedOut]);
         if (!graceful) {
-          for (const slot of active) {
-            try {
-              slot.process?.kill('SIGKILL');
-            } catch {
-              // A process that already exited needs no further action.
-            }
+          try {
+            slot.process?.kill('SIGKILL');
+          } catch {
+            // A process that already exited needs no further action.
           }
         }
       }

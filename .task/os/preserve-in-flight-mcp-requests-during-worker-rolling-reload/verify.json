@@ -1,0 +1,427 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/preserve-in-flight-mcp-requests-during-worker-rolling-reload",
+  "base": "origin/stream/os",
+  "headSha": "0e12fba54f90974a7f31b1cfa374b62698ce76f6",
+  "changeHash": "865be5a60f89fa261678ab5e6b1cb94639cf1c77f77e2324073d2f769280936b",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/start/install-consuelo-os.mdx",
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/lifecycle/service.ts",
+    "packages/os/scripts/lib/lifecycle/types.ts",
+    "packages/os/scripts/server/main.ts",
+    "packages/os/scripts/server/worker-runtime-state.ts",
+    "packages/os/tests/health-readiness.test.ts",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+    "packages/os/tests/lifecycle-restart-contract.test.ts",
+    "packages/os/tests/worker-pool-lifecycle.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "verifiedAt": "2026-08-16T02:54:47.977Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/preserve-in-flight-mcp-requests-during-worker-rolling-reload/current.json",
+        ".task/os/preserve-in-flight-mcp-requests-during-worker-rolling-reload/evidence-log.json",
+        ".task/os/preserve-in-flight-mcp-requests-during-worker-rolling-reload/read-log.json",
+        ".task/os/preserve-in-flight-mcp-requests-during-worker-rolling-reload/session.json",
+        ".task/os/preserve-in-flight-mcp-requests-during-worker-rolling-reload/workpad.md",
+        ".task/tasks/os/preserve-in-flight-mcp-requests-during-worker-rolling-reload.json",
+        "packages/documentation/src/content/docs/start/install-consuelo-os.mdx",
+        "packages/os/SCRIPTS.md",
+        "packages/os/scripts/lib/lifecycle/engine.ts",
+        "packages/os/scripts/lib/lifecycle/service.ts",
+        "packages/os/scripts/lib/lifecycle/types.ts",
+        "packages/os/scripts/server/main.ts",
+        "packages/os/scripts/server/worker-runtime-state.ts",
+        "packages/os/tests/health-readiness.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+        "packages/os/tests/lifecycle-restart-contract.test.ts",
+        "packages/os/tests/worker-pool-lifecycle.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/lifecycle/engine.ts",
+            "packages/os/tests/lifecycle-engine.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-lifecycle-update-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Lifecycle updater, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/SCRIPTS.md",
+            "packages/os/scripts/lib/lifecycle/engine.ts",
+            "packages/os/scripts/lib/lifecycle/service.ts",
+            "packages/os/scripts/lib/lifecycle/types.ts",
+            "packages/os/scripts/server/main.ts",
+            "packages/os/scripts/server/worker-runtime-state.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3275,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-in-flight-mcp-requests-during-worker-rolling-reload\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m39 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2400\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1199\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m39 passed\u001b[39m\u001b[22m\u001b[90m (39)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:54:34\n\u001b[2m   Duration \u001b[22m 2.68s\u001b[2m (transform 60ms, setup 0ms, import 75ms, tests 2.40s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 511,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-in-flight-mcp-requests-during-worker-rolling-reload/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/cloudflare-d1-route-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:54:38\n\u001b[2m   Duration \u001b[22m 133ms\u001b[2m (transform 33ms, setup 0ms, import 28ms, tests 19ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2799,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-in-flight-mcp-requests-during-worker-rolling-reload/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m41 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 76\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m66 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1813\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 338\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m107 passed\u001b[39m\u001b[22m\u001b[90m (107)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:54:38\n\u001b[2m   Duration \u001b[22m 2.56s\u001b[2m (transform 540ms, setup 0ms, import 966ms, tests 1.89s, environment 0ms)\u001b[22m\n\n$ vitest run tests/lifecycle-engine.test.ts tests/workspace-node-registry-routing.test.ts\n"
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3440,
+          "outputTail": "y.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/cli-update-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-ingress-continuity.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 20\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-package-layout.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 732\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m generates full, core, and workflow outputs deterministically with no committed drift \u001b[33m 719\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-facade.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/health-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/system-daemon-reliability.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2816\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should persist probe failures and restart only when the failure threshold is reached \u001b[33m 493\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bootstrap a missing Caddy label when the HA ingress is unavailable \u001b[33m 421\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should open a recovery circuit when restart attempts exceed the bounded window \u001b[33m 418\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should keep external health recovery scoped to the external launchd label \u001b[33m 462\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reconcile signed public route state before escalating a locally healthy node to restart \u001b[33m 562\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m66 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2187\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 338\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m17 passed\u001b[39m\u001b[22m\u001b[90m (17)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m194 passed\u001b[39m\u001b[22m\u001b[90m (194)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:54:41\n\u001b[2m   Duration \u001b[22m 3.06s\u001b[2m (transform 3.42s, setup 0ms, import 6.40s, tests 7.00s, environment 1ms)\u001b[22m\n\n(node:3899) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:42.975Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-16T02:54:42.976Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:42.979Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:42.981Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:42.984Z\"}\n"
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1671,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 734,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-in-flight-mcp-requests-during-worker-rolling-reload\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m703 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m694 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m694 skipped\u001b[39m\u001b[90m (703)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:54:46\n\u001b[2m   Duration \u001b[22m 456ms\u001b[2m (transform 189ms, setup 0ms, import 377ms, tests 14ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:46.790Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-16T02:54:46.791Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:46.793Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:46.794Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:46.795Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:46.796Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:46.798Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T02:54:46.799Z\"}\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 67,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.622417ms)\n✔ parseCliArguments selects GraphQL generation mode (0.06ms)\n✔ parseCliArguments selects migration generation mode (0.062042ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.090125ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.06975ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.055292ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.174833ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (1.151042ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.334541ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.079375ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.165ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.300959ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.085125ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.081ms)\n✔ server lint configuration resolves the existing workspace rules project (0.353917ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.081917ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.16525ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.070042ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.088375ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.178792ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.111708ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.096667ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 42.096958\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 148,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.10ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [3.53ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.20ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.05ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.05ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.05ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.03ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [141.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 745,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.308208ms)\n✔ the configured TypeORM wrapper resolves from the installed package (683.0465ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 719.531084\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
