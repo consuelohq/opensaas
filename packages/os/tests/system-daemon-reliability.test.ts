@@ -316,6 +316,49 @@ describe('macOS runtime service reliability', () => {
     );
   });
 
+  it('should kickstart launchd when canonical rolling recovery rejects an unhealthy pool', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-watchdog-recovery-fallback-');
+    const fakeBin = join(fixtureRoot, 'bin');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const launchLog = join(fixtureRoot, 'launchctl.log');
+    const consueloLog = join(fixtureRoot, 'consuelo.log');
+    mkdirSync(fakeBin, { recursive: true });
+    mkdirSync(home, { recursive: true });
+    installFakeConsuelo(consueloHome);
+    writeExecutable(
+      join(consueloHome, 'bin', 'consuelo'),
+      '#!/bin/bash\nprintf "%s\\n" "$*" >> "$WATCHDOG_CONSUELO_LOG"\nexit 1\n',
+    );
+    writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 1\n');
+    writeExecutable(
+      join(fakeBin, 'launchctl'),
+      '#!/bin/bash\nprintf "%s\\n" "$*" >> "$WATCHDOG_LAUNCH_LOG"\nexit 0\n',
+    );
+
+    const result = run('bash', [resolve(osRoot, 'scripts/workspace-watchdog.sh')], {
+      ...process.env,
+      HOME: home,
+      CONSUELO_HOME: consueloHome,
+      WORKSPACE_WATCHDOG_PATH: `${fakeBin}:/usr/bin:/bin:/usr/sbin:/sbin`,
+      WORKSPACE_WATCHDOG_DISABLE_EXTERNAL: '1',
+      WORKSPACE_WATCHDOG_LOCAL_HTTP_FAILURE_THRESHOLD: '1',
+      WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
+      WATCHDOG_LAUNCH_LOG: launchLog,
+      WATCHDOG_CONSUELO_LOG: consueloLog,
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    expect(readFileSync(consueloLog, 'utf8')).toContain('restart --quiet');
+    expect(readFileSync(launchLog, 'utf8')).toContain(
+      'kickstart -k gui/' + String(process.getuid?.()) + '/com.consuelo.system',
+    );
+    expect(result.stdout).toContain(
+      'falling back to launchd recovery for com.consuelo.system',
+    );
+  });
+
   it('should bootstrap a missing Caddy label when the HA ingress is unavailable', () => {
     const fixtureRoot = temporaryDirectory('consuelo-watchdog-bootstrap-');
     const fakeBin = join(fixtureRoot, 'bin');

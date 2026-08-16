@@ -63,6 +63,15 @@ case ":$PATH:" in
   *) export PATH="$bun_dir:$PATH" ;;
 esac
 
+if [ "${CONSUELO_OS_SINGLE_WORKER_SMOKE_TEST:-0}" = "1" ]; then
+  export CONSUELO_OS_WORKER_PROCESS="1"
+  export CONSUELO_OS_WORKER_ID="smoke-worker"
+  export CONSUELO_OS_WORKER_INSTANCE_ID="smoke-$$"
+  export CONSUELO_OS_WORKER_RELEASE_PATH="$root_dir"
+  unset CONSUELO_OS_SUPERVISOR_PID
+  exec "$bun_bin" "$root_dir/scripts/server/main.ts"
+fi
+
 run_with_timeout() {
   local timeout_seconds="$1"
   shift
