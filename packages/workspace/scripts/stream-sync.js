@@ -408,6 +408,10 @@ async function main() {
     reason: 'merge failed before stream checks could run',
   };
 
+  if (createdTemporaryWorktree) {
+    removeWorktree(repoRoot, worktreePath, true);
+  }
+
   printResult(
     {
       stream: streamBranch,
