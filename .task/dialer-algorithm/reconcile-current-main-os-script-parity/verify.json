@@ -1,0 +1,96 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer-algorithm/reconcile-current-main-os-script-parity",
+  "base": "stream/dialer-algorithm",
+  "headSha": "60d0b7974faa43408c8f4d506a438f747afbf967",
+  "changeHash": "6b797096543dc7be13d99656389749232f1de92a7065ccba59b2bcef86f75da6",
+  "changedFiles": [
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+  ],
+  "verifiedAt": "2026-08-16T02:55:27.085Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer-algorithm/reconcile-current-main-os-script-parity/current.json",
+        ".task/dialer-algorithm/reconcile-current-main-os-script-parity/evidence-log.json",
+        ".task/dialer-algorithm/reconcile-current-main-os-script-parity/read-log.json",
+        ".task/dialer-algorithm/reconcile-current-main-os-script-parity/session.json",
+        ".task/dialer-algorithm/reconcile-current-main-os-script-parity/verify.json",
+        ".task/dialer-algorithm/reconcile-current-main-os-script-parity/workpad.md",
+        ".task/tasks/dialer-algorithm/reconcile-current-main-os-script-parity.json",
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-stream-sync-runtime",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Stream sync merge, worktree, generated-registry recovery, and push-gate changes must prove focused real-Git sync behavior without selecting unrelated workspace package tests.",
+          "matchedFiles": [
+            "packages/workspace/scripts/stream-sync.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ],
+          "ruleId": "workspace-stream-sync-runtime",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ],
+          "ruleId": "workspace-stream-sync-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1689,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/stream-sync-node-modules.test.js:\n(pass) stream sync links main-worktree node_modules before running verify [0.32ms]\n\npackages/workspace/tests/stream-sync-generated-registry-conflict.test.js:\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-0jl31D/origin.git\n * [new branch]      main -> main\nSwitched to a new branch 'stream/fixture'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-0jl31D/origin.git\n * [new branch]      stream/fixture -> stream/fixture\nSwitched to branch 'main'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-0jl31D/origin.git\n   e81e56d..4a02655  main -> main\n(pass) stream sync generated registry conflict recovery > regenerates the generated test-selection registry when it is the only conflict [624.83ms]\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-fhF9zr/origin.git\n * [new branch]      main -> main\nSwitched to a new branch 'stream/fixture'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-fhF9zr/origin.git\n * [new branch]      stream/fixture -> stream/fixture\nSwitched to branch 'main'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-fhF9zr/origin.git\n   dfdbfe2..a3fcf3d  main -> main\n(pass) stream sync generated registry conflict recovery > fails closed when a non-generated source conflict is also present [445.39ms]\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-iJn0Ti/origin.git\n * [new branch]      main -> main\nSwitched to a new branch 'stream/fixture'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-iJn0Ti/origin.git\n * [new branch]      stream/fixture -> stream/fixture\nSwitched to branch 'main'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-iJn0Ti/origin.git\n   ec0d8bb..d5db9cc  main -> main\nPreparing worktree (checking out 'stream/fixture')\n(pass) stream sync generated registry conflict recovery > recovers a stale conflicted temporary stream worktree before syncing [503.97ms]\n\n 4 pass\n 0 fail\n 21 expect() calls\nRan 4 tests across 2 files. [1.68s]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

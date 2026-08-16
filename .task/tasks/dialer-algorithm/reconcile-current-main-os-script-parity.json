@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/reconcile-current-main-os-script-parity",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2104,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2104",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2104",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2104/reconcile-current-main-os-script-parity",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2104",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2104/reconcile-current-main-os-script-parity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-reconcile-current-main-os-script-parity",
+  "taskSession": "tsk_b36acde72aa9",
+  "tmuxSession": "opensaas-dialer-algorithm-reconcile-current-main-os-script-parity-b36acde7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-reconcile-current-main-os-script-parity/.task/dialer-algorithm/reconcile-current-main-os-script-parity/session.json",
+  "createdAt": "2026-08-16T02:49:30.204Z"
+}

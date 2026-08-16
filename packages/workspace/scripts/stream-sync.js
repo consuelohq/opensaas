@@ -154,6 +154,13 @@ function getConflictFiles(repoRoot, worktreePath) {
   return output ? output.split('\n').filter(Boolean) : [];
 }
 
+function mergeCandidateEnv(worktreePath) {
+  const env = { ...process.env, PWD: worktreePath };
+  delete env.TASK_BRANCH;
+  delete env.TASK_WORKTREE;
+  return env;
+}
+
 function resolveGeneratedTestSelectionRegistryConflict(repoRoot, worktreePath, conflictFiles) {
   if (conflictFiles.length !== 1 || conflictFiles[0] !== GENERATED_TEST_SELECTION_REGISTRY) {
     return { resolved: false, files: [] };
@@ -167,6 +174,7 @@ function resolveGeneratedTestSelectionRegistryConflict(repoRoot, worktreePath, c
     '--json',
   ], {
     cwd: worktreePath,
+    env: mergeCandidateEnv(worktreePath),
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -226,6 +234,7 @@ function runStreamChecks(worktreePath) {
     '--json',
   ], {
     cwd: worktreePath,
+    env: mergeCandidateEnv(worktreePath),
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
     stdio: ['ignore', 'pipe', 'pipe'],
