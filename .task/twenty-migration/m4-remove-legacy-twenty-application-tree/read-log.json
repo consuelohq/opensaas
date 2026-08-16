@@ -2,6 +2,7 @@
   "files": [
     ".github/dependabot.yml",
     ".task/twenty-migration/m4-remove-legacy-twenty-application-tree/verify.json",
+    ".task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md",
     "packages/cli/package.json",
     "packages/os/package.json",
     "packages/os/scripts/ci-plan.ts",
@@ -13,5 +14,5 @@
     "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts",
     "scripts/validate-dockerfiles.sh"
   ],
-  "updatedAt": "2026-08-15T20:25:47.844Z"
+  "updatedAt": "2026-08-16T06:48:19.210Z"
 }

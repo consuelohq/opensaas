@@ -8,14 +8,14 @@ started: 2026-08-15
 
 ## acceptance criteria
 
-- [ ] Remove the detached legacy Twenty application package trees from the active repository.
-- [ ] Remove Twenty-only CI workflows, helpers, baselines, runbooks/deployment scaffolding, and stale workspace/test-selection references whose only consumer is the deleted application.
-- [ ] Preserve Consuelo OS, CLI, `@consuelo/dialer`, `dialer-server`, and LeadConnector behavior.
-- [ ] Keep Yarn 4 authoritative; only prune removed workspaces/resolutions/lock entries. Do not begin the Yarn-to-Bun migration.
-- [ ] Make no predictive-model, Whittle, timing, stopping, or cadence semantic changes.
-- [ ] Prove active Consuelo package manifests no longer depend on deleted Twenty packages.
-- [ ] Keep Railway, Cloudflare, and production untouched.
-- [ ] Canonical `verify` is publish-valid against `origin/stream/twenty-migration`.
+- [x] Remove the detached legacy Twenty application package trees from the active repository.
+- [x] Remove Twenty-only CI workflows, helpers, baselines, runbooks/deployment scaffolding, and stale workspace/test-selection references whose only consumer is the deleted application.
+- [x] Preserve Consuelo OS, CLI, `@consuelo/dialer`, `dialer-server`, and LeadConnector behavior.
+- [x] Keep Yarn 4 authoritative; only prune removed workspaces/resolutions/lock entries. Do not begin the Yarn-to-Bun migration.
+- [x] Make no predictive-model, Whittle, timing, stopping, or cadence semantic changes.
+- [x] Prove active Consuelo package manifests no longer depend on deleted Twenty packages.
+- [x] Keep Railway, Cloudflare, and production untouched.
+- [x] Canonical `verify` is publish-valid against `origin/stream/twenty-migration`.
 - [ ] Push PR #2053 and promote only into `stream/twenty-migration`. Do not merge stream PR #1991 to main and do not start M5.
 
 ## plan
@@ -43,9 +43,9 @@ no-test waiver: not applicable.
 
 ## current status
 
-- Recovery reattached existing PR #2053 to managed task session `tsk_6893b20e16bc`, correctly based on the M3 migration stream.
-- The earlier uncommitted M4 worktree was cleaned while the prior chat was idle; PR #2053 remained empty and nothing was pushed or merged.
-- Reconstruction is proceeding from the recorded M4 contract and current repository truth, with fresh validation required before publish.
+- PR #2053 contains the reconstructed M4 deletion at `c70196fe13b1fb2d1940b4c7b9d3a6f5aad2b904`, based on the M3 migration stream.
+- GitHub exposed two CI-only scale defects after that push: native distribution selection overflowed Node's default Git-output buffer on the 14k-file diff, and committed-only verify overflowed/truncated its test-selection JSON capture.
+- Both defects are repaired locally with bounded 64 MiB buffers and regression contracts; fresh GitHub checks are required after the repair push before stream promotion.
 
 ## files changed
 
@@ -141,7 +141,6 @@ no-test waiver: not applicable.
 
 ## workspace-owned: activity log
 
-- 2026-08-15 19:55:29 fs.trash: `packages/twenty-docker`
 - 2026-08-15 19:55:35 fs.trash: `packages/twenty-e2e-testing`
 - 2026-08-15 19:55:38 fs.trash: `packages/twenty-front`
 - 2026-08-15 19:55:42 fs.trash: `packages/twenty-sdk`
@@ -190,6 +189,7 @@ no-test waiver: not applicable.
 - 2026-08-15 20:24:23 fs.write: `packages/workspace/test-selection.rules.json`
 - 2026-08-15 20:25:18 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
 - 2026-08-15 20:26:01 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- 2026-08-16 06:50:59 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
 - managed by workspace tooling.
 
 ## workspace-owned: validation evidence
@@ -199,6 +199,8 @@ no-test waiver: not applicable.
 - 2026-08-15 20:15:19 `review.run`: failed — COMMAND_FAILED
 - 2026-08-15 20:16:26 `checkFiles`: passed — OK
 - 2026-08-15 20:21:13 `checkFiles`: passed — OK
+- 2026-08-16 06:51:17 `review.run`: passed — OK
+- 2026-08-16 06:51:43 `verify`: passed — OK
 
 ## key decisions
 
@@ -425,3 +427,28 @@ Fallback: if still running, inspect its child process/stage before any further w
 Publish is now authorized by the repository gate. Next lifecycle actions are limited to PR #2053 and promotion into `stream/twenty-migration`; stream PR #1991 remains out of main and M5 remains unstarted.
 
 - 2026-08-15 20:26:01 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+
+- 2026-08-16 06:50:49 apply-patch: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+## M4 CI-scale repair — 2026-08-16
+
+### Test-first contract
+
+- Behavior: repository-scale committed diffs with thousands of deletions must not overflow native Git capture or verifier test-selection capture.
+- RED evidence: all three GitHub native jobs failed with `Changed native OS test selection failed: spawnSync git ENOBUFS`; local exact-base reproduction failed identically. The new native buffer regression failed 1/8 before the patch. The new verifier buffer regression failed 1/5 before the patch because `runTestSelection` still used an 8 MiB capture.
+- GREEN implementation: `run-changed-os-native-tests.mjs` now uses a bounded 64 MiB `maxBuffer`; `verify.js` uses a bounded 64 MiB `TEST_SELECTION_OUTPUT_MAX_BUFFER` for registry JSON and suite output.
+
+### Repair validation
+
+- Native selector regression: 8/8 passed; verifier regression: 5/5 passed; both scripts pass syntax checks.
+- Exact M4 native comparison `02ebe773...c70196fe` no longer raises ENOBUFS and selects `full-distribution` for the seven surviving OS-owned M4 paths.
+- Full native distribution execution: 13 test files passed, 86 tests passed, 7 explicit todos.
+- Exact GitHub CI verify replay: `bun run verify -- --base origin/stream/twenty-migration --committed-only-tests --no-stamp --review-arg --no-tests` exited 0; registry selected 15 suites and passed, review passed, DB guard passed.
+- Canonical full verify after the repair: passed with `publishValid: true`, `mode: full`, review clean, DB guard clean.
+- Task routing briefly returned transport `network_error`; a recorded 30s bounded recovery wait restored task reads. No duplicate mutation or validation run was started while completion was unknown.
+
+### Promotion guard
+
+- Repair must be pushed to PR #2053 and fresh GitHub checks must be green before `task.pr` promotes M4 into `stream/twenty-migration`.
+- Stream PR #1991 remains out of main; M5 remains unstarted.
+
+- 2026-08-16 06:50:59 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`

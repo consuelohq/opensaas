@@ -103,6 +103,10 @@ test('verify keeps review semantic-only because selected suites own test executi
     path.resolve('packages/workspace/scripts/verify.js'),
     'utf8',
   );
+  const runTestSelectionSource = verifySource.slice(
+    verifySource.indexOf('function runTestSelection'),
+    verifySource.indexOf('function createDbResult'),
+  );
 
   expect(verifySource).toContain(
     "'--summary-json', '--quiet', '--no-tests', ...args.reviewArgs",
@@ -111,4 +115,7 @@ test('verify keeps review semantic-only because selected suites own test executi
     "const selectionArgs = ['packages/workspace/scripts/test-selection.js', 'check', '--base', base];",
   );
   expect(verifySource).toContain("selectionArgs.push('--run', '--json');");
+  expect(runTestSelectionSource).toContain(
+    'maxBuffer: TEST_SELECTION_OUTPUT_MAX_BUFFER',
+  );
 });

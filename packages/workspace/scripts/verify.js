@@ -13,6 +13,7 @@ const {
 } = require('./lib/verification');
 
 const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
+const TEST_SELECTION_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -345,7 +346,7 @@ function runTestSelection(repoRoot, base, args) {
     cwd: repoRoot,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
-    maxBuffer: 1024 * 1024 * 8,
+    maxBuffer: TEST_SELECTION_OUTPUT_MAX_BUFFER,
   });
   let data = null;
   try {
