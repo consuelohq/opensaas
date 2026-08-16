@@ -223,6 +223,23 @@ const childTraceCache = new WeakMap<
   { source: unknown; stepsSource: unknown; children: TraceChildRecord[] }
 >();
 
+function isTraceShapedChild(value: unknown): boolean {
+  const record = asRecord(value);
+  if (!record) return false;
+  const metadata = asRecord(record.metadata);
+  return Boolean(
+    clean(record.tool ?? record.toolName ?? record.facadeTool) ||
+      clean(
+        record.traceId ??
+          record.trace_id ??
+          metadata?.traceId ??
+          metadata?.trace_id,
+      ) ||
+      clean(record.parentTraceId ?? record.parent_trace_id) ||
+      clean(record.__traceSelectionKey),
+  );
+}
+
 export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
   const sourceValue = parent.batchResultsJson;
   const stepsSourceValue =
@@ -384,9 +401,11 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
       record.children ?? record.results ?? data?.children ?? data?.results,
     );
     if (Array.isArray(nestedParsed)) {
-      nestedParsed.forEach((nested, index) =>
-        walk(nested, depth + 1, path, index),
-      );
+      nestedParsed.forEach((nested, index) => {
+        if (isTraceShapedChild(nested)) {
+          walk(nested, depth + 1, path, index);
+        }
+      });
     }
   };
   source.forEach((child, index) => walk(child, 1, '', index));

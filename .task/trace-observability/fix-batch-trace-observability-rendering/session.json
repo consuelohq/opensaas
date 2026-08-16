@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_eab93240558e",
+  "tmuxSession": "opensaas-trace-observability-fix-batch-trace-observability-rendering-eab93240",
+  "area": "trace-observability",
+  "stream": "stream/trace-observability",
+  "taskBranch": "task/trace-observability/fix-batch-trace-observability-rendering",
+  "branch": "task/trace-observability/fix-batch-trace-observability-rendering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-observability-fix-batch-trace-observability-rendering",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-observability-fix-batch-trace-observability-rendering",
+  "prNumber": 2136,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2136",
+  "createdAt": "2026-08-16T06:29:31.950Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-observability-fix-batch-trace-observability-rendering/.task/trace-observability/fix-batch-trace-observability-rendering/session.json"
+}

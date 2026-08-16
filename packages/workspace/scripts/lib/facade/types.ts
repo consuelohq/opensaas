@@ -29,6 +29,7 @@ export type ToolResult<TData = unknown> = {
   exitCode: number;
   durationMs: number;
   traceId: string;
+  tool?: string;
   parentTraceId?: string;
   requestId?: string;
   inputTokens?: number;

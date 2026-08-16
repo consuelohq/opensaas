@@ -48,10 +48,18 @@ export async function runBatch(
     }
 
     const ok = results.length === steps.length && results.every((result) => result.ok);
+    const failedIndex = results.findIndex((result) => !result.ok);
+    const failedResult = failedIndex >= 0 ? results[failedIndex] : null;
+    const failedStep = failedIndex >= 0 ? steps[failedIndex] : null;
+    const message = ok
+      ? 'batch completed'
+      : failedResult && failedStep
+        ? `batch stopped at step ${failedIndex + 1} (${failedStep.tool}): ${failedResult.message}`
+        : 'batch stopped after a failed step';
     return createToolResult({
       ok,
       code: ok ? 'OK' : 'COMMAND_FAILED',
-      message: ok ? 'batch completed' : 'batch stopped after a failed step',
+      message,
       data: {
         results,
         completed: results.length,
@@ -202,6 +210,7 @@ function decorateStepResult(
   const outputTokens = estimateTokens(result);
   return {
     ...result,
+    tool: step.tool,
     parentTraceId,
     inputTokens,
     outputTokens,
