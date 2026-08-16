@@ -7,6 +7,7 @@ export type WorkerPoolConfiguration = {
   workerPorts: number[];
   restartDelayMs: number;
   drainTimeoutMs: number;
+  caddyAdmissionDelayMs: number;
 };
 
 export type WorkerSpec = {
@@ -110,6 +111,13 @@ export function resolveWorkerPoolConfiguration(
     min: 0,
     max: 300_000,
   });
+  const caddyAdmissionDelayMs = integerFromEnv({
+    raw: env.CONSUELO_OS_DRAIN_PROPAGATION_MS,
+    fallback: 3_000,
+    label: 'OS worker Caddy admission delay',
+    min: 0,
+    max: 30_000,
+  });
   return {
     desiredWorkers,
     basePort,
@@ -119,6 +127,7 @@ export function resolveWorkerPoolConfiguration(
     ),
     restartDelayMs,
     drainTimeoutMs,
+    caddyAdmissionDelayMs,
   };
 }
 
@@ -301,6 +310,11 @@ export function createWorkerPoolSupervisor(input: {
         throw new Error(`worker-${slotIndex} could not begin rolling replacement`, { cause: error });
       }
       await waitForReplacement(slotIndex, previousInstanceId);
+      // Direct worker readiness precedes Caddy's next active health probe. Keep
+      // the old sibling serving until the replacement has had a full admission
+      // window, otherwise the next drain can leave Caddy with no healthy
+      // upstream even though the supervisor already sees the new worker ready.
+      await sleep(input.configuration.caddyAdmissionDelayMs);
     }
   };
 

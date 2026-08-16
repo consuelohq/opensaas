@@ -7,6 +7,7 @@ import {
   encodeMcpNodeRoutingContext,
   inspectMcpNodeRoutingBody,
   normalizeMcpTaskSession,
+  normalizeMcpWorkSession,
   MCP_NODE_CONTEXT_HEADER,
   MCP_ROUTE_SOURCE_HEADER,
   type McpNodeRoutingContext,
@@ -21,7 +22,7 @@ import type {
 import { hasGrantedScope, hash } from '../utils';
 import { mcpResourceUrl } from './mcp-oauth';
 import { workspaceDefaultNodeId, workspaceNodePresence } from './nodes';
-import { WORKSPACE_TASK_AFFINITY_TTL_MS } from '../stores';
+import { WORKSPACE_SESSION_AFFINITY_TTL_MS } from '../stores';
 
 export function bearerToken(request: Request): string | undefined {
   const authorization = request.headers.get('authorization')?.trim() ?? '';
@@ -93,6 +94,7 @@ export async function centralMcpOperationScope(request: Request): Promise<string
 type CentralMcpFacadeOutcome = {
   ok: boolean;
   taskSession?: string;
+  workSession?: string;
 };
 
 function isJsonObject(value: unknown): value is Record<string, unknown> {
@@ -118,9 +120,13 @@ async function centralMcpFacadeOutcome(response: Response): Promise<CentralMcpFa
     const taskSession = isJsonObject(data)
       ? normalizeMcpTaskSession(data.taskSession)
       : undefined;
+    const workSession = isJsonObject(data)
+      ? normalizeMcpWorkSession(data.workSession)
+      : undefined;
     return {
       ok: true,
       ...(taskSession ? { taskSession } : {}),
+      ...(workSession ? { workSession } : {}),
     };
   } catch {
     return { ok: false };
@@ -335,31 +341,39 @@ async function centralMcpNodeRoutingContext(input: {
   }
 }
 
-function reportTaskAffinityBookkeepingFailure(input: {
+function reportSessionAffinityBookkeepingFailure(input: {
   operationalLogger?: DeviceAuthorityLogger;
   accountId: string;
   workspaceId: string;
   workspaceHost: string;
-  taskSession: string;
+  sessionKind: 'task' | 'work';
+  sessionId: string;
   nodeId: string;
   outcome: 'conflict' | 'error';
   error?: unknown;
 }): void {
   try {
+    const taskSession = input.sessionKind === 'task' ? input.sessionId : undefined;
     input.operationalLogger?.warn(
-      '[OsDeviceAuthority] Task affinity bookkeeping failed',
+      input.sessionKind === 'task'
+        ? '[OsDeviceAuthority] Task affinity bookkeeping failed'
+        : '[OsDeviceAuthority] Work session affinity bookkeeping failed',
       {
         component: 'os-device-authority',
-        operation: 'task-affinity-bookkeeping',
+        operation: input.sessionKind === 'task'
+          ? 'task-affinity-bookkeeping'
+          : 'work-session-affinity-bookkeeping',
         accountId: input.accountId,
         workspaceId: input.workspaceId,
         workspaceHost: input.workspaceHost,
+        sessionKind: input.sessionKind,
+        sessionId: input.sessionId,
+        ...(taskSession ? { taskSession } : {}),
         failure: input.error instanceof Error
           ? input.error.name
           : input.outcome === 'conflict'
             ? 'Conflict'
             : 'UnknownError',
-        taskSession: input.taskSession,
         nodeId: input.nodeId,
         outcome: input.outcome,
       },
@@ -438,28 +452,38 @@ export async function proxyCentralMcpRequest(input: {
       });
     }
     const requestedNodeId = routingInspection.nodeId ?? headerNodeId;
-    const taskAffinity = routingInspection.taskSession
-      ? await input.store.byWorkspaceTaskAffinity({
+    const routedSession = routingInspection.taskSession
+      ? { sessionKind: 'task' as const, sessionId: routingInspection.taskSession }
+      : routingInspection.workSession
+        ? { sessionKind: 'work' as const, sessionId: routingInspection.workSession }
+        : undefined;
+    const sessionAffinity = routedSession
+      ? await input.store.byWorkspaceSessionAffinity({
           accountId: stored.accountId,
           workspaceHost: stored.workspaceHost,
-          taskSession: routingInspection.taskSession,
+          sessionKind: routedSession.sessionKind,
+          sessionId: routedSession.sessionId,
           nowMs: input.nowMs,
         })
       : undefined;
     if (
-      taskAffinity &&
+      sessionAffinity &&
       requestedNodeId &&
-      requestedNodeId !== taskAffinity.ownerNodeId
+      requestedNodeId !== sessionAffinity.ownerNodeId
     ) {
       return centralMcpSafeError({
         status: 409,
-        code: 'TASK_NODE_MISMATCH',
-        message: 'The requested node does not own this task session.',
+        code: sessionAffinity.sessionKind === 'task'
+          ? 'TASK_NODE_MISMATCH'
+          : 'WORK_SESSION_NODE_MISMATCH',
+        message: sessionAffinity.sessionKind === 'task'
+          ? 'The requested node does not own this task session.'
+          : 'The requested node does not own this work session.',
       });
     }
-    const resolvedNodeId = taskAffinity?.ownerNodeId ?? requestedNodeId;
-    const routeSource: McpNodeRouteSource = taskAffinity
-      ? 'task'
+    const resolvedNodeId = sessionAffinity?.ownerNodeId ?? requestedNodeId;
+    const routeSource: McpNodeRouteSource = sessionAffinity
+      ? sessionAffinity.sessionKind
       : requestedNodeId
         ? 'explicit'
         : 'default';
@@ -487,13 +511,17 @@ export async function proxyCentralMcpRequest(input: {
     }
 
     if (
-      taskAffinity?.workspaceId &&
-      taskAffinity.workspaceId !== resolution.workspaceId
+      sessionAffinity?.workspaceId &&
+      sessionAffinity.workspaceId !== resolution.workspaceId
     ) {
       return centralMcpSafeError({
         status: 409,
-        code: 'TASK_WORKSPACE_MISMATCH',
-        message: 'Task affinity does not belong to the resolved workspace.',
+        code: sessionAffinity.sessionKind === 'task'
+          ? 'TASK_WORKSPACE_MISMATCH'
+          : 'WORK_SESSION_WORKSPACE_MISMATCH',
+        message: sessionAffinity.sessionKind === 'task'
+          ? 'Task affinity does not belong to the resolved workspace.'
+          : 'Work session affinity does not belong to the resolved workspace.',
       });
     }
 
@@ -528,44 +556,67 @@ export async function proxyCentralMcpRequest(input: {
       routingInspection.facadeTool &&
       input.request.method === 'POST'
     ) {
-      let bookkeepingTaskSession = routingInspection.taskSession;
+      let bookkeepingSession = routedSession;
       try {
         const outcome = await centralMcpFacadeOutcome(upstreamResponse);
         if (outcome.ok) {
-          bookkeepingTaskSession = routingInspection.facadeTool === 'task.start'
-            ? outcome.taskSession
-            : routingInspection.taskSession;
+          if (routingInspection.facadeTool === 'session.start') {
+            bookkeepingSession = outcome.taskSession
+              ? { sessionKind: 'task', sessionId: outcome.taskSession }
+              : outcome.workSession
+                ? { sessionKind: 'work', sessionId: outcome.workSession }
+                : undefined;
+          } else if (routingInspection.facadeTool === 'task.start' && outcome.taskSession) {
+            bookkeepingSession = { sessionKind: 'task', sessionId: outcome.taskSession };
+          }
           if (
-            bookkeepingTaskSession &&
-            routingInspection.facadeTool === 'task.finish'
+            bookkeepingSession?.sessionKind === 'task'
+            && routingInspection.facadeTool === 'task.finish'
           ) {
             await input.store.releaseWorkspaceTaskAffinity({
               accountId: stored.accountId,
               workspaceHost: stored.workspaceHost,
-              taskSession: bookkeepingTaskSession,
+              taskSession: bookkeepingSession.sessionId,
               ownerNodeId: resolution.nodeId,
             });
           } else if (
-            bookkeepingTaskSession &&
-            (routingInspection.facadeTool === 'task.start' || Boolean(taskAffinity))
+            bookkeepingSession
+            && (
+              routingInspection.facadeTool === 'task.start'
+              || routingInspection.facadeTool === 'session.start'
+              || Boolean(sessionAffinity)
+            )
           ) {
-            const claimed = await input.store.claimWorkspaceTaskAffinity({
-              accountId: stored.accountId,
-              workspaceId: resolution.workspaceId,
-              workspaceHost: stored.workspaceHost,
-              taskSession: bookkeepingTaskSession,
-              ownerNodeId: resolution.nodeId,
-              createdAt: taskAffinity?.createdAt ?? input.nowMs,
-              updatedAt: input.nowMs,
-              expiresAt: input.nowMs + WORKSPACE_TASK_AFFINITY_TTL_MS,
-            });
+            const claimed = bookkeepingSession.sessionKind === 'task'
+              ? await input.store.claimWorkspaceTaskAffinity({
+                  accountId: stored.accountId,
+                  workspaceId: resolution.workspaceId,
+                  workspaceHost: stored.workspaceHost,
+                  taskSession: bookkeepingSession.sessionId,
+                  ownerNodeId: resolution.nodeId,
+                  createdAt: sessionAffinity?.createdAt ?? input.nowMs,
+                  updatedAt: input.nowMs,
+                  expiresAt: input.nowMs + WORKSPACE_SESSION_AFFINITY_TTL_MS,
+                })
+              : await input.store.claimWorkspaceSessionAffinity({
+                  accountId: stored.accountId,
+                  workspaceId: resolution.workspaceId,
+                  workspaceHost: stored.workspaceHost,
+                  sessionKind: bookkeepingSession.sessionKind,
+                  sessionId: bookkeepingSession.sessionId,
+                  ownerNodeId: resolution.nodeId,
+                  createdAt: sessionAffinity?.createdAt ?? input.nowMs,
+                  updatedAt: input.nowMs,
+                  expiresAt: input.nowMs + WORKSPACE_SESSION_AFFINITY_TTL_MS,
+                });
             if (claimed.status === 'conflict') {
-              reportTaskAffinityBookkeepingFailure({
+              reportSessionAffinityBookkeepingFailure({
                 operationalLogger: input.operationalLogger,
                 accountId: stored.accountId,
                 workspaceId: resolution.workspaceId,
                 workspaceHost: stored.workspaceHost,
-                taskSession: bookkeepingTaskSession,
+                sessionKind: bookkeepingSession.sessionKind,
+                sessionId: bookkeepingSession.sessionId,
                 nodeId: resolution.nodeId,
                 outcome: 'conflict',
               });
@@ -573,13 +624,14 @@ export async function proxyCentralMcpRequest(input: {
           }
         }
       } catch (error: unknown) {
-        if (bookkeepingTaskSession) {
-          reportTaskAffinityBookkeepingFailure({
+        if (bookkeepingSession) {
+          reportSessionAffinityBookkeepingFailure({
             operationalLogger: input.operationalLogger,
             accountId: stored.accountId,
             workspaceId: resolution.workspaceId,
             workspaceHost: stored.workspaceHost,
-            taskSession: bookkeepingTaskSession,
+            sessionKind: bookkeepingSession.sessionKind,
+            sessionId: bookkeepingSession.sessionId,
             nodeId: resolution.nodeId,
             outcome: 'error',
             error,

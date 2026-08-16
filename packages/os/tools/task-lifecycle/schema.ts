@@ -379,6 +379,49 @@ export const toolSchemas = [
     }
   },
   {
+    "name": "session.start",
+    "order": [
+      "name",
+      "methodPath",
+      "description",
+      "category",
+      "underlying",
+      "capabilities",
+      "defaultTimeout",
+      "inputSchema",
+      "outputSchema",
+      "command",
+      "exampleInput",
+      "sessionRequired",
+    ],
+    "definition": {
+      "name": "session.start",
+      "methodPath": [
+        "session",
+        "start"
+      ],
+      "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+      "category": "session lifecycle",
+      "underlying": "os session.start",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "SessionStartInput",
+      "outputSchema": "RawOutput",
+      "exampleInput": {
+        "kind": "task",
+        "stream": "stream/workspace-agent",
+        "title": "example task",
+        "workflow": "task"
+      },
+      "sessionRequired": false
+    }
+  },
+  {
     "name": "task.start",
     "order": [
       "name",
@@ -401,7 +444,7 @@ export const toolSchemas = [
         "task",
         "start"
       ],
-      "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+      "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
       "category": "task lifecycle",
       "underlying": "os task.start",
       "capabilities": {

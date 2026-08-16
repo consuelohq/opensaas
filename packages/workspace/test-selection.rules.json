@@ -7,7 +7,12 @@
       "source": [
         "packages/workspace/scripts/lib/facade/**",
         "packages/workspace/tooling/tool-manifest.json",
-        "packages/workspace/src/generated/workspace.d.ts"
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/scripts/generate-tool-manifest.ts",
+        "packages/workspace/tooling/workflows.json",
+        "packages/workspace/manifests/workflow-bundles.json",
+        "packages/workspace/tests/workflow-intent.test.ts"
       ],
       "tests": [
         {
@@ -19,9 +24,22 @@
             "--test-name-pattern",
             "validates input"
           ]
+        },
+        {
+          "name": "workspace facade manifest contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts"
+          ]
         }
       ],
-      "reason": "Workspace facade and manifest changes must prove typed tool input contracts."
+      "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+      "exclusive": true
     },
     {
       "id": "workspace-publish-gate",
@@ -54,8 +72,14 @@
         "packages/workspace/scripts/task-pr.js",
         "packages/workspace/scripts/task-finish.js",
         "packages/workspace/scripts/task-init.js",
+        "packages/workspace/scripts/task-cleanup.js",
+        "packages/workspace/scripts/lib/task-session.js",
         "packages/workspace/scripts/lib/task-selection*.js",
-        "packages/workspace/scripts/lib/task-metadata*.js"
+        "packages/workspace/scripts/lib/task-metadata*.js",
+        "packages/workspace/scripts/lib/task-registry.js",
+        "packages/workspace/scripts/lib/task-worktree-eviction.js",
+        "packages/workspace/scripts/lib/task-worktree-gc.js",
+        "packages/workspace/scripts/lib/paths.js"
       ],
       "tests": [
         {
@@ -66,7 +90,9 @@
             "packages/workspace/tests/task-session.test.js",
             "packages/workspace/tests/task-meta.test.ts",
             "packages/workspace/tests/task-init.test.js",
-            "packages/workspace/tests/task-selection.test.js"
+            "packages/workspace/tests/task-selection.test.js",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-worktree-eviction.test.ts"
           ]
         }
       ],
@@ -183,7 +209,12 @@
         "packages/os/tests/fixtures/trace-persistence-runtime.ts",
         "packages/os/scripts/lib/distribution/runtime-bundle.ts",
         "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
-        "packages/os/tests/trace-site-inspector-interactions.test.ts"
+        "packages/os/tests/trace-site-inspector-interactions.test.ts",
+        "packages/os/scripts/lib/facade/logger.ts",
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-search-query.ts",
+        "packages/os/tests/trace-persistence.test.ts",
+        "packages/os/tests/trace-search-query.test.ts"
       ],
       "tests": [
         {
@@ -212,9 +243,23 @@
             "test",
             "tests/trace-sites-runtime-boundary.test.ts"
           ]
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ]
         }
       ],
-      "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior."
+      "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+      "exclusive": true
     },
     {
       "id": "os-release-surface-freshness",
@@ -916,6 +961,7 @@
             "--cwd",
             "packages/os",
             "test",
+            "--no-file-parallelism",
             "tests/settings-site.test.ts",
             "tests/launcher-nodes-materialization.test.ts",
             "tests/observability-traces-site.test.ts",
@@ -933,7 +979,7 @@
           ]
         }
       ],
-      "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid without falling back to the broad OS package suite."
+      "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference."
     },
     {
       "id": "os-managed-cloud-one-click-provisioning",
@@ -1497,6 +1543,225 @@
         }
       ],
       "reason": "Frontend package changes should run the project test target."
+    },
+    {
+      "id": "workspace-session-integration",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tools/task-lifecycle/schema.ts",
+        "packages/os/hooks/task/**",
+        "packages/workspace/hooks/task/**",
+        "packages/os/skills/task/SKILL.md",
+        "packages/workspace/task.md",
+        "packages/workspace/senior-engineer.md",
+        "packages/os/steering/system_prompt.md",
+        "packages/workspace/scripts/session-start.ts",
+        "packages/os/tests/session-integration-guidance.test.ts",
+        "packages/os/tests/task-hook-workflow-contract.test.ts",
+        "packages/os/tests/task-hooks.test.ts",
+        "packages/os/scripts/session-start.ts",
+        "packages/os/scripts/lib/work-session.ts",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/tests/observability-traces-site.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts"
+          ]
+        }
+      ],
+      "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract."
+    },
+    {
+      "id": "os-task-worktree-eviction",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/task-start.js",
+        "packages/os/scripts/task-cleanup.js",
+        "packages/os/scripts/task-finish.js",
+        "packages/os/scripts/task-worktree-gc.js",
+        "packages/os/scripts/lib/task-registry.js",
+        "packages/os/scripts/lib/task-session.js",
+        "packages/os/scripts/lib/task-worktree-eviction.js",
+        "packages/os/scripts/lib/task-worktree-gc.js",
+        "packages/os/scripts/lib/task-worktree-gc-scheduler.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/server/supervisor.ts",
+        "packages/os/tests/task-worktree-gc-scheduler.test.ts",
+        "packages/os/scripts/lib/task-selection.js",
+        "packages/os/scripts/lib/paths.js",
+        "packages/os/tests/durable-task-worktrees.test.ts",
+        "packages/os/tests/task-selection.test.js",
+        "packages/os/tests/task-cleanup-durable-safety.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ]
+        },
+        {
+          "name": "task worktree eviction syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Durable task eviction, recovery archives, inactivity GC, supervisor scheduling, and facade recovery must prove reversible cleanup without selecting the unrelated package-wide OS baseline."
+    },
+    {
+      "id": "os-subagent-runtime",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/subagent/**",
+        "packages/os/tools/subagent/**",
+        "packages/os/tests/subagent-orchestration-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS durable subagent orchestration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/subagent-orchestration-contract.test.ts"
+          ]
+        },
+        {
+          "name": "OS subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Durable Grok/Codex orchestration, provider capabilities, active-run status, idempotency, and deadline behavior must prove the focused subagent contract without selecting the unrelated whole-OS package baseline."
+    },
+    {
+      "id": "os-work-session-fs",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/generated/core.manifest.json",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/scripts/fs.js",
+        "packages/os/scripts/generate-docs.ts",
+        "packages/os/scripts/generate-types.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/facade/types.ts",
+        "packages/os/scripts/lib/fs/mutation-path.ts",
+        "packages/os/scripts/lib/work-session-fs.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/session-start-foundation.test.ts",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/work-session-fs.test.ts",
+        "packages/os/tools/filesystem/schema.ts",
+        "packages/os/workflows/generated/workflow-bundles.json",
+        "packages/os/scripts/lib/work-session-protection.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ]
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write)"
+          ]
+        },
+        {
+          "name": "OS work-session filesystem syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-work-session-code-call",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/code-call/**",
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/tests/generated-error-code-parity.test.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/work-session-code-call.test.ts",
+        "packages/os/scripts/lib/work-session-protection.ts",
+        "packages/os/tests/code-call.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS work-session Code Call and MCP authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-code-call.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/generated-error-code-parity.test.ts",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/code-call.test.ts"
+          ]
+        },
+        {
+          "name": "OS work-session Code Call syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests."
     }
   ]
 }

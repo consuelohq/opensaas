@@ -5,6 +5,10 @@ const requestFields = {
   taskSession: z.string().min(1).optional(),
 };
 
+const workSessionField = {
+  workSession: z.string().min(1).optional(),
+};
+
 const dryRunField = {
   dryRun: z.boolean().optional(),
 };
@@ -211,6 +215,7 @@ export const CodeCallInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+  workSession: z.string().min(1).optional(),
   language: z.string().min(1),
   code: z.string().min(1).optional(),
   codeFile: optionalString,
@@ -227,6 +232,9 @@ export const CodeCallInput = z.object({
 }).refine((input) => !(input.stdin !== undefined && input.stdinFile), {
   message: 'provide at most one of stdin or stdinFile',
   path: ['stdin'],
+}).refine((input) => !(input.taskSession && input.workSession), {
+  message: 'provide taskSession or workSession, not both',
+  path: ['workSession'],
 });
 
 export const WorkflowIntentInput = z.object({
@@ -323,6 +331,7 @@ export const FsListInput = z.object({
 
 export const FsWriteInput = z.object({
   ...requestFields,
+  ...workSessionField,
   ...dryRunField,
   ...branchField,
   path: z.string().min(1),
@@ -353,6 +362,7 @@ export const FsWriteInput = z.object({
 
 export const FsApplyPatchInput = z.object({
   ...requestFields,
+  ...workSessionField,
   ...dryRunField,
   ...branchField,
   patchText: z.string().optional(),
@@ -373,6 +383,7 @@ export const FsHttpInput = z.object({
 
 export const FsTrashInput = z.object({
   ...requestFields,
+  ...workSessionField,
   ...dryRunField,
   ...branchField,
   path: z.string().min(1),
@@ -394,6 +405,35 @@ export const TaskStartInput = z.object({
   message: 'provide area/stream or a PR reference',
   path: ['area'],
 });
+
+const SessionTaskStartInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  kind: z.literal('task'),
+  area: optionalString,
+  stream: optionalString,
+  title: z.string().min(1),
+  workflow: z.enum(['task']).optional(),
+  description: optionalString,
+  bodyFile: optionalString,
+  startFrom: z.enum(['main', 'stream']).optional(),
+  createStream: z.boolean().optional(),
+}).strict().refine((input) => Boolean(input.area || input.stream), {
+  message: 'provide area or stream',
+  path: ['area'],
+});
+
+const SessionWorkStartInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  kind: z.literal('work'),
+  path: z.string().min(1),
+}).strict();
+
+export const SessionStartInput = z.union([
+  SessionTaskStartInput,
+  SessionWorkStartInput,
+]);
 
 export const TaskInitInput = z.object({
   ...requestFields,
@@ -1284,6 +1324,7 @@ export const schemaRegistry = {
   FsHttpInput,
   HttpInput: FsHttpInput,
   FsTrashInput,
+  SessionStartInput,
   TaskStartInput,
   TaskInitInput,
   TaskPushInput,
@@ -1392,7 +1433,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ArtifactsDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   DailySchedulesPublishInput: '{ kind: "security-scan" | "security-workpad" | "self-healing-workpad"; sourceFile?: string; content?: string; format?: "auto" | "json" | "markdown" | "text"; date?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaSvgInput: '{ action: \"create\" | \"inspect\" | \"render\" | \"measure\" | \"edit\" | \"verify\" | \"snapshot\" | \"restore\"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: \"png\"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: \"light\" | \"dark\" | \"no-preference\" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"artifacts\" | \"media\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1400,11 +1441,12 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; full?: boolean; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number; full?: boolean }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; full?: never; branch?: string; requestId?: string; taskSession?: string })',
   FsSearchInput: '{ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
-  FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  FsApplyPatchInput: '{ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
+  FsApplyPatchInput: '{ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
+  SessionStartInput: '({ kind: "task"; stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string } | { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })',
   TaskStartInput: '{ stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; description?: string; pr?: string | number; github?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPushInput: '{ branch?: string; repo?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',

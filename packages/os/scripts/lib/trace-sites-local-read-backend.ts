@@ -35,6 +35,8 @@ type TraceRow = {
   task_session?: string | null;
   branch?: string | null;
   worktree?: string | null;
+  work_session?: string | null;
+  work_path?: string | null;
   requested_node_id?: string | null;
   resolved_node_id?: string | null;
   resolved_node_name?: string | null;
@@ -66,6 +68,8 @@ const TRACE_HISTORY_PAGE_SQL = [
   '  task_session,',
   '  branch,',
   '  worktree,',
+  '  work_session,',
+  '  work_path,',
   '  requested_node_id,',
   '  resolved_node_id,',
   '  resolved_node_name,',
@@ -110,6 +114,8 @@ const RECENT_TRACE_EVENTS_SQL = [
   '  tool,',
   '  task_session,',
   '  branch,',
+  '  work_session,',
+  '  work_path,',
   '  status,',
   '  code,',
   '  exit_code,',
@@ -276,7 +282,11 @@ function rowToDashboardEvent(
       : `${input.workspaceId}:${traceId}:${cursor}`,
     sourceMode: input.sourceMode,
     branch:
-      cleanString(row.branch) || cleanString(row.task_session) || '(no branch)',
+      sanitizeLocalTraceText(cleanString(row.work_path)) ||
+      cleanString(row.branch) ||
+      cleanString(row.task_session) ||
+      cleanString(row.work_session) ||
+      '(no branch)',
     tool: cleanString(row.tool) || 'unknown',
     inputTokens,
     outputTokens,
@@ -332,6 +342,8 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
       cleanString(row.branch) || cleanString(row.task_session) || 'no-branch',
     taskSession: cleanString(row.task_session),
     worktree: sanitizeLocalTraceText(cleanString(row.worktree)),
+    workSession: cleanString(row.work_session),
+    workPath: sanitizeLocalTraceText(cleanString(row.work_path)),
     ...(requestedNodeId ? { requestedNodeId } : {}),
     ...(resolvedNodeId ? { resolvedNodeId, nodeId: resolvedNodeId } : {}),
     ...(resolvedNodeName
@@ -356,6 +368,10 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
       rowid: row.rowid,
       source: cleanString(row.source),
       mcpTraceId: cleanString(row.mcp_trace_id),
+      ...(cleanString(row.work_session) ? { workSession: cleanString(row.work_session) } : {}),
+      ...(cleanString(row.work_path)
+        ? { workPath: sanitizeLocalTraceText(cleanString(row.work_path)) }
+        : {}),
       ...(requestedNodeId ? { requestedNodeId } : {}),
       ...(resolvedNodeId ? { resolvedNodeId } : {}),
       ...(resolvedNodeName ? { resolvedNodeName } : {}),

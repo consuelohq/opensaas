@@ -276,9 +276,10 @@ export function createReloadServiceController(input: {
               }
 
               const detail = `${kickstart.stdout}\n${kickstart.stderr}`;
-              const transientExitFive = kickstart.exitCode === 5
-                || /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
-              if (!transientExitFive) break;
+              const transientLaunchdTransition = kickstart.exitCode === 5
+                || kickstart.exitCode === 37
+                || /Bootstrap failed:\s*5|Input\/output error|Operation already in progress/i.test(detail);
+              if (!transientLaunchdTransition) break;
               if (attempt < MAC_GATEWAY_KICKSTART_ATTEMPTS) {
                 await sleepImpl(MAC_GATEWAY_KICKSTART_RETRY_MS);
               }

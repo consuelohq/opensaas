@@ -5,6 +5,7 @@ import path from 'node:path';
 import { afterEach, expect, test, vi } from 'vitest';
 
 import taskSession from '../scripts/lib/task-session.js';
+import taskEviction from '../scripts/lib/task-worktree-eviction.js';
 
 const {
   assertTmuxAvailable,
@@ -193,4 +194,115 @@ test('terminateTaskTmuxSession closes an explicit existing tmux session', () => 
     ['has-session', '-t', 'explicit-session'],
     ['kill-session', '-t', 'explicit-session'],
   ]);
+});
+
+test('recoverDurableTaskSession validates branch and recreates missing tmux', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'task-session-recover-'));
+  const oldHome = process.env.CONSUELO_HOME;
+  const branch = 'task/workspace-agent/recover';
+  try {
+    process.env.CONSUELO_HOME = path.join(root, 'home');
+    const worktreePath = path.join(root, 'worktree');
+    fs.mkdirSync(worktreePath, { recursive: true });
+    childProcess.execFileSync('git', ['init', '-q'], { cwd: worktreePath });
+    childProcess.execFileSync('git', ['config', 'user.email', 'tests@consuelo.local'], { cwd: worktreePath });
+    childProcess.execFileSync('git', ['config', 'user.name', 'Consuelo Tests'], { cwd: worktreePath });
+    fs.writeFileSync(path.join(worktreePath, 'README.md'), 'fixture\n');
+    childProcess.execFileSync('git', ['add', 'README.md'], { cwd: worktreePath });
+    childProcess.execFileSync('git', ['commit', '-qm', 'fixture'], { cwd: worktreePath });
+    childProcess.execFileSync('git', ['checkout', '-qb', branch], { cwd: worktreePath });
+    const registry = require('../scripts/lib/task-registry.js');
+    const handle = getTaskSessionHandle(branch);
+    registry.writeDurableTaskSessionMetadata({ area: 'workspace-agent', taskBranch: branch, taskSession: handle, worktreePath });
+    const calls = [];
+    const result = withSpawnSync((command, args) => {
+      calls.push([command, ...args]);
+      if (args[0] === '-V') return { status: 0 };
+      if (args[0] === 'has-session') return { status: 1 };
+      if (args[0] === 'new-session') return { status: 0 };
+      throw new Error('unexpected call');
+    }, () => taskSession.recoverDurableTaskSession(handle));
+    expect(result.taskSession).toBe(handle);
+    expect(result.tmuxCreated).toBe(true);
+    expect(calls.some(([command, first]) => command === 'tmux' && first === 'new-session')).toBe(true);
+  } finally {
+    if (oldHome === undefined) delete process.env.CONSUELO_HOME; else process.env.CONSUELO_HOME = oldHome;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('writeTaskSessionMetadata mirrors session state into the durable registry', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'task-session-registry-'));
+  const oldHome = process.env.CONSUELO_HOME;
+  try {
+    process.env.CONSUELO_HOME = path.join(root, 'home');
+    const worktreePath = path.join(root, 'worktree'); fs.mkdirSync(worktreePath, { recursive: true });
+    const branch = 'task/workspace-agent/registry-mirror';
+    const metadata = taskSession.writeTaskSessionMetadata({ area: 'workspace-agent', stream: 'stream/workspace-agent', taskBranch: branch, worktreePath }, false);
+    const registry = require('../scripts/lib/task-registry.js');
+    expect(registry.readDurableTaskSessionMetadata(metadata.taskSession)).toMatchObject({ taskSession: metadata.taskSession, taskBranch: branch, worktreePath });
+  } finally {
+    if (oldHome === undefined) delete process.env.CONSUELO_HOME; else process.env.CONSUELO_HOME = oldHome;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('recoverDurableTaskSession restores an evicted worktree before recreating tmux', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'task-session-evicted-'));
+  const oldHome = process.env.CONSUELO_HOME;
+  const branch = 'task/workspace-agent/restore-evicted';
+  try {
+    const home = path.join(root, 'home');
+    process.env.CONSUELO_HOME = home;
+    const repoRoot = path.join(root, 'repo');
+    const remote = path.join(root, 'remote.git');
+    const worktreePath = path.join(root, 'worktree');
+    childProcess.execFileSync('git', ['init', '--bare', '-q', remote]);
+    childProcess.execFileSync('git', ['init', '-q', '-b', 'main', repoRoot]);
+    childProcess.execFileSync('git', ['config', 'user.email', 'tests@consuelo.local'], { cwd: repoRoot });
+    childProcess.execFileSync('git', ['config', 'user.name', 'Consuelo Tests'], { cwd: repoRoot });
+    fs.writeFileSync(path.join(repoRoot, 'README.md'), 'base\n');
+    childProcess.execFileSync('git', ['add', 'README.md'], { cwd: repoRoot });
+    childProcess.execFileSync('git', ['commit', '-qm', 'base'], { cwd: repoRoot });
+    childProcess.execFileSync('git', ['remote', 'add', 'origin', remote], { cwd: repoRoot });
+    childProcess.execFileSync('git', ['push', '-u', 'origin', 'main'], { cwd: repoRoot, stdio: 'ignore' });
+    childProcess.execFileSync('git', ['branch', branch], { cwd: repoRoot });
+    childProcess.execFileSync('git', ['push', '-u', 'origin', branch], { cwd: repoRoot, stdio: 'ignore' });
+    childProcess.execFileSync('git', ['worktree', 'add', '-q', worktreePath, branch], { cwd: repoRoot });
+
+    const registry = require('../scripts/lib/task-registry.js');
+    const handle = getTaskSessionHandle(branch);
+    registry.writeDurableTaskSessionMetadata({
+      area: 'workspace-agent',
+      taskBranch: branch,
+      taskSession: handle,
+      tmuxSession: 'restore-evicted-session',
+      worktreePath,
+      repoRoot,
+    }, { home });
+    fs.writeFileSync(path.join(worktreePath, 'README.md'), 'dirty recovery\n');
+    taskEviction.evictDurableTaskWorktree({
+      taskSession: handle,
+      home,
+      terminateTmux: () => ({ status: 'not-found', terminated: false }),
+    });
+    expect(fs.existsSync(worktreePath)).toBe(false);
+
+    const calls = [];
+    const result = withSpawnSync((command, args) => {
+      calls.push([command, ...args]);
+      if (args[0] === '-V') return { status: 0 };
+      if (args[0] === 'has-session') return { status: 1 };
+      if (args[0] === 'new-session') return { status: 0 };
+      throw new Error(`unexpected call ${command} ${args.join(' ')}`);
+    }, () => taskSession.recoverDurableTaskSession(handle, { home }));
+
+    expect(result.taskSession).toBe(handle);
+    expect(result.tmuxCreated).toBe(true);
+    expect(fs.readFileSync(path.join(worktreePath, 'README.md'), 'utf8')).toBe('dirty recovery\n');
+    expect(calls.some(([command, first]) => command === 'tmux' && first === 'new-session')).toBe(true);
+  } finally {
+    if (oldHome === undefined) delete process.env.CONSUELO_HOME; else process.env.CONSUELO_HOME = oldHome;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
