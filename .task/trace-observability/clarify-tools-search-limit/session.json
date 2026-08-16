@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5af12e533959",
+  "tmuxSession": "opensaas-trace-observability-clarify-tools-search-limit-5af12e53",
+  "area": "trace-observability",
+  "stream": "stream/trace-observability",
+  "taskBranch": "task/trace-observability/clarify-tools-search-limit",
+  "branch": "task/trace-observability/clarify-tools-search-limit",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-observability-clarify-tools-search-limit",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-observability-clarify-tools-search-limit",
+  "prNumber": 2140,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2140",
+  "createdAt": "2026-08-16T06:37:12.630Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-observability-clarify-tools-search-limit/.task/trace-observability/clarify-tools-search-limit/session.json"
+}

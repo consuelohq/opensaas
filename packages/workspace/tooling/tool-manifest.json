@@ -5081,7 +5081,7 @@
       "tools",
       "search"
     ],
-    "description": "search workspace tools by intent and return ranked usage guidance",
+    "description": "search workspace tools by intent and return ranked usage guidance; limit is capped at 5",
     "category": "tooling",
     "underlying": "workspace tools.search",
     "capabilities": {
