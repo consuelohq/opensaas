@@ -43,18 +43,34 @@ export async function drainWorkerServer(input: {
 }): Promise<void> {
   const sleep = input.sleep ?? ((milliseconds: number) => Bun.sleep(milliseconds));
   const report = input.report ?? ((message: string) => process.stderr.write(`${message}\n`));
-  input.workerState.startDraining();
-  report(`[Consuelo OS] ${input.workerState.snapshot().workerId} draining (${input.reason})`);
+  const workerId = input.workerState.snapshot().workerId;
+  try {
+    input.workerState.startDraining();
+    report(`[Consuelo OS] ${workerId} draining (${input.reason})`);
 
-  // /ready turns unavailable immediately, while ordinary requests remain accepted briefly.
-  // This gives Caddy's active health check time to evacuate the worker before its listener closes.
-  await sleep(input.propagationMs ?? resolveDrainPropagationMs());
-  input.workerState.stopAcceptingRequests();
+    // /ready turns unavailable immediately, while ordinary requests remain accepted briefly.
+    // This gives Caddy's active health check time to evacuate the worker before its listener closes.
+    const propagationMs = input.propagationMs ?? resolveDrainPropagationMs();
+    await sleep(propagationMs);
+    input.workerState.stopAcceptingRequests();
 
-  const gracefulStop = Promise.resolve(input.server.stop(false));
-  const idle = await input.workerState.waitForIdle(input.drainTimeoutMs ?? resolveDrainTimeoutMs());
-  if (!idle) await Promise.resolve(input.server.stop(true));
-  await gracefulStop.catch(() => undefined);
+    // Do not call Bun's graceful stop while application work is still active. In
+    // Bun 1.3.x, stop(false) can resolve as soon as the handler returns even
+    // though the proxy-facing response still needs time to flush; immediately
+    // exiting the worker can then surface as an upstream EOF. Wait for the
+    // handler to finish first, leave one additional propagation window for
+    // Caddy to consume the completed response, and only then close the listener.
+    const idle = await input.workerState.waitForIdle(input.drainTimeoutMs ?? resolveDrainTimeoutMs());
+    if (!idle) {
+      await Promise.resolve(input.server.stop(true));
+      return;
+    }
+    await sleep(propagationMs);
+    await Promise.resolve(input.server.stop(false));
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`${workerId} drain failed: ${message}`, { cause: error });
+  }
 }
 
 export async function runDrainAndExit(
