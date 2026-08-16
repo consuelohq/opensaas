@@ -5,8 +5,8 @@
     "testFileCount": 2642,
     "mappedTestCount": 2556,
     "unmappedTestCount": 86,
-    "ruleCount": 63,
-    "explicitRuleCount": 44,
+    "ruleCount": 64,
+    "explicitRuleCount": 45,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -650,8 +650,7 @@
         "packages/workspace/scripts/lib/facade/**",
         "packages/workspace/tooling/tool-manifest.json",
         "packages/workspace/src/generated/workspace.d.ts",
-        "packages/workspace/manifests/manifest.config.json",
-        "packages/workspace/package.json"
+        "packages/workspace/manifests/manifest.config.json"
       ],
       "tests": [
         {
@@ -905,6 +904,7 @@
         }
       ],
       "critical": true,
+      "exclusive": true,
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
       "origin": "explicit"
     },
@@ -2211,7 +2211,11 @@
         "packages/os/scripts/lib/task-worktree-gc-scheduler.ts",
         "packages/os/scripts/lib/facade/executor.ts",
         "packages/os/scripts/server/supervisor.ts",
-        "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+        "packages/os/tests/task-worktree-gc-scheduler.test.ts",
+        "packages/os/scripts/lib/task-selection.js",
+        "packages/os/scripts/lib/paths.js",
+        "packages/os/tests/durable-task-worktrees.test.ts",
+        "packages/os/tests/task-selection.test.js"
       ],
       "tests": [
         {
@@ -2238,6 +2242,37 @@
       "critical": true,
       "exclusive": true,
       "reason": "Durable task eviction, recovery archives, inactivity GC, supervisor scheduling, and facade recovery must prove reversible cleanup without selecting the unrelated package-wide OS baseline.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-subagent-runtime",
+      "source": [
+        "packages/os/scripts/lib/subagent/**",
+        "packages/os/tools/subagent/**",
+        "packages/os/tests/subagent-orchestration-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS durable subagent orchestration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/subagent-orchestration-contract.test.ts"
+          ]
+        },
+        {
+          "name": "OS subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Durable Grok/Codex orchestration, provider capabilities, active-run status, idempotency, and deadline behavior must prove the focused subagent contract without selecting the unrelated whole-OS package baseline.",
       "origin": "explicit"
     },
     {
@@ -2310,7 +2345,8 @@
         "packages/os/tests/generated-error-code-parity.test.ts",
         "packages/os/tests/mcp-gateway.test.ts",
         "packages/os/tests/work-session-code-call.test.ts",
-        "packages/os/scripts/lib/work-session-protection.ts"
+        "packages/os/scripts/lib/work-session-protection.ts",
+        "packages/os/tests/code-call.test.ts"
       ],
       "tests": [
         {
@@ -2323,7 +2359,8 @@
             "packages/os/tests/work-session-code-call.test.ts",
             "packages/os/tests/session-start-foundation.test.ts",
             "packages/os/tests/generated-error-code-parity.test.ts",
-            "packages/os/tests/mcp-gateway.test.ts"
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/code-call.test.ts"
           ]
         },
         {

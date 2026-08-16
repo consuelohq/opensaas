@@ -60,3 +60,31 @@ test('findActiveTaskCandidates can recover metadata from the durable registry', 
     rmSync(repoRoot, { recursive: true, force: true }); rmSync(worktreeRoot, { recursive: true, force: true }); rmSync(home, { recursive: true, force: true });
   }
 });
+
+
+test('findActiveTaskResult recovers an evicted taskSession even when no worktree candidate exists', () => {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'task-selection-evicted-'));
+  try {
+    execFileSync('git', ['init', '-q'], { cwd: repoRoot });
+    const recoveredPath = join(repoRoot, 'restored-task');
+    const result = findActiveTaskResult(repoRoot, { taskSession: 'tsk_evicted_selection' }, {
+      recoverTaskSession: (taskSession) => ({
+        taskSession,
+        area: 'workspace-agent',
+        taskBranch: 'task/workspace-agent/restored',
+        branch: 'task/workspace-agent/restored',
+        worktreePath: recoveredPath,
+        worktree: recoveredPath,
+        status: 'active',
+      }),
+    });
+    expect(result.error).toBeNull();
+    expect(result.task).toMatchObject({
+      branch: 'task/workspace-agent/restored',
+      worktreePath: recoveredPath,
+      meta: expect.objectContaining({ taskSession: 'tsk_evicted_selection', status: 'active' }),
+    });
+  } finally {
+    rmSync(repoRoot, { recursive: true, force: true });
+  }
+});

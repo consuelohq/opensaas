@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
-const { readDurableTaskSessionMetadata, writeDurableTaskSessionMetadata } = require('./task-registry');
+const { readDurableTaskSessionMetadata, transitionDurableTaskSessionMetadata, writeDurableTaskSessionMetadata } = require('./task-registry');
 const { restoreEvictedTaskWorktree } = require('./task-worktree-eviction');
 const { listWorktrees } = require('./git');
 
@@ -201,12 +201,12 @@ function recoverDurableTaskSession(taskSession, options = {}) {
     tmuxSession: tmux.tmuxSession,
     tmuxCreated: tmux.created,
   };
-  writeDurableTaskSessionMetadata({
+  const finalized = transitionDurableTaskSessionMetadata(taskSession, 'active', {
     ...recovered,
     status: 'active',
     lastActiveAt: new Date().toISOString(),
-  }, options);
-  return recovered;
+  }, { ...options, expectedUpdatedAt: metadata.updatedAt });
+  return { ...recovered, ...finalized };
 }
 
 function createTaskSessionMetadata(input) {

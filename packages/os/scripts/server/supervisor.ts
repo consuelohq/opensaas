@@ -231,9 +231,9 @@ if (import.meta.main) {
   if (!Number.isInteger(orphanReclaimTimeoutMs) || orphanReclaimTimeoutMs < 1) {
     throw new Error('CONSUELO_OS_ORPHAN_RECLAIM_TIMEOUT_MS must be a positive integer');
   }
+  const taskWorktreeGcIntervalValue = process.env.CONSUELO_TASK_WORKTREE_GC_INTERVAL_MS?.trim();
   const taskWorktreeGcIntervalMs = Number(
-    process.env.CONSUELO_TASK_WORKTREE_GC_INTERVAL_MS
-      ?? DEFAULT_TASK_WORKTREE_GC_INTERVAL_MS,
+    taskWorktreeGcIntervalValue || DEFAULT_TASK_WORKTREE_GC_INTERVAL_MS,
   );
   if (!Number.isInteger(taskWorktreeGcIntervalMs) || taskWorktreeGcIntervalMs < 1) {
     throw new Error('CONSUELO_TASK_WORKTREE_GC_INTERVAL_MS must be a positive integer');

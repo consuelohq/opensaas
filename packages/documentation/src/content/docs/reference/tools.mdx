@@ -115,7 +115,7 @@ The call envelope also supports a top-level `workSession` for work-session node 
 
 ## Starting sessions
 
-`session.start` is the canonical session constructor. `kind: "task"` delegates to the existing task lifecycle and returns the normal `taskSession`; `task.start` remains available as a compatibility alias. `kind: "work"` creates metadata only for an existing directory and returns a `workSession` owned by the current node. It does not create a branch, worktree, PR, or copied directory.
+`session.start` is the canonical session constructor. `kind: "task"` delegates to the existing task lifecycle and returns `sessionKind: "task"`, `taskSession`, `taskBranch`, and `worktreePath`; `task.start` remains available as a compatibility alias. `kind: "work"` creates metadata only for an existing directory and returns `sessionKind: "work"`, `workSession`, `ownerNodeId`, and `path`. It does not create a branch, worktree, PR, or copied directory.
 
 ```json
 {
@@ -126,6 +126,10 @@ The call envelope also supports a top-level `workSession` for work-session node 
   }
 }
 ```
+
+## Subagents
+
+`subagent` starts or attaches to durable Codex and Grok runs from an instruction handoff. The default tool deadline is 15 minutes so deep reviews can complete without disabling bounded execution. A `start` or bounded `wait` response for a run that is still `starting` or `running` reports `exitCode: 0`; use the returned run `status` to distinguish active work from terminal completion. Provider capability limits remain explicit—for example, Grok rejects unsupported `reasoningEffort` selection instead of silently ignoring it.
 
 ## Maintenance and observability examples
 

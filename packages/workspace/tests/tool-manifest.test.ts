@@ -5,7 +5,7 @@ import { join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildWorkspaceToolManifest, generateWorkspaceToolManifest } from '../scripts/generate-tool-manifest';
-import { getInputSchema, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
+import { getInputSchema, outputTypeSignatures, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 
 type JsonObject = Record<string, unknown>;
 
@@ -310,4 +310,15 @@ describe('workspace tool manifest generator', () => {
     expect(core.tools.map((tool) => tool.name)).toContain('tools.search');
     expect(workflows.sourceManifest).toBe(expectedSourceManifest);
   });
+
+  it('session.start advertises distinct typed task and work success shapes', () => {
+    const sessionStart = buildWorkspaceToolManifest().full.tools.find((entry) => entry.name === 'session.start');
+    expect(sessionStart?.definition.outputSchema).toBe('SessionStartOutput');
+    const signature = outputTypeSignatures.SessionStartOutput;
+    expect(signature).toContain('taskSession');
+    expect(signature).toContain('taskBranch');
+    expect(signature).toContain('workSession');
+    expect(signature).toContain('ownerNodeId');
+  });
+
 });

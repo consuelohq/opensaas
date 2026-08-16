@@ -9,8 +9,11 @@ const generatedTypes = readFileSync(resolve(here, '../src/generated/workspace.d.
 
 describe('generated workspace error-code parity', () => {
   it('should include task-session failures when generating the public ErrorCode union', () => {
-    expect(generatedTypes).toContain('"TASK_SESSION_REQUIRED"');
-    expect(generatedTypes).toContain('"TASK_SESSION_NOT_FOUND"');
-    expect(generatedTypes).toContain('"WORK_SESSION_NOT_FOUND"');
+    const errorCodeMatch = generatedTypes.match(/export type ErrorCode =([\s\S]*?);/u);
+    expect(errorCodeMatch, 'generated ErrorCode union was not found').toBeTruthy();
+    const errorCodeUnion = errorCodeMatch?.[1] || '';
+    expect(errorCodeUnion).toContain('\"TASK_SESSION_REQUIRED\"');
+    expect(errorCodeUnion).toContain('\"TASK_SESSION_NOT_FOUND\"');
+    expect(errorCodeUnion).toContain('\"WORK_SESSION_NOT_FOUND\"');
   });
 });

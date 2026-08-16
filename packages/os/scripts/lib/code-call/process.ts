@@ -160,6 +160,10 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
 
   child.stdout.setEncoding('utf8');
   child.stderr.setEncoding('utf8');
+  child.stdin.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED') return;
+    if (!settled) stderr += `${stderr ? '\n' : ''}${errorMessage(error)}`;
+  });
   child.stdout.on('data', (chunk) => { stdout += chunk; });
   child.stderr.on('data', (chunk) => { stderr += chunk; });
   child.on('error', (error: NodeJS.ErrnoException) => {
@@ -175,5 +179,10 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
   child.on('close', (code) => {
     finish({ stdout, stderr, exitCode: code ?? 0, timedOut, runtimeMissing: false, containmentUnavailable: false });
   });
-  child.stdin.end(options.stdin || '');
+  try {
+    child.stdin.end(options.stdin || '');
+  } catch (error: unknown) {
+    const code = (error as NodeJS.ErrnoException)?.code;
+    if (code !== 'EPIPE' && code !== 'ERR_STREAM_DESTROYED') throw error;
+  }
 }));

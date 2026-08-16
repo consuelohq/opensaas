@@ -391,6 +391,16 @@ async function main() {
       continue;
     }
 
+    if (durable && worktreePath && fs.existsSync(worktreePath)) {
+      if (durable.status !== 'active') {
+        result.skipped.push({ branch, reason: `task session is ${durable.status}` });
+        continue;
+      }
+      const evicted = evictDurableTaskWorktree({ taskSession: durable.taskSession });
+      result.evictedWorktrees.push({ path: worktreePath, branch, taskSession: durable.taskSession });
+      if (evicted.recovery?.bundlePath) result.recoveryArchives.push(evicted.recovery.bundlePath);
+    }
+
     if (worktreePath) {
       const tmuxCleanup = terminateTaskTmuxSession(cleanupMetadata, {
         branch,

@@ -47,8 +47,11 @@ export function managedWorktreeRoots(managedRepoRoot: string): string[] {
       });
     if (!roots.includes(canonicalManagedRoot)) roots.push(canonicalManagedRoot);
     return roots;
-  } catch {
-    return [canonicalManagedRoot];
+  } catch (error: unknown) {
+    throw new Error(
+      `failed to enumerate managed Git worktrees from ${canonicalManagedRoot}: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    );
   }
 }
 

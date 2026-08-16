@@ -16,7 +16,7 @@ function out(s = '') { process.stdout.write(s + '\n'); }
 function err(s = '') { process.stderr.write(s + '\n'); process.exitCode = 1; }
 
 function readStdin() {
-  try { return fs.readFileSync('/dev/stdin', 'utf8'); } catch { return ''; }
+  try { return fs.readFileSync(0, 'utf8'); } catch { return ''; }
 }
 
 function resolve(p) { return path.resolve(process.cwd(), p); }

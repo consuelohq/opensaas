@@ -43,6 +43,8 @@ import type {
 const require = createRequire(import.meta.url);
 const { syncTddEvidence, syncTestSelectionEvidence, syncValidationEvidence } = require('../task-workpad');
 const { recoverDurableTaskSession } = require('../task-session');
+const { readDurableTaskSessionMetadata, touchDurableTaskSessionMetadata } = require('../task-registry');
+const { getTaskWorktreeRoot } = require('../paths');
 
 type CanonicalManifestEntry = {
   kind: 'os-skill' | 'facade-tool';
@@ -77,6 +79,22 @@ type WorkSessionResolution =
   | { ok: false; code: 'WORK_SESSION_NOT_FOUND' | 'PERMISSION_DENIED' | 'VALIDATION_ERROR'; message: string };
 
 const runtimePackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+function refreshTaskSessionActivity(
+  entry: ToolManifestEntry,
+  resolution: TaskSessionResolution | null,
+  result: ToolResult<unknown>,
+  input: ToolInput,
+  env: NodeJS.ProcessEnv,
+): void {
+  if (!entry.capabilities.mutating || !resolution?.ok || !result.ok || input.dryRun === true) return;
+  try {
+    const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+    touchDurableTaskSessionMetadata(resolution.metadata.taskSession, home ? { home } : {});
+  } catch (error: unknown) {
+    process.stderr.write(`warning: failed to refresh durable task activity ${resolution.metadata.taskSession}: ${getErrorMessage(error)}\n`);
+  }
+}
+
 const MAX_LOG_COMMAND_CHARS = 4000;
 const WORK_SESSION_FS_TOOLS = new Set(['fs.write', 'fs.apply_patch', 'fs.trash']);
 const WORK_SESSION_AUTHORITY_TOOLS = new Set([...WORK_SESSION_FS_TOOLS, 'code.call']);
@@ -359,7 +377,10 @@ export async function executeTool<TData = unknown>(
       requestId,
       options,
     });
-    if (internalResult) return internalResult;
+    if (internalResult) {
+      refreshTaskSessionActivity(entry, taskSessionResolution, internalResult as ToolResult<unknown>, scopedInput, env);
+      return internalResult;
+    }
 
     const branchResolution = resolveBranchIfNeeded(entry, scopedInput, cwd, env, options);
     if (!branchResolution.ok) {
@@ -453,6 +474,7 @@ export async function executeTool<TData = unknown>(
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
       };
       maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
+      refreshTaskSessionActivity(entry, taskSessionResolution, result as ToolResult<unknown>, commandInput, env);
       logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
         input,
         resolvedInput: commandInput,
@@ -475,6 +497,7 @@ export async function executeTool<TData = unknown>(
       now: options.now,
     });
     maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
+    refreshTaskSessionActivity(entry, taskSessionResolution, result as ToolResult<unknown>, commandInput, env);
     logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
       input,
       resolvedInput: commandInput,
@@ -1158,8 +1181,22 @@ function addSessionCandidates(candidates: Array<{ path: string; warn: boolean }>
 function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.ProcessEnv): TaskSessionMetadata | null {
   try {
     const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
-    const durable = recoverDurableTaskSession(taskSession, home ? { home } : {});
-    if (durable && isTaskSessionMetadata(durable, taskSession)) return durable;
+    const registryOptions = home ? { home } : {};
+    const durable = readDurableTaskSessionMetadata(taskSession, registryOptions);
+    const durableWorktree = durable?.worktreePath || durable?.worktree;
+    if (
+      durable
+      && durable.status === 'active'
+      && typeof durableWorktree === 'string'
+      && fs.existsSync(durableWorktree)
+      && isTaskSessionMetadata(durable, taskSession)
+    ) {
+      return durable;
+    }
+    if (durable) {
+      const recovered = recoverDurableTaskSession(taskSession, registryOptions);
+      if (recovered && isTaskSessionMetadata(recovered, taskSession)) return recovered;
+    }
   } catch (error: unknown) {
     process.stderr.write(`warning: failed to recover durable task session ${taskSession}: ${getErrorMessage(error)}\n`);
   }
@@ -1171,8 +1208,13 @@ function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.P
     addSessionCandidates(candidates, env.TASK_WORKTREE, true);
   }
 
-  const absoluteWorktreeRoot = getWorktreeRoot(env);
-  if (fs.existsSync(absoluteWorktreeRoot)) {
+  const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+  const taskWorktreeRoots = Array.from(new Set([
+    getTaskWorktreeRoot(undefined, env),
+    getWorktreeRoot(env),
+  ].filter((value): value is string => typeof value === 'string' && value.length > 0)));
+  for (const absoluteWorktreeRoot of taskWorktreeRoots) {
+    if (!fs.existsSync(absoluteWorktreeRoot)) continue;
     for (const name of fs.readdirSync(absoluteWorktreeRoot)) {
       if (!name.startsWith('task-')) continue;
       addSessionCandidates(candidates, path.join(absoluteWorktreeRoot, name), false);

@@ -246,7 +246,7 @@ await workspace.call({
   },
 })
 That should return VALIDATION_ERROR.
-If a task-scoped call returns TASK_SESSION_REQUIRED or TASK_SESSION_NOT_FOUND, first check that the exact taskSession returned by session.start({ kind: "task" }) was passed at the top level. Do not switch to branch-threading, root task metadata, code.call, code.call, or host shell fallback as the default recovery path.
+If a task-scoped call returns TASK_SESSION_REQUIRED or TASK_SESSION_NOT_FOUND, first check that the exact taskSession returned by session.start({ kind: "task" }) was passed at the top level. Do not switch to branch-threading, root task metadata, code.call, or host shell fallback as the default recovery path.
 Inside code.run and batch, pass taskSession on the outer workspace.call. Nested workspace.* calls inherit task context.
 
 

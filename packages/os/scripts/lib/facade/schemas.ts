@@ -412,15 +412,14 @@ const SessionTaskStartInput = z.object({
   kind: z.literal('task'),
   area: optionalString,
   stream: optionalString,
-  title: optionalString,
-  workflow: z.enum(['task', 'artifacts', 'media']).optional(),
+  title: z.string().min(1),
+  workflow: z.enum(['task']).optional(),
   description: optionalString,
-  pr: prRefInput.optional(),
-  github: optionalString,
   bodyFile: optionalString,
   startFrom: z.enum(['main', 'stream']).optional(),
-}).refine((input) => Boolean(input.area || input.stream || input.pr || input.github), {
-  message: 'provide area/stream or a PR reference',
+  createStream: z.boolean().optional(),
+}).strict().refine((input) => Boolean(input.area || input.stream), {
+  message: 'provide area or stream',
   path: ['area'],
 });
 
@@ -429,7 +428,7 @@ const SessionWorkStartInput = z.object({
   ...dryRunField,
   kind: z.literal('work'),
   path: z.string().min(1),
-});
+}).strict();
 
 export const SessionStartInput = z.union([
   SessionTaskStartInput,

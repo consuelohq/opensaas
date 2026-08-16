@@ -1,5 +1,6 @@
 const TASK_FLOW_ANCHOR = 'stream.context → session.start({ kind: \"task\" }) → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish';
-const TASK_SESSION_ANCHOR = 'For task-scoped work, `session.start({ kind: \"task\" })` returns `data.taskSession`. `task.start` remains a compatibility alias.';
+const TASK_SESSION_ANCHOR = 'For task-scoped work, `session.start({ kind: \"task\" })` returns `data.taskSession`.';
+const TASK_SESSION_COMPATIBILITY_ANCHOR = '`session.start({ kind: \"task\" })` is the canonical constructor for repository tasks. `task.start` remains a compatibility alias for existing callers.';
 const TOP_LEVEL_SESSION_ANCHOR = 'Pass `taskSession` at the top level of every task-scoped `os.call`:';
 const TEST_FIRST_ANCHOR = 'For non-trivial code changes, implementation must not begin until the scoped workpad contains a Test-first contract and either:';
 const FOCUSED_RED_ANCHOR = 'a focused test has been written or updated and run red, or';
@@ -72,6 +73,7 @@ function buildAfterTaskStart(options) {
     skillAnchors: [
       TASK_FLOW_ANCHOR,
       TASK_SESSION_ANCHOR,
+      TASK_SESSION_COMPATIBILITY_ANCHOR,
       TOP_LEVEL_SESSION_ANCHOR,
       WORKPAD_ANCHOR,
       'Agents must update the workpad at these checkpoints:',
@@ -166,6 +168,7 @@ function buildUnknownTaskTool(options) {
     skillAnchors: [
       'Use `tools.search` when a workflow/provider/tool is not in core steering.',
       TASK_SESSION_ANCHOR,
+      TASK_SESSION_COMPATIBILITY_ANCHOR,
       TOP_LEVEL_SESSION_ANCHOR,
     ],
     actions: [

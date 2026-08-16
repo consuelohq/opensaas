@@ -11,13 +11,16 @@ describe('session integration guidance', () => {
     const seniorEngineer = read('packages/workspace/senior-engineer.md');
     const steering = read('packages/os/steering/system_prompt.md');
 
-    for (const source of [taskSkill, seniorEngineer, steering]) {
-      expect(source).toContain('session.start');
-      expect(source).toContain('kind');
-      expect(source).toContain('task.start');
-    }
-    expect(taskSkill).toContain('compatibility alias');
-    expect(seniorEngineer).toContain('compatibility alias');
+    const canonicalTaskStart = 'session.start({ kind: "task" })';
+    const compatibilityAlias = '`task.start` remains a compatibility alias';
+    expect(taskSkill).toContain(canonicalTaskStart);
+    expect(taskSkill).toContain(compatibilityAlias);
+    expect(seniorEngineer).toContain(canonicalTaskStart);
+    expect(seniorEngineer).toContain(compatibilityAlias);
+    expect(steering).toContain('call `session.start({ kind: "task" })` directly');
+    expect(steering).toContain('`task.start` is a compatibility alias');
+    expect(taskSkill).toContain('session.start({ kind: "work", path })');
+    expect(taskSkill).toContain('must never be used to edit the managed default repository or a registered task worktree');
   });
 
 

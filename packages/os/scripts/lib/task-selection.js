@@ -137,16 +137,26 @@ function findActiveTaskCandidates(repoRoot) {
   return tasks;
 }
 
-function findActiveTaskResult(repoRoot, selector = {}) {
+function findActiveTaskResult(repoRoot, selector = {}, options = {}) {
   const result = selectTaskFromCandidatesResult(findActiveTaskCandidates(repoRoot), selector);
-  if (!result.task || !selector.taskSession) return result;
+  if (!selector.taskSession) return result;
   try {
-    const recovered = recoverDurableTaskSession(selector.taskSession);
-    if (recovered) {
+    const recoverTaskSession = options.recoverTaskSession || recoverDurableTaskSession;
+    const recovered = recoverTaskSession(selector.taskSession);
+    if (!recovered) return result;
+    if (result.task) {
       result.task.meta = { ...result.task.meta, ...recovered };
       result.task.worktreePath = recovered.worktreePath || result.task.worktreePath;
+      return result;
     }
-    return result;
+    return {
+      task: {
+        worktreePath: recovered.worktreePath || recovered.worktree,
+        meta: recovered,
+        branch: recovered.taskBranch || recovered.branch,
+      },
+      error: null,
+    };
   } catch (error) {
     return {
       task: null,
