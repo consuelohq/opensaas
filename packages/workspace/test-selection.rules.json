@@ -520,7 +520,9 @@
         "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
         "packages/os/scripts/server/main.ts",
         "packages/os/scripts/server/worker-runtime-state.ts",
-        "packages/os/tests/health-readiness.test.ts"
+        "packages/os/tests/health-readiness.test.ts",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/tests/runtime-ingress-dependency-convergence.test.ts"
       ],
       "tests": [
         {
@@ -546,7 +548,8 @@
             "packages/os/tests/windows-platform.test.ts",
             "packages/os/tests/tool-manifest.test.ts",
             "packages/os/tests/tool-package-layout.test.ts",
-            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts"
           ]
         },
         {
@@ -569,7 +572,7 @@
           ]
         }
       ],
-      "reason": "Lifecycle updater, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests."
+      "reason": "Lifecycle updater, managed ingress dependency convergence, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests."
     },
     {
       "id": "os-launcher-copy-interaction",

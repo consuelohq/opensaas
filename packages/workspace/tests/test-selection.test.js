@@ -1042,6 +1042,8 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/scripts/lifecycle.ts',
       '--changed-file',
+      'packages/os/scripts/bootstrap.sh',
+      '--changed-file',
       'packages/os/scripts/lib/lifecycle/service.ts',
       '--changed-file',
       'packages/os/scripts/lib/platforms/linux.ts',
@@ -1073,6 +1075,7 @@ describe('test selection registry', () => {
     );
     expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
       'packages/os/tests/lifecycle-restart-contract.test.ts',
+      'packages/os/tests/runtime-ingress-dependency-convergence.test.ts',
       'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
       'packages/os/tests/linux-platform.test.ts',
     ]));

@@ -105,6 +105,7 @@ export function createReloadServiceController(input: {
   const runtimeScripts = (runtimeRoot: string) => ({
     reloadScript: resolve(runtimeRoot, 'scripts', 'consuelo-reload.js'),
     daemonInstaller: resolve(runtimeRoot, 'scripts', 'install-system-daemons.sh'),
+    dependencyBootstrap: resolve(runtimeRoot, 'scripts', 'bootstrap.sh'),
     caddyReconcileScript: resolve(
       runtimeRoot,
       'scripts',
@@ -161,8 +162,25 @@ export function createReloadServiceController(input: {
     async restart(options = {}) {
       try {
         const runtimeRoot = options.runtimeRoot ?? activeRuntimeRoot;
-        const { reloadScript, daemonInstaller } = runtimeScripts(runtimeRoot);
+        const { reloadScript, daemonInstaller, dependencyBootstrap } = runtimeScripts(runtimeRoot);
         if (platform === 'darwin') {
+          const dependencies = await run(
+            'bash',
+            [dependencyBootstrap, '--runtime-dependencies-only'],
+            input.environment ?? process.env,
+          );
+          if (dependencies.exitCode !== 0) {
+            const legacyRollbackCompatible = options.allowDestructiveFallback
+              && /unknown option:\s*--runtime-dependencies-only/i.test(
+                `${dependencies.stdout}\n${dependencies.stderr}`,
+              );
+            if (!legacyRollbackCompatible) {
+              throw commandFailure(
+                dependencies,
+                `runtime dependency reconciliation exited ${dependencies.exitCode}`,
+              );
+            }
+          }
           const definitions = await run(
             'bash',
             [daemonInstaller, '--definitions-only', '--quiet'],
