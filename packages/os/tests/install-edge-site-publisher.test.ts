@@ -140,6 +140,9 @@ contractDescribe('install edge site publisher', () => {
       'https://internal.consuelohq.com/secrets',
     ]);
     expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'traces', 'traces', 'traces', 'docs', 'configuration', 'tools', 'nodes', 'environments', 'secrets']);
+    expect(new Set(first.snapshots.map((snapshot) => snapshot.versionId))).toEqual(
+      new Set([first.versionId]),
+    );
     expect(first.routeSql).toMatch(/INSERT INTO workspace_route_registry/i);
     expect(first.routeSql).toMatch(/ON CONFLICT\(hostname\) DO UPDATE/i);
     expect(first.routeSql).not.toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);

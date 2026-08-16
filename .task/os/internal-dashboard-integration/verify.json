@@ -1,0 +1,64 @@
+{
+  "result": "fail",
+  "publishValid": false,
+  "mode": "full",
+  "branch": "task/os/internal-dashboard-integration",
+  "base": "origin/stream/os",
+  "headSha": "ed55f290d5f4b2b2e5784d39be2e8a04f21422a6",
+  "changeHash": "81418c75aba551323963c7ee4afbaa6b675aa40289e0724393d551ad7dd4a554",
+  "changedFiles": [
+    ".github/workflows/consuelo-os-runtime-publish.yaml",
+    "packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts",
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/docs/install-control-plane.md",
+    "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+    "packages/os/scripts/lib/install-control-plane-d1.ts",
+    "packages/os/scripts/lib/install-control-plane-r2.ts",
+    "packages/os/scripts/lib/install-control-plane.ts",
+    "packages/os/scripts/lib/install-telemetry-contract.ts",
+    "packages/os/scripts/lib/internal-user-dashboard.ts",
+    "packages/os/scripts/lib/lifecycle/service.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+    "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/internal-dashboard-integration.test.ts",
+    "packages/os/tests/lifecycle-restart-contract.test.ts",
+    "packages/os/tests/platform-cloudflare-provisioning-contract.test.ts",
+    "packages/twenty-server/src/engine/core-modules/auth/services/auth.service.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/auth/services/auth.service.ts"
+  ],
+  "verifiedAt": "2026-08-13T19:56:19.702Z",
+  "review": {
+    "skipped": false,
+    "passed": false
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "risks": [
+      {
+        "category": "migration",
+        "file": "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+        "severity": "warning",
+        "message": "migration file changed"
+      },
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": [],
+    "warnOnly": false
+  },
+  "docs": {
+    "skipped": true,
+    "passed": true,
+    "files": [],
+    "commands": []
+  },
+  "commandVersion": 1
+}

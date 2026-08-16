@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c3d431f6d847",
+  "tmuxSession": "opensaas-os-add-selectable-managed-cloud-plans-and-stripe-ch-c3d431f6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-selectable-managed-cloud-plans-and-stripe-checkout",
+  "branch": "task/os/add-selectable-managed-cloud-plans-and-stripe-checkout",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-selectable-managed-cloud-plans-and-stripe-checkout",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-selectable-managed-cloud-plans-and-stripe-checkout",
+  "prNumber": 1969,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1969",
+  "createdAt": "2026-08-14T21:26:06.039Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-selectable-managed-cloud-plans-and-stripe-checkout/.task/os/add-selectable-managed-cloud-plans-and-stripe-checkout/session.json"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-launcher-existing-account-auth-routing",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1962,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1962",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1962",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1962/fix-launcher-existing-account-auth-routing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1962",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1962/fix-launcher-existing-account-auth-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-existing-account-auth-routing",
+  "taskSession": "tsk_694223d91b09",
+  "tmuxSession": "opensaas-os-fix-launcher-existing-account-auth-routing-694223d9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-existing-account-auth-routing/.task/os/fix-launcher-existing-account-auth-routing/session.json",
+  "createdAt": "2026-08-14T18:05:00.088Z"
+}

@@ -6,13 +6,33 @@ import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 
 const require = createRequire(import.meta.url);
-const { assertApiPushBaseIsSynced, resolveApiPushSyncTarget, synchronizeApiPushedTaskBranch } = require('../scripts/lib/git');
+const { assertApiPushBaseIsSynced, getTrackedChanges, resolveApiPushSyncTarget, synchronizeApiPushedTaskBranch } = require('../scripts/lib/git');
 
 function git(cwd: string, args: string[], input?: string): string {
   return execFileSync('git', args, { cwd, encoding: 'utf8', input }).trim();
 }
 
 describe('task.push local branch synchronization', () => {
+  it('parses NUL-delimited rename records without inventing a truncated second path', () => {
+    const root = mkdtempSync(join(tmpdir(), 'task-push-rename-status-'));
+    try {
+      git(root, ['init']);
+      git(root, ['config', 'user.email', 'test@example.com']);
+      git(root, ['config', 'user.name', 'Test']);
+      mkdirSync(join(root, 'packages', 'documentation'), { recursive: true });
+      writeFileSync(join(root, 'packages', 'documentation', 'other-agents.mdx'), 'before\n');
+      git(root, ['add', '.']);
+      git(root, ['commit', '-m', 'base']);
+      git(root, ['mv', 'packages/documentation/other-agents.mdx', 'packages/documentation/renamed-agents.mdx']);
+
+      expect(getTrackedChanges(root)).toEqual([
+        { path: 'packages/documentation/renamed-agents.mdx', status: 'R', deleted: false },
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('should keep GitHub credentials out of the fetch URL when the selected repository differs from origin', () => {
     const root = mkdtempSync(join(tmpdir(), 'task-push-sync-target-'));
     const branch = 'task/workspace-agents/example';

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-rollback-compatibility-after-stable-topology",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2115,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2115",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2115",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2115/finish-rollback-compatibility-after-stable-topology",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2115",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2115/finish-rollback-compatibility-after-stable-topology",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-rollback-compatibility-after-stable-topology",
+  "taskSession": "tsk_92f163a23d69",
+  "tmuxSession": "opensaas-os-finish-rollback-compatibility-after-stable-topol-92f163a2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-rollback-compatibility-after-stable-topology/.task/os/finish-rollback-compatibility-after-stable-topology/session.json",
+  "createdAt": "2026-08-16T03:26:14.100Z"
+}

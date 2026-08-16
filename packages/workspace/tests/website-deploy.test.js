@@ -84,11 +84,13 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(workflow).toContain('- docs');
   expect(workflow).toContain('- website');
   expect(workflow).toContain('- os');
+  expect(workflow).toContain('- os-device-auth');
   expect(workflow.split('environment: consuelo / production')).toHaveLength(4);
   expect(workflow).toContain('needs: [deploy-docs, deploy-website]');
   expect(workflow).toContain("inputs.target == 'docs'");
   expect(workflow).toContain("inputs.target == 'website'");
   expect(workflow).toContain("inputs.target == 'os'");
+  expect(workflow).toContain("inputs.target == 'os-device-auth'");
   expect(workflow).toContain("needs.deploy-docs.result == 'success'");
   expect(workflow).toContain("needs.deploy-docs.result == 'skipped'");
   expect(workflow).toContain("needs.deploy-website.result == 'success'");
@@ -97,9 +99,34 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(workflow).toContain('bun run website:deploy -- --branch main --json');
   expect(workflow).toContain('bun install --global wrangler@4.105.0');
   expect(workflow).toContain('bun run os:release');
+  expect(workflow).toContain('bun run os:release -- --device-auth-only');
+  const osReleaseScript = readFileSync(
+    join(repoRoot, 'packages/workspace/scripts/os-release.ts'),
+    'utf8',
+  );
+  const rootPackage = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
+  const osPackage = JSON.parse(
+    readFileSync(join(repoRoot, 'packages/os/package.json'), 'utf8'),
+  );
+  expect(rootPackage.scripts['os:release-workspace-edge']).toBe(
+    'bun packages/workspace/scripts/os-release-workspace-edge.ts',
+  );
+  expect(osPackage.scripts['cloudflare:workspace-edge:migrate']).toContain('--remote');
+  expect(osReleaseScript).toContain("'os:release-workspace-edge'");
+  expect(osReleaseScript.indexOf("runScript('os:release-device-auth', options)")).toBeLessThan(
+    osReleaseScript.lastIndexOf("'os:release-workspace-edge'"),
+  );
+  expect(osReleaseScript).toContain('CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN');
+  expect(osReleaseScript).toContain('CLOUDFLARE_API_TOKEN: workspaceEdgeToken');
   expect(workflow).toContain('Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID');
   expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_PAGES_API_TOKEN');
   expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN');
+  expect(workflow).toContain(
+    'CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN || secrets.CLOUDFLARE_OS_PROVISIONING_API_TOKEN }}',
+  );
+  expect(workflow).toContain(
+    'OS_MANAGED_CLOUD_PROVISIONER_SECRET: ${{ secrets.OS_MANAGED_CLOUD_PROVISIONER_SECRET }}',
+  );
   expect(workflow).toContain('name: Sync Consuelo OS connector provisioning secret');
   expect(workflow).toContain(
     'Missing GitHub Actions secret CLOUDFLARE_OS_PROVISIONING_API_TOKEN',
@@ -116,7 +143,7 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   const osReleaseIndex = workflow.indexOf('name: Release Consuelo OS');
   expect(provisioningSecretSyncIndex).toBeGreaterThan(-1);
   expect(osReleaseIndex).toBeGreaterThan(-1);
-  expect(provisioningSecretSyncIndex).toBeLessThan(osReleaseIndex);
+  expect(osReleaseIndex).toBeLessThan(provisioningSecretSyncIndex);
   expect(workflow).toContain('CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}');
   expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}');
   expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}');

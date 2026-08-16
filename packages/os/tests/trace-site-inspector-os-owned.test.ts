@@ -221,12 +221,15 @@ describe('OS-owned Trace Burn table formatting', () => {
 
   it('owns older/newer cursor URLs and parses authenticated history pages', () => {
     const history = traceHistoryUrl('id:row_42', 250);
+    const search = traceHistoryUrl('latest', 100, 'branch:feature/search date:2026-08-13');
     const live = traceLiveUrl('000000000042', 25);
 
     expect(history).toContain('/gateway/traces/recent?');
     expect(history).toContain('direction=older');
     expect(history).toContain('cursor=id%3Arow_42');
     expect(history).toContain('includeRawPayload=true');
+    expect(search).toContain('cursor=latest');
+    expect(search).toContain('query=branch%3Afeature%2Fsearch+date%3A2026-08-13');
     expect(live).toContain('direction=newer');
     expect(live).toContain('cursor=000000000042');
 

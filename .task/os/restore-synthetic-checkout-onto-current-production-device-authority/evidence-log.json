@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/restore-synthetic-checkout-onto-current-production-device-authority",
+  "events": [
+    {
+      "id": "5c7535ab-3cda-4204-acce-388f0bba94d2",
+      "occurred_at": "2026-08-15T04:51:31.236Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/managed-cloud-checkout-observability.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restore-synthetic-checkout-onto-current-production-device-authority",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restore-synthetic-checkout-onto-current-production-device-authority"
+      }
+    },
+    {
+      "id": "84b3e5ba-2922-4a9f-a280-1998e9b44069",
+      "occurred_at": "2026-08-15T04:51:38.524Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-web-auth-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restore-synthetic-checkout-onto-current-production-device-authority",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restore-synthetic-checkout-onto-current-production-device-authority"
+      }
+    },
+    {
+      "id": "f834ed2a-3773-44ac-a957-acae29cec3e3",
+      "occurred_at": "2026-08-15T04:53:06.159Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restore-synthetic-checkout-onto-current-production-device-authority",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restore-synthetic-checkout-onto-current-production-device-authority"
+      }
+    },
+    {
+      "id": "345684ce-d596-4b9b-823b-860b31497dd9",
+      "occurred_at": "2026-08-15T04:55:28.310Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-universal-login.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restore-synthetic-checkout-onto-current-production-device-authority",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restore-synthetic-checkout-onto-current-production-device-authority"
+      }
+    },
+    {
+      "id": "3cc69b1b-e5d7-4c59-8f8d-a2abda99ad2f",
+      "occurred_at": "2026-08-15T05:02:05.049Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restore-synthetic-checkout-onto-current-production-device-authority",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restore-synthetic-checkout-onto-current-production-device-authority"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T05:02:05.109Z"
+}

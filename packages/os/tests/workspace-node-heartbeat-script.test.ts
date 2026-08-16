@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { LocalAgentDetection } from '../scripts/lib/local-agent-connectivity';
 import { createGatewaySecurityConfig } from '../scripts/lib/security-gateway';
+import { generateWorkspaceDeviceKeyPair } from '../scripts/lib/workspace-device-login-client';
 import {
   reconcileHeartbeatEdgeProxyAuth,
   resolveHeartbeatConnectorStatus,
@@ -161,6 +162,88 @@ describe('workspace node heartbeat script', () => {
         reason: 'connector_health_failed',
       });
       expect(fetchCalls).toBe(1);
+    } finally {
+      fs.rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('persists the authenticated read-only workspace snapshot for native node discovery', async () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-heartbeat-snapshot-'));
+    const generated = path.join(home, 'node', 'security', 'generated');
+    fs.mkdirSync(generated, { recursive: true });
+    const configPath = path.join(generated, 'workspace-node-heartbeat.json');
+    const keys = generateWorkspaceDeviceKeyPair();
+    fs.writeFileSync(configPath, JSON.stringify({
+      authorityOrigin: 'https://os.consuelohq.com',
+      workspaceId: 'workspace_123',
+      nodeId: 'node_home',
+      connectorStatus: 'connected',
+      capabilities: ['mcp'],
+      publicKeyJwk: keys.publicKeyJwk,
+      signingKeyJwk: keys.signingKeyJwk,
+    }));
+    try {
+      await sendWorkspaceNodeHeartbeatFromConfig(configPath, {
+        detectAgents: () => [],
+        fetchImpl: async () => Response.json({
+          nodeId: 'node_home',
+          presence: 'online',
+          routeReady: true,
+          workspace: {
+            workspaceId: 'workspace_123',
+            workspaceHost: 'workspace-123.consuelohq.com',
+            currentNodeId: 'node_home',
+            defaultNodeId: 'cloud_1',
+            nodes: [
+              {
+                workspaceId: 'workspace_123',
+                nodeId: 'node_home',
+                displayName: 'Mac Mini',
+                role: 'home',
+                platform: 'darwin',
+                architecture: 'arm64',
+                channel: 'canary',
+                capabilities: ['mcp'],
+                agents: [],
+                createdAt: '2026-08-14T20:00:00.000Z',
+                lastSeenAt: '2026-08-14T22:00:00.000Z',
+                presence: 'online',
+                state: 'active',
+              },
+              {
+                workspaceId: 'workspace_123',
+                nodeId: 'cloud_1',
+                displayName: 'Cloud node',
+                role: 'member',
+                platform: 'linux',
+                architecture: 'x64',
+                channel: 'canary',
+                capabilities: ['mcp', 'tools'],
+                agents: null,
+                createdAt: '2026-08-14T20:30:00.000Z',
+                lastSeenAt: '2026-08-14T22:00:00.000Z',
+                presence: 'online',
+                state: 'active',
+              },
+            ],
+          },
+        }),
+      });
+
+      const snapshotPath = path.join(home, 'node', 'cache', 'workspace-nodes.json');
+      const stored = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
+      expect(stored).toMatchObject({
+        version: 1,
+        kind: 'consuelo-workspace-node-snapshot',
+        workspaceId: 'workspace_123',
+        currentNodeId: 'node_home',
+        workspace: {
+          defaultNodeId: 'cloud_1',
+          nodes: [{ nodeId: 'node_home' }, { nodeId: 'cloud_1' }],
+        },
+      });
+      expect(fs.statSync(snapshotPath).mode & 0o077).toBe(0);
+      expect(JSON.stringify(stored)).not.toMatch(/token|secret|connectorId|publicKeyThumbprint/i);
     } finally {
       fs.rmSync(home, { recursive: true, force: true });
     }
