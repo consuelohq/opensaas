@@ -112,13 +112,18 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
     'bun packages/workspace/scripts/os-release-workspace-edge.ts',
   );
   expect(osPackage.scripts['cloudflare:workspace-edge:migrate']).toContain('--remote');
-  expect(osReleaseScript).toContain("runScript('os:release-workspace-edge', options)");
+  expect(osReleaseScript).toContain("'os:release-workspace-edge'");
   expect(osReleaseScript.indexOf("runScript('os:release-device-auth', options)")).toBeLessThan(
-    osReleaseScript.indexOf("runScript('os:release-workspace-edge', options)"),
+    osReleaseScript.lastIndexOf("'os:release-workspace-edge'"),
   );
+  expect(osReleaseScript).toContain('CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN');
+  expect(osReleaseScript).toContain('CLOUDFLARE_API_TOKEN: workspaceEdgeToken');
   expect(workflow).toContain('Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID');
   expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_PAGES_API_TOKEN');
   expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN');
+  expect(workflow).toContain(
+    'CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN || secrets.CLOUDFLARE_OS_PROVISIONING_API_TOKEN }}',
+  );
   expect(workflow).toContain(
     'OS_MANAGED_CLOUD_PROVISIONER_SECRET: ${{ secrets.OS_MANAGED_CLOUD_PROVISIONER_SECRET }}',
   );

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b372620f6b02",
+  "tmuxSession": "opensaas-os-sync-os-stream-with-main-after-mcp-continuity-me-b372620f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-os-stream-with-main-after-mcp-continuity-merge",
+  "branch": "task/os/sync-os-stream-with-main-after-mcp-continuity-merge",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-after-mcp-continuity-merge",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-after-mcp-continuity-merge",
+  "prNumber": 2098,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2098",
+  "createdAt": "2026-08-16T02:11:30.329Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-after-mcp-continuity-merge/.task/os/sync-os-stream-with-main-after-mcp-continuity-merge/session.json"
+}

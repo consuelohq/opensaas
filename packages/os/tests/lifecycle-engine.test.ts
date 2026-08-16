@@ -276,6 +276,7 @@ function createEngine(input: {
   stagingFailure?: Error;
   onboarding?: () => Promise<void>;
   runtime?: LifecycleRuntimeMaterializer;
+  visibleUserRoot?: string;
 } = {}): LifecycleEngine & { serviceOperations: string[]; onboardingCalls: number } {
   const events = input.events ?? [];
   const serviceOperations: string[] = [];
@@ -330,6 +331,7 @@ function createEngine(input: {
       },
     },
     runtime: input.runtime,
+    visibleUserRoot: input.visibleUserRoot,
     onboarding: input.onboarding ?? (async () => {
       onboardingCalls += 1;
       writeInstalledIdentity();
@@ -516,6 +518,27 @@ describe('unified lifecycle engine', () => {
       'health',
       'connector-readiness',
     ]);
+  });
+
+  it('reconciles release-managed user content when update is already current', async () => {
+    const visibleUserRoot = join(tempHome, 'visible-user');
+    await createEngine({ bundle: bundle100, visibleUserRoot }).install({ channel: 'dev' });
+    const managedExample = join(visibleUserRoot, 'Steering', 'example-system.md');
+    const expected = readFileSync(managedExample, 'utf8');
+    writeFileSync(managedExample, 'stale managed content\n');
+    const current = createEngine({
+      bundle: bundle100,
+      publicReadiness: true,
+      visibleUserRoot,
+    });
+
+    await expect(current.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.0.0',
+    });
+
+    expect(readFileSync(managedExample, 'utf8')).toBe(expected);
   });
 
   it('keeps current-version check-only updates free of hosted reconciliation side effects', async () => {

@@ -316,6 +316,16 @@ describe('test selection registry', () => {
       'packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts',
       '--changed-file',
       'packages/os/scripts/lib/settings-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/nodes-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/managed-cloud-public-pricing.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts',
+      '--changed-file',
+      'packages/os/tests/managed-cloud-public-pricing.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -941,7 +951,7 @@ describe('test selection registry', () => {
   });
 
 
-  it('routes daemon startup managed Sites refresh through focused lifecycle coverage', () => {
+  it('routes daemon startup managed Sites refresh through focused lifecycle handoff coverage', () => {
     const data = json(run([
       'check',
       '--changed-file',
@@ -950,17 +960,17 @@ describe('test selection registry', () => {
     ]));
 
     expect(data.matchedRules.map((rule) => rule.id)).toContain(
-      'os-lifecycle-legacy-mcp-scrub',
+      'os-lifecycle-update-handoff',
     );
     expect(data.selectedSuites.map((suite) => suite.name)).not.toContain(
       '@consuelo/os package test',
     );
     const lifecycleSuite = data.selectedSuites.find(
-      (suite) => suite.ruleId === 'os-lifecycle-legacy-mcp-scrub',
+      (suite) => suite.ruleId === 'os-lifecycle-update-handoff',
     );
     expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
-      'tests/finish-line-lifecycle-contract.test.ts',
-      'tests/daemon-bun-path.test.ts',
+      'packages/os/tests/lifecycle-ingress-continuity.test.ts',
+      'packages/os/tests/daemon-bun-path.test.ts',
     ]));
   });
 

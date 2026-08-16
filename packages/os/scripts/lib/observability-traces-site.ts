@@ -114,6 +114,8 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
       const feedUrl = root.dataset.feedUrl || '/gateway/traces/recent';
       const summaryUrl = root.dataset.summaryUrl || '/gateway/traces/summary';
       const eventsUrl = root.dataset.eventsUrl || '/gateway/traces/events';
+      const TRACE_PREFETCH_KEY = 'consuelo:tracing-prefetch:v1';
+      const TRACE_PREFETCH_MAX_AGE_MS = 20000;
       const fallbackFeed = { meta: { generatedAt: new Date(0).toISOString(), rowCount: 0, failureCount: 0, tokens: 0, cost: 0 }, rows: [], failures: [] };
       const escapeHtml = (value) => String(value == null ? '' : value).replace(/[&<>\"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char] || char);
       const first = (...values) => values.find((value) => value !== undefined && value !== null && String(value).length > 0);
@@ -194,6 +196,22 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
           failures: Array.isArray(data.failures) ? data.failures : []
         };
       };
+      const readPrefetchedTraceFeed = () => {
+        try {
+          const raw = sessionStorage.getItem(TRACE_PREFETCH_KEY);
+          sessionStorage.removeItem(TRACE_PREFETCH_KEY);
+          if (!raw) return null;
+          const cached = JSON.parse(raw);
+          if (!cached || typeof cached !== 'object') return null;
+          if (Date.now() - Number(cached.savedAt || 0) > TRACE_PREFETCH_MAX_AGE_MS) return null;
+          if (!cached.payload || typeof cached.payload !== 'object') return null;
+          const feed = normalizeGatewayFeed(cached.payload, {});
+          return Array.isArray(feed.rows) && feed.rows.length ? feed : null;
+        } catch {
+          try { sessionStorage.removeItem(TRACE_PREFETCH_KEY); } catch {}
+          return null;
+        }
+      };
       const createState = (feed) => {
         const rows = (feed.rows || []).map(normalizeTraceRow);
         return { rows, failures: feed.failures || [], meta: feed.meta || {}, filters: { query: '', branch: null, tool: null, status: null }, selectedKey: null, selectedTrace: null, mode: 'list', page: 1, pageSize: 100, cursor: feed.cursor || 'cur_000', feedSignature: traceFeedSignature(Object.assign({}, feed, { rows })) };
@@ -233,7 +251,9 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         });
       };
       const pageRows = (rows, page, pageSize) => rows.slice((page - 1) * pageSize, page * pageSize);
-      let state = createState(fallbackFeed);
+      const prefetchedFeed = readPrefetchedTraceFeed();
+      let state = createState(prefetchedFeed || fallbackFeed);
+      if (prefetchedFeed) state.liveState = 'prefetched';
       const modal = root.querySelector('[data-trace-modal]');
       const shell = root.querySelector('.trace-shell');
       const set = (selector, text) => { const el = root.querySelector(selector); if (el) el.textContent = text; };
