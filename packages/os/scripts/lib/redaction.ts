@@ -5,6 +5,15 @@ const REDACTED_RAW_PAYLOAD = '[REDACTED_RAW_PAYLOAD]';
 const SENSITIVE_KEY_PATTERN = /(?:password|passphrase|secret|token|api[_-]?key|authorization|cookie|credential|private[_-]?key|client[_-]?secret|session|jwt)/i;
 const RAW_PAYLOAD_KEY_PATTERN = /^(?:raw|rawPayload|rawBody|requestBody|responseBody|body|payload)$/i;
 const SENSITIVE_QUERY_KEY_PATTERN = /(?:password|passphrase|secret|token|api[_-]?key|authorization|cookie|credential|private[_-]?key|client[_-]?secret|session|jwt)/i;
+const LOG_CORRELATION_STRING_KEYS = new Set([
+  'traceId',
+  'trace_id',
+  'mcpTraceId',
+  'mcp_trace_id',
+  'requestId',
+  'request_id',
+  'recordId',
+]);
 const TRACE_SAFE_STRING_KEYS = new Set([
   'traceId',
   'trace_id',
@@ -86,6 +95,7 @@ export function redactTraceText(value) {
 }
 
 function redactValueInternal(value, key, seen) {
+  if (key && LOG_CORRELATION_STRING_KEYS.has(key) && typeof value === 'string') return value;
   if (key && looksLikeSensitiveKey(key)) return REDACTED_SECRET;
   if (key && looksLikeRawPayloadKey(key)) {
     return {

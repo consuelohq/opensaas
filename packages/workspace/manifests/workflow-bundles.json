@@ -775,7 +775,7 @@
           "source": "workspace-tooling",
           "sourcePath": "packages/workspace/tooling/tool-manifest.json",
           "category": "task lifecycle",
-          "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+          "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
           "core": true,
           "definition": {
             "name": "task.start",
@@ -783,7 +783,7 @@
               "task",
               "start"
             ],
-            "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+            "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
             "category": "task lifecycle",
             "underlying": "workspace task.start",
             "capabilities": {
