@@ -78,6 +78,65 @@ function compactVoiChallenger(challenger) {
   };
 }
 
+function compactPromotionGate(gate) {
+  if (!gate) return null;
+  return {
+    gate_version: gate.gate_version ?? null,
+    status: gate.status ?? null,
+    target: gate.target ?? null,
+    promotion_eligible: Boolean(gate.promotion_eligible),
+    production_cutover: Boolean(gate.production_cutover),
+    blockers: Array.isArray(gate.blockers) ? gate.blockers.slice(0, 12) : [],
+    challenger_configuration: gate.challenger_configuration ? {
+      status: gate.challenger_configuration.status ?? null,
+      frozen: gate.challenger_configuration.frozen ?? null,
+      configuration_id: gate.challenger_configuration.configuration_id ?? null,
+      utility_profile_id: gate.challenger_configuration.utility_profile_id ?? null,
+      utility_scale_present: Boolean(gate.challenger_configuration.utility_scale_present),
+      utility_scale_valid: Boolean(gate.challenger_configuration.utility_scale_valid),
+      utility_scale_non_degenerate: Boolean(gate.challenger_configuration.utility_scale_non_degenerate),
+      read_cost_model_ready: Boolean(gate.challenger_configuration.read_cost_model_ready),
+    } : null,
+    local_challenger: gate.local_challenger ? {
+      status: gate.local_challenger.status ?? null,
+      net_voi: gate.local_challenger.net_voi ?? null,
+      has_shadow_recommendation: Boolean(gate.local_challenger.has_shadow_recommendation),
+      promotion_eligible: Boolean(gate.local_challenger.promotion_eligible),
+    } : null,
+    benchmark: gate.benchmark ? {
+      analysis_mode: gate.benchmark.analysis_mode ?? null,
+      planned_evaluated_case_count: gate.benchmark.planned_evaluated_case_count ?? null,
+      frozen: gate.benchmark.frozen ?? null,
+      independent_case_count: gate.benchmark.independent_case_count ?? null,
+      evaluated_case_count: gate.benchmark.evaluated_case_count ?? null,
+      relevance: gate.benchmark.relevance ? {
+        wins: gate.benchmark.relevance.wins ?? null,
+        losses: gate.benchmark.relevance.losses ?? null,
+        ties: gate.benchmark.relevance.ties ?? null,
+        discordant: gate.benchmark.relevance.discordant ?? null,
+        p_value: gate.benchmark.relevance.p_value ?? null,
+      } : null,
+      required_node: gate.benchmark.required_node ? {
+        regressions: gate.benchmark.required_node.regressions ?? null,
+      } : null,
+    } : null,
+    shadow: gate.shadow ? {
+      status: gate.shadow.status ?? null,
+      frozen: gate.shadow.frozen ?? null,
+      observation_count: gate.shadow.observation_count ?? null,
+      distinct_question_count: gate.shadow.distinct_question_count ?? null,
+      error_count: gate.shadow.error_count ?? null,
+      authority_violation_count: gate.shadow.authority_violation_count ?? null,
+    } : null,
+    local_shadow: gate.local_shadow ? {
+      observation_count: gate.local_shadow.observation_count ?? null,
+      distinct_question_count: gate.local_shadow.distinct_question_count ?? null,
+      error_count: gate.local_shadow.error_count ?? null,
+      authority_violation_count: gate.local_shadow.authority_violation_count ?? null,
+    } : null,
+  };
+}
+
 function formatExploreOutput(payload, detail = 'compact') {
   if (detail === 'full') return payload;
   if (detail !== 'compact') {
@@ -90,6 +149,7 @@ function formatExploreOutput(payload, detail = 'compact') {
     budget: payload.budget,
     policy: payload.policy || null,
     voi_challenger: compactVoiChallenger(payload.voi_challenger),
+    promotion_gate: compactPromotionGate(payload.promotion_gate),
     results: (payload.results || []).map(compactExploreResult),
     index_stats: compactIndexStats(payload.index_stats),
   };
@@ -99,6 +159,7 @@ module.exports = {
   COMPACT_CONNECTION_LIMIT,
   COMPACT_PREVIEW_LIMIT,
   compactExploreResult,
+  compactPromotionGate,
   compactVoiChallenger,
   formatExploreOutput,
 };

@@ -163,19 +163,30 @@ function evaluateVoiShadowBenchmark(cases, decisionsByCaseId = new Map()) {
   const rows = [];
   for (const benchmarkCase of cases) {
     const decision = decisionsByCaseId.get(benchmarkCase.id);
+    if (decision?.status !== 'evaluable_shadow') continue;
     const controlPath = decision?.control_action?.path || null;
-    const challengerPath = decision?.research_candidate?.path || null;
-    if (!controlPath || !challengerPath) continue;
+    if (!controlPath) continue;
+    const challengerPath = decision?.shadow_recommendation?.path || controlPath;
+    const challengerUsedFallback = !decision?.shadow_recommendation?.path;
     const labels = new Map((benchmarkCase.labels || []).map((label) => [label.path, label]));
     const controlLabel = labels.get(controlPath);
     const challengerLabel = labels.get(challengerPath);
+    const controlRelevance = Number(controlLabel?.relevance || 0);
+    const challengerRelevance = Number(challengerLabel?.relevance || 0);
+    const controlRequiredHit = Boolean(controlLabel?.required);
+    const challengerRequiredHit = Boolean(challengerLabel?.required);
     rows.push({
       id: benchmarkCase.id,
+      challengerConfigurationId: decision.challenger_configuration_id || null,
+      challengerStatus: decision.status,
+      challengerUsedFallback,
       agreement: controlPath === challengerPath,
-      controlRelevance: Number(controlLabel?.relevance || 0),
-      challengerRelevance: Number(challengerLabel?.relevance || 0),
-      controlRequiredHit: Boolean(controlLabel?.required),
-      challengerRequiredHit: Boolean(challengerLabel?.required),
+      controlRelevance,
+      challengerRelevance,
+      relevanceDelta: challengerRelevance - controlRelevance,
+      controlRequiredHit,
+      challengerRequiredHit,
+      requiredHitDelta: Number(challengerRequiredHit) - Number(controlRequiredHit),
     });
   }
 
@@ -188,6 +199,7 @@ function evaluateVoiShadowBenchmark(cases, decisionsByCaseId = new Map()) {
     challengerMeanRelevance: round(mean((row) => row.challengerRelevance), 12),
     controlRequiredHitRate: round(mean((row) => row.controlRequiredHit ? 1 : 0), 12),
     challengerRequiredHitRate: round(mean((row) => row.challengerRequiredHit ? 1 : 0), 12),
+    caseResults: rows,
     claim: 'Curated-label shadow comparison only; this does not estimate counterfactual task success or causal policy improvement.',
   };
 }

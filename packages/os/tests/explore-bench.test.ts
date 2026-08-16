@@ -18,7 +18,25 @@ const {
   evaluateVoiShadowBenchmark: (
     cases: BenchmarkCase[],
     decisions: Map<string, { control_action?: { path?: string | null }; research_candidate?: { path?: string | null } | null }>,
-  ) => Record<string, number>;
+  ) => {
+    caseCount: number;
+    evaluatedCaseCount: number;
+    agreementRate: number;
+    controlMeanRelevance: number;
+    challengerMeanRelevance: number;
+    controlRequiredHitRate: number;
+    challengerRequiredHitRate: number;
+    caseResults: Array<{
+      id: string;
+      agreement: boolean;
+      controlRelevance: number;
+      challengerRelevance: number;
+      relevanceDelta: number;
+      controlRequiredHit: boolean;
+      challengerRequiredHit: boolean;
+      requiredHitDelta: number;
+    }>;
+  };
   validateBenchmarkCases: (cases: BenchmarkCase[]) => {
     caseCount: number;
     labeledCaseCount: number;
@@ -119,8 +137,11 @@ describe('OS ExploreBench retrieval metrics', () => {
   it('scores E5 shadow actions against curated labels without inventing counterfactual outcomes', () => {
     const report = evaluateVoiShadowBenchmark(cases, new Map([
       ['auth-owner', {
+        status: 'evaluable_shadow',
+        challenger_configuration_id: 'test-e5-config-v1',
         control_action: { path: 'src/auth.test.ts' },
-        research_candidate: { path: 'src/auth.ts' },
+        research_candidate: { path: 'src/routes.ts' },
+        shadow_recommendation: { path: 'src/auth.ts' },
       }],
     ]));
 
@@ -130,5 +151,52 @@ describe('OS ExploreBench retrieval metrics', () => {
     expect(report.challengerMeanRelevance).toBe(3);
     expect(report.controlRequiredHitRate).toBe(0);
     expect(report.challengerRequiredHitRate).toBe(1);
+    expect(report.caseResults).toEqual([{
+      id: 'auth-owner',
+      challengerConfigurationId: 'test-e5-config-v1',
+      challengerStatus: 'evaluable_shadow',
+      challengerUsedFallback: false,
+      agreement: false,
+      controlRelevance: 1,
+      challengerRelevance: 3,
+      relevanceDelta: 2,
+      controlRequiredHit: false,
+      challengerRequiredHit: true,
+      requiredHitDelta: 1,
+    }]);
   });
+  it('scores the E5 policy action, falling back to E4 on abstention and excluding non-evaluable studies', () => {
+    const abstained = evaluateVoiShadowBenchmark([cases[0]], new Map([
+      ['auth-owner', {
+        status: 'evaluable_shadow',
+        challenger_configuration_id: 'test-e5-config-v1',
+        control_action: { path: 'src/auth.test.ts' },
+        research_candidate: { path: 'src/auth.ts' },
+        shadow_recommendation: null,
+      }],
+    ]));
+    expect(abstained.evaluatedCaseCount).toBe(1);
+    expect(abstained.caseResults[0]).toMatchObject({
+      challengerConfigurationId: 'test-e5-config-v1',
+      challengerStatus: 'evaluable_shadow',
+      challengerUsedFallback: true,
+      agreement: true,
+      controlRelevance: 1,
+      challengerRelevance: 1,
+      relevanceDelta: 0,
+    });
+
+    const provisional = evaluateVoiShadowBenchmark([cases[0]], new Map([
+      ['auth-owner', {
+        status: 'provisional_evidence',
+        challenger_configuration_id: 'test-e5-config-v1',
+        control_action: { path: 'src/auth.test.ts' },
+        research_candidate: { path: 'src/auth.ts' },
+        shadow_recommendation: { path: 'src/auth.ts' },
+      }],
+    ]));
+    expect(provisional.evaluatedCaseCount).toBe(0);
+    expect(provisional.caseResults).toEqual([]);
+  });
+
 });
