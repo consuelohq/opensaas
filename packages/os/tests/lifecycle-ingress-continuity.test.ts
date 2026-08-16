@@ -93,8 +93,13 @@ describe('lifecycle ingress continuity', () => {
       });
       expect(calls[1]).toEqual({
         command: process.execPath,
-        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'reload-now'],
+        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
       });
+      expect(calls.filter((call) => call.command === process.execPath)).toHaveLength(1);
+      const recoveryLaunchctlCalls = calls.filter((call) => call.command === 'launchctl');
+      for (const label of ingressLabels) {
+        expect(JSON.stringify(recoveryLaunchctlCalls)).not.toContain(label);
+      }
     } finally {
       removeSafeTempDir(home, 'consuelo-ingress-continuity-');
     }

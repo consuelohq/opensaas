@@ -110,6 +110,37 @@ describe('lifecycle restart parity', () => {
     ]);
   });
 
+  it('uses destructive reload only after the rolling recovery path fails', async () => {
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const controller = createReloadServiceController({
+      osRoot,
+      platform: 'linux',
+      run: async (command, args) => {
+        calls.push({ command, args });
+        if (args.at(-1) === 'rolling-reload-now') {
+          return { exitCode: 1, stdout: '', stderr: 'rolling pool unavailable' };
+        }
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+    });
+
+    await expect(controller.restart({
+      waitForCompletion: true,
+      allowDestructiveFallback: true,
+    })).resolves.toBeUndefined();
+
+    expect(calls).toEqual([
+      {
+        command: process.execPath,
+        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
+      },
+      {
+        command: process.execPath,
+        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'reload-now'],
+      },
+    ]);
+  });
+
   it('preserves transport-critical macOS ingress while restarting non-ingress sidecars', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateways-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
@@ -388,6 +419,55 @@ describe('lifecycle restart parity', () => {
     expect(workflow).toContain(
       '--migration "2026-08-13-reconcile-caddy-ha-watchdog:scripts/migrations/reconcile-caddy-ha-watchdog.ts"',
     );
+  });
+
+  it('pins activation and rollback reconciliation to the explicit immutable runtime root', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-runtime-root-'));
+    const activeRuntimeRoot = resolve(osRoot, 'runtime-current');
+    const targetRuntimeRoot = resolve(osRoot, 'runtime-target');
+    const calls: Array<{ command: string; args: string[] }> = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        activeRuntimeRoot,
+        home,
+        platform: 'darwin',
+        environment: { HOME: home },
+        run: async (command, args) => {
+          calls.push({ command, args });
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: targetRuntimeRoot,
+      });
+
+      expect(calls.slice(0, 3)).toEqual([
+        {
+          command: 'bash',
+          args: [
+            resolve(targetRuntimeRoot, 'scripts', 'install-system-daemons.sh'),
+            '--definitions-only',
+            '--quiet',
+          ],
+        },
+        {
+          command: process.execPath,
+          args: [
+            resolve(targetRuntimeRoot, 'scripts', 'migrations', 'reconcile-caddy-worker-pool.ts'),
+            home,
+          ],
+        },
+        {
+          command: process.execPath,
+          args: [resolve(targetRuntimeRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
+        },
+      ]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
   });
 
   it('publishes a fresh Caddy gateway reconciliation migration with every runtime release', () => {
