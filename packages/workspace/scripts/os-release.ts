@@ -83,7 +83,11 @@ function parseArgs(argv: string[]): Options {
   return options;
 }
 
-function runScript(scriptName: string, options: Pick<Options, 'dryRun' | 'noVerify'>): void {
+function runScript(
+  scriptName: string,
+  options: Pick<Options, 'dryRun' | 'noVerify'>,
+  environment: NodeJS.ProcessEnv = {},
+): void {
   const args = ['run', scriptName];
   const childArgs: string[] = [];
 
@@ -94,6 +98,7 @@ function runScript(scriptName: string, options: Pick<Options, 'dryRun' | 'noVeri
   writeOut(`$ bun ${args.join(' ')}`);
   const result = spawnSync('bun', args, {
     cwd: REPO_ROOT,
+    env: { ...process.env, ...environment },
     stdio: 'inherit',
   });
 
@@ -122,7 +127,17 @@ function main(): void {
   }
 
   if (!options.installOnly && !options.deviceAuthOnly) {
-    runScript('os:release-workspace-edge', options);
+    const workspaceEdgeToken = process.env.CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN?.trim();
+    if (process.env.GITHUB_ACTIONS === 'true' && !workspaceEdgeToken) {
+      throw new Error(
+        'CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN is required in GitHub Actions for Workspace Edge D1 migration and deploy',
+      );
+    }
+    runScript(
+      'os:release-workspace-edge',
+      options,
+      workspaceEdgeToken ? { CLOUDFLARE_API_TOKEN: workspaceEdgeToken } : {},
+    );
   }
 
   writeOut('Consuelo OS release complete');

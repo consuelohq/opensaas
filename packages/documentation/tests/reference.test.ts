@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
+import { getBreadcrumbs } from '../src/lib/docs-navigation';
 
 const packageFile = (path: string) => new URL(`../${path}`, import.meta.url);
 const repoFile = (path: string) => new URL(`../../../${path}`, import.meta.url);
@@ -15,6 +16,7 @@ const referencePages = [
   ['reference/result-and-error-formats.mdx', 'Result and error formats'],
   ['reference/environment-variables.mdx', 'Environment variables'],
   ['reference/urls-and-ports.mdx', 'URLs and ports'],
+  ['reference/workflows/branch-graph.mdx', 'Branch Graph'],
   ['reference/glossary.mdx', 'Glossary'],
 ] as const;
 
@@ -54,6 +56,17 @@ describe('Reference documentation contract', () => {
       expect(source).toContain('tests:');
       expect(source).toContain('runtime:');
     }
+  });
+
+  test('promotes Branch Graph to the top-level Workflows breadcrumb and leaves a legacy move notice', () => {
+    expect(getBreadcrumbs('/workflows/branch-graph/').map(({ label }) => label)).toEqual([
+      'Workflows',
+      'Branch Graph',
+    ]);
+    const navigation = read('src/lib/docs-navigation.ts');
+    expect(navigation.match(/slug: 'reference\/workflows\//g)).toBeNull();
+    const legacyNotice = read('src/content/docs/reference/workflows/branch-graph.mdx');
+    expect(legacyNotice).toContain('[Workflows section](/workflows/branch-graph/)');
   });
 
   test('references evidence files that exist in the current repository', () => {
