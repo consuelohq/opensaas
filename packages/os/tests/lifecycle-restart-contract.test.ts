@@ -89,7 +89,13 @@ describe('lifecycle restart parity', () => {
         ? [{ command: 'bash', args: [resolve(osRoot, 'scripts', 'retire-legacy-system-daemons.sh'), '--check'] }]
         : []),
       ...(process.platform === 'darwin'
-        ? [{ command: 'bash', args: [resolve(osRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] }]
+        ? [
+            {
+              command: 'bash',
+              args: [resolve(osRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+            },
+            { command: 'bash', args: [resolve(osRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] },
+          ]
         : []),
       {
         command: process.execPath,
@@ -101,11 +107,48 @@ describe('lifecycle restart parity', () => {
     await controller.restart();
     expect(calls).toEqual([
       ...(process.platform === 'darwin'
-        ? [{ command: 'bash', args: [resolve(osRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] }]
+        ? [
+            {
+              command: 'bash',
+              args: [resolve(osRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+            },
+            { command: 'bash', args: [resolve(osRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] },
+          ]
         : []),
       {
         command: process.execPath,
         args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload'],
+      },
+    ]);
+  });
+
+  it('uses destructive reload only after the rolling recovery path fails', async () => {
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const controller = createReloadServiceController({
+      osRoot,
+      platform: 'linux',
+      run: async (command, args) => {
+        calls.push({ command, args });
+        if (args.at(-1) === 'rolling-reload-now') {
+          return { exitCode: 1, stdout: '', stderr: 'rolling pool unavailable' };
+        }
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+    });
+
+    await expect(controller.restart({
+      waitForCompletion: true,
+      allowDestructiveFallback: true,
+    })).resolves.toBeUndefined();
+
+    expect(calls).toEqual([
+      {
+        command: process.execPath,
+        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
+      },
+      {
+        command: process.execPath,
+        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'reload-now'],
       },
     ]);
   });
@@ -141,13 +184,17 @@ describe('lifecycle restart parity', () => {
 
       expect(calls[0]).toEqual({
         command: 'bash',
+        args: [resolve(osRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+      });
+      expect(calls[1]).toEqual({
+        command: 'bash',
         args: [
           resolve(osRoot, 'scripts', 'install-system-daemons.sh'),
           '--definitions-only',
           '--quiet',
         ],
       });
-      expect(calls[1]).toEqual({
+      expect(calls[2]).toEqual({
         command: process.execPath,
         args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
       });
@@ -268,6 +315,42 @@ describe('lifecycle restart parity', () => {
     }
   });
 
+  it('retries launchd operation-in-progress while restarting the watchdog', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-watchdog-kickstart-retry-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.watchdog';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    let kickstartAttempts = 0;
+    const sleepCalls: number[] = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        sleep: async (milliseconds) => {
+          sleepCalls.push(milliseconds);
+        },
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'kickstart') {
+            kickstartAttempts += 1;
+            if (kickstartAttempts === 1) {
+              return { exitCode: 37, stdout: '', stderr: '' };
+            }
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      expect(kickstartAttempts).toBe(2);
+      expect(sleepCalls).toEqual([200]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('includes the sidecar label when transient kickstart retries are exhausted', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-kickstart-failure-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
@@ -359,6 +442,10 @@ describe('lifecycle restart parity', () => {
     expect(calls).toEqual([
       {
         command: 'bash',
+        args: [resolve(activeRuntimeRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+      },
+      {
+        command: 'bash',
         args: [
           resolve(activeRuntimeRoot, 'scripts', 'install-system-daemons.sh'),
           '--definitions-only',
@@ -388,6 +475,96 @@ describe('lifecycle restart parity', () => {
     expect(workflow).toContain(
       '--migration "2026-08-13-reconcile-caddy-ha-watchdog:scripts/migrations/reconcile-caddy-ha-watchdog.ts"',
     );
+  });
+
+  it('signals Caddy only when worker topology actually changes', () => {
+    const migration = source('scripts/migrations/reconcile-caddy-worker-pool.ts');
+
+    expect(migration).toContain("if (!input.result.changed || input.result.reason === 'gateway-not-configured') return");
+    expect(migration).toContain("runLaunchctl(['kill', 'SIGUSR1', service])");
+    expect(migration).not.toContain("['launchctl', 'kickstart', '-k', service]");
+  });
+
+  it('keeps rollback compatible with an older runtime installer that predates definitions-only refresh', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-legacy-runtime-'));
+    const legacyRuntimeRoot = resolve(osRoot, 'runtime-legacy');
+    const calls: Array<{ command: string; args: string[] }> = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot, activeRuntimeRoot: osRoot, home, platform: 'darwin', environment: { HOME: home },
+        run: async (command, args) => {
+          calls.push({ command, args });
+          if (command === 'bash' && args.includes('--runtime-dependencies-only')) {
+            return { exitCode: 1, stdout: '', stderr: 'unknown option: --runtime-dependencies-only' };
+          }
+          if (command === 'bash' && args.includes('--definitions-only')) {
+            return { exitCode: 1, stdout: '', stderr: 'unknown option: --definitions-only' };
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true, allowDestructiveFallback: true, runtimeRoot: legacyRuntimeRoot })).resolves.toBeUndefined();
+      expect(calls[0]).toEqual({ command: 'bash', args: [resolve(legacyRuntimeRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'] });
+      expect(calls[1]).toEqual({ command: 'bash', args: [resolve(legacyRuntimeRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] });
+      expect(calls).toContainEqual({ command: process.execPath, args: [resolve(legacyRuntimeRoot, 'scripts', 'migrations', 'reconcile-caddy-worker-pool.ts'), home] });
+      expect(calls).toContainEqual({ command: process.execPath, args: [resolve(legacyRuntimeRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'] });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('pins activation and rollback reconciliation to the explicit immutable runtime root', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-runtime-root-'));
+    const activeRuntimeRoot = resolve(osRoot, 'runtime-current');
+    const targetRuntimeRoot = resolve(osRoot, 'runtime-target');
+    const calls: Array<{ command: string; args: string[] }> = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        activeRuntimeRoot,
+        home,
+        platform: 'darwin',
+        environment: { HOME: home },
+        run: async (command, args) => {
+          calls.push({ command, args });
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: targetRuntimeRoot,
+      });
+
+      expect(calls.slice(0, 4)).toEqual([
+        {
+          command: 'bash',
+          args: [resolve(targetRuntimeRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+        },
+        {
+          command: 'bash',
+          args: [
+            resolve(targetRuntimeRoot, 'scripts', 'install-system-daemons.sh'),
+            '--definitions-only',
+            '--quiet',
+          ],
+        },
+        {
+          command: process.execPath,
+          args: [
+            resolve(targetRuntimeRoot, 'scripts', 'migrations', 'reconcile-caddy-worker-pool.ts'),
+            home,
+          ],
+        },
+        {
+          command: process.execPath,
+          args: [resolve(targetRuntimeRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
+        },
+      ]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
   });
 
   it('publishes a fresh Caddy gateway reconciliation migration with every runtime release', () => {

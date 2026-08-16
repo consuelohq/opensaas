@@ -26,6 +26,35 @@ export type CaddyWorkerPoolReconciliationResult = {
   reason?: 'gateway-not-configured';
 };
 
+type RecordedWorkerPoolTopology = {
+  basePort: number;
+  desiredWorkers: number;
+};
+
+function readRecordedWorkerPoolTopology(nodeHome: string): RecordedWorkerPoolTopology | undefined {
+  try {
+    const parsed = JSON.parse(
+      readFileSync(join(nodeHome, 'runs', 'os-worker-pool.json'), 'utf8'),
+    ) as { schemaVersion?: unknown; basePort?: unknown; desiredWorkers?: unknown };
+    if (
+      parsed.schemaVersion !== 1
+      || !Number.isInteger(parsed.basePort)
+      || Number(parsed.basePort) < 1
+      || Number(parsed.basePort) > 65_535
+      || !Number.isInteger(parsed.desiredWorkers)
+      || Number(parsed.desiredWorkers) < 1
+      || Number(parsed.desiredWorkers) > 16
+      || Number(parsed.basePort) + Number(parsed.desiredWorkers) - 1 > 65_535
+    ) return undefined;
+    return {
+      basePort: Number(parsed.basePort),
+      desiredWorkers: Number(parsed.desiredWorkers),
+    };
+  } catch {
+    return undefined;
+  }
+}
+
 export function reconcileCaddyWorkerPoolConfig(input: {
   nodeHome: string;
   env?: NodeJS.ProcessEnv;
@@ -46,7 +75,16 @@ export function reconcileCaddyWorkerPoolConfig(input: {
   }
 
   const config = loadGatewaySecurityConfig({ authConfigPath });
-  const workerPool = resolveWorkerPoolConfiguration(input.env);
+  const recordedTopology = readRecordedWorkerPoolTopology(input.nodeHome);
+  const workerPool = resolveWorkerPoolConfiguration({
+    ...input.env,
+    ...(recordedTopology
+      ? {
+          CONSUELO_OS_WORKER_BASE_PORT: String(recordedTopology.basePort),
+          CONSUELO_OS_WORKER_COUNT: String(recordedTopology.desiredWorkers),
+        }
+      : {}),
+  });
   const upstreams = workerPool.workerPorts.map(
     (port) => '127.0.0.1:' + String(port),
   );

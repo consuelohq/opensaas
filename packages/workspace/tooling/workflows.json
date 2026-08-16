@@ -39,6 +39,16 @@
         {
           "event": "tool.preInvoke",
           "workflow": "task",
+          "tool": "session.start"
+        },
+        {
+          "event": "tool.postInvoke",
+          "workflow": "task",
+          "tool": "session.start"
+        },
+        {
+          "event": "tool.preInvoke",
+          "workflow": "task",
           "tool": "task.start"
         },
         {

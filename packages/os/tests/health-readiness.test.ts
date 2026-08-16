@@ -1,8 +1,19 @@
+import { spawn } from 'node:child_process';
+import { createInterface } from 'node:readline';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createHealthRoutes } from '../scripts/server/routes/health';
-import { runDrainAndExit } from '../scripts/server/main';
+import { drainWorkerServer, runDrainAndExit } from '../scripts/server/main';
 import { createWorkerRuntimeState } from '../scripts/server/worker-runtime-state';
+
+async function readJsonLine(stream: NodeJS.ReadableStream): Promise<Record<string, unknown>> {
+  const lines = createInterface({ input: stream });
+  for await (const line of lines) {
+    lines.close();
+    return JSON.parse(line) as Record<string, unknown>;
+  }
+  throw new Error('worker drain fixture did not publish its port');
+}
 
 describe('local OS health readiness', () => {
   it('should return unavailable when runtime manifests cannot be read', async () => {
@@ -101,6 +112,135 @@ describe('local OS health readiness', () => {
       workerId: 'worker-2',
       workerInstanceId: 'instance-partial',
     });
+  });
+
+  it('waits for active work and a response-flush window before closing the listener', async () => {
+    const workerState = createWorkerRuntimeState({
+      workerId: 'worker-1',
+      workerInstanceId: 'instance-drain',
+    });
+    expect(workerState.beginRequest()).toBe(true);
+    const events: string[] = [];
+    let sleepCount = 0;
+    const server = {
+      stop: vi.fn(async (force?: boolean) => {
+        events.push(`stop:${force === true ? 'force' : 'graceful'}`);
+        expect(workerState.snapshot().activeRequests).toBe(0);
+        expect(workerState.beginRequest()).toBe(false);
+      }),
+    };
+
+    const draining = drainWorkerServer({
+      server: server as never,
+      workerState,
+      reason: 'SIGTERM',
+      propagationMs: 25,
+      drainTimeoutMs: 100,
+      sleep: async (milliseconds) => {
+        sleepCount += 1;
+        events.push(`${sleepCount === 1 ? 'evacuate' : 'flush'}:${milliseconds}`);
+        expect(workerState.snapshot().draining).toBe(true);
+      },
+      report: () => {},
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(server.stop).not.toHaveBeenCalled();
+    workerState.endRequest();
+    await draining;
+
+    expect(events).toEqual(['evacuate:25', 'flush:25', 'stop:graceful']);
+    expect(server.stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves a real in-flight response when the worker exits after draining', async () => {
+    const mainUrl = new URL('../scripts/server/main.ts', import.meta.url).href;
+    const workerStateUrl = new URL('../scripts/server/worker-runtime-state.ts', import.meta.url).href;
+    const responseBytes = 2_000_000;
+    const childSource = `
+      import { drainWorkerServer, runDrainAndExit } from ${JSON.stringify(mainUrl)};
+      import { createWorkerRuntimeState } from ${JSON.stringify(workerStateUrl)};
+
+      const workerState = createWorkerRuntimeState({ workerId: 'worker-test', workerInstanceId: 'instance-test' });
+      const body = 'x'.repeat(${responseBytes});
+      let drainStarted = false;
+      let server;
+      server = Bun.serve({
+        hostname: '127.0.0.1',
+        port: 0,
+        async fetch(request) {
+          if (new URL(request.url).pathname !== '/slow') return new Response('not found', { status: 404 });
+          if (!workerState.beginRequest()) return new Response('draining', { status: 503 });
+          if (!drainStarted) {
+            drainStarted = true;
+            setTimeout(() => {
+              void runDrainAndExit(() => drainWorkerServer({
+                server,
+                workerState,
+                reason: 'test',
+                propagationMs: 250,
+                drainTimeoutMs: 5_000,
+                report: () => {},
+              }));
+            }, 10);
+          }
+          try {
+            await Bun.sleep(750);
+            return new Response(body);
+          } finally {
+            workerState.endRequest();
+          }
+        },
+      });
+      process.stdout.write(JSON.stringify({ port: server.port }) + '\\n');
+    `;
+    const child = spawn('bun', ['-e', childSource], { stdio: ['ignore', 'pipe', 'pipe'] });
+    const exited = new Promise<number | null>((resolve, reject) => {
+      child.once('error', reject);
+      child.once('exit', resolve);
+    });
+    let stderr = '';
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', (chunk: string) => {
+      stderr += chunk;
+    });
+
+    try {
+      const ready = await readJsonLine(child.stdout);
+      const port = ready.port;
+      expect(typeof port).toBe('number');
+      const response = await fetch(`http://127.0.0.1:${port}/slow`);
+      const body = await response.text();
+      expect(response.status).toBe(200);
+      expect(body).toHaveLength(responseBytes);
+      const exitCode = await exited;
+      expect(exitCode, stderr).toBe(0);
+    } finally {
+      if (child.exitCode === null) child.kill();
+    }
+  });
+
+  it('force-closes when active work exceeds the drain timeout', async () => {
+    const workerState = createWorkerRuntimeState({
+      workerId: 'worker-timeout',
+      workerInstanceId: 'instance-timeout',
+    });
+    expect(workerState.beginRequest()).toBe(true);
+    const server = { stop: vi.fn(async () => {}) };
+
+    await drainWorkerServer({
+      server: server as never,
+      workerState,
+      reason: 'test-timeout',
+      propagationMs: 0,
+      drainTimeoutMs: 0,
+      sleep: async () => {},
+      report: () => {},
+    });
+
+    expect(server.stop).toHaveBeenCalledTimes(1);
+    expect(server.stop).toHaveBeenCalledWith(true);
   });
 
   it('should report drain failures and exit nonzero', async () => {

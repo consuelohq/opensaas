@@ -99,7 +99,7 @@ let legacyRecoveryBundle: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 function runtimeReleaseDirectoryFor(
   bundle: Awaited<ReturnType<typeof buildRuntimeBundle>>,
 ): string {
-  return runtimeReleaseDirectoryName(bundle.manifest.bundleId, 'darwin');
+  return runtimeReleaseDirectoryName(bundle.manifest.bundleId, process.platform);
 }
 
 function runtimeReleaseTargetFor(
@@ -119,37 +119,37 @@ beforeAll(async () => {
   privateKey = pair.privateKey;
   publicKeyPem = pair.publicKey.export({ type: 'spki', format: 'pem' }).toString();
   bundle100 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-100',
     sourceRoot: osRoot,
     version: '1.0.0',
   });
   bundle110 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-110',
     sourceRoot: osRoot,
     version: '1.1.0',
   });
   bundle190 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-190',
     sourceRoot: osRoot,
     version: '1.9.0',
   });
   bundle1100 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-1100',
     sourceRoot: osRoot,
     version: '1.10.0',
@@ -163,7 +163,7 @@ beforeAll(async () => {
         runtimePath !== 'scripts/lib/workspace-node-heartbeat-client.ts',
     ),
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-legacy-recovery',
     sourceRoot: osRoot,
     version: '0.9.0',
@@ -270,6 +270,7 @@ function createEngine(input: {
   events?: LifecycleProgressEvent[];
   now?: () => Date;
   serviceFailure?: Error;
+  serviceFailures?: Error[];
   health?: boolean | boolean[];
   connectivity?: boolean;
   publicReadiness?: boolean;
@@ -283,6 +284,7 @@ function createEngine(input: {
   let onboardingCalls = 0;
   const bundle = input.bundle ?? bundle100;
   let healthIndex = 0;
+  let serviceRestartIndex = 0;
   const engine = createLifecycleEngine({
     home: tempHome,
     now: input.now,
@@ -295,6 +297,9 @@ function createEngine(input: {
       },
       async restart() {
         serviceOperations.push('restart');
+        const sequencedFailure = input.serviceFailures?.[serviceRestartIndex];
+        serviceRestartIndex += 1;
+        if (sequencedFailure) throw sequencedFailure;
         if (input.serviceFailure) throw input.serviceFailure;
       },
     },
@@ -451,6 +456,23 @@ describe('unified lifecycle engine', () => {
     expect(bundleFetches).toBe(0);
     expect(update.serviceOperations).toEqual([]);
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
+  });
+
+  it('preserves the original activation failure when automatic rollback also fails', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const update = createEngine({
+      bundle: bundle110,
+      serviceFailures: [
+        new Error('candidate worker handoff failed'),
+        new Error('rollback reconciliation failed'),
+      ],
+    });
+
+    await expect(update.update({ channel: 'dev', yes: true })).rejects.toThrow(
+      /runtime activation failed: .*candidate worker handoff failed.*rollback was not accepted: .*rollback reconciliation failed/,
+    );
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
+    expect(update.serviceOperations.filter((operation) => operation === 'restart')).toHaveLength(2);
   });
 
   it('supports check-only updates without downloading, activating, or restarting', async () => {

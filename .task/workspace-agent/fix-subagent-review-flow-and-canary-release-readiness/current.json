@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/fix-subagent-review-flow-and-canary-release-readiness",
+  "baseBranch": "stream/workspace-agent",
+  "sourceBranch": "stream/workspace-agent",
+  "startFrom": "stream",
+  "prNumber": 2059,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2059",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2059",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2059/fix-subagent-review-flow-and-canary-release-readiness",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2059",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2059/fix-subagent-review-flow-and-canary-release-readiness",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-fix-subagent-review-flow-and-canary-release-readiness",
+  "taskSession": "tsk_106ced96c9f3",
+  "tmuxSession": "opensaas-workspace-agent-fix-subagent-review-flow-and-canary-release-read-106ced96",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-fix-subagent-review-flow-and-canary-release-readiness/.task/workspace-agent/fix-subagent-review-flow-and-canary-release-readiness/session.json",
+  "createdAt": "2026-08-16T04:45:54.053Z"
+}

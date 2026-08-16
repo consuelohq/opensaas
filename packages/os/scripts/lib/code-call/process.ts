@@ -1,8 +1,11 @@
 import { spawn } from 'node:child_process';
+import { existsSync, realpathSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { Effect } from 'effect';
 
 import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from '../facade/process-tree';
+import { resolveConsueloHomeLayout } from '../consuelo-home';
 
 export type RunResult = {
   stdout: string;
@@ -10,6 +13,7 @@ export type RunResult = {
   exitCode: number;
   timedOut: boolean;
   runtimeMissing: boolean;
+  containmentUnavailable: boolean;
 };
 
 export type RunRuntimeOptions = {
@@ -17,17 +21,117 @@ export type RunRuntimeOptions = {
   env: NodeJS.ProcessEnv;
   stdin?: string;
   timeoutMs: number;
+  writeBoundaryRoot?: string;
+  scratchRoot?: string;
+  requireContainment?: boolean;
+  allowBoundaryWrites?: boolean;
 };
+
+const DARWIN_SANDBOX_EXEC = '/usr/bin/sandbox-exec';
+const DARWIN_WRITE_CONTAINMENT_PROFILE = [
+  '(version 1)',
+  '(deny default)',
+  '(allow process*)',
+  '(allow file-read*)',
+  '(deny file-read* (subpath (param "CONSUELO_KEYS_ROOT")) (subpath (param "CONSUELO_SECURITY_ROOT")) (subpath (param "CONSUELO_TUNNELS_ROOT")))',
+  '(allow file-write* (subpath (param "WRITE_ROOT")) (subpath (param "SCRATCH_ROOT")) (literal "/dev/null"))',
+  '(allow network*)',
+  '(allow sysctl-read)',
+  '(allow mach-lookup)',
+  '(allow signal)',
+  '(allow ipc-posix*)',
+].join('');
+const DARWIN_READ_CONTAINMENT_PROFILE = [
+  '(version 1)',
+  '(deny default)',
+  '(allow process*)',
+  '(allow file-read*)',
+  '(deny file-read* (subpath (param "CONSUELO_KEYS_ROOT")) (subpath (param "CONSUELO_SECURITY_ROOT")) (subpath (param "CONSUELO_TUNNELS_ROOT")))',
+  '(allow file-write* (subpath (param "SCRATCH_ROOT")) (literal "/dev/null"))',
+  '(allow network*)',
+  '(allow sysctl-read)',
+  '(allow mach-lookup)',
+  '(allow signal)',
+  '(allow ipc-posix*)',
+].join('');
+
+function canonicalPath(value: string): string {
+  try {
+    return realpathSync(value);
+  } catch {
+    return value;
+  }
+}
 
 function errorMessage(error: NodeJS.ErrnoException): string {
   return error.message || String(error);
 }
 
 export const runRuntimeEffect = (command: string, args: string[], options: RunRuntimeOptions) => Effect.promise<RunResult>(() => new Promise((resolve) => {
-  const child = spawn(command, args, {
+  let spawnCommand = command;
+  let spawnArgs = args;
+  let spawnEnv = options.env;
+  if (options.requireContainment === true) {
+    if (
+      process.platform !== 'darwin'
+      || !existsSync(DARWIN_SANDBOX_EXEC)
+      || !options.writeBoundaryRoot
+      || !options.scratchRoot
+    ) {
+      resolve({
+        stdout: '',
+        stderr: 'edit containment is unavailable on this node',
+        exitCode: 1,
+        timedOut: false,
+        runtimeMissing: false,
+        containmentUnavailable: true,
+      });
+      return;
+    }
+
+    const writeBoundaryRoot = canonicalPath(options.writeBoundaryRoot);
+    const scratchRoot = canonicalPath(options.scratchRoot);
+    const consueloHome = resolveConsueloHomeLayout(
+      options.env.CONSUELO_HOME
+        ?? options.env.WORKSPACE_DAEMON_CONSUELO_HOME
+        ?? options.env.CONSUELO_OS_HOME,
+    ).home;
+    const keysRoot = canonicalPath(join(consueloHome, 'node', 'keys'));
+    const securityRoot = canonicalPath(join(consueloHome, 'node', 'security', 'generated'));
+    const tunnelsRoot = canonicalPath(join(consueloHome, 'node', 'tunnels'));
+    spawnCommand = DARWIN_SANDBOX_EXEC;
+    spawnArgs = [
+      '-p',
+      options.allowBoundaryWrites === true
+        ? DARWIN_WRITE_CONTAINMENT_PROFILE
+        : DARWIN_READ_CONTAINMENT_PROFILE,
+      '-D',
+      `WRITE_ROOT=${writeBoundaryRoot}`,
+      '-D',
+      `SCRATCH_ROOT=${scratchRoot}`,
+      '-D',
+      `CONSUELO_KEYS_ROOT=${keysRoot}`,
+      '-D',
+      `CONSUELO_SECURITY_ROOT=${securityRoot}`,
+      '-D',
+      `CONSUELO_TUNNELS_ROOT=${tunnelsRoot}`,
+      command,
+      ...args,
+    ];
+    spawnEnv = {
+      ...options.env,
+      TMPDIR: scratchRoot + '/',
+      TMP: scratchRoot,
+      TEMP: scratchRoot,
+      XDG_CACHE_HOME: scratchRoot,
+      PYTHONPYCACHEPREFIX: scratchRoot,
+    };
+  }
+
+  const child = spawn(spawnCommand, spawnArgs, {
     cwd: options.cwd,
     detached: shouldUseDetachedProcessGroup(),
-    env: options.env,
+    env: spawnEnv,
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   let stdout = '';
@@ -56,6 +160,10 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
 
   child.stdout.setEncoding('utf8');
   child.stderr.setEncoding('utf8');
+  child.stdin.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED') return;
+    if (!settled) stderr += `${stderr ? '\n' : ''}${errorMessage(error)}`;
+  });
   child.stdout.on('data', (chunk) => { stdout += chunk; });
   child.stderr.on('data', (chunk) => { stderr += chunk; });
   child.stdin.on('error', (error: NodeJS.ErrnoException) => {
@@ -75,10 +183,16 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
       exitCode: 1,
       timedOut: false,
       runtimeMissing: error.code === 'ENOENT',
+      containmentUnavailable: false,
     });
   });
   child.on('close', (code) => {
-    finish({ stdout, stderr, exitCode: code ?? 0, timedOut, runtimeMissing: false });
+    finish({ stdout, stderr, exitCode: code ?? 0, timedOut, runtimeMissing: false, containmentUnavailable: false });
   });
-  child.stdin.end(options.stdin || '');
+  try {
+    child.stdin.end(options.stdin || '');
+  } catch (error: unknown) {
+    const code = (error as NodeJS.ErrnoException)?.code;
+    if (code !== 'EPIPE' && code !== 'ERR_STREAM_DESTROYED') throw error;
+  }
 }));

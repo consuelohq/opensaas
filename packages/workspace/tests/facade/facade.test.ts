@@ -10,6 +10,7 @@ import { runBatch } from '../../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
 import { parseSubagentOutput, parseSubagentTraceEvents } from '../../scripts/lib/subagent/runtime';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
+import taskRegistry from '../../scripts/lib/task-registry.js';
 import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
 const TEST_BRANCH = 'task/workspace-agents/test';
@@ -626,6 +627,71 @@ describe('typed facade executor', () => {
     expect(result.message).toContain('provide either path or paths, not both');
   });
 
+
+
+  it('refreshes durable task activity after a successful task-scoped mutation without recovery', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'workspace-facade-task-activity-'));
+    const home = join(root, '.consuelo');
+    const worktree = join(root, 'task-worktree');
+    const branch = 'task/workspace-agent/activity-refresh';
+    const taskSession = 'tsk_activity_refresh';
+    mkdirSync(worktree, { recursive: true });
+    try {
+      taskRegistry.writeDurableTaskSessionMetadata({
+        area: 'workspace-agent',
+        taskBranch: branch,
+        taskSession,
+        worktreePath: worktree,
+        status: 'active',
+        createdAt: '2026-08-10T00:00:00.000Z',
+        lastActiveAt: '2026-08-10T01:00:00.000Z',
+      }, { home, now: () => Date.parse('2026-08-10T01:00:00.000Z') });
+
+      const result = await executeTool('fs.write', {
+        taskSession,
+        path: 'example.txt',
+        content: 'updated',
+        force: true,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: worktree,
+        env: { ...process.env, CONSUELO_HOME: home },
+      });
+
+      expect(result.ok).toBe(true);
+      const refreshed = taskRegistry.readDurableTaskSessionMetadata(taskSession, { home });
+      expect(Date.parse(refreshed?.lastActiveAt || '')).toBeGreaterThan(Date.parse('2026-08-10T01:00:00.000Z'));
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('discovers task metadata under the durable task-worktree root when registry recovery is unavailable', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'workspace-facade-durable-root-'));
+    const home = join(root, '.consuelo');
+    const worktree = join(home, 'node', 'tasks', 'worktrees', 'task-workspace-agent-durable-fallback');
+    const unrelatedCwd = join(root, 'unrelated');
+    const taskSession = 'tsk_durable_fallback';
+    mkdirSync(worktree, { recursive: true });
+    mkdirSync(unrelatedCwd, { recursive: true });
+    writeTaskSession(worktree, taskSession, 'task/workspace-agent/durable-fallback');
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession,
+        path: 'README.md',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: unrelatedCwd,
+        env: { ...process.env, CONSUELO_HOME: home },
+        currentTask: null,
+        candidates: [],
+      });
+      expect(result.ok).toBe(true);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('runs http without taskSession', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('http', {
@@ -761,6 +827,49 @@ describe('typed facade executor', () => {
     });
     expect(JSON.stringify(result.data)).toContain('review.run');
     expect(JSON.stringify(result.data).toLowerCase()).not.toContain('clean');
+  });
+
+  it('resolves taskSession from the durable registry when local session files are unavailable', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'workspace-durable-session-'));
+    const repo = join(root, 'repo');
+    const worktree = join(root, 'task');
+    const home = join(root, 'home');
+    const branch = 'task/workspace-agents/durable-session';
+    const taskSession = 'tsk_durable_session';
+    try {
+      mkdirSync(repo, { recursive: true });
+      for (const args of [
+        ['init', '-q'],
+        ['config', 'user.email', 'tests@consuelo.local'],
+        ['config', 'user.name', 'Consuelo Tests'],
+      ]) {
+        const result = spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
+        if (result.status !== 0) throw new Error(result.stderr);
+      }
+      writeFileSync(join(repo, 'README.md'), 'fixture\n');
+      for (const args of [['add', 'README.md'], ['commit', '-qm', 'fixture'], ['worktree', 'add', '-qb', branch, worktree]]) {
+        const result = spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
+        if (result.status !== 0) throw new Error(result.stderr);
+      }
+      const registryRoot = join(home, 'node', 'tasks', 'registry');
+      mkdirSync(registryRoot, { recursive: true });
+      writeFileSync(join(registryRoot, `${taskSession}.json`), JSON.stringify({ taskSession, taskBranch: branch, branch, worktreePath: worktree, worktree }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', { taskSession, path: 'README.md' }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: repo,
+        env: { ...process.env, CONSUELO_HOME: home, WORKSPACE_WORKTREE_ROOT: join(root, 'legacy-empty') },
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe(branch);
+      expect(plans[0].env.TASK_WORKTREE).toBe(worktree);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it('uses options.env worktree root for taskSession discovery', async () => {

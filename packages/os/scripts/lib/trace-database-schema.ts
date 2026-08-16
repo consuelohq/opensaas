@@ -53,6 +53,8 @@ const TRACE_COLUMNS: Array<{ name: string; alterSql: string }> = [
   { name: 'task_session', alterSql: 'ALTER TABLE tool_traces ADD COLUMN task_session TEXT;' },
   { name: 'branch', alterSql: 'ALTER TABLE tool_traces ADD COLUMN branch TEXT;' },
   { name: 'worktree', alterSql: 'ALTER TABLE tool_traces ADD COLUMN worktree TEXT;' },
+  { name: 'work_session', alterSql: 'ALTER TABLE tool_traces ADD COLUMN work_session TEXT;' },
+  { name: 'work_path', alterSql: 'ALTER TABLE tool_traces ADD COLUMN work_path TEXT;' },
   { name: 'requested_node_id', alterSql: 'ALTER TABLE tool_traces ADD COLUMN requested_node_id TEXT;' },
   { name: 'resolved_node_id', alterSql: 'ALTER TABLE tool_traces ADD COLUMN resolved_node_id TEXT;' },
   { name: 'resolved_node_name', alterSql: 'ALTER TABLE tool_traces ADD COLUMN resolved_node_name TEXT;' },
@@ -120,6 +122,8 @@ export function ensureToolTraceSchema(db: TraceDatabase): void {
       task_session TEXT,
       branch TEXT,
       worktree TEXT,
+      work_session TEXT,
+      work_path TEXT,
       requested_node_id TEXT,
       resolved_node_id TEXT,
       resolved_node_name TEXT,
@@ -156,6 +160,7 @@ export function ensureToolTraceSchema(db: TraceDatabase): void {
     CREATE INDEX IF NOT EXISTS tool_traces_tool_idx ON tool_traces(tool);
     CREATE INDEX IF NOT EXISTS tool_traces_status_idx ON tool_traces(status);
     CREATE INDEX IF NOT EXISTS tool_traces_task_session_idx ON tool_traces(task_session);
+    CREATE INDEX IF NOT EXISTS tool_traces_work_session_idx ON tool_traces(work_session);
     CREATE INDEX IF NOT EXISTS tool_traces_branch_idx ON tool_traces(branch);
     CREATE INDEX IF NOT EXISTS tool_traces_resolved_node_id_idx ON tool_traces(resolved_node_id);
     CREATE INDEX IF NOT EXISTS tool_traces_route_source_idx ON tool_traces(route_source);

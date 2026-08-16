@@ -2,7 +2,7 @@
 title: Configuration
 description: Canonical Consuelo home, workspace, node, runtime, and settings files.
 status: preview
-verifiedAt: 2026-08-13
+verifiedAt: 2026-08-16
 evidence:
   - source: packages/os/scripts/lib/consuelo-home.ts
     tests:
@@ -19,6 +19,16 @@ evidence:
       - packages/os/tests/launcher-local-customization.test.ts
       - packages/os/tests/lifecycle-engine.test.ts
     runtime: A temporary Consuelo home materialized a launcher from a validated local overlay, and lifecycle update preservation was exercised on 2026-08-13.
+  - source: packages/os/scripts/bootstrap.sh
+    tests:
+      - packages/os/tests/runtime-ingress-dependency-convergence.test.ts
+      - packages/os/tests/lifecycle-restart-contract.test.ts
+    runtime: A live dependency-only dry run on 2026-08-16 accepted the pinned Caddy binary and planned replacement of stale Cloudflared with the Consuelo-managed binary without entering onboarding.
+  - source: packages/os/scripts/lib/worker-pool.ts
+    tests:
+      - packages/os/tests/worker-pool-lifecycle.test.ts
+      - packages/os/tests/health-readiness.test.ts
+    runtime: Live same-version update evidence on 2026-08-16 established that Caddy admission must complete between worker-slot replacements; focused regression coverage now enforces that handoff barrier.
 ---
 
 The default Consuelo home is:
@@ -144,6 +154,20 @@ Project repositories use `owner/repo` form. `localPaths` and `worktreeRoot` may 
 ## `config.json`
 
 `config.json` contains machine-local installer and runtime state such as mode, port, agent connection records, workspace identity, connector state, and generated security metadata. It is not the shared workspace file and should not be copied between nodes.
+
+## Managed runtime binary paths
+
+The installer and updater persist managed runtime executable paths in `~/.consuelo/.env`. In particular, `CADDY_BIN` and `CLOUDFLARED_BIN` identify the verified ingress binaries used when Consuelo regenerates its service definitions. These are machine-local implementation paths, not shared workspace settings.
+
+A normal update rechecks the pinned Caddy and Cloudflared versions before refreshing service definitions. If a global or Homebrew executable is older than the runtime pin, Consuelo installs the verified managed binary and updates the persisted path instead of silently retaining the stale executable. Routine worker replacement still leaves the loaded Caddy and Cloudflared processes running so MCP ingress is not deliberately torn down during an OS worker roll.
+
+Do not hand-edit these paths to bypass version or checksum verification. Use the installer, updater, or repair flow to reconcile them.
+
+## Worker roll timing
+
+`CONSUELO_OS_DRAIN_PROPAGATION_MS` controls the bounded timing windows used during a rolling worker replacement. The default is `3000` milliseconds. Consuelo uses that interval to let Caddy stop selecting a draining worker, to allow completed responses to flush before the listener closes, and to give Caddy time to admit a replacement before the next worker begins draining.
+
+This setting is primarily diagnostic. Lowering it reduces the safety margin around Caddy's active health checks and can make rolling updates less tolerant of slow requests or scheduling jitter. Leave the default in place unless you are diagnosing lifecycle behavior.
 
 ## Settings overlay
 

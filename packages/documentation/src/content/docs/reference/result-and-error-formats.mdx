@@ -142,5 +142,8 @@ Workspace routing can fail before the selected node executes a tool. Current rou
 | `WORKSPACE_NODE_OFFLINE` | The exact node required for the route is not currently reachable. |
 | `NODE_ROUTE_MISMATCH` | Multiple node-routing hints conflict, so Consuelo refuses to guess. |
 | `TASK_NODE_MISMATCH` | An explicit node conflicts with the node that already owns the task session. |
+| `WORK_SESSION_NODE_MISMATCH` | An explicit node conflicts with the node that owns the work session. |
+| `TASK_WORKSPACE_MISMATCH` | A task session belongs to a different workspace than the authenticated route. |
+| `WORK_SESSION_WORKSPACE_MISMATCH` | A work session belongs to a different workspace than the authenticated route. |
 
 These failures are intentionally fail-closed. In particular, task-owned work is not silently sent to another healthy node just because its owner is offline. See [Routing work](/nodes/routing/).

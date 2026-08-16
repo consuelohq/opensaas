@@ -14,6 +14,11 @@ import {
   type WorkerSpec,
 } from '../lib/worker-pool';
 import { startWorkspaceNodeHeartbeatScheduler } from '../lib/workspace-node-heartbeat-scheduler';
+import {
+  DEFAULT_TASK_WORKTREE_GC_INTERVAL_MS,
+  startTaskWorktreeGcScheduler,
+  type TaskWorktreeGcScheduler,
+} from '../lib/task-worktree-gc-scheduler';
 import { sendWorkspaceNodeHeartbeatFromConfig } from '../workspace-node-heartbeat';
 
 const WORKER_READY_ATTEMPTS = 40;
@@ -215,10 +220,9 @@ if (import.meta.main) {
   process.env.CONSUELO_OS_DAEMON_PROCESS = '1';
   const configuration = resolveWorkerPoolConfiguration();
   const layout = resolveConsueloHomeLayout();
-  // Resolve worker code through runtime/current for every spawn. The
+  // Resolve runtime-owned code through runtime/current for every spawn. The
   // supervisor intentionally outlives individual workers during a rolling
-  // update, so capturing import.meta.dir here can pin replacements to the
-  // previous immutable release after the current symlink advances.
+  // update, so captured immutable-release paths can become stale.
   const workerRuntime = (): { root: string; entry: string } => {
     const root = realpathSync(layout.runtimeCurrentDir);
     return { root, entry: path.join(root, 'scripts', 'server', 'main.ts') };
@@ -230,6 +234,13 @@ if (import.meta.main) {
   );
   if (!Number.isInteger(orphanReclaimTimeoutMs) || orphanReclaimTimeoutMs < 1) {
     throw new Error('CONSUELO_OS_ORPHAN_RECLAIM_TIMEOUT_MS must be a positive integer');
+  }
+  const taskWorktreeGcIntervalValue = process.env.CONSUELO_TASK_WORKTREE_GC_INTERVAL_MS?.trim();
+  const taskWorktreeGcIntervalMs = Number(
+    taskWorktreeGcIntervalValue || DEFAULT_TASK_WORKTREE_GC_INTERVAL_MS,
+  );
+  if (!Number.isInteger(taskWorktreeGcIntervalMs) || taskWorktreeGcIntervalMs < 1) {
+    throw new Error('CONSUELO_TASK_WORKTREE_GC_INTERVAL_MS must be a positive integer');
   }
   mkdirSync(layout.nodeRunsDir, { recursive: true, mode: 0o700 });
   await reclaimOrphanedWorkers(snapshotPath, orphanReclaimTimeoutMs);
@@ -260,6 +271,7 @@ if (import.meta.main) {
           CONSUELO_OS_WORKER_INSTANCE_ID: spec.workerInstanceId,
           CONSUELO_OS_SUPERVISOR_PID: String(process.pid),
           CONSUELO_OS_WORKER_RELEASE_PATH: runtime.root,
+          CONSUELO_OS_WORKER_BASE_PORT: String(configuration.basePort),
           CONSUELO_OS_PORT: String(spec.port),
           PORT: String(spec.port),
         },
@@ -297,9 +309,38 @@ if (import.meta.main) {
       })
     : undefined;
 
+  let taskWorktreeGcScheduler: TaskWorktreeGcScheduler | undefined;
   try {
     await pool.start();
+    taskWorktreeGcScheduler = startTaskWorktreeGcScheduler({
+      intervalMs: taskWorktreeGcIntervalMs,
+      async run() {
+        try {
+          const runtime = workerRuntime();
+          const taskWorktreeGcEntry = path.join(runtime.root, 'scripts', 'task-worktree-gc.js');
+          const subprocess = Bun.spawn([process.execPath, taskWorktreeGcEntry], {
+            cwd: runtime.root,
+            env: { ...process.env },
+            stdin: 'ignore',
+            stdout: 'ignore',
+            stderr: 'inherit',
+          });
+          const exitCode = await subprocess.exited;
+          if (exitCode !== 0) {
+            throw new Error(`task worktree GC exited ${exitCode}`);
+          }
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : String(error);
+          throw new Error(`task worktree GC process failed: ${message}`, { cause: error });
+        }
+      },
+      onError(error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`[Consuelo OS] ${message}\n`);
+      },
+    });
   } catch (error: unknown) {
+    taskWorktreeGcScheduler?.stop();
     await pool.stop();
     heartbeatScheduler?.stop();
     await lifecycleEndpoint?.close();
@@ -330,6 +371,11 @@ if (import.meta.main) {
     closing = true;
     if (process.platform !== 'win32') process.off('SIGUSR2', requestRollingReload);
     let failure: unknown;
+    try {
+      taskWorktreeGcScheduler?.stop();
+    } catch (error: unknown) {
+      failure = error;
+    }
     try {
       await pool.stop();
     } catch (error: unknown) {

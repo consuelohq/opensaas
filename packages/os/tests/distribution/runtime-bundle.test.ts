@@ -860,6 +860,22 @@ describe('runtime bundle contract', () => {
           role: 'runtime',
         }),
         expect.objectContaining({
+          path: 'scripts/task-worktree-gc.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-eviction.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-gc.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-gc-scheduler.ts',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
           path: 'assets/consuelo-mark.png',
           role: 'runtime',
         }),

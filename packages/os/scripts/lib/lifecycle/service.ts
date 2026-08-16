@@ -63,6 +63,11 @@ function commandFailure(result: LifecycleProcessResult, fallback: string): Error
   return new Error(result.stderr.trim() || result.stdout.trim() || fallback);
 }
 
+function isLegacyDefinitionsOnlyUnsupported(result: LifecycleProcessResult): boolean {
+  const detail = `${result.stdout}\n${result.stderr}`;
+  return /unknown option:\s*--definitions-only/i.test(detail);
+}
+
 function installedMacRestartableSidecarLaunchAgents(environment?: NodeJS.ProcessEnv): Array<{
   label: string;
   plistPath: string;
@@ -97,14 +102,17 @@ export function createReloadServiceController(input: {
 }): LifecycleServiceController {
   const bootstrapReloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
   const activeRuntimeRoot = input.activeRuntimeRoot ?? input.osRoot;
-  const activeReloadScript = resolve(activeRuntimeRoot, 'scripts', 'consuelo-reload.js');
-  const activeDaemonInstaller = resolve(activeRuntimeRoot, 'scripts', 'install-system-daemons.sh');
-  const caddyReconcileScript = resolve(
-    activeRuntimeRoot,
-    'scripts',
-    'migrations',
-    'reconcile-caddy-worker-pool.ts',
-  );
+  const runtimeScripts = (runtimeRoot: string) => ({
+    reloadScript: resolve(runtimeRoot, 'scripts', 'consuelo-reload.js'),
+    daemonInstaller: resolve(runtimeRoot, 'scripts', 'install-system-daemons.sh'),
+    dependencyBootstrap: resolve(runtimeRoot, 'scripts', 'bootstrap.sh'),
+    caddyReconcileScript: resolve(
+      runtimeRoot,
+      'scripts',
+      'migrations',
+      'reconcile-caddy-worker-pool.ts',
+    ),
+  });
   const lifecycleHome = input.home ?? (input.nodeHome ? resolve(input.nodeHome, '..') : undefined);
   const runtimeExecutable = input.runtimeExecutable ?? process.execPath;
   const legacySystemDaemonRetirementScript = resolve(input.osRoot, 'scripts', LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT);
@@ -112,8 +120,9 @@ export function createReloadServiceController(input: {
   const run = input.run ?? defaultRunner;
   const platform = input.platform ?? process.platform;
   const sleepImpl = input.sleep ?? sleep;
-  const reconcileCaddy = async (): Promise<void> => {
+  const reconcileCaddy = async (runtimeRoot = activeRuntimeRoot): Promise<void> => {
     if (platform !== 'darwin' || !lifecycleHome) return;
+    const { caddyReconcileScript } = runtimeScripts(runtimeRoot);
     try {
       const result = await run(
         runtimeExecutable,
@@ -147,25 +156,55 @@ export function createReloadServiceController(input: {
           throw commandFailure(legacy, `legacy system-daemon check exited ${legacy.exitCode}`);
         }
       }
-      if (existsSync(caddyReconcileScript)) await reconcileCaddy();
+      const { caddyReconcileScript } = runtimeScripts(activeRuntimeRoot);
+      if (existsSync(caddyReconcileScript)) await reconcileCaddy(activeRuntimeRoot);
     },
     async restart(options = {}) {
       try {
+        const runtimeRoot = options.runtimeRoot ?? activeRuntimeRoot;
+        const { reloadScript, daemonInstaller, dependencyBootstrap } = runtimeScripts(runtimeRoot);
         if (platform === 'darwin') {
+          const dependencies = await run(
+            'bash',
+            [dependencyBootstrap, '--runtime-dependencies-only'],
+            input.environment ?? process.env,
+          );
+          if (dependencies.exitCode !== 0) {
+            const legacyRollbackCompatible = options.allowDestructiveFallback
+              && /unknown option:\s*--runtime-dependencies-only/i.test(
+                `${dependencies.stdout}\n${dependencies.stderr}`,
+              );
+            if (!legacyRollbackCompatible) {
+              throw commandFailure(
+                dependencies,
+                `runtime dependency reconciliation exited ${dependencies.exitCode}`,
+              );
+            }
+          }
           const definitions = await run(
             'bash',
-            [activeDaemonInstaller, '--definitions-only', '--quiet'],
+            [daemonInstaller, '--definitions-only', '--quiet'],
             input.environment ?? process.env,
           );
           if (definitions.exitCode !== 0) {
-            throw commandFailure(definitions, `LaunchAgent definition refresh exited ${definitions.exitCode}`);
+            const legacyRollbackCompatible = options.allowDestructiveFallback
+              && isLegacyDefinitionsOnlyUnsupported(definitions);
+            if (!legacyRollbackCompatible) {
+              throw commandFailure(definitions, `LaunchAgent definition refresh exited ${definitions.exitCode}`);
+            }
+            // Older immutable releases predate the definitions-only installer mode. During
+            // automatic rollback, runtime/current has already been repointed to that release,
+            // and the installed LaunchAgent definitions use the stable runtime/current path.
+            // Keep those definitions and continue with the target release's reload adapter.
           }
         }
-        await reconcileCaddy();
-        const command = options.waitForCompletion
-          ? (options.allowDestructiveFallback ? 'reload-now' : 'rolling-reload-now')
-          : (options.allowDestructiveFallback ? 'reload' : 'rolling-reload');
-        const result = await run(runtimeExecutable, [activeReloadScript, command]);
+        await reconcileCaddy(runtimeRoot);
+        const rollingCommand = options.waitForCompletion ? 'rolling-reload-now' : 'rolling-reload';
+        let result = await run(runtimeExecutable, [reloadScript, rollingCommand]);
+        if (result.exitCode !== 0 && options.allowDestructiveFallback) {
+          const fallbackCommand = options.waitForCompletion ? 'reload-now' : 'reload';
+          result = await run(runtimeExecutable, [reloadScript, fallbackCommand]);
+        }
         if (result.exitCode !== 0) {
           throw commandFailure(result, `reload adapter exited ${result.exitCode}`);
         }
@@ -237,9 +276,10 @@ export function createReloadServiceController(input: {
               }
 
               const detail = `${kickstart.stdout}\n${kickstart.stderr}`;
-              const transientExitFive = kickstart.exitCode === 5
-                || /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
-              if (!transientExitFive) break;
+              const transientLaunchdTransition = kickstart.exitCode === 5
+                || kickstart.exitCode === 37
+                || /Bootstrap failed:\s*5|Input\/output error|Operation already in progress/i.test(detail);
+              if (!transientLaunchdTransition) break;
               if (attempt < MAC_GATEWAY_KICKSTART_ATTEMPTS) {
                 await sleepImpl(MAC_GATEWAY_KICKSTART_RETRY_MS);
               }
