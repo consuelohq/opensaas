@@ -904,6 +904,7 @@
         }
       ],
       "critical": true,
+      "exclusive": true,
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
       "origin": "explicit"
     },
@@ -2344,7 +2345,8 @@
         "packages/os/tests/generated-error-code-parity.test.ts",
         "packages/os/tests/mcp-gateway.test.ts",
         "packages/os/tests/work-session-code-call.test.ts",
-        "packages/os/scripts/lib/work-session-protection.ts"
+        "packages/os/scripts/lib/work-session-protection.ts",
+        "packages/os/tests/code-call.test.ts"
       ],
       "tests": [
         {
@@ -2357,7 +2359,8 @@
             "packages/os/tests/work-session-code-call.test.ts",
             "packages/os/tests/session-start-foundation.test.ts",
             "packages/os/tests/generated-error-code-parity.test.ts",
-            "packages/os/tests/mcp-gateway.test.ts"
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/code-call.test.ts"
           ]
         },
         {

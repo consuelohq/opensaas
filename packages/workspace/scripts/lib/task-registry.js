@@ -127,6 +127,9 @@ function transitionDurableTaskSessionMetadata(taskSession, expectedStatus, updat
     if (allowed.length > 0 && !allowed.includes(current.status)) {
       throw new Error(`durable task session ${expected} expected status ${allowed.join('|')} but found ${current.status}`);
     }
+    if (options.expectedUpdatedAt !== undefined && current.updatedAt !== options.expectedUpdatedAt) {
+      throw new Error(`durable task session ${expected} expected updatedAt ${options.expectedUpdatedAt} but found ${current.updatedAt || '(missing)'}`);
+    }
     const patch = typeof update === 'function' ? update(current) : update;
     return writeDurableTaskSessionMetadata({ ...current, ...patch, taskSession: expected }, { ...options, _lockHeld: true });
   });

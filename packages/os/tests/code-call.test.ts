@@ -4,8 +4,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { Effect } from 'effect';
 import { describe, expect, it } from 'vitest';
 
+import { runRuntimeEffect } from '../scripts/lib/code-call/process';
 import { executeCodeCall } from '../scripts/lib/code-call/runtime';
 
 const TEST_UUID = 'abc123def4567890abc123def4567890';
@@ -607,4 +609,26 @@ describe('code.call OS integration', () => {
     expect(docs).toContain('workspace.code.call');
     expect(docs).toContain('Run focused Python, Bun, or Bash programs where runtime output is the evidence');
   });
+
+  it('does not surface EPIPE when a child exits before consuming stdin', async () => {
+    const root = tempRoot('os-code-call-epipe-');
+    try {
+      const result = await Effect.runPromise(runRuntimeEffect(
+        process.execPath,
+        ['-e', 'process.exit(0)'],
+        {
+          cwd: root,
+          env: { ...process.env },
+          stdin: 'x'.repeat(2 * 1024 * 1024),
+          timeoutMs: 5_000,
+          requireContainment: false,
+        },
+      ));
+      expect(result.exitCode).toBe(0);
+      expect(result.timedOut).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
 });

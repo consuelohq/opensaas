@@ -529,7 +529,10 @@ async function executeSubagentAttachmentAction(
   const parser = durableSubagentParser(provider, read.run.traceId || context.traceId);
   let run = reconcileDurableSubagentRun(read.run, context.env, parser);
   if (action === 'wait') {
-    const waitMs = typeof input.waitMs === 'number' ? Math.min(Math.max(0, input.waitMs), SUBAGENT_MAX_TIMEOUT_MS) : SUBAGENT_MAX_TIMEOUT_MS;
+    const waitBudgetMs = subagentTimeoutMs(entry, input);
+    const waitMs = typeof input.waitMs === 'number'
+      ? Math.min(Math.max(0, input.waitMs), SUBAGENT_MAX_TIMEOUT_MS, waitBudgetMs)
+      : Math.min(SUBAGENT_MAX_TIMEOUT_MS, waitBudgetMs);
     const waited = await waitForDurableSubagentRun(run, context.env, waitMs, parser);
     run = waited.run;
     return durableSubagentResult(

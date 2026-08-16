@@ -215,6 +215,66 @@ test('an evicting task with its worktree still present rejects recovery instead 
 
 
 
+test('stale evicting task with a live worktree recovers to active after the eviction lease expires', () => {
+  const fixture = createTaskFixture();
+  const startedAt = Date.parse('2026-08-13T12:00:00.000Z');
+  taskRegistry.transitionDurableTaskSessionMetadata(
+    fixture.taskSession,
+    'active',
+    { status: 'evicting', repoRoot: fixture.repoRoot },
+    { home: fixture.home, now: () => startedAt },
+  );
+
+  const restored = restoreEvictedTaskWorktree(fixture.taskSession, {
+    home: fixture.home,
+    now: () => startedAt + 16 * 60_000,
+    evictionLeaseMs: 15 * 60_000,
+  });
+
+  expect(restored.status).toBe('active');
+  expect(fs.existsSync(fixture.worktreePath)).toBe(true);
+  expect(taskRegistry.readDurableTaskSessionMetadata(fixture.taskSession, { home: fixture.home })?.status).toBe('active');
+});
+
+test('stale evicting task with a removed worktree is finalized as evicted and restored', () => {
+  const fixture = createTaskFixture();
+  const startedAt = Date.parse('2026-08-13T12:00:00.000Z');
+  taskRegistry.transitionDurableTaskSessionMetadata(
+    fixture.taskSession,
+    'active',
+    { status: 'evicting', repoRoot: fixture.repoRoot },
+    { home: fixture.home, now: () => startedAt },
+  );
+  git(fixture.repoRoot, ['worktree', 'remove', '--force', fixture.worktreePath]);
+
+  const restored = restoreEvictedTaskWorktree(fixture.taskSession, {
+    home: fixture.home,
+    now: () => startedAt + 16 * 60_000,
+    evictionLeaseMs: 15 * 60_000,
+  });
+
+  expect(restored.status).toBe('active');
+  expect(fs.existsSync(fixture.worktreePath)).toBe(true);
+});
+
+test('durable registry transition rejects a stale updatedAt compare-and-swap writer', () => {
+  const fixture = createTaskFixture();
+  const observed = taskRegistry.readDurableTaskSessionMetadata(fixture.taskSession, { home: fixture.home });
+  expect(observed?.updatedAt).toBeTruthy();
+  taskRegistry.touchDurableTaskSessionMetadata(fixture.taskSession, {
+    home: fixture.home,
+    now: () => Date.parse('2026-08-13T12:05:00.000Z'),
+  });
+
+  expect(() => taskRegistry.transitionDurableTaskSessionMetadata(
+    fixture.taskSession,
+    'active',
+    { status: 'evicted' },
+    { home: fixture.home, expectedUpdatedAt: observed?.updatedAt },
+  )).toThrow(/expected updatedAt/i);
+  expect(taskRegistry.readDurableTaskSessionMetadata(fixture.taskSession, { home: fixture.home })?.status).toBe('active');
+});
+
 test('durable registry transitions reject stale status writers', () => {
   const fixture = createTaskFixture();
   const evicting = taskRegistry.transitionDurableTaskSessionMetadata(

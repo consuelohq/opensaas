@@ -259,6 +259,39 @@ describe('subagent orchestration contract', () => {
     }
   });
 
+  it('caps attachment waitMs to the effective subagent timeout', async () => {
+    const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
+    const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+    try {
+      const fake = writeFakeCodex(durableHome);
+      const instructionPath = writeInstruction(worktree);
+      const env = {
+        ...process.env,
+        CONSUELO_HOME: durableHome,
+        WORKSPACE_SUBAGENT_CODEX_BIN: fake.executable,
+        CODEX_ARGS_PATH: fake.argsPath,
+        CODEX_SPAWN_PATH: fake.spawnPath,
+        CODEX_PROMPT_PATH: fake.promptPath,
+        CODEX_SLEEP: '0.2',
+      };
+      const started = await executeTool('subagent', input({ action: 'start', instructionPath, requestId: 'req_subagent_wait_cap' }), options(worktree, env));
+      expect(started.ok).toBe(true);
+
+      const before = Date.now();
+      const waited = await executeTool('subagent', {
+        action: 'wait',
+        runId: started.data.runId,
+        waitMs: 500,
+        timeoutMs: 20,
+      }, options(durableHome, env));
+      expect(waited.code).toBe('WAIT_TIMEOUT');
+      expect(Date.now() - before).toBeLessThan(180);
+    } finally {
+      rmSync(durableHome, { recursive: true, force: true });
+      rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
   it('rejects changed instruction content for the same requestId without overwriting the winning run', async () => {
     const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
     const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));

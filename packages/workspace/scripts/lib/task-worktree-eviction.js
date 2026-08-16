@@ -24,6 +24,7 @@ const {
 } = require('./task-registry');
 
 const RECOVERY_SCHEMA_VERSION = 1;
+const DEFAULT_EVICTION_LEASE_MS = 15 * 60_000;
 
 function resolveNow(now = Date.now) {
   const value = typeof now === 'function' ? now() : now;
@@ -387,13 +388,33 @@ function removeTaskRecoveryRoot(taskSession, home = getConsueloHome()) {
 
 function restoreEvictedTaskWorktree(taskSession, options = {}) {
   const home = options.home || getConsueloHome();
-  const metadata = readDurableTaskSessionMetadata(taskSession, { home });
+  let metadata = readDurableTaskSessionMetadata(taskSession, { home });
   if (!metadata) throw new Error(`durable task session not found: ${taskSession}`);
   const worktreePath = path.resolve(metadata.worktreePath);
   if (metadata.status === 'evicting') {
-    throw new Error(`task eviction is in progress: ${taskSession}`);
+    const evictionLeaseMs = Number.isFinite(options.evictionLeaseMs)
+      ? Math.max(1, Number(options.evictionLeaseMs))
+      : DEFAULT_EVICTION_LEASE_MS;
+    const updatedAtMs = Date.parse(String(metadata.updatedAt || ''));
+    const evictionAgeMs = resolveNow(options.now).getTime() - updatedAtMs;
+    if (!Number.isFinite(updatedAtMs) || evictionAgeMs < evictionLeaseMs) {
+      throw new Error(`task eviction is in progress: ${taskSession}`);
+    }
+    const observedUpdatedAt = metadata.updatedAt;
+    if (fs.existsSync(worktreePath)) {
+      const active = transitionDurableTaskSessionMetadata(taskSession, 'evicting', {
+        status: 'active',
+        recovery: null,
+        evictedAt: null,
+      }, { home, now: options.now, expectedUpdatedAt: observedUpdatedAt });
+      if (metadata.recovery) removeTaskRecoveryRoot(taskSession, home);
+      return active;
+    }
+    metadata = transitionDurableTaskSessionMetadata(taskSession, 'evicting', {
+      status: 'evicted',
+    }, { home, now: options.now, expectedUpdatedAt: observedUpdatedAt });
   }
-  if (fs.existsSync(worktreePath) && metadata.status !== 'evicted' && metadata.status !== 'evicting') {
+  if (fs.existsSync(worktreePath) && metadata.status !== 'evicted') {
     return metadata;
   }
   const repoRoot = metadata.repoRoot ? path.resolve(metadata.repoRoot) : null;
@@ -434,13 +455,13 @@ function restoreEvictedTaskWorktree(taskSession, options = {}) {
     if (recovery) applyRecoveryCheckpoint(worktreePath, recovery);
 
     const restoredAt = nowIso(options.now);
-    const restored = transitionDurableTaskSessionMetadata(taskSession, ['evicted', 'active'], {
+    const restored = transitionDurableTaskSessionMetadata(taskSession, metadata.status, {
       repoRoot,
       status: 'active',
       recovery: null,
       evictedAt: null,
       lastActiveAt: restoredAt,
-    }, { home, now: options.now });
+    }, { home, now: options.now, expectedUpdatedAt: metadata.updatedAt });
     if (recovery) removeTaskRecoveryRoot(taskSession, home);
     return restored;
   } catch (error) {

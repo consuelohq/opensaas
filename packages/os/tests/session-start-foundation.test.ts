@@ -71,25 +71,27 @@ describe('session.start foundation', () => {
       area: 'os',
       title: 'canonical task',
       workflow: 'task',
-      description: 'legacy description',
-      pr: 2036,
-      github: 'https://github.com/consuelohq/opensaas/pull/2036',
+      description: 'canonical description',
       bodyFile: '/tmp/body.md',
       startFrom: 'stream',
+      createStream: true,
     })).toMatchObject({
       kind: 'task',
-      description: 'legacy description',
-      pr: 2036,
+      description: 'canonical description',
+      createStream: true,
     });
   });
 
   it('should validate task and work constructor inputs when parsing session.start', () => {
     const schema = getInputSchema('SessionStartInput');
     expect(schema).not.toBeNull();
-    expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example' }).success).toBe(true);
+    expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', workflow: 'task', createStream: true }).success).toBe(true);
     expect(schema?.safeParse({ kind: 'work', path: '/tmp/example-work' }).success).toBe(true);
     expect(schema?.safeParse({ kind: 'work' }).success).toBe(false);
-    expect(schema?.safeParse({ kind: 'task' }).success).toBe(false);
+    expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent' }).success).toBe(false);
+    expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', workflow: 'media' }).success).toBe(false);
+    expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', pr: 2036 }).success).toBe(false);
+    expect(schema?.safeParse({ kind: 'work', path: '/tmp/example-work', title: 'not-allowed' }).success).toBe(false);
   });
 
   it('should create metadata-only work sessions when starting ordinary work', () => {
