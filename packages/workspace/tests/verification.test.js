@@ -116,7 +116,13 @@ test('verify keeps review semantic-only because selected suites own test executi
   expect(verifySource).toContain(
     "const selectionArgs = ['packages/workspace/scripts/test-selection.js', 'check', '--base', base];",
   );
-  expect(verifySource).toContain("selectionArgs.push('--run', '--json');");
+  expect(runTestSelectionSource).toContain('selectionResultPath');
+  expect(runTestSelectionSource).toContain(
+    "selectionArgs.push('--run', '--json', '--out', selectionResultPath);",
+  );
+  expect(runTestSelectionSource).toContain(
+    "JSON.parse(fs.readFileSync(selectionResultPath, 'utf8'))",
+  );
   expect(runTestSelectionSource).toContain(
     'maxBuffer: TEST_SELECTION_OUTPUT_MAX_BUFFER',
   );

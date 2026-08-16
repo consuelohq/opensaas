@@ -46,6 +46,27 @@ describe('test selection runtime safety', () => {
 });
 
 describe('test selection registry', () => {
+  it('writes check results to --out independently of stdout', () => {
+    const out = path.join(
+      os.tmpdir(),
+      `test-selection-check-${process.pid}-${Date.now()}.json`,
+    );
+    const result = run([
+      'check',
+      '--changed-file',
+      'README.md',
+      '--out',
+      out,
+      '--json',
+    ]);
+
+    expect(result.status).toBe(0);
+    const data = JSON.parse(fs.readFileSync(out, 'utf8'));
+    expect(data.kind).toBe('selection');
+    expect(data.changedFiles).toContain('README.md');
+    fs.rmSync(out, { force: true });
+  });
+
   it('discovers and seeds the existing test inventory', () => {
     const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);
     const result = run(['generate', '--out', out, '--json']);

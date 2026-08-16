@@ -520,6 +520,8 @@ function main() {
   const failedSuites = runResults.filter((result) => result.status !== 'passed');
   const passed = selected.level !== 'fail' && failedSuites.length === 0;
   const result = { kind: 'selection', passed, ...selected, run, runResults, failedSuites };
+  const out = valueFor(args, 'out');
+  if (out) writeJson(path.resolve(root, out), result);
   print(result, args.json);
   if (!passed) process.exit(1);
 }

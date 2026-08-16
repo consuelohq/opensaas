@@ -76,6 +76,7 @@ no-test waiver: not applicable.
 - `packages/workspace/scripts/ci/twenty-server-eslint-baseline.json` (deleted)
 - `packages/workspace/scripts/ci/twenty-server-migration-baseline.json` (deleted)
 - `packages/workspace/scripts/ci/twenty-server-typecheck-baseline.json` (deleted)
+- `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/scripts/verify.js`
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts` (deleted)
@@ -86,6 +87,7 @@ no-test waiver: not applicable.
 - `packages/workspace/tests/run-changed-frontend-task.test.mjs` (deleted)
 - `packages/workspace/tests/run-changed-os-native-tests.test.mjs`
 - `packages/workspace/tests/run-changed-server-task.test.mjs` (deleted)
+- `packages/workspace/tests/test-selection.test.js`
 - `packages/workspace/tests/twenty-migration-runtime-boundary.test.ts`
 - `packages/workspace/tests/twenty-server-email-build-contract.test.ts` (deleted)
 - `packages/workspace/tests/typeorm-cli-contract.test.mjs` (deleted)
@@ -126,6 +128,7 @@ no-test waiver: not applicable.
 - `packages/workspace/scripts/ci/twenty-server-eslint-baseline.json` (deleted)
 - `packages/workspace/scripts/ci/twenty-server-migration-baseline.json` (deleted)
 - `packages/workspace/scripts/ci/twenty-server-typecheck-baseline.json` (deleted)
+- `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/scripts/verify.js`
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts` (deleted)
@@ -136,6 +139,7 @@ no-test waiver: not applicable.
 - `packages/workspace/tests/run-changed-frontend-task.test.mjs` (deleted)
 - `packages/workspace/tests/run-changed-os-native-tests.test.mjs`
 - `packages/workspace/tests/run-changed-server-task.test.mjs` (deleted)
+- `packages/workspace/tests/test-selection.test.js`
 - `packages/workspace/tests/twenty-migration-runtime-boundary.test.ts`
 - `packages/workspace/tests/twenty-server-email-build-contract.test.ts` (deleted)
 - `packages/workspace/tests/typeorm-cli-contract.test.mjs` (deleted)
@@ -149,12 +153,6 @@ no-test waiver: not applicable.
 
 ## workspace-owned: activity log
 
-- 2026-08-15 19:55:55 fs.trash: `packages/twenty-utils`
-- 2026-08-15 19:56:00 fs.trash: `.github/workflows/ci-breaking-changes.yaml`
-- 2026-08-15 19:56:05 fs.trash: `.github/workflows/ci-create-app.yaml`
-- 2026-08-15 19:56:08 fs.trash: `.github/workflows/ci-docker-build.yaml`
-- 2026-08-15 19:56:13 fs.trash: `.github/workflows/ci-front.yaml`
-- 2026-08-15 19:56:16 fs.trash: `.github/workflows/ci-sdk.yaml`
 - 2026-08-15 19:56:19 fs.trash: `.github/workflows/ci-server.yaml`
 - 2026-08-15 19:56:22 fs.trash: `.github/workflows/ci-shared.yaml`
 - 2026-08-15 19:56:25 fs.trash: `.github/workflows/ci-test-docker-compose.yaml`
@@ -198,6 +196,12 @@ no-test waiver: not applicable.
 - 2026-08-16 06:55:29 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
 - 2026-08-16 06:56:16 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
 - 2026-08-16 07:03:58 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- 2026-08-16 07:05:48 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- 2026-08-16 07:06:30 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- 2026-08-16 07:07:15 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- 2026-08-16 07:08:14 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- 2026-08-16 07:09:10 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- 2026-08-16 07:12:31 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
 - managed by workspace tooling.
 
 ## workspace-owned: validation evidence
@@ -211,6 +215,8 @@ no-test waiver: not applicable.
 - 2026-08-16 06:51:43 `verify`: passed — OK
 - 2026-08-16 07:04:30 `review.run`: passed — OK
 - 2026-08-16 07:04:53 `verify`: passed — OK
+- 2026-08-16 07:12:53 `review.run`: passed — OK
+- 2026-08-16 07:13:15 `verify`: passed — OK
 
 ## key decisions
 
@@ -503,3 +509,43 @@ Fallback: if any required check fails, inspect that job immediately and fix/reve
 Promotion remains blocked until this second repair is pushed and fresh GitHub checks, including Consuelo verify, dialer, and native Linux/macOS/Windows, are green on the new SHA.
 
 - 2026-08-16 07:03:58 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+
+## CI wait — second repair SHA 8ed06544
+
+Wait reason: GitHub accepted repair SHA `8ed065441b56007d95ea0d8af64e0cf616220eb2`; fresh checks have not populated yet.
+Duration: 20s.
+Resume action: query PR #2053 checks on the same SHA.
+Expected signal: fresh required checks populate with zero failures; specifically Consuelo verify and native Linux/macOS/Windows must execute the repaired paths.
+Fallback: on failure, inspect the completed job before any new mutation; on pending, continue bounded same-SHA polling without reruns.
+
+- 2026-08-16 07:05:48 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- Second-repair CI poll 1: after 20s, 17 checks populated with 0 failed and 10 pending. Existing distribution regressions and Debian 12 passed; native Linux/macOS/Windows are running; Consuelo verify is queued. Next: wait 25s and recheck SHA `8ed06544`.
+
+- 2026-08-16 07:06:30 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- Second-repair CI poll 2: after 25s, 18 checks with 0 failed and 7 pending. Native Linux passed; verify, dialer, OS contracts, workflow security, docs, and native macOS remain active. Next: wait 30s and recheck SHA `8ed06544`.
+
+- 2026-08-16 07:07:15 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- Second-repair CI poll 3: after 30s, 18 checks with 0 failed and 3 pending. Native Linux + macOS, OS contracts, workflow security, docs, Sites Gateway, and existing distribution regressions are green. Consuelo verify and dialer remain active; one additional pending check is outside the bounded sample. Next: wait 30s and recheck SHA `8ed06544`.
+
+- 2026-08-16 07:08:14 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- Second-repair CI poll 4: 18 checks, 0 failed, only 2 pending: Consuelo verify and dialer. All platform/distribution checks are no longer pending or failed, including native Linux/macOS/Windows. Next: wait 30s and recheck SHA `8ed06544`.
+
+- 2026-08-16 07:09:10 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+
+- 2026-08-16 07:11:13 apply-patch: `packages/workspace/tests/test-selection.test.js`
+- 2026-08-16 07:11:13 apply-patch: `packages/workspace/tests/verification.test.js`
+- 2026-08-16 07:11:31 apply-patch: `packages/workspace/scripts/test-selection.js`
+- 2026-08-16 07:11:31 apply-patch: `packages/workspace/scripts/verify.js`
+## M4 structured selector result repair — 2026-08-16
+
+- Fresh GitHub CI on SHA `8ed065441b56007d95ea0d8af64e0cf616220eb2` passed native Linux/macOS/Windows and all sampled platform/workflow gates, but Consuelo verify still failed on synthetic merge `b8a7e409cd74409ef33f1f11a2c8d31233f67389`.
+- New diagnostics proved the selector process exited 1 and stdout was not parseable JSON: `registry runner failure: exit 1; failed to parse test-selection JSON`. There was still no selector stderr or runner-level OOM annotation.
+- Root boundary removed: verifier no longer treats child stdout as the structured protocol. `test-selection check --out <path>` now writes its complete selection result before human/JSON stdout and before exit; verifier supplies a unique `/tmp` sidecar path, reads/parses that file, and removes it in `finally`.
+- RED: check-mode `--out` contract failed with ENOENT; verifier sidecar-source contract failed because `selectionResultPath` did not exist.
+- GREEN focused: both sidecar contracts passed; test-selection and verifier syntax-check.
+- GREEN widened: `test-selection.test.js` + `verification.test.js` = 40/40 passed.
+- GREEN exact CI-mode replay: `CI=true GITHUB_ACTIONS=true bun run verify -- --base origin/stream/twenty-migration --committed-only-tests --no-stamp --review-arg --no-tests` exited 0, read the sidecar result, and selected/passed all 15 M4 suites.
+
+A new repair SHA must pass GitHub Consuelo verify plus dialer and all native platform checks before M4 promotion. M5 remains blocked.
+
+- 2026-08-16 07:12:31 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`

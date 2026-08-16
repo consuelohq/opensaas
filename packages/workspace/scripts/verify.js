@@ -1,6 +1,8 @@
 #!/usr/bin/env bun
 
 const { execFileSync, spawnSync } = require('child_process');
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const { analyzeDbRisk } = require('./lib/db-guards');
@@ -341,7 +343,11 @@ function runReview(repoRoot, base, args) {
 function runTestSelection(repoRoot, base, args) {
   const selectionArgs = ['packages/workspace/scripts/test-selection.js', 'check', '--base', base];
   if (args.committedOnlyTests) selectionArgs.push('--committed-only');
-  selectionArgs.push('--run', '--json');
+  const selectionResultPath = path.join(
+    os.tmpdir(),
+    `opensaas-test-selection-${process.pid}-${Date.now()}.json`,
+  );
+  selectionArgs.push('--run', '--json', '--out', selectionResultPath);
   const result = spawnSync('bun', selectionArgs, {
     cwd: repoRoot,
     encoding: 'utf8',
@@ -350,9 +356,15 @@ function runTestSelection(repoRoot, base, args) {
   });
   let data = null;
   try {
-    data = JSON.parse(result.stdout || '{}');
-  } catch {
-    data = { passed: false, error: 'failed to parse test-selection JSON', stdout: result.stdout || '' };
+    data = JSON.parse(fs.readFileSync(selectionResultPath, 'utf8'));
+  } catch (error) {
+    data = {
+      passed: false,
+      error: `failed to read test-selection result file: ${error instanceof Error ? error.message : String(error)}`,
+      stdout: result.stdout || '',
+    };
+  } finally {
+    fs.rmSync(selectionResultPath, { force: true });
   }
   return {
     skipped: false,
