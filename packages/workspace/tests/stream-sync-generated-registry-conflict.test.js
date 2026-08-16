@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -117,6 +117,8 @@ describe('stream sync generated registry conflict recovery', () => {
       'conflict.txt',
       'packages/workspace/test-selection.registry.json',
     ]));
+    expect(payload.temporaryWorktree).toBe(true);
+    expect(existsSync(payload.worktreePath)).toBe(false);
     expect(readFileSync(join(fixture.repo, 'conflict.txt'), 'utf8')).toBe('main\n');
   });
 });
