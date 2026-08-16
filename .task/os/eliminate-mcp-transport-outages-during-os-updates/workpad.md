@@ -30,17 +30,62 @@ started: 2026-08-16
 
 ## files changed
 
-- none yet
+- `packages/os/SCRIPTS.md`
+- `packages/os/scripts/consuelo-reload.js`
+- `packages/os/scripts/generate-system-daemons.sh`
+- `packages/os/scripts/install-system-daemons.sh`
+- `packages/os/scripts/lib/lifecycle/engine.ts`
+- `packages/os/scripts/lib/lifecycle/service.ts`
+- `packages/os/scripts/lib/lifecycle/types.ts`
+- `packages/os/scripts/lib/platforms/linux.ts`
+- `packages/os/scripts/lib/worker-pool.ts`
+- `packages/os/scripts/server/routes/health.ts`
+- `packages/os/scripts/server/routes/mcp.ts`
+- `packages/os/scripts/server/supervisor.ts`
+- `packages/os/scripts/start-consuelo-daemon.sh`
+- `packages/os/tests/daemon-bun-path.test.ts`
+- `packages/os/tests/lifecycle-ingress-continuity.test.ts`
+- `packages/os/tests/lifecycle-restart-contract.test.ts`
+- `packages/os/tests/linux-ingress-continuity.test.ts`
+- `packages/os/tests/linux-platform.test.ts`
+- `packages/os/tests/mcp-openai-session-receipt.test.ts`
+- `packages/os/tests/system-daemon-reliability.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/os/SCRIPTS.md`
+- `packages/os/scripts/consuelo-reload.js`
+- `packages/os/scripts/generate-system-daemons.sh`
+- `packages/os/scripts/install-system-daemons.sh`
+- `packages/os/scripts/lib/lifecycle/engine.ts`
+- `packages/os/scripts/lib/lifecycle/service.ts`
+- `packages/os/scripts/lib/lifecycle/types.ts`
+- `packages/os/scripts/lib/platforms/linux.ts`
+- `packages/os/scripts/lib/worker-pool.ts`
+- `packages/os/scripts/server/routes/health.ts`
+- `packages/os/scripts/server/routes/mcp.ts`
+- `packages/os/scripts/server/supervisor.ts`
+- `packages/os/scripts/start-consuelo-daemon.sh`
+- `packages/os/tests/daemon-bun-path.test.ts`
+- `packages/os/tests/lifecycle-ingress-continuity.test.ts`
+- `packages/os/tests/lifecycle-restart-contract.test.ts`
+- `packages/os/tests/linux-ingress-continuity.test.ts`
+- `packages/os/tests/linux-platform.test.ts`
+- `packages/os/tests/mcp-openai-session-receipt.test.ts`
+- `packages/os/tests/system-daemon-reliability.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## workspace-owned: activity log
 
 - 2026-08-16 02:03:15 fs.write: `.task/os/eliminate-mcp-transport-outages-during-os-updates/workpad.md`
 - 2026-08-16 02:03:21 fs.write: `.task/os/eliminate-mcp-transport-outages-during-os-updates/workpad.md`
 - 2026-08-16 02:06:25 fs.write: `.task/os/eliminate-mcp-transport-outages-during-os-updates/workpad.md`
+- 2026-08-16 02:10:21 fs.write: `.task/os/eliminate-mcp-transport-outages-during-os-updates/workpad.md`
 
 ## Test-first contract
 
@@ -76,12 +121,17 @@ no-test waiver: not applicable.
 
 ## workspace-owned: files read
 
+- `packages/os/scripts/consuelo-reload.js`
+- `packages/os/scripts/lib/lifecycle/service.ts`
 - `packages/os/tests/daemon-bun-path.test.ts`
+- `packages/os/tests/lifecycle-restart-contract.test.ts`
 
 ## workspace-owned: validation evidence
 
 - 2026-08-16 02:05:50 `review.run`: passed — OK
 - 2026-08-16 02:06:18 `verify`: passed — OK
+- 2026-08-16 02:09:49 `review.run`: passed — OK
+- 2026-08-16 02:10:14 `verify`: passed — OK
 
 ## validation evidence
 
@@ -99,3 +149,12 @@ no-test waiver: not applicable.
 - Ready to push implementation to PR #2086 and merge it into `stream/os`.
 
 - 2026-08-16 02:06:25 append: `.task/os/eliminate-mcp-transport-outages-during-os-updates/workpad.md`
+
+## stream conflict resolution
+
+- `stream/os` advanced by seven commits while #2086 was being debugged. True overlaps were `consuelo-reload.js`, lifecycle service behavior, and lifecycle restart tests.
+- Resolution preserves the stream's transient launchd bootstrap/kickstart retries while keeping #2086's availability boundary: Caddy and Cloudflared are never ordinary restart sidecars; retry coverage now exercises node-heartbeat instead.
+- Post-resolution gate: 185/185 lifecycle tests, syntax, and 39/39 selection tests passed. Strict review again found 0 blockers and verify again returned `publishValid=true` (`trc_c3f1a0d140b7`, `trc_7c161ab617db`).
+- `task.pr` cannot synthesize a merge commit when non-metadata conflicts exist. The resolution will therefore use a normal non-force local merge commit with Ko as author and the Consuelo bot as committer, then return to the task PR merge path.
+
+- 2026-08-16 02:10:21 append: `.task/os/eliminate-mcp-transport-outages-during-os-updates/workpad.md`

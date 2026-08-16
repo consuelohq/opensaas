@@ -19,6 +19,8 @@ const MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES = [
 ];
 const MAC_GATEWAY_BOOTSTRAP_ATTEMPTS = 4;
 const MAC_GATEWAY_BOOTSTRAP_RETRY_MS = 200;
+const MAC_GATEWAY_KICKSTART_ATTEMPTS = 4;
+const MAC_GATEWAY_KICKSTART_RETRY_MS = 200;
 
 export type LifecycleProcessResult = {
   exitCode: number;
@@ -220,16 +222,37 @@ export function createReloadServiceController(input: {
                 || 'launchctl bootstrap exited ' + String(result.exitCode);
               throw new Error('gateway bootstrap failed for ' + gateway.label + ': ' + detail);
             }
-            const kickstart = await run('launchctl', [
-              'kickstart',
-              '-k',
-              domain + '/' + gateway.label,
-            ]);
-            if (kickstart.exitCode !== 0) {
-              throw commandFailure(
-                kickstart,
-                'gateway restart exited ' + String(kickstart.exitCode) + ': ' + gateway.label,
-              );
+            let kickstarted = false;
+            let lastKickstart: LifecycleProcessResult | undefined;
+            for (let attempt = 1; attempt <= MAC_GATEWAY_KICKSTART_ATTEMPTS; attempt += 1) {
+              const kickstart = await run('launchctl', [
+                'kickstart',
+                '-k',
+                domain + '/' + gateway.label,
+              ]);
+              lastKickstart = kickstart;
+              if (kickstart.exitCode === 0) {
+                kickstarted = true;
+                break;
+              }
+
+              const detail = `${kickstart.stdout}\n${kickstart.stderr}`;
+              const transientExitFive = kickstart.exitCode === 5
+                || /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
+              if (!transientExitFive) break;
+              if (attempt < MAC_GATEWAY_KICKSTART_ATTEMPTS) {
+                await sleepImpl(MAC_GATEWAY_KICKSTART_RETRY_MS);
+              }
+            }
+            if (!kickstarted) {
+              const result = lastKickstart ?? {
+                exitCode: 1,
+                stdout: '',
+                stderr: '',
+              };
+              const detail = result.stderr.trim() || result.stdout.trim()
+                || 'launchctl kickstart exited ' + String(result.exitCode);
+              throw new Error('gateway kickstart failed for ' + gateway.label + ': ' + detail);
             }
           }
         }

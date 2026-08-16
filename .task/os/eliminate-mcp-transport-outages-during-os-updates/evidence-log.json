@@ -849,8 +849,56 @@
         "source": "task:fs",
         "task_branch": "task/os/eliminate-mcp-transport-outages-during-os-updates"
       }
+    },
+    {
+      "id": "96a8374c-d1a7-44e1-a9ee-0bb65a2cdbaf",
+      "occurred_at": "2026-08-16T02:07:55.252Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/consuelo-reload.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/eliminate-mcp-transport-outages-during-os-updates",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/eliminate-mcp-transport-outages-during-os-updates"
+      }
+    },
+    {
+      "id": "4cb914bd-8ef1-4a97-bfcf-2465c3e928ca",
+      "occurred_at": "2026-08-16T02:08:43.023Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-restart-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/eliminate-mcp-transport-outages-during-os-updates",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/eliminate-mcp-transport-outages-during-os-updates"
+      }
+    },
+    {
+      "id": "ef583afd-32ee-464e-b721-d6874ca2ae32",
+      "occurred_at": "2026-08-16T02:08:48.687Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/eliminate-mcp-transport-outages-during-os-updates",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/eliminate-mcp-transport-outages-during-os-updates"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-08-16T02:04:14.080Z"
+  "updated_at": "2026-08-16T02:08:48.747Z"
 }
