@@ -6,7 +6,7 @@ import {
   loadGatewaySecurityConfig,
   renderCaddyGatewayConfig,
 } from './security-gateway';
-import { resolveWorkerPoolConfiguration } from './worker-pool';
+import { MAX_OS_WORKERS, resolveWorkerPoolConfiguration } from './worker-pool';
 
 const DEFAULT_CADDY_INGRESS_PORT = 46_320;
 
@@ -25,6 +25,42 @@ export type CaddyWorkerPoolReconciliationResult = {
   upstreams: string[];
   reason?: 'gateway-not-configured';
 };
+
+type ReconciliationWorkerPool = {
+  basePort: number;
+  workerPorts: number[];
+};
+
+function canonicalWorkerPoolFromSnapshot(nodeHome: string): ReconciliationWorkerPool | null {
+  const snapshotPath = join(nodeHome, 'runs', 'os-worker-pool.json');
+  if (!existsSync(snapshotPath)) return null;
+  try {
+    const snapshot = JSON.parse(readFileSync(snapshotPath, 'utf8')) as { schemaVersion?: unknown; desiredWorkers?: unknown; basePort?: unknown };
+    const desiredWorkers = snapshot.desiredWorkers;
+    const basePort = snapshot.basePort;
+    if (snapshot.schemaVersion !== 1
+      || !Number.isInteger(desiredWorkers) || !Number.isInteger(basePort)
+      || (desiredWorkers as number) < 1 || (desiredWorkers as number) > MAX_OS_WORKERS
+      || (basePort as number) < 1 || (basePort as number) > 65_535
+      || (basePort as number) + (desiredWorkers as number) - 1 > 65_535) return null;
+    return {
+      basePort: basePort as number,
+      workerPorts: Array.from({ length: desiredWorkers as number }, (_, index) => (basePort as number) + index),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function resolveReconciliationWorkerPool(input: { nodeHome: string; env?: NodeJS.ProcessEnv }): ReconciliationWorkerPool {
+  // Lifecycle requests execute inside one HA worker. Its CONSUELO_OS_PORT is the slot
+  // port, not the pool base. Prefer the supervisor snapshot so Caddy topology cannot
+  // depend on which worker happened to receive the lifecycle request.
+  const snapshot = canonicalWorkerPoolFromSnapshot(input.nodeHome);
+  if (snapshot) return snapshot;
+  const configured = resolveWorkerPoolConfiguration(input.env);
+  return { basePort: configured.basePort, workerPorts: configured.workerPorts };
+}
 
 export function reconcileCaddyWorkerPoolConfig(input: {
   nodeHome: string;
@@ -46,7 +82,7 @@ export function reconcileCaddyWorkerPoolConfig(input: {
   }
 
   const config = loadGatewaySecurityConfig({ authConfigPath });
-  const workerPool = resolveWorkerPoolConfiguration(input.env);
+  const workerPool = resolveReconciliationWorkerPool(input);
   const upstreams = workerPool.workerPorts.map(
     (port) => '127.0.0.1:' + String(port),
   );

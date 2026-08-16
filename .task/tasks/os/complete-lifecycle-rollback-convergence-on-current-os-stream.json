@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/complete-lifecycle-rollback-convergence-on-current-os-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2112,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2112",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2112",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2112/complete-lifecycle-rollback-convergence-on-current-os-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2112",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2112/complete-lifecycle-rollback-convergence-on-current-os-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-complete-lifecycle-rollback-convergence-on-current-os-stream",
+  "taskSession": "tsk_52331ba8b2d1",
+  "tmuxSession": "opensaas-os-complete-lifecycle-rollback-convergence-on-curre-52331ba8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-complete-lifecycle-rollback-convergence-on-current-os-stream/.task/os/complete-lifecycle-rollback-convergence-on-current-os-stream/session.json",
+  "createdAt": "2026-08-16T03:22:26.512Z"
+}

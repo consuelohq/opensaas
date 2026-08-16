@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_52331ba8b2d1",
+  "tmuxSession": "opensaas-os-complete-lifecycle-rollback-convergence-on-curre-52331ba8",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/complete-lifecycle-rollback-convergence-on-current-os-stream",
+  "branch": "task/os/complete-lifecycle-rollback-convergence-on-current-os-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-complete-lifecycle-rollback-convergence-on-current-os-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-complete-lifecycle-rollback-convergence-on-current-os-stream",
+  "prNumber": 2112,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2112",
+  "createdAt": "2026-08-16T03:22:26.511Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-complete-lifecycle-rollback-convergence-on-current-os-stream/.task/os/complete-lifecycle-rollback-convergence-on-current-os-stream/session.json"
+}
