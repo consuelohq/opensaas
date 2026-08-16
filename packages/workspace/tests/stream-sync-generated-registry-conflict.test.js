@@ -32,11 +32,21 @@ function setupFixture({ extraConflict = false } = {}) {
   write(join(repo, 'package.json'), JSON.stringify({
     scripts: { verify: 'node verify.js' },
   }, null, 2));
-  write(join(repo, 'verify.js'), "process.stdout.write(JSON.stringify({ publishValid: true }) + '\\n');\n");
+  write(join(repo, 'verify.js'), `
+if (process.env.TASK_WORKTREE || process.env.TASK_BRANCH) {
+  process.stderr.write('task routing env leaked into stream verify\\n');
+  process.exit(9);
+}
+process.stdout.write(JSON.stringify({ publishValid: true }) + '\\n');
+`);
   write(join(repo, 'packages/workspace/scripts/test-selection.js'), `
 const fs = require('fs');
 const args = process.argv.slice(2);
 if (args[0] !== 'generate') process.exit(2);
+if (process.env.TASK_WORKTREE || process.env.TASK_BRANCH) {
+  process.stderr.write('task routing env leaked into registry generation\\n');
+  process.exit(9);
+}
 const outIndex = args.indexOf('--out');
 if (outIndex < 0 || !args[outIndex + 1]) process.exit(3);
 fs.writeFileSync(args[outIndex + 1], JSON.stringify({ regenerated: true }, null, 2) + '\\n');
