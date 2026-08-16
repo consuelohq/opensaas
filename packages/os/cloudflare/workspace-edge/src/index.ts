@@ -439,6 +439,23 @@ export function createWorkspaceEdgeHandler(
           }),
         })
       : undefined);
+  const internalDashboardAccessValues = [
+    env.OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN?.trim() ?? '',
+    env.OS_INTERNAL_DASHBOARD_ACCESS_AUD?.trim() ?? '',
+    internalDashboardAllowedEmails(
+      env.OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS,
+    ).join(','),
+  ];
+  const configuredInternalDashboardAccessValues =
+    internalDashboardAccessValues.filter(Boolean).length;
+  const internalDashboardAccessState = options.authorizeInternalDashboard
+    ? 'configured'
+    : configuredInternalDashboardAccessValues === 0
+      ? 'disabled'
+      : configuredInternalDashboardAccessValues ===
+          internalDashboardAccessValues.length
+        ? 'configured'
+        : 'partial';
   const authorizeInternalDashboard =
     options.authorizeInternalDashboard ??
     createCloudflareAccessDashboardAuthorizer({
@@ -516,7 +533,16 @@ export function createWorkspaceEdgeHandler(
           url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
           url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`) ||
           isInternalDashboardPagePath(url.pathname);
-        if (internalDashboardRequest) {
+        if (
+          internalDashboardRequest &&
+          internalDashboardAccessState === 'partial'
+        ) {
+          return closedAuthResponse();
+        }
+        if (
+          internalDashboardRequest &&
+          internalDashboardAccessState === 'configured'
+        ) {
           const sessionValidation = await validateWorkspaceBrowserSession({
             request,
             stub,
@@ -529,24 +555,24 @@ export function createWorkspaceEdgeHandler(
               ? workspaceSessionRequiredResponse(request)
               : closedAuthResponse();
           }
-        }
-        if (
-          url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
-          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`)
-        ) {
-          const diagnostic = await proxyInstallDiagnosticRequest({
-            request,
-            stub,
-            internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
-            authorize: authorizeInternalDashboard,
-          });
-          if (diagnostic) return diagnostic;
-          if (!internalDashboardHandler) return closedAuthResponse();
-          return await internalDashboardHandler(request);
-        }
-        if (isInternalDashboardPagePath(url.pathname)) {
-          if (!internalDashboardPageHandler) return closedAuthResponse();
-          return await internalDashboardPageHandler(request);
+          if (
+            url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
+            url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`)
+          ) {
+            const diagnostic = await proxyInstallDiagnosticRequest({
+              request,
+              stub,
+              internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+              authorize: authorizeInternalDashboard,
+            });
+            if (diagnostic) return diagnostic;
+            if (!internalDashboardHandler) return closedAuthResponse();
+            return await internalDashboardHandler(request);
+          }
+          if (isInternalDashboardPagePath(url.pathname)) {
+            if (!internalDashboardPageHandler) return closedAuthResponse();
+            return await internalDashboardPageHandler(request);
+          }
         }
       }
       if (url.pathname.startsWith('/gateway/nodes/')) {
