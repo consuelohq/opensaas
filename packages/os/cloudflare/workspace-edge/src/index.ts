@@ -161,7 +161,27 @@ function forbiddenInternalDashboardResponse(): Response {
   });
 }
 
-function workspaceSessionRequiredResponse(): Response {
+function workspaceSessionRequiredResponse(request: Request): Response {
+  const url = new URL(request.url);
+  const acceptsHtml =
+    request.method === 'GET' &&
+    (request.headers.get('accept') ?? '').includes('text/html');
+  if (acceptsHtml) {
+    const login = new URL(
+      '/login/google/start',
+      'https://os.consuelohq.com',
+    );
+    login.searchParams.set('purpose', 'web');
+    login.searchParams.set('return_to', `${url.pathname}${url.search}`);
+    return new Response(null, {
+      status: 302,
+      headers: {
+        location: login.toString(),
+        'cache-control': 'no-store',
+        'x-content-type-options': 'nosniff',
+      },
+    });
+  }
   return new Response(JSON.stringify({ error: 'workspace_session_required' }), {
     status: 401,
     headers: {
@@ -506,7 +526,7 @@ export function createWorkspaceEdgeHandler(
           if (!sessionValidation) return closedAuthResponse();
           if (sessionValidation.status !== 204) {
             return sessionValidation.status === 401
-              ? workspaceSessionRequiredResponse()
+              ? workspaceSessionRequiredResponse(request)
               : closedAuthResponse();
           }
         }

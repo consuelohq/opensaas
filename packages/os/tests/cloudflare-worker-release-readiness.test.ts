@@ -14,12 +14,15 @@ describe('Cloudflare Worker release readiness', () => {
         commands.push(argv);
         return {
           exitCode: 0,
-          stdout: JSON.stringify([{ name: 'CONSUELO_EDGE_SIGNING_SECRET' }]),
+          stdout: JSON.stringify([
+            { name: 'CONSUELO_EDGE_SIGNING_SECRET' },
+            { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET' },
+          ]),
           stderr: '',
         };
       },
     })).rejects.toThrow(
-      'Workspace edge secret WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET is not configured',
+      'Workspace edge secret OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN is not configured',
     );
     expect(commands).toEqual([[
       'wrangler',
