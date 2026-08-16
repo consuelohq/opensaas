@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2638,
-    "mappedTestCount": 2555,
+    "testFileCount": 2639,
+    "mappedTestCount": 2556,
     "unmappedTestCount": 83,
     "ruleCount": 60,
     "explicitRuleCount": 41,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 261,
+      "packages/os/tests": 262,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 61,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 544,
+      "test": 545,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -1179,7 +1179,8 @@
         "packages/os/scripts/server/worker-runtime-state.ts",
         "packages/os/tests/health-readiness.test.ts",
         "packages/os/scripts/bootstrap.sh",
-        "packages/os/tests/runtime-ingress-dependency-convergence.test.ts"
+        "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+        "packages/os/tests/caddy-worker-pool-migration.test.ts"
       ],
       "tests": [
         {
@@ -1206,7 +1207,8 @@
             "packages/os/tests/tool-manifest.test.ts",
             "packages/os/tests/tool-package-layout.test.ts",
             "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
-            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts"
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+            "packages/os/tests/caddy-worker-pool-migration.test.ts"
           ]
         },
         {
@@ -1231,7 +1233,7 @@
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Lifecycle updater, managed ingress dependency convergence, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
+      "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -3623,6 +3625,11 @@
     },
     {
       "path": "packages/os/tests/caddy-ha-watchdog-migration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/caddy-worker-pool-migration.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
