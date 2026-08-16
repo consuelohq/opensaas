@@ -14,7 +14,7 @@ type ToolSearchPayload = {
   detectedIntent?: string;
 };
 
-async function runSearch(query: string, limit = 8): Promise<ToolSearchPayload> {
+async function runSearch(query: string, limit = 5): Promise<ToolSearchPayload> {
   return await runToolSearch({
     query,
     limit,

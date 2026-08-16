@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tools/subagent/schema.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/tool-manifest.test.ts"
+  ],
+  "updatedAt": "2026-08-16T06:50:54.115Z"
+}
