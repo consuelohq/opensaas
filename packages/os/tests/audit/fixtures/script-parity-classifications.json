@@ -294,8 +294,8 @@
       "reason": "scripts/lib/code-call/output.ts is classified from the current workspace/OS inventory and retains an explicit parity disposition for this repository state."
     },
     "scripts/lib/code-call/policy.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/code-call/process.ts": {
       "status": "changed-needs-review",
@@ -326,8 +326,8 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/code-call/types.ts": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/codemode/debug.ts": {
       "status": "os-only-intentional",
@@ -508,6 +508,10 @@
     "scripts/lib/facade/types.ts": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/lib/fs/mutation-path.ts": {
+      "status": "os-only-needs-review",
+      "reason": "OS-only mutation-path guard centralizes filesystem mutation-root validation; keep tracked until Workspace intentionally adopts an equivalent boundary."
     },
     "scripts/lib/fs/read.ts": {
       "status": "changed-needs-review",
@@ -1187,6 +1191,10 @@
       "status": "workspace-only-needs-port",
       "reason": "Present only in packages/workspace and absent from packages/os; keep tracked until the OS parity decision ports or retires it."
     },
+    "scripts/lib/task-registry.js": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
     "scripts/lib/task-selection.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -1200,6 +1208,18 @@
       "reason": "scripts/lib/task-start-output.js is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
     },
     "scripts/lib/task-workpad.js": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/task-worktree-eviction.js": {
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/task-worktree-gc-scheduler.ts": {
+      "status": "os-only-needs-review",
+      "reason": "OS-only scheduler owns background task-worktree garbage-collection timing; keep explicit until Workspace intentionally gains an equivalent scheduler."
+    },
+    "scripts/lib/task-worktree-gc.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
@@ -1322,6 +1342,18 @@
     "scripts/lib/windows-platform.ts": {
       "status": "os-only-needs-review",
       "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
+    },
+    "scripts/lib/work-session-fs.ts": {
+      "status": "os-only-needs-review",
+      "reason": "OS-only work-session filesystem authority persists session-scoped mutations and currently has no Workspace counterpart."
+    },
+    "scripts/lib/work-session-protection.ts": {
+      "status": "os-only-needs-review",
+      "reason": "OS-only work-session protection enforces session-owned path boundaries and currently has no Workspace counterpart."
+    },
+    "scripts/lib/work-session.ts": {
+      "status": "os-only-needs-review",
+      "reason": "OS-only work-session lifecycle coordinates session state for OS Code Call and currently has no Workspace counterpart."
     },
     "scripts/lib/worker-pool.ts": {
       "status": "os-only-intentional",
@@ -1685,6 +1717,10 @@
       "status": "os-only-intentional",
       "reason": "OS-owned per-worker request accounting and drain state supports readiness and graceful worker retirement with no workspace counterpart."
     },
+    "scripts/session-start.ts": {
+      "status": "changed-needs-review",
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
     "scripts/smoke-workspace-edge.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -1784,6 +1820,10 @@
     "scripts/task-start.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/task-worktree-gc.js": {
+      "status": "os-only-needs-review",
+      "reason": "OS-only task-worktree GC entrypoint invokes the OS cleanup implementation; keep tracked until Workspace intentionally adopts an equivalent entrypoint."
     },
     "scripts/test-selection.js": {
       "status": "changed-needs-review",

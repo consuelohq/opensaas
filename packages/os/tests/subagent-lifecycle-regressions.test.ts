@@ -27,6 +27,8 @@ import {
   type DurableSubagentRun,
 } from '../scripts/lib/subagent/lifecycle';
 
+const PROCESS_HEAVY_TEST_TIMEOUT_MS = 15_000;
+
 function makeEnvironment(home: string, counterPath?: string): NodeJS.ProcessEnv {
   return {
     ...process.env,
@@ -484,7 +486,7 @@ describe('durable subagent lifecycle regressions', () => {
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
-  });
+  }, PROCESS_HEAVY_TEST_TIMEOUT_MS);
 
   it('preserves startup grace when a published runner exits before its exit marker is observed', () => {
     const home = mkdtempSync(join(tmpdir(), 'subagent-fast-exit-grace-'));
@@ -710,7 +712,7 @@ describe('durable subagent lifecycle regressions', () => {
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
-  });
+  }, PROCESS_HEAVY_TEST_TIMEOUT_MS);
 
   it('records timed_out when an owned provider remains alive past its deadline', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-home-'));
@@ -832,7 +834,7 @@ describe('durable subagent lifecycle regressions', () => {
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
-  });
+  }, PROCESS_HEAVY_TEST_TIMEOUT_MS);
 
   it('cancels an owned provider through the runner control marker', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-home-'));
