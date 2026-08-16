@@ -1220,6 +1220,7 @@
         "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
         "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
         "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+        "packages/os/scripts/server/app.ts",
         "packages/os/scripts/server/main.ts",
         "packages/os/scripts/server/worker-runtime-state.ts",
         "packages/os/tests/health-readiness.test.ts",
