@@ -99,6 +99,7 @@ const ACTIVE_PHASES = new Set<NativeLifecycleOperationState['phase']>([
   'running',
 ]);
 const FORWARDED_LIFECYCLE_ENVIRONMENT_NAMES = [
+  'CONSUELO_OS_WORKER_BASE_PORT',
   'CONSUELO_OS_PORT',
   'PORT',
   'CONSUELO_RELEASE_BASE_URL',

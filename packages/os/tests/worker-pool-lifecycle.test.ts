@@ -53,6 +53,19 @@ describe('OS worker pool lifecycle', () => {
       workerPorts: [47000, 47001, 47002],
     });
 
+    expect(
+      resolveWorkerPoolConfiguration({
+        CONSUELO_OS_WORKER_COUNT: '2',
+        CONSUELO_OS_WORKER_BASE_PORT: '48100',
+        CONSUELO_OS_PORT: '48101',
+        PORT: '48101',
+      }),
+    ).toMatchObject({
+      desiredWorkers: 2,
+      basePort: 48100,
+      workerPorts: [48100, 48101],
+    });
+
     expect(() =>
       resolveWorkerPoolConfiguration({ CONSUELO_OS_WORKER_COUNT: '0' }),
     ).toThrow(/worker count/i);
@@ -287,6 +300,16 @@ describe('OS worker pool lifecycle', () => {
     state.endRequest();
     await expect(idle).resolves.toBe(true);
     expect(state.snapshot()).toMatchObject({ activeRequests: 0, draining: true });
+  });
+
+  it('keeps worker bind ports separate from the stable worker-pool base', () => {
+    const supervisor = readFileSync(resolve(osRoot, 'scripts/server/supervisor.ts'), 'utf8');
+    expect(supervisor).toContain('CONSUELO_OS_WORKER_BASE_PORT: String(configuration.basePort)');
+    expect(supervisor).toContain('CONSUELO_OS_PORT: String(spec.port)');
+    expect(supervisor).toContain('PORT: String(spec.port)');
+
+    const reload = readFileSync(resolve(osRoot, 'scripts/consuelo-reload.js'), 'utf8');
+    expect(reload).toContain('CONSUELO_OS_WORKER_BASE_PORT');
   });
 
   it('wires managed macOS/direct and Linux service launch paths to the supervisor', () => {
