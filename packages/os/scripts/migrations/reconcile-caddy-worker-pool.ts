@@ -12,7 +12,7 @@ const result = reconcileCaddyWorkerPoolConfig({
   nodeHome: join(home, 'node'),
 });
 
-if (result.changed && process.platform === 'darwin') {
+if (result.reason !== 'gateway-not-configured' && process.platform === 'darwin') {
   const userId = process.getuid?.();
   if (userId !== undefined) {
     const service = 'gui/' + String(userId) + '/com.consuelo.caddy';
@@ -21,15 +21,15 @@ if (result.changed && process.platform === 'darwin') {
       stderr: 'ignore',
     });
     if (loaded.exitCode === 0) {
-      const restarted = Bun.spawnSync(
-        ['launchctl', 'kickstart', '-k', service],
+      const reloaded = Bun.spawnSync(
+        ['launchctl', 'kill', 'SIGUSR1', service],
         { stdout: 'pipe', stderr: 'pipe' },
       );
-      if (restarted.exitCode !== 0) {
+      if (reloaded.exitCode !== 0) {
         throw new Error(
-          restarted.stderr.toString().trim()
-            || restarted.stdout.toString().trim()
-            || 'failed to restart Caddy after topology reconciliation',
+          reloaded.stderr.toString().trim()
+            || reloaded.stdout.toString().trim()
+            || 'failed to signal Caddy after topology reconciliation',
         );
       }
     }
