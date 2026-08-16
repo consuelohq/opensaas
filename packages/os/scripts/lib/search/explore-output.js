@@ -58,6 +58,26 @@ function compactIndexStats(indexStats = {}) {
   };
 }
 
+function compactVoiChallenger(challenger) {
+  if (!challenger) return null;
+  const candidate = challenger.research_candidate;
+  return {
+    voi_version: challenger.voi_version ?? null,
+    status: challenger.status ?? null,
+    promotion_eligible: Boolean(challenger.promotion_eligible),
+    control_action: challenger.control_action || null,
+    research_candidate: candidate ? {
+      type: candidate.type || null,
+      path: candidate.path || null,
+      expected_proxy_gain: candidate.expected_proxy_gain ?? null,
+    } : null,
+    shadow_recommendation: challenger.shadow_recommendation || null,
+    recommended_replacement: challenger.recommended_replacement || null,
+    agreement: challenger.agreement ?? null,
+    net_voi: challenger.net_voi ?? null,
+  };
+}
+
 function formatExploreOutput(payload, detail = 'compact') {
   if (detail === 'full') return payload;
   if (detail !== 'compact') {
@@ -69,6 +89,7 @@ function formatExploreOutput(payload, detail = 'compact') {
     query: payload.query,
     budget: payload.budget,
     policy: payload.policy || null,
+    voi_challenger: compactVoiChallenger(payload.voi_challenger),
     results: (payload.results || []).map(compactExploreResult),
     index_stats: compactIndexStats(payload.index_stats),
   };
@@ -78,5 +99,6 @@ module.exports = {
   COMPACT_CONNECTION_LIMIT,
   COMPACT_PREVIEW_LIMIT,
   compactExploreResult,
+  compactVoiChallenger,
   formatExploreOutput,
 };

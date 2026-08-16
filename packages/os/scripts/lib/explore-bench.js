@@ -158,6 +158,40 @@ function evaluateBenchmark(cases, rankingsByCaseId, options = {}) {
   };
 }
 
+function evaluateVoiShadowBenchmark(cases, decisionsByCaseId = new Map()) {
+  validateBenchmarkCases(cases);
+  const rows = [];
+  for (const benchmarkCase of cases) {
+    const decision = decisionsByCaseId.get(benchmarkCase.id);
+    const controlPath = decision?.control_action?.path || null;
+    const challengerPath = decision?.research_candidate?.path || null;
+    if (!controlPath || !challengerPath) continue;
+    const labels = new Map((benchmarkCase.labels || []).map((label) => [label.path, label]));
+    const controlLabel = labels.get(controlPath);
+    const challengerLabel = labels.get(challengerPath);
+    rows.push({
+      id: benchmarkCase.id,
+      agreement: controlPath === challengerPath,
+      controlRelevance: Number(controlLabel?.relevance || 0),
+      challengerRelevance: Number(challengerLabel?.relevance || 0),
+      controlRequiredHit: Boolean(controlLabel?.required),
+      challengerRequiredHit: Boolean(challengerLabel?.required),
+    });
+  }
+
+  const mean = (selector) => rows.length === 0 ? 0 : rows.reduce((sum, row) => sum + selector(row), 0) / rows.length;
+  return {
+    caseCount: cases.length,
+    evaluatedCaseCount: rows.length,
+    agreementRate: round(mean((row) => row.agreement ? 1 : 0), 12),
+    controlMeanRelevance: round(mean((row) => row.controlRelevance), 12),
+    challengerMeanRelevance: round(mean((row) => row.challengerRelevance), 12),
+    controlRequiredHitRate: round(mean((row) => row.controlRequiredHit ? 1 : 0), 12),
+    challengerRequiredHitRate: round(mean((row) => row.challengerRequiredHit ? 1 : 0), 12),
+    claim: 'Curated-label shadow comparison only; this does not estimate counterfactual task success or causal policy improvement.',
+  };
+}
+
 function renderBenchmarkMarkdown(report, options = {}) {
   const title = options.title || 'OS ExploreBench';
   const metrics = report?.benchmark?.metrics || {};
@@ -194,6 +228,7 @@ function renderBenchmarkMarkdown(report, options = {}) {
 
 module.exports = {
   evaluateBenchmark,
+  evaluateVoiShadowBenchmark,
   renderBenchmarkMarkdown,
   validateBenchmarkCases,
 };
