@@ -496,6 +496,8 @@ CONSUELO_EMBEDDING_PROVIDER=openrouter CONSUELO_OPENROUTER_API_KEY=... bun run e
 
 Structured Explore output is compact by default so agents receive the ranked ownership/dependency packet without paying for scoring internals and the complete graph frontier. Compact results preserve result order, symbols/lines, rationale, evidence state, provisional retrieval support, calibration status, up to three typed dependency edges plus the full connection count, the E5 shadow recommendation summary, and the bounded E6 promotion-gate blocker/paired-evidence summary. The rich payload is still written to Explore state/evidence. Use `--detail full` only when debugging ranking, graph, scoring, or promotion evidence internals.
 
+Hosted semantic embedding requests carry a pseudonymous install id for telemetry/cache correlation only. That id is caller-minted and is never an authorization or provider-spend control. The public gateway applies its spend ceilings to Cloudflare-observed client identity and bounds upstream embedding-provider calls with a finite deadline; install-id persistence is fail-open so an unwritable identity path cannot make Explore unavailable.
+
 ```bash
 bun run explore -- "how does the dialer queue work?"
 bun run explore -- "where is task metadata verified?" --budget 5
@@ -526,10 +528,10 @@ Runs the curated OS-owned ExploreBench corpus directly against the live `package
 ```bash
 bun run explore:benchmark -- --json
 bun run explore:benchmark -- --case explore-ranking --case explicit-search-scope --json
-bun run explore:benchmark -- --output-dir packages/os/explore-bench/reports --name e2-live-control --json
+bun run explore:benchmark -- --output-dir packages/os/explore-bench/reports --name explore-benchmark-snapshot --json
 ```
 
-Benchmark labels live in `packages/os/explore-bench/cases.v1.json`. Treat reports as comparative evidence: use the same case file, budget, graph depth, and index configuration for control and challenger runs. The library-level `evaluateVoiShadowBenchmark` emits paired per-case E4-control/E5-policy relevance and required-node deltas for E6 evidence construction. It evaluates only `evaluable_shadow` E5 decisions, uses `shadow_recommendation` when E5 recommends a read, and uses the E4 control action when E5 abstains; it does not score `research_candidate` as though E5 had proposed it. Each emitted row carries the challenger configuration id. The retrieval benchmark CLI does not manufacture E5 policy decisions or silently populate the promotion artifact; `explore-promotion-evidence.v1.json` stays insufficient until one frozen challenger configuration, an explicit paired fixed-sample decision set, and an operational `shadowEvidence` snapshot are collected under the same configuration id and frozen. Mutable query/worktree evidence remains diagnostic only.
+Benchmark labels live in `packages/os/explore-bench/cases.v1.json`. Treat reports as comparative evidence only after `validateBenchmarkEvidence` accepts them: an explicitly invalid report or a run with no ranked results is not a control, even if it contains numeric metrics. The historical `e2-live-control` artifact is intentionally marked invalid because its gateway failed and every ranking was empty; it is retained for provenance, not comparison. For valid control/challenger runs, use the same case file, budget, graph depth, and index configuration. The library-level `evaluateVoiShadowBenchmark` emits paired per-case E4-control/E5-policy relevance and required-node deltas for E6 evidence construction. It evaluates only `evaluable_shadow` E5 decisions, uses `shadow_recommendation` when E5 recommends a read, and uses the E4 control action when E5 abstains; it does not score `research_candidate` as though E5 had proposed it. Each emitted row carries the challenger configuration id. The retrieval benchmark CLI does not manufacture E5 policy decisions or silently populate the promotion artifact; `explore-promotion-evidence.v1.json` stays insufficient until one frozen challenger configuration, an explicit paired fixed-sample decision set, and an operational `shadowEvidence` snapshot are collected under the same configuration id and frozen. Mutable query/worktree evidence remains diagnostic only.
 
 ---
 

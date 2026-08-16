@@ -564,6 +564,8 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/tools/decision-engine/handler.ts',
       '--changed-file',
+      'packages/os/scripts/lib/facade/executor.ts',
+      '--changed-file',
       'packages/os/cloudflare/workspace-edge/src/semantic-embedding-gateway.ts',
       '--changed-file',
       'packages/os/cloudflare/workspace-edge/wrangler.toml',
@@ -582,6 +584,37 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).toContain('os-explore-retrieval-science');
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(suiteNames).toContain('OS Explore retrieval science contracts');
+  });
+
+  it('treats OS script documentation as docs-only instead of selecting lifecycle execution', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/SCRIPTS.md',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).not.toContain('os-lifecycle-update-handoff');
+    expect(data.selectedSuites).toEqual([]);
+    expect(data.zeroSuiteReason).toBe('changed files are docs or task metadata');
+  });
+
+  it('owns the legacy Workspace ExploreBench compatibility entrypoint with a focused suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/explore-bench.js',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'workspace-explore-bench-compatibility',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'Workspace ExploreBench compatibility contracts',
+    ]);
   });
 
   it('keeps E4 unified Explore policy skill changes on the focused Explore suite', () => {

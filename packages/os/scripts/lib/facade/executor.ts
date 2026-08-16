@@ -1119,13 +1119,15 @@ function buildCommandPlan(
 
   if (entry.command.jsonFlag) args.push(entry.command.jsonFlag);
   if (entry.command.dryRunFlag && input.dryRun === true) args.push(entry.command.dryRunFlag);
+  const runtimeScoped = entry.command.executionScope === 'runtime';
 
   return {
     command: 'bun',
     args,
-    cwd: entry.command.executionScope === 'runtime' ? runtimePackageRoot : resolveWorkspaceCommandCwd(cwd, script, input),
+    cwd: runtimeScoped ? runtimePackageRoot : resolveWorkspaceCommandCwd(cwd, script, input),
     env: {
       ...env,
+      ...(runtimeScoped ? { CONSUELO_TOOL_CALLER_CWD: cwd } : {}),
       ...(branch ? { TASK_BRANCH: branch } : {}),
       ...(typeof input.taskWorktree === 'string' ? { TASK_WORKTREE: input.taskWorktree } : {}),
     },

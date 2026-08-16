@@ -1,5 +1,7 @@
 {
   "schemaVersion": 1,
+  "valid": false,
+  "invalidReason": "The control retrieval failed for every curated case because the OS embedding gateway returned WORKSPACE_HOSTNAME_NOT_FOUND; every topPaths list is empty. This file is retained as a failure diagnostic only and must not be used as comparative or promotion evidence.",
   "generatedAt": "2026-08-15T10:50:49.419Z",
   "durationMs": 25381,
   "benchmark": {

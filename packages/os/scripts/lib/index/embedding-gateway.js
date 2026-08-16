@@ -78,14 +78,7 @@ function persistInstallId(filePath, installId) {
     if (error && error.code === 'EEXIST') {
       const existing = readPersistedInstallId(filePath);
       if (existing) return existing;
-      try { fs.rmSync(filePath, { force: true }); } catch { /* Retry creation below. */ }
-      fs.writeFileSync(filePath, `${installId}\n`, {
-        encoding: 'utf8',
-        flag: 'wx',
-        mode: 0o600,
-      });
-      try { fs.chmodSync(filePath, 0o600); } catch { /* Best effort on non-POSIX filesystems. */ }
-      return installId;
+      throw new Error('persisted embedding install identity is invalid', { cause: error });
     }
     throw error;
   }
@@ -104,7 +97,13 @@ function getInstallId() {
   }
 
   const generated = `ins_${crypto.randomUUID().toLowerCase()}`;
-  cachedInstallId = persistInstallId(filePath, generated);
+  try {
+    cachedInstallId = persistInstallId(filePath, generated);
+  } catch {
+    // Persistence is an optimization for pseudonymous telemetry correlation, not an availability
+    // dependency. Keep one stable process-local identity when the filesystem is unavailable.
+    cachedInstallId = generated;
+  }
   return cachedInstallId;
 }
 

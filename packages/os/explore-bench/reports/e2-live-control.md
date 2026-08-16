@@ -1,4 +1,6 @@
-# OS ExploreBench: E2 live control
+# OS ExploreBench: E2 live control — INVALID EVIDENCE
+
+This run is retained only as a failure diagnostic. The OS embedding gateway returned `WORKSPACE_HOSTNAME_NOT_FOUND`, every ranked `topPaths` list is empty, and the zero metrics therefore do **not** represent a valid control policy. Do not use this artifact as comparative, confirmatory, or promotion evidence.
 
 Generated: 2026-08-15T10:50:49.419Z
 

@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
@@ -38,5 +39,13 @@ describe('installed Explore facade routing', () => {
     expect(plans[0]?.command).toBe('bun');
     expect(plans[0]?.args.slice(0, 2)).toEqual(['run', 'explore']);
     expect(plans[0]?.cwd.split(path.sep).slice(-2).join('/')).toBe('packages/os');
+    expect(plans[0]?.env.CONSUELO_TOOL_CALLER_CWD).toBe('/tmp/unrelated-caller-repository');
+  });
+
+  it('passes the caller repository cwd from the runtime process into index construction', () => {
+    const source = readFileSync(new URL('../scripts/explore.js', import.meta.url), 'utf8');
+
+    expect(source).toContain('CONSUELO_TOOL_CALLER_CWD');
+    expect(source).toMatch(/ensureIndex\(\{[\s\S]*cwd:\s*process\.env\.CONSUELO_TOOL_CALLER_CWD/);
   });
 });

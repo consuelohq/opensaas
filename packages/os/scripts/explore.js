@@ -271,6 +271,7 @@ async function main() {
   let results;
   try {
     indexResult = await ensureIndex({
+      cwd: process.env.CONSUELO_TOOL_CALLER_CWD || process.cwd(),
       json: args.json,
       reindex: args.reindex,
     });

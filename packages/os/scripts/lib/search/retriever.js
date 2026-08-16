@@ -327,14 +327,15 @@ async function retrieve(store, repoRoot, query, options = {}) {
   }
 
   let lexicalRows = [];
-  try {
-    lexicalRows = typeof store.searchChunksByText === 'function'
-      ? store.searchChunksByText(lexicalTerms, budget * (hasPathScope ? 60 : 30))
-        .map((row) => ({ ...row, retrievalType: 'lexical' }))
-      : [];
-  } catch (error /* unknown */) {
-    const details = error instanceof Error ? error.stack || error.message : String(error);
-    throw new Error(`lexical retrieval failed: ${details}`, { cause: error });
+  let lexicalAvailable = typeof store.searchChunksByText === 'function';
+  if (lexicalAvailable) {
+    try {
+      lexicalRows = store.searchChunksByText(lexicalTerms, budget * (hasPathScope ? 60 : 30))
+        .map((row) => ({ ...row, retrievalType: 'lexical' }));
+    } catch {
+      lexicalAvailable = false;
+      lexicalRows = [];
+    }
   }
 
   const seedRows = [...semanticRows, ...lexicalRows]
@@ -374,14 +375,17 @@ async function retrieve(store, repoRoot, query, options = {}) {
       changedInBranch: changedPaths.has(candidate.path),
       lastModified: recencyByPath.get(candidate.path) || null,
       rankingScore: candidate.fusionScore,
-      score: candidate.score,
+      score: candidate.fusionRelevance,
       scoreParts: {
         ...candidate.scoreParts,
+        preFusionHeuristicScore: candidate.score,
         retrievalFusion: {
           channels: candidate.fusionChannels,
           ranks: candidate.fusionRanks,
           score: candidate.fusionScore,
+          relevance: candidate.fusionRelevance,
           semanticAvailable,
+          lexicalAvailable,
         },
       },
       reason: candidateReason(candidate),

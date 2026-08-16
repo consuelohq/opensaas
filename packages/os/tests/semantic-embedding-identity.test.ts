@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -81,6 +81,26 @@ describe('Explore hosted embedding install identity', () => {
     }, () => {
       const gateway = loadGateway();
       expect(gateway.getInstallId?.()).toBe(inherited);
+    });
+  });
+
+  it('keeps a process-stable ephemeral identity when persistence is unavailable', () => {
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-embedding-id-'));
+    createdHomes.push(root);
+    const blockedHome = join(root, 'blocked-home');
+    writeFileSync(blockedHome, 'not a directory');
+
+    withEnv({
+      CONSUELO_HOME: blockedHome,
+      CONSUELO_INSTALL_ID: undefined,
+      CONSUELO_OS_INSTALL_ID: undefined,
+    }, () => {
+      const gateway = loadGateway();
+      const first = gateway.getInstallId?.();
+      const second = gateway.getInstallId?.();
+
+      expect(first).toMatch(/^ins_[0-9a-f-]{36}$/);
+      expect(second).toBe(first);
     });
   });
 });

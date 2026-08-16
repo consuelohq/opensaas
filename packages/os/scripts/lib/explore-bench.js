@@ -158,6 +158,36 @@ function evaluateBenchmark(cases, rankingsByCaseId, options = {}) {
   };
 }
 
+function validateBenchmarkEvidence(report) {
+  if (!report || typeof report !== 'object') {
+    throw new Error('invalid benchmark evidence: report must be an object');
+  }
+  if (report.valid === false) {
+    const reason = typeof report.invalidReason === 'string' && report.invalidReason.trim()
+      ? `: ${report.invalidReason.trim()}`
+      : '';
+    throw new Error(`invalid benchmark evidence${reason}`);
+  }
+
+  const benchmark = report.benchmark;
+  if (!benchmark || typeof benchmark !== 'object' || !Array.isArray(benchmark.caseResults)) {
+    throw new Error('invalid benchmark evidence: benchmark case results are required');
+  }
+  const caseCount = Number(benchmark.caseCount);
+  const evaluatedCaseCount = Number(benchmark.evaluatedCaseCount);
+  if (!Number.isInteger(caseCount) || caseCount < 0 || !Number.isInteger(evaluatedCaseCount) || evaluatedCaseCount <= 0) {
+    throw new Error('invalid benchmark evidence: no evaluated cases');
+  }
+  const rankedCaseCount = benchmark.caseResults.filter((row) => (
+    row && Array.isArray(row.topPaths) && row.topPaths.length > 0
+  )).length;
+  if (rankedCaseCount === 0) {
+    throw new Error('invalid benchmark evidence: no ranked results');
+  }
+
+  return { caseCount, evaluatedCaseCount, rankedCaseCount };
+}
+
 function evaluateVoiShadowBenchmark(cases, decisionsByCaseId = new Map()) {
   validateBenchmarkCases(cases);
   const rows = [];
@@ -242,5 +272,6 @@ module.exports = {
   evaluateBenchmark,
   evaluateVoiShadowBenchmark,
   renderBenchmarkMarkdown,
+  validateBenchmarkEvidence,
   validateBenchmarkCases,
 };
