@@ -5,10 +5,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
-import { Effect } from 'effect';
 
 import { executeCodeCall } from '../scripts/lib/code-call/runtime';
-import { runRuntimeEffect } from '../scripts/lib/code-call/process';
 
 const TEST_UUID = 'abc123def4567890abc123def4567890';
 
@@ -48,26 +46,6 @@ function initGitRepo(cwd: string): void {
 }
 
 describe('code.call runtime', () => {
-  it('handles stdin pipe closure when the child exits before consuming input', async () => {
-    const root = tempRoot();
-    try {
-      const result = await Effect.runPromise(
-        runRuntimeEffect(process.execPath, ['-e', 'process.exit(0)'], {
-          cwd: root,
-          env: process.env,
-          stdin: 'x'.repeat(8 * 1024 * 1024),
-          timeoutMs: 5_000,
-        }),
-      );
-
-      expect(result.exitCode).toBe(0);
-      expect(result.timedOut).toBe(false);
-      expect(result.runtimeMissing).toBe(false);
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-
   it('rejects shell-escaped Python transport', async () => {
     const root = tempRoot();
     try {

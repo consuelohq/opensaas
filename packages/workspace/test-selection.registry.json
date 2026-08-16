@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2648,
-    "mappedTestCount": 2565,
+    "testFileCount": 2649,
+    "mappedTestCount": 2566,
     "unmappedTestCount": 83,
-    "ruleCount": 61,
-    "explicitRuleCount": 42,
+    "ruleCount": 67,
+    "explicitRuleCount": 48,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 256,
+      "packages/os/tests": 257,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 61,
       "packages/twenty-sdk/src/cli": 51,
@@ -636,7 +636,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 545,
+      "test": 546,
       "spec": 161,
       "other": 7,
       "tests-dir": 7,
@@ -866,6 +866,135 @@
       ],
       "critical": true,
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-code-call-process-runtime",
+      "source": [
+        "packages/os/scripts/lib/code-call/process.ts",
+        "packages/os/tests/code-call-process-regressions.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS code.call process regressions",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/code-call-process-regressions.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Code-call child-process transport changes must prove stdin/exit lifecycle behavior without selecting the broad OS guardrail test file or unrelated package-wide tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-trace-sqlite-runtime",
+      "source": [
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Trace SQLite runtime compatibility",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Trace SQLite adapter changes must prove the Node-compatible read backend and gateway history behavior under the same runtime that exposed the CI regression, without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-facade-release-regressions",
+      "source": [
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS facade release regression contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "returns a timeout envelope|supports synthetic dry-run|rejects mixed fs read pagination modes|allows matching taskSession and branch for code.call|runs code.call edit mode inside an explicit task worktree"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Facade test-only release-gate fixes must rerun the exact timeout, dry-run, pagination, and managed-task-worktree contracts without selecting unrelated OS package tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-media-svg-convert",
+      "source": [
+        "packages/os/tests/media/31-svg-convert.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS SVG conversion contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/media/31-svg-convert.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "SVG fixture and conversion-contract changes must prove the exact media conversion suite without requiring host ffmpeg or selecting unrelated OS package tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-script-parity-audit",
+      "source": [
+        "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+        "packages/os/tests/audit/script-parity-audit.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS script parity audit contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/audit/script-parity-audit.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Script-parity classification changes must prove the complete current workspace/OS inventory without selecting unrelated OS runtime tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-instruction-docs",
+      "source": [
+        "packages/os/SCRIPTS.md",
+        "packages/os/streams/**/AGENTS.md"
+      ],
+      "tests": [],
+      "critical": false,
+      "exclusive": true,
+      "reason": "OS operator and stream instruction Markdown is documentation-only test-selection metadata and must not wake executable lifecycle or package-wide runtime suites by itself.",
       "origin": "explicit"
     },
     {
@@ -1135,7 +1264,6 @@
     {
       "id": "os-lifecycle-update-handoff",
       "source": [
-        "packages/os/SCRIPTS.md",
         "packages/os/TOOLS.md",
         "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
@@ -3761,6 +3889,11 @@
     },
     {
       "path": "packages/os/tests/code-call-parity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/code-call-process-regressions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
