@@ -28,6 +28,23 @@ function json(result) {
   return JSON.parse(result.stdout);
 }
 
+describe('test selection runtime safety', () => {
+  it('reserves enough suite output for repository-scale CI runs', () => {
+    const source = fs.readFileSync(script, 'utf8');
+    const runSuitesSource = source.slice(
+      source.indexOf('function runSuites'),
+      source.indexOf('function testFileExtension'),
+    );
+
+    expect(source).toContain(
+      'const TEST_SUITE_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;',
+    );
+    expect(runSuitesSource).toContain(
+      'maxBuffer: TEST_SUITE_OUTPUT_MAX_BUFFER',
+    );
+  });
+});
+
 describe('test selection registry', () => {
   it('discovers and seeds the existing test inventory', () => {
     const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);

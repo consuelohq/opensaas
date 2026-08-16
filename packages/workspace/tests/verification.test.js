@@ -95,6 +95,8 @@ test('verify human output identifies failed registry suites', () => {
   expect(source).toContain('selection.failedSuites');
   expect(source).toContain('failure.outputTail');
   expect(source).toContain('compactRegistryFailureOutput');
+  expect(source).toContain('registry runner failure:');
+  expect(source).toContain('result.testSelection.error');
 });
 
 

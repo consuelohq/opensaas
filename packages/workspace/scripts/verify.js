@@ -358,6 +358,10 @@ function runTestSelection(repoRoot, base, args) {
     skipped: false,
     passed: result.status === 0 && data.passed === true,
     status: result.status,
+    signal: result.signal || null,
+    error: result.error
+      ? { code: result.error.code || null, message: result.error.message || String(result.error) }
+      : null,
     data,
     stderr: result.stderr || '',
   };
@@ -443,6 +447,28 @@ function createBecause(result) {
       }
     } else if (selection.zeroSuiteReason) {
       lines.push(`registry selected 0 suites because ${selection.zeroSuiteReason}`);
+    } else if (
+      result.testSelection.error
+      || result.testSelection.signal
+      || result.testSelection.status !== 0
+      || selection.error
+    ) {
+      const details = [];
+      if (result.testSelection.error) {
+        const code = result.testSelection.error.code
+          ? ` ${result.testSelection.error.code}`
+          : '';
+        details.push(`error${code}: ${result.testSelection.error.message}`);
+      }
+      if (result.testSelection.signal) details.push(`signal ${result.testSelection.signal}`);
+      if (result.testSelection.status !== null && result.testSelection.status !== undefined) {
+        details.push(`exit ${result.testSelection.status}`);
+      }
+      if (selection.error) details.push(String(selection.error));
+      lines.push(`registry runner failure: ${details.join('; ') || 'unknown selector failure'}`);
+      for (const outputLine of compactRegistryFailureOutput(result.testSelection.stderr)) {
+        lines.push(`registry stderr: ${outputLine}`);
+      }
     } else {
       lines.push('registry selected 0 suites and gave no reason');
     }
