@@ -517,7 +517,10 @@
         "packages/os/tests/linux-platform.test.ts",
         "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
         "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
-        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+        "packages/os/scripts/server/main.ts",
+        "packages/os/scripts/server/worker-runtime-state.ts",
+        "packages/os/tests/health-readiness.test.ts"
       ],
       "tests": [
         {
@@ -534,6 +537,7 @@
             "packages/os/tests/daemon-bun-path.test.ts",
             "packages/os/tests/system-daemon-reliability.test.ts",
             "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
             "packages/os/tests/lifecycle-facade.test.ts",
             "packages/os/tests/native-lifecycle-operation.test.ts",
             "packages/os/tests/lifecycle-tool-surface.test.ts",
@@ -565,7 +569,7 @@
           ]
         }
       ],
-      "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests."
+      "reason": "Lifecycle updater, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests."
     },
     {
       "id": "os-launcher-copy-interaction",

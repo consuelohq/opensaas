@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { createHealthRoutes } from '../scripts/server/routes/health';
-import { runDrainAndExit } from '../scripts/server/main';
+import { drainWorkerServer, runDrainAndExit } from '../scripts/server/main';
 import { createWorkerRuntimeState } from '../scripts/server/worker-runtime-state';
 
 describe('local OS health readiness', () => {
@@ -101,6 +101,38 @@ describe('local OS health readiness', () => {
       workerId: 'worker-2',
       workerInstanceId: 'instance-partial',
     });
+  });
+
+  it('should announce worker drain before closing the listener so Caddy can evacuate it', async () => {
+    const workerState = createWorkerRuntimeState({
+      workerId: 'worker-1',
+      workerInstanceId: 'instance-drain',
+    });
+    const events: string[] = [];
+    const server = {
+      stop: vi.fn(async (force?: boolean) => {
+        events.push(`stop:${force === true ? 'force' : 'graceful'}`);
+        expect(workerState.beginRequest()).toBe(false);
+      }),
+    };
+
+    await drainWorkerServer({
+      server: server as never,
+      workerState,
+      reason: 'SIGTERM',
+      propagationMs: 25,
+      drainTimeoutMs: 100,
+      sleep: async (milliseconds) => {
+        events.push(`propagate:${milliseconds}`);
+        expect(workerState.snapshot().draining).toBe(true);
+        expect(workerState.beginRequest()).toBe(true);
+        workerState.endRequest();
+      },
+      report: () => {},
+    });
+
+    expect(events).toEqual(['propagate:25', 'stop:graceful']);
+    expect(server.stop).toHaveBeenCalledTimes(1);
   });
 
   it('should report drain failures and exit nonzero', async () => {
