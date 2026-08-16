@@ -1,0 +1,46 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/sync-os-stream-with-main-after-cloudflared-definition-convergence",
+  "base": "origin/stream/os",
+  "headSha": "0ad87b0a1f6c8f5062917766651a4ea0f10c2a4d",
+  "changeHash": "7da9c72216b04be6a593c59ea253fe64f404eb21902ed1005d1e6eaae5745b59",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-16T04:28:30.291Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/sync-os-stream-with-main-after-cloudflared-definition-convergence/current.json",
+        ".task/os/sync-os-stream-with-main-after-cloudflared-definition-convergence/session.json",
+        ".task/os/sync-os-stream-with-main-after-cloudflared-definition-convergence/workpad.md",
+        ".task/tasks/os/sync-os-stream-with-main-after-cloudflared-definition-convergence.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
