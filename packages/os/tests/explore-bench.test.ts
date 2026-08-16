@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 const require = createRequire(import.meta.url);
 const {
   evaluateBenchmark,
+  evaluateVoiShadowBenchmark,
   validateBenchmarkCases,
 } = require('../scripts/lib/explore-bench.js') as {
   evaluateBenchmark: (
@@ -14,6 +15,10 @@ const {
     rankings: Map<string, Array<{ path: string }>>,
     options?: { kValues?: number[] },
   ) => BenchmarkReport;
+  evaluateVoiShadowBenchmark: (
+    cases: BenchmarkCase[],
+    decisions: Map<string, { control_action?: { path?: string | null }; research_candidate?: { path?: string | null } | null }>,
+  ) => Record<string, number>;
   validateBenchmarkCases: (cases: BenchmarkCase[]) => {
     caseCount: number;
     labeledCaseCount: number;
@@ -109,5 +114,21 @@ describe('OS ExploreBench retrieval metrics', () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('usage: bun run explore:benchmark');
+  });
+
+  it('scores E5 shadow actions against curated labels without inventing counterfactual outcomes', () => {
+    const report = evaluateVoiShadowBenchmark(cases, new Map([
+      ['auth-owner', {
+        control_action: { path: 'src/auth.test.ts' },
+        research_candidate: { path: 'src/auth.ts' },
+      }],
+    ]));
+
+    expect(report.evaluatedCaseCount).toBe(1);
+    expect(report.agreementRate).toBe(0);
+    expect(report.controlMeanRelevance).toBe(1);
+    expect(report.challengerMeanRelevance).toBe(3);
+    expect(report.controlRequiredHitRate).toBe(0);
+    expect(report.challengerRequiredHitRate).toBe(1);
   });
 });

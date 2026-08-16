@@ -16,8 +16,10 @@ const {
   writeExploreState,
 } = require('./lib/state/explore-state');
 const calibration = require('./lib/state/explore-calibration.v1.json');
+const readCostModel = require('./lib/state/explore-read-cost-model.v1.json');
 const { getRankSupport } = require('./lib/state/explore-hypothesis-model');
 const { evaluateExplorePolicy } = require('./lib/state/explore-policy');
+const { evaluateExploreVoiChallenger } = require('./lib/state/explore-voi-policy');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -235,6 +237,13 @@ function printPolicyHuman(policy) {
   }
 }
 
+function printVoiHuman(challenger) {
+  if (!challenger) return;
+  const candidate = challenger.research_candidate;
+  const target = candidate?.path ? ` ${candidate.path}` : '';
+  writeStdout(`voi-shadow: ${challenger.status}${candidate ? `; candidate ${candidate.type}${target}` : ''}; promotion ${challenger.promotion_eligible ? 'eligible' : 'blocked'}`);
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -305,18 +314,70 @@ async function main() {
   const events = getEvidenceEvents(indexResult.repoRoot);
   const state = updateHypothesesWithEvents(nextState, events);
   const policy = evaluateExplorePolicy(state, events);
+  let voiChallenger;
+  try {
+    voiChallenger = evaluateExploreVoiChallenger({
+      state,
+      controlPolicy: policy,
+      calibration,
+      costModel: readCostModel,
+    });
+  } catch (error /* unknown */) {
+    const message = error instanceof Error ? error.message : String(error);
+    voiChallenger = {
+      voi_version: 1,
+      method: 'myopic-empirical-voi-proxy',
+      status: 'error',
+      promotion_eligible: false,
+      control_action: policy.next_action || null,
+      research_candidate: null,
+      recommended_replacement: null,
+      agreement: null,
+      net_voi: null,
+      reason: `shadow evaluator failed: ${message}`,
+    };
+  }
+
+  try {
+    appendEvidenceEvent(indexResult.repoRoot, {
+      type: 'explore.voi.shadow',
+      source: 'explore',
+      question: args.question,
+      action: 'voi-shadow',
+      status: voiChallenger.status,
+      confidence_delta: 0,
+      worktree_id: indexResult.worktreeId,
+      details: {
+        voi_version: voiChallenger.voi_version,
+        method: voiChallenger.method,
+        control_action: voiChallenger.control_action,
+        research_candidate: voiChallenger.research_candidate ? {
+          type: voiChallenger.research_candidate.type,
+          path: voiChallenger.research_candidate.path,
+          expected_proxy_gain: voiChallenger.research_candidate.expected_proxy_gain,
+        } : null,
+        promotion_eligible: voiChallenger.promotion_eligible,
+        agreement: voiChallenger.agreement,
+        net_voi: voiChallenger.net_voi,
+      },
+    }, { requireMirror: true });
+  } catch (error /* unknown */) {
+    writeStderr(`explore: VOI shadow logging failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
   const statePath = writeExploreState(indexResult.repoRoot, {
     ...state,
     policy_snapshot: policy,
+    voi_challenger_snapshot: voiChallenger,
     updated_at: new Date().toISOString(),
   });
-  const outputPayload = { ...payload, policy };
+  const outputPayload = { ...payload, policy, voi_challenger: voiChallenger };
 
   if (args.json) {
     writeStdout(JSON.stringify(formatExploreOutput(outputPayload, args.detail), null, 2));
   } else {
     printHuman(args, results, indexResult);
     printPolicyHuman(policy);
+    printVoiHuman(voiChallenger);
     writeStdout(`state: ${statePath}`);
   }
 }

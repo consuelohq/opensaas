@@ -46,6 +46,24 @@ type RichExplorePayload = {
     next_action: { type: string; path: string | null };
     dependency_map: { primary: { root_path: string }; alternative_count: number };
   };
+  voi_challenger: {
+    voi_version: number;
+    status: string;
+    promotion_eligible: boolean;
+    control_action: { type: string; path: string | null };
+    research_candidate: {
+      type: string;
+      path: string;
+      expected_proxy_gain: number;
+      costs: { total_tokens: number; latency_ms: number; action_risk: number };
+      break_even: { utility_per_token_if_latency_free: number; utility_per_ms_if_tokens_free: number };
+    };
+    recommended_replacement: null;
+    shadow_recommendation?: null;
+    agreement: boolean;
+    net_voi: null;
+    limitations: string[];
+  };
   index_stats: {
     total_files: number;
     total_chunks: number;
@@ -118,6 +136,23 @@ function richPayload(): RichExplorePayload {
         alternative_count: 2,
       },
     },
+    voi_challenger: {
+      voi_version: 1,
+      status: 'provisional_evidence',
+      promotion_eligible: false,
+      control_action: { type: 'read', path: 'packages/os/scripts/example-0.ts' },
+      research_candidate: {
+        type: 'read',
+        path: 'packages/os/scripts/example-0.ts',
+        expected_proxy_gain: 0.4,
+        costs: { total_tokens: 2031, latency_ms: 537, action_risk: 0 },
+        break_even: { utility_per_token_if_latency_free: 0.000197, utility_per_ms_if_tokens_free: 0.000745 },
+      },
+      recommended_replacement: null,
+      agreement: true,
+      net_voi: null,
+      limitations: ['research only', 'not causal'],
+    },
     index_stats: {
       total_files: 15_710,
       total_chunks: 80_769,
@@ -150,6 +185,17 @@ describe('Explore compact response contract', () => {
     expect(compact.query).toBe(rich.query);
     expect(compact.budget).toBe(rich.budget);
     expect((compact as { policy?: unknown }).policy).toEqual(rich.policy);
+    expect((compact as { voi_challenger?: unknown }).voi_challenger).toEqual({
+      voi_version: 1,
+      status: 'provisional_evidence',
+      promotion_eligible: false,
+      control_action: { type: 'read', path: 'packages/os/scripts/example-0.ts' },
+      research_candidate: { type: 'read', path: 'packages/os/scripts/example-0.ts', expected_proxy_gain: 0.4 },
+      recommended_replacement: null,
+      shadow_recommendation: null,
+      agreement: true,
+      net_voi: null,
+    });
     expect(compact.results.map((result) => result.path)).toEqual(rich.results.map((result) => result.path));
 
     const first = compact.results[0];
