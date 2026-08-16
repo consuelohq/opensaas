@@ -1068,6 +1068,32 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes durable subagent changes through focused contracts instead of the broad OS package suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/subagent/runtime.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/subagent/lifecycle.ts',
+      '--changed-file',
+      'packages/os/tests/subagent-executable-discovery.test.ts',
+      '--changed-file',
+      'packages/os/tests/subagent-orchestration-contract.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-durable-subagent-runtime',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'OS durable subagent runtime contracts',
+      'OS durable subagent syntax contracts',
+    ]);
+  });
+
   it('routes native macOS menu changes through focused Mac contracts', () => {
     const data = json(run([
       'check',

@@ -56,12 +56,13 @@ function writeFakeGrok(
 }
 
 async function runGrok(root: string, env: NodeJS.ProcessEnv) {
+  const isolatedEnv = { ...env, CONSUELO_HOME: root };
   return executeTool('subagent', {
     provider: 'grok',
     policy: 'read',
     instructionPath: writeInstruction(root),
     outputFormat: 'json',
-  }, stableOptions(root, env));
+  }, stableOptions(root, isolatedEnv));
 }
 
 describe('Grok subagent executable discovery', () => {
