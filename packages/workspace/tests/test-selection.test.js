@@ -1094,6 +1094,65 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('keeps Dialer stream OS release fixes on focused contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/code-call/process.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/trace-database-schema.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/trace-sites-local-read-backend.ts',
+      '--changed-file',
+      'packages/os/tests/audit/fixtures/script-parity-classifications.json',
+      '--changed-file',
+      'packages/os/tests/code-call-process-regressions.test.ts',
+      '--changed-file',
+      'packages/os/tests/facade/facade.test.ts',
+      '--changed-file',
+      'packages/os/tests/media/31-svg-convert.test.ts',
+      '--changed-file',
+      'packages/os/tests/trace-sites-gateway-live-endpoints.test.ts',
+      '--changed-file',
+      'packages/os/SCRIPTS.md',
+      '--changed-file',
+      'packages/os/streams/dialer-algorithm/AGENTS.md',
+      '--json',
+    ]));
+
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    expect(matchedRuleIds).toEqual(expect.arrayContaining([
+      'os-code-call-process-runtime',
+      'os-trace-sqlite-runtime',
+      'os-facade-release-regressions',
+      'os-media-svg-convert',
+      'os-script-parity-audit',
+      'os-instruction-docs',
+    ]));
+    expect(matchedRuleIds).not.toContain('os-lifecycle-update-handoff');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).not.toContain('OS lifecycle update handoff contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('treats OS operational instructions as documentation-only selection', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/SCRIPTS.md',
+      '--changed-file',
+      'packages/os/streams/dialer-algorithm/AGENTS.md',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toEqual([
+      'os-instruction-docs',
+    ]);
+    expect(data.selectedSuites).toEqual([]);
+    expect(data.zeroSuiteReason).toContain('changed files are docs');
+  });
+
   it('routes native macOS menu changes through focused Mac contracts', () => {
     const data = json(run([
       'check',
