@@ -470,9 +470,17 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### explore — repo exploration retrieval
 
-builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semantic-index/<repoHash>/`, embeds chunks and queries with Qwen3-Embedding-4B through the Consuelo hosted embedding gateway by default, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
+builds or refreshes the git-aware local index under `$CONSUELO_HOME/cache/semantic-index/<repoHash>/`, then retrieves candidates through independent semantic and lexical/exact channels before graph expansion. Candidate channels are fused by reciprocal rank rather than treating incomparable raw scores as one scale; a conservative MMR pass reduces redundant same-role results while preserving complementary implementation/dependency/test context. Explicit path scopes such as `Within packages/os/scripts/lib/search, ...` are hard retrieval boundaries. Explore still writes an `explore.result` evidence event and initializes `.task/explore-state.json` dependency hypotheses. Rank support is fitted from the curated ExploreBench corpus with Jeffreys-smoothed rank bins and remains explicitly provisional until the independent benchmark corpus is large enough for calibration review. Retrieval narrows the investigation; it is not proof.
 
-The default OS path does not require a user OpenRouter key or a local GGUF model. Raw chunks are sent only to the configured Consuelo embedding gateway for vector generation; vectors and graph/index state remain local in the repo-scoped semantic index DB. Offline users can opt into local embeddings explicitly:
+E4 remains the authoritative investigation policy for `next_action` and edit readiness. E5 evaluates a one-read empirical VOI challenger in shadow only and records `explore.voi.shadow`; it never replaces E4. E6 evaluates a versioned, pre-specified promotion gate after the E5 shadow event and records `explore.promotion.gate`. E6 requires a **frozen challenger configuration** with an explicit non-degenerate utility profile and compatible empirical read-cost model, calibrated retrieval evidence, a frozen fixed-sample paired ExploreBench comparison, zero required-node regressions, and a versioned frozen operational-shadow snapshot. Benchmark rows and frozen shadow observations must carry the same challenger configuration id; mixed-policy evidence is invalid. The current query E5 packet is `local_challenger` diagnostics and current worktree shadow history is `local_shadow` diagnostics; neither can satisfy promotion thresholds. A passing E6 result means only `eligible_for_controlled_trial`; `production_cutover` is always false and E4 remains authoritative.
+
+Semantic retrieval uses Qwen3-Embedding-4B through the Consuelo hosted embedding gateway by default. If query embedding is temporarily unavailable, Explore continues with lexical/exact retrieval and graph expansion instead of failing the whole request. Graph-only candidates do not inherit a synthetic embedding score from their parent, so missing semantic evidence stays missing rather than being fabricated.
+
+The default OS path does not require a user OpenRouter key or a local GGUF model. Consuelo currently provides the hosted embedding path as part of Explore. Raw chunks are sent only to the configured Consuelo embedding gateway for vector generation; vectors and graph/index state remain local in the repo-scoped semantic index DB. The shared provider credential stays in the Cloudflare worker and is never delivered to the client.
+
+`gateway.consuelohq.com/v1/os/semantic-embeddings` is a platform-global route, not a workspace hostname. It bypasses workspace routing and accepts only the fixed Qwen3-Embedding-4B contract used by Explore: POST only, at most 32 items, 4,000 characters per item, and 128,000 characters total. The worker cannot proxy chat/completion requests or arbitrary OpenRouter models. Cloudflare applies a 600 requests/minute pseudonymous-install ceiling plus a 1,200 requests/minute IP abuse ceiling before any provider request is made. Interactive installs reuse a private `ins_<uuid>` stored at `$CONSUELO_HOME/node/identity/install-id` when an installer-provided ID is not already available.
+
+Offline users can opt into local embeddings explicitly:
 
 ```bash
 CONSUELO_EMBEDDING_PROVIDER=local bun run explore -- "how does the dialer queue work?"
@@ -486,10 +494,15 @@ CONSUELO_EMBEDDING_GATEWAY_URL=https://gateway.consuelohq.com/v1/os/semantic-emb
 CONSUELO_EMBEDDING_PROVIDER=openrouter CONSUELO_OPENROUTER_API_KEY=... bun run explore -- "query"
 ```
 
+Structured Explore output is compact by default so agents receive the ranked ownership/dependency packet without paying for scoring internals and the complete graph frontier. Compact results preserve result order, symbols/lines, rationale, evidence state, provisional retrieval support, calibration status, up to three typed dependency edges plus the full connection count, the E5 shadow recommendation summary, and the bounded E6 promotion-gate blocker/paired-evidence summary. The rich payload is still written to Explore state/evidence. Use `--detail full` only when debugging ranking, graph, scoring, or promotion evidence internals.
+
+Hosted semantic embedding requests carry a pseudonymous install id for telemetry/cache correlation only. That id is caller-minted and is never an authorization or provider-spend control. The public gateway applies its spend ceilings to Cloudflare-observed client identity and bounds upstream embedding-provider calls with a finite deadline; install-id persistence is fail-open so an unwritable identity path cannot make Explore unavailable.
+
 ```bash
 bun run explore -- "how does the dialer queue work?"
 bun run explore -- "where is task metadata verified?" --budget 5
 bun run explore -- "recent workspace changes" --changed-only --json
+bun run explore -- "inspect ranking internals" --json --detail full
 bun run explore -- "refresh everything" --reindex
 ```
 
@@ -500,7 +513,7 @@ bad: sqlite-vec could not be loaded
  → use the root script, which sets Homebrew SQLite on DYLD_LIBRARY_PATH for macOS extension loading.
 
 bad: embedding gateway failed
- → hosted embedding generation is unavailable, over quota, or misconfigured. check CONSUELO_EMBEDDING_GATEWAY_URL or use CONSUELO_EMBEDDING_PROVIDER=local for offline mode.
+ → hosted embedding generation is unavailable, rate-limited, or misconfigured. Explore continues on lexical/exact + graph retrieval for the current query; check the platform-global embedding gateway or use CONSUELO_EMBEDDING_PROVIDER=local when semantic retrieval is required offline. `WORKSPACE_HOSTNAME_NOT_FOUND` is never an expected response from the embedding route.
 
 bad: embedding model not found
  → local mode was explicitly selected and the expected model is missing under $CONSUELO_HOME/models/ or CONSUELO_EMBEDDING_MODEL_PATH.
@@ -508,9 +521,23 @@ bad: embedding model not found
 
 ---
 
+### explore:benchmark — agent-facing Explore retrieval quality
+
+Runs the curated OS-owned ExploreBench corpus directly against the live `packages/os` retriever without writing Explore evidence or belief state. It reports Recall@k, required-node recall, MRR, and nDCG. The default uses the existing semantic index as a frozen corpus so control/challenger comparisons change ranking rather than indexed content; pass `--refresh-index` only when intentionally measuring a refreshed corpus. Use `--case` repeatedly for bounded subsets when diagnosing a single retrieval domain; use `--output-dir` plus `--name` to retain control/challenger reports.
+
+```bash
+bun run explore:benchmark -- --json
+bun run explore:benchmark -- --case explore-ranking --case explicit-search-scope --json
+bun run explore:benchmark -- --output-dir packages/os/explore-bench/reports --name explore-benchmark-snapshot --json
+```
+
+Benchmark labels live in `packages/os/explore-bench/cases.v1.json`. Treat reports as comparative evidence only after `validateBenchmarkEvidence` accepts them: an explicitly invalid report or a run with no ranked results is not a control, even if it contains numeric metrics. The historical `e2-live-control` artifact is intentionally marked invalid because its gateway failed and every ranking was empty; it is retained for provenance, not comparison. For valid control/challenger runs, use the same case file, budget, graph depth, and index configuration. The library-level `evaluateVoiShadowBenchmark` emits paired per-case E4-control/E5-policy relevance and required-node deltas for E6 evidence construction. It evaluates only `evaluable_shadow` E5 decisions, uses `shadow_recommendation` when E5 recommends a read, and uses the E4 control action when E5 abstains; it does not score `research_candidate` as though E5 had proposed it. Each emitted row carries the challenger configuration id. The retrieval benchmark CLI does not manufacture E5 policy decisions or silently populate the promotion artifact; `explore-promotion-evidence.v1.json` stays insufficient until one frozen challenger configuration, an explicit paired fixed-sample decision set, and an operational `shadowEvidence` snapshot are collected under the same configuration id and frozen. Mutable query/worktree evidence remains diagnostic only.
+
+---
+
 ### decide-next — next action from evidence
 
-reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `$CONSUELO_HOME/cache/semantic-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
+reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `$CONSUELO_HOME/cache/semantic-index/`, updates dependency hypotheses from explicit relevance evidence, then recommends the next unread root/dependency from the strongest hypothesis. plain file reads record coverage only. test/verify/runtime outcomes affect readiness, not file relevance. it writes a `decision.taken` evidence event and recommends `exploit` only when the hypothesis has enough observed dependency coverage to choose an edit target.
 
 ```bash
 bun run decide-next
@@ -523,9 +550,9 @@ bun run decide-next -- --json
 
 ---
 
-### confidence-score — evidence confidence
+### confidence-score — investigation readiness
 
-scores the current path from evidence events: reads, posterior belief updates, connected files actually visited, verify/test/runtime results, and contradictions. Qwen candidates, graph expansion, and test existence are reported as starting state, not `evidence_for`; cold start confidence stays low because retrieval is only a prior.
+reports categorical investigation readiness from dependency-hypothesis coverage, explicit relevance labels, verify/test/runtime results, and contradictions. the tool name remains `confidenceScore` for compatibility, but its output is readiness, not a probability. plain reads increase coverage only. retrieval support is reported with its calibration status and never described as a posterior.
 
 ```bash
 bun run confidence-score
@@ -536,7 +563,7 @@ bun run confidence-score -- --json
 
 ### exploit — commit to an editing path
 
-selects the highest-confidence file from explore state, emits line ranges and context files, marks the state as exploiting, and writes a `decision.taken` evidence event.
+selects the strongest supported dependency-hypothesis root from explore state, emits line ranges and context files from that subgraph, marks the state as exploiting, and writes a `decision.taken` evidence event. an explicit `--target` still overrides the hypothesis root.
 
 ```bash
 bun run exploit

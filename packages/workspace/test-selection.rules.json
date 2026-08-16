@@ -96,6 +96,27 @@
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy."
     },
     {
+      "id": "workspace-explore-bench-compatibility",
+      "critical": true,
+      "source": [
+        "packages/workspace/scripts/explore-bench.js",
+        "packages/workspace/tests/explore-bench.test.js"
+      ],
+      "tests": [
+        {
+          "name": "Workspace ExploreBench compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/explore-bench.test.js"
+          ]
+        }
+      ],
+      "reason": "The legacy Workspace ExploreBench entrypoint must delegate to the canonical OS benchmark without cwd, syntax, or error-wrapping drift."
+    },
+    {
       "id": "trace-watch",
       "critical": true,
       "source": [
@@ -217,6 +238,78 @@
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior."
     },
     {
+      "id": "os-explore-retrieval-science",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/workspace-edge/src/index.ts",
+        "packages/os/cloudflare/workspace-edge/src/semantic-embedding-gateway.ts",
+        "packages/os/cloudflare/workspace-edge/wrangler.toml",
+        "packages/os/dev-steering.md",
+        "packages/os/explore-bench/**",
+        "packages/os/scripts/ai-review.js",
+        "packages/os/scripts/confidence-score.js",
+        "packages/os/scripts/decide-next.js",
+        "packages/os/scripts/exploit.js",
+        "packages/os/scripts/explore-bench.js",
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
+        "packages/os/scripts/lib/explore-bench.js",
+        "packages/os/scripts/lib/index/embedding-gateway.js",
+        "packages/os/scripts/lib/index/store.js",
+        "packages/os/scripts/lib/search/**",
+        "packages/os/scripts/lib/state/explore-calibration.v1.json",
+        "packages/os/scripts/lib/state/explore-hypothesis-model.js",
+        "packages/os/scripts/lib/state/explore-policy.js",
+        "packages/os/scripts/lib/state/explore-promotion-criteria.v1.json",
+        "packages/os/scripts/lib/state/explore-promotion-evidence.v1.json",
+        "packages/os/scripts/lib/state/explore-promotion-gate.js",
+        "packages/os/scripts/lib/state/explore-read-cost-model.v1.json",
+        "packages/os/scripts/lib/state/explore-state.js",
+        "packages/os/scripts/lib/state/explore-voi-policy.js",
+        "packages/os/scripts/review.js",
+        "packages/os/skills/senior-engineer/SKILL.md",
+        "packages/os/skills/task/SKILL.md",
+        "packages/os/tests/explore-bench.test.ts",
+        "packages/os/tests/explore-hypothesis-model.test.ts",
+        "packages/os/tests/explore-output-contract.test.ts",
+        "packages/os/tests/explore-promotion-gate.test.ts",
+        "packages/os/tests/explore-retrieval-policy.test.ts",
+        "packages/os/tests/explore-retriever-fallback.test.ts",
+        "packages/os/tests/explore-runtime-routing.test.ts",
+        "packages/os/tests/explore-voi-policy.test.ts",
+        "packages/os/tests/semantic-embedding-edge-gateway.test.ts",
+        "packages/os/tests/semantic-embedding-gateway.test.ts",
+        "packages/os/tests/semantic-embedding-identity.test.ts",
+        "packages/os/tools/decision-engine/handler.ts",
+        "packages/os/tools/decision-engine/schema.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts"
+          ]
+        }
+      ],
+      "reason": "Agent-facing OS Explore retrieval, unified investigation-policy, shadow VOI, and E6 controlled-trial promotion-gate changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared E4 next-action/edit-readiness control, shadow-only empirical E5 VOI abstention/cost math, fixed-sample paired E6 evidence with exact sign-test and required-node safety gates, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite."
+    },
+    {
       "id": "os-release-surface-freshness",
       "critical": true,
       "exclusive": true,
@@ -226,6 +319,7 @@
         "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/tests/distribution/release-channel-workflows.test.ts",
         "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/os/tests/production-release-mcp-security.test.ts",
         "packages/workspace/scripts/os-release.ts",
         "packages/workspace/scripts/os-release-device-auth.ts",
         "packages/workspace/scripts/os-release-workspace-edge.ts",
@@ -240,7 +334,8 @@
             "packages/os",
             "test",
             "tests/os-device-authority-release-contract.test.ts",
-            "tests/distribution/release-channel-workflows.test.ts"
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts"
           ]
         },
         {
@@ -473,39 +568,66 @@
       "reason": "Gateway security and Caddy handoff changes must prove signed Workspace Edge headers survive local proxying, gateway authorization remains fail-closed, worker-pool reconciliation is idempotent, and syntax stays valid without selecting unrelated package-wide OS tests."
     },
     {
+      "id": "os-tool-surface-generation",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/manifests/generated/core.manifest.json",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/tool-package-layout.test.ts",
+        "packages/os/tools/registry.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS tool surface generation contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/tool-manifest.test.ts",
+            "tests/tool-package-layout.test.ts"
+          ]
+        },
+        {
+          "name": "OS tool surface syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Shared generated OS tool manifests, facade schemas, registry metadata, and generated workspace types must prove deterministic generation and syntax without waking unrelated lifecycle execution."
+    },
+    {
       "id": "os-lifecycle-update-handoff",
       "critical": true,
       "exclusive": true,
       "source": [
-        "packages/os/SCRIPTS.md",
-        "packages/os/TOOLS.md",
-        "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
         "packages/os/scripts/consuelo-reload.js",
         "packages/os/scripts/generate-system-daemons.sh",
         "packages/os/scripts/install-system-daemons.sh",
         "packages/os/scripts/lifecycle.ts",
         "packages/os/scripts/lib/lifecycle/engine.ts",
-        "packages/os/scripts/lib/facade/schemas.ts",
         "packages/os/scripts/lib/native-lifecycle-operation.ts",
         "packages/os/scripts/lib/lifecycle/types.ts",
         "packages/os/scripts/lib/worker-pool.ts",
         "packages/os/scripts/server/routes/health.ts",
         "packages/os/scripts/server/supervisor.ts",
         "packages/os/scripts/start-consuelo-daemon.sh",
-        "packages/os/src/generated/workspace.d.ts",
-        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
-        "packages/os/tests/fixtures/tool-package-baseline.json",
         "packages/os/tests/cli-update-routing.test.ts",
         "packages/os/tests/lifecycle-engine.test.ts",
         "packages/os/tests/lifecycle-facade.test.ts",
         "packages/os/tests/lifecycle-tool-surface.test.ts",
         "packages/os/tests/native-lifecycle-operation.test.ts",
-        "packages/os/tests/tool-manifest.test.ts",
-        "packages/os/tests/tool-package-layout.test.ts",
         "packages/os/scripts/lib/windows-platform.ts",
         "packages/os/tools/lifecycle/**",
-        "packages/os/tools/registry.ts",
         "packages/os/scripts/lib/lifecycle/service.ts",
         "packages/os/scripts/lib/platforms/linux.ts",
         "packages/os/tests/lifecycle-restart-contract.test.ts",

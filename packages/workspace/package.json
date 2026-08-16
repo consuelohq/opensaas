@@ -53,7 +53,8 @@
     "os:release": "bun ./scripts/os-release.ts",
     "os:release-install": "bun ./scripts/os-release-install.ts",
     "os:release-device-auth": "bun ./scripts/os-release-device-auth.ts",
-    "media:svg": "python3 ./scripts/media-svg.py"
+    "media:svg": "python3 ./scripts/media-svg.py",
+    "explore-bench": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/explore-bench.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

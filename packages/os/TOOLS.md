@@ -1728,7 +1728,7 @@ await workspace.call({
 
 ### workspace.confidenceScore
 
-score confidence from evidence state
+report investigation readiness from hypothesis coverage and validation evidence
 
 | Field | Value |
 | --- | --- |
@@ -1844,7 +1844,7 @@ await workspace.call({
 
 ### workspace.decideNext
 
-recommend the next action from evidence state
+recommend the next evidence action from hypothesis support and readiness
 
 | Field | Value |
 | --- | --- |
@@ -1901,7 +1901,7 @@ await workspace.call({
 
 ### workspace.exploit
 
-select the highest-confidence editing target
+select the strongest supported dependency hypothesis as the editing target
 
 | Field | Value |
 | --- | --- |
@@ -1963,7 +1963,7 @@ a repo-aware decision search tool for coding agents. It answers where to spend a
 | Field | Value |
 | --- | --- |
 | Category | decision engine |
-| Signature | `workspace.explore({ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.explore({ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; detail?: "compact" &#124; "full"; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace explore` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 300000ms |

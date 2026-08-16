@@ -43,6 +43,7 @@
     "review": "bun ./scripts/review.js",
     "ai-review": "bun ./scripts/ai-review.js",
     "explore": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/explore.js",
+    "explore:benchmark": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/explore-bench.js",
     "decide-next": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/decide-next.js",
     "confidence-score": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/confidence-score.js",
     "exploit": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/exploit.js",

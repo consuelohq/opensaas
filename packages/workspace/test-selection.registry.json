@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2638,
-    "mappedTestCount": 2555,
+    "testFileCount": 2649,
+    "mappedTestCount": 2566,
     "unmappedTestCount": 83,
-    "ruleCount": 60,
-    "explicitRuleCount": 41,
+    "ruleCount": 63,
+    "explicitRuleCount": 44,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 261,
+      "packages/os/tests": 271,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 61,
+      "packages/workspace/tests": 62,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 544,
+      "test": 555,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -740,6 +740,28 @@
       ],
       "critical": true,
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+      "origin": "explicit"
+    },
+    {
+      "id": "workspace-explore-bench-compatibility",
+      "source": [
+        "packages/workspace/scripts/explore-bench.js",
+        "packages/workspace/tests/explore-bench.test.js"
+      ],
+      "tests": [
+        {
+          "name": "Workspace ExploreBench compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/explore-bench.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "The legacy Workspace ExploreBench entrypoint must delegate to the canonical OS benchmark without cwd, syntax, or error-wrapping drift.",
       "origin": "explicit"
     },
     {
@@ -868,6 +890,79 @@
       "origin": "explicit"
     },
     {
+      "id": "os-explore-retrieval-science",
+      "source": [
+        "packages/os/cloudflare/workspace-edge/src/index.ts",
+        "packages/os/cloudflare/workspace-edge/src/semantic-embedding-gateway.ts",
+        "packages/os/cloudflare/workspace-edge/wrangler.toml",
+        "packages/os/dev-steering.md",
+        "packages/os/explore-bench/**",
+        "packages/os/scripts/ai-review.js",
+        "packages/os/scripts/confidence-score.js",
+        "packages/os/scripts/decide-next.js",
+        "packages/os/scripts/exploit.js",
+        "packages/os/scripts/explore-bench.js",
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
+        "packages/os/scripts/lib/explore-bench.js",
+        "packages/os/scripts/lib/index/embedding-gateway.js",
+        "packages/os/scripts/lib/index/store.js",
+        "packages/os/scripts/lib/search/**",
+        "packages/os/scripts/lib/state/explore-calibration.v1.json",
+        "packages/os/scripts/lib/state/explore-hypothesis-model.js",
+        "packages/os/scripts/lib/state/explore-policy.js",
+        "packages/os/scripts/lib/state/explore-promotion-criteria.v1.json",
+        "packages/os/scripts/lib/state/explore-promotion-evidence.v1.json",
+        "packages/os/scripts/lib/state/explore-promotion-gate.js",
+        "packages/os/scripts/lib/state/explore-read-cost-model.v1.json",
+        "packages/os/scripts/lib/state/explore-state.js",
+        "packages/os/scripts/lib/state/explore-voi-policy.js",
+        "packages/os/scripts/review.js",
+        "packages/os/skills/senior-engineer/SKILL.md",
+        "packages/os/skills/task/SKILL.md",
+        "packages/os/tests/explore-bench.test.ts",
+        "packages/os/tests/explore-hypothesis-model.test.ts",
+        "packages/os/tests/explore-output-contract.test.ts",
+        "packages/os/tests/explore-promotion-gate.test.ts",
+        "packages/os/tests/explore-retrieval-policy.test.ts",
+        "packages/os/tests/explore-retriever-fallback.test.ts",
+        "packages/os/tests/explore-runtime-routing.test.ts",
+        "packages/os/tests/explore-voi-policy.test.ts",
+        "packages/os/tests/semantic-embedding-edge-gateway.test.ts",
+        "packages/os/tests/semantic-embedding-gateway.test.ts",
+        "packages/os/tests/semantic-embedding-identity.test.ts",
+        "packages/os/tools/decision-engine/handler.ts",
+        "packages/os/tools/decision-engine/schema.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Agent-facing OS Explore retrieval, unified investigation-policy, shadow VOI, and E6 controlled-trial promotion-gate changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared E4 next-action/edit-readiness control, shadow-only empirical E5 VOI abstention/cost math, fixed-sample paired E6 evidence with exact sign-test and required-node safety gates, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
+      "origin": "explicit"
+    },
+    {
       "id": "os-release-surface-freshness",
       "source": [
         ".github/workflows/consuelo-os-runtime-publish.yaml",
@@ -875,6 +970,7 @@
         "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/tests/distribution/release-channel-workflows.test.ts",
         "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/os/tests/production-release-mcp-security.test.ts",
         "packages/workspace/scripts/os-release.ts",
         "packages/workspace/scripts/os-release-device-auth.ts",
         "packages/workspace/scripts/os-release-workspace-edge.ts",
@@ -889,7 +985,8 @@
             "packages/os",
             "test",
             "tests/os-device-authority-release-contract.test.ts",
-            "tests/distribution/release-channel-workflows.test.ts"
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts"
           ]
         },
         {
@@ -1132,37 +1229,65 @@
       "origin": "explicit"
     },
     {
+      "id": "os-tool-surface-generation",
+      "source": [
+        "packages/os/manifests/generated/core.manifest.json",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/tool-package-layout.test.ts",
+        "packages/os/tools/registry.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS tool surface generation contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/tool-manifest.test.ts",
+            "tests/tool-package-layout.test.ts"
+          ]
+        },
+        {
+          "name": "OS tool surface syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Shared generated OS tool manifests, facade schemas, registry metadata, and generated workspace types must prove deterministic generation and syntax without waking unrelated lifecycle execution.",
+      "origin": "explicit"
+    },
+    {
       "id": "os-lifecycle-update-handoff",
       "source": [
-        "packages/os/SCRIPTS.md",
-        "packages/os/TOOLS.md",
-        "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
         "packages/os/scripts/consuelo-reload.js",
         "packages/os/scripts/generate-system-daemons.sh",
         "packages/os/scripts/install-system-daemons.sh",
         "packages/os/scripts/lifecycle.ts",
         "packages/os/scripts/lib/lifecycle/engine.ts",
-        "packages/os/scripts/lib/facade/schemas.ts",
         "packages/os/scripts/lib/native-lifecycle-operation.ts",
         "packages/os/scripts/lib/lifecycle/types.ts",
         "packages/os/scripts/lib/worker-pool.ts",
         "packages/os/scripts/server/routes/health.ts",
         "packages/os/scripts/server/supervisor.ts",
         "packages/os/scripts/start-consuelo-daemon.sh",
-        "packages/os/src/generated/workspace.d.ts",
-        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
-        "packages/os/tests/fixtures/tool-package-baseline.json",
         "packages/os/tests/cli-update-routing.test.ts",
         "packages/os/tests/lifecycle-engine.test.ts",
         "packages/os/tests/lifecycle-facade.test.ts",
         "packages/os/tests/lifecycle-tool-surface.test.ts",
         "packages/os/tests/native-lifecycle-operation.test.ts",
-        "packages/os/tests/tool-manifest.test.ts",
-        "packages/os/tests/tool-package-layout.test.ts",
         "packages/os/scripts/lib/windows-platform.ts",
         "packages/os/tools/lifecycle/**",
-        "packages/os/tools/registry.ts",
         "packages/os/scripts/lib/lifecycle/service.ts",
         "packages/os/scripts/lib/platforms/linux.ts",
         "packages/os/tests/lifecycle-restart-contract.test.ts",
@@ -3892,6 +4017,46 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/explore-bench.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-hypothesis-model.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-output-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-promotion-gate.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-retrieval-policy.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-retriever-fallback.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-runtime-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-voi-policy.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/facade/facade.test.ts",
       "group": "packages/os/tests/facade",
       "kind": "test"
@@ -4707,7 +4872,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/semantic-embedding-edge-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/semantic-embedding-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/semantic-embedding-identity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15528,6 +15703,11 @@
     },
     {
       "path": "packages/workspace/tests/embedding-config.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/explore-bench.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },

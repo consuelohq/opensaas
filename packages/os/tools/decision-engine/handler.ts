@@ -108,6 +108,7 @@ export const toolHandlers = [
     "name": "explore",
     "command": {
       "script": "explore",
+      "executionScope": "runtime",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
@@ -125,6 +126,11 @@ export const toolHandlers = [
           "source": "changedOnly",
           "flag": "--changed-only",
           "kind": "boolean"
+        },
+        {
+          "source": "detail",
+          "flag": "--detail",
+          "kind": "value"
         },
         {
           "source": "reindex",

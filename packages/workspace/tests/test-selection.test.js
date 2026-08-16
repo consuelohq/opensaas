@@ -549,6 +549,8 @@ describe('test selection registry', () => {
       'packages/workspace/scripts/os-release-workspace-edge.ts',
       '--changed-file',
       'packages/workspace/scripts/os-release-device-auth.ts',
+      '--changed-file',
+      'packages/os/tests/production-release-mcp-security.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -564,6 +566,145 @@ describe('test selection registry', () => {
         'Workspace Edge release dry run',
       ]),
     );
+    const releaseSuite = data.selectedSuites.find(
+      (suite) => suite.name === 'OS release freshness contracts',
+    );
+    expect(releaseSuite?.command).toContain(
+      'tests/production-release-mcp-security.test.ts',
+    );
+  });
+
+  it('uses focused OS Explore retrieval contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/search/retrieval-policy.js',
+      '--changed-file',
+      'packages/os/scripts/lib/search/retriever.js',
+      '--changed-file',
+      'packages/os/scripts/lib/index/store.js',
+      '--changed-file',
+      'packages/os/scripts/lib/state/explore-hypothesis-model.js',
+      '--changed-file',
+      'packages/os/scripts/confidence-score.js',
+      '--changed-file',
+      'packages/os/scripts/decide-next.js',
+      '--changed-file',
+      'packages/os/scripts/exploit.js',
+      '--changed-file',
+      'packages/os/tests/explore-hypothesis-model.test.ts',
+      '--changed-file',
+      'packages/os/tools/decision-engine/schema.ts',
+      '--changed-file',
+      'packages/os/scripts/explore-bench.js',
+      '--changed-file',
+      'packages/os/tests/explore-retrieval-policy.test.ts',
+      '--changed-file',
+      'packages/os/manifests/generated/core.manifest.json',
+      '--changed-file',
+      'packages/os/tools/decision-engine/handler.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/executor.ts',
+      '--changed-file',
+      'packages/os/cloudflare/workspace-edge/src/semantic-embedding-gateway.ts',
+      '--changed-file',
+      'packages/os/cloudflare/workspace-edge/wrangler.toml',
+      '--changed-file',
+      'packages/os/scripts/lib/index/embedding-gateway.js',
+      '--changed-file',
+      'packages/os/tests/explore-runtime-routing.test.ts',
+      '--changed-file',
+      'packages/os/tests/semantic-embedding-edge-gateway.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-explore-retrieval-science');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toContain('OS Explore retrieval science contracts');
+  });
+
+  it('routes shared generated OS tool surfaces without waking lifecycle execution', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/manifests/generated/core.manifest.json',
+      '--changed-file',
+      'packages/os/manifests/generated/tool.manifest.json',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/schemas.ts',
+      '--changed-file',
+      'packages/os/src/generated/workspace.d.ts',
+      '--changed-file',
+      'packages/os/tests/fixtures/tool-package-baseline.json',
+      '--changed-file',
+      'packages/os/tests/tool-manifest.test.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-tool-surface-generation');
+    expect(matchedRuleIds).not.toContain('os-lifecycle-update-handoff');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS tool surface generation contracts',
+      'OS tool surface syntax contracts',
+    ]);
+  });
+
+  it('treats OS script documentation as docs-only instead of selecting lifecycle execution', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/SCRIPTS.md',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).not.toContain('os-lifecycle-update-handoff');
+    expect(data.selectedSuites).toEqual([]);
+    expect(data.zeroSuiteReason).toBe('changed files are docs or task metadata');
+  });
+
+  it('owns the legacy Workspace ExploreBench compatibility entrypoint with a focused suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/explore-bench.js',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'workspace-explore-bench-compatibility',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'Workspace ExploreBench compatibility contracts',
+    ]);
+  });
+
+  it('keeps E4 unified Explore policy skill changes on the focused Explore suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/state/explore-policy.js',
+      '--changed-file',
+      'packages/os/skills/senior-engineer/SKILL.md',
+      '--changed-file',
+      'packages/os/skills/task/SKILL.md',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-explore-retrieval-science');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toContain('OS Explore retrieval science contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
   it('uses focused hosted-site reconciliation contracts instead of the broad OS package suite', () => {

@@ -27,6 +27,10 @@ import {
   isInstallId,
 } from '../../../scripts/lib/install-telemetry-contract';
 import { createInternalUserDashboardPageHandler } from '../../../scripts/lib/internal-user-dashboard';
+import {
+  handleSemanticEmbeddingGatewayRequest,
+  type SemanticEmbeddingGatewayEnvironment,
+} from './semantic-embedding-gateway';
 
 type WorkspaceEdgeLogContext = {
   component: 'workspace-edge';
@@ -49,7 +53,7 @@ type AuthorityNamespace = {
   get(id: unknown): AuthorityStub;
 };
 
-export type WorkspaceEdgeEnvironment = {
+export type WorkspaceEdgeEnvironment = SemanticEmbeddingGatewayEnvironment & {
   WORKSPACE_ROUTE_REGISTRY: WorkspaceRouteD1Database;
   CONSUELO_EDGE_SIGNING_SECRET: string;
   WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?: string;
@@ -63,6 +67,7 @@ export type WorkspaceEdgeEnvironment = {
 
 export type WorkspaceEdgeHandlerOptions = {
   fetchUpstream?: (request: Request) => Promise<Response>;
+  fetchEmbeddingUpstream?: (request: Request) => Promise<Response>;
   now?: () => number;
   createNonce?: () => string;
   internalDashboardService?: InstallControlPlaneService;
@@ -379,6 +384,16 @@ export function createWorkspaceEdgeHandler(
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url);
+      const embeddingResponse = await handleSemanticEmbeddingGatewayRequest({
+        request,
+        env,
+        options: {
+          ...(options.fetchEmbeddingUpstream
+            ? { fetchUpstream: options.fetchEmbeddingUpstream }
+            : {}),
+        },
+      });
+      if (embeddingResponse) return embeddingResponse;
       if (
         (url.pathname === '/auth/consume' && request.method === 'GET') ||
         (url.pathname === '/auth/logout' && request.method === 'POST')

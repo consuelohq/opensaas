@@ -2970,14 +2970,14 @@
       "source": "decision-engine",
       "sourcePath": "packages/os/tools/decision-engine/manifest.ts",
       "category": "decision engine",
-      "description": "score confidence from evidence state",
+      "description": "compatibility view of the readiness already returned by Explore's unified investigation policy",
       "core": false,
       "definition": {
         "name": "confidenceScore",
         "methodPath": [
           "confidenceScore"
         ],
-        "description": "score confidence from evidence state",
+        "description": "compatibility view of the readiness already returned by Explore's unified investigation policy",
         "category": "decision engine",
         "underlying": "workspace confidenceScore",
         "capabilities": {
@@ -3123,14 +3123,14 @@
       "source": "decision-engine",
       "sourcePath": "packages/os/tools/decision-engine/manifest.ts",
       "category": "decision engine",
-      "description": "recommend the next action from evidence state",
+      "description": "compatibility view of the next evidence action already returned by Explore's unified investigation policy",
       "core": false,
       "definition": {
         "name": "decideNext",
         "methodPath": [
           "decideNext"
         ],
-        "description": "recommend the next action from evidence state",
+        "description": "compatibility view of the next evidence action already returned by Explore's unified investigation policy",
         "category": "decision engine",
         "underlying": "workspace decideNext",
         "capabilities": {
@@ -4025,14 +4025,14 @@
       "source": "decision-engine",
       "sourcePath": "packages/os/tools/decision-engine/manifest.ts",
       "category": "decision engine",
-      "description": "select the highest-confidence editing target",
+      "description": "compatibility alias for Explore's edit target; without an explicit override it only selects when Explore is edit-ready",
       "core": false,
       "definition": {
         "name": "exploit",
         "methodPath": [
           "exploit"
         ],
-        "description": "select the highest-confidence editing target",
+        "description": "compatibility alias for Explore's edit target; without an explicit override it only selects when Explore is edit-ready",
         "category": "decision engine",
         "underlying": "workspace exploit",
         "capabilities": {
@@ -4070,14 +4070,14 @@
       "source": "decision-engine",
       "sourcePath": "packages/os/tools/decision-engine/manifest.ts",
       "category": "decision engine",
-      "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
+      "description": "a repo-aware investigation policy for coding agents. It retrieves the dependency graph and returns the current hypotheses, readiness, uncertainty, next evidence action, and whether the investigation is edit-ready.",
       "core": true,
       "definition": {
         "name": "explore",
         "methodPath": [
           "explore"
         ],
-        "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
+        "description": "a repo-aware investigation policy for coding agents. It retrieves the dependency graph and returns the current hypotheses, readiness, uncertainty, next evidence action, and whether the investigation is edit-ready.",
         "category": "decision engine",
         "underlying": "workspace explore",
         "capabilities": {
@@ -4091,6 +4091,7 @@
         "outputSchema": "RawOutput",
         "command": {
           "script": "explore",
+          "executionScope": "runtime",
           "branchMode": "none",
           "jsonFlag": "--json",
           "arguments": [
@@ -4108,6 +4109,11 @@
               "source": "changedOnly",
               "flag": "--changed-only",
               "kind": "boolean"
+            },
+            {
+              "source": "detail",
+              "flag": "--detail",
+              "kind": "value"
             },
             {
               "source": "reindex",

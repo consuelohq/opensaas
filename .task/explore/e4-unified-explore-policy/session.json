@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_90047e604117",
+  "tmuxSession": "opensaas-explore-e4-unified-explore-policy-90047e60",
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/e4-unified-explore-policy",
+  "branch": "task/explore/e4-unified-explore-policy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e4-unified-explore-policy",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e4-unified-explore-policy",
+  "prNumber": 2083,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2083",
+  "createdAt": "2026-08-15T20:08:06.357Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e4-unified-explore-policy/.task/explore/e4-unified-explore-policy/session.json"
+}
