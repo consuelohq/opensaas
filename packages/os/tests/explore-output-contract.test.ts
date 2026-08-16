@@ -64,6 +64,54 @@ type RichExplorePayload = {
     net_voi: null;
     limitations: string[];
   };
+  promotion_gate: {
+    gate_version: number;
+    status: string;
+    target: string;
+    promotion_eligible: boolean;
+    production_cutover: boolean;
+    blockers: string[];
+    challenger_configuration: {
+      status: string;
+      frozen: boolean;
+      configuration_id: string | null;
+      utility_profile_id: string | null;
+      utility_scale_present: boolean;
+      utility_scale_valid: boolean;
+      utility_scale_non_degenerate: boolean;
+      read_cost_model_ready: boolean;
+    };
+    local_challenger: {
+      status: string;
+      net_voi: number | null;
+      has_shadow_recommendation: boolean;
+      promotion_eligible: boolean;
+    };
+    benchmark: {
+      analysis_mode: string;
+      planned_evaluated_case_count: number;
+      frozen: boolean;
+      independent_case_count: number;
+      evaluated_case_count: number;
+      relevance: { wins: number; losses: number; ties: number; discordant: number; p_value: number };
+      required_node: { regressions: number };
+    };
+    shadow: {
+      status: string;
+      frozen: boolean;
+      observation_count: number;
+      distinct_question_count: number;
+      error_count: number;
+      authority_violation_count: number;
+    };
+    local_shadow: {
+      observation_count: number;
+      distinct_question_count: number;
+      error_count: number;
+      authority_violation_count: number;
+    };
+    limitations: string[];
+  };
   index_stats: {
     total_files: number;
     total_chunks: number;
@@ -153,6 +201,54 @@ function richPayload(): RichExplorePayload {
       net_voi: null,
       limitations: ['research only', 'not causal'],
     },
+    promotion_gate: {
+      gate_version: 1,
+      status: 'blocked',
+      target: 'controlled_trial',
+      promotion_eligible: false,
+      production_cutover: false,
+      blockers: ['challenger_evidence_not_ready', 'calibration_not_ready'],
+      challenger_configuration: {
+        status: 'insufficient_evidence',
+        frozen: false,
+        configuration_id: null,
+        utility_profile_id: null,
+        utility_scale_present: false,
+        utility_scale_valid: false,
+        utility_scale_non_degenerate: false,
+        read_cost_model_ready: true,
+      },
+      local_challenger: {
+        status: 'provisional_evidence',
+        net_voi: null,
+        has_shadow_recommendation: false,
+        promotion_eligible: false,
+      },
+      benchmark: {
+        analysis_mode: 'fixed_sample',
+        planned_evaluated_case_count: 50,
+        frozen: false,
+        independent_case_count: 10,
+        evaluated_case_count: 0,
+        relevance: { wins: 0, losses: 0, ties: 0, discordant: 0, p_value: 1 },
+        required_node: { regressions: 0 },
+      },
+      shadow: {
+        status: 'insufficient_evidence',
+        frozen: false,
+        observation_count: 0,
+        distinct_question_count: 0,
+        error_count: 0,
+        authority_violation_count: 0,
+      },
+      local_shadow: {
+        observation_count: 7,
+        distinct_question_count: 4,
+        error_count: 0,
+        authority_violation_count: 0,
+      },
+      limitations: ['controlled trial only', 'not causal'],
+    },
     index_stats: {
       total_files: 15_710,
       total_chunks: 80_769,
@@ -185,6 +281,53 @@ describe('Explore compact response contract', () => {
     expect(compact.query).toBe(rich.query);
     expect(compact.budget).toBe(rich.budget);
     expect((compact as { policy?: unknown }).policy).toEqual(rich.policy);
+    expect((compact as { promotion_gate?: unknown }).promotion_gate).toEqual({
+      gate_version: 1,
+      status: 'blocked',
+      target: 'controlled_trial',
+      promotion_eligible: false,
+      production_cutover: false,
+      blockers: ['challenger_evidence_not_ready', 'calibration_not_ready'],
+      challenger_configuration: {
+        status: 'insufficient_evidence',
+        frozen: false,
+        configuration_id: null,
+        utility_profile_id: null,
+        utility_scale_present: false,
+        utility_scale_valid: false,
+        utility_scale_non_degenerate: false,
+        read_cost_model_ready: true,
+      },
+      local_challenger: {
+        status: 'provisional_evidence',
+        net_voi: null,
+        has_shadow_recommendation: false,
+        promotion_eligible: false,
+      },
+      benchmark: {
+        analysis_mode: 'fixed_sample',
+        planned_evaluated_case_count: 50,
+        frozen: false,
+        independent_case_count: 10,
+        evaluated_case_count: 0,
+        relevance: { wins: 0, losses: 0, ties: 0, discordant: 0, p_value: 1 },
+        required_node: { regressions: 0 },
+      },
+      shadow: {
+        status: 'insufficient_evidence',
+        frozen: false,
+        observation_count: 0,
+        distinct_question_count: 0,
+        error_count: 0,
+        authority_violation_count: 0,
+      },
+      local_shadow: {
+        observation_count: 7,
+        distinct_question_count: 4,
+        error_count: 0,
+        authority_violation_count: 0,
+      },
+    });
     expect((compact as { voi_challenger?: unknown }).voi_challenger).toEqual({
       voi_version: 1,
       status: 'provisional_evidence',

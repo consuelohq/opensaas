@@ -17,9 +17,12 @@ const {
 } = require('./lib/state/explore-state');
 const calibration = require('./lib/state/explore-calibration.v1.json');
 const readCostModel = require('./lib/state/explore-read-cost-model.v1.json');
+const promotionCriteria = require('./lib/state/explore-promotion-criteria.v1.json');
+const promotionEvidence = require('./lib/state/explore-promotion-evidence.v1.json');
 const { getRankSupport } = require('./lib/state/explore-hypothesis-model');
 const { evaluateExplorePolicy } = require('./lib/state/explore-policy');
 const { evaluateExploreVoiChallenger } = require('./lib/state/explore-voi-policy');
+const { evaluateExplorePromotionGate } = require('./lib/state/explore-promotion-gate');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -244,6 +247,14 @@ function printVoiHuman(challenger) {
   writeStdout(`voi-shadow: ${challenger.status}${candidate ? `; candidate ${candidate.type}${target}` : ''}; promotion ${challenger.promotion_eligible ? 'eligible' : 'blocked'}`);
 }
 
+function printPromotionGateHuman(gate) {
+  if (!gate) return;
+  const listed = Array.isArray(gate.blockers) ? gate.blockers.slice(0, 4) : [];
+  const suffix = listed.length > 0
+    ? '; blockers ' + listed.join(', ') + (gate.blockers.length > 4 ? ', ...' : '')
+    : '';
+  writeStdout('promotion-gate: ' + gate.status + '; target ' + gate.target + '; production-cutover no' + suffix);
+}
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -314,6 +325,11 @@ async function main() {
   const events = getEvidenceEvents(indexResult.repoRoot);
   const state = updateHypothesesWithEvents(nextState, events);
   const policy = evaluateExplorePolicy(state, events);
+  const challengerConfiguration = promotionEvidence.challengerConfiguration || {};
+  const configuredUtilityRates = challengerConfiguration.status === 'frozen_challenger_configuration'
+    && challengerConfiguration.frozen === true
+    ? challengerConfiguration.utilityRates
+    : undefined;
   let voiChallenger;
   try {
     voiChallenger = evaluateExploreVoiChallenger({
@@ -321,6 +337,7 @@ async function main() {
       controlPolicy: policy,
       calibration,
       costModel: readCostModel,
+      utilityRates: configuredUtilityRates,
     });
   } catch (error /* unknown */) {
     const message = error instanceof Error ? error.message : String(error);
@@ -357,6 +374,8 @@ async function main() {
           expected_proxy_gain: voiChallenger.research_candidate.expected_proxy_gain,
         } : null,
         promotion_eligible: voiChallenger.promotion_eligible,
+        challenger_configuration_id: challengerConfiguration.configurationId || null,
+        utility_profile_id: challengerConfiguration.utilityProfileId || null,
         agreement: voiChallenger.agreement,
         net_voi: voiChallenger.net_voi,
       },
@@ -364,13 +383,93 @@ async function main() {
   } catch (error /* unknown */) {
     writeStderr(`explore: VOI shadow logging failed: ${error instanceof Error ? error.message : String(error)}`);
   }
+  let promotionGate;
+  try {
+    const promotionEvents = getEvidenceEvents(indexResult.repoRoot);
+    promotionGate = evaluateExplorePromotionGate({
+      challengerConfiguration,
+      localChallenger: voiChallenger,
+      costModel: readCostModel,
+      calibration,
+      benchmarkEvidence: promotionEvidence,
+      shadowEvidence: promotionEvidence.shadowEvidence,
+      localShadowEvents: promotionEvents,
+      criteria: promotionCriteria,
+    });
+  } catch (error /* unknown */) {
+    const message = error instanceof Error ? error.message : String(error);
+    promotionGate = {
+      gate_version: 1,
+      method: 'prespecified-paired-sign-test-gate',
+      status: 'blocked',
+      target: 'controlled_trial',
+      promotion_eligible: false,
+      production_cutover: false,
+      control_remains_authoritative: true,
+      blockers: ['gate_evaluator_error'],
+      reason: 'promotion gate failed closed: ' + message,
+      challenger_configuration: null,
+      local_challenger: null,
+      benchmark: null,
+      shadow: null,
+      local_shadow: null,
+    };
+  }
+
+  try {
+    appendEvidenceEvent(indexResult.repoRoot, {
+      type: 'explore.promotion.gate',
+      source: 'explore',
+      question: args.question,
+      action: 'promotion-gate',
+      status: promotionGate.status,
+      confidence_delta: 0,
+      worktree_id: indexResult.worktreeId,
+      details: {
+        gate_version: promotionGate.gate_version,
+        method: promotionGate.method,
+        target: promotionGate.target,
+        promotion_eligible: promotionGate.promotion_eligible,
+        production_cutover: false,
+        blockers: promotionGate.blockers,
+        challenger_configuration: promotionGate.challenger_configuration ? {
+          status: promotionGate.challenger_configuration.status,
+          frozen: promotionGate.challenger_configuration.frozen,
+          configuration_id: promotionGate.challenger_configuration.configuration_id,
+          utility_profile_id: promotionGate.challenger_configuration.utility_profile_id,
+          utility_scale_present: promotionGate.challenger_configuration.utility_scale_present,
+          utility_scale_valid: promotionGate.challenger_configuration.utility_scale_valid,
+          utility_scale_non_degenerate: promotionGate.challenger_configuration.utility_scale_non_degenerate,
+          read_cost_model_ready: promotionGate.challenger_configuration.read_cost_model_ready,
+        } : null,
+        local_challenger: promotionGate.local_challenger,
+        benchmark: promotionGate.benchmark ? {
+          independent_case_count: promotionGate.benchmark.independent_case_count,
+          evaluated_case_count: promotionGate.benchmark.evaluated_case_count,
+          relevance: promotionGate.benchmark.relevance,
+          required_node: promotionGate.benchmark.required_node,
+        } : null,
+        shadow: promotionGate.shadow,
+        local_shadow: promotionGate.local_shadow ? {
+          observation_count: promotionGate.local_shadow.observation_count,
+          distinct_question_count: promotionGate.local_shadow.distinct_question_count,
+          error_count: promotionGate.local_shadow.error_count,
+          authority_violation_count: promotionGate.local_shadow.authority_violation_count,
+        } : null,
+      },
+    }, { requireMirror: true });
+  } catch (error /* unknown */) {
+    writeStderr('explore: promotion gate logging failed: ' + (error instanceof Error ? error.message : String(error)));
+  }
+
   const statePath = writeExploreState(indexResult.repoRoot, {
     ...state,
     policy_snapshot: policy,
     voi_challenger_snapshot: voiChallenger,
+    promotion_gate_snapshot: promotionGate,
     updated_at: new Date().toISOString(),
   });
-  const outputPayload = { ...payload, policy, voi_challenger: voiChallenger };
+  const outputPayload = { ...payload, policy, voi_challenger: voiChallenger, promotion_gate: promotionGate };
 
   if (args.json) {
     writeStdout(JSON.stringify(formatExploreOutput(outputPayload, args.detail), null, 2));
@@ -378,6 +477,7 @@ async function main() {
     printHuman(args, results, indexResult);
     printPolicyHuman(policy);
     printVoiHuman(voiChallenger);
+    printPromotionGateHuman(promotionGate);
     writeStdout(`state: ${statePath}`);
   }
 }

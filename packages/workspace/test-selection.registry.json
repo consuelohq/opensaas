@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2642,
-    "mappedTestCount": 2558,
+    "testFileCount": 2643,
+    "mappedTestCount": 2559,
     "unmappedTestCount": 84,
     "ruleCount": 60,
     "explicitRuleCount": 41,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 264,
+      "packages/os/tests": 265,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 62,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 548,
+      "test": 549,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -889,19 +889,23 @@
         "packages/os/scripts/lib/state/explore-calibration.v1.json",
         "packages/os/scripts/lib/state/explore-hypothesis-model.js",
         "packages/os/scripts/lib/state/explore-policy.js",
+        "packages/os/scripts/lib/state/explore-promotion-criteria.v1.json",
+        "packages/os/scripts/lib/state/explore-promotion-evidence.v1.json",
+        "packages/os/scripts/lib/state/explore-promotion-gate.js",
         "packages/os/scripts/lib/state/explore-read-cost-model.v1.json",
         "packages/os/scripts/lib/state/explore-state.js",
         "packages/os/scripts/lib/state/explore-voi-policy.js",
+        "packages/os/scripts/review.js",
         "packages/os/skills/senior-engineer/SKILL.md",
         "packages/os/skills/task/SKILL.md",
-        "packages/os/scripts/review.js",
         "packages/os/tests/explore-bench.test.ts",
         "packages/os/tests/explore-hypothesis-model.test.ts",
         "packages/os/tests/explore-output-contract.test.ts",
-        "packages/os/tests/explore-voi-policy.test.ts",
+        "packages/os/tests/explore-promotion-gate.test.ts",
         "packages/os/tests/explore-retrieval-policy.test.ts",
         "packages/os/tests/explore-retriever-fallback.test.ts",
         "packages/os/tests/explore-runtime-routing.test.ts",
+        "packages/os/tests/explore-voi-policy.test.ts",
         "packages/os/tests/semantic-embedding-edge-gateway.test.ts",
         "packages/os/tests/semantic-embedding-gateway.test.ts",
         "packages/os/tests/semantic-embedding-identity.test.ts",
@@ -922,6 +926,7 @@
             "tests/explore-output-contract.test.ts",
             "tests/explore-hypothesis-model.test.ts",
             "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
             "tests/explore-runtime-routing.test.ts",
             "tests/semantic-embedding-edge-gateway.test.ts",
             "tests/semantic-embedding-gateway.test.ts",
@@ -931,7 +936,7 @@
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Agent-facing OS Explore retrieval and unified investigation-policy changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared next-action/edit-readiness policy, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
+      "reason": "Agent-facing OS Explore retrieval, unified investigation-policy, shadow VOI, and E6 controlled-trial promotion-gate changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared E4 next-action/edit-readiness control, shadow-only empirical E5 VOI abstention/cost math, fixed-sample paired E6 evidence with exact sign-test and required-node safety gates, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
       "origin": "explicit"
     },
     {
@@ -3898,6 +3903,11 @@
     },
     {
       "path": "packages/os/tests/explore-output-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-promotion-gate.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
