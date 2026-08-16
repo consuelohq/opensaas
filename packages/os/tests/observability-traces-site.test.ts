@@ -209,6 +209,15 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).not.toContain('trace-seed-data">{"savedAt"');
   });
 
+  it('rebuilds missing public-Astro token totals from trace payload size', () => {
+    const clientScript = buildObservabilityTracesClientScript();
+
+    expect(clientScript).toContain('estimatePayloadTokens');
+    expect(clientScript).toContain('row.rawResolvedInputJson');
+    expect(clientScript).toContain('row.rawResultJson');
+    expect(clientScript).toContain('inputTokens + outputTokens');
+  });
+
   it('owns the maintained Trace Burn browser source in OS with no deprecated workspace dependency', () => {
     const sourceFiles = [
       'model.ts',

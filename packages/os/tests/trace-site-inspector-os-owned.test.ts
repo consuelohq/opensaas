@@ -140,6 +140,68 @@ describe('OS-owned Trace Burn table formatting', () => {
     });
   });
 
+  it('does not promote ordinary explore results into nested batch traces', () => {
+    const parent = record({
+      rawResolvedInputJson: JSON.stringify({
+        steps: [{ tool: 'explore', input: { query: 'trace request receipts' } }],
+      }),
+      batchResultsJson: JSON.stringify([
+        {
+          ok: true,
+          code: 'OK',
+          traceId: 'trc_explore',
+          data: {
+            results: [
+              { symbol: 'alpha', path: 'src/alpha.ts', chunk_type: 'function' },
+              { symbol: 'beta', path: 'src/beta.ts', chunk_type: 'class' },
+            ],
+          },
+        },
+      ]),
+    });
+
+    const children = childTraceRecords(parent);
+    expect(children).toHaveLength(1);
+    expect(children[0]).toMatchObject({
+      name: 'explore',
+      traceId: 'trc_explore',
+      __traceDepth: 1,
+    });
+    expect(children.map((child) => formatTraceTableRow(child).toolLabel)).toEqual([
+      'explore',
+    ]);
+  });
+
+  it('keeps explicitly trace-shaped nested batch results', () => {
+    const parent = record({
+      rawResolvedInputJson: JSON.stringify({
+        steps: [{ tool: 'explore', input: { query: 'trace request receipts' } }],
+      }),
+      batchResultsJson: JSON.stringify([
+        {
+          ok: true,
+          code: 'OK',
+          traceId: 'trc_explore',
+          data: {
+            results: [
+              {
+                tool: 'fs.read',
+                traceId: 'trc_nested_read',
+                ok: true,
+                code: 'OK',
+              },
+            ],
+          },
+        },
+      ]),
+    });
+
+    expect(childTraceRecords(parent).map((child) => child.traceId)).toEqual([
+      'trc_explore',
+      'trc_nested_read',
+    ]);
+  });
+
   it('uses the work-session path as the existing session label and inherits it into batch children', () => {
     const parent = record({
       workSession: 'wrk_raycast',

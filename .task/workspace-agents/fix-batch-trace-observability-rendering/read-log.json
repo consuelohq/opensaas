@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/observability-traces-site.test.ts",
+    "packages/workspace/scripts/lib/facade/batch.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-08-16T06:22:07.300Z"
+}

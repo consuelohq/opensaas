@@ -155,6 +155,17 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         if (Math.abs(n) >= 1000) return (n / 1000).toFixed(1) + 'K';
         return String(Math.round(n));
       };
+      const positiveFiniteNumber = (value) => {
+        const n = Number(value || 0);
+        return Number.isFinite(n) && n > 0 ? n : 0;
+      };
+      const estimatePayloadTokens = (value) => {
+        if (value === undefined || value === null || value === '') return 0;
+        let text = '';
+        try { text = typeof value === 'string' ? value : JSON.stringify(value); }
+        catch { text = String(value || ''); }
+        return text.length > 0 ? Math.max(1, Math.ceil(text.length / 4)) : 0;
+      };
       const timeOnly = (value) => {
         const raw = String(value || '');
         const timeMatch = raw.match(/(?:T|\s)(\d{2}:\d{2}:\d{2})(?:\.\d+)?/);
@@ -173,9 +184,13 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         const metadata = isObject(row.metadata) ? row.metadata : {};
         const input = summarize(first(row.input, row.inputSummary, row.request, row.args, row.resolvedInputObj));
         const output = summarize(first(row.output, row.outputSummary, row.result, row.response, row.error, row.summary));
-        const inputTokens = Number(first(row.inputTokens, row.input_tokens, metadata.inputTokens, 0) || 0);
-        const outputTokens = Number(first(row.outputTokens, row.output_tokens, metadata.outputTokens, 0) || 0);
-        const tokens = Number(first(row.tokens, row.totalTokens, row.total_tokens, inputTokens + outputTokens, 0) || 0);
+        const inputTokens = positiveFiniteNumber(first(row.inputTokens, row.input_tokens, metadata.inputTokens, 0));
+        const outputTokens = positiveFiniteNumber(first(row.outputTokens, row.output_tokens, metadata.outputTokens, 0));
+        const explicitTokens = positiveFiniteNumber(first(row.tokens, row.totalTokens, row.total_tokens, 0));
+        const recordedTokens = inputTokens + outputTokens;
+        const payloadTokens = estimatePayloadTokens(first(row.rawResolvedInputJson, row.resolved_input_json, row.rawInputJson, row.input_json, row.input))
+          + estimatePayloadTokens(first(row.rawResultJson, row.result_json, row.output, row.result));
+        const tokens = explicitTokens || recordedTokens || payloadTokens;
         const cost = Number(first(row.cost, row.costUsd, row.totalCostUsd, row.total_cost_usd, 0) || 0);
         const status = String(first(row.status, row.success === false ? 'error' : 'success') || 'success');
         return Object.assign({}, row, {
