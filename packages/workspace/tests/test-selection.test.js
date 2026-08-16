@@ -1052,6 +1052,8 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
       '--changed-file',
+      'packages/os/tests/caddy-worker-pool-migration.test.ts',
+      '--changed-file',
       'packages/os/tests/lifecycle-restart-contract.test.ts',
       '--changed-file',
       'packages/os/tests/linux-platform.test.ts',
@@ -1077,6 +1079,7 @@ describe('test selection registry', () => {
       'packages/os/tests/lifecycle-restart-contract.test.ts',
       'packages/os/tests/runtime-ingress-dependency-convergence.test.ts',
       'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      'packages/os/tests/caddy-worker-pool-migration.test.ts',
       'packages/os/tests/linux-platform.test.ts',
     ]));
   });
