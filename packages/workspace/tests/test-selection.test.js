@@ -1111,6 +1111,7 @@ describe('test selection registry', () => {
     expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
       'OS durable subagent runtime contracts',
       'OS durable subagent syntax contracts',
+      'OS durable subagent orchestration contracts',
     ]);
   });
 
