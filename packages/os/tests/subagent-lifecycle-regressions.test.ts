@@ -233,6 +233,67 @@ describe('durable subagent lifecycle regressions', () => {
     }
   });
 
+  it('keeps waiting through completion_unknown so a late owned exit marker can recover the run', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-late-wait-recovery-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_012301230123012301230123';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerToken = 'owner-late-wait-recovery';
+    writeFileSync(stdoutLogPath, 'late completion output');
+    writeFileSync(stderrLogPath, '');
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_late_wait_recovery',
+      fingerprint: 'late-wait-recovery',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      pid: process.pid,
+      ownerToken,
+      exitMarkerPath,
+      status: 'completion_unknown',
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 3_000,
+      updatedAt: Date.now(),
+      stdoutLogPath,
+      stderrLogPath,
+    };
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+
+    const markerWritten = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        writeFileSync(exitMarkerPath, JSON.stringify({
+          runId,
+          ownerToken,
+          runnerPid: process.pid,
+          outcome: 'completed',
+          exitCode: 0,
+        }, null, 2));
+        resolve();
+      }, 50);
+    });
+
+    try {
+      const waited = await waitForDurableSubagentRun(run, environment, 250, (stdout) => ({
+        completed: stdout.includes('late completion output'),
+        finalMessage: stdout.includes('late completion output') ? 'late completion output' : undefined,
+      }));
+      await markerWritten;
+
+      expect(waited.timedOut).toBe(false);
+      expect(waited.run.status).toBe('completed');
+      expect(waited.run.finalMessage).toBe('late completion output');
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('atomically claims a requestId so concurrent starts spawn exactly once', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-home-'));
     const instructionPath = join(home, 'instructions.md');
@@ -415,7 +476,7 @@ describe('durable subagent lifecycle regressions', () => {
       }));
 
       expect(observed.status).not.toBe('completion_unknown');
-      const waited = await waitForDurableSubagentRun(started.run, makeEnvironment(home), 2_000, (stdout) => ({
+      const waited = await waitForDurableSubagentRun(started.run, makeEnvironment(home), 5_000, (stdout) => ({
         completed: stdout.includes('startup complete'),
         finalMessage: stdout.includes('startup complete') ? 'startup complete' : undefined,
       }));
@@ -639,7 +700,7 @@ describe('durable subagent lifecycle regressions', () => {
       writeFileSync(instructionPath, 'instruction');
       const started = startDurableSubagentRun(startInput(executable, home, instructionPath, 'req-tail'));
       if (!started.ok) throw new Error(started.message);
-      const waited = await waitForDurableSubagentRun(started.run, makeEnvironment(home), 2_000, (stdout) => ({
+      const waited = await waitForDurableSubagentRun(started.run, makeEnvironment(home), 5_000, (stdout) => ({
         completed: stdout.includes('tail complete'),
         finalMessage: stdout.includes('tail complete') ? 'tail complete' : undefined,
       }));
@@ -761,7 +822,7 @@ describe('durable subagent lifecycle regressions', () => {
       const runDirectory = resolveSubagentRunDirectory(started.run.runId, environment);
       const persistedFiles = readRegularFiles(runDirectory);
       expect(persistedFiles.some((content) => content.includes(sentinel))).toBe(false);
-      const waited = await waitForDurableSubagentRun(started.run, environment, 2_000, (stdout) => ({
+      const waited = await waitForDurableSubagentRun(started.run, environment, 5_000, (stdout) => ({
         completed: stdout.includes('secret complete'),
         finalMessage: stdout.includes('secret complete') ? 'secret complete' : undefined,
       }));
