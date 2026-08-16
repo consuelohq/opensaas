@@ -37,6 +37,24 @@ function fakeStore(rows: LexicalRow[]) {
   };
 }
 
+async function withWorkingSemanticEmbedding<T>(run: (retrieve: Function) => Promise<T>): Promise<T> {
+  const embedderPath = require.resolve('../scripts/lib/index/embedder.js');
+  const retrieverPath = require.resolve('../scripts/lib/search/retriever.js');
+  const embedder = require(embedderPath) as { embedText: (...args: unknown[]) => Promise<unknown> };
+  const originalEmbedText = embedder.embedText;
+
+  embedder.embedText = async () => [1, 0];
+  delete require.cache[retrieverPath];
+
+  try {
+    const { retrieve } = require(retrieverPath) as { retrieve: Function };
+    return await run(retrieve);
+  } finally {
+    embedder.embedText = originalEmbedText;
+    delete require.cache[retrieverPath];
+  }
+}
+
 async function withFailingSemanticEmbedding<T>(run: (retrieve: Function) => Promise<T>): Promise<T> {
   const embedderPath = require.resolve('../scripts/lib/index/embedder.js');
   const retrieverPath = require.resolve('../scripts/lib/search/retriever.js');
@@ -95,6 +113,8 @@ describe('OS Explore E2 lexical fallback integration', () => {
     ]);
     expect(results[0].retrievalTypes).toContain('lexical');
     expect(results[0].scoreParts.retrievalFusion.channels).toContain('lexical');
+    expect(results[0].score).toBeGreaterThan(0);
+    expect(results[0].scoreParts.preFusionHeuristicScore).toBe(0);
   });
 
   it('hard-filters an explicit path scope before returning lexical results', async () => {
@@ -131,5 +151,36 @@ describe('OS Explore E2 lexical fallback integration', () => {
     expect(results.map((result: { path: string }) => result.path)).toEqual([
       'packages/os/scripts/lib/search/ranker.js',
     ]);
+  });
+
+  it('returns semantic results when lexical retrieval fails independently', async () => {
+    const store = fakeStore([]);
+    store.searchChunks = () => [{
+      chunkId: 1,
+      filePath: 'packages/os/scripts/lib/search/retriever.js',
+      startLine: 1,
+      endLine: 30,
+      chunkType: 'function',
+      name: 'retrieve',
+      content: 'retrieve semantic graph ranking candidates',
+      distance: 0.1,
+    }];
+    store.searchChunksByText = () => {
+      throw new Error('lexical sqlite unavailable');
+    };
+
+    const results = await withWorkingSemanticEmbedding((retrieve) => retrieve(
+      store,
+      process.cwd(),
+      'where is Explore retrieval implemented',
+      { budget: 2, depth: 0, changedFiles: [], worktreeId: null },
+    ));
+
+    expect(results.map((result: { path: string }) => result.path)).toEqual([
+      'packages/os/scripts/lib/search/retriever.js',
+    ]);
+    expect(results[0].retrievalTypes).toContain('semantic');
+    expect(results[0].scoreParts.retrievalFusion.semanticAvailable).toBe(true);
+    expect(results[0].scoreParts.retrievalFusion.lexicalAvailable).toBe(false);
   });
 });

@@ -322,6 +322,7 @@ function select(registry, files) {
       ? rawMatchedFiles
       : rawMatchedFiles.filter((file) => !exclusivelyOwnedFiles.has(file));
     if (matchedFiles.length === 0) continue;
+    if (rule.origin === 'auto' && docsOnly(matchedFiles)) continue;
     matchedRules.push({
       id: rule.id,
       critical: rule.critical,

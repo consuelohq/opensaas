@@ -3,10 +3,10 @@
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
     "testFileCount": 2643,
-    "mappedTestCount": 2559,
-    "unmappedTestCount": 84,
-    "ruleCount": 60,
-    "explicitRuleCount": 41,
+    "mappedTestCount": 2560,
+    "unmappedTestCount": 83,
+    "ruleCount": 61,
+    "explicitRuleCount": 42,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -743,6 +743,28 @@
       "origin": "explicit"
     },
     {
+      "id": "workspace-explore-bench-compatibility",
+      "source": [
+        "packages/workspace/scripts/explore-bench.js",
+        "packages/workspace/tests/explore-bench.test.js"
+      ],
+      "tests": [
+        {
+          "name": "Workspace ExploreBench compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/explore-bench.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "The legacy Workspace ExploreBench entrypoint must delegate to the canonical OS benchmark without cwd, syntax, or error-wrapping drift.",
+      "origin": "explicit"
+    },
+    {
       "id": "trace-watch",
       "source": [
         "packages/os/scripts/trace-watch.ts"
@@ -881,6 +903,7 @@
         "packages/os/scripts/exploit.js",
         "packages/os/scripts/explore-bench.js",
         "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/facade/executor.ts",
         "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
         "packages/os/scripts/lib/explore-bench.js",
         "packages/os/scripts/lib/index/embedding-gateway.js",
@@ -1206,8 +1229,6 @@
     {
       "id": "os-lifecycle-update-handoff",
       "source": [
-        "packages/os/SCRIPTS.md",
-        "packages/os/TOOLS.md",
         "packages/os/manifests/generated/core.manifest.json",
         "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
@@ -15846,7 +15867,6 @@
     "packages/workspace/tests/docs-production-release.test.js",
     "packages/workspace/tests/email-package-removal.test.ts",
     "packages/workspace/tests/embedding-config.test.js",
-    "packages/workspace/tests/explore-bench.test.js",
     "packages/workspace/tests/explore-ranker.test.js",
     "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tests/fs-apply-patch.test.ts",

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createWorkspaceEdgeHandler } from '../cloudflare/workspace-edge/src/index';
+import { handleSemanticEmbeddingGatewayRequest } from '../cloudflare/workspace-edge/src/semantic-embedding-gateway';
 import {
   createInMemoryWorkspaceRouteD1,
   migrateWorkspaceRouteD1,
@@ -20,7 +21,10 @@ function contentHash(text: string): string {
   return createHash('sha256').update(text).digest('hex');
 }
 
-function gatewayPayload(text = 'where is Explore retrieval implemented') {
+function gatewayPayload(
+  text = 'where is Explore retrieval implemented',
+  installId = INSTALL_ID,
+) {
   return {
     version: 1,
     provider: 'consuelo-gateway',
@@ -28,7 +32,7 @@ function gatewayPayload(text = 'where is Explore retrieval implemented') {
     embeddingConfigId: 'qwen-qwen3-embedding-4b:2560:v1',
     dimensions: DIMENSIONS,
     instructionVersion: 'qwen3-retrieval-v1',
-    installId: INSTALL_ID,
+    installId,
     repoHash: 'a'.repeat(64),
     items: [{
       contentHash: contentHash(text),
@@ -86,13 +90,17 @@ async function createGateway(input: {
   return { handler, installLimiter, ipLimiter, upstreamRequests, fetchEmbeddingUpstream };
 }
 
-function request(body: unknown = gatewayPayload()): Request {
+function request(
+  body: unknown = gatewayPayload(),
+  installId = INSTALL_ID,
+  ip = '203.0.113.7',
+): Request {
   return new Request(GATEWAY_URL, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
-      'cf-connecting-ip': '203.0.113.7',
-      'x-consuelo-install-id': INSTALL_ID,
+      'cf-connecting-ip': ip,
+      'x-consuelo-install-id': installId,
       'x-consuelo-embedding-model': APPROVED_MODEL,
     },
     body: JSON.stringify(body),
@@ -124,7 +132,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     expect(body.data?.[0]?.embedding).toHaveLength(DIMENSIONS);
     expect(gateway.upstreamRequests).toHaveLength(1);
     expect(gateway.upstreamRequests[0]?.url).toBe(OPENROUTER_EMBEDDINGS_URL);
-    expect(gateway.installLimiter.keys).toEqual([`install:${INSTALL_ID}`]);
+    expect(gateway.installLimiter.keys).toEqual(['client-ip:203.0.113.7']);
     expect(gateway.ipLimiter.keys).toEqual(['ip:203.0.113.7']);
   });
 
@@ -151,8 +159,15 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     const payload = { ...gatewayPayload(), model: 'openai/gpt-5' };
 
     const response = await gateway.handler(request(payload));
+    const body = await response.json() as { error?: { code?: string; message?: string } };
 
     expect(response.status).toBe(400);
+    expect(body).toEqual({
+      error: {
+        code: 'unsupported_embedding_contract',
+        message: expect.any(String),
+      },
+    });
     expect(gateway.fetchEmbeddingUpstream).not.toHaveBeenCalled();
   });
 
@@ -178,7 +193,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     expect(gateway.fetchEmbeddingUpstream).not.toHaveBeenCalled();
   });
 
-  it('rate-limits by pseudonymous install identity before spending provider money', async () => {
+  it('rate-limits by server-observed client identity before spending provider money', async () => {
     const gateway = await createGateway({ installAllowed: false });
 
     const response = await gateway.handler(request());
@@ -186,5 +201,57 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     expect(response.status).toBe(429);
     expect(response.headers.get('retry-after')).toBe('60');
     expect(gateway.fetchEmbeddingUpstream).not.toHaveBeenCalled();
+  });
+
+  it('does not let callers rotate install ids to rotate the primary spend bucket', async () => {
+    const gateway = await createGateway();
+    const rotatedInstallId = 'ins_00000000-0000-4000-8000-000000000002';
+
+    expect((await gateway.handler(request())).status).toBe(200);
+    expect((await gateway.handler(request(
+      gatewayPayload('where is Explore retrieval implemented', rotatedInstallId),
+      rotatedInstallId,
+    ))).status).toBe(200);
+
+    expect(gateway.installLimiter.keys).toEqual([
+      'client-ip:203.0.113.7',
+      'client-ip:203.0.113.7',
+    ]);
+  });
+
+  it('bounds a hung embedding provider request with an abort timeout', async () => {
+    const installLimiter = rateLimiter();
+    const ipLimiter = rateLimiter();
+    const controller = new AbortController();
+    controller.abort(new DOMException('provider deadline reached', 'TimeoutError'));
+    let observedTimeoutMs: number | null = null;
+    const gatewayResponse = await handleSemanticEmbeddingGatewayRequest({
+      request: request(),
+      env: {
+        OPENROUTER_API_KEY: 'server-only-openrouter-key',
+        OS_SEMANTIC_EMBEDDING_RATE_LIMITER: installLimiter.binding,
+        OS_SEMANTIC_EMBEDDING_IP_RATE_LIMITER: ipLimiter.binding,
+      },
+      options: {
+        providerTimeoutMs: 10,
+        createProviderSignal: (timeoutMs: number) => {
+          observedTimeoutMs = timeoutMs;
+          return controller.signal;
+        },
+        fetchUpstream: async (upstreamRequest: Request) => {
+          expect(upstreamRequest.signal.aborted).toBe(true);
+          throw upstreamRequest.signal.reason;
+        },
+      },
+    });
+
+    expect(observedTimeoutMs).toBe(10);
+    expect(gatewayResponse.status).toBe(503);
+    expect(await gatewayResponse.json()).toEqual({
+      error: {
+        code: 'embedding_provider_timeout',
+        message: expect.any(String),
+      },
+    });
   });
 });

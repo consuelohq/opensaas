@@ -96,6 +96,27 @@
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy."
     },
     {
+      "id": "workspace-explore-bench-compatibility",
+      "critical": true,
+      "source": [
+        "packages/workspace/scripts/explore-bench.js",
+        "packages/workspace/tests/explore-bench.test.js"
+      ],
+      "tests": [
+        {
+          "name": "Workspace ExploreBench compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/explore-bench.test.js"
+          ]
+        }
+      ],
+      "reason": "The legacy Workspace ExploreBench entrypoint must delegate to the canonical OS benchmark without cwd, syntax, or error-wrapping drift."
+    },
+    {
       "id": "trace-watch",
       "critical": true,
       "source": [
@@ -232,6 +253,7 @@
         "packages/os/scripts/exploit.js",
         "packages/os/scripts/explore-bench.js",
         "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/facade/executor.ts",
         "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
         "packages/os/scripts/lib/explore-bench.js",
         "packages/os/scripts/lib/index/embedding-gateway.js",
@@ -548,8 +570,6 @@
       "critical": true,
       "exclusive": true,
       "source": [
-        "packages/os/SCRIPTS.md",
-        "packages/os/TOOLS.md",
         "packages/os/manifests/generated/core.manifest.json",
         "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",

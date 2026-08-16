@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { createRequire } from 'node:module';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const {
   buildExploreBenchReport,
   dedupeEvidenceEvents,
@@ -236,5 +240,30 @@ describe('ExploreBench retrieval metrics and report contract', () => {
     expect(markdown).not.toContain('secret raw query');
     expect(serialized).not.toContain('secret raw query');
     expect(serialized).not.toContain('another raw query');
+  });
+
+  it('delegates the legacy Workspace ExploreBench CLI to the canonical OS benchmark', () => {
+    const result = spawnSync('bun', ['packages/workspace/scripts/explore-bench.js', '--help'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: process.env,
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('usage: bun run explore:benchmark');
+  });
+
+  it('preserves the canonical benchmark root cause through the legacy CLI surface', () => {
+    const result = spawnSync('bun', [
+      'packages/workspace/scripts/explore-bench.js',
+      '--definitely-invalid',
+    ], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: process.env,
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('unknown flag: --definitely-invalid');
   });
 });

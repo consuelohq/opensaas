@@ -8,6 +8,7 @@ const require = createRequire(import.meta.url);
 const {
   evaluateBenchmark,
   evaluateVoiShadowBenchmark,
+  validateBenchmarkEvidence,
   validateBenchmarkCases,
 } = require('../scripts/lib/explore-bench.js') as {
   evaluateBenchmark: (
@@ -36,6 +37,11 @@ const {
       challengerRequiredHit: boolean;
       requiredHitDelta: number;
     }>;
+  };
+  validateBenchmarkEvidence: (report: unknown) => {
+    caseCount: number;
+    evaluatedCaseCount: number;
+    rankedCaseCount: number;
   };
   validateBenchmarkCases: (cases: BenchmarkCase[]) => {
     caseCount: number;
@@ -132,6 +138,35 @@ describe('OS ExploreBench retrieval metrics', () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('usage: bun run explore:benchmark');
+  });
+
+  it('rejects explicitly invalid or all-empty benchmark evidence as a comparator', () => {
+    expect(() => validateBenchmarkEvidence({
+      valid: false,
+      invalidReason: 'retrieval gateway failed during the run',
+      benchmark: {
+        caseCount: 1,
+        evaluatedCaseCount: 1,
+        caseResults: [{ id: 'auth-owner', topPaths: [] }],
+      },
+    })).toThrow(/invalid benchmark evidence/i);
+
+    expect(() => validateBenchmarkEvidence({
+      benchmark: {
+        caseCount: 1,
+        evaluatedCaseCount: 1,
+        caseResults: [{ id: 'auth-owner', topPaths: [] }],
+      },
+    })).toThrow(/no ranked results/i);
+
+    expect(validateBenchmarkEvidence({
+      valid: true,
+      benchmark: {
+        caseCount: 1,
+        evaluatedCaseCount: 1,
+        caseResults: [{ id: 'auth-owner', topPaths: ['src/auth.ts'] }],
+      },
+    })).toEqual({ caseCount: 1, evaluatedCaseCount: 1, rankedCaseCount: 1 });
   });
 
   it('scores E5 shadow actions against curated labels without inventing counterfactual outcomes', () => {
