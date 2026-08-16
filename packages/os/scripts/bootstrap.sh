@@ -69,6 +69,7 @@ YES=0
 NO_INSTALL_BUN=0
 INSTALL_DAEMONS=0
 SKIP_DAEMONS=0
+RUNTIME_DEPENDENCIES_ONLY=0
 JSON=0
 DEBUG="${CONSUELO_OS_DEBUG:-0}"
 DEV_DIAGNOSTICS="${CONSUELO_OS_DEV_DIAGNOSTICS:-0}"
@@ -147,6 +148,7 @@ Options:
   --no-install-bun  fail with manual instructions if Bun is missing
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
+  --runtime-dependencies-only  reconcile pinned Caddy/Cloudflared binaries without onboarding or service restarts
   --refresh-source  accepted and ignored; hosted installs always resolve the current signed channel
   --use-existing-source accepted and ignored; kept for older install commands
   --mode <mode>      local or cloud
@@ -329,6 +331,7 @@ parse_args() {
       --no-install-bun) NO_INSTALL_BUN=1 ;;
       --install-daemons) INSTALL_DAEMONS=1 ;;
       --skip-daemons) SKIP_DAEMONS=1 ;;
+      --runtime-dependencies-only) RUNTIME_DEPENDENCIES_ONLY=1 ;;
       --refresh-source|--use-existing-source) ;;
       --mode)
         shift
@@ -963,14 +966,26 @@ ensure_portless() {
   log "portless is not installed; Consuelo will use http://127.0.0.1:46321"
 }
 
+cloudflared_version_matches() {
+  local candidate="$1"
+  [ -x "$candidate" ] || return 1
+  case "$("$candidate" --version 2>/dev/null || true)" in
+    "cloudflared version ${CLOUDFLARED_VERSION}"|"cloudflared version ${CLOUDFLARED_VERSION} "*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 ensure_cloudflared() {
   local managed_path="$RUNTIME_BIN_DIR/cloudflared"
+  local candidate=""
   if [ "$CLOUDFLARED_REQUIRED" != "1" ]; then
     CLOUDFLARED_STATUS="skipped_not_needed"
     return 0
   fi
 
-  if CLOUDFLARED_BIN="$(find_runtime_binary "${CLOUDFLARED_BIN:-}" cloudflared "$managed_path")"; then
+  candidate="$(find_runtime_binary "${CLOUDFLARED_BIN:-}" cloudflared "$managed_path" || true)"
+  if [ -n "$candidate" ] && cloudflared_version_matches "$candidate"; then
+    CLOUDFLARED_BIN="$candidate"
     CLOUDFLARED_STATUS="present"
     log "cloudflared found: $CLOUDFLARED_BIN"
     return 0
@@ -1066,6 +1081,54 @@ remove_env_value() {
   mv "$tmp_file" "$file"
   chmod 600 "$file"
 }
+read_persisted_runtime_path() {
+  local key="$1"
+  local env_file="$OS_HOME/.env"
+  [ -f "$env_file" ] || return 1
+  local line current_key value
+  while IFS= read -r line || [ -n "$line" ]; do
+    current_key="${line%%=*}"
+    [ "$current_key" = "$key" ] || continue
+    value="${line#*=}"
+    value="${value%$'\r'}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    printf '%s\n' "$value"
+    return 0
+  done < "$env_file"
+  return 1
+}
+
+load_persisted_ingress_runtime_paths() {
+  if [ -z "${CADDY_BIN:-}" ]; then
+    CADDY_BIN="$(read_persisted_runtime_path CADDY_BIN || true)"
+  fi
+  if [ -z "${CLOUDFLARED_BIN:-}" ]; then
+    CLOUDFLARED_BIN="$(read_persisted_runtime_path CLOUDFLARED_BIN || true)"
+  fi
+}
+
+persist_ingress_runtime_paths() {
+  local env_file="$OS_HOME/.env"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would persist ingress runtime binary paths to $env_file"
+    return 0
+  fi
+  persist_env_value "$env_file" CLOUDFLARED_BIN "$CLOUDFLARED_BIN"
+  persist_env_value "$env_file" CADDY_BIN "$CADDY_BIN"
+  export CADDY_BIN CLOUDFLARED_BIN
+}
+
+reconcile_runtime_dependencies_only() {
+  check_mac_prerequisites
+  load_persisted_ingress_runtime_paths
+  ensure_caddy
+  ensure_cloudflared
+  persist_ingress_runtime_paths
+}
+
 persist_runtime_paths() {
   local env_file="$OS_HOME/.env"
   if [ "$DRY_RUN" -eq 1 ]; then
@@ -1817,6 +1880,10 @@ print_success_summary() {
 
 main() {
   parse_args "$@"
+  if [ "$RUNTIME_DEPENDENCIES_ONLY" -eq 1 ]; then
+    reconcile_runtime_dependencies_only
+    return 0
+  fi
   init_dev_diagnostics
   choose_os_mode
   handle_cloud_mode
