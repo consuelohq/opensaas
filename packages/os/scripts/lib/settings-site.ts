@@ -1,4 +1,8 @@
-import { listManagedCloudPlans, listManagedCloudRegions } from './managed-cloud-pricing';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { nodesClientScript, nodesSiteStyles, renderNodesContent } from './nodes-site';
 import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
 import {
   renderWorkspaceChromeBar,
@@ -6,6 +10,15 @@ import {
   workspaceRouteSwitcherStyles,
   type WorkspaceSurfaceId,
 } from './workspace-chrome';
+
+const overviewAssetDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../assets/vendor/observability-traces-v38',
+);
+const OVERVIEW_HEATMAP_GSAP = fs.readFileSync(
+  path.join(overviewAssetDir, 'gsap.js'),
+  'utf8',
+).replaceAll('</script>', '<\\/script>');
 
 export type ConfigurationPageId =
   | 'configuration'
@@ -20,7 +33,7 @@ const PAGE_COPY: Record<ConfigurationPageId, {
 }> = {
   configuration: {
     title: 'Overview',
-    description: 'See what is connected to your workspace and what agents can use here.',
+    description: 'See live workspace activity, operating readiness, and the agent surfaces available here.',
   },
   tools: {
     title: 'Tools',
@@ -63,6 +76,16 @@ function configurationStyles(): string {
       --site-color-line-strong: rgba(28, 26, 23, 0.28);
       --site-color-panel: rgba(28, 26, 23, 0.035);
       --site-color-canvas: #e9e4dc;
+      --heat-cell-0: rgba(41, 37, 31, 0.045);
+      --heat-cell-1: rgba(164, 66, 37, 0.12);
+      --heat-cell-2: rgba(164, 66, 37, 0.20);
+      --heat-cell-3: rgba(164, 66, 37, 0.31);
+      --heat-cell-4: rgba(164, 66, 37, 0.44);
+      --heat-cell-5: rgba(164, 66, 37, 0.64);
+      --heat-highlight: #a44225;
+      --heat-tooltip-bg: rgba(255, 255, 248, 0.97);
+      --heat-tooltip-border: rgba(41, 37, 31, 0.16);
+      --heat-tooltip-shadow: 0 18px 55px rgba(49, 37, 24, 0.18);
       --site-font-body: 'displayFont', 'displayFont Fallback', 'Times New Roman', serif;
       --site-font-mono: 'monoFont', 'monoFont Fallback', 'Courier New', monospace;
       background: var(--site-color-paper);
@@ -81,6 +104,16 @@ function configurationStyles(): string {
         --site-color-line-strong: rgba(255, 247, 235, 0.28);
         --site-color-panel: rgba(255, 247, 235, 0.055);
         --site-color-canvas: #0d0d0c;
+        --heat-cell-0: #f1e7d50e;
+        --heat-cell-1: #f1e7d51a;
+        --heat-cell-2: #f1e7d529;
+        --heat-cell-3: #f1e7d53d;
+        --heat-cell-4: #f1e7d557;
+        --heat-cell-5: #c5a46d7a;
+        --heat-highlight: #c5a46d;
+        --heat-tooltip-bg: rgba(25, 24, 20, 0.96);
+        --heat-tooltip-border: rgba(241, 231, 213, 0.16);
+        --heat-tooltip-shadow: 0 18px 55px rgba(0, 0, 0, 0.44);
       }
     }
     * { box-sizing: border-box; }
@@ -187,6 +220,31 @@ function configurationStyles(): string {
     .inventory-toggle input:focus-visible { outline: 2px solid var(--site-color-accent); outline-offset: 2px; }
     .inventory-empty { padding: 28px 0; color: var(--site-color-muted); }
     .overview-surface { display: grid; gap: 30px; max-width: 1240px; }
+    .overview-heatmap-panel { position: relative; display: grid; gap: 20px; min-width: 0; padding: 2px 0 28px; border-bottom: 1px solid var(--site-color-line); }
+    .overview-heatmap-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: end; }
+    .overview-heatmap-copy { display: grid; gap: 7px; }
+    .overview-heatmap-copy h2 { max-width: 780px; font-size: clamp(29px, 4vw, 48px); line-height: 1.01; letter-spacing: -.035em; }
+    .overview-heatmap-copy p:not(.identity) { color: var(--site-color-muted); line-height: 1.45; }
+    .overview-heatmap-summary { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px 18px; color: var(--site-color-muted); font: 11px/1.25 var(--site-font-mono); font-variant-numeric: tabular-nums; }
+    .overview-heatmap-summary b { color: var(--site-color-ink); font-weight: 600; }
+    .overview-heatmap-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: thin; padding-bottom: 4px; }
+    .overview-heatmap-frame { min-width: 760px; display: grid; gap: 7px; }
+    .overview-heatmap-hours, .overview-heatmap-row { display: grid; grid-template-columns: 42px repeat(24, minmax(18px, 1fr)); gap: 3px; align-items: center; }
+    .overview-heatmap-hours { color: var(--site-color-muted); font: 9px/1 var(--site-font-mono); }
+    .overview-heatmap-hours span:not(:first-child) { text-align: center; }
+    .overview-heatmap-day { color: var(--site-color-muted); font: 10px/1 var(--site-font-mono); }
+    .overview-heat-cell { min-width: 0; min-height: 28px; border: 0; border-radius: 4px; background: var(--heat-cell-0); cursor: default; transition: box-shadow 160ms ease, transform 160ms ease; }
+    .overview-heat-cell[data-level="1"] { background: var(--heat-cell-1); }
+    .overview-heat-cell[data-level="2"] { background: var(--heat-cell-2); }
+    .overview-heat-cell[data-level="3"] { background: var(--heat-cell-3); }
+    .overview-heat-cell[data-level="4"] { background: var(--heat-cell-4); }
+    .overview-heat-cell[data-level="5"] { background: var(--heat-cell-5); }
+    .overview-heat-cell:hover, .overview-heat-cell:focus-visible { outline: none; transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--heat-highlight), 0 5px 13px color-mix(in srgb, var(--heat-highlight) 16%, transparent); }
+    .overview-heatmap-tooltip { position: fixed; z-index: 160; width: min(260px, calc(100vw - 24px)); padding: 12px 13px; border: 1px solid var(--heat-tooltip-border); border-radius: 9px; background: var(--heat-tooltip-bg); box-shadow: var(--heat-tooltip-shadow); backdrop-filter: blur(15px); pointer-events: none; }
+    .overview-heatmap-tooltip time { display: block; margin-bottom: 9px; color: var(--heat-highlight); font: 600 11px/1.25 var(--site-font-mono); }
+    .overview-heatmap-tooltip dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .overview-heatmap-tooltip dt { color: var(--site-color-muted); font: 9px/1 var(--site-font-mono); text-transform: uppercase; letter-spacing: .06em; }
+    .overview-heatmap-tooltip dd { margin-top: 4px; color: var(--site-color-ink); font: 600 12px/1.1 var(--site-font-mono); font-variant-numeric: tabular-nums; }
     .overview-lede { display: grid; grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr); gap: 42px; align-items: start; border-bottom: 1px solid var(--site-color-line); padding-bottom: 26px; }
     .overview-finding { display: grid; gap: 8px; }
     .overview-finding h2 { font-size: clamp(26px, 3vw, 40px); line-height: 1.03; font-weight: 500; letter-spacing: -.025em; max-width: 650px; }
@@ -215,6 +273,11 @@ function configurationStyles(): string {
       .inventory-toggle { grid-column: 3; }
     }
     @media (max-width: 620px) {
+      .overview-heatmap-head { grid-template-columns: 1fr; gap: 11px; }
+      .overview-heatmap-summary { justify-content: flex-start; }
+      .overview-heatmap-frame { min-width: 620px; }
+      .overview-heatmap-hours, .overview-heatmap-row { grid-template-columns: 34px repeat(24, minmax(14px, 1fr)); gap: 2px; }
+      .overview-heat-cell { min-height: 20px; }
       .readiness-row { grid-template-columns: 88px minmax(90px, 1fr) 70px; }
       .overview-context { grid-template-columns: 1fr; gap: 12px; }
       .availability-row { grid-template-columns: 72px minmax(90px, 1fr) 68px; }
@@ -292,7 +355,10 @@ function configurationStyles(): string {
       .plan-grid { grid-template-columns: 1fr; }
       .node-meta { grid-template-columns: 1fr; }
     }
-  ` + workspaceRouteSwitcherStyles();
+    @media (prefers-reduced-motion: reduce) {
+      .overview-heat-cell { transition: none; }
+    }
+  ` + workspaceRouteSwitcherStyles() + nodesSiteStyles();
 }
 
 function configurationClientScript(): string {
@@ -315,6 +381,184 @@ function configurationClientScript(): string {
     const pill = (status) => '<span class="status-pill ' + statusClass(status) + '">' + escapeHtml(String(status || 'unknown').replaceAll('_', ' ')) + '</span>';
     const emptyRow = (columns, message) => '<tr><td colspan="' + columns + '" class="empty">' + escapeHtml(message) + '</td></tr>';
     const detail = (label, value, code = false) => '<div><dt>' + escapeHtml(label) + '</dt><dd>' + (code ? '<code>' + escapeHtml(value) + '</code>' : escapeHtml(value)) + '</dd></div>';
+
+    const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v1';
+    const OVERVIEW_HEATMAP_TTL_MS = 30000;
+    const OVERVIEW_HEATMAP_REFRESH_MS = 30000;
+    const OVERVIEW_HEATMAP_URL = '/gateway/traces/recent?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
+    const OVERVIEW_HEATMAP_MAX_PAGES = 24;
+    const heatCompact = (value) => new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value || 0));
+    const heatCost = (value) => '$' + Number(value || 0).toFixed(Number(value || 0) >= 1 ? 2 : 4);
+    const heatTimestamp = (row) => row && (row.startTime || row.startedAt || row.started_at || row.time || row.ts || row.timestamp || row.createdAt || row.created_at);
+    const heatTokens = (row) => Number(row?.tokens ?? row?.totalTokens ?? row?.total_tokens ?? (Number(row?.inputTokens ?? row?.input_tokens ?? 0) + Number(row?.outputTokens ?? row?.output_tokens ?? 0)));
+    const heatCostValue = (row) => Number(row?.cost ?? row?.costUsd ?? row?.totalCostUsd ?? row?.total_cost_usd ?? 0);
+    const heatDayKey = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+    const heatDayLabel = (date) => new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date);
+    const heatDateLabel = (date) => new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(date);
+
+    function aggregateOverviewHeatmap(rows) {
+      const now = new Date();
+      const days = [];
+      for (let offset = 6; offset >= 0; offset -= 1) {
+        const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+        days.push({ key: heatDayKey(date), label: heatDayLabel(date), dateLabel: heatDateLabel(date) });
+      }
+      const allowed = new Set(days.map((day) => day.key));
+      const buckets = {};
+      for (const day of days) {
+        for (let hour = 0; hour < 24; hour += 1) buckets[day.key + ':' + String(hour)] = { calls: 0, tokens: 0, cost: 0 };
+      }
+      let calls = 0;
+      let tokens = 0;
+      let cost = 0;
+      for (const row of Array.isArray(rows) ? rows : []) {
+        const stamp = heatTimestamp(row);
+        const date = new Date(String(stamp || ''));
+        if (Number.isNaN(date.getTime())) continue;
+        const dayKey = heatDayKey(date);
+        if (!allowed.has(dayKey)) continue;
+        const key = dayKey + ':' + String(date.getHours());
+        const bucket = buckets[key];
+        if (!bucket) continue;
+        const rowTokens = heatTokens(row);
+        const rowCost = heatCostValue(row);
+        bucket.calls += 1;
+        bucket.tokens += rowTokens;
+        bucket.cost += rowCost;
+        calls += 1;
+        tokens += rowTokens;
+        cost += rowCost;
+      }
+      const maxCalls = Math.max(0, ...Object.values(buckets).map((bucket) => Number(bucket.calls || 0)));
+      return { days, buckets, totals: { calls, tokens, cost }, maxCalls };
+    }
+
+    function overviewHeatLevel(calls, maxCalls) {
+      if (!calls || !maxCalls) return 0;
+      const ratio = calls / maxCalls;
+      if (ratio >= 0.8) return 5;
+      if (ratio >= 0.55) return 4;
+      if (ratio >= 0.32) return 3;
+      if (ratio >= 0.14) return 2;
+      return 1;
+    }
+
+    function hideOverviewHeatTooltip() {
+      const tooltip = byId('overview-heatmap-tooltip');
+      if (tooltip) tooltip.hidden = true;
+    }
+
+    function showOverviewHeatTooltip(cell) {
+      const tooltip = byId('overview-heatmap-tooltip');
+      if (!(tooltip instanceof HTMLElement) || !(cell instanceof HTMLElement)) return;
+      setText('overview-heatmap-tooltip-time', cell.dataset.time || '');
+      setText('overview-heatmap-tooltip-calls', heatCompact(cell.dataset.calls));
+      setText('overview-heatmap-tooltip-tokens', heatCompact(cell.dataset.tokens));
+      setText('overview-heatmap-tooltip-cost', heatCost(cell.dataset.cost));
+      tooltip.hidden = false;
+      const rect = cell.getBoundingClientRect();
+      window.requestAnimationFrame(() => {
+        const left = Math.max(12, Math.min(window.innerWidth - tooltip.offsetWidth - 12, rect.left + rect.width / 2 - tooltip.offsetWidth / 2));
+        const preferredTop = rect.top - tooltip.offsetHeight - 10;
+        const top = preferredTop >= 12 ? preferredTop : Math.min(window.innerHeight - tooltip.offsetHeight - 12, rect.bottom + 10);
+        tooltip.style.left = Math.round(left) + 'px';
+        tooltip.style.top = Math.round(top) + 'px';
+      });
+    }
+
+    function animateOverviewHeatmap(cells) {
+      const reduceMotion = globalThis.matchMedia && globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const gsap = globalThis.gsap;
+      if (reduceMotion || !gsap || typeof gsap.fromTo !== 'function') return;
+      gsap.fromTo(cells, { opacity: 0.22, scale: 0.88 }, { opacity: 1, scale: 1, duration: 0.28, stagger: 0.006, ease: 'power2.out', clearProps: 'opacity,transform' });
+    }
+
+    function renderOverviewHeatmap(aggregate) {
+      const grid = byId('overview-heatmap-grid');
+      if (!grid || !aggregate || !Array.isArray(aggregate.days)) return;
+      const rows = aggregate.days.map((day) => {
+        const cells = [];
+        for (let hour = 0; hour < 24; hour += 1) {
+          const bucket = aggregate.buckets?.[day.key + ':' + String(hour)] || { calls: 0, tokens: 0, cost: 0 };
+          const level = overviewHeatLevel(bucket.calls, aggregate.maxCalls);
+          const hourLabel = String(hour).padStart(2, '0') + ':00';
+          const aria = day.dateLabel + ' ' + hourLabel + ', ' + String(bucket.calls) + ' calls, ' + heatCompact(bucket.tokens) + ' tokens, ' + heatCost(bucket.cost);
+          cells.push('<div class="overview-heat-cell" role="gridcell" tabindex="0" data-level="' + String(level) + '" data-time="' + escapeHtml(day.dateLabel + ' · ' + hourLabel) + '" data-calls="' + String(bucket.calls) + '" data-tokens="' + String(bucket.tokens) + '" data-cost="' + String(bucket.cost) + '" aria-label="' + escapeHtml(aria) + '"></div>');
+        }
+        return '<div class="overview-heatmap-row" role="row"><span class="overview-heatmap-day" role="rowheader">' + escapeHtml(day.label) + '</span>' + cells.join('') + '</div>';
+      }).join('');
+      grid.innerHTML = rows;
+      const totals = aggregate.totals || { calls: 0, tokens: 0, cost: 0 };
+      setText('overview-heatmap-calls', heatCompact(totals.calls));
+      setText('overview-heatmap-tokens', heatCompact(totals.tokens));
+      setText('overview-heatmap-cost', heatCost(totals.cost));
+      setText('overview-heatmap-title', totals.calls > 0 ? 'Activity concentrates into a readable weekly rhythm' : 'Live trace activity will appear here');
+      grid.setAttribute('aria-label', 'Trace activity by local hour for the last seven days. ' + String(totals.calls) + ' calls, ' + heatCompact(totals.tokens) + ' tokens, ' + heatCost(totals.cost) + '.');
+      const cells = Array.from(grid.querySelectorAll('.overview-heat-cell'));
+      cells.forEach((cell) => {
+        cell.addEventListener('pointerenter', () => showOverviewHeatTooltip(cell));
+        cell.addEventListener('pointerleave', hideOverviewHeatTooltip);
+        cell.addEventListener('focus', () => showOverviewHeatTooltip(cell));
+        cell.addEventListener('blur', hideOverviewHeatTooltip);
+      });
+      animateOverviewHeatmap(cells);
+    }
+
+    function readOverviewHeatmapCache() {
+      try {
+        const raw = sessionStorage.getItem(OVERVIEW_HEATMAP_CACHE_KEY);
+        const cached = raw ? JSON.parse(raw) : null;
+        if (!cached || Date.now() - Number(cached.savedAt || 0) > OVERVIEW_HEATMAP_TTL_MS) return null;
+        return cached.aggregate || null;
+      } catch {
+        return null;
+      }
+    }
+
+    async function readOverviewHeatmapRows() {
+      const rows = [];
+      let cursor = 'latest';
+      const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
+      for (let page = 0; page < OVERVIEW_HEATMAP_MAX_PAGES; page += 1) {
+        const requestUrl = OVERVIEW_HEATMAP_URL.replace('cursor=latest', 'cursor=' + encodeURIComponent(cursor));
+        const response = await fetch(requestUrl, { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' });
+        if (!response.ok) throw new Error('trace heatmap returned ' + response.status);
+        const payload = await response.json();
+        if (!payload || payload.ok === false) throw new Error('trace heatmap payload unavailable');
+        const data = payload.data || payload;
+        const pageRows = Array.isArray(data.rows) ? data.rows : [];
+        rows.push(...pageRows);
+        const oldest = pageRows.reduce((value, row) => {
+          const time = new Date(String(heatTimestamp(row) || '')).getTime();
+          return Number.isFinite(time) ? Math.min(value, time) : value;
+        }, Number.POSITIVE_INFINITY);
+        if (!data.nextCursor || pageRows.length === 0 || oldest <= cutoff) break;
+        cursor = String(data.nextCursor);
+      }
+      return rows;
+    }
+
+    async function refreshOverviewHeatmap() {
+      if (!byId('overview-heatmap-grid')) return;
+      try {
+        const rows = await readOverviewHeatmapRows();
+        const aggregate = aggregateOverviewHeatmap(rows);
+        renderOverviewHeatmap(aggregate);
+        try { sessionStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), aggregate })); } catch {}
+      } catch {
+        const grid = byId('overview-heatmap-grid');
+        if (grid && !grid.children.length) grid.setAttribute('aria-label', 'Live trace activity is temporarily unavailable.');
+      }
+    }
+
+    function initOverviewHeatmap() {
+      if (!byId('overview-heatmap-grid')) return;
+      const cached = readOverviewHeatmapCache();
+      if (cached) renderOverviewHeatmap(cached);
+      void refreshOverviewHeatmap();
+      window.setInterval(() => { if (!document.hidden) void refreshOverviewHeatmap(); }, OVERVIEW_HEATMAP_REFRESH_MS);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshOverviewHeatmap(); });
+    }
 
     let currentSourceControl = { configured: false, defaultRepositoryId: null, repositories: [] };
 
@@ -727,6 +971,7 @@ function configurationClientScript(): string {
       renderToolInventory();
     });
 
+    initOverviewHeatmap();
     void loadConfiguration();
     void loadSourceControl();
   `;
@@ -921,8 +1166,39 @@ function environmentClientScript(): string {
 }
 
 function renderOverviewPanels(): string {
+  const heatmapHours = Array.from({ length: 24 }, (_, hour) =>
+    hour % 3 === 0 || hour === 23 ? `<span>${String(hour).padStart(2, '0')}</span>` : '<span></span>',
+  ).join('');
   return `
-        <section class="overview-surface" id="overview" aria-labelledby="overview-readiness-title">
+        <section class="overview-surface" id="overview" aria-labelledby="overview-heatmap-title">
+          <section class="overview-heatmap-panel" data-overview-heatmap aria-labelledby="overview-heatmap-title">
+            <div class="overview-heatmap-head">
+              <div class="overview-heatmap-copy">
+                <p class="identity">Last seven days</p>
+                <h2 id="overview-heatmap-title">Live trace activity will appear here</h2>
+                <p>Calls, tokens, and cost by local hour. Hover or focus any cell for details; the heatmap refreshes from the signed trace gateway.</p>
+              </div>
+              <div class="overview-heatmap-summary" aria-live="polite">
+                <span>Calls <b id="overview-heatmap-calls">0</b></span>
+                <span>Tokens <b id="overview-heatmap-tokens">0</b></span>
+                <span>Cost <b id="overview-heatmap-cost">$0.0000</b></span>
+              </div>
+            </div>
+            <div class="overview-heatmap-scroll" tabindex="0" aria-label="Scrollable trace activity heatmap">
+              <div class="overview-heatmap-frame">
+                <div class="overview-heatmap-hours" aria-hidden="true"><span></span>${heatmapHours}</div>
+                <div id="overview-heatmap-grid" role="grid" aria-label="Trace activity by local hour for the last seven days."></div>
+              </div>
+            </div>
+            <aside id="overview-heatmap-tooltip" class="overview-heatmap-tooltip" hidden>
+              <time id="overview-heatmap-tooltip-time"></time>
+              <dl>
+                <div><dt>Calls</dt><dd id="overview-heatmap-tooltip-calls">0</dd></div>
+                <div><dt>Tokens</dt><dd id="overview-heatmap-tooltip-tokens">0</dd></div>
+                <div><dt>Cost</dt><dd id="overview-heatmap-tooltip-cost">$0.0000</dd></div>
+              </dl>
+            </aside>
+          </section>
           <div class="overview-lede">
             <div class="overview-finding">
               <p class="identity">Workspace readiness</p>
@@ -934,9 +1210,9 @@ function renderOverviewPanels(): string {
           <div class="overview-context">
             <div class="overview-context-copy">
               <h2>One workspace, directly readable</h2>
-              <p>Overview shows the operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
+              <p>Overview shows live activity and operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
             </div>
-            <a class="overview-context-link" href="/docs">Open Documentation →</a>
+            <a class="overview-context-link" target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/">Open Documentation →</a>
           </div>
         </section>
         <section class="panel-section" id="configuration">
@@ -1080,95 +1356,6 @@ function renderSecretsContent(): string {
       </div>`;
 }
 
-function renderNodesContent(): string {
-  const plans = listManagedCloudPlans();
-  const regions = listManagedCloudRegions();
-  const planCards = plans.map((plan) => {
-    const cpu = plan.cpu.vcpus + (plan.cpu.shared ? ' shared vCPU' : ' vCPU');
-    const checked = plan.recommended ? ' checked' : '';
-    const recommended = plan.recommended ? '<span class="plan-recommended">Recommended</span>' : '';
-    return '<label class="plan-option"><input type="radio" name="cloud-plan" value="' + escapeHtml(plan.id) + '"' + checked + '><span class="plan-card"><span class="plan-name"><strong>' + escapeHtml(plan.name) + '</strong>' + recommended + '</span><span class="plan-spec">' + escapeHtml(cpu) + ' · ' + escapeHtml(String(plan.memoryGb)) + ' GB RAM</span><span class="plan-price" data-plan-price="' + escapeHtml(plan.id) + '">Price loading…</span></span></label>';
-  }).join('');
-  const regionOptions = regions.map((region) =>
-    '<option value="' + escapeHtml(region.id) + '">' + escapeHtml(region.name) + '</option>',
-  ).join('');
-  return [
-    '<p id="node-loading" class="sr-only" aria-live="polite">Loading workspace nodes</p>',
-    '<section id="node-error" class="state-panel" aria-live="polite" hidden>',
-    '  <strong>Nodes unavailable</strong>',
-    '  <p class="muted">Sign in again or verify the workspace control plane is available.</p>',
-    '</section>',
-    '<div id="node-content" aria-busy="true">',
-    '  <section class="panel-section">',
-    '    <div class="nodes-toolbar">',
-    '      <div class="nodes-toolbar-copy"><h2>Workspace nodes</h2><p id="node-summary" class="muted">Loading node presence…</p></div>',
-    '      <button id="add-node-button" class="primary-button" type="button">+ Add node</button>',
-    '    </div>',
-    '    <p id="node-feedback" class="muted node-feedback" aria-live="polite">The default node receives calls when an agent does not choose one explicitly.</p>',
-    '    <div id="node-list" class="node-list"></div>',
-    '  </section>',
-    '</div>',
-    '<dialog id="add-node-dialog" aria-labelledby="add-node-title">',
-    '  <div class="dialog-shell">',
-    '    <header class="dialog-header">',
-    '      <div class="dialog-title"><p class="identity">Managed by Consuelo</p><h2 id="add-node-title">Create cloud node</h2><p class="muted">Always available. One flat monthly price. No cold starts when your agents need to work.</p></div>',
-    '      <button id="add-node-close" class="dialog-close" type="button" aria-label="Close">×</button>',
-    '    </header>',
-    '    <section class="subsection" aria-labelledby="plan-heading"><h3 id="plan-heading">Choose a plan</h3><div class="plan-grid">' + planCards + '</div></section>',
-    '    <section class="cloud-config">',
-    '      <label class="field"><span>Region</span><select id="cloud-region">' + regionOptions + '</select></label>',
-    '      <div class="cloud-note"><strong>Built for always-on agent work</strong><p class="muted">CPU, RAM, storage, networking, and managed operations are rolled into the monthly price.</p></div>',
-    '    </section>',
-    '    <div class="actions"><button id="create-cloud-node-button" class="primary-button provisioning-button" type="button" disabled>Create cloud node</button><button id="add-node-cancel" type="button">Cancel</button></div>',
-    '    <p id="pricing-status" class="muted" aria-live="polite">Loading current monthly prices…</p>',
-    '    <div id="provisioning-progress" class="provisioning-progress" aria-live="polite" hidden><strong id="provisioning-phase">Preparing cloud node</strong><p id="provisioning-detail" class="muted">You can leave this page after creation starts. The node will continue provisioning.</p></div>',
-    '  </div>',
-    '</dialog>',
-  ].join(String.fromCharCode(10));
-}
-
-function nodesClientScript(): string {
-  return [
-    "const byId = (id) => document.getElementById(id);",
-    "const setHidden = (id, value) => { const element = byId(id); if (element) element.hidden = value; };",
-    "const setText = (id, value) => { const element = byId(id); if (element) element.textContent = value; };",
-    "const escapeHtml = (value) => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll(String.fromCharCode(34), '&quot;').replaceAll(String.fromCharCode(39), '&#39;');",
-    "let currentNodeSnapshot = null;",
-    "let pricingRequestGeneration = 0;",
-    "let currentPricing = null;",
-    "let currentProvisioningJobId = null;",
-    "let currentProvisioningKey = null;",
-    "let provisioningPollTimer = null;",
-    "const prettyPlatform = (value) => value === 'darwin' ? 'macOS' : value === 'linux' ? 'Linux' : value === 'win32' || value === 'windows' ? 'Windows' : (value || 'Unknown platform');",
-    "const prettyPresence = (value) => value === 'online' ? 'Online' : value === 'stale' ? 'Stale' : 'Offline';",
-    "const csrfToken = () => { const part = document.cookie.split(';').map((value) => value.trim()).find((value) => value.startsWith('__Host-consuelo_os_csrf=')); return part ? decodeURIComponent(part.slice(part.indexOf('=') + 1)) : ''; };",
-    "const selectedPlanId = () => { const input = document.querySelector('input[name=\"cloud-plan\"]:checked'); return input instanceof HTMLInputElement ? input.value : ''; };",
-    "const selectedRegionId = () => { const input = byId('cloud-region'); return input instanceof HTMLSelectElement ? input.value : ''; };",
-    "const selectedQuote = () => { const planId = selectedPlanId(); const region = selectedRegionId(); const quotes = currentPricing && Array.isArray(currentPricing.quotes) ? currentPricing.quotes : []; return quotes.find((quote) => quote && quote.plan && quote.plan.id === planId && quote.region && quote.region.id === region) || null; };",
-    "const nodeCard = (node) => { const isDefault = currentNodeSnapshot && currentNodeSnapshot.defaultNodeId === node.nodeId; const isCurrent = currentNodeSnapshot && currentNodeSnapshot.currentNodeId === node.nodeId; const online = node.presence === 'online' && node.state === 'active'; const badges = [isDefault ? '<span class=\"status-pill status-connected\">Default</span>' : '', isCurrent ? '<span class=\"status-pill\">Current</span>' : '', node.role === 'home' ? '<span class=\"status-pill\">Home</span>' : ''].filter(Boolean).join(''); const action = isDefault ? '<button type=\"button\" disabled>Default node</button>' : '<button type=\"button\" data-make-default=\"' + escapeHtml(node.nodeId) + '\" ' + (online ? '' : 'disabled') + '>Make default</button>'; return '<article class=\"node-card' + (isDefault ? ' is-default' : '') + '\">' + '<header class=\"node-card-header\"><div class=\"node-card-title\"><strong>' + escapeHtml(node.displayName || node.nodeId) + '</strong><code>' + escapeHtml(node.nodeId) + '</code></div><div class=\"node-badges\">' + badges + '</div></header>' + '<div class=\"node-meta\"><div class=\"node-meta-item\"><span>Platform</span><span>' + escapeHtml(prettyPlatform(node.platform)) + '</span></div><div class=\"node-meta-item\"><span>Channel</span><span>' + escapeHtml(node.channel || 'standard') + '</span></div></div>' + '<footer class=\"node-card-footer\"><span class=\"presence presence-' + escapeHtml(node.presence || 'offline') + '\"><span class=\"presence-dot\"></span>' + escapeHtml(prettyPresence(node.presence)) + '</span>' + action + '</footer>' + '</article>'; };",
-    "function bindDefaultButtons() { document.querySelectorAll('[data-make-default]').forEach((button) => { button.addEventListener('click', () => void makeDefault(button.getAttribute('data-make-default') || '', button)); }); }",
-    "function renderNodes(snapshot) { currentNodeSnapshot = snapshot; const nodes = Array.isArray(snapshot.nodes) ? snapshot.nodes : []; const list = byId('node-list'); if (list) list.innerHTML = nodes.length ? nodes.map(nodeCard).join('') : '<section class=\"state-panel\"><strong>No nodes yet</strong><p class=\"muted\">Add a cloud node to start using Consuelo without installing it on a computer.</p></section>'; const presence = snapshot.presence || {}; setText('node-summary', nodes.length + (nodes.length === 1 ? ' node' : ' nodes') + ' · ' + String(presence.online || 0) + ' online'); setHidden('node-loading', true); setHidden('node-error', true); const content = byId('node-content'); if (content) content.setAttribute('aria-busy', 'false'); bindDefaultButtons(); }",
-    "async function loadNodes() { try { const response = await fetch('/gateway/nodes/snapshot', { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' }); if (!response.ok) throw new Error('nodes unavailable'); renderNodes(await response.json()); } catch { setHidden('node-loading', true); setHidden('node-error', false); const content = byId('node-content'); if (content) content.setAttribute('aria-busy', 'false'); } }",
-    "async function makeDefault(nodeId, button) { const csrf = csrfToken(); if (!nodeId || !csrf) { setText('node-feedback', 'Your workspace session needs to be refreshed before changing the default node.'); return; } if (button instanceof HTMLButtonElement) button.disabled = true; setText('node-feedback', 'Updating workspace default…'); try { const response = await fetch('/gateway/nodes/default', { method: 'POST', credentials: 'same-origin', headers: { accept: 'application/json', 'content-type': 'application/json', 'x-consuelo-csrf-token': csrf }, body: JSON.stringify({ nodeId }) }); if (!response.ok) throw new Error('default update denied'); await loadNodes(); setText('node-feedback', 'Default node updated. New untargeted OS calls will route there.'); } catch { if (button instanceof HTMLButtonElement) button.disabled = false; setText('node-feedback', 'Default node update failed. The existing default was kept.'); } }",
-    "const formatMonthlyPrice = (quote) => { if (!quote || !Number.isSafeInteger(quote.monthlyPriceCents)) return 'Price available soon'; const value = quote.monthlyPriceCents / 100; try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: quote.currency || 'USD', maximumFractionDigits: 0 }).format(value) + '<small>/month</small>'; } catch { return '$' + String(Math.ceil(value)) + '<small>/month</small>'; } };",
-    "function updateCreateButton() { const button = byId('create-cloud-node-button'); if (!(button instanceof HTMLButtonElement)) return; const ready = Boolean(selectedQuote()) && !currentProvisioningJobId; button.disabled = !ready; button.textContent = currentProvisioningJobId ? 'Creating cloud node…' : 'Create cloud node'; }",
-    "async function loadPricing() { const requestGeneration = ++pricingRequestGeneration; const selectedRegion = selectedRegionId() || 'us-east1'; setText('pricing-status', 'Loading current monthly prices…'); currentPricing = null; updateCreateButton(); try { const response = await fetch('/gateway/nodes/pricing?region=' + encodeURIComponent(selectedRegion), { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' }); if (!response.ok) throw new Error('pricing unavailable'); const payload = await response.json(); if (requestGeneration !== pricingRequestGeneration) return; currentPricing = payload; const quotes = Array.isArray(payload.quotes) ? payload.quotes : []; document.querySelectorAll('[data-plan-price]').forEach((element) => { const quote = quotes.find((candidate) => candidate && candidate.plan && candidate.plan.id === element.getAttribute('data-plan-price')); element.innerHTML = formatMonthlyPrice(quote); }); setText('pricing-status', payload.pricingAvailable ? 'Monthly price includes an always-on node and managed operations.' : 'Plans are ready; monthly prices will appear when the current rate card is published.'); updateCreateButton(); } catch { if (requestGeneration !== pricingRequestGeneration) return; document.querySelectorAll('[data-plan-price]').forEach((element) => { element.textContent = 'Price available soon'; }); setText('pricing-status', 'Pricing is temporarily unavailable. Try again in a moment.'); updateCreateButton(); } }",
-    "const provisioningCopy = (status) => status === 'requested' ? ['Request received', 'Your cloud node is queued for provisioning.'] : status === 'provisioning' ? ['Creating cloud resources', 'Preparing compute, storage, and private networking.'] : status === 'booting' ? ['Installing Consuelo', 'The node is booting and installing the current Consuelo runtime.'] : status === 'connecting' ? ['Connecting your node', 'Consuelo is establishing its secure workspace connection.'] : status === 'ready' ? ['Cloud node ready', 'Your node is online and available to your agents.'] : status === 'failed' ? ['Cloud node needs attention', 'Provisioning did not finish. No second node will be created by retrying this request.'] : ['Preparing cloud node', 'Provisioning is starting.'];",
-    "function renderProvisioning(job) { if (!job) return; currentProvisioningJobId = job.jobId; const copy = provisioningCopy(job.status); setHidden('provisioning-progress', false); setText('provisioning-phase', copy[0]); setText('provisioning-detail', job.status === 'failed' && job.errorMessage ? job.errorMessage : copy[1]); updateCreateButton(); }",
-    "function stopProvisioningPoll() { if (provisioningPollTimer) window.clearTimeout(provisioningPollTimer); provisioningPollTimer = null; }",
-    "async function pollProvisioning() { if (!currentProvisioningJobId) return; try { const response = await fetch('/gateway/nodes/provisioning?job_id=' + encodeURIComponent(currentProvisioningJobId), { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' }); if (!response.ok) throw new Error('status unavailable'); const payload = await response.json(); const job = payload && payload.job; renderProvisioning(job); if (job && job.status === 'ready') { stopProvisioningPoll(); await loadNodes(); currentProvisioningJobId = null; currentProvisioningKey = null; updateCreateButton(); window.setTimeout(() => { const dialog = byId('add-node-dialog'); if (dialog instanceof HTMLDialogElement) dialog.close(); }, 900); return; } if (job && job.status === 'failed') { stopProvisioningPoll(); currentProvisioningJobId = null; currentProvisioningKey = null; updateCreateButton(); return; } } catch { setText('provisioning-detail', 'The node is still being created. Status will retry automatically.'); } provisioningPollTimer = window.setTimeout(() => void pollProvisioning(), 2000); }",
-    "async function createCloudNode() { const csrf = csrfToken(); const quote = selectedQuote(); if (!csrf || !quote) { setText('pricing-status', 'Refresh the page and current monthly price before creating a node.'); return; } const button = byId('create-cloud-node-button'); if (button instanceof HTMLButtonElement) button.disabled = true; currentProvisioningKey = currentProvisioningKey || (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function' ? globalThis.crypto.randomUUID() : 'cloud-' + Date.now() + '-' + Math.random().toString(16).slice(2)); setHidden('provisioning-progress', false); setText('provisioning-phase', 'Creating cloud node'); setText('provisioning-detail', 'Submitting your plan and region to Consuelo…'); try { const response = await fetch('/gateway/nodes/provision', { method: 'POST', credentials: 'same-origin', headers: { accept: 'application/json', 'content-type': 'application/json', 'x-consuelo-csrf-token': csrf }, body: JSON.stringify({ planId: quote.plan.id, region: quote.region.id, pricingVersion: quote.pricingVersion, idempotencyKey: currentProvisioningKey }) }); const payload = await response.json().catch(() => ({})); const job = payload && payload.job; if (!response.ok && response.status !== 409) throw new Error('create failed'); if (!job) throw new Error('missing job'); renderProvisioning(job); void pollProvisioning(); } catch { currentProvisioningJobId = null; setText('provisioning-phase', 'Cloud node was not created'); setText('provisioning-detail', 'Nothing was charged or provisioned. Check your connection and try again.'); updateCreateButton(); } }",
-    "const dialog = byId('add-node-dialog');",
-    "byId('add-node-button')?.addEventListener('click', () => { if (dialog instanceof HTMLDialogElement) { currentProvisioningKey = null; setHidden('provisioning-progress', true); dialog.showModal(); void loadPricing(); } });",
-    "byId('add-node-close')?.addEventListener('click', () => { if (dialog instanceof HTMLDialogElement) dialog.close(); });",
-    "byId('add-node-cancel')?.addEventListener('click', () => { if (dialog instanceof HTMLDialogElement) dialog.close(); });",
-    "byId('create-cloud-node-button')?.addEventListener('click', () => void createCloudNode());",
-    "byId('cloud-region')?.addEventListener('change', () => void loadPricing());",
-    "document.querySelectorAll('input[name=\"cloud-plan\"]').forEach((input) => input.addEventListener('change', updateCreateButton));",
-    "void loadNodes();",
-  ].join(String.fromCharCode(10));
-}
-
 function renderEnvironmentContent(): string {
   return `
       <p id="environment-loading" class="sr-only" aria-live="polite">Loading environments</p>
@@ -1236,6 +1423,9 @@ export function renderConfigurationSite(page: ConfigurationPageId = 'configurati
       : page === 'environments'
         ? environmentClientScript()
         : secretsClientScript();
+  const overviewHeatmapGsap = page === 'configuration'
+    ? `<script id="overview-heatmap-gsap">${OVERVIEW_HEATMAP_GSAP}</script>`
+    : '';
 
   return `<!doctype html>
 <html lang="en">
@@ -1258,6 +1448,7 @@ export function renderConfigurationSite(page: ConfigurationPageId = 'configurati
       </main>
     </div>
   </div>
+  ${overviewHeatmapGsap}
   <script>${PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT}\n${workspaceChromeClientScript()}\n${clientScript}</script>
 </body>
 </html>`;

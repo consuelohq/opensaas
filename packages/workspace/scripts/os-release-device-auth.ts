@@ -8,21 +8,24 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assertRequiredDeviceAuthorityWorkerSecrets } from '../../os/scripts/lib/device-authority-release-readiness';
+import { fetchGoogleCloudPublicPricingRuntime } from '../../os/scripts/lib/google-cloud-public-pricing-refresh';
+import { createDefaultManagedCloudPricingRuntime, type DefaultManagedCloudPricingRuntime } from '../../os/scripts/lib/managed-cloud-public-pricing';
 import { getSitesPaths, materializeSites } from '../../os/scripts/lib/sites';
-import { createWorkspaceReleaseManagedSiteRefreshSql } from '../../os/scripts/lib/workspace-edge-route-seed';
+import { WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS } from '../../os/scripts/lib/workspace-edge-route-seed';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '..', '..', '..');
 const WORKER_DIR = resolve(REPO_ROOT, 'packages/os/cloudflare/os-device-authority');
-const WORKSPACE_EDGE_CONFIG = resolve(REPO_ROOT, 'packages/os/cloudflare/workspace-edge/wrangler.toml');
-const ROUTE_REGISTRY_DATABASE = 'consuelo-workspace-route-registry';
 const WORKER_NAME = 'consuelo-os-device-authority';
 const HEALTH_URL = 'https://os.consuelohq.com/health';
+const RELEASE_SITE_REFRESH_URL = 'https://os.consuelohq.com/internal/release/site-snapshots/refresh';
 const DEVICE_PAGE_URL = 'https://os.consuelohq.com/login/device?user_code=RELSMOKE';
 const DEVICE_CODE_URL = 'https://os.consuelohq.com/login/device/code';
 const REQUEST_TIMEOUT_MS = 30_000;
 const DEFAULT_VERIFY_ATTEMPTS = 12;
 const DEFAULT_VERIFY_DELAY_MS = 5_000;
+const RELEASE_SITE_REFRESH_ATTEMPTS = 12;
+const RELEASE_SITE_REFRESH_RETRY_MS = 1_000;
 const SNAPSHOT_BUCKET = 'consuelo-sites-snapshots';
 const DEFAULT_SNAPSHOT_WORKSPACE_ID = 'workspace_testing';
 const SNAPSHOT_CONTENT_TYPE = 'text/html; charset=utf-8';
@@ -60,6 +63,7 @@ type ReleaseDependencies = {
   writeErr: (message?: string) => void;
   fetchImpl: typeof fetch;
   sleepImpl: (ms: number) => Promise<void>;
+  managedCloudPricingLoader: () => Promise<DefaultManagedCloudPricingRuntime>;
 };
 
 type ReleaseDependencyOverrides = Partial<ReleaseDependencies>;
@@ -106,12 +110,16 @@ function defaultCommandRunner(input: ReleaseCommand): ReleaseCommandResult {
 function dependencies(
   overrides: ReleaseDependencyOverrides = {},
 ): ReleaseDependencies {
+  const fetchImpl = overrides.fetchImpl ?? fetch;
   return {
     commandRunner: overrides.commandRunner ?? defaultCommandRunner,
     writeOut: overrides.writeOut ?? defaultWriteOut,
     writeErr: overrides.writeErr ?? defaultWriteErr,
-    fetchImpl: overrides.fetchImpl ?? fetch,
+    fetchImpl,
     sleepImpl: overrides.sleepImpl ?? defaultSleep,
+    managedCloudPricingLoader:
+      overrides.managedCloudPricingLoader ??
+      (() => fetchGoogleCloudPublicPricingRuntime({ fetchImpl })),
   };
 }
 
@@ -208,13 +216,25 @@ function snapshotVersionId(html: string): string {
   return `sha256-${createHash('sha256').update(html).digest('hex').slice(0, 16)}`;
 }
 
+function commandForLog(input: ReleaseCommand): string {
+  const args = input.args.map((arg, index) => {
+    if (input.args[index - 1] !== '--var') return arg;
+    if (!arg.startsWith('OS_MANAGED_CLOUD_')) return arg;
+    const separator = arg.indexOf(':');
+    return separator < 0
+      ? '<managed-cloud-pricing>'
+      : `${arg.slice(0, separator)}:<redacted-pricing>`;
+  });
+  return [input.command, ...args].join(' ');
+}
+
 function runCommand(
   input: ReleaseCommand,
   deps: ReleaseDependencies,
   options: { announce?: boolean } = {},
 ): ReleaseCommandResult {
   if (options.announce !== false) {
-    deps.writeOut(`$ ${[input.command, ...input.args].join(' ')}`);
+    deps.writeOut(`$ ${commandForLog(input)}`);
   }
   const result = deps.commandRunner(input);
 
@@ -244,6 +264,16 @@ function assertRemoteWorkerReleaseReadiness(deps: ReleaseDependencies): void {
     stdio: 'pipe',
   }, deps, { announce: false });
   assertRequiredDeviceAuthorityWorkerSecrets(result.stdout);
+}
+
+function releaseManagedRouteRefreshSecret(): string {
+  const secret = process.env.OS_MANAGED_CLOUD_PROVISIONER_SECRET?.trim();
+  if (!secret) {
+    throw new Error(
+      'OS_MANAGED_CLOUD_PROVISIONER_SECRET is required to refresh release-managed workspace routes',
+    );
+  }
+  return secret;
 }
 
 function releaseDefaultSiteSnapshots(
@@ -322,37 +352,71 @@ function releaseDefaultSiteSnapshots(
   }
 }
 
-function refreshReleaseManagedWorkspaceSiteRoutes(
+async function refreshReleaseManagedWorkspaceSiteRoutes(
   snapshot: DefaultSiteSnapshot,
   dryRun: boolean,
   deps: ReleaseDependencies,
-): void {
+): Promise<void> {
   if (dryRun) {
     deps.writeOut(
       `plannedRouteRefresh=workspace_route_registry:${snapshot.versionId}`,
     );
     return;
   }
-  const sql = createWorkspaceReleaseManagedSiteRefreshSql({
-    versionId: snapshot.versionId,
-    snapshotWorkspaceId: DEFAULT_SNAPSHOT_WORKSPACE_ID,
-    siteContentHashes: snapshot.siteContentHashes,
-  });
-  runCommand({
-    command: 'wrangler',
-    args: [
-      'd1',
-      'execute',
-      ROUTE_REGISTRY_DATABASE,
-      '--remote',
-      '--config',
-      WORKSPACE_EDGE_CONFIG,
-      '--command',
-      sql,
-    ],
-    cwd: WORKER_DIR,
-    stdio: 'inherit',
-  }, deps);
+  const releaseRouteSecret = releaseManagedRouteRefreshSecret();
+  const requestInit: RequestInit = {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${releaseRouteSecret}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      versionId: snapshot.versionId,
+      snapshotWorkspaceId: DEFAULT_SNAPSHOT_WORKSPACE_ID,
+      siteContentHashes: Object.fromEntries(
+        WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS.map((siteId) => [
+          siteId,
+          snapshot.siteContentHashes[siteId],
+        ]),
+      ),
+    }),
+  };
+  for (let attempt = 1; attempt <= RELEASE_SITE_REFRESH_ATTEMPTS; attempt += 1) {
+    deps.writeOut(
+      `Refreshing ${RELEASE_SITE_REFRESH_URL} (attempt ${attempt}/${RELEASE_SITE_REFRESH_ATTEMPTS})`,
+    );
+    let response: Response;
+    try {
+      response = await fetchWithDefaults(RELEASE_SITE_REFRESH_URL, deps.fetchImpl, requestInit);
+    } catch (error: unknown) {
+      if (attempt < RELEASE_SITE_REFRESH_ATTEMPTS) {
+        await deps.sleepImpl(RELEASE_SITE_REFRESH_RETRY_MS);
+        continue;
+      }
+      throw new Error(
+        `workspace route refresh request failed: ${requestFailureMessage(error)}`,
+        { cause: error },
+      );
+    }
+    if (response.ok) {
+      deps.writeOut(`refreshedRoutes=workspace_route_registry:${snapshot.versionId}`);
+      return;
+    }
+    const detail = (await response.text()).trim();
+    const transient = response.status === 404
+      || response.status === 408
+      || response.status === 425
+      || response.status === 429
+      || response.status >= 500;
+    if (transient && attempt < RELEASE_SITE_REFRESH_ATTEMPTS) {
+      await deps.sleepImpl(RELEASE_SITE_REFRESH_RETRY_MS);
+      continue;
+    }
+    throw new Error(
+      `workspace route refresh failed with HTTP ${response.status}${detail ? `: ${detail}` : ''}`,
+    );
+  }
+  throw new Error('workspace route refresh attempts exhausted');
 }
 
 async function fetchWithDefaults(
@@ -494,6 +558,7 @@ async function runDeviceAuthorityRelease(
 
   if (!options.verifyOnly) {
     assertRemoteWorkerReleaseReadiness(deps);
+    if (!options.dryRun) releaseManagedRouteRefreshSecret();
   }
 
   deps.writeOut(`workerDir=${WORKER_DIR}`);
@@ -504,6 +569,18 @@ async function runDeviceAuthorityRelease(
     const defaultSiteSnapshot = releaseDefaultSiteSnapshots(options.dryRun, deps);
     deps.writeOut(`defaultSiteSnapshotKey=${defaultSiteSnapshot.key}`);
     deps.writeOut(`defaultSiteSnapshotVersion=${defaultSiteSnapshot.versionId}`);
+    let managedCloudPricing: DefaultManagedCloudPricingRuntime;
+    try {
+      managedCloudPricing = options.dryRun
+        ? createDefaultManagedCloudPricingRuntime()
+        : await deps.managedCloudPricingLoader();
+    } catch (error: unknown) {
+      throw new Error(
+        `managed cloud pricing refresh failed: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
+    deps.writeOut(`managedCloudPricingVersion=${managedCloudPricing.policy.pricingVersion}`);
 
     const deployArgs = [
       'deploy',
@@ -512,6 +589,10 @@ async function runDeviceAuthorityRelease(
       `OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY:${defaultSiteSnapshot.key}`,
       '--var',
       `OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID:${defaultSiteSnapshot.versionId}`,
+      '--var',
+      `OS_MANAGED_CLOUD_PRICING_POLICY_JSON:${JSON.stringify(managedCloudPricing.policy)}`,
+      '--var',
+      `OS_MANAGED_CLOUD_RATE_CARDS_JSON:${JSON.stringify(managedCloudPricing.rateCards)}`,
     ];
     if (options.dryRun) deployArgs.push('--dry-run');
     runCommand({
@@ -520,7 +601,7 @@ async function runDeviceAuthorityRelease(
       cwd: WORKER_DIR,
       stdio: 'inherit',
     }, deps);
-    refreshReleaseManagedWorkspaceSiteRoutes(
+    await refreshReleaseManagedWorkspaceSiteRoutes(
       defaultSiteSnapshot,
       options.dryRun,
       deps,

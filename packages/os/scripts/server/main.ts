@@ -21,6 +21,42 @@ function resolveDrainTimeoutMs(env: NodeJS.ProcessEnv = process.env): number {
   return timeout;
 }
 
+function resolveDrainPropagationMs(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = env.CONSUELO_OS_DRAIN_PROPAGATION_MS?.trim();
+  if (!raw) return 3_000;
+  if (!/^\d+$/.test(raw)) throw new Error('Invalid OS worker drain propagation timeout');
+  const timeout = Number(raw);
+  if (!Number.isInteger(timeout) || timeout < 0 || timeout > 30_000) {
+    throw new Error('Invalid OS worker drain propagation timeout');
+  }
+  return timeout;
+}
+
+export async function drainWorkerServer(input: {
+  server: Pick<ReturnType<typeof Bun.serve>, 'stop'>;
+  workerState: ReturnType<typeof createWorkerRuntimeStateFromEnv>;
+  reason: string;
+  drainTimeoutMs?: number;
+  propagationMs?: number;
+  sleep?: (milliseconds: number) => Promise<void>;
+  report?: (message: string) => void;
+}): Promise<void> {
+  const sleep = input.sleep ?? ((milliseconds: number) => Bun.sleep(milliseconds));
+  const report = input.report ?? ((message: string) => process.stderr.write(`${message}\n`));
+  input.workerState.startDraining();
+  report(`[Consuelo OS] ${input.workerState.snapshot().workerId} draining (${input.reason})`);
+
+  // /ready turns unavailable immediately, while ordinary requests remain accepted briefly.
+  // This gives Caddy's active health check time to evacuate the worker before its listener closes.
+  await sleep(input.propagationMs ?? resolveDrainPropagationMs());
+  input.workerState.stopAcceptingRequests();
+
+  const gracefulStop = Promise.resolve(input.server.stop(false));
+  const idle = await input.workerState.waitForIdle(input.drainTimeoutMs ?? resolveDrainTimeoutMs());
+  if (!idle) await Promise.resolve(input.server.stop(true));
+  await gracefulStop.catch(() => undefined);
+}
+
 export async function runDrainAndExit(
   drain: () => Promise<void>,
   dependencies: {
@@ -78,12 +114,13 @@ if (import.meta.main) {
     if (shuttingDown) return;
     shuttingDown = true;
     if (parentMonitor) clearInterval(parentMonitor);
-    workerState.startDraining();
-    process.stderr.write(`[Consuelo OS] ${workerState.snapshot().workerId} draining (${reason})\n`);
-    const gracefulStop = Promise.resolve(server.stop(false));
-    const idle = await workerState.waitForIdle(resolveDrainTimeoutMs());
-    if (!idle) await Promise.resolve(server.stop(true));
-    await gracefulStop.catch(() => undefined);
+    try {
+      await drainWorkerServer({ server, workerState, reason });
+    } catch (error: unknown) {
+      heartbeatScheduler?.stop();
+      await lifecycleEndpoint?.close().catch(() => undefined);
+      throw error;
+    }
     heartbeatScheduler?.stop();
     await lifecycleEndpoint?.close();
   };

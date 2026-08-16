@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_714558dcf064",
+  "tmuxSession": "opensaas-os-make-macos-gateway-restart-resilient-during-upda-714558dc",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-macos-gateway-restart-resilient-during-updates",
+  "branch": "task/os/make-macos-gateway-restart-resilient-during-updates",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-macos-gateway-restart-resilient-during-updates",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-macos-gateway-restart-resilient-during-updates",
+  "prNumber": 2079,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2079",
+  "createdAt": "2026-08-15T19:01:58.871Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-macos-gateway-restart-resilient-during-updates/.task/os/make-macos-gateway-restart-resilient-during-updates/session.json"
+}

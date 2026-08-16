@@ -617,7 +617,7 @@ export const createDefaultLifecycleEngine = (input: {
   progress: (event: LifecycleProgressEvent) => void;
 }): LifecycleEngine => {
   const osRoot = resolve(import.meta.dirname, '..');
-  const port = process.env.CONSUELO_OS_PORT || process.env.PORT || '46321';
+  const port = process.env.CONSUELO_OS_WORKER_BASE_PORT || process.env.WORKSPACE_DAEMON_PORT || process.env.CONSUELO_OS_PORT || process.env.PORT || '46321';
   const releaseBaseUrl =
     process.env.CONSUELO_RELEASE_BASE_URL?.trim() || DEFAULT_RELEASE_BASE_URL;
   return createLifecycleEngine({

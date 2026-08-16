@@ -3,15 +3,18 @@ set -euo pipefail
 
 dry_run=0
 quiet=0
+definitions_only=0
 debug="${CONSUELO_OS_DEBUG:-0}"
 for arg in "$@"; do
   case "$arg" in
     --dry-run) dry_run=1 ;;
     --quiet) quiet=1 ;;
+    --definitions-only) definitions_only=1 ;;
     --debug) debug=1 ;;
     --help|-h)
-      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--quiet] [--debug]"
+      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--definitions-only] [--quiet] [--debug]"
       echo "installs Consuelo OS user LaunchAgents in ~/Library/LaunchAgents"
+      echo "  --definitions-only  refresh plist definitions without restarting live services"
       echo "  --quiet  suppress normal success details for hosted bootstrap output"
       exit 0
       ;;
@@ -524,6 +527,24 @@ run_plutil_lint() {
   fi
 }
 
+install_launch_agent_definitions() {
+  install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
+  install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
+  if [ "$portless_enabled" = "1" ]; then
+    install -m 644 "$portless_generated_plist" "$portless_agent_plist"
+  fi
+  install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
+  if [ "$availability_enabled" = "1" ]; then
+    install -m 644 "$availability_generated_plist" "$availability_agent_plist"
+  fi
+  for index in "${!cloudflared_generated_plists[@]}"; do
+    install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
+  done
+  for index in "${!heartbeat_generated_plists[@]}"; do
+    install -m 600 "${heartbeat_generated_plists[$index]}" "${heartbeat_agent_plists[$index]}"
+  done
+}
+
 if [ "$dry_run" -eq 0 ]; then
   mkdir -p "$launch_agent_dir" "$log_dir" "$consuelo_data_home/node/runtime/watchdog"
 fi
@@ -549,6 +570,13 @@ if [ "$dry_run" -eq 1 ]; then
   retire_legacy_portless_services
   log "Services: $(service_labels_csv)"
   log "dry run complete; generated and linted user LaunchAgent plist files without installing services"
+  exit 0
+fi
+
+if [ "$definitions_only" -eq 1 ]; then
+  background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
+  install_launch_agent_definitions
+  log "LaunchAgent definitions refreshed without restarting services"
   exit 0
 fi
 
@@ -582,23 +610,10 @@ stage_pid=""
 retire_legacy_portless_services
 
 background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
-install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
-install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
-if [ "$portless_enabled" = "1" ]; then
-  install -m 644 "$portless_generated_plist" "$portless_agent_plist"
-fi
-install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
-if [ "$availability_enabled" = "1" ]; then
-  install -m 644 "$availability_generated_plist" "$availability_agent_plist"
-else
+install_launch_agent_definitions
+if [ "$availability_enabled" != "1" ]; then
   remove_disabled_agent "$availability_label" "$availability_agent_plist"
 fi
-for index in "${!cloudflared_generated_plists[@]}"; do
-  install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
-done
-for index in "${!heartbeat_generated_plists[@]}"; do
-  install -m 600 "${heartbeat_generated_plists[$index]}" "${heartbeat_agent_plists[$index]}"
-done
 
 for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
   bootout_agent "$label"

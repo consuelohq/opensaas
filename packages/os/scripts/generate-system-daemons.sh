@@ -68,6 +68,10 @@ if ! id -u "$consuelo_user" >/dev/null 2>&1; then
 fi
 consuelo_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$consuelo_user}}"
 consuelo_data_home="${CONSUELO_HOME:-$consuelo_home/.consuelo}"
+managed_runtime_root="$consuelo_data_home/runtime/current"
+if [ ! -e "$managed_runtime_root" ]; then
+  managed_runtime_root="$root_dir"
+fi
 persisted_env_file="$consuelo_data_home/.env"
 if [ "$persisted_env_file" != "$env_file" ]; then
   load_env_file "$persisted_env_file"
@@ -152,14 +156,14 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>${root_dir}/scripts/start-consuelo-daemon.sh</string>
+    <string>${managed_runtime_root}/scripts/start-consuelo-daemon.sh</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
   <key>KeepAlive</key>
   <true/>
   <key>WorkingDirectory</key>
-  <string>${root_dir}</string>
+  <string>${managed_runtime_root}</string>
   <key>StandardOutPath</key>
   <string>${log_dir}/system.log</string>
   <key>StandardErrorPath</key>
@@ -232,14 +236,14 @@ cat > "$generated_dir/${caddy_label}.plist" <<PLIST
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>${root_dir}/scripts/start-caddy-daemon.sh</string>
+    <string>${managed_runtime_root}/scripts/start-caddy-daemon.sh</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
   <key>KeepAlive</key>
   <true/>
   <key>WorkingDirectory</key>
-  <string>${root_dir}</string>
+  <string>${managed_runtime_root}</string>
   <key>StandardOutPath</key>
   <string>${log_dir}/caddy.log</string>
   <key>StandardErrorPath</key>
@@ -278,7 +282,7 @@ cat > "$generated_dir/${portless_label}.plist" <<PLIST
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>${root_dir}/scripts/start-portless-daemon.sh</string>
+    <string>${managed_runtime_root}/scripts/start-portless-daemon.sh</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
@@ -324,7 +328,7 @@ cat > "$generated_dir/${watchdog_label}.plist" <<PLIST
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>${root_dir}/scripts/workspace-watchdog.sh</string>
+    <string>${managed_runtime_root}/scripts/workspace-watchdog.sh</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
@@ -333,7 +337,7 @@ cat > "$generated_dir/${watchdog_label}.plist" <<PLIST
   <key>ProcessType</key>
   <string>Background</string>
   <key>WorkingDirectory</key>
-  <string>${root_dir}</string>
+  <string>${managed_runtime_root}</string>
   <key>StandardOutPath</key>
   <string>${log_dir}/watchdog.log</string>
   <key>StandardErrorPath</key>
