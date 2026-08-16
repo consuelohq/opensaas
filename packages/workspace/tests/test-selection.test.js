@@ -951,7 +951,7 @@ describe('test selection registry', () => {
   });
 
 
-  it('routes daemon startup managed Sites refresh through focused lifecycle coverage', () => {
+  it('routes daemon startup managed Sites refresh through focused lifecycle handoff coverage', () => {
     const data = json(run([
       'check',
       '--changed-file',
@@ -960,17 +960,17 @@ describe('test selection registry', () => {
     ]));
 
     expect(data.matchedRules.map((rule) => rule.id)).toContain(
-      'os-lifecycle-legacy-mcp-scrub',
+      'os-lifecycle-update-handoff',
     );
     expect(data.selectedSuites.map((suite) => suite.name)).not.toContain(
       '@consuelo/os package test',
     );
     const lifecycleSuite = data.selectedSuites.find(
-      (suite) => suite.ruleId === 'os-lifecycle-legacy-mcp-scrub',
+      (suite) => suite.ruleId === 'os-lifecycle-update-handoff',
     );
     expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
-      'tests/finish-line-lifecycle-contract.test.ts',
-      'tests/daemon-bun-path.test.ts',
+      'packages/os/tests/lifecycle-ingress-continuity.test.ts',
+      'packages/os/tests/daemon-bun-path.test.ts',
     ]));
   });
 

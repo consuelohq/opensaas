@@ -6,14 +6,15 @@ import type {
   LifecycleServiceController,
 } from './types';
 const LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT = 'retire-legacy-system-daemons.sh';
-const MAC_GATEWAY_SERVICE_LABELS = new Set([
-  'com.consuelo.caddy',
+// Caddy and Cloudflared are the public MCP availability boundary. Ordinary
+// runtime activation may rotate the OS worker pool behind Caddy, but it must
+// not tear down the ingress that carries the client's HTTP connection.
+const MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS = new Set([
   'com.consuelo.portless.system',
   'com.consuelo.watchdog',
   'com.consuelo.availability',
 ]);
-const MAC_GATEWAY_SERVICE_PREFIXES = [
-  'com.consuelo.os.cloudflared.',
+const MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES = [
   'com.consuelo.os.node-heartbeat.',
 ];
 const MAC_GATEWAY_BOOTSTRAP_ATTEMPTS = 4;
@@ -62,7 +63,7 @@ function commandFailure(result: LifecycleProcessResult, fallback: string): Error
   return new Error(result.stderr.trim() || result.stdout.trim() || fallback);
 }
 
-function installedMacGatewayLaunchAgents(environment?: NodeJS.ProcessEnv): Array<{
+function installedMacRestartableSidecarLaunchAgents(environment?: NodeJS.ProcessEnv): Array<{
   label: string;
   plistPath: string;
 }> {
@@ -77,8 +78,8 @@ function installedMacGatewayLaunchAgents(environment?: NodeJS.ProcessEnv): Array
       plistPath: join(launchAgentDir, name),
     }))
     .filter(({ label }) =>
-      MAC_GATEWAY_SERVICE_LABELS.has(label)
-      || MAC_GATEWAY_SERVICE_PREFIXES.some((prefix) => label.startsWith(prefix)),
+      MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS.has(label)
+      || MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES.some((prefix) => label.startsWith(prefix)),
     )
     .sort((left, right) => left.label.localeCompare(right.label));
 }
@@ -97,6 +98,7 @@ export function createReloadServiceController(input: {
   const bootstrapReloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
   const activeRuntimeRoot = input.activeRuntimeRoot ?? input.osRoot;
   const activeReloadScript = resolve(activeRuntimeRoot, 'scripts', 'consuelo-reload.js');
+  const activeDaemonInstaller = resolve(activeRuntimeRoot, 'scripts', 'install-system-daemons.sh');
   const caddyReconcileScript = resolve(
     activeRuntimeRoot,
     'scripts',
@@ -149,8 +151,20 @@ export function createReloadServiceController(input: {
     },
     async restart(options = {}) {
       try {
+        if (platform === 'darwin') {
+          const definitions = await run(
+            'bash',
+            [activeDaemonInstaller, '--definitions-only', '--quiet'],
+            input.environment ?? process.env,
+          );
+          if (definitions.exitCode !== 0) {
+            throw commandFailure(definitions, `LaunchAgent definition refresh exited ${definitions.exitCode}`);
+          }
+        }
         await reconcileCaddy();
-        const command = options.waitForCompletion ? 'restart-now' : 'restart';
+        const command = options.waitForCompletion
+          ? (options.allowDestructiveFallback ? 'reload-now' : 'rolling-reload-now')
+          : (options.allowDestructiveFallback ? 'reload' : 'rolling-reload');
         const result = await run(runtimeExecutable, [activeReloadScript, command]);
         if (result.exitCode !== 0) {
           throw commandFailure(result, `reload adapter exited ${result.exitCode}`);
@@ -161,7 +175,7 @@ export function createReloadServiceController(input: {
             throw new Error('cannot resolve the user id for gateway restart');
           }
           const domain = 'gui/' + String(userId);
-          for (const gateway of installedMacGatewayLaunchAgents(input.environment)) {
+          for (const gateway of installedMacRestartableSidecarLaunchAgents(input.environment)) {
             await run('launchctl', ['bootout', domain + '/' + gateway.label]);
             let bootstrapped = false;
             let lastBootstrap: LifecycleProcessResult | undefined;
