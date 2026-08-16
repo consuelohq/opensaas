@@ -1,0 +1,19 @@
+{
+  "area": "trace-observability",
+  "stream": "stream/trace-observability",
+  "taskBranch": "task/trace-observability/fix-batch-trace-observability-rendering",
+  "baseBranch": "stream/trace-observability",
+  "sourceBranch": "stream/trace-observability",
+  "startFrom": "stream",
+  "prNumber": 2136,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2136",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2136",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2136/fix-batch-trace-observability-rendering",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2136",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2136/fix-batch-trace-observability-rendering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-observability-fix-batch-trace-observability-rendering",
+  "taskSession": "tsk_eab93240558e",
+  "tmuxSession": "opensaas-trace-observability-fix-batch-trace-observability-rendering-eab93240",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-observability-fix-batch-trace-observability-rendering/.task/trace-observability/fix-batch-trace-observability-rendering/session.json",
+  "createdAt": "2026-08-16T06:29:31.952Z"
+}
