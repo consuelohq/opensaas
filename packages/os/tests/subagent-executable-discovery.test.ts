@@ -1,4 +1,4 @@
-import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -55,14 +55,40 @@ function writeFakeGrok(
   return executablePath;
 }
 
-async function runGrok(root: string, env: NodeJS.ProcessEnv) {
+async function runGrok(root: string, env: NodeJS.ProcessEnv, overrides: Record<string, unknown> = {}) {
   const isolatedEnv = { ...env, CONSUELO_HOME: root };
   return executeTool('subagent', {
     provider: 'grok',
     policy: 'read',
     instructionPath: writeInstruction(root),
     outputFormat: 'json',
+    ...overrides,
   }, stableOptions(root, isolatedEnv));
+}
+
+function writeRetryingFakeGrok(root: string): { executable: string; attemptsPath: string } {
+  const executable = join(root, '.grok', 'bin', 'grok');
+  const attemptsPath = join(root, 'grok-attempts.txt');
+  mkdirSync(dirname(executable), { recursive: true });
+  writeFileSync(executable, [
+    '#!/bin/sh',
+    'if [ "$1" = "--help" ]; then',
+    "  printf '%s\\n' '--permission-mode <MODE> --max-turns <N> --deny <RULE> --no-memory --no-subagents'",
+    '  exit 0',
+    'fi',
+    'count=0',
+    'if [ -f "$GROK_ATTEMPTS_PATH" ]; then IFS= read -r count < "$GROK_ATTEMPTS_PATH" || true; fi',
+    'count=$((count + 1))',
+    'printf "%s\\n" "$count" > "$GROK_ATTEMPTS_PATH"',
+    'if [ "$count" -le "${GROK_FAIL_ATTEMPTS:-0}" ]; then',
+    '  printf "%s\\n" "fake grok failure $count" >&2',
+    '  exit 7',
+    'fi',
+    "printf '%s\\n' '{\"text\":\"retry success\",\"stopReason\":\"EndTurn\"}'",
+    '',
+  ].join('\n'));
+  chmodSync(executable, 0o755);
+  return { executable, attemptsPath };
 }
 
 describe('Grok subagent executable discovery', () => {
@@ -113,7 +139,7 @@ describe('Grok subagent executable discovery', () => {
     }
   });
 
-  it('should fail when Grok cancels a run despite exiting successfully', async () => {
+  it('skips Grok after three cancelled completions', async () => {
     const root = mkdtempSync(join(tmpdir(), 'os-grok-cancelled-run-'));
     try {
       writeFakeGrok(
@@ -123,16 +149,17 @@ describe('Grok subagent executable discovery', () => {
 
       const result = await runGrok(root, { ...process.env, HOME: root, PATH: '' });
 
-      expect(result.ok).toBe(false);
-      expect(result.data.status).toBe('failed');
-      expect(result.data.exitCode).toBe(1);
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('CAPABILITY_NOT_SUPPORTED');
+      expect(result.data.status).toBe('not_supported');
       expect(result.data.stderr).toContain('stop reason Cancelled');
+      expect(result.data.stderr).toContain('skipped after 3 failed attempts');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
   });
 
-  it('should fail when Grok exits successfully without a final message', async () => {
+  it('skips Grok after three empty completions', async () => {
     const root = mkdtempSync(join(tmpdir(), 'os-grok-empty-run-'));
     try {
       writeFakeGrok(
@@ -142,10 +169,11 @@ describe('Grok subagent executable discovery', () => {
 
       const result = await runGrok(root, { ...process.env, HOME: root, PATH: '' });
 
-      expect(result.ok).toBe(false);
-      expect(result.data.status).toBe('failed');
-      expect(result.data.exitCode).toBe(1);
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('CAPABILITY_NOT_SUPPORTED');
+      expect(result.data.status).toBe('not_supported');
       expect(result.data.stderr).toContain('without a final message');
+      expect(result.data.stderr).toContain('skipped after 3 failed attempts');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -214,6 +242,72 @@ describe('Grok subagent executable discovery', () => {
       expect(result.ok).toBe(true);
       expect(result.data.status).toBe('not_configured');
       expect(result.data.command[0]).toBe(configuredPath);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('retries direct Grok execution and succeeds on the third attempt', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'os-grok-retry-success-'));
+    try {
+      const fake = writeRetryingFakeGrok(root);
+      const result = await runGrok(root, {
+        ...process.env,
+        HOME: root,
+        PATH: '',
+        GROK_ATTEMPTS_PATH: fake.attemptsPath,
+        GROK_FAIL_ATTEMPTS: '2',
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('OK');
+      expect(result.data.status).toBe('completed');
+      expect(result.data.finalMessage).toBe('retry success');
+      expect(result.data.runId).toBeUndefined();
+      expect(result.data.capabilities.detachedExecution).toBe(false);
+      expect(readFileSync(fake.attemptsPath, 'utf8').trim(), result.data.stderr).toBe('3');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('skips Grok non-fatally after exactly three failed direct attempts', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'os-grok-retry-skip-'));
+    try {
+      const fake = writeRetryingFakeGrok(root);
+      const result = await runGrok(root, {
+        ...process.env,
+        HOME: root,
+        PATH: '',
+        GROK_ATTEMPTS_PATH: fake.attemptsPath,
+        GROK_FAIL_ATTEMPTS: '9',
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('CAPABILITY_NOT_SUPPORTED');
+      expect(result.data.status).toBe('not_supported');
+      expect(result.data.stderr).toContain('skipped after 3 failed attempts');
+      expect(result.data.runId).toBeUndefined();
+      expect(result.data.capabilities.detachedExecution).toBe(false);
+      expect(readFileSync(fake.attemptsPath, 'utf8').trim()).toBe('3');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('does not support detached start for Grok', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'os-grok-no-detached-start-'));
+    try {
+      const executable = writeFakeGrok(join(root, '.grok', 'bin', 'grok'));
+      const result = await runGrok(root, { ...process.env, HOME: root, PATH: '' }, { action: 'start' });
+
+      expect(result.ok).toBe(true);
+      expect(result.code).toBe('CAPABILITY_NOT_SUPPORTED');
+      expect(result.data.status).toBe('not_supported');
+      expect(result.data.capabilities.detachedExecution).toBe(false);
+      expect(result.data.command).toEqual([]);
+      expect(result.data.runId).toBeUndefined();
+      expect(executable).toBeTruthy();
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

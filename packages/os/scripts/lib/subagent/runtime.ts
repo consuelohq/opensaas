@@ -106,6 +106,8 @@ type SubagentProviderConfig = {
 export const SUBAGENT_OUTPUT_LIMIT = 8000;
 const SUBAGENT_COMPACT_OUTPUT_LIMIT = 1200;
 const SUBAGENT_MAX_TIMEOUT_MS = 1_800_000;
+const GROK_MAX_ATTEMPTS = 3;
+const GROK_ATTEMPT_TIMEOUT_MS = 15_000;
 const SUBAGENT_REASONING_EFFORTS = ['minimal', 'low', 'medium', 'high', 'xhigh'] as const;
 
 const subagentDefaults: Record<SubagentProvider, {
@@ -123,7 +125,7 @@ const subagentCapabilities: Record<SubagentProvider, SubagentCapabilities> = {
   codex: { modelSelection: true, reasoningEffort: true, strictWorkspaceOnly: false, edit: true, detachedExecution: true },
   pi: { modelSelection: true, reasoningEffort: false, strictWorkspaceOnly: true, edit: true, detachedExecution: false },
   opencode: { modelSelection: true, reasoningEffort: false, strictWorkspaceOnly: false, edit: false, detachedExecution: false },
-  grok: { modelSelection: true, reasoningEffort: false, strictWorkspaceOnly: false, edit: false, detachedExecution: true },
+  grok: { modelSelection: true, reasoningEffort: false, strictWorkspaceOnly: false, edit: false, detachedExecution: false },
 };
 
 function capabilitiesForProvider(provider: SubagentProvider): SubagentCapabilities {
@@ -1200,12 +1202,8 @@ async function executeGrokSubagent(
     });
   }
 
-  const runId = deriveSubagentRunId(input.requestId, context.traceId);
-  const runDirectory = resolveSubagentRunDirectory(runId, context.env);
-  const stagedInstructionPath = path.join(runDirectory, 'instruction.md');
-  const instructionDigest = createHash('sha256').update(input.instruction, 'utf8').digest('hex');
   const prompt = [
-    subagentInstruction({ ...input, instructionPath: stagedInstructionPath, taskSession: input.audit.taskSession }),
+    subagentInstruction({ ...input, taskSession: input.audit.taskSession }),
     ...(input.policy === 'read'
       ? ['Read-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context.']
       : []),
@@ -1232,63 +1230,70 @@ async function executeGrokSubagent(
   args.push('--output-format', input.outputFormat === 'json' ? 'json' : 'text');
 
   const command = [grok, ...args];
-  const fingerprint = JSON.stringify({
-    provider: 'grok',
-    model: input.model,
-    bundle: input.bundle,
-    outputFormat: input.outputFormat,
-    policy: input.policy,
-    workspaceOnly: input.workspaceOnly,
-    taskSession: input.audit.taskSession,
-    cwd: input.cwd,
-    instructionPath: input.instructionPath,
-    instructionSha256: instructionDigest,
-    timeoutMs: input.timeoutMs,
-    command,
-  });
-  const started = startDurableSubagentRun({
-    requestId: input.requestId,
-    fingerprint,
-    provider: 'grok',
-    model: input.model,
-    bundle: input.bundle,
-    outputFormat: input.outputFormat,
-    policy: input.policy,
-    workspaceOnly: input.workspaceOnly,
-    taskSession: input.audit.taskSession,
-    branch: input.audit.branch,
-    rawShellUsed: true,
-    cwd: input.cwd,
-    instructionPath: stagedInstructionPath,
-    command,
-    env: context.env,
-    stdin: prompt,
-    artifacts: [{ path: stagedInstructionPath, content: input.instruction, mode: 0o600 }],
-    timeoutMs: input.timeoutMs,
-    traceId: context.traceId,
-  });
-  if (!started.ok) {
-    if (started.run) return durableSubagentResult(entry, context, started.run, input.action, started.code);
-    return subagentToolResult(entry, context, {
-      ...input,
-      status: 'failed',
-      command,
-      stdout: '',
-      stderr: started.message,
-      exitCode: 1,
-      ok: false,
-      code: started.code,
-      message: started.message,
+  const started = (context.options.now || Date.now)();
+  const retryStartedAt = Date.now();
+  const failures: string[] = [];
+  let lastRun: (RunnerResult & { timedOut: boolean }) | undefined;
+
+  for (let attempt = 1; attempt <= GROK_MAX_ATTEMPTS; attempt += 1) {
+    const elapsed = Date.now() - retryStartedAt;
+    const remainingBudget = input.timeoutMs - elapsed;
+    if (remainingBudget <= 0) break;
+    const attemptTimeoutMs = Math.max(1, Math.min(remainingBudget, GROK_ATTEMPT_TIMEOUT_MS));
+    const run = await runSubagentProcess({
+      command: grok,
+      args,
+      cwd: input.cwd,
+      env: context.env,
+      stdin: prompt,
+      timeoutMs: attemptTimeoutMs,
     });
+    lastRun = run;
+
+    const failure = run.timedOut
+      ? 'timed out'
+      : run.exitCode !== 0
+        ? `exited with code ${run.exitCode}`
+        : grokCompletionFailure(run.stdout);
+    if (!failure) {
+      return subagentToolResult(entry, context, {
+        ...input,
+        status: 'completed',
+        command,
+        ...compactSubagentOutput({
+          provider: 'grok',
+          cwd: input.cwd,
+          traceId: context.traceId,
+          stdout: run.stdout,
+          stderr: run.stderr,
+          taskSession: input.audit.taskSession,
+          branch: input.audit.branch,
+        }),
+        exitCode: 0,
+        durationMs: elapsedMs(started, context.options.now),
+        audit: { ...input.audit, rawShellUsed: true },
+        ok: true,
+        code: 'OK',
+        message: attempt === 1 ? 'grok provider completed' : `grok provider completed on attempt ${attempt}`,
+      });
+    }
+    failures.push(`attempt ${attempt}: ${failure}`);
   }
 
-  let run = started.run;
-  if (input.action === 'run') {
-    const waited = await waitForDurableSubagentRun(run, context.env, input.timeoutMs, durableSubagentParser('grok', context.traceId));
-    run = waited.run;
-    return durableSubagentResult(entry, context, run, input.action, waited.timedOut ? 'TIMEOUT' : durableTerminalOutcomeCode(run));
-  }
-  return durableSubagentResult(entry, context, run, input.action, 'OK');
+  const skippedMessage = `grok provider skipped after ${failures.length} failed attempts: ${failures.join('; ')}`;
+  return subagentToolResult(entry, context, {
+    ...input,
+    status: 'not_supported',
+    command,
+    stdout: '',
+    stderr: skippedMessage,
+    exitCode: lastRun?.exitCode ?? 1,
+    durationMs: elapsedMs(started, context.options.now),
+    audit: { ...input.audit, rawShellUsed: true },
+    ok: true,
+    code: 'CAPABILITY_NOT_SUPPORTED',
+    message: skippedMessage,
+  });
 }
 
 function grokCompletionFailure(stdout: string): string | undefined {
