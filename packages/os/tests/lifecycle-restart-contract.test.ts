@@ -88,28 +88,36 @@ describe('lifecycle restart parity', () => {
       ...(process.platform === 'darwin'
         ? [{ command: 'bash', args: [resolve(osRoot, 'scripts', 'retire-legacy-system-daemons.sh'), '--check'] }]
         : []),
+      ...(process.platform === 'darwin'
+        ? [{ command: 'bash', args: [resolve(osRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] }]
+        : []),
       {
         command: process.execPath,
-        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'restart-now'],
+        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
       },
     ]);
 
     calls.length = 0;
     await controller.restart();
     expect(calls).toEqual([
+      ...(process.platform === 'darwin'
+        ? [{ command: 'bash', args: [resolve(osRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] }]
+        : []),
       {
         command: process.execPath,
-        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'restart'],
+        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload'],
       },
     ]);
   });
 
-  it('restarts every installed macOS gateway sidecar during a completed lifecycle restart', async () => {
+  it('preserves transport-critical macOS ingress while restarting non-ingress sidecars', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateways-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
     for (const label of [
       'com.consuelo.caddy',
+      'com.consuelo.availability',
+      'com.consuelo.portless.system',
       'com.consuelo.watchdog',
       'com.consuelo.os.cloudflared.connector-test',
       'com.consuelo.os.node-heartbeat.node-test',
@@ -131,31 +139,40 @@ describe('lifecycle restart parity', () => {
 
       await controller.restart({ waitForCompletion: true });
 
-      expect(calls).toEqual([
-        {
-          command: process.execPath,
-          args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'restart-now'],
-        },
-        ...[
-          'com.consuelo.caddy',
-          'com.consuelo.os.cloudflared.connector-test',
-          'com.consuelo.os.node-heartbeat.node-test',
-          'com.consuelo.watchdog',
-        ].flatMap((label) => [
-          {
-            command: 'launchctl',
-            args: ['bootout', 'gui/501/' + label],
-          },
-          {
-            command: 'launchctl',
-            args: ['bootstrap', 'gui/501', join(launchAgents, label + '.plist')],
-          },
-          {
-            command: 'launchctl',
-            args: ['kickstart', '-k', 'gui/501/' + label],
-          },
-        ]),
-      ]);
+      expect(calls[0]).toEqual({
+        command: 'bash',
+        args: [
+          resolve(osRoot, 'scripts', 'install-system-daemons.sh'),
+          '--definitions-only',
+          '--quiet',
+        ],
+      });
+      expect(calls[1]).toEqual({
+        command: process.execPath,
+        args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
+      });
+      const launchctl = calls.filter((call) => call.command === 'launchctl');
+      expect(JSON.stringify(launchctl)).not.toContain('com.consuelo.caddy');
+      expect(JSON.stringify(launchctl)).not.toContain('com.consuelo.os.cloudflared.connector-test');
+      for (const label of [
+        'com.consuelo.availability',
+        'com.consuelo.os.node-heartbeat.node-test',
+        'com.consuelo.portless.system',
+        'com.consuelo.watchdog',
+      ]) {
+        expect(launchctl).toContainEqual({
+          command: 'launchctl',
+          args: ['bootout', 'gui/501/' + label],
+        });
+        expect(launchctl).toContainEqual({
+          command: 'launchctl',
+          args: ['bootstrap', 'gui/501', join(launchAgents, label + '.plist')],
+        });
+        expect(launchctl).toContainEqual({
+          command: 'launchctl',
+          args: ['kickstart', '-k', 'gui/501/' + label],
+        });
+      }
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
@@ -165,7 +182,7 @@ describe('lifecycle restart parity', () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-retry-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
-    const label = 'com.consuelo.caddy';
+    const label = 'com.consuelo.os.node-heartbeat.node-test';
     const plistPath = join(launchAgents, label + '.plist');
     writeFileSync(plistPath, '<plist/>\n');
     const calls: Array<{ command: string; args: string[] }> = [];
@@ -211,11 +228,11 @@ describe('lifecycle restart parity', () => {
     }
   });
 
-  it('retries a transient macOS gateway kickstart after bootstrap succeeds', async () => {
+  it('retries a transient macOS sidecar kickstart after bootstrap succeeds', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-kickstart-retry-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
-    const label = 'com.consuelo.caddy';
+    const label = 'com.consuelo.os.node-heartbeat.node-test';
     writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
     let kickstartAttempts = 0;
     const sleepCalls: number[] = [];
@@ -251,11 +268,11 @@ describe('lifecycle restart parity', () => {
     }
   });
 
-  it('includes the gateway label when transient kickstart retries are exhausted', async () => {
+  it('includes the sidecar label when transient kickstart retries are exhausted', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-kickstart-failure-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
-    const label = 'com.consuelo.caddy';
+    const label = 'com.consuelo.os.node-heartbeat.node-test';
     writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
     let kickstartAttempts = 0;
     try {
@@ -289,7 +306,7 @@ describe('lifecycle restart parity', () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-failure-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
-    const label = 'com.consuelo.caddy';
+    const label = 'com.consuelo.watchdog';
     writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
     try {
       const controller = createReloadServiceController({
@@ -341,6 +358,14 @@ describe('lifecycle restart parity', () => {
 
     expect(calls).toEqual([
       {
+        command: 'bash',
+        args: [
+          resolve(activeRuntimeRoot, 'scripts', 'install-system-daemons.sh'),
+          '--definitions-only',
+          '--quiet',
+        ],
+      },
+      {
         command: process.execPath,
         args: [
           resolve(activeRuntimeRoot, 'scripts', 'migrations', 'reconcile-caddy-worker-pool.ts'),
@@ -349,7 +374,7 @@ describe('lifecycle restart parity', () => {
       },
       {
         command: process.execPath,
-        args: [resolve(activeRuntimeRoot, 'scripts', 'consuelo-reload.js'), 'restart-now'],
+        args: [resolve(activeRuntimeRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
       },
     ]);
     expect(lifecycle).toContain('activeRuntimeRoot: lifecyclePaths.currentLink');

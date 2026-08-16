@@ -94,6 +94,8 @@ describe('Linux platform adapter', () => {
     expect(statSync(paths.unitPath).mode & 0o777).toBe(0o600);
     expect(statSync(paths.systemdUserDir).mode & 0o777).toBe(0o700);
     expect(readFileSync(paths.unitPath, 'utf8')).toContain(`${home}/runtime/current/scripts/server/supervisor.ts`);
+    expect(readFileSync(paths.unitPath, 'utf8')).toContain(`${home}/runtime/current/scripts/consuelo-reload.js`);
+    expect(readFileSync(paths.unitPath, 'utf8')).toContain('rolling-reload-now');
     expect(commands.map(({ executable, args }) => [executable, args])).toEqual([
       ['systemctl', ['--user', 'show-environment']],
       ['systemctl', ['--user', 'daemon-reload']],
@@ -124,10 +126,15 @@ describe('Linux platform adapter', () => {
     ]);
   });
 
-  it('restarts installed Linux connector and heartbeat gateway units with the OS service', async () => {
+  it('preserves Linux connector ingress while restarting heartbeat sidecars with the OS service', async () => {
     const paths = resolveLinuxPlatformPaths(home, environment);
     mkdirSync(paths.systemdUserDir, { recursive: true });
+    mkdirSync(paths.runsDir, { recursive: true });
     writeFileSync(paths.unitPath, renderSystemdUserUnit({ home, bunExecutable: '/opt/consuelo/bin/bun' }));
+    writeFileSync(
+      join(paths.runsDir, 'os-worker-pool.json'),
+      `${JSON.stringify({ schemaVersion: 1, supportsRuntimeCurrentRollingReload: true })}\n`,
+    );
     for (const unit of [
       'consuelo-cloudflared-connector-test.service',
       'consuelo-node-heartbeat.service',
@@ -149,8 +156,7 @@ describe('Linux platform adapter', () => {
     expect(commands.map(({ executable, args }) => [executable, args])).toEqual([
       ['systemctl', ['--user', 'show-environment']],
       ['systemctl', ['--user', 'daemon-reload']],
-      ['systemctl', ['--user', 'restart', 'consuelo-os.service']],
-      ['systemctl', ['--user', 'restart', 'consuelo-cloudflared-connector-test.service']],
+      ['systemctl', ['--user', 'reload', 'consuelo-os.service']],
       ['systemctl', ['--user', 'restart', 'consuelo-node-heartbeat.timer']],
       ['systemctl', ['--user', 'start', 'consuelo-node-heartbeat.service']],
       ['systemctl', ['--user', 'restart', 'consuelo-watchdog.service']],
