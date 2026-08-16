@@ -56,6 +56,7 @@ export type DurableSubagentRun = {
 
 export type DurableSubagentParser = (stdout: string, stderr: string) => {
   completed: boolean;
+  failure?: string;
   finalMessage?: string;
   summary?: unknown;
   usage?: Record<string, number>;
@@ -631,17 +632,22 @@ function reconcileOwnedExitMarker(
   parsed: ReturnType<DurableSubagentParser>,
   now: number,
 ): DurableSubagentRun {
+  const providerFailure = exit.outcome === 'completed' ? parsed.failure : undefined;
   const updated: DurableSubagentRun = {
     ...run,
-    status: exit.outcome,
-    ...(exit.exitCode !== undefined ? { exitCode: exit.exitCode } : {}),
+    status: providerFailure ? 'failed' : exit.outcome,
+    ...(providerFailure
+      ? { exitCode: 1 }
+      : exit.exitCode !== undefined
+        ? { exitCode: exit.exitCode }
+        : {}),
     updatedAt: now,
     ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
     ...(parsed.summary !== undefined ? { summary: parsed.summary } : {}),
     ...(parsed.usage ? { usage: parsed.usage } : {}),
     ...(typeof parsed.stdoutChars === 'number' ? { stdoutChars: parsed.stdoutChars } : {}),
     ...(typeof parsed.stderrChars === 'number' ? { stderrChars: parsed.stderrChars } : {}),
-    ...(exit.error ? { error: exit.error } : {}),
+    ...(providerFailure || exit.error ? { error: providerFailure || exit.error } : {}),
   };
   return persistReconciledState(statePath, run, updated, true);
 }

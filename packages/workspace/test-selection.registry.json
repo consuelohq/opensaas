@@ -2,11 +2,11 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2633,
-    "mappedTestCount": 2550,
+    "testFileCount": 2648,
+    "mappedTestCount": 2565,
     "unmappedTestCount": 83,
-    "ruleCount": 59,
-    "explicitRuleCount": 40,
+    "ruleCount": 61,
+    "explicitRuleCount": 42,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -25,10 +25,11 @@
       "packages/twenty-server/test/integration/graphql/suites/inputs-validation/create-validation": 23,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/twenty-front/src/modules/billing/hooks": 21,
+      "packages/dialer-server/src": 20,
       "packages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/validator-utils": 20,
       "packages/twenty-server/test/integration/constants": 20,
       "packages/twenty-server/test/integration/graphql/suites/inputs-validation/filter-validation": 20,
-      "packages/dialer-server/src": 19,
+      "packages/dialer/src/services": 18,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/graphWidgetBarChart/utils": 18,
       "packages/twenty-front/src/modules/workflow/workflow-variables/utils": 17,
       "packages/twenty-server/src/modules/dashboard/chart-data/utils": 17,
@@ -65,7 +66,6 @@
       "packages/twenty-server/test/integration/metadata/suites/page-layout-widget/utils": 11,
       "packages/twenty-server/test/integration/metadata/suites/role/utils": 11,
       "packages/api/src/routes": 10,
-      "packages/dialer/src/services": 10,
       "packages/twenty-front/src/modules/object-metadata/utils": 10,
       "packages/twenty-front/src/modules/object-record/record-field/ui/utils": 10,
       "packages/twenty-server/src/engine/core-modules/billing/utils": 10,
@@ -115,6 +115,7 @@
       "packages/twenty-server/test/integration/metadata/suites/skill": 7,
       "packages/twenty-shared/src/utils/strings": 7,
       "packages/twenty-shared/src/utils/url": 7,
+      "packages/dialer-server/src/runtime": 6,
       "packages/lead-connector/src/deployment": 6,
       "packages/twenty-front/src/hooks": 6,
       "packages/twenty-front/src/modules/ai/utils": 6,
@@ -135,7 +136,6 @@
       "packages/twenty-server/test/integration/metadata/suites/front-component": 6,
       "packages/twenty-shared/src/utils/validation": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
-      "packages/dialer-server/src/runtime": 5,
       "packages/twenty-front/src/modules/apollo/utils": 5,
       "packages/twenty-front/src/modules/auth/sign-in-up/hooks": 5,
       "packages/twenty-front/src/modules/dialer/hooks": 5,
@@ -155,6 +155,7 @@
       "packages/twenty-server/test/integration/metadata/suites/utils": 5,
       "packages/consuelo-design/upstream/open-design/apps/web/src/i18n": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/runtime": 4,
+      "packages/dialer-server/src/learning": 4,
       "packages/os/tools/deployment-provider": 4,
       "packages/twenty-front/src/modules/activities/hooks": 4,
       "packages/twenty-front/src/modules/apollo/optimistic-effect/group-by/utils": 4,
@@ -186,6 +187,7 @@
       "packages/twenty-server/test/integration/metadata/suites/field-metadata/relation": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/providers": 3,
       "packages/dialer-server/src/call-operations": 3,
+      "packages/dialer/src/domain": 3,
       "packages/os/scripts": 3,
       "packages/twenty-front/src/modules/action-menu/utils": 3,
       "packages/twenty-front/src/modules/activities/calendar/utils": 3,
@@ -236,7 +238,6 @@
       "packages/contacts/src": 2,
       "packages/dialer-server/src/lab": 2,
       "packages/dialer/src/application": 2,
-      "packages/dialer/src/domain": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
       "packages/os/tests/facade": 2,
@@ -635,8 +636,8 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 539,
-      "spec": 152,
+      "test": 545,
+      "spec": 161,
       "other": 7,
       "tests-dir": 7,
       "integration": 2,
@@ -1206,6 +1207,42 @@
       "critical": true,
       "exclusive": true,
       "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-durable-subagent-runtime",
+      "source": [
+        "packages/os/scripts/lib/subagent/**",
+        "packages/os/tests/subagent-executable-discovery.test.ts",
+        "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+        "packages/os/tests/subagent-orchestration-contract.test.ts",
+        "packages/os/tests/subagent-runner-termination.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/subagent-executable-discovery.test.ts",
+            "tests/subagent-lifecycle-regressions.test.ts",
+            "tests/subagent-orchestration-contract.test.ts",
+            "tests/subagent-runner-termination.test.ts"
+          ]
+        },
+        {
+          "name": "OS durable subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Durable subagent provider, ownership, completion, cancellation, and process-lifecycle changes must prove focused provider and lifecycle contracts without selecting the broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -3063,6 +3100,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/commercial-target-authorization.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/commercial.acceptance.test.ts",
       "group": "packages/dialer-server/src",
       "kind": "test"
@@ -3103,6 +3145,26 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/learning/contextual-shadow-evaluation.test.ts",
+      "group": "packages/dialer-server/src/learning",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/learning/postgres-predictive-model-store.contract.test.ts",
+      "group": "packages/dialer-server/src/learning",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/learning/predictive-decision-log.test.ts",
+      "group": "packages/dialer-server/src/learning",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/learning/response-time-shadow-evaluation.test.ts",
+      "group": "packages/dialer-server/src/learning",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/lifecycle.integration.test.ts",
       "group": "packages/dialer-server/src",
       "kind": "integration"
@@ -3119,6 +3181,11 @@
     },
     {
       "path": "packages/dialer-server/src/runtime/lead-connector-learning.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/predictive-runtime-cutover.test.ts",
       "group": "packages/dialer-server/src/runtime",
       "kind": "test"
     },
@@ -3178,6 +3245,11 @@
       "kind": "spec"
     },
     {
+      "path": "packages/dialer/src/domain/learning-observation.spec.ts",
+      "group": "packages/dialer/src/domain",
+      "kind": "spec"
+    },
+    {
       "path": "packages/dialer/src/domain/parallel-group.spec.ts",
       "group": "packages/dialer/src/domain",
       "kind": "spec"
@@ -3191,6 +3263,11 @@
       "path": "packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts",
       "group": "packages/dialer/src/infrastructure/redis",
       "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/services/binomial-estimate.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
     },
     {
       "path": "packages/dialer/src/services/cadence-optimizer.spec.ts",
@@ -3213,6 +3290,16 @@
       "kind": "spec"
     },
     {
+      "path": "packages/dialer/src/services/contextual-response-model.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/discrete-time-response-hazard.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
       "path": "packages/dialer/src/services/local-presence.spec.ts",
       "group": "packages/dialer/src/services",
       "kind": "spec"
@@ -3229,6 +3316,31 @@
     },
     {
       "path": "packages/dialer/src/services/parallel-strategy-resolver.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/predictive-evaluation.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/predictive-priority.contract.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/predictive-selection-model.contract.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/predictive-selection-science.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/retry-decision-model.contract.spec.ts",
       "group": "packages/dialer/src/services",
       "kind": "spec"
     },

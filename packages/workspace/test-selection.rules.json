@@ -549,6 +549,41 @@
       "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests."
     },
     {
+      "id": "os-durable-subagent-runtime",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/subagent/**",
+        "packages/os/tests/subagent-executable-discovery.test.ts",
+        "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+        "packages/os/tests/subagent-orchestration-contract.test.ts",
+        "packages/os/tests/subagent-runner-termination.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/subagent-executable-discovery.test.ts",
+            "tests/subagent-lifecycle-regressions.test.ts",
+            "tests/subagent-orchestration-contract.test.ts",
+            "tests/subagent-runner-termination.test.ts"
+          ]
+        },
+        {
+          "name": "OS durable subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Durable subagent provider, ownership, completion, cancellation, and process-lifecycle changes must prove focused provider and lifecycle contracts without selecting the broad OS package suite."
+    },
+    {
       "id": "os-launcher-copy-interaction",
       "critical": true,
       "exclusive": true,
