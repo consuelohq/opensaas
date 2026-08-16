@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2649,
-    "mappedTestCount": 2566,
-    "unmappedTestCount": 83,
-    "ruleCount": 67,
-    "explicitRuleCount": 48,
+    "testFileCount": 2650,
+    "mappedTestCount": 2568,
+    "unmappedTestCount": 82,
+    "ruleCount": 68,
+    "explicitRuleCount": 49,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
       "packages/os/tests": 257,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 61,
+      "packages/workspace/tests": 62,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -636,7 +636,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 546,
+      "test": 547,
       "spec": 161,
       "other": 7,
       "tests-dir": 7,
@@ -741,6 +741,29 @@
       ],
       "critical": true,
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+      "origin": "explicit"
+    },
+    {
+      "id": "workspace-stream-sync-runtime",
+      "source": [
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/tests/stream-sync-node-modules.test.js",
+        "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+      ],
+      "tests": [
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Stream sync merge, worktree, generated-registry recovery, and push-gate changes must prove focused real-Git sync behavior without selecting unrelated workspace package tests.",
       "origin": "explicit"
     },
     {
@@ -15823,6 +15846,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/stream-sync-node-modules.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -16018,7 +16046,6 @@
     "packages/workspace/tests/review-generated-artifact-contract.test.js",
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/stream-lifecycle.test.ts",
-    "packages/workspace/tests/stream-sync-node-modules.test.js",
     "packages/workspace/tests/stream-workpads.test.js",
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
     "packages/workspace/tests/task-hook-workflow-contract.test.ts",

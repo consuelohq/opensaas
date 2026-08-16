@@ -1136,6 +1136,26 @@ describe('test selection registry', () => {
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('routes stream sync changes through focused merge contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/workspace/tests/stream-sync-node-modules.test.js',
+      '--changed-file',
+      'packages/workspace/tests/stream-sync-generated-registry-conflict.test.js',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'workspace-stream-sync-runtime',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'workspace stream sync runtime contracts',
+    ]);
+  });
+
   it('treats OS operational instructions as documentation-only selection', () => {
     const data = json(run([
       'check',

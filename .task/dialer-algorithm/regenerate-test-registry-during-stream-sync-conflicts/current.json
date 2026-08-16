@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2100,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2100",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2100",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2100/regenerate-test-registry-during-stream-sync-conflicts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2100",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2100/regenerate-test-registry-during-stream-sync-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-regenerate-test-registry-during-stream-sync-conflicts",
+  "taskSession": "tsk_d340a23c2e2a",
+  "tmuxSession": "opensaas-dialer-algorithm-regenerate-test-registry-during-stream-sync-conf-d340a23c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-regenerate-test-registry-during-stream-sync-conflicts/.task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts/session.json",
+  "createdAt": "2026-08-16T02:30:30.728Z"
+}
