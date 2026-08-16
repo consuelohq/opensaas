@@ -395,6 +395,7 @@ export function createLifecycleEngine(
           operationId: input.operationId,
           expectedBundleId: input.manifest.bundleId,
           waitForCompletion: true,
+          allowDestructiveFallback: !input.previousReleasePath,
         });
       } catch (error: unknown) {
         throw asLifecycleError(
@@ -452,6 +453,7 @@ export function createLifecycleEngine(
             operationId: `${input.operationId}-rollback`,
             expectedBundleId: previousManifest.bundleId,
             waitForCompletion: true,
+            allowDestructiveFallback: true,
           });
           input.emit('rollback', {
             bundleId: previousManifest.bundleId,
@@ -978,6 +980,7 @@ export function createLifecycleEngine(
                     operationId,
                     expectedBundleId: state.currentBundleId,
                     waitForCompletion: true,
+                    allowDestructiveFallback: true,
                   }),
                 code: 'SERVICE_RESTART_FAILED',
                 message: 'failed to restart Consuelo services after repair',

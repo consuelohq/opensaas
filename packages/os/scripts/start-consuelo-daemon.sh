@@ -92,8 +92,12 @@ if [ "$sites_refresh_timeout" -lt 1 ]; then
   sites_refresh_timeout=15
 fi
 
-if ! run_with_timeout "$sites_refresh_timeout" "$bun_bin" "$root_dir/scripts/os.ts" sites refresh --json >/dev/null; then
-  echo "managed Sites refresh failed; continuing daemon startup" >&2
-fi
+sites_refresh_log="$CONSUELO_HOME/node/logs/managed-sites-refresh.log"
+mkdir -p "$(dirname "$sites_refresh_log")"
+(
+  if ! run_with_timeout "$sites_refresh_timeout" "$bun_bin" "$root_dir/scripts/os.ts" sites refresh --json >/dev/null; then
+    echo "managed Sites refresh failed; continuing daemon startup" >&2
+  fi
+) </dev/null >>"$sites_refresh_log" 2>&1 &
 
 exec "$bun_bin" "$root_dir/scripts/server/supervisor.ts"

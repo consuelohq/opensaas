@@ -49,6 +49,15 @@ function resolveMcpRequestId(request: Request): string {
     : randomUUID();
 }
 
+function resolveOpenAiSessionReceiptKey(request: Request): string | undefined {
+  const raw = request.headers.get('x-openai-session')?.trim();
+  if (!raw) return undefined;
+  return createHash('sha256')
+    .update(['openai-session', raw].join('\n'))
+    .digest('hex')
+    .slice(0, 16);
+}
+
 
 type McpRouteDependencies = {
   getSteering: (
@@ -152,11 +161,13 @@ export function createMcpRoutes(
 
   app.use(MCP_PATH, async (context, next) => {
     const requestId = resolveMcpRequestId(context.req.raw);
+    const connectorKey = resolveOpenAiSessionReceiptKey(context.req.raw);
     context.set('requestId', requestId);
     logLocalOsServerEvent('local_os.mcp_request_received', {
       requestId,
       route: MCP_PATH,
       method: context.req.method,
+      ...(connectorKey ? { connectorKey } : {}),
     });
     await next();
     context.header('x-consuelo-request-id', requestId);

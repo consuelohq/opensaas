@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2633,
-    "mappedTestCount": 2550,
+    "testFileCount": 2637,
+    "mappedTestCount": 2554,
     "unmappedTestCount": 83,
-    "ruleCount": 59,
-    "explicitRuleCount": 40,
+    "ruleCount": 60,
+    "explicitRuleCount": 41,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 256,
+      "packages/os/tests": 260,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 61,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 539,
+      "test": 543,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -1138,9 +1138,18 @@
         "packages/os/TOOLS.md",
         "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
+        "packages/os/scripts/consuelo-reload.js",
+        "packages/os/scripts/generate-system-daemons.sh",
+        "packages/os/scripts/install-system-daemons.sh",
         "packages/os/scripts/lifecycle.ts",
+        "packages/os/scripts/lib/lifecycle/engine.ts",
         "packages/os/scripts/lib/facade/schemas.ts",
         "packages/os/scripts/lib/native-lifecycle-operation.ts",
+        "packages/os/scripts/lib/lifecycle/types.ts",
+        "packages/os/scripts/lib/worker-pool.ts",
+        "packages/os/scripts/server/routes/health.ts",
+        "packages/os/scripts/server/supervisor.ts",
+        "packages/os/scripts/start-consuelo-daemon.sh",
         "packages/os/src/generated/workspace.d.ts",
         "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
         "packages/os/tests/fixtures/tool-package-baseline.json",
@@ -1157,6 +1166,11 @@
         "packages/os/scripts/lib/lifecycle/service.ts",
         "packages/os/scripts/lib/platforms/linux.ts",
         "packages/os/tests/lifecycle-restart-contract.test.ts",
+        "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+        "packages/os/tests/linux-ingress-continuity.test.ts",
+        "packages/os/tests/daemon-bun-path.test.ts",
+        "packages/os/tests/system-daemon-reliability.test.ts",
+        "packages/os/tests/worker-pool-lifecycle.test.ts",
         "packages/os/tests/linux-platform.test.ts",
         "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
         "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
@@ -1172,6 +1186,11 @@
             "run",
             "packages/os/tests/lifecycle-engine.test.ts",
             "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
             "packages/os/tests/lifecycle-facade.test.ts",
             "packages/os/tests/native-lifecycle-operation.test.ts",
             "packages/os/tests/lifecycle-tool-surface.test.ts",
@@ -1358,6 +1377,7 @@
         "packages/os/scripts/server/logger.ts",
         "packages/os/scripts/lib/dangerous-material-policy.ts",
         "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/mcp-openai-session-receipt.test.ts",
         "packages/os/tests/dangerous-material-policy.test.ts"
       ],
       "tests": [
@@ -1368,7 +1388,8 @@
             "x",
             "vitest",
             "run",
-            "packages/os/tests/mcp-gateway.test.ts"
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/mcp-openai-session-receipt.test.ts"
           ]
         },
         {
@@ -4094,6 +4115,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/lifecycle-restart-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4105,6 +4131,11 @@
     },
     {
       "path": "packages/os/tests/lifecycle-tool-surface.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/linux-ingress-continuity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4250,6 +4281,11 @@
     },
     {
       "path": "packages/os/tests/mcp-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-openai-session-receipt.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

@@ -121,6 +121,7 @@ export type LifecycleServiceController = {
     operationId?: string;
     expectedBundleId?: string;
     waitForCompletion?: boolean;
+    allowDestructiveFallback?: boolean;
   }): Promise<void>;
   uninstall?(input?: {
     dryRun?: boolean;
