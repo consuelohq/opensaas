@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import path from 'node:path';
 
@@ -215,8 +215,14 @@ if (import.meta.main) {
   process.env.CONSUELO_OS_DAEMON_PROCESS = '1';
   const configuration = resolveWorkerPoolConfiguration();
   const layout = resolveConsueloHomeLayout();
-  const osRoot = path.resolve(import.meta.dir, '..', '..');
-  const workerEntry = path.join(import.meta.dir, 'main.ts');
+  // Resolve worker code through runtime/current for every spawn. The
+  // supervisor intentionally outlives individual workers during a rolling
+  // update, so capturing import.meta.dir here can pin replacements to the
+  // previous immutable release after the current symlink advances.
+  const workerRuntime = (): { root: string; entry: string } => {
+    const root = realpathSync(layout.runtimeCurrentDir);
+    return { root, entry: path.join(root, 'scripts', 'server', 'main.ts') };
+  };
   const snapshotPath = path.join(layout.nodeRunsDir, 'os-worker-pool.json');
   const orphanReclaimTimeoutMs = Number(
     process.env.CONSUELO_OS_ORPHAN_RECLAIM_TIMEOUT_MS
@@ -240,17 +246,21 @@ if (import.meta.main) {
   const pool = createWorkerPoolSupervisor({
     configuration,
     supervisorPid: process.pid,
+    supportsRuntimeCurrentRollingReload: true,
     probeReady: probeWorkerReady,
     writeSnapshot,
     spawnWorker(spec): WorkerProcessHandle {
-      const subprocess = Bun.spawn([process.execPath, workerEntry], {
-        cwd: osRoot,
+      const runtime = workerRuntime();
+      const subprocess = Bun.spawn([process.execPath, runtime.entry], {
+        cwd: runtime.root,
         env: {
           ...process.env,
           CONSUELO_OS_WORKER_PROCESS: '1',
           CONSUELO_OS_WORKER_ID: spec.workerId,
           CONSUELO_OS_WORKER_INSTANCE_ID: spec.workerInstanceId,
           CONSUELO_OS_SUPERVISOR_PID: String(process.pid),
+          CONSUELO_OS_WORKER_RELEASE_PATH: runtime.root,
+          CONSUELO_OS_WORKER_BASE_PORT: String(configuration.basePort),
           CONSUELO_OS_PORT: String(spec.port),
           PORT: String(spec.port),
         },

@@ -2,7 +2,7 @@
 title: Install Consuelo OS
 description: Install the local Consuelo OS runtime on a supported Mac and verify it is ready.
 status: preview
-verifiedAt: 2026-08-15
+verifiedAt: 2026-08-16
 evidence:
   - source: packages/os/scripts/bootstrap.sh
     tests:
@@ -18,7 +18,14 @@ evidence:
     tests:
       - packages/os/tests/lifecycle-restart-contract.test.ts
       - packages/os/tests/lifecycle-engine.test.ts
-    runtime: Cross-version activation handoff and current-runtime gateway reconciliation were verified on 2026-08-15.
+      - packages/os/tests/lifecycle-ingress-continuity.test.ts
+      - packages/os/tests/runtime-ingress-dependency-convergence.test.ts
+    runtime: Live dependency reconciliation on 2026-08-16 accepted the pinned Caddy binary, detected stale Cloudflared state, and planned the managed Cloudflared replacement without entering onboarding; live worker-roll verification kept Caddy and Cloudflared running while workers were replaced.
+  - source: packages/os/scripts/server/main.ts
+    tests:
+      - packages/os/tests/health-readiness.test.ts
+      - packages/os/tests/worker-pool-lifecycle.test.ts
+    runtime: The live worker-roll test on 2026-08-16 reproduced a request routed during drain, establishing the load-balancer evacuation requirement covered by these tests.
 ---
 
 import Note from '../../../components/mintlify/Note.astro';
@@ -86,9 +93,13 @@ Skipping the service does not remove the OS files. It only skips user LaunchAgen
 
 ## Updates after installation
 
-The lifecycle updater stages and verifies a new runtime before switching `runtime/current`. After that switch, service reload and local gateway reconciliation are executed from the newly active runtime. This matters for private workspace routes because their signed edge identity must pass through the local reverse proxy unchanged.
+The lifecycle updater stages and verifies a new runtime before switching `runtime/current`. Before refreshing service definitions, the activated runtime reconciles the checksum-pinned Caddy and Cloudflared binaries into Consuelo-managed paths. A stale global or Homebrew binary is not considered current merely because it exists.
 
-`consuelo restart` uses the same current-runtime reconciliation path. If gateway reconciliation fails, the lifecycle operation reports the failure rather than treating a stale proxy configuration as healthy.
+Routine updates keep the loaded Caddy and Cloudflared processes running while the two local OS workers are replaced one at a time. Before a worker closes its listener, it marks `/ready` unavailable and stays available for ordinary requests during a short propagation window so the local load balancer can stop choosing it for new work. Bun then finishes requests that were already in flight before that worker exits.
+
+Activation and automatic rollback reconcile services from the exact immutable runtime release being activated, not whichever release the mutable `runtime/current` link happens to reference later. Recovery-capable operations still try the rolling path first and use supervisor replacement only if rolling recovery cannot restore a healthy pool.
+
+`consuelo restart` uses the same release-pinned reconciliation path. If gateway or worker-pool reconciliation fails, the lifecycle operation reports the failure rather than treating a stale or partially replaced runtime as healthy.
 
 ## Verify the installation
 

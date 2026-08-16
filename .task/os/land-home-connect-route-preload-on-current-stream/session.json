@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ff45d48f1731",
+  "tmuxSession": "opensaas-os-land-home-connect-route-preload-on-current-strea-ff45d48f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/land-home-connect-route-preload-on-current-stream",
+  "branch": "task/os/land-home-connect-route-preload-on-current-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-land-home-connect-route-preload-on-current-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-land-home-connect-route-preload-on-current-stream",
+  "prNumber": 2054,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2054",
+  "createdAt": "2026-08-15T08:31:25.470Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-land-home-connect-route-preload-on-current-stream/.task/os/land-home-connect-route-preload-on-current-stream/session.json"
+}
