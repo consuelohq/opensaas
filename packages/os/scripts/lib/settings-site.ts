@@ -8,6 +8,8 @@ import {
   renderWorkspaceChromeBar,
   workspaceChromeClientScript,
   workspaceRouteSwitcherStyles,
+  workspaceWindowShellStyles,
+  type WorkspaceChromeOptions,
   type WorkspaceSurfaceId,
 } from './workspace-chrome';
 
@@ -116,20 +118,7 @@ function configurationStyles(): string {
         --heat-tooltip-shadow: 0 18px 55px rgba(0, 0, 0, 0.44);
       }
     }
-    * { box-sizing: border-box; }
-    html { background: var(--site-color-canvas); }
-    body { margin: 0; min-height: 100vh; padding: 14px; background: var(--site-color-canvas); color: var(--site-color-ink); }
-    .workspace-window { width: min(1880px, calc(100vw - 28px)); min-height: calc(100vh - 28px); margin: 0 auto; overflow: clip; border: 1px solid rgba(241, 231, 213, 0.16); border-radius: 18px; background: var(--site-color-paper); box-shadow: 0 34px 110px rgba(0, 0, 0, 0.42); display: grid; grid-template-rows: 42px minmax(0, 1fr); }
-    .trxChrome { position: relative; z-index: 70; display: grid; grid-template-columns: minmax(84px, 1fr) auto minmax(84px, 1fr); align-items: center; height: 42px; padding: 0 14px; border-bottom: 1px solid rgba(241, 231, 213, 0.10); background: #151411; color: #d8d0c1; view-transition-name: workspace-chrome; }
-    .trxDots { display: flex; align-items: center; gap: 8px; justify-self: start; }
-    .trxDot { width: 12px; height: 12px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.22); }
-    .trxDot.red { background: #d85e54; }
-    .trxDot.yellow { background: #d5ad49; }
-    .trxDot.green { background: #64a866; }
-    .trxChromeTitle { justify-self: center; color: #d8d0c1; font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .01em; }
-    .trxChromeActions { justify-self: end; min-width: 72px; text-align: right; }
-    .trxClock { color: #918a7f; font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
-    .workspace-view { min-width: 0; min-height: 0; background: var(--site-color-paper); view-transition-name: workspace-body; }
+    ${workspaceWindowShellStyles()}
     @view-transition { navigation: auto; }
     ::view-transition-old(workspace-chrome), ::view-transition-new(workspace-chrome) { animation-duration: 90ms; }
     ::view-transition-old(workspace-body), ::view-transition-new(workspace-body) { animation-duration: 140ms; animation-timing-function: ease-out; }
@@ -340,8 +329,6 @@ function configurationStyles(): string {
     [hidden] { display: none !important; }
     .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
     @media (max-width: 900px) {
-      body { padding: 0; }
-      .workspace-window { width: 100vw; min-height: 100dvh; border: 0; border-radius: 0; }
       .detail-grid { grid-template-columns: 1fr; }
       .form-grid { grid-template-columns: 1fr; }
       .field-wide { grid-column: auto; }
@@ -1406,7 +1393,10 @@ function configurationSurface(page: ConfigurationPageId): WorkspaceSurfaceId {
   return 'overview';
 }
 
-export function renderConfigurationSite(page: ConfigurationPageId = 'configuration'): string {
+export function renderConfigurationSite(
+  page: ConfigurationPageId = 'configuration',
+  chromeOptions: WorkspaceChromeOptions = {},
+): string {
   const copy = PAGE_COPY[page];
   const requiresConfigurationSnapshot = page === 'configuration' || page === 'tools';
   const content = requiresConfigurationSnapshot
@@ -1437,7 +1427,7 @@ export function renderConfigurationSite(page: ConfigurationPageId = 'configurati
 </head>
 <body>
   <div class="workspace-window" data-workspace-shell>
-    ${renderWorkspaceChromeBar(configurationSurface(page), copy.title)}
+    ${renderWorkspaceChromeBar(configurationSurface(page), copy.title, chromeOptions)}
     <div class="workspace-view" data-workspace-view>
       <main class="content">
         <header class="hero">

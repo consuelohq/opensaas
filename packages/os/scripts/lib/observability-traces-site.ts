@@ -7,6 +7,7 @@ import {
   renderWorkspaceChromeBar,
   workspaceChromeClientScript,
   workspaceRouteSwitcherStyles,
+  type WorkspaceChromeOptions,
 } from './workspace-chrome';
 
 const canonicalAssetDir = path.resolve(
@@ -396,7 +397,9 @@ export function buildObservabilityTracesClientScript(): string {
   return OBSERVABILITY_TRACES_CLIENT_SCRIPT;
 }
 
-export function buildObservabilityTracesSite(): string {
+export function buildObservabilityTracesSite(
+  chromeOptions: WorkspaceChromeOptions = {},
+): string {
   let html = canonicalAsset('template.html');
 
   html = inlineStyle(
@@ -428,7 +431,7 @@ export function buildObservabilityTracesSite(): string {
   html = replaceExactlyOnce(
     html,
     /<div class="trxChrome">\s*<div class="trxDots">[\s\S]*?<div class="trxChromeActions">[\s\S]*?<\/div>\s*<\/div>\s*<div class="trxBody">/i,
-    `${renderWorkspaceChromeBar('tracing', 'Tracing')} <div class="trxBody">`,
+    `${renderWorkspaceChromeBar('tracing', 'Tracing', chromeOptions)} <div class="trxBody">`,
     'workspace chrome',
   );
 
