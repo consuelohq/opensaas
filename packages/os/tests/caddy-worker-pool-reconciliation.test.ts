@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -19,6 +19,50 @@ describe('Caddy worker-pool reconciliation', () => {
 
   afterEach(() => {
     for (const home of homes.splice(0)) rmSync(home, { force: true, recursive: true });
+  });
+
+  it('uses canonical worker-pool state instead of the request worker port environment', () => {
+    const nodeHome = mkdtempSync(join(tmpdir(), 'consuelo-caddy-pool-state-'));
+    homes.push(nodeHome);
+    createGatewaySecurityConfig({
+      home: nodeHome,
+      workspaceId: 'workspace_state',
+      workspaceSlug: 'state',
+      workspaceHost: 'state.example.test',
+      upstreamPort: 48_100,
+      upstreamPorts: [48_100, 48_101],
+      ingressPort: 48_000,
+      edgeProxy: {
+        nodeId: 'node_state',
+        connectorId: 'connector_state',
+        signingSecret: 'edge-state-secret',
+      },
+    });
+    const runsDir = join(nodeHome, 'runs');
+    mkdirSync(runsDir, { recursive: true });
+    writeFileSync(join(runsDir, 'os-worker-pool.json'), JSON.stringify({
+      schemaVersion: 1,
+      desiredWorkers: 2,
+      basePort: 48_100,
+      generatedAt: new Date().toISOString(),
+      workers: [
+        { slot: 0, workerId: 'worker-0', workerInstanceId: 'instance-0', port: 48_100, state: 'ready', restartCount: 0 },
+        { slot: 1, workerId: 'worker-1', workerInstanceId: 'instance-1', port: 48_101, state: 'ready', restartCount: 0 },
+      ],
+    }));
+
+    expect(reconcileCaddyWorkerPoolConfig({
+      nodeHome,
+      env: {
+        CONSUELO_OS_PORT: '48101',
+        CONSUELO_OS_WORKER_COUNT: '2',
+      },
+    })).toMatchObject({
+      upstreams: ['127.0.0.1:48100', '127.0.0.1:48101'],
+    });
+    expect(readFileSync(join(nodeHome, 'caddy', 'Caddyfile'), 'utf8')).toContain(
+      'reverse_proxy 127.0.0.1:48100 127.0.0.1:48101 {',
+    );
   });
 
   it('upgrades a preserved single-upstream config without rotating credentials', () => {

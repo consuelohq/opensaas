@@ -63,6 +63,11 @@ function commandFailure(result: LifecycleProcessResult, fallback: string): Error
   return new Error(result.stderr.trim() || result.stdout.trim() || fallback);
 }
 
+function isLegacyDefinitionsOnlyUnsupported(result: LifecycleProcessResult): boolean {
+  const detail = `${result.stdout}\n${result.stderr}`;
+  return /unknown option:\s*--definitions-only/i.test(detail);
+}
+
 function installedMacRestartableSidecarLaunchAgents(environment?: NodeJS.ProcessEnv): Array<{
   label: string;
   plistPath: string;
@@ -164,7 +169,16 @@ export function createReloadServiceController(input: {
             input.environment ?? process.env,
           );
           if (definitions.exitCode !== 0) {
-            throw commandFailure(definitions, `LaunchAgent definition refresh exited ${definitions.exitCode}`);
+            const legacyRollbackCompatible = options.allowDestructiveFallback
+              && isLegacyDefinitionsOnlyUnsupported(definitions);
+            if (!legacyRollbackCompatible) {
+              throw commandFailure(definitions, `LaunchAgent definition refresh exited ${definitions.exitCode}`);
+            }
+            // Older immutable releases predate the definitions-only installer mode. During
+            // automatic rollback, runtime/current has already been repointed to that release,
+            // and the installed LaunchAgent definitions use the stable runtime/current path.
+            // Keep those definitions and continue with the target release's reload adapter
+            // instead of making rollback itself depend on a newer installer capability.
           }
         }
         await reconcileCaddy(runtimeRoot);

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c53a1157f86d",
+  "tmuxSession": "opensaas-os-repair-lifecycle-reload-adapter-after-canary-act-c53a1157",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-lifecycle-reload-adapter-after-canary-activation",
+  "branch": "task/os/repair-lifecycle-reload-adapter-after-canary-activation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-lifecycle-reload-adapter-after-canary-activation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-lifecycle-reload-adapter-after-canary-activation",
+  "prNumber": 2109,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2109",
+  "createdAt": "2026-08-16T03:11:20.651Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-lifecycle-reload-adapter-after-canary-activation/.task/os/repair-lifecycle-reload-adapter-after-canary-activation/session.json"
+}

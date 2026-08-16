@@ -421,6 +421,66 @@ describe('lifecycle restart parity', () => {
     );
   });
 
+  it('reapplies reconciled Caddy config with a zero-downtime config-file signal', () => {
+    const migration = source('scripts/migrations/reconcile-caddy-worker-pool.ts');
+
+    expect(migration).toContain("['launchctl', 'kill', 'SIGUSR1', service]");
+    expect(migration).toContain("result.reason !== 'gateway-not-configured'");
+    expect(migration).not.toContain("if (result.changed && process.platform === 'darwin')");
+    expect(migration).not.toContain("['launchctl', 'kickstart', '-k', service]");
+    expect(migration).not.toContain("'--force',");
+  });
+
+  it('keeps rollback compatible with an older runtime installer that predates definitions-only refresh', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-legacy-runtime-'));
+    const legacyRuntimeRoot = resolve(osRoot, 'runtime-legacy');
+    const calls: Array<{ command: string; args: string[] }> = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        activeRuntimeRoot: osRoot,
+        home,
+        platform: 'darwin',
+        environment: { HOME: home },
+        run: async (command, args) => {
+          calls.push({ command, args });
+          if (command === 'bash' && args.includes('--definitions-only')) {
+            return { exitCode: 1, stdout: '', stderr: 'unknown option: --definitions-only' };
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({
+        waitForCompletion: true,
+        allowDestructiveFallback: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).resolves.toBeUndefined();
+
+      expect(calls[0]).toEqual({
+        command: 'bash',
+        args: [
+          resolve(legacyRuntimeRoot, 'scripts', 'install-system-daemons.sh'),
+          '--definitions-only',
+          '--quiet',
+        ],
+      });
+      expect(calls).toContainEqual({
+        command: process.execPath,
+        args: [
+          resolve(legacyRuntimeRoot, 'scripts', 'migrations', 'reconcile-caddy-worker-pool.ts'),
+          home,
+        ],
+      });
+      expect(calls).toContainEqual({
+        command: process.execPath,
+        args: [resolve(legacyRuntimeRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
+      });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('pins activation and rollback reconciliation to the explicit immutable runtime root', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-runtime-root-'));
     const activeRuntimeRoot = resolve(osRoot, 'runtime-current');

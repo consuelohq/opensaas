@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-lifecycle-reload-adapter-after-canary-activation",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2109,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2109",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2109",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2109/repair-lifecycle-reload-adapter-after-canary-activation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2109",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2109/repair-lifecycle-reload-adapter-after-canary-activation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-lifecycle-reload-adapter-after-canary-activation",
+  "taskSession": "tsk_c53a1157f86d",
+  "tmuxSession": "opensaas-os-repair-lifecycle-reload-adapter-after-canary-act-c53a1157",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-lifecycle-reload-adapter-after-canary-activation/.task/os/repair-lifecycle-reload-adapter-after-canary-activation/session.json",
+  "createdAt": "2026-08-16T03:11:20.652Z"
+}
