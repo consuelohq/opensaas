@@ -684,6 +684,39 @@ ensure_bun() {
   log "Bun installed: $BUN_BIN"
 }
 
+ensure_named_bun_runtime() {
+  local source="$BUN_BIN"
+  local target="$RUNTIME_BIN_DIR/consuelo-os"
+  local temporary="$target.$$.tmp"
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would install the named Consuelo service executable at $target"
+    return 0
+  fi
+  [ -x "$source" ] || fail "Consuelo OS cannot create its named service executable because Bun is unavailable: ${source:-unset}"
+  if [ "$source" = "$target" ]; then
+    return 0
+  fi
+
+  mkdir -p "$RUNTIME_BIN_DIR"
+  if [ -x "$target" ] && /usr/bin/cmp -s "$source" "$target"; then
+    BUN_BIN="$target"
+    return 0
+  fi
+
+  /bin/rm -f -- "$temporary"
+  if ! /bin/cp -c "$source" "$temporary" 2>/dev/null; then
+    /bin/cp -p "$source" "$temporary" || fail "Consuelo OS could not copy Bun to its named service executable."
+  fi
+  /bin/chmod 0755 "$temporary"
+  if ! /usr/bin/cmp -s "$source" "$temporary"; then
+    /bin/rm -f -- "$temporary"
+    fail "The Consuelo Bun service clone failed integrity verification."
+  fi
+  /bin/mv -f "$temporary" "$target"
+  BUN_BIN="$target"
+}
+
 runtime_arch() {
   local machine
   machine="$(uname -m 2>/dev/null || true)"
@@ -1891,6 +1924,7 @@ main() {
   render_dependency_progress
   prompt_dependency_setup
   ensure_bun
+  ensure_named_bun_runtime
   ensure_install_id
   ensure_portless
   ensure_caddy

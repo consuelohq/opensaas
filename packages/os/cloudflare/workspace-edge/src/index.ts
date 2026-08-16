@@ -161,7 +161,27 @@ function forbiddenInternalDashboardResponse(): Response {
   });
 }
 
-function workspaceSessionRequiredResponse(): Response {
+function workspaceSessionRequiredResponse(request: Request): Response {
+  const url = new URL(request.url);
+  const acceptsHtml =
+    request.method === 'GET' &&
+    (request.headers.get('accept') ?? '').includes('text/html');
+  if (acceptsHtml) {
+    const login = new URL(
+      '/login/google/start',
+      'https://os.consuelohq.com',
+    );
+    login.searchParams.set('purpose', 'web');
+    login.searchParams.set('return_to', `${url.pathname}${url.search}`);
+    return new Response(null, {
+      status: 302,
+      headers: {
+        location: login.toString(),
+        'cache-control': 'no-store',
+        'x-content-type-options': 'nosniff',
+      },
+    });
+  }
   return new Response(JSON.stringify({ error: 'workspace_session_required' }), {
     status: 401,
     headers: {
@@ -419,6 +439,23 @@ export function createWorkspaceEdgeHandler(
           }),
         })
       : undefined);
+  const internalDashboardAccessValues = [
+    env.OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN?.trim() ?? '',
+    env.OS_INTERNAL_DASHBOARD_ACCESS_AUD?.trim() ?? '',
+    internalDashboardAllowedEmails(
+      env.OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS,
+    ).join(','),
+  ];
+  const configuredInternalDashboardAccessValues =
+    internalDashboardAccessValues.filter(Boolean).length;
+  const internalDashboardAccessState = options.authorizeInternalDashboard
+    ? 'configured'
+    : configuredInternalDashboardAccessValues === 0
+      ? 'disabled'
+      : configuredInternalDashboardAccessValues ===
+          internalDashboardAccessValues.length
+        ? 'configured'
+        : 'partial';
   const authorizeInternalDashboard =
     options.authorizeInternalDashboard ??
     createCloudflareAccessDashboardAuthorizer({
@@ -496,7 +533,16 @@ export function createWorkspaceEdgeHandler(
           url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
           url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`) ||
           isInternalDashboardPagePath(url.pathname);
-        if (internalDashboardRequest) {
+        if (
+          internalDashboardRequest &&
+          internalDashboardAccessState === 'partial'
+        ) {
+          return closedAuthResponse();
+        }
+        if (
+          internalDashboardRequest &&
+          internalDashboardAccessState === 'configured'
+        ) {
           const sessionValidation = await validateWorkspaceBrowserSession({
             request,
             stub,
@@ -506,27 +552,27 @@ export function createWorkspaceEdgeHandler(
           if (!sessionValidation) return closedAuthResponse();
           if (sessionValidation.status !== 204) {
             return sessionValidation.status === 401
-              ? workspaceSessionRequiredResponse()
+              ? workspaceSessionRequiredResponse(request)
               : closedAuthResponse();
           }
-        }
-        if (
-          url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
-          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`)
-        ) {
-          const diagnostic = await proxyInstallDiagnosticRequest({
-            request,
-            stub,
-            internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
-            authorize: authorizeInternalDashboard,
-          });
-          if (diagnostic) return diagnostic;
-          if (!internalDashboardHandler) return closedAuthResponse();
-          return await internalDashboardHandler(request);
-        }
-        if (isInternalDashboardPagePath(url.pathname)) {
-          if (!internalDashboardPageHandler) return closedAuthResponse();
-          return await internalDashboardPageHandler(request);
+          if (
+            url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
+            url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`)
+          ) {
+            const diagnostic = await proxyInstallDiagnosticRequest({
+              request,
+              stub,
+              internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+              authorize: authorizeInternalDashboard,
+            });
+            if (diagnostic) return diagnostic;
+            if (!internalDashboardHandler) return closedAuthResponse();
+            return await internalDashboardHandler(request);
+          }
+          if (isInternalDashboardPagePath(url.pathname)) {
+            if (!internalDashboardPageHandler) return closedAuthResponse();
+            return await internalDashboardPageHandler(request);
+          }
         }
       }
       if (url.pathname.startsWith('/gateway/nodes/')) {
