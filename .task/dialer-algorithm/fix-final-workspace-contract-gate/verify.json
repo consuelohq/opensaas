@@ -1,0 +1,140 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer-algorithm/fix-final-workspace-contract-gate",
+  "base": "stream/dialer-algorithm",
+  "headSha": "109787dc757150210d6cda544efed4bc6d52e3cb",
+  "changeHash": "3143f854cb4722fbcc17de8d828c0215007bdebab0625b736fa5e63cabbbd5c7",
+  "changedFiles": [
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/lib/subagent/lifecycle.ts",
+    "packages/os/tests/subagent-lifecycle-regressions.test.ts"
+  ],
+  "verifiedAt": "2026-08-16T03:18:53.161Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer-algorithm/fix-final-workspace-contract-gate/current.json",
+        ".task/dialer-algorithm/fix-final-workspace-contract-gate/evidence-log.json",
+        ".task/dialer-algorithm/fix-final-workspace-contract-gate/read-log.json",
+        ".task/dialer-algorithm/fix-final-workspace-contract-gate/session.json",
+        ".task/dialer-algorithm/fix-final-workspace-contract-gate/verify.json",
+        ".task/dialer-algorithm/fix-final-workspace-contract-gate/workpad.md",
+        ".task/tasks/dialer-algorithm/fix-final-workspace-contract-gate.json",
+        "packages/os/SCRIPTS.md",
+        "packages/os/scripts/lib/subagent/lifecycle.ts",
+        "packages/os/tests/subagent-lifecycle-regressions.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-instruction-docs",
+          "critical": false,
+          "exclusive": true,
+          "reason": "OS operator and stream instruction Markdown is documentation-only test-selection metadata and must not wake executable lifecycle or package-wide runtime suites by itself.",
+          "matchedFiles": [
+            "packages/os/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-durable-subagent-runtime",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Durable subagent provider, ownership, completion, cancellation, and process-lifecycle changes must prove focused provider and lifecycle contracts without selecting the broad OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/subagent/lifecycle.ts",
+            "packages/os/tests/subagent-lifecycle-regressions.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/subagent-executable-discovery.test.ts",
+            "tests/subagent-lifecycle-regressions.test.ts",
+            "tests/subagent-orchestration-contract.test.ts",
+            "tests/subagent-runner-termination.test.ts"
+          ],
+          "ruleId": "os-durable-subagent-runtime",
+          "critical": true
+        },
+        {
+          "name": "OS durable subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-durable-subagent-runtime",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/subagent-executable-discovery.test.ts",
+            "tests/subagent-lifecycle-regressions.test.ts",
+            "tests/subagent-orchestration-contract.test.ts",
+            "tests/subagent-runner-termination.test.ts"
+          ],
+          "ruleId": "os-durable-subagent-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 9172,
+          "outputTail": "\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:50.381Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET] exec --cd /[REDACTED_SECRET] --sandbox read-only --json -\",\"durationMs\":132,\"exitCode\":0,\"traceId\":\"trc_trc_subagent\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:50.515Z\"}\n{\"level\":\"error\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET] exec --cd /[REDACTED_SECRET] --sandbox read-only --json -\",\"durationMs\":0,\"exitCode\":124,\"traceId\":\"trc_trc_subagent\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:50.909Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET] exec --cd /[REDACTED_SECRET] --sandbox read-only --json -\",\"durationMs\":329,\"exitCode\":0,\"traceId\":\"trc_trc_subagent\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:51.242Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"codex exec\",\"durationMs\":8,\"exitCode\":1,\"traceId\":\"trc_trc_subagent\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:51.254Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"codex exec\",\"durationMs\":6,\"exitCode\":1,\"traceId\":\"trc_trc_subagent\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:51.262Z\"}\n{\"level\":\"error\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"codex exec\",\"durationMs\":6,\"exitCode\":1,\"traceId\":\"trc_trc_subagent\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:51.270Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"durationMs\":19,\"exitCode\":1,\"traceId\":\"trc_trc_subagent\",\"ok\":true,\"code\":\"CAPABILITY_NOT_SUPPORTED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:51.291Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"durationMs\":17,\"exitCode\":1,\"traceId\":\"trc_trc_subagent\",\"ok\":true,\"code\":\"CAPABILITY_NOT_SUPPORTED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:51.310Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"durationMs\":17,\"exitCode\":1,\"traceId\":\"trc_trc_subagent\",\"ok\":true,\"code\":\"CAPABILITY_NOT_SUPPORTED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:51.329Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"durationMs\":18,\"exitCode\":1,\"traceId\":\"trc_trc_subagent\",\"ok\":true,\"code\":\"CAPABILITY_NOT_SUPPORTED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:51.350Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"durationMs\":18,\"exitCode\":1,\"traceId\":\"trc_trc_subagent\",\"ok\":true,\"code\":\"CAPABILITY_NOT_SUPPORTED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:51.370Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"durationMs\":19,\"exitCode\":1,\"traceId\":\"trc_trc_subagent\",\"ok\":true,\"code\":\"CAPABILITY_NOT_SUPPORTED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-16T03:18:51.391Z\"}\n"
+        },
+        {
+          "name": "OS durable subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-durable-subagent-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1547,
+          "outputTail": "workspace script syntax checks passed\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

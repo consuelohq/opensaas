@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/tests/audit/script-parity-audit.test.ts",
+    "packages/workspace/scripts/lib/git.js",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+  ],
+  "updatedAt": "2026-08-16T02:53:42.341Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_06d3f1fe8731",
+  "tmuxSession": "opensaas-dialer-algorithm-focus-os-stream-test-selection-for-dialer-releas-06d3f1fe",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/focus-os-stream-test-selection-for-dialer-release",
+  "branch": "task/dialer-algorithm/focus-os-stream-test-selection-for-dialer-release",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-focus-os-stream-test-selection-for-dialer-release",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-focus-os-stream-test-selection-for-dialer-release",
+  "prNumber": 2099,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2099",
+  "createdAt": "2026-08-16T02:15:10.568Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-focus-os-stream-test-selection-for-dialer-release/.task/dialer-algorithm/focus-os-stream-test-selection-for-dialer-release/session.json"
+}

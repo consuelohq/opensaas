@@ -122,6 +122,28 @@
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy."
     },
     {
+      "id": "workspace-stream-sync-runtime",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/tests/stream-sync-node-modules.test.js",
+        "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+      ],
+      "tests": [
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ]
+        }
+      ],
+      "reason": "Stream sync merge, worktree, generated-registry recovery, and push-gate changes must prove focused real-Git sync behavior without selecting unrelated workspace package tests."
+    },
+    {
       "id": "trace-watch",
       "critical": true,
       "source": [
@@ -260,6 +282,129 @@
       ],
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
       "exclusive": true
+    },
+    {
+      "id": "os-code-call-process-runtime",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/code-call/process.ts",
+        "packages/os/tests/code-call-process-regressions.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS code.call process regressions",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/code-call-process-regressions.test.ts"
+          ]
+        }
+      ],
+      "reason": "Code-call child-process transport changes must prove stdin/exit lifecycle behavior without selecting the broad OS guardrail test file or unrelated package-wide tests."
+    },
+    {
+      "id": "os-trace-sqlite-runtime",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Trace SQLite runtime compatibility",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        }
+      ],
+      "reason": "Trace SQLite adapter changes must prove the Node-compatible read backend and gateway history behavior under the same runtime that exposed the CI regression, without selecting the broad OS package suite."
+    },
+    {
+      "id": "os-facade-release-regressions",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS facade release regression contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "returns a timeout envelope|supports synthetic dry-run|rejects mixed fs read pagination modes|allows matching taskSession and branch for code.call|runs code.call edit mode inside an explicit task worktree"
+          ]
+        }
+      ],
+      "reason": "Facade test-only release-gate fixes must rerun the exact timeout, dry-run, pagination, and managed-task-worktree contracts without selecting unrelated OS package tests."
+    },
+    {
+      "id": "os-media-svg-convert",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tests/media/31-svg-convert.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS SVG conversion contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/media/31-svg-convert.test.ts"
+          ]
+        }
+      ],
+      "reason": "SVG fixture and conversion-contract changes must prove the exact media conversion suite without requiring host ffmpeg or selecting unrelated OS package tests."
+    },
+    {
+      "id": "os-script-parity-audit",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+        "packages/os/tests/audit/script-parity-audit.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS script parity audit contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/audit/script-parity-audit.test.ts"
+          ]
+        }
+      ],
+      "reason": "Script-parity classification changes must prove the complete current workspace/OS inventory without selecting unrelated OS runtime tests."
+    },
+    {
+      "id": "os-instruction-docs",
+      "critical": false,
+      "exclusive": true,
+      "source": [
+        "packages/os/SCRIPTS.md",
+        "packages/os/streams/**/AGENTS.md"
+      ],
+      "tests": [],
+      "reason": "OS operator and stream instruction Markdown is documentation-only test-selection metadata and must not wake executable lifecycle or package-wide runtime suites by itself."
     },
     {
       "id": "os-release-surface-freshness",
@@ -522,7 +667,6 @@
       "critical": true,
       "exclusive": true,
       "source": [
-        "packages/os/SCRIPTS.md",
         "packages/os/TOOLS.md",
         "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
@@ -620,6 +764,41 @@
         }
       ],
       "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-durable-subagent-runtime",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/subagent/**",
+        "packages/os/tests/subagent-executable-discovery.test.ts",
+        "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+        "packages/os/tests/subagent-orchestration-contract.test.ts",
+        "packages/os/tests/subagent-runner-termination.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/subagent-executable-discovery.test.ts",
+            "tests/subagent-lifecycle-regressions.test.ts",
+            "tests/subagent-orchestration-contract.test.ts",
+            "tests/subagent-runner-termination.test.ts"
+          ]
+        },
+        {
+          "name": "OS durable subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Durable subagent provider, ownership, completion, cancellation, and process-lifecycle changes must prove focused provider and lifecycle contracts without selecting the broad OS package suite."
     },
     {
       "id": "os-launcher-copy-interaction",

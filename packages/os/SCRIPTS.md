@@ -1433,6 +1433,8 @@ cat /tmp/input.txt | bun run agent -- "clean this transcript"
 - pass the model as `--provider/model` only when you need to override the default
 - use `bun run agent --` from `/Users/kokayi/Dev/opensaas`; do not call the pi proxy directly from random scripts unless the script owns that integration
 - treat sub-agent output as a draft until verified against files, tests, or logs
+- durable Grok runs require both a successful process exit and a provider-success payload; cancelled/failed stop reasons or missing final messages are recorded as failed runs even when the CLI exits `0`
+- `completion_unknown` is observable through status/log attachments, but an active bounded `wait` keeps polling for a late owned exit marker until its wait budget expires; if ambiguity remains, the wait returns `WAIT_TIMEOUT` rather than freezing the recoverable state as a completed failure
 - never send secrets, api keys, auth tokens, customer pii, full phone numbers, or private credentials
 - do not let sub-agents mutate repo files directly; write changes through workspace scripts (`fs`, `task:fs`, `code-call`) and verify after writes
 

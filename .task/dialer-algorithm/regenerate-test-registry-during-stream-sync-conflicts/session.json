@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d340a23c2e2a",
+  "tmuxSession": "opensaas-dialer-algorithm-regenerate-test-registry-during-stream-sync-conf-d340a23c",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts",
+  "branch": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-regenerate-test-registry-during-stream-sync-conflicts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-regenerate-test-registry-during-stream-sync-conflicts",
+  "prNumber": 2100,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2100",
+  "createdAt": "2026-08-16T02:30:30.725Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-regenerate-test-registry-during-stream-sync-conflicts/.task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts/session.json"
+}

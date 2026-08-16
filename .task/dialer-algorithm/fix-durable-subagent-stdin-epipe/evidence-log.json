@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer-algorithm/fix-durable-subagent-stdin-epipe",
+  "events": [
+    {
+      "id": "ef7d11f0-97c1-4c60-a463-04becab1f0da",
+      "occurred_at": "2026-08-16T06:41:34.300Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/dialer-algorithm/fix-durable-subagent-stdin-epipe/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/fix-durable-subagent-stdin-epipe",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/fix-durable-subagent-stdin-epipe"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-16T06:41:34.361Z"
+}

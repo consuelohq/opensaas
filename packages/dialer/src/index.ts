@@ -24,6 +24,29 @@ export { ParallelStrategyResolver } from './services/parallel-strategy-resolver.
 export { StoppingModelService } from './services/stopping-model.js';
 export { CallTimingModel } from './services/call-timing-model.service.js';
 export { WhittleIndexService } from './services/whittle-index.service.js';
+export { PredictivePriorityService } from './services/predictive-priority.service.js';
+export { estimateBernoulliWilson } from './services/binomial-estimate.js';
+export { PredictiveSelectionModel } from './services/predictive-selection-model.js';
+export { RetryDecisionModel } from './services/retry-decision-model.js';
+export {
+  ContextualResponseModel,
+  scoreContextualCandidateEconomics,
+} from './services/contextual-response-model.js';
+export {
+  DiscreteTimeResponseHazardModel,
+  expandDiscreteTimeObservation,
+} from './services/discrete-time-response-hazard.js';
+export type {
+  DiscreteTimeHazardConfiguration,
+  DiscreteTimeHazardPeriod,
+} from './services/discrete-time-response-hazard.js';
+export {
+  buildCalibrationBins,
+  compareProbabilisticModels,
+  evaluateProbabilisticPredictions,
+  populationStabilityIndex,
+  splitTemporalEvaluationExamples,
+} from './services/predictive-evaluation.js';
 export { CadenceOptimizerService } from './services/cadence-optimizer.service.js';
 export type { LockStore } from './services/caller-id.js';
 export type { NumberPool } from './services/local-presence.js';
@@ -76,6 +99,18 @@ export {
   isStaleDialingGroup,
 } from './domain/parallel-group.js';
 export { isHumanLikeAnswer } from './domain/parallel-profile.js';
+export {
+  buildResponseTimeObservation,
+  classifyLearningObservation,
+  resolveLocalCalendarSlot,
+} from './domain/learning-observation.js';
+export type {
+  LearningCensorReason,
+  LearningObservationClassification,
+  LearningOutcomeClass,
+  LocalCalendarSlot,
+  ResponseTimeObservation,
+} from './domain/learning-observation.js';
 export {
   planProviderCallbackTransition,
   resolveWinnerClaim,
@@ -223,4 +258,26 @@ export type {
   WhittleIndexResult,
   CadencePolicy,
   AgeBucket,
+  WorkspaceDialerEconomics,
+  BernoulliEstimate,
+  AttemptAnswerProbability,
+  PredictivePriorityInput,
+  PredictivePriorityResult,
+  PredictiveModelQuery,
+  PredictiveHazardQuery,
+  PredictiveModelStore,
+  PredictiveSelectionCandidate,
+  PredictiveSelectionInput,
+  PredictiveHazardSource,
+  PredictiveTimezoneSource,
+  PredictiveSourceContext,
+  PredictiveDecisionContext,
+  PredictiveRankedCandidate,
+  PredictiveSuppressedCandidate,
+  PredictiveSelectionResult,
+  RetryDecisionReason,
+  RetryTimingSource,
+  RetryOutcome,
+  RetryDecisionInput,
+  RetryDecisionResult,
 } from './types.js';

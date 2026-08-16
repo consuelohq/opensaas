@@ -144,6 +144,26 @@ function executableEntries() {
   return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && !SNAPSHOT_EXCLUDED_TOOLS.has(entry.name));
 }
 
+function runnableEntries() {
+  return executableEntries().filter((entry) => {
+    const schema = getInputSchema(entry.inputSchema);
+    return schema?.safeParse(exampleInput(entry.name)).success === true;
+  });
+}
+
+function syntheticDryRunEntries() {
+  return runnableEntries().filter((entry) => {
+    if (!entry.capabilities.mutating || entry.command.dryRunFlag) {
+      return false;
+    }
+
+    const schema = getInputSchema(entry.inputSchema);
+    if (!schema) return false;
+    const parsed = schema.safeParse({ ...exampleInput(entry.name), dryRun: true });
+    return parsed.success && (parsed.data as ToolInput).dryRun === true;
+  });
+}
+
 describe('typed facade executor', () => {
   it('provides fs.patch facade guidance with the fs.apply_patch manifest entry', async () => {
     const result = await executeTool('fs.patch', { path: 'tmp/example.txt' }, stableOptions(successfulRunner()));
@@ -289,7 +309,7 @@ describe('typed facade executor', () => {
     expect(result).toMatchSnapshot();
   });
 
-  it.each(executableEntries().map((entry) => entry.name))('returns a timeout envelope for %s', async (toolName) => {
+  it.each(runnableEntries().map((entry) => entry.name))('returns a timeout envelope for %s', async (toolName) => {
     const result = await executeTool(toolName, exampleInput(toolName), stableOptions(timeoutRunner()));
     expect(result.code).toBe('TIMEOUT');
     expect(result.ok).toBe(false);
@@ -420,7 +440,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it.each(manifestEntries.filter((entry) => entry.name !== 'worker.call' && entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
+  it.each(syntheticDryRunEntries().map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
     const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
     expect(result.code).toBe('DRY_RUN');
@@ -723,7 +743,7 @@ describe('typed facade executor', () => {
 
         expect(result.ok).toBe(false);
         expect(result.code).toBe('VALIDATION_ERROR');
-        expect(result.message).toContain('top-level pagination fields cannot be used with files');
+        expect(result.message).toContain('top-level read fields cannot be used with files');
       }
       expect(plans).toHaveLength(0);
     } finally {

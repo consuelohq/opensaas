@@ -1088,6 +1088,111 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes durable subagent changes through focused contracts instead of the broad OS package suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/subagent/runtime.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/subagent/lifecycle.ts',
+      '--changed-file',
+      'packages/os/tests/subagent-executable-discovery.test.ts',
+      '--changed-file',
+      'packages/os/tests/subagent-orchestration-contract.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-durable-subagent-runtime',
+    );
+    expect(data.matchedRules.map((rule) => rule.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'OS durable subagent runtime contracts',
+      'OS durable subagent syntax contracts',
+    ]);
+  });
+
+  it('keeps Dialer stream OS release fixes on focused contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/code-call/process.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/trace-database-schema.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/trace-sites-local-read-backend.ts',
+      '--changed-file',
+      'packages/os/tests/audit/fixtures/script-parity-classifications.json',
+      '--changed-file',
+      'packages/os/tests/code-call-process-regressions.test.ts',
+      '--changed-file',
+      'packages/os/tests/facade/facade.test.ts',
+      '--changed-file',
+      'packages/os/tests/media/31-svg-convert.test.ts',
+      '--changed-file',
+      'packages/os/tests/trace-sites-gateway-live-endpoints.test.ts',
+      '--changed-file',
+      'packages/os/SCRIPTS.md',
+      '--changed-file',
+      'packages/os/streams/dialer-algorithm/AGENTS.md',
+      '--json',
+    ]));
+
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    expect(matchedRuleIds).toEqual(expect.arrayContaining([
+      'os-code-call-process-runtime',
+      'os-trace-sqlite-runtime',
+      'os-facade-release-regressions',
+      'os-media-svg-convert',
+      'os-script-parity-audit',
+      'os-instruction-docs',
+    ]));
+    expect(matchedRuleIds).not.toContain('os-lifecycle-update-handoff');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).not.toContain('OS lifecycle update handoff contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('routes stream sync changes through focused merge contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/workspace/tests/stream-sync-node-modules.test.js',
+      '--changed-file',
+      'packages/workspace/tests/stream-sync-generated-registry-conflict.test.js',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'workspace-stream-sync-runtime',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'workspace stream sync runtime contracts',
+    ]);
+  });
+
+  it('treats OS operational instructions as documentation-only selection', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/SCRIPTS.md',
+      '--changed-file',
+      'packages/os/streams/dialer-algorithm/AGENTS.md',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toEqual([
+      'os-instruction-docs',
+    ]);
+    expect(data.selectedSuites).toEqual([]);
+    expect(data.zeroSuiteReason).toContain('changed files are docs');
+  });
+
   it('routes native macOS menu changes through focused Mac contracts', () => {
     const data = json(run([
       'check',

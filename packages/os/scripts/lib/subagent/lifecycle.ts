@@ -56,6 +56,7 @@ export type DurableSubagentRun = {
 
 export type DurableSubagentParser = (stdout: string, stderr: string) => {
   completed: boolean;
+  failure?: string;
   finalMessage?: string;
   summary?: unknown;
   usage?: Record<string, number>;
@@ -401,7 +402,7 @@ export async function waitForDurableSubagentRun(
 ): Promise<{ run: DurableSubagentRun; timedOut: boolean }> {
   const deadline = Date.now() + Math.max(0, waitMs);
   let current = reconcileDurableSubagentRun(run, env, parser);
-  while (!isTerminal(current.status) && current.status !== 'cancelled' && Date.now() < deadline) {
+  while (!isSettledForWait(current.status) && current.status !== 'cancelled' && Date.now() < deadline) {
     try {
       await new Promise((resolve) => setTimeout(resolve, Math.min(50, Math.max(1, deadline - Date.now()))));
       const read = readDurableSubagentRun(current.runId, env);
@@ -422,7 +423,7 @@ export async function waitForDurableSubagentRun(
       return { run: unknown, timedOut: false };
     }
   }
-  return { run: current, timedOut: !isTerminal(current.status) && current.status !== 'cancelled' };
+  return { run: current, timedOut: !isSettledForWait(current.status) && current.status !== 'cancelled' };
 }
 
 export function cancelDurableSubagentRun(
@@ -536,6 +537,10 @@ function isTerminal(status: DurableSubagentStatus): boolean {
   return status === 'completed' || status === 'failed' || status === 'timed_out' || status === 'completion_unknown';
 }
 
+function isSettledForWait(status: DurableSubagentStatus): boolean {
+  return status === 'completed' || status === 'failed' || status === 'timed_out';
+}
+
 function isProcessAlive(pid: number): boolean {
   try {
     process.kill(pid, 0);
@@ -631,17 +636,22 @@ function reconcileOwnedExitMarker(
   parsed: ReturnType<DurableSubagentParser>,
   now: number,
 ): DurableSubagentRun {
+  const providerFailure = exit.outcome === 'completed' ? parsed.failure : undefined;
   const updated: DurableSubagentRun = {
     ...run,
-    status: exit.outcome,
-    ...(exit.exitCode !== undefined ? { exitCode: exit.exitCode } : {}),
+    status: providerFailure ? 'failed' : exit.outcome,
+    ...(providerFailure
+      ? { exitCode: 1 }
+      : exit.exitCode !== undefined
+        ? { exitCode: exit.exitCode }
+        : {}),
     updatedAt: now,
     ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
     ...(parsed.summary !== undefined ? { summary: parsed.summary } : {}),
     ...(parsed.usage ? { usage: parsed.usage } : {}),
     ...(typeof parsed.stdoutChars === 'number' ? { stdoutChars: parsed.stdoutChars } : {}),
     ...(typeof parsed.stderrChars === 'number' ? { stderrChars: parsed.stderrChars } : {}),
-    ...(exit.error ? { error: exit.error } : {}),
+    ...(providerFailure || exit.error ? { error: providerFailure || exit.error } : {}),
   };
   return persistReconciledState(statePath, run, updated, true);
 }

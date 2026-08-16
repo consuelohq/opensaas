@@ -1,6 +1,9 @@
-import type { TimingModelStore } from '../types';
+import type { HazardEstimate, TimingModelStore } from '../types';
 
-import { CallTimingModel } from './call-timing-model.service';
+import {
+  CallTimingModel,
+  rankHazardEstimates,
+} from './call-timing-model.service';
 
 describe('CallTimingModel', () => {
   it('should return null when segment has insufficient sample size', async () => {
@@ -55,5 +58,32 @@ describe('CallTimingModel', () => {
       hour: 11,
       dayOfWeek: 3,
     });
+  });
+
+  it('prefers a timing bin with stronger lower-bound evidence over a lucky tiny raw rate', () => {
+    const hazards: HazardEstimate[] = [
+      {
+        segmentId: 'segment-1',
+        hourOfDay: 9,
+        dayOfWeek: 1,
+        attemptNumber: 1,
+        answerRate: 0.8,
+        sampleSize: 5,
+        lowerBound: 0.37553463,
+        upperBound: 0.96377589,
+      },
+      {
+        segmentId: 'segment-1',
+        hourOfDay: 14,
+        dayOfWeek: 1,
+        attemptNumber: 1,
+        answerRate: 0.6,
+        sampleSize: 100,
+        lowerBound: 0.50200259,
+        upperBound: 0.69059871,
+      },
+    ];
+
+    expect(rankHazardEstimates(hazards)[0]?.hourOfDay).toBe(14);
   });
 });
