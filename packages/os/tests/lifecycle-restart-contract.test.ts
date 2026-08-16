@@ -89,7 +89,13 @@ describe('lifecycle restart parity', () => {
         ? [{ command: 'bash', args: [resolve(osRoot, 'scripts', 'retire-legacy-system-daemons.sh'), '--check'] }]
         : []),
       ...(process.platform === 'darwin'
-        ? [{ command: 'bash', args: [resolve(osRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] }]
+        ? [
+            {
+              command: 'bash',
+              args: [resolve(osRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+            },
+            { command: 'bash', args: [resolve(osRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] },
+          ]
         : []),
       {
         command: process.execPath,
@@ -101,7 +107,13 @@ describe('lifecycle restart parity', () => {
     await controller.restart();
     expect(calls).toEqual([
       ...(process.platform === 'darwin'
-        ? [{ command: 'bash', args: [resolve(osRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] }]
+        ? [
+            {
+              command: 'bash',
+              args: [resolve(osRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+            },
+            { command: 'bash', args: [resolve(osRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] },
+          ]
         : []),
       {
         command: process.execPath,
@@ -172,13 +184,17 @@ describe('lifecycle restart parity', () => {
 
       expect(calls[0]).toEqual({
         command: 'bash',
+        args: [resolve(osRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+      });
+      expect(calls[1]).toEqual({
+        command: 'bash',
         args: [
           resolve(osRoot, 'scripts', 'install-system-daemons.sh'),
           '--definitions-only',
           '--quiet',
         ],
       });
-      expect(calls[1]).toEqual({
+      expect(calls[2]).toEqual({
         command: process.execPath,
         args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
       });
@@ -390,6 +406,10 @@ describe('lifecycle restart parity', () => {
     expect(calls).toEqual([
       {
         command: 'bash',
+        args: [resolve(activeRuntimeRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+      },
+      {
+        command: 'bash',
         args: [
           resolve(activeRuntimeRoot, 'scripts', 'install-system-daemons.sh'),
           '--definitions-only',
@@ -439,6 +459,9 @@ describe('lifecycle restart parity', () => {
         osRoot, activeRuntimeRoot: osRoot, home, platform: 'darwin', environment: { HOME: home },
         run: async (command, args) => {
           calls.push({ command, args });
+          if (command === 'bash' && args.includes('--runtime-dependencies-only')) {
+            return { exitCode: 1, stdout: '', stderr: 'unknown option: --runtime-dependencies-only' };
+          }
           if (command === 'bash' && args.includes('--definitions-only')) {
             return { exitCode: 1, stdout: '', stderr: 'unknown option: --definitions-only' };
           }
@@ -447,7 +470,8 @@ describe('lifecycle restart parity', () => {
       });
 
       await expect(controller.restart({ waitForCompletion: true, allowDestructiveFallback: true, runtimeRoot: legacyRuntimeRoot })).resolves.toBeUndefined();
-      expect(calls[0]).toEqual({ command: 'bash', args: [resolve(legacyRuntimeRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] });
+      expect(calls[0]).toEqual({ command: 'bash', args: [resolve(legacyRuntimeRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'] });
+      expect(calls[1]).toEqual({ command: 'bash', args: [resolve(legacyRuntimeRoot, 'scripts', 'install-system-daemons.sh'), '--definitions-only', '--quiet'] });
       expect(calls).toContainEqual({ command: process.execPath, args: [resolve(legacyRuntimeRoot, 'scripts', 'migrations', 'reconcile-caddy-worker-pool.ts'), home] });
       expect(calls).toContainEqual({ command: process.execPath, args: [resolve(legacyRuntimeRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'] });
     } finally {
@@ -478,7 +502,11 @@ describe('lifecycle restart parity', () => {
         runtimeRoot: targetRuntimeRoot,
       });
 
-      expect(calls.slice(0, 3)).toEqual([
+      expect(calls.slice(0, 4)).toEqual([
+        {
+          command: 'bash',
+          args: [resolve(targetRuntimeRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+        },
         {
           command: 'bash',
           args: [
