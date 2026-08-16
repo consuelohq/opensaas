@@ -84,7 +84,10 @@ export function resolveWorkerPoolConfiguration(
     max: MAX_OS_WORKERS,
   });
   const basePort = integerFromEnv({
-    raw: env.CONSUELO_OS_PORT ?? env.PORT ?? env.WORKSPACE_DAEMON_PORT,
+    raw: env.CONSUELO_OS_WORKER_BASE_PORT
+      ?? env.WORKSPACE_DAEMON_PORT
+      ?? env.CONSUELO_OS_PORT
+      ?? env.PORT,
     fallback: 46321,
     label: 'OS worker base port',
     min: 1,
