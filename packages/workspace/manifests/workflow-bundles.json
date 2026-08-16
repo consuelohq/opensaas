@@ -44,6 +44,16 @@
         {
           "event": "tool.preInvoke",
           "workflow": "task",
+          "tool": "session.start"
+        },
+        {
+          "event": "tool.postInvoke",
+          "workflow": "task",
+          "tool": "session.start"
+        },
+        {
+          "event": "tool.preInvoke",
+          "workflow": "task",
           "tool": "task.start"
         },
         {
@@ -506,6 +516,99 @@
             },
             "sessionRequired": true,
             "workflowRole": "validation.review"
+          }
+        },
+        {
+          "name": "session.start",
+          "kind": "facade-tool",
+          "source": "workspace-tooling",
+          "sourcePath": "packages/workspace/tooling/tool-manifest.json",
+          "category": "session lifecycle",
+          "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+          "core": true,
+          "definition": {
+            "name": "session.start",
+            "methodPath": [
+              "session",
+              "start"
+            ],
+            "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+            "category": "session lifecycle",
+            "underlying": "workspace session.start",
+            "capabilities": {
+              "readOnly": false,
+              "mutating": true,
+              "deterministic": false,
+              "safeToRetry": false
+            },
+            "defaultTimeout": 60000,
+            "inputSchema": "SessionStartInput",
+            "outputSchema": "SessionStartOutput",
+            "command": {
+              "script": "session:start",
+              "branchMode": "none",
+              "arguments": [
+                {
+                  "source": "kind",
+                  "flag": "--kind",
+                  "kind": "value",
+                  "required": true
+                },
+                {
+                  "source": "path",
+                  "flag": "--path",
+                  "kind": "value"
+                },
+                {
+                  "source": "area",
+                  "flag": "--area",
+                  "kind": "value"
+                },
+                {
+                  "source": "stream",
+                  "flag": "--stream",
+                  "kind": "value"
+                },
+                {
+                  "source": "title",
+                  "flag": "--title",
+                  "kind": "value"
+                },
+                {
+                  "source": "workflow",
+                  "flag": "--workflow",
+                  "kind": "value"
+                },
+                {
+                  "source": "bodyFile",
+                  "flag": "--body-file",
+                  "kind": "value"
+                },
+                {
+                  "source": "startFrom",
+                  "flag": "--start-from",
+                  "kind": "value"
+                },
+                {
+                  "source": "description",
+                  "flag": "--description",
+                  "kind": "value"
+                },
+                {
+                  "source": "createStream",
+                  "flag": "--create-stream",
+                  "kind": "boolean"
+                }
+              ],
+              "jsonFlag": "--json"
+            },
+            "exampleInput": {
+              "kind": "task",
+              "area": "workspace-agents",
+              "title": "example task",
+              "workflow": "task"
+            },
+            "sessionRequired": false
           }
         },
         {

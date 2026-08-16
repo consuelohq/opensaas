@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2649,
-    "mappedTestCount": 2563,
-    "unmappedTestCount": 86,
+    "testFileCount": 2650,
+    "mappedTestCount": 2565,
+    "unmappedTestCount": 85,
     "ruleCount": 65,
     "explicitRuleCount": 46,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 269,
+      "packages/os/tests": 270,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 64,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 555,
+      "test": 556,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -650,7 +650,11 @@
         "packages/workspace/scripts/lib/facade/**",
         "packages/workspace/tooling/tool-manifest.json",
         "packages/workspace/src/generated/workspace.d.ts",
-        "packages/workspace/manifests/manifest.config.json"
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/scripts/generate-tool-manifest.ts",
+        "packages/workspace/tooling/workflows.json",
+        "packages/workspace/manifests/workflow-bundles.json",
+        "packages/workspace/tests/workflow-intent.test.ts"
       ],
       "tests": [
         {
@@ -2286,7 +2290,8 @@
         "packages/os/scripts/lib/task-selection.js",
         "packages/os/scripts/lib/paths.js",
         "packages/os/tests/durable-task-worktrees.test.ts",
-        "packages/os/tests/task-selection.test.js"
+        "packages/os/tests/task-selection.test.js",
+        "packages/os/tests/task-cleanup-durable-safety.test.ts"
       ],
       "tests": [
         {
@@ -5115,6 +5120,11 @@
     },
     {
       "path": "packages/os/tests/system-daemon-reliability.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/task-cleanup-durable-safety.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -16179,7 +16189,6 @@
     "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
     "packages/workspace/tests/verification.test.js",
     "packages/workspace/tests/wait.test.js",
-    "packages/workspace/tests/workflow-intent.test.ts",
     "tests/operator.test.ts"
   ],
   "projects": [
