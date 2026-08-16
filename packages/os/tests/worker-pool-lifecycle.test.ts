@@ -224,6 +224,7 @@ describe('OS worker pool lifecycle', () => {
         CONSUELO_OS_WORKER_COUNT: '2',
         CONSUELO_OS_PORT: '47030',
         CONSUELO_OS_WORKER_RESTART_DELAY_MS: '0',
+        CONSUELO_OS_DRAIN_PROPAGATION_MS: '3000',
       }),
       instanceId: () => `rolling-${++nextInstance}`,
       spawnWorker(spec): WorkerProcessHandle {
@@ -245,7 +246,8 @@ describe('OS worker pool lifecycle', () => {
         return true;
       },
       writeSnapshot: () => {},
-      sleep: async () => {
+      sleep: async (milliseconds) => {
+        events.push(`sleep:${milliseconds}`);
         await new Promise<void>((resolveSleep) => setTimeout(resolveSleep, 0));
       },
     });
@@ -270,8 +272,12 @@ describe('OS worker pool lifecycle', () => {
     const worker1Drain = events.findIndex((event) =>
       event === `kill:worker-1:${originalWorker1}:SIGTERM`,
     );
+    const worker0CaddyAdmission = events.findIndex((event, index) =>
+      index > worker0ReplacementReady && event === 'sleep:3000',
+    );
     expect(worker0ReplacementReady).toBeGreaterThan(-1);
-    expect(worker1Drain).toBeGreaterThan(worker0ReplacementReady);
+    expect(worker0CaddyAdmission).toBeGreaterThan(worker0ReplacementReady);
+    expect(worker1Drain).toBeGreaterThan(worker0CaddyAdmission);
 
     await supervisor.stop();
   });
