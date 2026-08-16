@@ -396,6 +396,7 @@ export function createLifecycleEngine(
           expectedBundleId: input.manifest.bundleId,
           waitForCompletion: true,
           allowDestructiveFallback: !input.previousReleasePath,
+          runtimeRoot: input.nextReleasePath,
         });
       } catch (error: unknown) {
         throw asLifecycleError(
@@ -454,6 +455,7 @@ export function createLifecycleEngine(
             expectedBundleId: previousManifest.bundleId,
             waitForCompletion: true,
             allowDestructiveFallback: true,
+            runtimeRoot: input.previousReleasePath,
           });
           input.emit('rollback', {
             bundleId: previousManifest.bundleId,
@@ -478,9 +480,11 @@ export function createLifecycleEngine(
           clearLifecycleActivationJournal(home);
         }
       } catch (rollbackError: unknown) {
+        const activationMessage = error instanceof Error ? error.message : String(error);
+        const rollbackMessage = rollbackError instanceof Error ? rollbackError.message : String(rollbackError);
         throw lifecycleError(
           'ACTIVATION_FAILED',
-          `runtime activation failed and rollback was not accepted: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`,
+          `runtime activation failed: ${activationMessage}; rollback was not accepted: ${rollbackMessage}`,
           { phase: 'health', cause: { error, rollbackError } },
         );
       }
@@ -545,6 +549,7 @@ export function createLifecycleEngine(
                 operationId,
                 expectedBundleId: release.bundleId,
                 waitForCompletion: true,
+                runtimeRoot: current.currentReleasePath,
               }),
             code: 'SERVICE_RESTART_FAILED',
             message: 'failed to reconcile Consuelo services',
@@ -882,6 +887,7 @@ export function createLifecycleEngine(
           operationId,
           expectedBundleId: state.kind === 'valid' ? state.currentBundleId : undefined,
           waitForCompletion: true,
+          runtimeRoot: state.kind === 'valid' ? state.currentReleasePath : undefined,
         });
       } catch (error: unknown) {
         throw asLifecycleError(
@@ -981,6 +987,7 @@ export function createLifecycleEngine(
                     expectedBundleId: state.currentBundleId,
                     waitForCompletion: true,
                     allowDestructiveFallback: true,
+                    runtimeRoot: state.currentReleasePath,
                   }),
                 code: 'SERVICE_RESTART_FAILED',
                 message: 'failed to restart Consuelo services after repair',

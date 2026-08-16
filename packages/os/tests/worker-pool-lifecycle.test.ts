@@ -263,7 +263,7 @@ describe('OS worker pool lifecycle', () => {
     await supervisor.stop();
   });
 
-  it('tracks active work and refuses new work after draining starts', async () => {
+  it('announces drain before refusing new work so the load balancer can evacuate the worker', async () => {
     const state = createWorkerRuntimeState({
       workerId: 'worker-0',
       workerInstanceId: 'instance-a',
@@ -278,8 +278,12 @@ describe('OS worker pool lifecycle', () => {
     });
 
     state.startDraining();
+    expect(state.snapshot()).toMatchObject({ draining: true });
+    expect(state.beginRequest()).toBe(true);
+    state.stopAcceptingRequests();
     expect(state.beginRequest()).toBe(false);
     const idle = state.waitForIdle(100);
+    state.endRequest();
     state.endRequest();
     await expect(idle).resolves.toBe(true);
     expect(state.snapshot()).toMatchObject({ activeRequests: 0, draining: true });
