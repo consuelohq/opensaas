@@ -42,6 +42,28 @@ describe('Twilio provider test mode', () => {
   });
 
   it('passes the magic From number unchanged into the provider group request', () => {
+    const decisionContext = {
+      schemaVersion: 2 as const,
+      capturedAt: '2026-08-15T12:00:00.000Z',
+      timezone: 'UTC',
+      timezoneSource: 'workspace_fallback' as const,
+      localHour: 12,
+      localDayOfWeek: 6,
+      attemptsUsed: 0,
+      attemptsToday: 0,
+      attemptsThisWeek: 0,
+      minutesSinceLastAttempt: null,
+      localPresenceRequested: true,
+      source: { opportunityValue: 1_000 },
+      d3: {
+        nextAttemptNumber: 1,
+        answerProbability: 0.4,
+        answerProbabilityUpperBound: 0.6,
+        score: 59,
+        hazardSource: 'exact_local_slot' as const,
+        suppressed: false,
+      },
+    };
     const request = buildProviderGroupOptions(
       {
         sessionId: 'session-test',
@@ -49,7 +71,14 @@ describe('Twilio provider test mode', () => {
         queueId: 'queue-test',
         userId: 'user-test',
         callMode: 'twilio-test',
-        targets: [{ contactId: 'contact-test', phone: '+15550100000' }],
+        targets: [
+          {
+            contactId: 'contact-test',
+            phone: '+15550100000',
+            predictiveDecisionId: 'decision-test',
+            decisionContext,
+          },
+        ],
         callerIds: [TWILIO_TEST_FROM_NUMBER],
       },
       'https://dialer.example.test',
@@ -58,6 +87,8 @@ describe('Twilio provider test mode', () => {
     expect(request.fromNumbers).toEqual([TWILIO_TEST_FROM_NUMBER]);
     expect(request.dialerSessionId).toBe('session-test');
     expect(request.providerMode).toBe('twilio-test');
+    expect(request.predictiveDecisionIds).toEqual(['decision-test']);
+    expect(request.decisionContexts).toEqual([decisionContext]);
     expect(request.statusCallbackUrl).toBe(
       'https://dialer.example.test/webhooks/twilio/status',
     );

@@ -166,6 +166,16 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
   });
   child.stdout.on('data', (chunk) => { stdout += chunk; });
   child.stderr.on('data', (chunk) => { stderr += chunk; });
+  child.stdin.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED') return;
+    finish({
+      stdout,
+      stderr: stderr || errorMessage(error),
+      exitCode: 1,
+      timedOut,
+      runtimeMissing: false,
+    });
+  });
   child.on('error', (error: NodeJS.ErrnoException) => {
     finish({
       stdout,

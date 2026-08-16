@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2650,
-    "mappedTestCount": 2565,
-    "unmappedTestCount": 85,
-    "ruleCount": 65,
-    "explicitRuleCount": 46,
+    "testFileCount": 2667,
+    "mappedTestCount": 2583,
+    "unmappedTestCount": 84,
+    "ruleCount": 73,
+    "explicitRuleCount": 54,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 270,
+      "packages/os/tests": 271,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 64,
+      "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -25,10 +25,11 @@
       "packages/twenty-server/test/integration/graphql/suites/inputs-validation/create-validation": 23,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/twenty-front/src/modules/billing/hooks": 21,
+      "packages/dialer-server/src": 20,
       "packages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/validator-utils": 20,
       "packages/twenty-server/test/integration/constants": 20,
       "packages/twenty-server/test/integration/graphql/suites/inputs-validation/filter-validation": 20,
-      "packages/dialer-server/src": 19,
+      "packages/dialer/src/services": 18,
       "packages/twenty-front/src/modules/page-layout/widgets/graph/graphWidgetBarChart/utils": 18,
       "packages/twenty-front/src/modules/workflow/workflow-variables/utils": 17,
       "packages/twenty-server/src/modules/dashboard/chart-data/utils": 17,
@@ -65,7 +66,6 @@
       "packages/twenty-server/test/integration/metadata/suites/page-layout-widget/utils": 11,
       "packages/twenty-server/test/integration/metadata/suites/role/utils": 11,
       "packages/api/src/routes": 10,
-      "packages/dialer/src/services": 10,
       "packages/twenty-front/src/modules/object-metadata/utils": 10,
       "packages/twenty-front/src/modules/object-record/record-field/ui/utils": 10,
       "packages/twenty-server/src/engine/core-modules/billing/utils": 10,
@@ -115,6 +115,7 @@
       "packages/twenty-server/test/integration/metadata/suites/skill": 7,
       "packages/twenty-shared/src/utils/strings": 7,
       "packages/twenty-shared/src/utils/url": 7,
+      "packages/dialer-server/src/runtime": 6,
       "packages/lead-connector/src/deployment": 6,
       "packages/twenty-front/src/hooks": 6,
       "packages/twenty-front/src/modules/ai/utils": 6,
@@ -135,7 +136,6 @@
       "packages/twenty-server/test/integration/metadata/suites/front-component": 6,
       "packages/twenty-shared/src/utils/validation": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
-      "packages/dialer-server/src/runtime": 5,
       "packages/twenty-front/src/modules/apollo/utils": 5,
       "packages/twenty-front/src/modules/auth/sign-in-up/hooks": 5,
       "packages/twenty-front/src/modules/dialer/hooks": 5,
@@ -155,6 +155,7 @@
       "packages/twenty-server/test/integration/metadata/suites/utils": 5,
       "packages/consuelo-design/upstream/open-design/apps/web/src/i18n": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/runtime": 4,
+      "packages/dialer-server/src/learning": 4,
       "packages/os/tools/deployment-provider": 4,
       "packages/twenty-front/src/modules/activities/hooks": 4,
       "packages/twenty-front/src/modules/apollo/optimistic-effect/group-by/utils": 4,
@@ -186,6 +187,7 @@
       "packages/twenty-server/test/integration/metadata/suites/field-metadata/relation": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/providers": 3,
       "packages/dialer-server/src/call-operations": 3,
+      "packages/dialer/src/domain": 3,
       "packages/os/scripts": 3,
       "packages/twenty-front/src/modules/action-menu/utils": 3,
       "packages/twenty-front/src/modules/activities/calendar/utils": 3,
@@ -236,7 +238,6 @@
       "packages/contacts/src": 2,
       "packages/dialer-server/src/lab": 2,
       "packages/dialer/src/application": 2,
-      "packages/dialer/src/domain": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
       "packages/os/tests/facade": 2,
@@ -635,8 +636,8 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 556,
-      "spec": 152,
+      "test": 564,
+      "spec": 161,
       "other": 7,
       "tests-dir": 7,
       "integration": 2,
@@ -766,6 +767,29 @@
       ],
       "critical": true,
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+      "origin": "explicit"
+    },
+    {
+      "id": "workspace-stream-sync-runtime",
+      "source": [
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/tests/stream-sync-node-modules.test.js",
+        "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+      ],
+      "tests": [
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Stream sync merge, worktree, generated-registry recovery, and push-gate changes must prove focused real-Git sync behavior without selecting unrelated workspace package tests.",
       "origin": "explicit"
     },
     {
@@ -910,6 +934,135 @@
       "critical": true,
       "exclusive": true,
       "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-code-call-process-runtime",
+      "source": [
+        "packages/os/scripts/lib/code-call/process.ts",
+        "packages/os/tests/code-call-process-regressions.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS code.call process regressions",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/code-call-process-regressions.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Code-call child-process transport changes must prove stdin/exit lifecycle behavior without selecting the broad OS guardrail test file or unrelated package-wide tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-trace-sqlite-runtime",
+      "source": [
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Trace SQLite runtime compatibility",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Trace SQLite adapter changes must prove the Node-compatible read backend and gateway history behavior under the same runtime that exposed the CI regression, without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-facade-release-regressions",
+      "source": [
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS facade release regression contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "returns a timeout envelope|supports synthetic dry-run|rejects mixed fs read pagination modes|allows matching taskSession and branch for code.call|runs code.call edit mode inside an explicit task worktree"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Facade test-only release-gate fixes must rerun the exact timeout, dry-run, pagination, and managed-task-worktree contracts without selecting unrelated OS package tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-media-svg-convert",
+      "source": [
+        "packages/os/tests/media/31-svg-convert.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS SVG conversion contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/media/31-svg-convert.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "SVG fixture and conversion-contract changes must prove the exact media conversion suite without requiring host ffmpeg or selecting unrelated OS package tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-script-parity-audit",
+      "source": [
+        "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+        "packages/os/tests/audit/script-parity-audit.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS script parity audit contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/audit/script-parity-audit.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Script-parity classification changes must prove the complete current workspace/OS inventory without selecting unrelated OS runtime tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-instruction-docs",
+      "source": [
+        "packages/os/SCRIPTS.md",
+        "packages/os/streams/**/AGENTS.md"
+      ],
+      "tests": [],
+      "critical": false,
+      "exclusive": true,
+      "reason": "OS operator and stream instruction Markdown is documentation-only test-selection metadata and must not wake executable lifecycle or package-wide runtime suites by itself.",
       "origin": "explicit"
     },
     {
@@ -1179,7 +1332,6 @@
     {
       "id": "os-lifecycle-update-handoff",
       "source": [
-        "packages/os/SCRIPTS.md",
         "packages/os/TOOLS.md",
         "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
@@ -1279,6 +1431,42 @@
       "critical": true,
       "exclusive": true,
       "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-durable-subagent-runtime",
+      "source": [
+        "packages/os/scripts/lib/subagent/**",
+        "packages/os/tests/subagent-executable-discovery.test.ts",
+        "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+        "packages/os/tests/subagent-orchestration-contract.test.ts",
+        "packages/os/tests/subagent-runner-termination.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/subagent-executable-discovery.test.ts",
+            "tests/subagent-lifecycle-regressions.test.ts",
+            "tests/subagent-orchestration-contract.test.ts",
+            "tests/subagent-runner-termination.test.ts"
+          ]
+        },
+        {
+          "name": "OS durable subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Durable subagent provider, ownership, completion, cancellation, and process-lifecycle changes must prove focused provider and lifecycle contracts without selecting the broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -3369,6 +3557,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/commercial-target-authorization.test.ts",
+      "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/commercial.acceptance.test.ts",
       "group": "packages/dialer-server/src",
       "kind": "test"
@@ -3409,6 +3602,26 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/learning/contextual-shadow-evaluation.test.ts",
+      "group": "packages/dialer-server/src/learning",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/learning/postgres-predictive-model-store.contract.test.ts",
+      "group": "packages/dialer-server/src/learning",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/learning/predictive-decision-log.test.ts",
+      "group": "packages/dialer-server/src/learning",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/learning/response-time-shadow-evaluation.test.ts",
+      "group": "packages/dialer-server/src/learning",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/lifecycle.integration.test.ts",
       "group": "packages/dialer-server/src",
       "kind": "integration"
@@ -3425,6 +3638,11 @@
     },
     {
       "path": "packages/dialer-server/src/runtime/lead-connector-learning.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/predictive-runtime-cutover.test.ts",
       "group": "packages/dialer-server/src/runtime",
       "kind": "test"
     },
@@ -3484,6 +3702,11 @@
       "kind": "spec"
     },
     {
+      "path": "packages/dialer/src/domain/learning-observation.spec.ts",
+      "group": "packages/dialer/src/domain",
+      "kind": "spec"
+    },
+    {
       "path": "packages/dialer/src/domain/parallel-group.spec.ts",
       "group": "packages/dialer/src/domain",
       "kind": "spec"
@@ -3497,6 +3720,11 @@
       "path": "packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts",
       "group": "packages/dialer/src/infrastructure/redis",
       "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/services/binomial-estimate.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
     },
     {
       "path": "packages/dialer/src/services/cadence-optimizer.spec.ts",
@@ -3519,6 +3747,16 @@
       "kind": "spec"
     },
     {
+      "path": "packages/dialer/src/services/contextual-response-model.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/discrete-time-response-hazard.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
       "path": "packages/dialer/src/services/local-presence.spec.ts",
       "group": "packages/dialer/src/services",
       "kind": "spec"
@@ -3535,6 +3773,31 @@
     },
     {
       "path": "packages/dialer/src/services/parallel-strategy-resolver.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/predictive-evaluation.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/predictive-priority.contract.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/predictive-selection-model.contract.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/predictive-selection-science.spec.ts",
+      "group": "packages/dialer/src/services",
+      "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/services/retry-decision-model.contract.spec.ts",
       "group": "packages/dialer/src/services",
       "kind": "spec"
     },
@@ -3960,6 +4223,11 @@
     },
     {
       "path": "packages/os/tests/code-call-parity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/code-call-process-regressions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15964,6 +16232,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/stream-sync-node-modules.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -16166,7 +16439,6 @@
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/session-start-compatibility.test.ts",
     "packages/workspace/tests/stream-lifecycle.test.ts",
-    "packages/workspace/tests/stream-sync-node-modules.test.js",
     "packages/workspace/tests/stream-workpads.test.js",
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
     "packages/workspace/tests/task-hook-workflow-contract.test.ts",

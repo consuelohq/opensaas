@@ -1,0 +1,24 @@
+{
+  "files": [
+    ".task/dialer-algorithm/isolate-os-subagent-executable-discovery-tests/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/consuelo-home.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/lifecycle/paths.ts",
+    "packages/os/scripts/lib/subagent/lifecycle.ts",
+    "packages/os/scripts/lib/subagent/runtime.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/tests/subagent-cli.test.ts",
+    "packages/os/tests/subagent-executable-discovery.test.ts",
+    "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+    "packages/os/tests/subagent-orchestration-contract.test.ts",
+    "packages/os/tests/subagent-runner-termination.test.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-16T02:11:13.366Z"
+}

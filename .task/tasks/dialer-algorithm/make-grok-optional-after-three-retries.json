@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/make-grok-optional-after-three-retries",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2117,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2117",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2117",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2117/make-grok-optional-after-three-retries",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2117",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2117/make-grok-optional-after-three-retries",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-make-grok-optional-after-three-retries",
+  "taskSession": "tsk_b534510546f2",
+  "tmuxSession": "opensaas-dialer-algorithm-make-grok-optional-after-three-retries-b5345105",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-make-grok-optional-after-three-retries/.task/dialer-algorithm/make-grok-optional-after-three-retries/session.json",
+  "createdAt": "2026-08-16T03:34:49.995Z"
+}

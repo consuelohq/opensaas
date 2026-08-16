@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/refresh-os-script-parity-baseline",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2070,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2070",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2070",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2070/refresh-os-script-parity-baseline",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2070",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2070/refresh-os-script-parity-baseline",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-refresh-os-script-parity-baseline",
+  "taskSession": "tsk_f3a1c6293862",
+  "tmuxSession": "opensaas-dialer-algorithm-refresh-os-script-parity-baseline-f3a1c629",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-refresh-os-script-parity-baseline/.task/dialer-algorithm/refresh-os-script-parity-baseline/session.json",
+  "createdAt": "2026-08-15T11:13:08.135Z"
+}

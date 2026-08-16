@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { readFile } from 'node:fs/promises';
 import { Effect } from 'effect';
 import {
   RedisParallelStore,
@@ -18,6 +19,7 @@ import { recordLeadConnectorAttemptTelemetry } from './lead-connector-learning';
 import {
   createRailwayDialerApplicationLayers,
   createRailwayLeadConnectorApplicationLayer,
+  selectSuccessfullyCreatedTargets,
   selectProviderDialerForGroup,
 } from './railway';
 
@@ -107,11 +109,25 @@ const createUnlearnedPredictiveDatabase = (): LeadConnectorDatabase => ({
         ] as T[],
       };
     }
+    if (text.includes('FROM dialer_learning_observations')) {
+      return { rows: [] as T[] };
+    }
+    if (text.includes('FROM dialer_workspace_settings')) {
+      return {
+        rows: [
+          {
+            avg_deal_value: '100',
+            avg_close_rate: '1',
+            cost_per_attempt: '0.03',
+          },
+        ] as T[],
+      };
+    }
     return { rows: [] as T[] };
   },
 });
 
-const createLeadConnectorLearnedDatabase = (): LeadConnectorDatabase => ({
+const createCanonicalLearnedDatabase = (): LeadConnectorDatabase => ({
   query: async <T>(text: string) => {
     if (text.includes('FROM contact_attempt_ledger')) {
       return {
@@ -129,11 +145,45 @@ const createLeadConnectorLearnedDatabase = (): LeadConnectorDatabase => ({
         ] as T[],
       };
     }
-    if (text.includes('FROM consuelo_lead_connector_call_outcomes')) {
+    if (text.includes('FROM dialer_learning_observations')) {
+      if (
+        text.includes('local_hour') &&
+        text.includes('GROUP BY attempt_number, local_hour, local_day_of_week')
+      ) {
+        return {
+          rows: [
+            {
+              attempt_number: 1,
+              local_hour: 10,
+              local_day_of_week: 1,
+              successes: 10,
+              trials: 100,
+            },
+            {
+              attempt_number: 2,
+              local_hour: 10,
+              local_day_of_week: 1,
+              successes: 80,
+              trials: 100,
+            },
+          ] as T[],
+        };
+      }
       return {
         rows: [
-          { attempt_number: 1, answer_rate: 0.1, sample_size: 20 },
-          { attempt_number: 2, answer_rate: 0.8, sample_size: 20 },
+          { attempt_number: 1, successes: 10, trials: 100 },
+          { attempt_number: 2, successes: 80, trials: 100 },
+        ] as T[],
+      };
+    }
+    if (text.includes('FROM dialer_workspace_settings')) {
+      return {
+        rows: [
+          {
+            avg_deal_value: '100',
+            avg_close_rate: '1',
+            cost_per_attempt: '0.03',
+          },
         ] as T[],
       };
     }
@@ -212,14 +262,30 @@ describe('LeadConnector dialer learning', () => {
 
     expect(recorded).toBe(true);
     expect(writes).toHaveLength(1);
+    expect(writes[0].text).toContain('INSERT INTO dialer_learning_observations');
+    expect(writes[0].text).toContain(
+      'ON CONFLICT (workspace_id, group_id, position) DO NOTHING',
+    );
     expect(writes[0].text).toContain('INSERT INTO contact_attempt_ledger');
     expect(writes[0].text).toContain(
       'INSERT INTO consuelo_lead_connector_call_outcomes',
     );
     expect(writes[0].values).toEqual([
       'workspace-1',
+      'pg-learning',
+      1,
+      'queue-1',
       'contact-winner',
       '2026-08-01T12:00:00.000Z',
+      '2026-08-01T12:00:05.000Z',
+      '2026-08-01T12:00:45.000Z',
+      12,
+      6,
+      'response',
+      null,
+      null,
+      null,
+      null,
       'answered',
     ]);
   });
@@ -242,6 +308,34 @@ describe('LeadConnector dialer learning', () => {
 });
 
 describe('Railway dialer-server runtime composition', () => {
+  it('finalizes predictive actions only after provider initiation and only for created legs', async () => {
+    const source = await readFile(new URL('./railway.ts', import.meta.url), 'utf8');
+    const liveStart = source.indexOf('initiateProviderCalls: (input) =>');
+    const liveEnd = source.indexOf('generateTwilioCustomerTwiml', liveStart);
+    const liveBlock = source.slice(liveStart, liveEnd);
+    expect(liveBlock.indexOf('dialer.parallel.initiateGroup')).toBeLessThan(
+      liveBlock.indexOf('finalizeSelectedDecisionRecords'),
+    );
+
+    const selected = [
+      {
+        contactId: 'contact-a',
+        phone: '+15550100001',
+        predictiveDecisionId: 'decision-1',
+      },
+      {
+        contactId: 'contact-b',
+        phone: '+15550100002',
+        predictiveDecisionId: 'decision-1',
+      },
+    ];
+    expect(
+      selectSuccessfullyCreatedTargets(selected, [
+        { contactId: 'contact-b', callSid: 'CA_created' },
+      ]).map((target) => target.contactId),
+    ).toEqual(['contact-b']);
+  });
+
   it('selects the test dialer for follow-up operations on test-mode groups', async () => {
     const redis = new MemoryRedis();
     const parallelStore = new RedisParallelStore(redis);
@@ -362,11 +456,11 @@ describe('Railway dialer-server runtime composition', () => {
     });
   });
 
-  it('ranks predictive targets from LeadConnector learned outcomes without Twenty model rows', async () => {
+  it('ranks predictive targets from canonical observations without Twenty model rows', async () => {
     const redis = new MemoryRedis();
     const layers = await createRailwayDialerApplicationLayers(environment, {
       redis,
-      database: createLeadConnectorLearnedDatabase(),
+      database: createCanonicalLearnedDatabase(),
     });
     const application = createEffectDialerApplication(layers);
     const result = await Effect.runPromise(
