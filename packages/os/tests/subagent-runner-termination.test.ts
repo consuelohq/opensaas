@@ -6,6 +6,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import { runSubagentProcess } from '../scripts/lib/subagent/runtime';
+
 import {
   preserveFirstTerminationOutcome,
   providerExitCodeForOutcome,
@@ -63,6 +65,32 @@ describe('subagent runner termination', () => {
       const result = spawnSync(process.execPath, [script], { encoding: 'utf8' });
       expect(result.status).toBe(0);
       expect(readFileSync(marker, 'utf8')).toBe('SIGKILL');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('tolerates EPIPE when a provider closes stdin before the prompt is written', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'subagent-stdin-epipe-'));
+    const script = join(root, 'close-stdin.mjs');
+    writeFileSync(script, [
+      "import { closeSync } from 'node:fs';",
+      'closeSync(0);',
+      'setTimeout(() => process.exit(0), 50);',
+    ].join('\n'));
+
+    try {
+      const result = await runSubagentProcess({
+        command: process.execPath,
+        args: [script],
+        cwd: root,
+        env: process.env,
+        timeoutMs: 2_000,
+        stdin: 'x'.repeat(8 * 1024 * 1024),
+      });
+
+      expect(result.timedOut).toBe(false);
+      expect(result.exitCode).toBe(0);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

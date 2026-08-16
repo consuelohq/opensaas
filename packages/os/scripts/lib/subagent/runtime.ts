@@ -1975,7 +1975,7 @@ function boundSubagentOutput(value: string): string {
   return `${value.slice(0, SUBAGENT_OUTPUT_LIMIT)}\n... [truncated ${value.length - SUBAGENT_OUTPUT_LIMIT} chars]`;
 }
 
-async function runSubagentProcess(input: {
+export async function runSubagentProcess(input: {
   command: string;
   args: string[];
   cwd: string;
@@ -2016,6 +2016,10 @@ async function runSubagentProcess(input: {
     child.stderr.setEncoding('utf8');
     child.stdout.on('data', (chunk) => { stdout = boundSubagentOutput(stdout + chunk); });
     child.stderr.on('data', (chunk) => { stderr = boundSubagentOutput(stderr + chunk); });
+    child.stdin.on('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED') return;
+      finish({ stdout, stderr: stderr || error.message, exitCode: 1, timedOut: false });
+    });
     child.on('error', (error) => {
       finish({ stdout, stderr: error.message, exitCode: 1, timedOut: false });
     });
