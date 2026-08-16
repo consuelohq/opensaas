@@ -7,7 +7,7 @@ const path = require('path');
 const LABEL = process.env.WORKSPACE_DAEMON_LABEL || 'com.consuelo.system';
 const HOME = process.env.HOME || os.homedir();
 const PLIST = path.join(HOME, 'Library', 'LaunchAgents', `${LABEL}.plist`);
-const PORT = process.env.CONSUELO_OS_PORT || process.env.PORT || process.env.WORKSPACE_DAEMON_PORT || '46321';
+const PORT = process.env.CONSUELO_OS_WORKER_BASE_PORT || process.env.WORKSPACE_DAEMON_PORT || process.env.CONSUELO_OS_PORT || process.env.PORT || '46321';
 const HEALTH = `http://127.0.0.1:${PORT}/health`;
 const OS_DIR = path.resolve(__dirname, '..');
 const START_SCRIPT = path.join(OS_DIR, 'scripts', 'start-consuelo-daemon.sh');
@@ -15,6 +15,8 @@ const LOG_FILE = process.env.CONSUELO_DAEMON_LOG_FILE || path.join(HOME, 'Librar
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
 const RELOAD_POLL_MS = 500;
+const PRIMARY_LAUNCH_AGENT_BOOTSTRAP_ATTEMPTS = 4;
+const PRIMARY_LAUNCH_AGENT_BOOTSTRAP_RETRY_SECONDS = 0.2;
 const EXPECTED_SERVER_NAME = 'consuelo-os';
 const CONFLICTING_LABELS = ['com.consuelo.workspace'];
 const CONSUELO_HOME = process.env.CONSUELO_HOME || path.join(HOME, '.consuelo');
@@ -274,9 +276,39 @@ function scrubInheritedLegacyEnvironment() {
   runBestEffort('launchctl', ['unsetenv', 'WORKSPACE_MCP_TOKEN']);
 }
 
-function bootstrapLaunchAgent() {
-  runRequired('launchctl', ['bootstrap', LAUNCH_DOMAIN, PLIST], 'launchctl bootstrap');
-  runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
+function bootstrapLaunchAgent({ kickstart = true } = {}) {
+  let lastError = null;
+  let bootstrapped = false;
+  for (let attempt = 1; attempt <= PRIMARY_LAUNCH_AGENT_BOOTSTRAP_ATTEMPTS; attempt += 1) {
+    try {
+      runRequired('launchctl', ['bootstrap', LAUNCH_DOMAIN, PLIST], 'launchctl bootstrap');
+      bootstrapped = true;
+      break;
+    } catch (error) {
+      lastError = error;
+      const detail = error instanceof Error ? error.message : String(error);
+      const transientExitFive = /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
+      if (!transientExitFive) throw error;
+
+      // launchd can keep the previous job in a teardown transaction briefly.
+      // If the label is already visible again, the immutable plist was accepted;
+      // otherwise give teardown a moment to settle and retry the same bootstrap.
+      if (isLaunchdLoaded()) {
+        bootstrapped = true;
+        break;
+      }
+      if (attempt < PRIMARY_LAUNCH_AGENT_BOOTSTRAP_ATTEMPTS) {
+        sleep(PRIMARY_LAUNCH_AGENT_BOOTSTRAP_RETRY_SECONDS);
+      }
+    }
+  }
+  if (!bootstrapped) {
+    const detail = lastError instanceof Error ? lastError.message : String(lastError || 'launchctl bootstrap failed');
+    throw new Error(`primary launch agent bootstrap failed for ${LABEL}: ${detail}`);
+  }
+  if (kickstart) {
+    runRequired('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${LABEL}`], 'launchctl kickstart');
+  }
 }
 
 function kickstartOrBootstrapLaunchAgent() {
@@ -351,12 +383,45 @@ function waitForRollingReload(before, attempts = rollingReloadWaitAttempts(befor
   return false;
 }
 
+function waitForSupervisorHandoff(before, attempts = RELOAD_WAIT_ATTEMPTS) {
+  for (let index = 0; index < attempts; index += 1) {
+    const current = workerPoolState();
+    if (
+      isHealthyRollingPool(current)
+      && current.supportsRuntimeCurrentRollingReload === true
+      && current.supervisorPid !== before.supervisorPid
+      && caddyMatchesReadyPool(current)
+    ) return true;
+    sleep(RELOAD_POLL_MS / 1000);
+  }
+  return false;
+}
+
+function handoffLegacySupervisor(before) {
+  if (process.platform !== 'darwin' || !existsSync(PLIST) || !isLaunchdLoaded()) return false;
+  if (!isHighAvailabilityReady(before)) {
+    throw new Error('Consuelo OS cannot hand off the legacy supervisor without a healthy HA pool.');
+  }
+  bootoutLaunchAgent();
+  bootstrapLaunchAgent({ kickstart: false });
+  if (!waitForSupervisorHandoff(before)) {
+    throw new Error('Consuelo OS replacement supervisor did not establish the runtime-current HA pool.');
+  }
+  if (!waitForHealth('reloaded', 1)) {
+    throw new Error('Consuelo OS did not become healthy after supervisor handoff.');
+  }
+  return true;
+}
+
 function tryRollingReload() {
   if (process.platform === 'win32') return false;
   const pool = workerPoolState();
   if (!isHealthyRollingPool(pool)) return false;
   if (!caddyMatchesReadyPool(pool)) {
     throw new Error('Caddy worker upstreams do not match the ready worker pool.');
+  }
+  if (pool.supportsRuntimeCurrentRollingReload !== true) {
+    return handoffLegacySupervisor(pool);
   }
   const supervisorPid = String(pool.supervisorPid);
   if (!findServerPids().includes(supervisorPid)) return false;
@@ -414,7 +479,7 @@ function scheduleReload({ useLaunchd, command = 'reload-now' }) {
 
 const args = process.argv.slice(2);
 if (args.includes('--help')) {
-  writeStdout('usage: bun run consuelo-reload -- [reload|reload-now|restart|restart-now|status|stop|start|logs]');
+  writeStdout('usage: bun run consuelo-reload -- [rolling-reload|rolling-reload-now|reload|reload-now|restart|restart-now|status|stop|start|logs]');
   writeStdout('manages the local Consuelo OS Bun server and user LaunchAgent.');
   process.exit(0);
 }
@@ -475,6 +540,17 @@ switch (command) {
   case 'consuelo-reload':
   case 'reload':
     scheduleReload({ useLaunchd: hasLaunchdPlist, command: 'reload-now' });
+    break;
+
+  case 'rolling-reload':
+    scheduleReload({ useLaunchd: hasLaunchdPlist, command: 'rolling-reload-now' });
+    break;
+
+  case 'rolling-reload-now':
+    sleep(0.5);
+    if (!tryRollingReload()) {
+      throw new Error('Consuelo OS cannot preserve MCP ingress without a healthy two-worker pool. Run repair for destructive recovery.');
+    }
     break;
 
   case 'restart':

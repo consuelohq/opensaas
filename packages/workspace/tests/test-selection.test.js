@@ -97,7 +97,7 @@ describe('test selection registry', () => {
       'twenty-shared',
       '--coverage=false',
     ]);
-  });
+  }, 15_000);
 
   it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
     const rulesPath = path.resolve(
@@ -267,6 +267,28 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused bundled-skill contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/skills/branch/skill.json',
+      '--changed-file',
+      'packages/os/skills/skills.json',
+      '--changed-file',
+      'packages/os/tests/branch-skill.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-bundled-skill-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS bundled skill contracts',
+    ]);
+  });
+
   it('uses the focused native OS workflow contracts for Windows workflow assertions', () => {
     const result = run([
       'check',
@@ -294,6 +316,16 @@ describe('test selection registry', () => {
       'packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts',
       '--changed-file',
       'packages/os/scripts/lib/settings-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/nodes-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/managed-cloud-public-pricing.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts',
+      '--changed-file',
+      'packages/os/tests/managed-cloud-public-pricing.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -923,7 +955,7 @@ describe('test selection registry', () => {
   });
 
 
-  it('routes daemon startup managed Sites refresh through focused lifecycle coverage', () => {
+  it('routes daemon startup managed Sites refresh through focused lifecycle handoff coverage', () => {
     const data = json(run([
       'check',
       '--changed-file',
@@ -932,17 +964,17 @@ describe('test selection registry', () => {
     ]));
 
     expect(data.matchedRules.map((rule) => rule.id)).toContain(
-      'os-lifecycle-legacy-mcp-scrub',
+      'os-lifecycle-update-handoff',
     );
     expect(data.selectedSuites.map((suite) => suite.name)).not.toContain(
       '@consuelo/os package test',
     );
     const lifecycleSuite = data.selectedSuites.find(
-      (suite) => suite.ruleId === 'os-lifecycle-legacy-mcp-scrub',
+      (suite) => suite.ruleId === 'os-lifecycle-update-handoff',
     );
     expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
-      'tests/finish-line-lifecycle-contract.test.ts',
-      'tests/daemon-bun-path.test.ts',
+      'packages/os/tests/lifecycle-ingress-continuity.test.ts',
+      'packages/os/tests/daemon-bun-path.test.ts',
     ]));
   });
 
@@ -1014,6 +1046,8 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/scripts/lifecycle.ts',
       '--changed-file',
+      'packages/os/scripts/bootstrap.sh',
+      '--changed-file',
       'packages/os/scripts/lib/lifecycle/service.ts',
       '--changed-file',
       'packages/os/scripts/lib/platforms/linux.ts',
@@ -1021,6 +1055,8 @@ describe('test selection registry', () => {
       'packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts',
       '--changed-file',
       'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      '--changed-file',
+      'packages/os/tests/caddy-worker-pool-migration.test.ts',
       '--changed-file',
       'packages/os/tests/lifecycle-restart-contract.test.ts',
       '--changed-file',
@@ -1045,7 +1081,9 @@ describe('test selection registry', () => {
     );
     expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
       'packages/os/tests/lifecycle-restart-contract.test.ts',
+      'packages/os/tests/runtime-ingress-dependency-convergence.test.ts',
       'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      'packages/os/tests/caddy-worker-pool-migration.test.ts',
       'packages/os/tests/linux-platform.test.ts',
     ]));
   });

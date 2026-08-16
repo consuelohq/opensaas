@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2642,
-    "mappedTestCount": 2556,
+    "testFileCount": 2649,
+    "mappedTestCount": 2563,
     "unmappedTestCount": 86,
-    "ruleCount": 64,
-    "explicitRuleCount": 45,
+    "ruleCount": 65,
+    "explicitRuleCount": 46,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 262,
+      "packages/os/tests": 269,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 64,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 548,
+      "test": 555,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -1179,9 +1179,18 @@
         "packages/os/TOOLS.md",
         "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
+        "packages/os/scripts/consuelo-reload.js",
+        "packages/os/scripts/generate-system-daemons.sh",
+        "packages/os/scripts/install-system-daemons.sh",
         "packages/os/scripts/lifecycle.ts",
+        "packages/os/scripts/lib/lifecycle/engine.ts",
         "packages/os/scripts/lib/facade/schemas.ts",
         "packages/os/scripts/lib/native-lifecycle-operation.ts",
+        "packages/os/scripts/lib/lifecycle/types.ts",
+        "packages/os/scripts/lib/worker-pool.ts",
+        "packages/os/scripts/server/routes/health.ts",
+        "packages/os/scripts/server/supervisor.ts",
+        "packages/os/scripts/start-consuelo-daemon.sh",
         "packages/os/src/generated/workspace.d.ts",
         "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
         "packages/os/tests/fixtures/tool-package-baseline.json",
@@ -1198,10 +1207,21 @@
         "packages/os/scripts/lib/lifecycle/service.ts",
         "packages/os/scripts/lib/platforms/linux.ts",
         "packages/os/tests/lifecycle-restart-contract.test.ts",
+        "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+        "packages/os/tests/linux-ingress-continuity.test.ts",
+        "packages/os/tests/daemon-bun-path.test.ts",
+        "packages/os/tests/system-daemon-reliability.test.ts",
+        "packages/os/tests/worker-pool-lifecycle.test.ts",
         "packages/os/tests/linux-platform.test.ts",
         "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
         "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
-        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+        "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+        "packages/os/scripts/server/main.ts",
+        "packages/os/scripts/server/worker-runtime-state.ts",
+        "packages/os/tests/health-readiness.test.ts",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+        "packages/os/tests/caddy-worker-pool-migration.test.ts"
       ],
       "tests": [
         {
@@ -1213,6 +1233,12 @@
             "run",
             "packages/os/tests/lifecycle-engine.test.ts",
             "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
             "packages/os/tests/lifecycle-facade.test.ts",
             "packages/os/tests/native-lifecycle-operation.test.ts",
             "packages/os/tests/lifecycle-tool-surface.test.ts",
@@ -1221,7 +1247,9 @@
             "packages/os/tests/windows-platform.test.ts",
             "packages/os/tests/tool-manifest.test.ts",
             "packages/os/tests/tool-package-layout.test.ts",
-            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+            "packages/os/tests/caddy-worker-pool-migration.test.ts"
           ]
         },
         {
@@ -1246,7 +1274,7 @@
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests.",
+      "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -1399,6 +1427,7 @@
         "packages/os/scripts/server/logger.ts",
         "packages/os/scripts/lib/dangerous-material-policy.ts",
         "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/mcp-openai-session-receipt.test.ts",
         "packages/os/tests/dangerous-material-policy.test.ts"
       ],
       "tests": [
@@ -1409,7 +1438,8 @@
             "x",
             "vitest",
             "run",
-            "packages/os/tests/mcp-gateway.test.ts"
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/mcp-openai-session-receipt.test.ts"
           ]
         },
         {
@@ -1612,7 +1642,7 @@
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "The workspace shell tests share process.env and spawn local MCP daemons; run files serially so one test file cannot corrupt another file’s agent-verification state.",
+      "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference.",
       "origin": "explicit"
     },
     {
@@ -1641,7 +1671,12 @@
         "packages/os/tests/managed-cloud-one-click-runner.test.ts",
         "packages/os/tests/os-device-authority-architecture.test.ts",
         "packages/os/tests/os-device-authority-release-contract.test.ts",
-        "packages/os/tests/settings-site.test.ts"
+        "packages/os/tests/settings-site.test.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts",
+        "packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts",
+        "packages/os/scripts/lib/managed-cloud-public-pricing.ts",
+        "packages/os/scripts/lib/nodes-site.ts",
+        "packages/os/tests/managed-cloud-public-pricing.test.ts"
       ],
       "tests": [
         {
@@ -1662,6 +1697,7 @@
             "tests/managed-cloud-node-enrollment-cli.test.ts",
             "tests/platform-managed-cloud-node.test.ts",
             "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
             "tests/managed-cloud-node-instance-contract.test.ts",
             "tests/managed-cloud-node-contract.test.ts"
           ]
@@ -1919,6 +1955,41 @@
       "critical": true,
       "exclusive": true,
       "reason": "Removal of the obsolete metering package from the deployed artifact manifest must retain the canonical Artifacts boundary without selecting unrelated OS suites.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-bundled-skill-contract",
+      "source": [
+        "packages/os/skills/**",
+        "packages/os/tests/branch-skill.test.ts",
+        "packages/os/tests/cli-skill-routing.test.ts",
+        "packages/os/tests/onboarding-skills.test.ts",
+        "packages/os/tests/senior-engineer-skill.test.ts",
+        "packages/os/tests/skill-migration.test.ts",
+        "packages/os/tests/skill-selection-cli.test.ts",
+        "packages/os/tests/skills-registry.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS bundled skill contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--",
+            "tests/branch-skill.test.ts",
+            "tests/cli-skill-routing.test.ts",
+            "tests/onboarding-skills.test.ts",
+            "tests/skill-selection-cli.test.ts",
+            "tests/skills-registry.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Bundled skill instructions, metadata, registry output, and skill-routing contracts must run the focused skill lifecycle suite without selecting unrelated historically red package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -3803,6 +3874,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/branch-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/browser-service.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -3814,6 +3890,11 @@
     },
     {
       "path": "packages/os/tests/caddy-ha-watchdog-migration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/caddy-worker-pool-migration.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4323,6 +4404,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/lifecycle-restart-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4334,6 +4420,11 @@
     },
     {
       "path": "packages/os/tests/lifecycle-tool-surface.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/linux-ingress-continuity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4433,6 +4524,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/managed-cloud-public-pricing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/managed-cloud-review-regressions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4474,6 +4570,11 @@
     },
     {
       "path": "packages/os/tests/mcp-gateway.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-openai-session-receipt.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4844,6 +4945,11 @@
     },
     {
       "path": "packages/os/tests/runtime-bundle-managed-site-assets.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

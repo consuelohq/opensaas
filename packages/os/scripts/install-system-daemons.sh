@@ -3,15 +3,18 @@ set -euo pipefail
 
 dry_run=0
 quiet=0
+definitions_only=0
 debug="${CONSUELO_OS_DEBUG:-0}"
 for arg in "$@"; do
   case "$arg" in
     --dry-run) dry_run=1 ;;
     --quiet) quiet=1 ;;
+    --definitions-only) definitions_only=1 ;;
     --debug) debug=1 ;;
     --help|-h)
-      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--quiet] [--debug]"
+      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--definitions-only] [--quiet] [--debug]"
       echo "installs Consuelo OS user LaunchAgents in ~/Library/LaunchAgents"
+      echo "  --definitions-only  refresh plist definitions without restarting live services"
       echo "  --quiet  suppress normal success details for hosted bootstrap output"
       exit 0
       ;;
@@ -178,9 +181,79 @@ extract_plist_label() {
   sed -n '/<key>Label<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;q;}' "$plist"
 }
 
+xml_escape() {
+  local value="$1"
+  value="${value//&/&amp;}"
+  value="${value//</&lt;}"
+  value="${value//>/&gt;}"
+  value="${value//\"/&quot;}"
+  value="${value//\'/&apos;}"
+  printf '%s\n' "$value"
+}
+
+reconcile_cloudflared_plist_binary() {
+  local plist="$1"
+  local cloudflared_bin="${CLOUDFLARED_BIN:-}"
+  if [ -z "$cloudflared_bin" ] || [ ! -x "$cloudflared_bin" ]; then
+    echo "managed cloudflared binary is missing or not executable while reconciling: $plist" >&2
+    return 1
+  fi
+
+  local escaped_bin current_bin
+  escaped_bin="$(xml_escape "$cloudflared_bin")"
+  current_bin="$(awk '
+    /<key>ProgramArguments<\/key>/ { in_args = 1; next }
+    in_args {
+      start = index($0, "<string>")
+      finish = index($0, "</string>")
+      if (start > 0 && finish > start) {
+        print substr($0, start + length("<string>"), finish - start - length("<string>"))
+        exit
+      }
+      if ($0 ~ /<\/array>/) exit
+    }
+  ' "$plist")"
+  if [ "$current_bin" = "$escaped_bin" ]; then
+    return 0
+  fi
+  if [ "$dry_run" -eq 1 ]; then
+    log "dry-run: would update Cloudflared binary in $plist to $cloudflared_bin"
+    return 0
+  fi
+
+  local temporary_path
+  temporary_path="$(mktemp "${plist}.tmp.XXXXXX")"
+  if ! awk -v replacement="$escaped_bin" '
+    BEGIN { in_args = 0; replaced = 0 }
+    {
+      if ($0 ~ /<key>ProgramArguments<\/key>/) in_args = 1
+      if (in_args && !replaced) {
+        start = index($0, "<string>")
+        finish = index($0, "</string>")
+        if (start > 0 && finish > start) {
+          prefix = substr($0, 1, start - 1)
+          suffix = substr($0, finish + length("</string>"))
+          $0 = prefix "<string>" replacement "</string>" suffix
+          replaced = 1
+        }
+      }
+      print
+      if (in_args && $0 ~ /<\/array>/) in_args = 0
+    }
+    END { if (!replaced) exit 42 }
+  ' "$plist" > "$temporary_path"; then
+    rm -f "$temporary_path"
+    echo "unable to rewrite Cloudflared ProgramArguments in plist: $plist" >&2
+    return 1
+  fi
+  chmod 600 "$temporary_path"
+  mv "$temporary_path" "$plist"
+}
+
 append_cloudflared_plist() {
   local plist="$1"
   local label existing_label
+  reconcile_cloudflared_plist_binary "$plist"
   label="$(extract_plist_label "$plist")"
   if [ -z "$label" ]; then
     echo "unable to read Label from cloudflared plist: $plist" >&2
@@ -330,6 +403,21 @@ resolve_caddy_bin() {
       printf '%s\n' "$managed_caddy_bin"
     else
       command -v caddy || true
+    fi
+  )
+}
+
+resolve_cloudflared_bin() {
+  (
+    load_env_file "$env_file"
+    load_env_file "$state_env_file"
+    managed_cloudflared_bin="$consuelo_data_home/bin/cloudflared"
+    if [ -n "${CLOUDFLARED_BIN:-}" ] && [ -x "$CLOUDFLARED_BIN" ]; then
+      printf '%s\n' "$CLOUDFLARED_BIN"
+    elif [ -x "$managed_cloudflared_bin" ]; then
+      printf '%s\n' "$managed_cloudflared_bin"
+    else
+      command -v cloudflared || true
     fi
   )
 }
@@ -524,6 +612,24 @@ run_plutil_lint() {
   fi
 }
 
+install_launch_agent_definitions() {
+  install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
+  install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
+  if [ "$portless_enabled" = "1" ]; then
+    install -m 644 "$portless_generated_plist" "$portless_agent_plist"
+  fi
+  install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
+  if [ "$availability_enabled" = "1" ]; then
+    install -m 644 "$availability_generated_plist" "$availability_agent_plist"
+  fi
+  for index in "${!cloudflared_generated_plists[@]}"; do
+    install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
+  done
+  for index in "${!heartbeat_generated_plists[@]}"; do
+    install -m 600 "${heartbeat_generated_plists[$index]}" "${heartbeat_agent_plists[$index]}"
+  done
+}
+
 if [ "$dry_run" -eq 0 ]; then
   mkdir -p "$launch_agent_dir" "$log_dir" "$consuelo_data_home/node/runtime/watchdog"
 fi
@@ -535,6 +641,8 @@ fi
 if [ -f "$availability_generated_plist" ]; then
   availability_enabled=1
 fi
+CLOUDFLARED_BIN="$(resolve_cloudflared_bin)"
+export CLOUDFLARED_BIN
 collect_cloudflared_plists
 collect_heartbeat_plists
 
@@ -549,6 +657,13 @@ if [ "$dry_run" -eq 1 ]; then
   retire_legacy_portless_services
   log "Services: $(service_labels_csv)"
   log "dry run complete; generated and linted user LaunchAgent plist files without installing services"
+  exit 0
+fi
+
+if [ "$definitions_only" -eq 1 ]; then
+  background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
+  install_launch_agent_definitions
+  log "LaunchAgent definitions refreshed without restarting services"
   exit 0
 fi
 
@@ -582,23 +697,10 @@ stage_pid=""
 retire_legacy_portless_services
 
 background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
-install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
-install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
-if [ "$portless_enabled" = "1" ]; then
-  install -m 644 "$portless_generated_plist" "$portless_agent_plist"
-fi
-install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
-if [ "$availability_enabled" = "1" ]; then
-  install -m 644 "$availability_generated_plist" "$availability_agent_plist"
-else
+install_launch_agent_definitions
+if [ "$availability_enabled" != "1" ]; then
   remove_disabled_agent "$availability_label" "$availability_agent_plist"
 fi
-for index in "${!cloudflared_generated_plists[@]}"; do
-  install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
-done
-for index in "${!heartbeat_generated_plists[@]}"; do
-  install -m 600 "${heartbeat_generated_plists[$index]}" "${heartbeat_agent_plists[$index]}"
-done
 
 for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
   bootout_agent "$label"

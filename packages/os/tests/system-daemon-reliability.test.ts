@@ -53,6 +53,44 @@ afterEach(() => {
 });
 
 describe('macOS runtime service reliability', () => {
+  it('should point runtime-owned LaunchAgents at the mutable active runtime instead of an immutable release path', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-current-');
+    const scriptsDirectory = join(fixtureRoot, 'scripts');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const activeRuntime = join(consueloHome, 'runtime', 'current');
+    mkdirSync(scriptsDirectory, { recursive: true });
+    mkdirSync(activeRuntime, { recursive: true });
+    copyFileSync(resolve(osRoot, 'scripts/generate-system-daemons.sh'), join(scriptsDirectory, 'generate-system-daemons.sh'));
+
+    const result = run('bash', [join(scriptsDirectory, 'generate-system-daemons.sh')], {
+      ...process.env,
+      HOME: home,
+      USER: process.env.USER ?? 'nobody',
+      CONSUELO_HOME: consueloHome,
+      PORTLESS_ENABLED: '0',
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    const generatedDirectory = join(consueloHome, 'node', 'security', 'generated');
+    const workspace = readFileSync(join(generatedDirectory, 'com.consuelo.system.plist'), 'utf8');
+    const caddy = readFileSync(join(generatedDirectory, 'com.consuelo.caddy.plist'), 'utf8');
+    const watchdog = readFileSync(join(generatedDirectory, 'com.consuelo.watchdog.plist'), 'utf8');
+    expect(workspace).toContain(`${activeRuntime}/scripts/start-consuelo-daemon.sh`);
+    expect(caddy).toContain(`${activeRuntime}/scripts/start-caddy-daemon.sh`);
+    expect(watchdog).toContain(`${activeRuntime}/scripts/workspace-watchdog.sh`);
+    expect(workspace).not.toContain(`${fixtureRoot}/scripts/start-consuelo-daemon.sh`);
+  });
+
+  it('should support refreshing LaunchAgent definitions without restarting live services', () => {
+    const installer = readFileSync(resolve(osRoot, 'scripts/install-system-daemons.sh'), 'utf8');
+    expect(installer).toContain('--definitions-only');
+    expect(installer).toContain('definitions_only=0');
+    expect(installer).toContain('install_launch_agent_definitions');
+    expect(installer).toContain('if [ "$definitions_only" -eq 1 ]; then');
+    expect(installer).toContain('LaunchAgent definitions refreshed without restarting services');
+  });
+
   it('should wire opt-in availability and OS-owned watchdog state when installing and uninstalling daemons', () => {
     const install = readFileSync(
       resolve(osRoot, 'scripts/install-system-daemons.sh'),
