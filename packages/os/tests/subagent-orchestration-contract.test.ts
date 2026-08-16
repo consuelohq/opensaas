@@ -111,7 +111,7 @@ async function settleDetachedRun(
 }
 
 describe('subagent orchestration contract', () => {
-  it('runs Grok through the durable detached runner', async () => {
+  it('runs Grok directly without creating durable detached state', async () => {
     const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
     const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
     try {
@@ -132,11 +132,10 @@ describe('subagent orchestration contract', () => {
       expect(result.ok).toBe(true);
       expect(result.code).toBe('OK');
       expect(result.data.status).toBe('completed');
-      expect(result.data.capabilities.detachedExecution).toBe(true);
-      expect(result.data.runId).toMatch(/^run_[a-f0-9]{24}$/);
+      expect(result.data.capabilities.detachedExecution).toBe(false);
+      expect(result.data.runId).toBeUndefined();
       expect(result.data.command).toEqual(expect.arrayContaining(['--permission-mode', 'auto', '--max-turns', '32']));
-      if (typeof result.data.runId !== 'string') throw new Error('missing Grok runId');
-      expect(existsSync(join(resolveSubagentRunDirectory(result.data.runId, env), 'state.json'))).toBe(true);
+      expect(existsSync(join(durableHome, 'node', 'runs'))).toBe(false);
     } finally {
       rmSync(durableHome, { recursive: true, force: true });
       rmSync(worktree, { recursive: true, force: true });
