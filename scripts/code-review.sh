@@ -23,7 +23,7 @@ $(git ls-files --others --exclude-standard 2>/dev/null || echo "")"
 ALL_CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -v '^$' | sort -u || true)
 
 CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -E '^packages/[^/]+/src/.*\.(ts|tsx)$' || true)
-DIALER_CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -E '^(areas/dialer/AGENTS\.md|scripts/code-review\.sh|packages/workspace/scripts/run-dialer-scenario\.ts|packages/workspace/tests/dialer-.*\.test\.ts|packages/dialer/src/.*\.ts|packages/dialer-server/(package\.json|project\.json|src/.*\.ts)|packages/lead-connector/(MIGRATION\.md|package\.json|project\.json|tsconfig\.json|src/.*\.ts)|packages/twenty-front/src/modules/dialer/.*\.(ts|tsx)|packages/twenty-server/src/engine/core-modules/consuelo-api/(controllers/parallel\.controller\.ts|guards/twilio-signature\.guard\.ts|resolvers/dialer-call-start\.resolver\.ts|services/(dialer-call-start|legacy-dialer|parallel|parallel-posterior|parallel-strategy-resolver).*\.ts))$' || true)
+DIALER_CHANGED_FILES=$(echo "$ALL_CHANGED_FILES" | grep -E '^(areas/dialer/AGENTS\.md|scripts/code-review\.sh|packages/workspace/scripts/run-dialer-scenario\.ts|packages/workspace/tests/dialer-.*\.test\.ts|packages/dialer/src/.*\.ts|packages/dialer-server/(package\.json|project\.json|src/.*\.ts)|packages/lead-connector/(MIGRATION\.md|package\.json|project\.json|tsconfig\.json|src/.*\.ts))$' || true)
 
 if [ -z "$CHANGED_FILES" ] && [ -z "$DIALER_CHANGED_FILES" ]; then
   echo -e "${GREEN}no changed source or dialer-critical files to review${NC}"
@@ -408,19 +408,6 @@ if [ -n "$DIALER_CHANGED_FILES" ]; then
 ${WORKSPACE_DIALER_OUTPUT}"
   }
 
-  if echo "$DIALER_CHANGED_FILES" | grep -q '^packages/twenty-server/src/engine/core-modules/consuelo-api/'; then
-    SERVER_DIALER_OUTPUT=$(npx jest \
-      packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts \
-      packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts \
-      --config=packages/twenty-server/jest.config.mjs \
-      --runInBand 2>&1) || {
-      FAIL=1
-      DIALER_TEST_OUTPUT="${DIALER_TEST_OUTPUT}
---- twenty-server dialer tests ---
-${SERVER_DIALER_OUTPUT}"
-    }
-  fi
-
   if echo "$DIALER_CHANGED_FILES" | grep -q '^packages/dialer/src/'; then
     PACKAGE_DIALER_OUTPUT=$(npx jest \
       packages/dialer/src/services/caller-id.spec.ts \
@@ -449,17 +436,6 @@ ${DIALER_SERVER_OUTPUT}"
       DIALER_TEST_OUTPUT="${DIALER_TEST_OUTPUT}
 --- LeadConnector provider contracts ---
 ${LEAD_CONNECTOR_OUTPUT}"
-    }
-  fi
-  if echo "$DIALER_CHANGED_FILES" | grep -q '^packages/twenty-front/src/modules/dialer/'; then
-    FRONT_DIALER_OUTPUT=$(npx jest \
-      packages/twenty-front/src/modules/dialer/utils/__tests__/backend-queue-session.test.ts \
-      --config=packages/twenty-front/jest.config.mjs \
-      --runInBand 2>&1) || {
-      FAIL=1
-      DIALER_TEST_OUTPUT="${DIALER_TEST_OUTPUT}
---- twenty-front dialer tests ---
-${FRONT_DIALER_OUTPUT}"
     }
   fi
 fi

@@ -6,6 +6,8 @@ const { spawnSync } = require('child_process');
 const DEFAULT_RULES = 'packages/workspace/test-selection.rules.json';
 const DEFAULT_REGISTRY = 'packages/workspace/test-selection.registry.json';
 const REPORT_DIR = '/tmp/opensaas-test-reports';
+const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
+const TEST_SUITE_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
 const SKIP_DIRS = new Set(['.git', 'node_modules', '.next', 'dist', 'build', 'coverage', '.turbo', '.cache', '.task', 'tmp', 'node-jiti', '.astro']);
 const TEST_FILE_RE = /(^|\/)(__tests__|tests|test|spec|e2e|integration|unit)(\/|$)|\.(test|spec|e2e|integration)\.[cm]?[jt]sx?$/i;
 const JS_TS_RE = /\.[cm]?[jt]sx?$/i;
@@ -258,14 +260,18 @@ function changedFiles(root, args) {
   const explicit = valuesFor(args, 'changed-file');
   if (explicit.length) return explicit;
   const base = valueFor(args, 'base') || 'origin/main';
-  const committed = spawnSync('git', ['diff', '--name-only', `${base}...HEAD`], { cwd: root, encoding: 'utf8' });
+  const committed = spawnSync('git', ['diff', '--name-only', `${base}...HEAD`], {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: GIT_OUTPUT_MAX_BUFFER,
+  });
   const files = new Set();
   const results = [committed];
   if (!args['committed-only']) {
     results.push(
-      spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' }),
-      spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' }),
-      spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }),
+      spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8', maxBuffer: GIT_OUTPUT_MAX_BUFFER }),
+      spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8', maxBuffer: GIT_OUTPUT_MAX_BUFFER }),
+      spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8', maxBuffer: GIT_OUTPUT_MAX_BUFFER }),
     );
   }
   for (const result of results) {
@@ -376,7 +382,7 @@ function runSuites(root, suites, base) {
     const result = spawnSync(suite.command[0], suite.command.slice(1), {
       cwd: root,
       encoding: 'utf8',
-      maxBuffer: 1024 * 1024 * 8,
+      maxBuffer: TEST_SUITE_OUTPUT_MAX_BUFFER,
       timeout: testSuiteTimeoutMs(),
       env: { ...process.env, NX_BASE: base, BASE_REF: base },
     });
@@ -514,6 +520,8 @@ function main() {
   const failedSuites = runResults.filter((result) => result.status !== 'passed');
   const passed = selected.level !== 'fail' && failedSuites.length === 0;
   const result = { kind: 'selection', passed, ...selected, run, runResults, failedSuites };
+  const out = valueFor(args, 'out');
+  if (out) writeJson(path.resolve(root, out), result);
   print(result, args.json);
   if (!passed) process.exit(1);
 }

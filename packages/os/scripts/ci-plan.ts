@@ -44,10 +44,6 @@ function nestedString(value: unknown, keys: string[]): string | undefined {
   return typeof current === 'string' && current.length > 0 ? current : undefined;
 }
 
-function isLegacyTwentyPackage(file: string): boolean {
-  return /^packages\/(?:twenty-[^/]+|create-twenty-app)(?:\/|$)/.test(file);
-}
-
 function isRootTypeScriptConfig(file: string): boolean {
   return /^tsconfig[^/]*\.json$/.test(file);
 }
@@ -85,7 +81,7 @@ export function classifyConsueloChanges(files: string[]): ConsueloCiPlan {
       plan.verify = true;
     }
 
-    if (file.startsWith('packages/') && !isLegacyTwentyPackage(file)) {
+    if (file.startsWith('packages/')) {
       plan.verify = true;
     }
 
@@ -100,11 +96,6 @@ export function classifyConsueloChanges(files: string[]): ConsueloCiPlan {
       || file.startsWith('packages/lead-connector/')
       || file.startsWith('packages/logger/')
     ) {
-      plan.dialer = true;
-      plan.verify = true;
-    }
-
-    if (file.startsWith('packages/twenty-server/src/engine/core-modules/consuelo-api/')) {
       plan.dialer = true;
       plan.verify = true;
     }

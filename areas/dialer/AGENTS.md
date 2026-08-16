@@ -65,50 +65,23 @@ Enable pgvector when the version query is empty:
 export PG_DATABASE_URL='postgres://postgres@localhost:5432/default'
 export DATABASE_URL="$PG_DATABASE_URL"
 export REDIS_URL='redis://localhost:6379'
-export FRONT_BASE_URL='http://localhost:3001'
+export DIALER_SERVER_PUBLIC_URL='http://localhost:3000'
 ```
 
 ### Task-worktree server environment
 
-Git task worktrees do not inherit ignored files. `twenty-server` requires the local server `.env`—including `APP_SECRET`—before Nest can bind port 3000. Reuse the ignored file from the canonical checkout instead of copying secrets into a tracked task directory:
+`@consuelo/dialer-server` reads its runtime contract directly from environment variables. Do not copy a legacy application `.env` into task worktrees. Keep provider credentials in Keychain, export them only into the shell that starts the server, and never print or attach their values.
+
+### Migrate the database
+
+The standalone server owns forward-only dialer schema migrations. Run them against the local database before product-level runtime validation.
 
 ```bash
-TASK_ROOT="$(git rev-parse --show-toplevel)"
-CANONICAL_ROOT="$(git -C "$TASK_ROOT" worktree list --porcelain | awk '/^worktree / { print substr($0, 10); exit }')"
-SERVER_ENV_SOURCE="$CANONICAL_ROOT/packages/twenty-server/.env"
-SERVER_ENV_TARGET="$TASK_ROOT/packages/twenty-server/.env"
-
-if [ ! -f "$SERVER_ENV_SOURCE" ]; then
-  printf 'missing canonical twenty-server .env; create it locally before continuing\n' >&2
-  exit 1
-fi
-
-if [ ! -e "$SERVER_ENV_TARGET" ] && [ ! -L "$SERVER_ENV_TARGET" ]; then
-  ln -s "$SERVER_ENV_SOURCE" "$SERVER_ENV_TARGET"
-fi
-
-test -s "$SERVER_ENV_TARGET"
-grep -q '^APP_SECRET=' "$SERVER_ENV_TARGET"
+DATABASE_URL='postgresql://localhost/postgres' \
+  bun run --cwd packages/dialer-server db:migrate
 ```
 
-These checks print only presence. Never print, copy into source control, or attach the `.env` contents. Twilio credentials and safe-number allowlists remain in Keychain and are exported separately.
-
-### Reset the database
-
-Run the reset from the server package directory. A successful reset is required before product-level runtime validation.
-
-```bash
-cd packages/twenty-server
-PG_DATABASE_URL='postgres://postgres@localhost:5432/default' \
-DATABASE_URL='postgres://postgres@localhost:5432/default' \
-REDIS_URL='redis://localhost:6379' \
-IS_CI=false \
-NODE_OPTIONS=--max-old-space-size=8192 \
-npx nx database:reset twenty-server
-cd ../..
-```
-
-If reset fails, record and fix the infrastructure blocker before changing dialer behavior.
+If migration fails, record and fix the infrastructure blocker before changing dialer behavior.
 
 ## Twilio credentials and safe-number allowlists
 
@@ -168,9 +141,9 @@ done
 
 Safe checks may print only presence, list counts, or a redacted prefix/suffix. They must not print a complete value.
 
-### Export into the shell that starts twenty-server
+### Export into the shell that starts dialer-server
 
-Keychain storage alone does nothing for the server. Export values into the same shell that starts twenty-server. Restart the server after changing any export.
+Keychain storage alone does nothing for the server. Export values into the same shell that starts `@consuelo/dialer-server`. Restart the server after changing any export.
 
 Base exports for every mode:
 
@@ -178,7 +151,7 @@ Base exports for every mode:
 export PG_DATABASE_URL='postgres://postgres@localhost:5432/default'
 export DATABASE_URL="$PG_DATABASE_URL"
 export REDIS_URL='redis://localhost:6379'
-export FRONT_BASE_URL='http://localhost:3001'
+export DIALER_SERVER_PUBLIC_URL='http://localhost:3000'
 export CONSUELO_SCENARIO_SAFE_TO_NUMBERS="$(security find-generic-password -a "$USER" -s 'consuelo_scenario_safe_to_numbers' -w)"
 export CONSUELO_SCENARIO_SAFE_FROM_NUMBERS="$(security find-generic-password -a "$USER" -s 'consuelo_scenario_safe_from_numbers' -w)"
 ```
@@ -263,11 +236,10 @@ Set the public base before starting or restarting the server:
 
 ```bash
 export DIALER_PUBLIC_BASE_URL='https://dialer-dev.consuelohq.com'
-export API_BASE_URL="$DIALER_PUBLIC_BASE_URL"
-export SERVER_URL="$DIALER_PUBLIC_BASE_URL"
+export DIALER_SERVER_PUBLIC_URL="$DIALER_PUBLIC_BASE_URL"
 
-cd packages/twenty-server
-NODE_OPTIONS=--max-old-space-size=8192 npx nx start twenty-server
+bun run --cwd packages/dialer-server build
+bun run --cwd packages/dialer-server start
 ```
 
 The tunnel, exports, and server must be active at the same time.
@@ -296,18 +268,18 @@ done
 
 test -s /tmp/dialer-public-base-url
 export DIALER_PUBLIC_BASE_URL="$(cat /tmp/dialer-public-base-url)"
-export API_BASE_URL="$DIALER_PUBLIC_BASE_URL"
-export SERVER_URL="$DIALER_PUBLIC_BASE_URL"
+export DIALER_SERVER_PUBLIC_URL="$DIALER_PUBLIC_BASE_URL"
 ```
 
-Restart `twenty-server` after selecting the quick URL. Stop and recreate the quick tunnel—and restart the server—when the URL changes.
+Restart `@consuelo/dialer-server` after selecting the quick URL. Stop and recreate the quick tunnel—and restart the server—when the URL changes.
 
 ## Callback contract and preflight curls
 
-The current parallel callback routes are:
+The current Twilio callback routes are:
 
-- `POST /api/v1/calls/parallel/status-callback`
-- `POST /api/v1/calls/parallel/customer-twiml`
+- `POST /webhooks/twilio/status`
+- `POST /webhooks/twilio/customer-twiml`
+- `GET /webhooks/twilio/media` for the Twilio-signed WebSocket upgrade
 
 There are no separate AMD or generic event callback routes in the current production path. Twilio sends call status and `AnsweredBy` to the status callback. The customer TwiML route is fetched by Twilio for a real call leg.
 
@@ -318,14 +290,14 @@ curl -sS \
   -o /tmp/dialer-unsigned-status-response.txt \
   -w 'unsigned status callback: HTTP %{http_code}\n' \
   -X POST \
-  "$DIALER_PUBLIC_BASE_URL/api/v1/calls/parallel/status-callback" \
+  "$DIALER_PUBLIC_BASE_URL/webhooks/twilio/status" \
   --data 'CallSid=CA_PREFLIGHT_ONLY&CallStatus=completed'
 
 curl -sS \
   -o /tmp/dialer-unsigned-twiml-response.txt \
   -w 'unsigned customer TwiML: HTTP %{http_code}\n' \
   -X POST \
-  "$DIALER_PUBLIC_BASE_URL/api/v1/calls/parallel/customer-twiml" \
+  "$DIALER_PUBLIC_BASE_URL/webhooks/twilio/customer-twiml" \
   --data 'CallSid=CA_PREFLIGHT_ONLY'
 ```
 
@@ -334,7 +306,7 @@ Expected: HTTP 401 for both requests.
 A signed synthetic status callback can prove the tunnel hostname, forwarded URL reconstruction, Twilio signature guard, controller, and no-group acknowledgement without placing a call. It uses the already exported live Auth Token but never prints it.
 
 ```bash
-export CALLBACK_URL="$DIALER_PUBLIC_BASE_URL/api/v1/calls/parallel/status-callback"
+export CALLBACK_URL="$DIALER_PUBLIC_BASE_URL/webhooks/twilio/status"
 export CALLBACK_FORM='CallSid=CA_PREFLIGHT_ONLY&CallStatus=completed&AnsweredBy=human'
 export TWILIO_SIGNATURE="$({
   CALLBACK_URL="$CALLBACK_URL" \
@@ -422,21 +394,14 @@ Scenario transcripts may contain only counts, boolean credential presence, redac
 
 ```bash
 bun run --cwd packages/workspace test -- tests/dialer-validation-runbook.test.ts
-
-npx jest \
-  packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts \
-  packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts \
-  --config=packages/twenty-server/jest.config.mjs \
-  --runInBand
-
-npx jest \
-  packages/dialer/src/services/caller-id.spec.ts \
-  packages/dialer/src/services/parallel-dialer.spec.ts \
-  --config=packages/dialer/jest.config.mjs \
-  --runInBand
-
-npx nx typecheck @consuelo/dialer
-npx nx typecheck twenty-server
+bun test packages/dialer/src
+bun test packages/dialer-server/src
+bun test packages/lead-connector/src
+bun run --cwd packages/dialer typecheck
+bun run --cwd packages/dialer-server typecheck
+bun run --cwd packages/lead-connector typecheck
+bun run --cwd packages/dialer-server build
+bun run --cwd packages/lead-connector build
 git diff --check
 ```
 
@@ -507,37 +472,30 @@ At minimum cover:
 - explicit group termination;
 - two sequential groups reuse released numbers.
 
-## Frontend production-contract check
+## Embedded client production-contract check
 
-Production frontend call start must use GraphQL `startDialerCall`. Search for accidental legacy use:
+The LeadConnector iframe sends authenticated call-session intent to the standalone server. It must not import the deleted Twenty shell or create carrier calls directly in the browser. Prove the current boundary with the package contracts:
 
 ```bash
-git grep -n "/v1/voice/preflight\|/api/v1/calls/parallel\|connect({" -- \
-  packages/twenty-front/src/modules/dialer \
-  packages/twenty-front/src/pages
+bun test packages/lead-connector/src
+bun test packages/dialer-server/src
 ```
 
-Acceptable references are backend callback URLs, explicit quarantine tests, or documented legacy code not used by production call start. Frontend direct or queue start must not call the old REST bridges or browser Twilio `connect()` path.
+The browser may project authoritative server state, but ranking, winner selection, retries, caller-ID locks, and Twilio lifecycle ownership remain server/domain responsibilities.
 
 ## Railway deployment boundary and runtime truth
 
 ### Current repository audit
 
-As of July 22, 2026:
+The production runtime is the compiled Bun service built from `packages/dialer-server/Dockerfile`. `packages/dialer-server/railway.json` is the repository deployment contract for that service and health-checks `/health`. The standalone runtime has no Twenty or compatibility API dependency.
 
-- The repository has no root `railway.json` or `railway.toml`; Railway dashboard service settings are therefore part of the deployment contract and must be inspected directly.
-- The root `Dockerfile` is a legacy `packages/api` image that exposes port 8000. It is not the current Twenty-backed dialer application image.
-- The current server image is `packages/twenty-docker/twenty/Dockerfile`; the queue worker image is `packages/twenty-docker/twenty/Dockerfile.worker`.
-- The server Dockerfile currently copies `packages/os` into the final image because `OsInstallController` reads `/app/packages/os/scripts/bootstrap.sh`. That means the current image does **not** yet satisfy the strict “no OS runtime/artifacts on Railway” boundary.
-- Railway helper scripts expect the application service `opensaas` and worker service `twenty-worker`.
-
-Do not reconnect automatic deploys until a dedicated deployment change resolves the OS installer coupling—such as publishing the bootstrap asset separately or adding a dialer-specific Docker target—and Railway explicitly points each service at the intended Dockerfile. Do not silently use the root Dockerfile.
+M4 is repository cleanup only. Do not change Railway service configuration, reconnect automatic deploys, or deploy from this task.
 
 Before enabling Railway again:
 
 1. Inspect Railway project/service root directories, Dockerfiles, build commands, start commands, and watch paths.
 2. Keep `packages/os`, `packages/workspace`, website, and unrelated monorepo services out of Railway builds and deploys.
-3. Deploy only the dialer application runtime and required server/worker/data services.
+3. Deploy only the dedicated `packages/dialer-server` runtime and required data services.
 4. Confirm the deployed commit matches the intended dialer stream/main commit.
 5. Confirm public callback bases use the production HTTPS hostname, never the local tunnel.
 

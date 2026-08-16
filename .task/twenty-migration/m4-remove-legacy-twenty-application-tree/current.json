@@ -1,0 +1,19 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/m4-remove-legacy-twenty-application-tree",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "stream/twenty-migration",
+  "startFrom": "stream",
+  "prNumber": 2053,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2053",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2053",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2053/m4-remove-legacy-twenty-application-tree",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2053",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2053/m4-remove-legacy-twenty-application-tree",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m4-remove-legacy-twenty-application-tree",
+  "taskSession": "tsk_6893b20e16bc",
+  "tmuxSession": "opensaas-twenty-migration-m4-remove-legacy-twenty-application-tree-6893b20e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m4-remove-legacy-twenty-application-tree/.task/twenty-migration/m4-remove-legacy-twenty-application-tree/session.json",
+  "createdAt": "2026-08-16T06:41:25.768Z"
+}

@@ -979,58 +979,6 @@
       "reason": "Native menu lifecycle/auth/heartbeat changes must prove read-only enrolled-node discovery, privileged operator mutations, refresh-token persistence, heartbeat snapshot safety, and lifecycle presentation without selecting the historically red unrelated OS package suite."
     },
     {
-      "id": "frontend-lint-config-contract",
-      "critical": true,
-      "exclusive": true,
-      "source": [
-        ".github/workflows/ci-front.yaml",
-        "eslint.config.mjs",
-        "packages/eslint-rules/eslint.config.react.mjs",
-        "packages/twenty-front/eslint.config.mjs",
-        "packages/twenty-shared/eslint.config.mjs",
-        "packages/twenty-ui/eslint.config.mjs",
-        "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs",
-        "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
-        "packages/workspace/scripts/ci/run-changed-frontend-task.mjs",
-        "packages/workspace/tests/run-changed-frontend-task.test.mjs",
-        ".github/workflows/ci-shared.yaml"
-      ],
-      "tests": [
-        {
-          "name": "changed frontend lint helper tests",
-          "command": [
-            "node",
-            "--test",
-            "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
-            "packages/workspace/tests/run-changed-frontend-task.test.mjs"
-          ]
-        },
-        {
-          "name": "GitHub workflow policy tests",
-          "command": [
-            "bun",
-            "test",
-            "packages/workspace/tests/github-workflow-policy.test.js"
-          ]
-        },
-        {
-          "name": "changed GitHub workflow security checks",
-          "command": [
-            "node",
-            "packages/workspace/scripts/ci/check-github-workflows.cjs"
-          ]
-        },
-        {
-          "name": "changed frontend files lint",
-          "command": [
-            "node",
-            "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs"
-          ]
-        }
-      ],
-      "reason": "Frontend lint configuration and workflow-only changes must validate their exact configs, workflow policy, and changed-file lint lane without selecting unrelated full application test targets."
-    },
-    {
       "id": "obsolete-metering-artifact-contract",
       "critical": true,
       "exclusive": true,
@@ -1174,47 +1122,6 @@
       "reason": "Coaching package changes must emit the declaration artifact advertised by package.json so clean consumers can typecheck."
     },
     {
-      "id": "server-ci-task-contract",
-      "critical": true,
-      "source": [
-        ".github/workflows/ci-server.yaml",
-        "packages/workspace/scripts/ci/run-changed-server-task.mjs",
-        "packages/workspace/tests/run-changed-server-task.test.mjs",
-        "packages/workspace/tests/typeorm-cli-contract.test.mjs",
-        "packages/workspace/tests/github-workflow-policy.test.js",
-        "packages/twenty-server/project.json",
-        "packages/workspace/test-selection.rules.json",
-        "packages/workspace/test-selection.registry.json"
-      ],
-      "tests": [
-        {
-          "name": "changed server task selector tests",
-          "command": [
-            "node",
-            "--test",
-            "packages/workspace/tests/run-changed-server-task.test.mjs"
-          ]
-        },
-        {
-          "name": "GitHub workflow policy tests",
-          "command": [
-            "bun",
-            "test",
-            "packages/workspace/tests/github-workflow-policy.test.js"
-          ]
-        },
-        {
-          "name": "TypeORM CLI compatibility contract",
-          "command": [
-            "node",
-            "--test",
-            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
-          ]
-        }
-      ],
-      "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation."
-    },
-    {
       "id": "api-package",
       "critical": true,
       "source": [
@@ -1235,67 +1142,37 @@
       "reason": "API changes must run API route and service specs."
     },
     {
-      "id": "twenty-migration-call-start-orchestration",
+      "id": "twenty-migration-os-reference-cleanup",
       "critical": true,
       "exclusive": true,
       "source": [
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts"
+        "packages/os/operator/prompts/review.md",
+        "packages/os/scripts/lib/code-call/snapshot.ts"
       ],
       "tests": [
         {
-          "name": "Twenty call-start compatibility contracts",
+          "name": "M4 Twenty physical deletion boundary",
           "command": [
-            "bash",
-            "-lc",
-            "cd packages/twenty-server && NODE_ENV=test npx --no-install jest --config jest.config.mjs src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts --runInBand"
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts"
           ]
-        }
-      ],
-      "reason": "M1 call-start extraction must prove the compatibility service and architecture boundary without scheduling the unrelated full Twenty server suite."
-    },
-    {
-      "id": "twenty-server-project",
-      "critical": true,
-      "source": [
-        "packages/twenty-server/**",
-        "packages/twenty-server/src/engine/**/*.resolver.ts",
-        "packages/twenty-server/src/**/migrations/**"
-      ],
-      "tests": [
+        },
         {
-          "name": "twenty-server affected test target",
+          "name": "OS code.call snapshot contracts",
           "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server"
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/code-call-snapshot.test.ts",
+            "packages/os/tests/code-call-service-architecture.test.ts"
           ]
         }
       ],
-      "reason": "Server changes have the broadest backend impact and should run the project test target."
-    },
-    {
-      "id": "twenty-front-project",
-      "critical": false,
-      "source": [
-        "packages/twenty-front/**"
-      ],
-      "tests": [
-        {
-          "name": "twenty-front test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-front",
-            "--coverage=false"
-          ]
-        }
-      ],
-      "reason": "Frontend package changes should run the project test target."
+      "reason": "M4 OS reference and snapshot cleanup must prove deleted Twenty topology stays absent and large-diff code.call snapshots remain safe without selecting the broad OS package suite."
     }
   ]
 }

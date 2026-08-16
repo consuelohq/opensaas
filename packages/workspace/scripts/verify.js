@@ -1,6 +1,8 @@
 #!/usr/bin/env bun
 
 const { execFileSync, spawnSync } = require('child_process');
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const { analyzeDbRisk } = require('./lib/db-guards');
@@ -11,6 +13,9 @@ const {
   computeVerificationState,
   writeVerifyStamp,
 } = require('./lib/verification');
+
+const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
+const TEST_SELECTION_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -219,6 +224,7 @@ function readChangedFiles(repoRoot, base) {
       cwd: repoRoot,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: GIT_OUTPUT_MAX_BUFFER,
     });
 
     for (const entry of statusOutput.split('\0').filter(Boolean)) {
@@ -337,23 +343,37 @@ function runReview(repoRoot, base, args) {
 function runTestSelection(repoRoot, base, args) {
   const selectionArgs = ['packages/workspace/scripts/test-selection.js', 'check', '--base', base];
   if (args.committedOnlyTests) selectionArgs.push('--committed-only');
-  selectionArgs.push('--run', '--json');
+  const selectionResultPath = path.join(
+    os.tmpdir(),
+    `opensaas-test-selection-${process.pid}-${Date.now()}.json`,
+  );
+  selectionArgs.push('--run', '--json', '--out', selectionResultPath);
   const result = spawnSync('bun', selectionArgs, {
     cwd: repoRoot,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
-    maxBuffer: 1024 * 1024 * 8,
+    maxBuffer: TEST_SELECTION_OUTPUT_MAX_BUFFER,
   });
   let data = null;
   try {
-    data = JSON.parse(result.stdout || '{}');
-  } catch {
-    data = { passed: false, error: 'failed to parse test-selection JSON', stdout: result.stdout || '' };
+    data = JSON.parse(fs.readFileSync(selectionResultPath, 'utf8'));
+  } catch (error) {
+    data = {
+      passed: false,
+      error: `failed to read test-selection result file: ${error instanceof Error ? error.message : String(error)}`,
+      stdout: result.stdout || '',
+    };
+  } finally {
+    fs.rmSync(selectionResultPath, { force: true });
   }
   return {
     skipped: false,
     passed: result.status === 0 && data.passed === true,
     status: result.status,
+    signal: result.signal || null,
+    error: result.error
+      ? { code: result.error.code || null, message: result.error.message || String(result.error) }
+      : null,
     data,
     stderr: result.stderr || '',
   };
@@ -439,6 +459,28 @@ function createBecause(result) {
       }
     } else if (selection.zeroSuiteReason) {
       lines.push(`registry selected 0 suites because ${selection.zeroSuiteReason}`);
+    } else if (
+      result.testSelection.error
+      || result.testSelection.signal
+      || result.testSelection.status !== 0
+      || selection.error
+    ) {
+      const details = [];
+      if (result.testSelection.error) {
+        const code = result.testSelection.error.code
+          ? ` ${result.testSelection.error.code}`
+          : '';
+        details.push(`error${code}: ${result.testSelection.error.message}`);
+      }
+      if (result.testSelection.signal) details.push(`signal ${result.testSelection.signal}`);
+      if (result.testSelection.status !== null && result.testSelection.status !== undefined) {
+        details.push(`exit ${result.testSelection.status}`);
+      }
+      if (selection.error) details.push(String(selection.error));
+      lines.push(`registry runner failure: ${details.join('; ') || 'unknown selector failure'}`);
+      for (const outputLine of compactRegistryFailureOutput(result.testSelection.stderr)) {
+        lines.push(`registry stderr: ${outputLine}`);
+      }
     } else {
       lines.push('registry selected 0 suites and gave no reason');
     }
