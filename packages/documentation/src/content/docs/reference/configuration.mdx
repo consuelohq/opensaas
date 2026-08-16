@@ -29,6 +29,10 @@ evidence:
       - packages/os/tests/worker-pool-lifecycle.test.ts
       - packages/os/tests/health-readiness.test.ts
     runtime: Live same-version update evidence on 2026-08-16 established that Caddy admission must complete between worker-slot replacements; focused regression coverage now enforces that handoff barrier.
+  - source: packages/os/scripts/server/app.ts
+    tests:
+      - packages/os/tests/health-readiness.test.ts
+    runtime: Live same-version update evidence on 2026-08-16 showed that handler completion can precede proxy response completion; worker request accounting now follows response-body completion or cancellation.
 ---
 
 The default Consuelo home is:
@@ -165,7 +169,7 @@ Do not hand-edit these paths to bypass version or checksum verification. Use the
 
 ## Worker roll timing
 
-`CONSUELO_OS_DRAIN_PROPAGATION_MS` controls the bounded timing windows used during a rolling worker replacement. The default is `3000` milliseconds. Consuelo uses that interval to let Caddy stop selecting a draining worker, to allow completed responses to flush before the listener closes, and to give Caddy time to admit a replacement before the next worker begins draining.
+`CONSUELO_OS_DRAIN_PROPAGATION_MS` controls the bounded timing windows used during a rolling worker replacement. The default is `3000` milliseconds. Consuelo uses that interval to let Caddy stop selecting a draining worker, to allow completed responses to flush before the listener closes, and to give Caddy time to admit a replacement before the next worker begins draining. Independently of that fixed interval, the worker remains active while any accepted response body is still streaming; normal completion or client cancellation releases that request from the drain counter.
 
 This setting is primarily diagnostic. Lowering it reduces the safety margin around Caddy's active health checks and can make rolling updates less tolerant of slow requests or scheduling jitter. Leave the default in place unless you are diagnosing lifecycle behavior.
 

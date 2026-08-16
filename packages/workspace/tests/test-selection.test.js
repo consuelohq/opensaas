@@ -978,6 +978,27 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes local OS response lifecycle changes through critical lifecycle coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/server/app.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-lifecycle-update-handoff',
+    );
+    const lifecycleSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-lifecycle-update-handoff',
+    );
+    expect(lifecycleSuite?.critical).toBe(true);
+    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
+      'packages/os/tests/health-readiness.test.ts',
+      'packages/os/tests/worker-pool-lifecycle.test.ts',
+    ]));
+  });
+
   it('routes internal workspace shell and root Sites changes through loud focused contracts', () => {
     const data = json(run([
       'check',
