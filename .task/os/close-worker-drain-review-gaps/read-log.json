@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os/close-worker-drain-review-gaps/verify.json",
+    ".task/os/close-worker-drain-review-gaps/workpad.md",
+    "packages/documentation/src/content/docs/start/install-consuelo-os.mdx",
+    "packages/os/SCRIPTS.md",
+    "packages/os/tests/health-readiness.test.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-17T00:35:23.986Z"
+}

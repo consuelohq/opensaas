@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-worker-drain-review-gaps",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2145,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2145",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2145",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2145/close-worker-drain-review-gaps",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2145",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2145/close-worker-drain-review-gaps",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-close-worker-drain-review-gaps",
+  "taskSession": "tsk_9bad21557cef",
+  "tmuxSession": "opensaas-os-close-worker-drain-review-gaps-9bad2155",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-close-worker-drain-review-gaps/.task/os/close-worker-drain-review-gaps/session.json",
+  "createdAt": "2026-08-16T07:21:18.101Z"
+}

@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { describe, expect, it, vi } from 'vitest';
 
+import { createLocalOsApp } from '../scripts/server/app';
 import { createHealthRoutes } from '../scripts/server/routes/health';
 import { drainWorkerServer, runDrainAndExit } from '../scripts/server/main';
 import { createWorkerRuntimeState } from '../scripts/server/worker-runtime-state';
@@ -114,6 +115,61 @@ describe('local OS health readiness', () => {
     });
   });
 
+  it('keeps worker request accounting active until the response body is consumed', async () => {
+    const workerState = createWorkerRuntimeState({
+      workerId: 'worker-response',
+      workerInstanceId: 'instance-response',
+    });
+    const app = createLocalOsApp(
+      { name: 'consuelo-os', port: 46324 },
+      { workerState },
+    );
+
+    const response = await app.request('http://127.0.0.1:46324/not-a-real-route');
+    expect(response.status).toBe(404);
+    expect(workerState.snapshot().activeRequests).toBe(1);
+
+    await response.text();
+    expect(workerState.snapshot().activeRequests).toBe(0);
+  });
+
+  it('releases worker request accounting when the response body is canceled', async () => {
+    const workerState = createWorkerRuntimeState({
+      workerId: 'worker-cancel',
+      workerInstanceId: 'instance-cancel',
+    });
+    const app = createLocalOsApp(
+      { name: 'consuelo-os', port: 46325 },
+      { workerState },
+    );
+
+    const response = await app.request('http://127.0.0.1:46325/not-a-real-route');
+    expect(workerState.snapshot().activeRequests).toBe(1);
+    expect(response.body).not.toBeNull();
+
+    await response.body!.cancel('client disconnected');
+    expect(workerState.snapshot().activeRequests).toBe(0);
+  });
+
+  it('should release worker request accounting when a HEAD response body is discarded by Hono', async () => {
+    const workerState = createWorkerRuntimeState({
+      workerId: 'worker-head',
+      workerInstanceId: 'instance-head',
+    });
+    const app = createLocalOsApp(
+      { name: 'consuelo-os', port: 46326 },
+      { workerState },
+    );
+
+    const response = await app.request('http://127.0.0.1:46326/not-a-real-route', {
+      method: 'HEAD',
+    });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toBeNull();
+    expect(workerState.snapshot().activeRequests).toBe(0);
+  });
+
   it('waits for active work and a response-flush window before closing the listener', async () => {
     const workerState = createWorkerRuntimeState({
       workerId: 'worker-1',
@@ -214,6 +270,74 @@ describe('local OS health readiness', () => {
       const body = await response.text();
       expect(response.status).toBe(200);
       expect(body).toHaveLength(responseBytes);
+      const exitCode = await exited;
+      expect(exitCode, stderr).toBe(0);
+    } finally {
+      if (child.exitCode === null) child.kill();
+    }
+  });
+
+  it('preserves a slow app response stream while a real Bun worker drains', async () => {
+    const appUrl = new URL('../scripts/server/app.ts', import.meta.url).href;
+    const mainUrl = new URL('../scripts/server/main.ts', import.meta.url).href;
+    const workerStateUrl = new URL('../scripts/server/worker-runtime-state.ts', import.meta.url).href;
+    const chunkBytes = 100_000;
+    const chunkCount = 10;
+    const childSource = `
+      import { createLocalOsApp } from ${JSON.stringify(appUrl)};
+      import { drainWorkerServer, runDrainAndExit } from ${JSON.stringify(mainUrl)};
+      import { createWorkerRuntimeState } from ${JSON.stringify(workerStateUrl)};
+
+      const workerState = createWorkerRuntimeState({ workerId: 'worker-stream', workerInstanceId: 'instance-stream' });
+      const app = createLocalOsApp({ name: 'consuelo-os', port: 0 }, { workerState });
+      const chunk = new TextEncoder().encode('x'.repeat(${chunkBytes}));
+      let server;
+      app.get('/slow-stream', () => {
+        setTimeout(() => {
+          void runDrainAndExit(() => drainWorkerServer({
+            server,
+            workerState,
+            reason: 'test-stream',
+            propagationMs: 250,
+            drainTimeoutMs: 5_000,
+            report: () => {},
+          }));
+        }, 10);
+        let sent = 0;
+        return new Response(new ReadableStream({
+          async pull(controller) {
+            if (sent >= ${chunkCount}) {
+              controller.close();
+              return;
+            }
+            await Bun.sleep(100);
+            controller.enqueue(chunk);
+            sent += 1;
+          },
+        }));
+      });
+      server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: app.fetch });
+      process.stdout.write(JSON.stringify({ port: server.port }) + '\\n');
+    `;
+    const child = spawn('bun', ['-e', childSource], { stdio: ['ignore', 'pipe', 'pipe'] });
+    const exited = new Promise<number | null>((resolve, reject) => {
+      child.once('error', reject);
+      child.once('exit', resolve);
+    });
+    let stderr = '';
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', (chunk: string) => {
+      stderr += chunk;
+    });
+
+    try {
+      const ready = await readJsonLine(child.stdout);
+      const port = ready.port;
+      expect(typeof port).toBe('number');
+      const response = await fetch(`http://127.0.0.1:${port}/slow-stream`);
+      const body = await response.text();
+      expect(response.status).toBe(200);
+      expect(body).toHaveLength(chunkBytes * chunkCount);
       const exitCode = await exited;
       expect(exitCode, stderr).toBe(0);
     } finally {

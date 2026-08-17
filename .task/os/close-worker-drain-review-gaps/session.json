@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9bad21557cef",
+  "tmuxSession": "opensaas-os-close-worker-drain-review-gaps-9bad2155",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-worker-drain-review-gaps",
+  "branch": "task/os/close-worker-drain-review-gaps",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-close-worker-drain-review-gaps",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-close-worker-drain-review-gaps",
+  "prNumber": 2145,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2145",
+  "createdAt": "2026-08-16T07:21:18.098Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-close-worker-drain-review-gaps/.task/os/close-worker-drain-review-gaps/session.json"
+}
