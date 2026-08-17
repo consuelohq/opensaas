@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2637,
-    "mappedTestCount": 2554,
+    "testFileCount": 2640,
+    "mappedTestCount": 2557,
     "unmappedTestCount": 83,
-    "ruleCount": 60,
-    "explicitRuleCount": 41,
+    "ruleCount": 61,
+    "explicitRuleCount": 42,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 260,
+      "packages/os/tests": 261,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 61,
+      "packages/workspace/tests": 63,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 543,
+      "test": 546,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -740,6 +740,68 @@
       ],
       "critical": true,
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-github-cli-runtime",
+      "source": [
+        "packages/workspace/scripts/github.js",
+        "packages/workspace/scripts/lib/github.js",
+        "packages/workspace/scripts/lib/pr-review-collector.js",
+        "packages/workspace/scripts/task-prs.js",
+        "packages/workspace/scripts/wait.js",
+        "packages/workspace/scripts/review.js",
+        "packages/workspace/scripts/lib/review-static-rules.js",
+        "packages/workspace/tests/github-cli-resolution.test.ts",
+        "packages/workspace/tests/review-error-handling-scope.test.ts",
+        "packages/os/scripts/github.js",
+        "packages/os/scripts/lib/github.js",
+        "packages/os/scripts/lib/pr-review-collector.js",
+        "packages/os/scripts/task-prs.js",
+        "packages/os/scripts/wait.js",
+        "packages/os/scripts/review.js",
+        "packages/os/scripts/lib/review-static-rules.js"
+      ],
+      "tests": [
+        {
+          "name": "Workspace GitHub CLI and review contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/github-cli-resolution.test.ts",
+            "packages/workspace/tests/github.test.ts",
+            "packages/workspace/tests/github-pr-reviews.test.ts",
+            "packages/workspace/tests/pr-review.test.js",
+            "packages/workspace/tests/review-error-handling-scope.test.ts"
+          ]
+        },
+        {
+          "name": "Workspace wait GitHub check contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/workspace",
+            "test",
+            "tests/wait.test.js"
+          ]
+        },
+        {
+          "name": "OS GitHub CLI contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github.test.ts",
+            "tests/github-pr-reviews.test.ts",
+            "tests/pr-review-collector.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "GitHub helper and task-lifecycle changes must prove external CLI resolution, PR review collection, wait/check polling, and the review static-rule boundary without falling back to the unrelated broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -4475,6 +4537,11 @@
     },
     {
       "path": "packages/os/tests/memory.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/monitor-errors-report.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15554,6 +15621,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/github-cli-resolution.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/github-pr-reviews.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -15595,6 +15667,11 @@
     },
     {
       "path": "packages/workspace/tests/review-documentation-opportunity.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/review-error-handling-scope.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },

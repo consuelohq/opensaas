@@ -96,6 +96,67 @@
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy."
     },
     {
+      "id": "os-github-cli-runtime",
+      "critical": true,
+      "source": [
+        "packages/workspace/scripts/github.js",
+        "packages/workspace/scripts/lib/github.js",
+        "packages/workspace/scripts/lib/pr-review-collector.js",
+        "packages/workspace/scripts/task-prs.js",
+        "packages/workspace/scripts/wait.js",
+        "packages/workspace/scripts/review.js",
+        "packages/workspace/scripts/lib/review-static-rules.js",
+        "packages/workspace/tests/github-cli-resolution.test.ts",
+        "packages/workspace/tests/review-error-handling-scope.test.ts",
+        "packages/os/scripts/github.js",
+        "packages/os/scripts/lib/github.js",
+        "packages/os/scripts/lib/pr-review-collector.js",
+        "packages/os/scripts/task-prs.js",
+        "packages/os/scripts/wait.js",
+        "packages/os/scripts/review.js",
+        "packages/os/scripts/lib/review-static-rules.js"
+      ],
+      "tests": [
+        {
+          "name": "Workspace GitHub CLI and review contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/github-cli-resolution.test.ts",
+            "packages/workspace/tests/github.test.ts",
+            "packages/workspace/tests/github-pr-reviews.test.ts",
+            "packages/workspace/tests/pr-review.test.js",
+            "packages/workspace/tests/review-error-handling-scope.test.ts"
+          ]
+        },
+        {
+          "name": "Workspace wait GitHub check contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/workspace",
+            "test",
+            "tests/wait.test.js"
+          ]
+        },
+        {
+          "name": "OS GitHub CLI contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github.test.ts",
+            "tests/github-pr-reviews.test.ts",
+            "tests/pr-review-collector.test.js"
+          ]
+        }
+      ],
+      "reason": "GitHub helper and task-lifecycle changes must prove external CLI resolution, PR review collection, wait/check polling, and the review static-rule boundary without falling back to the unrelated broad OS package suite."
+    },
+    {
       "id": "trace-watch",
       "critical": true,
       "source": [
