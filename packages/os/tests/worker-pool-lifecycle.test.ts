@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   createWorkerPoolSupervisor,
+  resolveWorkerGracefulDrainSignal,
   resolveWorkerPoolConfiguration,
   type WorkerProcessHandle,
 } from '../scripts/lib/worker-pool';
@@ -35,6 +36,12 @@ async function waitFor(condition: () => boolean, timeoutMs = 500): Promise<void>
 }
 
 describe('OS worker pool lifecycle', () => {
+  it('uses a non-terminating graceful drain signal on Unix workers', () => {
+    expect(resolveWorkerGracefulDrainSignal('darwin')).toBe('SIGUSR2');
+    expect(resolveWorkerGracefulDrainSignal('linux')).toBe('SIGUSR2');
+    expect(resolveWorkerGracefulDrainSignal('win32')).toBe('SIGTERM');
+  });
+
   it('defaults to an HA pair and assigns deterministic bounded ports', () => {
     expect(resolveWorkerPoolConfiguration({})).toMatchObject({
       desiredWorkers: 2,
@@ -270,7 +277,7 @@ describe('OS worker pool lifecycle', () => {
       event === `ready:worker-0:${after.workers[0]?.workerInstanceId}`,
     );
     const worker1Drain = events.findIndex((event) =>
-      event === `kill:worker-1:${originalWorker1}:SIGTERM`,
+      event === `kill:worker-1:${originalWorker1}:${resolveWorkerGracefulDrainSignal()}`,
     );
     const worker0CaddyAdmission = events.findIndex((event, index) =>
       index > worker0ReplacementReady && event === 'sleep:3000',
@@ -316,7 +323,7 @@ describe('OS worker pool lifecycle', () => {
     await supervisor.stop();
 
     expect(sleeps).toContain(150);
-    expect(signals).toEqual(['SIGTERM', 'SIGKILL']);
+    expect(signals).toEqual([resolveWorkerGracefulDrainSignal(), 'SIGKILL']);
   });
 
   it('announces drain before refusing new work so the load balancer can evacuate the worker', async () => {
