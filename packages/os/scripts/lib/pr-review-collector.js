@@ -1,4 +1,5 @@
 const { execFileSync } = require('child_process');
+const { resolveGitHubCli } = require('./github');
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 const KNOWN_REVIEW_BOT_PATTERNS = [
@@ -34,7 +35,7 @@ function compactGhError(error, args) {
 
 function gh(args) {
   try {
-    return execFileSync('gh', args, {
+    return execFileSync(resolveGitHubCli(), args, {
       encoding: 'utf8',
       maxBuffer: 20 * 1024 * 1024,
       stdio: ['ignore', 'pipe', 'pipe'],
