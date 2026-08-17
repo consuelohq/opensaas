@@ -33,12 +33,14 @@ started: 2026-08-17
 - 2026-08-17 13:18:41 fs.write: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
 - 2026-08-17 13:24:42 fs.write: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
 - 2026-08-17 13:25:21 fs.write: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
+- 2026-08-17 13:30:08 fs.write: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-08-17 13:22:12 `review.run`: passed — OK
 - 2026-08-17 13:24:35 `verify`: passed — OK
 - 2026-08-17 13:26:56 `verify`: passed — OK
+- 2026-08-17 13:30:00 `verify`: passed — OK
 
 ## key decisions
 
@@ -162,3 +164,11 @@ no-test waiver: permanent regression test waived because the package manifests/l
 - `task.push` failed before committing because the installed GitHub helper could not parse its `gh auth` response and reported no GitHub token in the task environment (`trc_a81546e7b164`). The task PR already exists and GitHub authentication is otherwise available through the repository remote. Per workspace recovery policy, use a narrowly scoped task-worktree Git commit/push fallback for this lifecycle step only; no reset, force-push, branch deletion, or history rewrite is permitted.
 
 - 2026-08-17 13:25:21 append: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
+
+## Stream reconciliation and promotion readiness
+
+- After `task.pr` also failed at the same installed GitHub-auth parser boundary (`trc_db2aa66d1df6`), the task branch deliberately reconciled the current remote `origin/stream/security` history into itself with a normal non-destructive merge. The merge was clean and added only the prior 2026-08-15 task metadata; no source-code conflict remained, confirming the three older stream-only security behaviors are already represented on current main and the XML dependency state is identical to today's remediation.
+- Post-reconciliation focused dependency assertion remained green: website parser 5.10.1 in Bun and npm, builder 1.3.1 in npm.
+- Post-reconciliation full `verify` passed and is publish-valid (`trc_526bebce5c66`) against `origin/main`; 0 task-owned issues, 0 related-pre-existing issues, 0 DB/migration risks. The task branch now contains both current main ancestry and all accepted `stream/security` history, so a non-force fast-forward promotion can preserve the persistent stream history without touching the separate stale sync worktree.
+
+- 2026-08-17 13:30:08 append: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
