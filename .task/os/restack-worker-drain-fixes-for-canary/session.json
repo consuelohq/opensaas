@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_ab9d564b45e3",
+  "tmuxSession": "opensaas-os-restack-worker-drain-fixes-for-canary-ab9d564b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restack-worker-drain-fixes-for-canary",
+  "branch": "task/os/restack-worker-drain-fixes-for-canary",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restack-worker-drain-fixes-for-canary",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restack-worker-drain-fixes-for-canary",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2151,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2151",
+  "createdAt": "2026-08-17T00:36:48.437Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restack-worker-drain-fixes-for-canary/.task/os/restack-worker-drain-fixes-for-canary/session.json"
+}

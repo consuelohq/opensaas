@@ -278,8 +278,45 @@ describe('OS worker pool lifecycle', () => {
     expect(worker0ReplacementReady).toBeGreaterThan(-1);
     expect(worker0CaddyAdmission).toBeGreaterThan(worker0ReplacementReady);
     expect(worker1Drain).toBeGreaterThan(worker0CaddyAdmission);
+    expect(events.filter((event) => event === 'sleep:3000')).toHaveLength(1);
 
     await supervisor.stop();
+  });
+
+  it('should budget both propagation windows before force-closing a draining worker', async () => {
+    const sleeps: number[] = [];
+    const signals: Array<NodeJS.Signals | undefined> = [];
+    const exit = deferredExit();
+    const supervisor = createWorkerPoolSupervisor({
+      configuration: resolveWorkerPoolConfiguration({
+        CONSUELO_OS_WORKER_COUNT: '1',
+        CONSUELO_OS_PORT: '47035',
+        CONSUELO_OS_DRAIN_TIMEOUT_MS: '100',
+        CONSUELO_OS_DRAIN_PROPAGATION_MS: '25',
+      }),
+      spawnWorker(): WorkerProcessHandle {
+        return {
+          pid: 3500,
+          exited: exit.promise,
+          kill(signal) {
+            signals.push(signal);
+            if (signal === 'SIGKILL') exit.resolve(0);
+            return true;
+          },
+        };
+      },
+      probeReady: async () => true,
+      writeSnapshot: () => {},
+      sleep: async (milliseconds) => {
+        sleeps.push(milliseconds);
+      },
+    });
+
+    await supervisor.start();
+    await supervisor.stop();
+
+    expect(sleeps).toContain(150);
+    expect(signals).toEqual(['SIGTERM', 'SIGKILL']);
   });
 
   it('announces drain before refusing new work so the load balancer can evacuate the worker', async () => {
