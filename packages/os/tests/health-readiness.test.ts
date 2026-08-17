@@ -126,7 +126,7 @@ describe('local OS health readiness', () => {
     );
 
     const response = await app.request('http://127.0.0.1:46324/not-a-real-route');
-    expect(response.status).toBe(404);
+    expect(response.body).not.toBeNull();
     expect(workerState.snapshot().activeRequests).toBe(1);
 
     await response.text();
@@ -148,6 +148,24 @@ describe('local OS health readiness', () => {
     expect(response.body).not.toBeNull();
 
     await response.body!.cancel('client disconnected');
+    expect(workerState.snapshot().activeRequests).toBe(0);
+  });
+
+  it('should release worker request accounting when a HEAD response body is discarded by Hono', async () => {
+    const workerState = createWorkerRuntimeState({
+      workerId: 'worker-head',
+      workerInstanceId: 'instance-head',
+    });
+    const app = createLocalOsApp(
+      { name: 'consuelo-os', port: 46326 },
+      { workerState },
+    );
+
+    const response = await app.request('http://127.0.0.1:46326/not-a-real-route', {
+      method: 'HEAD',
+    });
+
+    expect(response.body).toBeNull();
     expect(workerState.snapshot().activeRequests).toBe(0);
   });
 

@@ -101,6 +101,10 @@ export function createLocalOsApp(
     };
     try {
       await next();
+      if (context.req.raw.method === 'HEAD') {
+        releaseRequest();
+        return;
+      }
       context.res = trackResponseCompletion(context.res, releaseRequest);
     } catch (error: unknown) {
       releaseRequest();
