@@ -1,11 +1,20 @@
 import { spawn } from 'node:child_process';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createInterface } from 'node:readline';
 import { describe, expect, it, vi } from 'vitest';
 
+import {
+  createGatewaySecurityConfig,
+  issueAgentAppToken,
+} from '../scripts/lib/security-gateway';
+import { resolveWorkerGracefulDrainSignal } from '../scripts/lib/worker-pool';
 import { createLocalOsApp } from '../scripts/server/app';
 import { createHealthRoutes } from '../scripts/server/routes/health';
 import { drainWorkerServer, runDrainAndExit } from '../scripts/server/main';
 import { createWorkerRuntimeState } from '../scripts/server/worker-runtime-state';
+import { removeSafeTempDir } from './safe-temp-cleanup';
 
 async function readJsonLine(stream: NodeJS.ReadableStream): Promise<Record<string, unknown>> {
   const lines = createInterface({ input: stream });
@@ -341,6 +350,119 @@ describe('local OS health readiness', () => {
       expect(exitCode, stderr).toBe(0);
     } finally {
       if (child.exitCode === null) child.kill();
+    }
+  });
+
+  it('preserves a real MCP tool call when the worker receives the graceful drain signal', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-mcp-signal-drain-'));
+    const security = createGatewaySecurityConfig({
+      home,
+      workspaceId: 'workspace_mcp_signal_drain',
+      workspaceSlug: 'mcp-signal-drain',
+      workspaceHost: 'mcp-signal-drain.consuelohq.com',
+    });
+    const token = issueAgentAppToken({
+      config: security,
+      callerId: 'caller_mcp_signal_drain',
+      appId: 'app_mcp_signal_drain',
+      subjectId: 'subject_mcp_signal_drain',
+      deviceId: 'device_mcp_signal_drain',
+      connectorId: 'connector_mcp_signal_drain',
+      connectionId: 'connection_mcp_signal_drain',
+      scopes: ['route:/mcp:read', 'tool:wait:read'],
+      expiresInSeconds: 300,
+    });
+    const appUrl = new URL('../scripts/server/app.ts', import.meta.url).href;
+    const mainUrl = new URL('../scripts/server/main.ts', import.meta.url).href;
+    const workerStateUrl = new URL('../scripts/server/worker-runtime-state.ts', import.meta.url).href;
+    const gracefulSignal = resolveWorkerGracefulDrainSignal();
+    const childSource = `
+      import { createLocalOsApp } from ${JSON.stringify(appUrl)};
+      import { drainWorkerServer, runDrainAndExit } from ${JSON.stringify(mainUrl)};
+      import { createWorkerRuntimeState } from ${JSON.stringify(workerStateUrl)};
+
+      const workerState = createWorkerRuntimeState({ workerId: 'worker-mcp-signal', workerInstanceId: 'instance-mcp-signal' });
+      const app = createLocalOsApp({ name: 'consuelo-os', port: 0 }, { workerState });
+      let server;
+      server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: app.fetch });
+      let shuttingDown = false;
+      const drain = async () => {
+        if (shuttingDown) return;
+        shuttingDown = true;
+        await drainWorkerServer({
+          server,
+          workerState,
+          reason: ${JSON.stringify(gracefulSignal)},
+          propagationMs: 250,
+          drainTimeoutMs: 5_000,
+          report: (message) => process.stderr.write('[drain] ' + message + '\\n'),
+        });
+      };
+      process.once(${JSON.stringify(gracefulSignal)}, () => {
+        process.stderr.write('[snapshot-signal] ' + JSON.stringify(workerState.snapshot()) + '\\n');
+        void runDrainAndExit(drain);
+      });
+      process.stdout.write(JSON.stringify({ port: server.port }) + '\\n');
+    `;
+    const child = spawn('bun', ['-e', childSource], {
+      cwd: join(import.meta.dirname, '..', '..'),
+      env: {
+        ...process.env,
+        CONSUELO_HOME: home,
+        CONSUELO_OS_HOME: home,
+        CONSUELO_OS_AUTH_CONFIG: security.generatedAuthPath,
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const exited = new Promise<number | null>((resolveExit, rejectExit) => {
+      child.once('error', rejectExit);
+      child.once('exit', resolveExit);
+    });
+    let stderr = '';
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', (chunk: string) => {
+      stderr += chunk;
+    });
+
+    try {
+      const ready = await readJsonLine(child.stdout);
+      expect(typeof ready.port).toBe('number');
+      const request = fetch(`http://127.0.0.1:${ready.port}/mcp`, {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${token.bearerToken}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 'signal-drain-wait',
+          method: 'tools/call',
+          params: {
+            name: 'call',
+            arguments: { tool: 'wait', input: { seconds: 2 } },
+          },
+        }),
+      });
+      await vi.waitFor(() => {
+        expect(stderr).toContain('local_os.mcp_request_received');
+      }, { timeout: 2_000 });
+      expect(child.kill(gracefulSignal)).toBe(true);
+
+      let response: Response;
+      try {
+        response = await request;
+      } catch (error: unknown) {
+        throw new Error(`MCP request failed during SIGTERM drain: ${String(error)}\n${stderr}`);
+      }
+      const body = await response.json() as Record<string, unknown>;
+      expect(response.status).toBe(200);
+      expect(body).toMatchObject({ jsonrpc: '2.0', id: 'signal-drain-wait' });
+      expect(await exited, stderr).toBe(0);
+      expect(stderr).toMatch(/\[snapshot-signal\].*"activeRequests":1/);
+      expect(stderr).not.toContain('worker drain timed out');
+    } finally {
+      if (child.exitCode === null) child.kill();
+      removeSafeTempDir(home, 'consuelo-mcp-signal-drain-');
     }
   });
 
