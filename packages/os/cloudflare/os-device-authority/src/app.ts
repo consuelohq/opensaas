@@ -34,6 +34,7 @@ export type CreateDeviceAuthorityHandlerInput = {
   workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
+  operatorEnrollmentResetSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
   managedCloudProvisionerSecret?: string;
