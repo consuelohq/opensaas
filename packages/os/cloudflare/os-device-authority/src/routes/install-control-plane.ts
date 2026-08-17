@@ -12,8 +12,13 @@ import {
   createInstallTelemetryIngestHandler,
 } from '../../../../scripts/lib/install-control-plane-http';
 import { isInstallId } from '../../../../scripts/lib/install-telemetry-contract';
+import {
+  resolveWorkspaceRouteFromD1,
+  revokeWorkspaceHostnameInD1,
+} from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { json } from '../http';
 import type { DeviceAuthorityRuntime } from '../types';
+import { host } from '../utils';
 
 export const INSTALL_CONTROL_PLANE_DEVICE_DIRECTORY_PATH =
   '/internal/install-control-plane/devices' as const;
@@ -21,6 +26,10 @@ export const INSTALL_CONTROL_PLANE_USER_DIRECTORY_PATH =
   '/internal/install-control-plane/users' as const;
 export const INSTALL_CONTROL_PLANE_DIAGNOSTIC_READ_PREFIX =
   '/internal/install-control-plane/diagnostics' as const;
+export const INSTALL_CONTROL_PLANE_ENROLLMENT_RESET_PATH =
+  '/internal/install-control-plane/enrollment/reset' as const;
+
+const WORKSPACE_ROOT_PATH = '/' as const;
 
 const USER_DIRECTORY_ASSERTION_HEADER =
   'x-consuelo-user-directory-assertion' as const;
@@ -115,10 +124,175 @@ function internalEdgeAuthorized(
   return Boolean(expected && actual && actual === expected);
 }
 
+function enrollmentResetAuthorized(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): boolean {
+  if (internalEdgeAuthorized(request, runtime)) return true;
+  const expected = runtime.operatorEnrollmentResetSecret?.trim();
+  const actual = request.headers
+    .get('x-consuelo-enrollment-reset-secret')
+    ?.trim();
+  return Boolean(expected && actual && actual === expected);
+}
+
+type EnrollmentResetBody = {
+  workspace_host?: unknown;
+  workspace_id?: unknown;
+};
+
+async function enrollmentResetBody(
+  request: Request,
+): Promise<{ workspaceHost: string; workspaceId?: string } | undefined> {
+  try {
+    const body = (await request.json()) as EnrollmentResetBody;
+    if (typeof body.workspace_host !== 'string') return undefined;
+    const workspaceHost = host(body.workspace_host);
+    if (
+      workspaceHost.length > 253 ||
+      workspaceHost.includes('/') ||
+      workspaceHost.includes('?') ||
+      workspaceHost.includes('#')
+    ) {
+      return undefined;
+    }
+    if (body.workspace_id === undefined) return { workspaceHost };
+    if (
+      typeof body.workspace_id !== 'string' ||
+      !body.workspace_id.trim() ||
+      body.workspace_id.length > 256
+    ) {
+      return undefined;
+    }
+    return { workspaceHost, workspaceId: body.workspace_id.trim() };
+  } catch {
+    return undefined;
+  }
+}
+
 export function registerInstallControlPlaneRoutes(
   app: Hono,
   runtime: DeviceAuthorityRuntime,
 ): void {
+  app.post(INSTALL_CONTROL_PLANE_ENROLLMENT_RESET_PATH, async (c) => {
+    if (!enrollmentResetAuthorized(c.req.raw, runtime)) {
+      return json({ error: 'forbidden' }, { status: 403 });
+    }
+    const routeRegistry = runtime.workspaceRouteRegistry;
+    if (!routeRegistry) {
+      return json({ error: 'workspace_route_registry_unavailable' }, { status: 503 });
+    }
+    const target = await enrollmentResetBody(c.req.raw);
+    if (!target) {
+      return json({ error: 'invalid_enrollment_reset_target' }, { status: 400 });
+    }
+
+    try {
+      const nodes = await runtime.store.listWorkspaceNodesByHost(
+        target.workspaceHost,
+      );
+      if (nodes.length === 0) {
+        const route = await resolveWorkspaceRouteFromD1(routeRegistry, {
+          host: target.workspaceHost,
+          path: WORKSPACE_ROOT_PATH,
+          requireOnlineNode: false,
+        });
+        if (route.allowed) {
+          return json(
+            { error: 'enrollment_owner_not_found' },
+            { status: 409 },
+          );
+        }
+        if (route.status === 503) {
+          return json(
+            { error: 'workspace_route_registry_unavailable' },
+            { status: 503 },
+          );
+        }
+        await revokeWorkspaceHostnameInD1(routeRegistry, {
+          hostname: target.workspaceHost,
+          reason: 'operator enrollment reset',
+        });
+        return json({
+          status: 'already_reset',
+          workspace_host: target.workspaceHost,
+          ...(target.workspaceId ? { workspace_id: target.workspaceId } : {}),
+          nodes_removed: 0,
+          route_revoked: true,
+        });
+      }
+
+      const accountIds = [...new Set(nodes.map((node) => node.accountId))];
+      if (accountIds.length !== 1) {
+        return json({ error: 'ambiguous_enrollment_owner' }, { status: 409 });
+      }
+      const accountId = accountIds[0];
+      const accountWorkspace = await runtime.store.byAccountWorkspace(accountId);
+      const nodeWorkspaceIds = [
+        ...new Set(
+          nodes
+            .map((node) => node.workspaceId)
+            .filter((workspaceId): workspaceId is string => Boolean(workspaceId)),
+        ),
+      ];
+      if (nodeWorkspaceIds.length > 1) {
+        return json({ error: 'ambiguous_enrollment_workspace' }, { status: 409 });
+      }
+      const workspaceId =
+        target.workspaceId ?? accountWorkspace?.workspaceId ?? nodeWorkspaceIds[0];
+      if (!workspaceId) {
+        return json({ error: 'enrollment_workspace_id_not_found' }, { status: 409 });
+      }
+      if (
+        (accountWorkspace &&
+          (accountWorkspace.workspaceHost !== target.workspaceHost ||
+            (accountWorkspace.workspaceId !== undefined &&
+              accountWorkspace.workspaceId !== workspaceId))) ||
+        nodes.some(
+          (node) =>
+            node.workspaceHost !== target.workspaceHost ||
+            (node.workspaceId !== undefined && node.workspaceId !== workspaceId),
+        )
+      ) {
+        return json({ error: 'enrollment_target_mismatch' }, { status: 409 });
+      }
+
+      const route = await resolveWorkspaceRouteFromD1(routeRegistry, {
+        host: target.workspaceHost,
+        path: WORKSPACE_ROOT_PATH,
+        requireOnlineNode: false,
+      });
+      if (route.status === 503) {
+        return json(
+          { error: 'workspace_route_registry_unavailable' },
+          { status: 503 },
+        );
+      }
+      if (route.allowed && route.workspaceId !== workspaceId) {
+        return json({ error: 'enrollment_route_mismatch' }, { status: 409 });
+      }
+
+      const reset = await runtime.store.resetWorkspaceEnrollment({
+        accountId,
+        workspaceId,
+        workspaceHost: target.workspaceHost,
+      });
+      await revokeWorkspaceHostnameInD1(routeRegistry, {
+        hostname: target.workspaceHost,
+        reason: 'operator enrollment reset',
+      });
+      return json({
+        status: 'reset',
+        workspace_host: target.workspaceHost,
+        workspace_id: workspaceId,
+        nodes_removed: reset.nodesRemoved,
+        route_revoked: true,
+      });
+    } catch {
+      return json({ error: 'enrollment_reset_failed' }, { status: 503 });
+    }
+  });
+
   app.get(INSTALL_CONTROL_PLANE_OBSERVABILITY_CONFIG_PATH, (c) =>
     createInstallObservabilityConfigHandler({
       sentryDsn: runtime.installSentryDsn,
