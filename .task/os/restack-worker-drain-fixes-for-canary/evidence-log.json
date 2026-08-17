@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/restack-worker-drain-fixes-for-canary",
+  "events": [
+    {
+      "id": "e63e0d5c-668a-4aaf-bf5f-680600e8b377",
+      "occurred_at": "2026-08-17T00:36:57.981Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/restack-worker-drain-fixes-for-canary/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restack-worker-drain-fixes-for-canary",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restack-worker-drain-fixes-for-canary"
+      }
+    },
+    {
+      "id": "f119336a-a980-4111-8d4d-e827e8324762",
+      "occurred_at": "2026-08-17T00:37:52.926Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/health-readiness.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restack-worker-drain-fixes-for-canary",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restack-worker-drain-fixes-for-canary"
+      }
+    },
+    {
+      "id": "10ca3728-7bed-4087-9ef1-2a7d98f54476",
+      "occurred_at": "2026-08-17T00:37:59.389Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restack-worker-drain-fixes-for-canary",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restack-worker-drain-fixes-for-canary"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-17T00:37:59.445Z"
+}
