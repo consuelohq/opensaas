@@ -233,6 +233,23 @@ type WorkspaceNodeNonceClaim = {
   expiresAt: number;
 };
 
+async function removeWorkspaceNodeNonceClaims(
+  storage: StorageLike,
+  nodeId: string,
+): Promise<void> {
+  try {
+    const indexKey = `wnnl:${nodeId}`;
+    const indexed =
+      (await storage.get<WorkspaceNodeNonceClaim[]>(indexKey)) ?? [];
+    for (const entry of indexed) {
+      await storage.delete(`wnn:${nodeId}:${entry.nonce}`);
+    }
+    await storage.delete(indexKey);
+  } catch {
+    throw new Error('workspace node nonce cleanup failed');
+  }
+}
+
 export class DurableStore implements Store {
   constructor(private storage: StorageLike) {}
 
@@ -423,6 +440,113 @@ export class DurableStore implements Store {
       return await this.storage.get<AccountWorkspace>(`aw:${accountId}`);
     } catch {
       throw new Error('account workspace read failed');
+    }
+  }
+  async resetWorkspaceEnrollment(input: {
+    accountId: string;
+    workspaceId: string;
+    workspaceHost: string;
+  }) {
+    const workspaceHost = input.workspaceHost.trim().toLowerCase();
+    try {
+      const accountWorkspace = await this.byAccountWorkspace(input.accountId);
+      if (
+        accountWorkspace &&
+        (accountWorkspace.workspaceHost !== workspaceHost ||
+          (accountWorkspace.workspaceId !== undefined &&
+            accountWorkspace.workspaceId !== input.workspaceId))
+      ) {
+        throw new Error('account workspace does not match reset target');
+      }
+
+      const accountNodes = await this.listWorkspaceNodes(input.accountId);
+      const targetNodes = accountNodes.filter((node) => {
+        if (node.workspaceHost !== workspaceHost) return false;
+        if (node.workspaceId && node.workspaceId !== input.workspaceId) {
+          throw new Error('workspace node does not match reset target');
+        }
+        return true;
+      });
+      for (const node of targetNodes) {
+        await this.delWorkspaceNode(input.accountId, node.nodeId);
+      }
+
+      const cleanup = async (storage: StorageLike) => {
+        try {
+          const currentWorkspace = await storage.get<AccountWorkspace>(
+            `aw:${input.accountId}`,
+          );
+          if (
+            currentWorkspace &&
+            currentWorkspace.workspaceHost === workspaceHost &&
+            (currentWorkspace.workspaceId === undefined ||
+              currentWorkspace.workspaceId === input.workspaceId)
+          ) {
+            await storage.delete(`aw:${input.accountId}`);
+          }
+
+          await storage.delete(`wm:${input.accountId}:${input.workspaceId}`);
+          const membershipIndexKey = `wml:${input.accountId}`;
+          const workspaceIds =
+            (await storage.get<string[]>(membershipIndexKey)) ?? [];
+          const remainingWorkspaceIds = workspaceIds.filter(
+            (workspaceId) => workspaceId !== input.workspaceId,
+          );
+          if (remainingWorkspaceIds.length > 0) {
+            await storage.put(membershipIndexKey, remainingWorkspaceIds);
+          } else {
+            await storage.delete(membershipIndexKey);
+          }
+
+          await storage.delete(`was:${workspaceHost}`);
+
+          if (storage.list) {
+            const credentials = await storage.list<NodeBootstrapCredential>({
+              prefix: 'nbc:',
+            });
+            for (const [key, credential] of credentials) {
+              if (
+                credential.accountId === input.accountId &&
+                credential.workspaceId === input.workspaceId &&
+                credential.workspaceHost === workspaceHost
+              ) {
+                await storage.delete(key);
+              }
+            }
+
+            const grants = await storage.list<Grant>({ prefix: 'd:' });
+            for (const [key, grant] of grants) {
+              if (
+                grant.accountId === input.accountId &&
+                (grant.workspaceHost === workspaceHost ||
+                  grant.workspaceId === input.workspaceId)
+              ) {
+                await storage.delete(key);
+                await storage.delete(`u:${cleanCode(grant.userCode)}`);
+              }
+            }
+          }
+        } catch (error: unknown) {
+          throw new Error(
+            error instanceof Error
+              ? `workspace enrollment storage cleanup failed: ${error.message}`
+              : 'workspace enrollment storage cleanup failed',
+          );
+        }
+      };
+
+      if (this.storage.transaction) {
+        await this.storage.transaction((transaction) => cleanup(transaction));
+      } else {
+        await cleanup(this.storage);
+      }
+      return { nodesRemoved: targetNodes.length };
+    } catch (error: unknown) {
+      throw new Error(
+        error instanceof Error
+          ? `workspace enrollment reset failed: ${error.message}`
+          : 'workspace enrollment reset failed',
+      );
     }
   }
   async createWorkspaceCloudTrial(trial: WorkspaceCloudTrial) {
@@ -677,6 +801,7 @@ export class DurableStore implements Store {
         }
         await removeWorkspaceTaskAffinitiesForNode(storage, accountId, nodeId);
         await removeWorkspaceSessionAffinitiesForNode(storage, accountId, nodeId);
+        await removeWorkspaceNodeNonceClaims(storage, nodeId);
       } catch {
         throw new Error('workspace node delete transaction failed');
       }
@@ -734,6 +859,7 @@ export class DurableStore implements Store {
             input.accountId,
             input.nodeId,
           );
+          await removeWorkspaceNodeNonceClaims(storage, input.nodeId);
           deleted = true;
         } catch {
           throw new Error('workspace node conditional delete failed');
@@ -1365,6 +1491,75 @@ export function createMemoryDeviceGrantStore(): Store {
     byAccountWorkspace(accountId) {
       const workspace = accountWorkspaces.get(accountId);
       return Promise.resolve(workspace ? { ...workspace } : undefined);
+    },
+    async resetWorkspaceEnrollment(input) {
+      try {
+        const workspaceHost = input.workspaceHost.trim().toLowerCase();
+        const accountWorkspace = accountWorkspaces.get(input.accountId);
+        if (
+          accountWorkspace &&
+          (accountWorkspace.workspaceHost !== workspaceHost ||
+            (accountWorkspace.workspaceId !== undefined &&
+              accountWorkspace.workspaceId !== input.workspaceId))
+        ) {
+          throw new Error(
+            'workspace enrollment reset failed: account workspace does not match reset target',
+          );
+        }
+
+        const targetNodes = [...workspaceNodes.values()].filter((node) => {
+          if (node.accountId !== input.accountId || node.workspaceHost !== workspaceHost) {
+            return false;
+          }
+          if (node.workspaceId && node.workspaceId !== input.workspaceId) {
+            throw new Error(
+              'workspace enrollment reset failed: workspace node does not match reset target',
+            );
+          }
+          return true;
+        });
+        for (const node of targetNodes) {
+          await this.delWorkspaceNode(input.accountId, node.nodeId);
+          for (const key of [...workspaceNodeNonces.keys()]) {
+            if (key.startsWith(`${node.nodeId}:`)) workspaceNodeNonces.delete(key);
+          }
+        }
+
+        if (
+          accountWorkspace &&
+          accountWorkspace.workspaceHost === workspaceHost &&
+          (accountWorkspace.workspaceId === undefined ||
+            accountWorkspace.workspaceId === input.workspaceId)
+        ) {
+          accountWorkspaces.delete(input.accountId);
+        }
+        workspaceMemberships.delete(`${input.accountId}:${input.workspaceId}`);
+        workspaceAgentStatuses.delete(workspaceHost);
+        for (const [tokenHash, credential] of nodeBootstrapCredentials) {
+          if (
+            credential.accountId === input.accountId &&
+            credential.workspaceId === input.workspaceId &&
+            credential.workspaceHost === workspaceHost
+          ) {
+            nodeBootstrapCredentials.delete(tokenHash);
+          }
+        }
+        for (const [hash, grant] of grants) {
+          if (
+            grant.accountId === input.accountId &&
+            (grant.workspaceHost === workspaceHost || grant.workspaceId === input.workspaceId)
+          ) {
+            grants.delete(hash);
+          }
+        }
+        return { nodesRemoved: targetNodes.length };
+      } catch (error: unknown) {
+        throw new Error(
+          error instanceof Error
+            ? `workspace enrollment reset failed: ${error.message}`
+            : 'workspace enrollment reset failed',
+        );
+      }
     },
     createWorkspaceCloudTrial(trial) {
       const existing = workspaceCloudTrials.get(trial.workspaceId);
