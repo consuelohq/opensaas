@@ -34,6 +34,7 @@ started: 2026-08-17
 - 2026-08-17 13:24:42 fs.write: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
 - 2026-08-17 13:25:21 fs.write: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
 - 2026-08-17 13:30:08 fs.write: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
+- 2026-08-17 13:31:35 fs.write: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -172,3 +173,20 @@ no-test waiver: permanent regression test waived because the package manifests/l
 - Post-reconciliation full `verify` passed and is publish-valid (`trc_526bebce5c66`) against `origin/main`; 0 task-owned issues, 0 related-pre-existing issues, 0 DB/migration risks. The task branch now contains both current main ancestry and all accepted `stream/security` history, so a non-force fast-forward promotion can preserve the persistent stream history without touching the separate stale sync worktree.
 
 - 2026-08-17 13:30:08 append: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
+
+## Promotion result and human boundary
+
+- Daily task PR: https://github.com/consuelohq/opensaas/pull/2158.
+- Because both installed `task.push` and `task.pr` fail before their GitHub operations at the same malformed `gh auth` parser boundary, the validated task was pushed with narrowly scoped non-force Git fallback and then promoted by a non-force fast-forward update of `stream/security`. Before promotion, remote `stream/security` was re-read as `9571b94c1232468a8a2f1600d894aaef3fa982fb` and proven to be an ancestor of the task; the stream advanced to validated task head `7687a9ade1b1a08c9975ca0e289a24e74382ab79` without rewriting accepted history.
+- Post-promotion `stream.context` no longer lists PR #2158 among open security task PRs and shows the 2026-08-17 task commits at the top of stream history.
+- The perpetual human review boundary remains PR #1940 (`stream/security` -> `main`). GitHub remote refs show `refs/pull/1940/head` exactly matches the promoted `stream/security` head and a current `refs/pull/1940/merge` ref exists. The stream was not merged to main.
+- Final normalized/redacted scan report for publication: `/Users/kokayi/.consuelo/node/cache/security-scans/2026-08-17T13-15-53-879Z/security-scan-report.json`.
+- Human-only next action: review and, when appropriate, merge `stream/security` into `main`. No deploy, release, credential rotation/revocation, production IAM change, destructive production test, or Consuelo install/update/restart/rollback/uninstall operation was performed.
+
+## Tooling gaps observed
+
+- Installed `security.scan` routes to a runtime without the current `security:scan` script; the current task-source equivalent completed successfully instead.
+- Typed `github pr.list` / `pr.view`, `task.push`, and `task.pr` currently fail because their installed GitHub CLI/auth parsing emits JSON parse errors; scoped non-force Git fallback was required only for task push/promotion after review+verify passed.
+- The existing `stream.sync` temp worktree is stale and still contains an old unfinished merge. It was left untouched; no reset, recreation, force-push, deletion, or discard was used.
+
+- 2026-08-17 13:31:35 append: `.task/security/daily-security-maintenance-2026-08-17/workpad.md`
