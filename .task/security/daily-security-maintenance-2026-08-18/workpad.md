@@ -40,7 +40,7 @@ started: 2026-08-18
 - Remaining older `fast-xml-parser` / `fast-xml-builder` groups are in the root open-source `yarn.lock`, not the Consuelo Website locks fixed by this stream. Remaining PostCSS groups are build-chain dependencies; upstream GitHub advisory evidence shows the latest source-map issue is fixed in 8.5.23, but the affected condition requires processing CSS that is not fully trusted. No such runtime customer-input CSS processing path was established for Consuelo OS or the Dialer during this run.
 - Strict `review.run` passed with 0 issues owned by this task, 0 blocking issues, and 3/3 selected test suites passing; 29 unrelated pre-existing lint/typecheck findings remain outside the task delta. Full `verify` passed with `publishValid: true` against `origin/main` for the three website dependency files.
 - The typed `task.push` and `task.pr` operations could not authenticate because the installed workspace wrapper lacks GitHub credentials. Recovery used exact task-scoped Git only: the already-validated task metadata was committed, the task branch was pushed non-force, then `stream/security` was advanced non-force only after proving the prior stream head and current `main` were both ancestors of the task head.
-- Promotion succeeded: remote `stream/security` now points to task commit `ca76ac23ceacaa7a67b94926d0643a67e01b5dc7`; PR #2161 no longer appears among open security task PRs. The perpetual review ref for PR #1940 still exists and its head exactly matches the promoted `stream/security` head, while `main` remains `c88a107f91c0bc31a2f761fbe472ae18a02c75d6`.
+- Promotion succeeded: task integration commit `ca76ac23ceacaa7a67b94926d0643a67e01b5dc7` is contained in remote `stream/security`; PR #2161 no longer appears among open security task PRs. After final metadata publication, the perpetual review ref for PR #1940 was rechecked and followed the current `stream/security` head, while `main` remained `c88a107f91c0bc31a2f761fbe472ae18a02c75d6`.
 - Daily Schedules scan publication succeeded at `/artifacts/daily-schedules/2026-08-18/security-scan`; the dated/filterable index is `/artifacts/daily-schedules`.
 - Daily Schedules workpad publication succeeded at `/artifacts/daily-schedules/2026-08-18/security`; this generated workpad is the source workpad and no parallel workpad was created.
 
@@ -115,3 +115,5 @@ bun run task:finish
 - 2026-08-18 13:51:34 apply-patch: `.task/security/daily-security-maintenance-2026-08-18/workpad.md`
 
 - 2026-08-18 13:51:58 apply-patch: `.task/security/daily-security-maintenance-2026-08-18/workpad.md`
+
+- 2026-08-18 13:54:31 apply-patch: `.task/security/daily-security-maintenance-2026-08-18/workpad.md`
