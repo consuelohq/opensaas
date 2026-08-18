@@ -63,13 +63,17 @@ describe('lifecycle ingress continuity', () => {
 
       expect(calls[0]).toEqual({
         command: 'bash',
+        args: [resolve(osRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+      });
+      expect(calls[1]).toEqual({
+        command: 'bash',
         args: [
           resolve(osRoot, 'scripts', 'install-system-daemons.sh'),
           '--definitions-only',
           '--quiet',
         ],
       });
-      expect(calls[1]).toEqual({
+      expect(calls[2]).toEqual({
         command: process.execPath,
         args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
       });
@@ -85,13 +89,17 @@ describe('lifecycle ingress continuity', () => {
       await controller.restart({ waitForCompletion: true, allowDestructiveFallback: true });
       expect(calls[0]).toEqual({
         command: 'bash',
+        args: [resolve(osRoot, 'scripts', 'bootstrap.sh'), '--runtime-dependencies-only'],
+      });
+      expect(calls[1]).toEqual({
+        command: 'bash',
         args: [
           resolve(osRoot, 'scripts', 'install-system-daemons.sh'),
           '--definitions-only',
           '--quiet',
         ],
       });
-      expect(calls[1]).toEqual({
+      expect(calls[2]).toEqual({
         command: process.execPath,
         args: [resolve(osRoot, 'scripts', 'consuelo-reload.js'), 'rolling-reload-now'],
       });

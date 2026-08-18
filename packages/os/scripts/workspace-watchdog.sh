@@ -228,10 +228,12 @@ restart_workspace() {
     log "restart command failed for $workspace_label; canonical Consuelo CLI is missing or not executable at $consuelo_cli"
     return 1
   fi
-  if ! CONSUELO_HOME="$consuelo_home" "$consuelo_cli" restart --quiet; then
-    log "restart command failed for $workspace_label; canonical Consuelo restart returned non-zero"
-    return 1
+  if CONSUELO_HOME="$consuelo_home" "$consuelo_cli" restart --quiet; then
+    return 0
   fi
+  log "restart command failed for $workspace_label; canonical Consuelo restart returned non-zero"
+  log "falling back to launchd recovery for $workspace_label"
+  restart_launchd_label "$workspace_label"
 }
 
 reconcile_public_route() {

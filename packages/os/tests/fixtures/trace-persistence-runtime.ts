@@ -6,6 +6,11 @@ import { dirname, join } from 'node:path';
 import { executeTool } from '../../scripts/lib/facade/executor';
 import type { CommandPlan } from '../../scripts/lib/facade/types';
 import { createGatewaySecurityConfig } from '../../scripts/lib/security-gateway';
+import {
+  createDefaultNodeYamlConfig,
+  resolveConsueloHomeLayout,
+  writeYamlConfig,
+} from '../../scripts/lib/consuelo-home';
 import { parseSubagentTraceEvents } from '../../scripts/lib/subagent/runtime';
 import { createLocalTraceSitesReadBackend } from '../../scripts/lib/trace-sites-local-read-backend';
 import {
@@ -16,12 +21,13 @@ import {
   resolveCanonicalTraceDbPath,
 } from '../../scripts/lib/trace-persistence';
 import { withTraceRoutingContext } from '../../scripts/lib/trace-routing-context';
+import { createWorkSession } from '../../scripts/lib/work-session';
 import { authorizeConsueloOAuthMcpRequest } from '../../scripts/server/services/oauth-introspection';
 
 type TraceRow = Record<string, unknown>;
 
 const TRACE_ROWS_SQL = [
-  'SELECT trace_id, mcp_trace_id, source, tool, task_session, branch, worktree,',
+  'SELECT trace_id, mcp_trace_id, source, tool, task_session, branch, worktree, work_session, work_path,',
   'requested_node_id, resolved_node_id, resolved_node_name, default_node_id, route_source,',
   'status, ok, code, exit_code, duration_ms, input_json,',
   'resolved_input_json, result_json, stderr,',
@@ -152,6 +158,43 @@ async function run(): Promise<unknown> {
       },
     });
       return { recorded, rows: traceRows() };
+    }
+
+    if (scenario === 'work-session') {
+      const workPath = join(tmpdir(), `consuelo-trace-work-session-${process.pid}`);
+      mkdirSync(workPath, { recursive: true });
+      const layout = resolveConsueloHomeLayout(home);
+      writeYamlConfig(
+        layout.nodeConfigPath,
+        createDefaultNodeYamlConfig({
+          nodeId: 'node_trace_work_session',
+          nodeName: 'Trace Work Session Test',
+          workspaceId: 'workspace_trace_test',
+        }),
+        false,
+      );
+      const metadata = createWorkSession({
+        home,
+        path: workPath,
+        now: () => new Date('2026-08-15T03:00:00.000Z'),
+        randomUUID: () => '12345678-1234-4234-9234-123456789abc',
+      });
+      try {
+        const result = await executeTool('fs.write', {
+          workSession: metadata.workSession,
+          path: 'src/index.ts',
+          content: 'export const observed = true;\n',
+          mkdirs: true,
+        }, stableFacadeOptions());
+        const traceDb = new Database(resolveCanonicalTraceDbPath(), { readonly: true });
+        const workSessionRow = traceDb.query(
+          'SELECT work_session, work_path FROM tool_traces WHERE trace_id = ?',
+        ).get(result.traceId);
+        traceDb.close();
+        return { result, recorded: result.ok === true, workSessionRow };
+      } finally {
+        rmSync(workPath, { recursive: true, force: true });
+      }
     }
 
     if (scenario === 'internal') {

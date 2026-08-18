@@ -7,6 +7,7 @@ import {
   renderWorkspaceChromeBar,
   workspaceChromeClientScript,
   workspaceRouteSwitcherStyles,
+  type WorkspaceChromeOptions,
 } from './workspace-chrome';
 
 const canonicalAssetDir = path.resolve(
@@ -16,6 +17,24 @@ const canonicalAssetDir = path.resolve(
 
 const canonicalAsset = (name: string): string =>
   fs.readFileSync(path.join(canonicalAssetDir, name), 'utf8');
+
+export function resolveObservabilitySessionValue(row: Record<string, unknown>): string {
+  const metadata = row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+    ? row.metadata as Record<string, unknown>
+    : {};
+  for (const value of [
+    row.workPath,
+    row.branch,
+    row.gitBranch,
+    row.taskSession,
+    row.workSession,
+    metadata.workPath,
+    metadata.branch,
+  ]) {
+    if (value !== undefined && value !== null && String(value).length > 0) return String(value);
+  }
+  return 'no-branch';
+}
 
 const productionHistoryTransport = `<script id="consuelo-trace-history-transport">
 (()=>{const historyRoute='/gateway/traces/recent';const snapshotRoute='/trace-burn-intelligence/live-traces.json';const snapshotUrl=historyRoute+'?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true';const allowed=(url)=>url===snapshotRoute||url===historyRoute||url.startsWith(historyRoute+'?');window.__consueloTraceHistoryTransport={fetchJson(url){if(!allowed(url))return Promise.reject(new Error('Trace history route is not allowed.'));const requestUrl=url===snapshotRoute?snapshotUrl:url;return fetch(requestUrl,{cache:'no-store',credentials:'same-origin',headers:{accept:'application/json'}}).then(response=>response.json().then(payload=>{if(!response.ok||payload?.ok===false)throw new Error(payload?.error?.message||'Trace history request failed.');return url===snapshotRoute?(payload?.data??{rows:[],failures:[]}):payload;}));}};})();
@@ -161,7 +180,7 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         const cost = Number(first(row.cost, row.costUsd, row.totalCostUsd, row.total_cost_usd, 0) || 0);
         const status = String(first(row.status, row.success === false ? 'error' : 'success') || 'success');
         return Object.assign({}, row, {
-          branch: String(first(row.branch, row.gitBranch, row.taskSession, metadata.branch, 'no-branch') || 'no-branch'),
+          branch: String(first(row.workPath, row.branch, row.gitBranch, row.taskSession, row.workSession, metadata.workPath, metadata.branch, 'no-branch') || 'no-branch'),
           name: String(first(row.name, row.traceName, row.toolName, row.tool, 'unknown') || 'unknown'),
           code: String(first(row.code, row.kind, row.capability, '') || ''),
           status: status === 'ok' ? 'success' : status,
@@ -270,7 +289,7 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         if (!container) return;
         const branchButtons = countBy(state.rows, 'branch').slice(0, 10).map(([branch, count]) => '<button class="filter-chip" data-filter-branch="' + escapeHtml(branch) + '"><span>' + escapeHtml(branch) + '</span><b>' + count + '</b></button>').join('');
         const toolButtons = countBy(state.rows, 'tool').slice(0, 10).map(([tool, count]) => '<button class="filter-chip" data-filter-tool="' + escapeHtml(tool) + '"><span>' + escapeHtml(tool) + '</span><b>' + count + '</b></button>').join('');
-        container.innerHTML = '<p class="eyebrow">Branches / task sessions</p>' + branchButtons + '<p class="eyebrow tools-label">Tools</p>' + toolButtons;
+        container.innerHTML = '<p class="eyebrow">Sessions</p>' + branchButtons + '<p class="eyebrow tools-label">Tools</p>' + toolButtons;
       };
       const renderRows = () => {
         const body = root.querySelector('[data-trace-rows]');
@@ -396,7 +415,9 @@ export function buildObservabilityTracesClientScript(): string {
   return OBSERVABILITY_TRACES_CLIENT_SCRIPT;
 }
 
-export function buildObservabilityTracesSite(): string {
+export function buildObservabilityTracesSite(
+  chromeOptions: WorkspaceChromeOptions = {},
+): string {
   let html = canonicalAsset('template.html');
 
   html = inlineStyle(
@@ -428,14 +449,14 @@ export function buildObservabilityTracesSite(): string {
   html = replaceExactlyOnce(
     html,
     /<div class="trxChrome">\s*<div class="trxDots">[\s\S]*?<div class="trxChromeActions">[\s\S]*?<\/div>\s*<\/div>\s*<div class="trxBody">/i,
-    `${renderWorkspaceChromeBar('tracing', 'Tracing')} <div class="trxBody">`,
+    `${renderWorkspaceChromeBar('tracing', 'Tracing', chromeOptions)} <div class="trxBody">`,
     'workspace chrome',
   );
 
   html = replaceExactlyOnce(
     html,
     /<div class="trxHead"><div><\/div><div>Time<\/div><div>Tool<\/div><div>Latency<\/div><div>Tokens<\/div><div>Branch<\/div><div>Input<\/div><div>Output<\/div><div>Trace<\/div><div>Status<\/div><div>Cost<\/div><\/div>/i,
-    '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
+    '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Session</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     'trace table header',
   );
 

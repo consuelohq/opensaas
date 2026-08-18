@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/os/wire-private-internal-site-through-current-launcher-auth-and-chrome/session.json",
+    ".task/os/wire-private-internal-site-through-current-launcher-auth-and-chrome/verify.json",
+    ".task/os/wire-private-internal-site-through-current-launcher-auth-and-chrome/workpad.md",
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/package.json",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/install-control-plane-cloudflare.test.ts",
+    "packages/os/tests/internal-user-dashboard.test.ts",
+    "packages/os/tests/launcher-nodes-materialization.test.ts",
+    "packages/os/tests/os-device-authority-architecture.test.ts",
+    "packages/os/tests/trace-site-renderer.test.ts",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.registry.json"
+  ],
+  "updatedAt": "2026-08-16T07:04:53.121Z"
+}

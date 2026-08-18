@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_af28ff74214b",
+  "tmuxSession": "opensaas-os-repair-runtime-retention-and-watchdog-recovery-af28ff74",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-runtime-retention-and-watchdog-recovery",
+  "branch": "task/os/repair-runtime-retention-and-watchdog-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-runtime-retention-and-watchdog-recovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-runtime-retention-and-watchdog-recovery",
+  "prNumber": 2150,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2150",
+  "createdAt": "2026-08-16T22:46:56.310Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-runtime-retention-and-watchdog-recovery/.task/os/repair-runtime-retention-and-watchdog-recovery/session.json"
+}

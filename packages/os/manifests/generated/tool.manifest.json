@@ -108,7 +108,7 @@
       "label": "task-lifecycle",
       "kind": "facade-tool",
       "path": "packages/os/tools/task-lifecycle/manifest.ts",
-      "entryCount": 11
+      "entryCount": 12
     },
     {
       "label": "tool-discovery",
@@ -2755,7 +2755,7 @@
       "source": "codemode",
       "sourcePath": "packages/os/tools/codemode/manifest.ts",
       "category": "codemode",
-      "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
+      "description": "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
       "core": true,
       "definition": {
         "name": "code.call",
@@ -2763,7 +2763,7 @@
           "code",
           "call"
         ],
-        "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
+        "description": "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
         "category": "codemode",
         "underlying": "os code.call",
         "capabilities": {
@@ -4129,7 +4129,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+      "description": "apply an anchored patch inside an authorized task worktree or work-session directory",
       "core": true,
       "definition": {
         "name": "fs.apply_patch",
@@ -4137,7 +4137,7 @@
           "fs",
           "apply_patch"
         ],
-        "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+        "description": "apply an anchored patch inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.apply_patch",
         "capabilities": {
@@ -4482,7 +4482,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "An agent safe file deletion path. Prefered over rm rf",
+      "description": "move files to trash inside an authorized task worktree or work-session directory",
       "core": true,
       "definition": {
         "name": "fs.trash",
@@ -4490,7 +4490,7 @@
           "fs",
           "trash"
         ],
-        "description": "An agent safe file deletion path. Prefered over rm rf",
+        "description": "move files to trash inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.trash",
         "capabilities": {
@@ -4529,7 +4529,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "write a file in a task worktree",
+      "description": "write a file inside an authorized task worktree or work-session directory",
       "core": false,
       "definition": {
         "name": "fs.write",
@@ -4537,7 +4537,7 @@
           "fs",
           "write"
         ],
-        "description": "write a file in a task worktree",
+        "description": "write a file inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.write",
         "capabilities": {
@@ -8325,6 +8325,89 @@
       }
     },
     {
+      "name": "session.start",
+      "kind": "facade-tool",
+      "source": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "category": "session lifecycle",
+      "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+      "core": true,
+      "definition": {
+        "name": "session.start",
+        "methodPath": [
+          "session",
+          "start"
+        ],
+        "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+        "category": "session lifecycle",
+        "underlying": "os session.start",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 60000,
+        "inputSchema": "SessionStartInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "session:start",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "kind",
+              "flag": "--kind",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "path",
+              "flag": "--path",
+              "kind": "value"
+            },
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value"
+            },
+            {
+              "source": "stream",
+              "flag": "--stream",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "bodyFile",
+              "flag": "--body-file",
+              "kind": "value"
+            },
+            {
+              "source": "startFrom",
+              "flag": "--start-from",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "kind": "task",
+          "stream": "stream/workspace-agent",
+          "title": "example task",
+          "workflow": "task"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "status",
       "kind": "facade-tool",
       "source": "utilities",
@@ -8592,7 +8675,7 @@
           "deterministic": false,
           "safeToRetry": false
         },
-        "defaultTimeout": 300000,
+        "defaultTimeout": 900000,
         "inputSchema": "SubagentInput",
         "outputSchema": "SubagentOutput",
         "command": {
@@ -9202,7 +9285,7 @@
       "source": "task-lifecycle",
       "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
       "category": "task lifecycle",
-      "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+      "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
       "core": true,
       "definition": {
         "name": "task.start",
@@ -9210,7 +9293,7 @@
           "task",
           "start"
         ],
-        "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+        "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
         "category": "task lifecycle",
         "underlying": "os task.start",
         "capabilities": {

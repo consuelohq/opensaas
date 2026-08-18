@@ -48,6 +48,11 @@ export const DEVICE_AUTHORITY_ROUTE_POLICIES = [
   { method: 'POST', path: '/webhooks/stripe-synthetic', trust: 'webhook-signature' },
   {
     method: 'POST',
+    path: '/internal/auth/session/handoff',
+    trust: 'internal',
+  },
+  {
+    method: 'POST',
     path: '/internal/auth/session/validate',
     trust: 'internal',
   },

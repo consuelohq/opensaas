@@ -46,6 +46,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | review | 4 |
 | security | 1 |
 | sentry | 7 |
+| session lifecycle | 1 |
 | stream | 4 |
 | subagent | 1 |
 | task lifecycle | 11 |
@@ -1344,12 +1345,12 @@ await workspace.call({
 
 ### workspace.code.call
 
-Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
+Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
 
 | Field | Value |
 | --- | --- |
 | Category | codemode |
-| Signature | `workspace.code.call({ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" &#124; "edit" &#124; "verify"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.code.call({ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" &#124; "edit" &#124; "verify"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os code.call` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 180000ms |
@@ -2512,12 +2513,12 @@ await workspace.call({
 
 ### workspace.fs.apply_patch
 
-apply an anchored patch file with embedded task-worktree-relative paths
+apply an anchored patch inside an authorized task worktree or work-session directory
 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.apply_patch({ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.fs.apply_patch({ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace fs.apply_patch` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 30000ms |
@@ -2755,12 +2756,12 @@ await workspace.call({
 
 ### workspace.fs.trash
 
-An agent safe file deletion path. Prefered over rm rf
+move files to trash inside an authorized task worktree or work-session directory
 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.trash({ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.fs.trash({ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace fs.trash` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 30000ms |
@@ -2816,12 +2817,12 @@ await workspace.call({
 
 ### workspace.fs.write
 
-write a file in a task worktree
+write a file inside an authorized task worktree or work-session directory
 
 | Field | Value |
 | --- | --- |
 | Category | filesystem |
-| Signature | `workspace.fs.write({ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.fs.write({ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace fs.write` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 30000ms |
@@ -6661,6 +6662,70 @@ await workspace.call({
 }
 ```
 
+## session lifecycle
+
+### workspace.session.start
+
+Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.
+
+| Field | Value |
+| --- | --- |
+| Category | session lifecycle |
+| Signature | `workspace.session.start(({ kind: "task"; stream?: string; area?: string; title?: string; workflow?: "task" &#124; "artifacts" &#124; "media"; bodyFile?: string; startFrom?: "main" &#124; "stream"; dryRun?: boolean; requestId?: string; taskSession?: string } &#124; { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `os session.start` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 60000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "session.start",
+  "input": {
+    "kind": "task",
+    "stream": "stream/workspace-agent",
+    "title": "example task",
+    "workflow": "task"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## stream
 
 ### workspace.stream.context
@@ -6911,7 +6976,7 @@ run or start a subagent from an instruction handoff. Write the handoff to OS tmp
 | Signature | `workspace.subagent({ action?: "run" &#124; "start" &#124; "status" &#124; "wait" &#124; "logs" &#124; "cancel"; provider?: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; reasoningEffort?: "minimal" &#124; "low" &#124; "medium" &#124; "high" &#124; "xhigh"; bundle?: "core" &#124; "media"; policy?: "read" &#124; "edit"; instructionPath?: string; cwd?: string; runId?: string; waitMs?: number; taskSession?: string; timeoutMs?: number; outputFormat?: "text" &#124; "json"; workspaceOnly?: boolean &#124; "preferred" &#124; "strict"; requestId?: string }) => Promise<ToolResult<{ action?: "run" &#124; "start" &#124; "status" &#124; "wait" &#124; "logs" &#124; "cancel"; runId?: string; requestId?: string; provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; reasoningEffort?: "minimal" &#124; "low" &#124; "medium" &#124; "high" &#124; "xhigh"; bundle: "core" &#124; "media"; outputFormat: "text" &#124; "json"; mode: "work"; policy: "read" &#124; "edit"; status: "starting" &#124; "running" &#124; "completed" &#124; "failed" &#124; "cancelled" &#124; "completion_unknown" &#124; "not_configured" &#124; "not_supported" &#124; "timed_out"; capabilities?: { modelSelection: boolean; reasoningEffort: boolean; strictWorkspaceOnly: boolean; edit: boolean; detachedExecution: boolean }; unsupportedCapabilities?: string[]; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary?: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" &#124; "strict" &#124; false; rawShellUsed: boolean } }>>` |
 | Runtime | `workspace subagent` |
 | Capability | writes state · mutating · single-shot |
-| Default timeout | 300000ms |
+| Default timeout | 900000ms |
 
 #### Example call
 
@@ -7513,7 +7578,7 @@ await workspace.call({
 
 ### workspace.task.start
 
-Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.
+Compatibility alias for session.start({ kind: "task" }). Existing callers remain supported; new agents should prefer session.start for task creation.
 
 | Field | Value |
 | --- | --- |
@@ -9627,7 +9692,7 @@ Every result includes `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `du
 
 ## error codes
 
-`OK`, `VALIDATION_ERROR`, `AMBIGUOUS_TASK_SELECTION`, `WORKTREE_NOT_FOUND`, `COMMAND_FAILED`, `TIMEOUT`, `PARSE_ERROR`, `NOT_FOUND`, `TASK_SESSION_REQUIRED`, `TASK_SESSION_NOT_FOUND`, `DRY_RUN`.
+`OK`, `VALIDATION_ERROR`, `AMBIGUOUS_TASK_SELECTION`, `WORKTREE_NOT_FOUND`, `COMMAND_FAILED`, `TIMEOUT`, `PARSE_ERROR`, `NOT_FOUND`, `TASK_SESSION_REQUIRED`, `TASK_SESSION_NOT_FOUND`, `WORK_SESSION_NOT_FOUND`, `DRY_RUN`.
 
 Lifecycle actions also return CAPABILITY_NOT_SUPPORTED, WAIT_TIMEOUT, and IDEMPOTENCY_CONFLICT where applicable.
 ## final rule

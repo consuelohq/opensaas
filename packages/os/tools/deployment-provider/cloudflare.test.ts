@@ -429,9 +429,15 @@ describe('Cloudflare deployment provider adapter', () => {
       await expectProviderError(service.raw({
         args,
         approval: { approved: true, reason: 'Boundary test' },
-      }), 'MALFORMED_OUTPUT');
+      }), 'INVALID_INPUT');
       expect(fake.requests).toHaveLength(0);
     }
+
+    const { fake, service } = createService([]);
+    await expectProviderError(service.logsRead({
+      serviceId: 'worker:consuelo-os-device-authority',
+    }), 'INVALID_INPUT');
+    expect(fake.requests).toHaveLength(0);
   });
 
   it('ships the customer adapter while excluding operator Cloudflare modules', () => {

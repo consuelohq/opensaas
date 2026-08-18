@@ -25,6 +25,9 @@ const EXCLUDE_DIRS = new Set([
   'generated',
   'generated-metadata',
   'coverage',
+  'vendor',
+  'worktrees',
+  '.worktrees',
   '__pycache__',
   '.task',
 ]);
