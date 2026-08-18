@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+  "events": [
+    {
+      "id": "691680f2-61c6-4fef-b111-7617b442db4e",
+      "occurred_at": "2026-08-18T01:57:04.678Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/self-healing/daily-self-healing-2026-08-17/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "b9534b86-743f-4648-ab36-08e3357f528a",
+      "occurred_at": "2026-08-18T01:57:07.652Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/senior-engineer.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "0bd8c002-c4a5-4f5a-ba7e-510efe98de98",
+      "occurred_at": "2026-08-18T01:59:13.643Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/deployment-provider/service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "78374c32-d85b-49a4-a10a-f6f163dbfb4b",
+      "occurred_at": "2026-08-18T01:59:17.214Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/deployment-provider/cloudflare.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "6eef3f69-4a99-457d-b97e-93660c798882",
+      "occurred_at": "2026-08-18T01:59:26.834Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/deployment-provider/errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "97d22b85-ff42-4897-8cf2-2bc7ef9597ec",
+      "occurred_at": "2026-08-18T01:59:34.791Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/deployment-provider/cloudflare.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "8e82dd9d-e08d-4643-84f9-2169c8ff49da",
+      "occurred_at": "2026-08-18T01:59:41.122Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/monitor-errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "92142eca-a19e-4950-8f1d-e5d8db6f4bb7",
+      "occurred_at": "2026-08-18T02:01:01.245Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "d37efe86-d516-4fdc-92eb-30b57e368b2a",
+      "occurred_at": "2026-08-18T02:02:25.852Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/deployment-provider/cloudflare.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "5a981819-74da-44ae-99c1-c8b4a290bd42",
+      "occurred_at": "2026-08-18T02:13:52.178Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/worker-pool.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "29746842-6d80-4617-853a-89eaf694dd28",
+      "occurred_at": "2026-08-18T02:13:54.623Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/worker-pool.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "284cae28-9b0e-4e1e-bc72-1ebc08451e27",
+      "occurred_at": "2026-08-18T02:14:54.465Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/monitor-errors-report.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    },
+    {
+      "id": "65b921d9-4228-4f76-9d5e-361fc9f31a85",
+      "occurred_at": "2026-08-18T02:15:17.799Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-17",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-17"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-18T02:15:17.865Z"
+}

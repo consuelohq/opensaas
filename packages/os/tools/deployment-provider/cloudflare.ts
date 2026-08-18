@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 
+import { providerInputError } from './errors';
 import type {
   DeploymentProviderAdapter,
   DeploymentProviderOperationInputMap,
@@ -32,10 +33,10 @@ const SAFE_RESOURCE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 const assertCustomerValue = (value: string, label: string): string => {
   const trimmed = value.trim();
-  if (!trimmed) throw new Error(`${label} is required`);
-  if (trimmed.includes('\0')) throw new Error(`${label} contains an invalid null byte`);
+  if (!trimmed) throw providerInputError(label, `${label} is required`);
+  if (trimmed.includes('\0')) throw providerInputError(label, `${label} contains an invalid null byte`);
   if (FORBIDDEN_REFERENCE.test(trimmed)) {
-    throw new Error(`${label} references operator-owned Cloudflare resources`);
+    throw providerInputError(label, `${label} references operator-owned Cloudflare resources`);
   }
   return trimmed;
 };
@@ -43,7 +44,7 @@ const assertCustomerValue = (value: string, label: string): string => {
 const assertResourceName = (value: string, label: string): string => {
   const name = assertCustomerValue(value, label);
   if (!SAFE_RESOURCE_NAME.test(name)) {
-    throw new Error(`${label} must be a Cloudflare resource name`);
+    throw providerInputError(label, `${label} must be a Cloudflare resource name`);
   }
   return name;
 };
@@ -56,15 +57,19 @@ const parseReference = (
   const normalized = assertCustomerValue(value || '', label);
   const [kindCandidate, targetCandidate, ...detailParts] = normalized.split(':');
   if (kindCandidate !== 'worker' && kindCandidate !== 'pages') {
-    throw new Error(`${label} must start with worker: or pages:`);
+    throw providerInputError(label, `${label} must start with worker: or pages:`);
   }
   const target = assertResourceName(targetCandidate || '', `${label} target`);
   const detail = detailParts.length > 0
     ? assertCustomerValue(detailParts.join(':'), `${label} detail`)
     : undefined;
   const detailPolicy = options.detail || 'optional';
-  if (detailPolicy === 'required' && !detail) throw new Error(`${label} requires a detail identifier`);
-  if (detailPolicy === 'forbidden' && detail) throw new Error(`${label} does not accept a detail identifier`);
+  if (detailPolicy === 'required' && !detail) {
+    throw providerInputError(label, `${label} requires a detail identifier`);
+  }
+  if (detailPolicy === 'forbidden' && detail) {
+    throw providerInputError(label, `${label} does not accept a detail identifier`);
+  }
   return { kind: kindCandidate, target, ...(detail ? { detail } : {}) };
 };
 
@@ -276,7 +281,7 @@ const parseEnvironmentSet = (
 
 const rawArgs = (input: DeploymentProviderOperationInputMap['raw']): string[] => {
   if (!Array.isArray(input.args) || input.args.length === 0) {
-    throw new Error('raw Wrangler arguments are required');
+    throw providerInputError('raw argument', 'raw Wrangler arguments are required');
   }
   return input.args.map((argument, index) => assertCustomerValue(argument, `raw argument ${index + 1}`));
 };

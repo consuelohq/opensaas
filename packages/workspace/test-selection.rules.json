@@ -1824,6 +1824,30 @@
         }
       ],
       "reason": "GitHub helper and task-lifecycle changes must prove external CLI resolution, PR review collection, wait/check polling, and the review static-rule boundary without falling back to the unrelated broad OS package suite."
+    },
+    {
+      "id": "os-deployment-provider-adapters",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tools/deployment-provider/**"
+      ],
+      "tests": [
+        {
+          "name": "OS deployment-provider adapter contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tools/deployment-provider/cloudflare.test.ts",
+            "tools/deployment-provider/vercel.test.ts",
+            "tools/deployment-provider/handler.test.ts",
+            "tools/deployment-provider/facade.test.ts"
+          ]
+        }
+      ],
+      "reason": "Deployment-provider adapter changes must prove the focused provider, handler, and facade contracts without selecting the unrelated package-wide OS baseline."
     }
   ]
 }
