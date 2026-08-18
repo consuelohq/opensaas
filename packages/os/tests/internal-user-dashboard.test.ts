@@ -71,6 +71,10 @@ describe('internal user dashboard', () => {
   it('renders a findings-first overview with Tufte-clean charts and direct labels', () => {
     const html = renderInternalUserDashboard({ pathname: '/users', assetMode: 'inline', fixtureMode: true });
 
+    expect(html).toContain('class="workspace-window"');
+    expect(html).toContain('data-workspace-shell');
+    expect(html).toContain('data-workspace-chrome');
+    expect(html).toContain('data-workspace-route-trigger');
     expect(html).toContain('people have joined Consuelo');
     expect(html).toContain('Activation progression');
     expect(html).toContain('<table class="activation-table"');
@@ -104,7 +108,8 @@ describe('internal user dashboard', () => {
   });
 
   it('authors responsive, reduced-motion, and light/dark screen behavior explicitly', () => {
-    expect(INTERNAL_DASHBOARD_CSS).toContain('background: #151515');
+    expect(INTERNAL_DASHBOARD_CSS).toContain('--dash-bg: #151515');
+    expect(INTERNAL_DASHBOARD_CSS).toContain('--site-color-paper: var(--dash-bg)');
     expect(INTERNAL_DASHBOARD_CSS).toContain('#fffff8');
     expect(INTERNAL_DASHBOARD_CSS).toContain('@media (max-width: 760px)');
     expect(INTERNAL_DASHBOARD_CSS).toContain('@media (max-width: 420px)');

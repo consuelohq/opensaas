@@ -30,7 +30,7 @@ const connectItems: SidebarItem[] = [
       { label: 'Cursor', slug: 'connect/agents/cursor' },
       { label: 'OpenCode', slug: 'connect/agents/opencode' },
       { label: 'Gemini', slug: 'connect/agents/gemini' },
-      { label: 'Bring your own', slug: 'connect/agents/create-your-own' },
+      { label: 'Create your own', slug: 'connect/agents/create-your-own' },
     ],
   },
   {
@@ -57,7 +57,7 @@ const connectItems: SidebarItem[] = [
       { label: 'Supabase', slug: 'connect/apps-and-services/supabase' },
       { label: 'Twilio', slug: 'connect/apps-and-services/twilio' },
       { label: 'Vercel', slug: 'connect/apps-and-services/vercel' },
-      { label: 'Bring your own', slug: 'connect/apps-and-services/create-your-own' },
+      { label: 'Create your own', slug: 'connect/apps-and-services/create-your-own' },
     ],
   },
 ];

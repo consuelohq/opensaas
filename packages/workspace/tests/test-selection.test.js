@@ -503,8 +503,12 @@ describe('test selection registry', () => {
     const suiteNames = data.selectedSuites.map((suite) => suite.name);
 
     expect(matchedRuleIds).toContain('os-chatgpt-node-routing-facade');
+    expect(matchedRuleIds).toContain('os-work-session-code-call');
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS MCP admission contracts',
+      'OS MCP admission syntax contracts',
+      'OS work-session Code Call and MCP authority contracts',
       'OS ChatGPT node-routing facade contracts',
       'OS ChatGPT node-routing authority contracts',
     ]));
@@ -974,6 +978,27 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes local OS response lifecycle changes through critical lifecycle coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/server/app.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-lifecycle-update-handoff',
+    );
+    const lifecycleSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-lifecycle-update-handoff',
+    );
+    expect(lifecycleSuite?.critical).toBe(true);
+    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
+      'packages/os/tests/health-readiness.test.ts',
+      'packages/os/tests/worker-pool-lifecycle.test.ts',
+    ]));
+  });
+
   it('routes internal workspace shell and root Sites changes through loud focused contracts', () => {
     const data = json(run([
       'check',
@@ -1042,6 +1067,8 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/scripts/lifecycle.ts',
       '--changed-file',
+      'packages/os/scripts/bootstrap.sh',
+      '--changed-file',
       'packages/os/scripts/lib/lifecycle/service.ts',
       '--changed-file',
       'packages/os/scripts/lib/platforms/linux.ts',
@@ -1049,6 +1076,8 @@ describe('test selection registry', () => {
       'packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts',
       '--changed-file',
       'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      '--changed-file',
+      'packages/os/tests/caddy-worker-pool-migration.test.ts',
       '--changed-file',
       'packages/os/tests/lifecycle-restart-contract.test.ts',
       '--changed-file',
@@ -1073,7 +1102,9 @@ describe('test selection registry', () => {
     );
     expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
       'packages/os/tests/lifecycle-restart-contract.test.ts',
+      'packages/os/tests/runtime-ingress-dependency-convergence.test.ts',
       'packages/os/tests/caddy-worker-pool-reconciliation.test.ts',
+      'packages/os/tests/caddy-worker-pool-migration.test.ts',
       'packages/os/tests/linux-platform.test.ts',
     ]));
   });
@@ -1146,6 +1177,60 @@ describe('test selection registry', () => {
         ]);
       }
     }
+  });
+
+  it('does not treat generated workspace types as lifecycle behavior by themselves', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/src/generated/workspace.d.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('os-work-session-fs');
+    expect(matchedRuleIds).toContain('os-lifecycle-update-handoff');
+  });
+
+  it('keeps shared facade schema ownership out of the session-specific exclusive rule', () => {
+    const result = run(['check', '--changed-file', 'packages/workspace/scripts/lib/facade/schemas.ts', '--json']);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    expect(matchedRuleIds).toContain('workspace-facade');
+    expect(matchedRuleIds).not.toContain('workspace-session-integration');
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain('workspace facade manifest contracts');
+  });
+
+  it('routes session integration changes to focused task/work compatibility tests', () => {
+    for (const changedFile of [
+      'packages/workspace/scripts/session-start.ts',
+      'packages/os/hooks/task/workflow.js',
+    ]) {
+      const result = run(['check', '--changed-file', changedFile, '--json']);
+      const data = json(result);
+      const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+      expect(matchedRuleIds).toContain('workspace-session-integration');
+      expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+        'workspace session integration contracts',
+      );
+    }
+  });
+
+  it('routes work-session Code Call changes to focused authority tests', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/code-call/process.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('os-work-session-code-call');
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'OS work-session Code Call and MCP authority contracts',
+    );
   });
 
 });

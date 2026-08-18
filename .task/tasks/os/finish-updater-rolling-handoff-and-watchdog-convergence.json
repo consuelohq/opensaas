@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-updater-rolling-handoff-and-watchdog-convergence",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2138,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2138",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2138",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2138/finish-updater-rolling-handoff-and-watchdog-convergence",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2138",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2138/finish-updater-rolling-handoff-and-watchdog-convergence",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-updater-rolling-handoff-and-watchdog-convergence",
+  "taskSession": "tsk_ef14c926438d",
+  "tmuxSession": "opensaas-os-finish-updater-rolling-handoff-and-watchdog-conv-ef14c926",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-updater-rolling-handoff-and-watchdog-convergence/.task/os/finish-updater-rolling-handoff-and-watchdog-convergence/session.json",
+  "createdAt": "2026-08-16T06:31:49.020Z"
+}

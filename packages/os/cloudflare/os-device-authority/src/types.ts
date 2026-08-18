@@ -135,6 +135,25 @@ export type WorkspaceTaskAffinityClaim = {
   affinity: WorkspaceTaskAffinity;
 };
 
+export type WorkspaceSessionKind = 'task' | 'work';
+
+export type WorkspaceSessionAffinity = {
+  accountId: string;
+  workspaceId?: string;
+  workspaceHost: string;
+  sessionKind: WorkspaceSessionKind;
+  sessionId: string;
+  ownerNodeId: string;
+  createdAt: number;
+  updatedAt: number;
+  expiresAt?: number;
+};
+
+export type WorkspaceSessionAffinityClaim = {
+  status: 'created' | 'existing' | 'conflict';
+  affinity: WorkspaceSessionAffinity;
+};
+
 export type WorkspaceAgentName =
   | 'codex'
   | 'cursor'
@@ -373,6 +392,11 @@ export type Store = {
   delMcpOAuthRefreshToken(tokenHash: string): Promise<void>;
   putAccountWorkspace(workspace: AccountWorkspace): Promise<void>;
   byAccountWorkspace(accountId: string): Promise<AccountWorkspace | undefined>;
+  resetWorkspaceEnrollment(input: {
+    accountId: string;
+    workspaceId: string;
+    workspaceHost: string;
+  }): Promise<{ nodesRemoved: number }>;
   createWorkspaceCloudTrial(
     trial: WorkspaceCloudTrial,
   ): Promise<WorkspaceCloudTrial>;
@@ -433,6 +457,23 @@ export type Store = {
     accountId: string;
     workspaceHost: string;
     taskSession: string;
+    ownerNodeId: string;
+  }): Promise<boolean>;
+  byWorkspaceSessionAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    sessionKind: WorkspaceSessionKind;
+    sessionId: string;
+    nowMs?: number;
+  }): Promise<WorkspaceSessionAffinity | undefined>;
+  claimWorkspaceSessionAffinity(
+    affinity: WorkspaceSessionAffinity,
+  ): Promise<WorkspaceSessionAffinityClaim>;
+  releaseWorkspaceSessionAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    sessionKind: WorkspaceSessionKind;
+    sessionId: string;
     ownerNodeId: string;
   }): Promise<boolean>;
   putNodeBootstrapCredential(
@@ -502,6 +543,7 @@ export type Env = {
   GOOGLE_OAUTH_CLIENT_SECRET?: string;
   WORKSPACE_ROUTE_REGISTRY?: WorkspaceRouteRegistryBinding;
   WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?: string;
+  OS_ENROLLMENT_RESET_SECRET?: string;
   OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY?: string;
   OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;
@@ -589,6 +631,7 @@ export type DeviceAuthorityRuntime = {
   workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
+  operatorEnrollmentResetSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
   managedCloudProvisionerSecret?: string;

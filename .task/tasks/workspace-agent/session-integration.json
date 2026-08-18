@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/session-integration",
+  "baseBranch": "stream/workspace-agent",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2036,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2036",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2036",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2036/session-integration",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2036",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2036/session-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration",
+  "taskSession": "tsk_c8f1ab688842",
+  "tmuxSession": "opensaas-workspace-agent-session-integration-c8f1ab68",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration/.task/workspace-agent/session-integration/session.json",
+  "createdAt": "2026-08-15T06:54:58.695Z"
+}

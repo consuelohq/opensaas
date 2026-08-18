@@ -15,10 +15,13 @@ describe('Workspace task hook guidance', () => {
 
     expect(guidance.title).toBe('Task started — preserve task-scoped workflow');
     expect(guidance.skillAnchors).toContain(
-      'stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish',
+      'stream.context → session.start({ kind: "task" }) → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish',
     );
     expect(guidance.skillAnchors).toContain(
-      'For task-scoped work, `task.start` returns `data.taskSession`.',
+      'For task-scoped work, `session.start({ kind: "task" })` returns `data.taskSession`.',
+    );
+    expect(guidance.skillAnchors).toContain(
+      '`session.start({ kind: "task" })` is the canonical constructor for repository tasks. `task.start` remains a compatibility alias for existing callers.',
     );
     expect(guidance.skillAnchors).toContain(
       'Pass `taskSession` at the top level of every task-scoped `workspace.call`:',
@@ -81,7 +84,11 @@ describe('Workspace task hook guidance', () => {
     const streamContextAction = guidance.actions.find(
       (action) => action.input.tool === 'stream.context',
     );
+    const sessionStartAction = guidance.actions.find(
+      (action) => action.input.tool === 'session.start',
+    );
 
     expect(streamContextAction?.input.timeout).toBe(120000);
+    expect(sessionStartAction?.input.input).toMatchObject({ kind: 'task' });
   });
 });

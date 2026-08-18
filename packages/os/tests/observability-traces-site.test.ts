@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildObservabilityTracesClientScript,
   buildObservabilityTracesSite,
+  resolveObservabilitySessionValue,
 } from '../scripts/lib/observability-traces-site';
 
 const canonicalAssetDir = resolve(
@@ -37,7 +38,7 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('data-show-filters');
     expect(html).toContain('data-trace-count');
     expect(html).toContain(
-      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
+      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Session</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     );
     expect(html).toContain('consuelo-trace-node-observability');
     expect(html).toContain('data-workspace-route-trigger');
@@ -105,6 +106,27 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain(
       '#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .tiInspector{width:100%!important;max-width:100%!important;',
     );
+  });
+
+  it('projects task branches and work filesystem paths into the same Session value', () => {
+    expect(resolveObservabilitySessionValue({
+      workPath: '/Users/ko/Developer/raycast-extension',
+      branch: 'task/workspace-agent/example',
+      taskSession: 'tsk_example',
+      workSession: 'wrk_example',
+    })).toBe('/Users/ko/Developer/raycast-extension');
+    expect(resolveObservabilitySessionValue({
+      branch: 'task/workspace-agent/example',
+      taskSession: 'tsk_example',
+    })).toBe('task/workspace-agent/example');
+    expect(resolveObservabilitySessionValue({ workSession: 'wrk_example' })).toBe('wrk_example');
+    expect(resolveObservabilitySessionValue({})).toBe('no-branch');
+  });
+
+  it('labels the existing branch facet as Sessions', () => {
+    const source = readFileSync(resolve(osTraceInspectorDir, 'virtual-list-browser.ts'), 'utf8');
+    expect(source).toContain("createFilterSection('branches', 'Sessions'");
+    expect(source).not.toContain("createFilterSection('branches', 'Branches'");
   });
 
   it('uses the exact v38 interaction assets with only same-origin gateway transport', () => {

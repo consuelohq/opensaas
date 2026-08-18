@@ -20,6 +20,8 @@ export type ToolTraceInput = {
   taskSession?: string;
   branch?: string;
   worktree?: string;
+  workSession?: string;
+  workPath?: string;
   status: string;
   ok: boolean;
   code?: string;
@@ -68,12 +70,12 @@ type TracePersistenceOptions = {
 
 const INSERT_TOOL_TRACE_SQL = [
   'INSERT OR REPLACE INTO tool_traces (',
-  'id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch, worktree,',
+  'id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch, worktree, work_session, work_path,',
   'requested_node_id, resolved_node_id, resolved_node_name, default_node_id, route_source,',
   'status, ok, code, exit_code, duration_ms,',
   'input_json, resolved_input_json, result_json, stderr,',
   'input_tokens, output_tokens, total_tokens',
-  ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 ].join(' ');
 
 export function resolveCanonicalTraceDbPath(
@@ -308,6 +310,8 @@ function insertToolTrace(db: TraceDatabase, input: ToolTraceInput): void {
     input.taskSession ?? null,
     input.branch ?? null,
     input.worktree ?? null,
+    input.workSession ?? null,
+    input.workPath ?? null,
     input.routing?.requestedNodeId ?? null,
     input.routing?.resolvedNodeId ?? null,
     input.routing?.resolvedNodeName ?? null,

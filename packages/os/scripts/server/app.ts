@@ -28,6 +28,47 @@ type LocalOsAppOptions = {
 const isProbePath = (pathname: string): boolean =>
   pathname === '/health' || pathname === '/ready';
 
+function trackResponseCompletion(
+  response: Response,
+  onSettled: () => void,
+): Response {
+  if (!response.body) {
+    onSettled();
+    return response;
+  }
+
+  const reader = response.body.getReader();
+  const body = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        const result = await reader.read();
+        if (result.done) {
+          controller.close();
+          onSettled();
+          return;
+        }
+        controller.enqueue(result.value);
+      } catch (error: unknown) {
+        onSettled();
+        controller.error(error);
+      }
+    },
+    async cancel(reason) {
+      try {
+        await reader.cancel(reason);
+      } finally {
+        onSettled();
+      }
+    },
+  });
+
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
+}
+
 export function createLocalOsApp(
   config: LocalOsServerConfig = loadLocalOsServerConfig(),
   options: LocalOsAppOptions = {},
@@ -52,10 +93,22 @@ export function createLocalOsApp(
         },
       }, 503);
     }
+    let released = false;
+    const releaseRequest = (): void => {
+      if (released) return;
+      released = true;
+      workerState.endRequest();
+    };
     try {
       await next();
-    } finally {
-      workerState.endRequest();
+      if (context.req.raw.method === 'HEAD') {
+        releaseRequest();
+        return;
+      }
+      context.res = trackResponseCompletion(context.res, releaseRequest);
+    } catch (error: unknown) {
+      releaseRequest();
+      throw error;
     }
   });
 

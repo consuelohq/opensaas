@@ -17,6 +17,12 @@ import {
   INTERNAL_DASHBOARD_FIXTURES,
   type InternalDashboardFixtures,
 } from './internal-user-dashboard-fixtures';
+import {
+  renderWorkspaceChromeBar,
+  workspaceChromeClientScript,
+  workspaceRouteSwitcherStyles,
+  workspaceWindowShellStyles,
+} from './workspace-chrome';
 
 export { INTERNAL_DASHBOARD_FIXTURES } from './internal-user-dashboard-fixtures';
 
@@ -121,13 +127,15 @@ export const INTERNAL_DASHBOARD_CSS = `
   --dash-display: "Bodoni Moda", "Palatino Linotype", Palatino, Georgia, serif;
   --dash-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --dash-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  background: #151515;
+  --site-color-paper: var(--dash-bg);
+  --site-color-canvas: #0d0d0c;
+  --site-color-ink: var(--dash-text);
   color: var(--dash-text);
   font-family: var(--dash-sans);
 }
 * { box-sizing: border-box; }
-html { background: var(--dash-bg); min-width: 320px; }
-body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--dash-bg); color: var(--dash-text); }
+html { min-width: 320px; }
+body { min-width: 320px; color: var(--dash-text); }
 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 a:hover { color: var(--dash-link); }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--dash-accent); outline-offset: 3px; }
@@ -295,8 +303,8 @@ code { font-family: var(--dash-mono); overflow-wrap: anywhere; }
     --dash-warn: #785f2d;
     --dash-bad: #9e3f39;
     --dash-link: #7d302b;
+    --site-color-canvas: #e9e4dc;
   }
-  html, body { background: #fffff8; }
 }
 `;
 
@@ -319,6 +327,14 @@ export const INTERNAL_DASHBOARD_JAVASCRIPT = `
   });
 })();
 `;
+
+export function internalDashboardStyles(): string {
+  return `${workspaceWindowShellStyles()}\n${workspaceRouteSwitcherStyles()}\n${INTERNAL_DASHBOARD_CSS}`;
+}
+
+export function internalDashboardJavascript(): string {
+  return `${workspaceChromeClientScript()}\n${INTERNAL_DASHBOARD_JAVASCRIPT}`;
+}
 
 function escapeHtml(value: unknown): string {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({
@@ -726,10 +742,10 @@ export function renderInternalUserDashboard(options: InternalUserDashboardRender
   const fixtures = options.fixtures ?? INTERNAL_DASHBOARD_FIXTURES;
   const inline = options.assetMode === 'inline';
   const styles = inline
-    ? `<style>${INTERNAL_DASHBOARD_CSS}</style>`
+    ? `<style>${internalDashboardStyles()}</style>`
     : `<link rel="stylesheet" href="/internal/assets/dashboard.css?v=${INTERNAL_DASHBOARD_ASSET_VERSION}">`;
   const script = inline
-    ? `<script>${INTERNAL_DASHBOARD_JAVASCRIPT}</script>`
+    ? `<script>${internalDashboardJavascript().replaceAll('</script', '<\\/script')}</script>`
     : `<script defer src="/internal/assets/dashboard.js?v=${INTERNAL_DASHBOARD_ASSET_VERSION}"></script>`;
   const fixtureFlag =
     options.dataMode ?? (options.fixtureMode === true ? 'fixture' : 'contract');
@@ -752,14 +768,19 @@ export function renderInternalUserDashboard(options: InternalUserDashboardRender
   ${styles}
 </head>
 <body>
-  <div class="dashboard-shell" data-internal-dashboard data-data-mode="${fixtureFlag}">
-    <header class="dashboard-masthead">
-      <div class="dashboard-brand"><a href="/users">Consuelo OS</a><span>Internal</span></div>
-      <div class="dashboard-stamp">Read only · generated <time data-generated-relative datetime="${escapeHtml(generatedAt)}">${escapeHtml(formatDateTime(generatedAt))}</time></div>
-    </header>
-    ${navMarkup(route.nav)}
-    <main class="dashboard-main" id="main-content">${pageMarkup(route, fixtures)}</main>
-    ${footer}
+  <div class="workspace-window" data-workspace-shell>
+    ${renderWorkspaceChromeBar('internal', 'Internal')}
+    <div class="workspace-view" data-workspace-view>
+      <div class="dashboard-shell" data-internal-dashboard data-data-mode="${fixtureFlag}">
+        <header class="dashboard-masthead">
+          <div class="dashboard-brand"><a href="/users">Consuelo OS</a><span>Internal</span></div>
+          <div class="dashboard-stamp">Read only · generated <time data-generated-relative datetime="${escapeHtml(generatedAt)}">${escapeHtml(formatDateTime(generatedAt))}</time></div>
+        </header>
+        ${navMarkup(route.nav)}
+        <main class="dashboard-main" id="main-content">${pageMarkup(route, fixtures)}</main>
+        ${footer}
+      </div>
+    </div>
   </div>
   ${script}
 </body>
@@ -867,12 +888,12 @@ export function createInternalUserDashboardPageHandler(input: {
       });
     }
     if (url.pathname === '/internal/assets/dashboard.css') {
-      return new Response(INTERNAL_DASHBOARD_CSS, {
+      return new Response(internalDashboardStyles(), {
         headers: internalDashboardResponseHeaders('text/css; charset=utf-8'),
       });
     }
     if (url.pathname === '/internal/assets/dashboard.js') {
-      return new Response(INTERNAL_DASHBOARD_JAVASCRIPT, {
+      return new Response(internalDashboardJavascript(), {
         headers: internalDashboardResponseHeaders(
           'text/javascript; charset=utf-8',
         ),

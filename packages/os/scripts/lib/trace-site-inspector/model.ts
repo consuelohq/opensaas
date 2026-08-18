@@ -54,7 +54,11 @@ export function isBatchChild(row: TraceRecord | null | undefined): boolean {
 }
 
 export function branchName(row: TraceRecord | null | undefined): string {
-  return clean(row?.branch ?? row?.taskSession) || 'no-branch';
+  for (const candidate of [row?.workPath, row?.branch, row?.taskSession, row?.workSession]) {
+    const value = clean(candidate);
+    if (value) return value;
+  }
+  return 'no-branch';
 }
 
 export function traceNodeId(row: TraceRecord | null | undefined): string {
@@ -304,6 +308,9 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
       branch: mergedRecord.branch ?? parent.branch,
       taskSession: mergedRecord.taskSession ?? parent.taskSession,
       worktree: mergedRecord.worktree ?? parent.worktree,
+      workSession:
+        mergedRecord.workSession ?? parent.workSession ?? parentMetadata?.workSession,
+      workPath: mergedRecord.workPath ?? parent.workPath ?? parentMetadata?.workPath,
       requestedNodeId:
         mergedRecord.requestedNodeId ??
         parent.requestedNodeId ??

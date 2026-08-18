@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_82fb65a9614e",
+  "tmuxSession": "opensaas-workspace-agent-resolve-workspace-agent-stream-review-findings-82fb65a9",
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/resolve-workspace-agent-stream-review-findings",
+  "branch": "task/workspace-agent/resolve-workspace-agent-stream-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-resolve-workspace-agent-stream-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-resolve-workspace-agent-stream-review-findings",
+  "prNumber": 2020,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2020",
+  "createdAt": "2026-08-15T04:34:57.125Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-resolve-workspace-agent-stream-review-findings/.task/workspace-agent/resolve-workspace-agent-stream-review-findings/session.json"
+}

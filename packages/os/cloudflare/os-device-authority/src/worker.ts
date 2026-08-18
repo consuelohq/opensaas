@@ -65,6 +65,7 @@ export class OsDeviceGrantDurableObject {
       ),
       workspaceEdgeInternalSigningSecret:
         env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+      operatorEnrollmentResetSecret: env.OS_ENROLLMENT_RESET_SECRET,
       operationalLogger: env.OS_DEVICE_AUTH_LOGGER,
       managedCloudProvisionerSecret: env.OS_MANAGED_CLOUD_PROVISIONER_SECRET,
       managedCloudEnrollmentSecret: env.OS_MANAGED_CLOUD_ENROLLMENT_SECRET,
