@@ -2,9 +2,10 @@
   "files": [
     ".task/security/daily-security-maintenance-2026-08-18/workpad.md",
     "packages/consuelo-website/package.json",
+    "packages/os/scripts/daily-schedules.ts",
     "packages/os/scripts/fs.js",
     "packages/os/scripts/lib/security-scan.ts",
     "packages/os/scripts/security-scan.ts"
   ],
-  "updatedAt": "2026-08-18T13:48:37.650Z"
+  "updatedAt": "2026-08-18T13:50:52.529Z"
 }

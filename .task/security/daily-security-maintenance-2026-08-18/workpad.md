@@ -13,8 +13,8 @@ started: 2026-08-18
 - [x] Avoid duplicating open/recent security fixes and preserve accepted `stream/security` history while reconciling current `main` safely.
 - [x] Make only evidence-backed bounded source changes; a truthful no-source-change day is acceptable.
 - [x] Validate any remediation with focused tests plus review/verify gates appropriate to the risk.
-- [ ] Promote the completed daily task into `stream/security` without merging the stream to `main`.
-- [ ] Publish the normalized/redacted scan and generated task workpad to Daily Schedules.
+- [x] Promote the completed daily task into `stream/security` without merging the stream to `main`.
+- [x] Publish the normalized/redacted scan and generated task workpad to Daily Schedules.
 
 ## plan
 
@@ -39,6 +39,10 @@ started: 2026-08-18
 - Final normalized scan completed all four scanners with 1,368 unique groups: 0 new / 1,368 persistent / 5 resolved compared with the pre-reconciliation scan. The five resolved groups are exactly the Consuelo Website repeated-DOCTYPE parser and attribute-injection builder findings that the accepted stream remediation was intended to eliminate.
 - Remaining older `fast-xml-parser` / `fast-xml-builder` groups are in the root open-source `yarn.lock`, not the Consuelo Website locks fixed by this stream. Remaining PostCSS groups are build-chain dependencies; upstream GitHub advisory evidence shows the latest source-map issue is fixed in 8.5.23, but the affected condition requires processing CSS that is not fully trusted. No such runtime customer-input CSS processing path was established for Consuelo OS or the Dialer during this run.
 - Strict `review.run` passed with 0 issues owned by this task, 0 blocking issues, and 3/3 selected test suites passing; 29 unrelated pre-existing lint/typecheck findings remain outside the task delta. Full `verify` passed with `publishValid: true` against `origin/main` for the three website dependency files.
+- The typed `task.push` and `task.pr` operations could not authenticate because the installed workspace wrapper lacks GitHub credentials. Recovery used exact task-scoped Git only: the already-validated task metadata was committed, the task branch was pushed non-force, then `stream/security` was advanced non-force only after proving the prior stream head and current `main` were both ancestors of the task head.
+- Promotion succeeded: remote `stream/security` now points to task commit `ca76ac23ceacaa7a67b94926d0643a67e01b5dc7`; PR #2161 no longer appears among open security task PRs. The perpetual review ref for PR #1940 still exists and its head exactly matches the promoted `stream/security` head, while `main` remains `c88a107f91c0bc31a2f761fbe472ae18a02c75d6`.
+- Daily Schedules scan publication succeeded at `/artifacts/daily-schedules/2026-08-18/security-scan`; the dated/filterable index is `/artifacts/daily-schedules`.
+- Daily Schedules workpad publication succeeded at `/artifacts/daily-schedules/2026-08-18/security`; this generated workpad is the source workpad and no parallel workpad was created.
 
 ## files changed
 
@@ -58,6 +62,7 @@ started: 2026-08-18
 - 2026-08-18 13:46:57 `review.run`: passed — OK
 - 2026-08-18 13:46:58 `review.run`: passed — OK
 - 2026-08-18 13:48:30 `verify`: passed — OK
+- 2026-08-18 13:53:28 `verify`: passed — OK
 
 ## key decisions
 
@@ -69,7 +74,7 @@ started: 2026-08-18
 
 ## notes for ko
 
-- none yet
+- Human boundary remains the `stream/security` → `main` review PR. No deploy, release, credential rotation/revocation, production IAM mutation, destructive production test, or Consuelo lifecycle operation was performed.
 
 ## improvements noticed
 
@@ -80,6 +85,9 @@ started: 2026-08-18
 - `stream.sync` rejected the first call because the installed wrapper does not accept `--repo`; retrying without it exposed the pre-existing dirty/conflicted stream-sync worktree.
 - `security.scan` is present in the current tool catalog but the installed runtime cannot find the `security:scan` script. Use the current repo implementation as the equivalent capability and record the tooling gap in the final report.
 - The first `review.run` transport attempt failed at the MCP connection boundary and produced no trace row; a single retry through the same typed review surface completed successfully and was reused by `verify`.
+- Installed `task.push`/`task.pr` and `github` wrappers fail because the runtime GitHub auth surface is stale/missing. After the typed attempts failed, promotion used bounded non-force Git with explicit ancestor checks; no reset, force-push, branch recreation, or destructive cleanup was used.
+- Installed `dailySchedules.publish` fails because its runtime cannot find the `daily-schedules` script. The current repository exposes the equivalent `packages/os/scripts/daily-schedules.ts`, which is being used to publish the same normalized scan/workpad and refresh the index.
+- The first source-equivalent workpad publication attempt used a task-relative source path while the script runs from `packages/os`, so it correctly failed closed with “source file does not exist.” Retrying once with the exact task-worktree source path succeeded.
 
 ---
 
@@ -96,11 +104,14 @@ bun run task:finish
 - `package.json`
 - `packages/consuelo-website/package.json`
 - `packages/documentation/package.json`
+- `packages/os/package.json`
+- `packages/os/scripts/daily-schedules.ts`
 - `packages/os/scripts/fs.js`
+- `packages/os/scripts/lib/daily-schedules-publisher.ts`
 - `packages/os/scripts/lib/security-scan.ts`
 - `packages/os/scripts/mac.js`
 - `packages/os/scripts/security-scan.ts`
 
-- 2026-08-18 13:48:56 apply-patch: `.task/security/daily-security-maintenance-2026-08-18/workpad.md`
+- 2026-08-18 13:51:34 apply-patch: `.task/security/daily-security-maintenance-2026-08-18/workpad.md`
 
-- 2026-08-18 13:49:02 apply-patch: `.task/security/daily-security-maintenance-2026-08-18/workpad.md`
+- 2026-08-18 13:51:58 apply-patch: `.task/security/daily-security-maintenance-2026-08-18/workpad.md`
