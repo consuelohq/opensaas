@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/daily-security-maintenance-2026-08-19",
+  "base": "origin/stream/security",
+  "headSha": "be32b37e863ead47fbab4624bc68fab0bef54d0f",
+  "changeHash": "05e5bdf6fffd6b30e57bb0d559f0d8ba3533d0e48ea874cba77b2fce00f3119a",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-19T13:40:14.619Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/daily-security-maintenance-2026-08-19/current.json",
+        ".task/security/daily-security-maintenance-2026-08-19/evidence-log.json",
+        ".task/security/daily-security-maintenance-2026-08-19/read-log.json",
+        ".task/security/daily-security-maintenance-2026-08-19/session.json",
+        ".task/security/daily-security-maintenance-2026-08-19/verify.json",
+        ".task/security/daily-security-maintenance-2026-08-19/workpad.md",
+        ".task/tasks/security/daily-security-maintenance-2026-08-19.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
