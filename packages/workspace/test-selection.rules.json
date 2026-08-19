@@ -1826,6 +1826,30 @@
       "reason": "GitHub helper and task-lifecycle changes must prove external CLI resolution, PR review collection, wait/check polling, and the review static-rule boundary without falling back to the unrelated broad OS package suite."
     },
     {
+      "id": "os-self-healing-monitor",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/monitor-errors.ts",
+        "packages/os/scripts/lib/monitor-errors.ts",
+        "packages/os/scripts/lib/monitor-errors-report.ts",
+        "packages/os/tests/monitor-errors.test.ts",
+        "packages/os/tests/monitor-errors-report.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS self-healing monitor contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts",
+            "packages/os/tests/monitor-errors-report.test.ts"
+          ]
+        }
+      ],
+      "reason": "Self-healing monitor selection and classification changes must prove the focused trace-selection and classification contracts without selecting the unrelated package-wide OS baseline."
+    },
+    {
       "id": "os-deployment-provider-adapters",
       "critical": true,
       "exclusive": true,

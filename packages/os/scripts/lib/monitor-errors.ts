@@ -119,7 +119,12 @@ export function classifyTraceFailure(
     );
   }
 
-  if (code === 'VALIDATION_ERROR' || code === 'INVALID_INPUT' || code === 'SCHEMA_VALIDATION_FAILED') {
+  if (
+    code === 'VALIDATION_ERROR' ||
+    code === 'CODE_CALL_VALIDATION_ERROR' ||
+    code === 'INVALID_INPUT' ||
+    code === 'SCHEMA_VALIDATION_FAILED'
+  ) {
     return classified(
       failure,
       'caller-input',
@@ -153,6 +158,17 @@ export function classifyTraceFailure(
       recurring(failure)
         ? 'external/provider failure is recurring enough to inspect our adapter or resilience contract'
         : 'isolated external/provider failure',
+    );
+  }
+
+  if (code === 'COMMAND_FAILED' && (failure.tool === 'batch' || failure.tool === 'code.call')) {
+    return classified(
+      failure,
+      'unknown',
+      false,
+      failure.tool === 'batch'
+        ? 'batch propagates child-tool failures; inspect the separately persisted child trace before attributing an OS defect'
+        : 'code.call propagates arbitrary child-command nonzero exits; recurrence alone does not prove the execution wrapper is defective',
     );
   }
 
