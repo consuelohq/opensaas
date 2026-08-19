@@ -80,6 +80,37 @@ describe('OS self-healing trace classification', () => {
     ).toBe('caller-input');
   });
 
+  it('keeps explicit code.call validation failures in the caller-input bucket', () => {
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'code.call',
+          code: 'CODE_CALL_VALIDATION_ERROR',
+          occurrences: 6,
+          affectedSessions: 3,
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+  });
+
+  it('does not manufacture defects from recurring execution-wrapper child failures', () => {
+    for (const tool of ['batch', 'code.call']) {
+      expect(
+        classifyTraceFailure(
+          failure({
+            tool,
+            code: 'COMMAND_FAILED',
+            occurrences: 12,
+            affectedBranches: 4,
+            affectedSessions: 4,
+          }),
+          undefined,
+        ),
+      ).toMatchObject({ classification: 'unknown', actionable: false });
+    }
+  });
+
   it('surfaces repeated command failures as defect candidates while keeping isolated timeouts transient', () => {
     expect(
       classifyTraceFailure(failure({ code: 'COMMAND_FAILED', occurrences: 9, affectedBranches: 3 }), undefined),

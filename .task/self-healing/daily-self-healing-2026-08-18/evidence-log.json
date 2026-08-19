@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "worktree_id": "task/self-healing/daily-self-healing-2026-08-18",
+  "events": [
+    {
+      "id": "4497540f-9203-4061-99f9-108ed2ed83c0",
+      "occurred_at": "2026-08-19T01:16:26.769Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/monitor-errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-18",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-18"
+      }
+    },
+    {
+      "id": "3a6054cc-7137-40fb-b758-52239bf9a176",
+      "occurred_at": "2026-08-19T01:16:40.671Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-18",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-18"
+      }
+    },
+    {
+      "id": "b2926fed-50a3-409e-b9b7-4276386b4971",
+      "occurred_at": "2026-08-19T01:17:07.502Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/monitor-errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-18",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-18"
+      }
+    },
+    {
+      "id": "6627fa38-f34c-4e5b-83aa-b96e1d84860f",
+      "occurred_at": "2026-08-19T01:18:32.415Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/monitor-errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-18",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-18"
+      }
+    },
+    {
+      "id": "dfd98c36-31b1-4a3b-ac4a-b65455f0aecb",
+      "occurred_at": "2026-08-19T01:21:19.357Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-18",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-18"
+      }
+    },
+    {
+      "id": "30743fff-20c3-4338-8990-5e88cccbf674",
+      "occurred_at": "2026-08-19T01:22:34.116Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-18",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-18"
+      }
+    },
+    {
+      "id": "f5e5c968-42c8-4d74-b21e-ee5f10b8b788",
+      "occurred_at": "2026-08-19T01:22:41.947Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-18",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-18"
+      }
+    },
+    {
+      "id": "04f56166-eab1-4bed-9884-feb65a097045",
+      "occurred_at": "2026-08-19T01:22:53.059Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/self-healing/daily-self-healing-2026-08-18/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-18",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-18"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-19T01:22:53.118Z"
+}

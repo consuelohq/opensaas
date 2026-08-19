@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/self-healing/daily-self-healing-2026-08-18/workpad.md",
+    "packages/os/scripts/lib/monitor-errors.ts",
+    "packages/os/tools/task-lifecycle/schema.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-19T01:22:52.999Z"
+}

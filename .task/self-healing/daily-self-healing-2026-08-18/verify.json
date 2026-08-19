@@ -1,0 +1,228 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/self-healing/daily-self-healing-2026-08-18",
+  "base": "origin/stream/self-healing",
+  "headSha": "3b217ab07bc997eb10fbec888cfc848551ee190f",
+  "changeHash": "331e927d64224f59ae9e6007c81cac20d9da3fbb527636e5cb90572a0cafd361",
+  "changedFiles": [
+    "packages/os/scripts/lib/monitor-errors.ts",
+    "packages/os/tests/monitor-errors.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "verifiedAt": "2026-08-19T01:25:42.627Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/self-healing/daily-self-healing-2026-08-18/current.json",
+        ".task/self-healing/daily-self-healing-2026-08-18/evidence-log.json",
+        ".task/self-healing/daily-self-healing-2026-08-18/read-log.json",
+        ".task/self-healing/daily-self-healing-2026-08-18/session.json",
+        ".task/self-healing/daily-self-healing-2026-08-18/verify.json",
+        ".task/self-healing/daily-self-healing-2026-08-18/workpad.md",
+        ".task/tasks/self-healing/daily-self-healing-2026-08-18.json",
+        "packages/os/scripts/lib/monitor-errors.ts",
+        "packages/os/tests/monitor-errors.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-self-healing-monitor",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Self-healing monitor selection and classification changes must prove the focused trace-selection and classification contracts without selecting the unrelated package-wide OS baseline.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/monitor-errors.ts",
+            "packages/os/tests/monitor-errors.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "OS self-healing monitor contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts",
+            "packages/os/tests/monitor-errors-report.test.ts"
+          ],
+          "ruleId": "os-self-healing-monitor",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2888,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-daily-self-healing-2026-08-18\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m45 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2584\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1161\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m45 passed\u001b[39m\u001b[22m\u001b[90m (45)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:25:38\n\u001b[2m   Duration \u001b[22m 2.67s\u001b[2m (transform 16ms, setup 0ms, import 23ms, tests 2.58s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 65,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.5765ms)\n✔ parseCliArguments selects GraphQL generation mode (0.05275ms)\n✔ parseCliArguments selects migration generation mode (0.056667ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.080208ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.071125ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.049458ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.169292ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (1.158625ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.613958ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.068625ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.171417ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.284625ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.076625ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.078042ms)\n✔ server lint configuration resolves the existing workspace rules project (0.300459ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.069875ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.146666ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.060958ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.083584ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.159208ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.112041ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.11525ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 40.740167\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 121,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.06ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [5.59ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.19ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.03ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.03ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.03ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [114.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 877,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.284417ms)\n✔ the configured TypeORM wrapper resolves from the installed package (818.972667ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 852.852\n"
+        },
+        {
+          "name": "OS self-healing monitor contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts",
+            "packages/os/tests/monitor-errors-report.test.ts"
+          ],
+          "ruleId": "os-self-healing-monitor",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 183,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/monitor-errors-report.test.ts:\n(pass) monitor errors report trace selection > uses the persisted ok bit rather than free-form status/code text to select failures [8.82ms]\n\npackages/os/tests/monitor-errors.test.ts:\n(pass) OS self-healing trace classification > treats a required task session on a mutating tool as expected policy enforcement [0.03ms]\n(pass) OS self-healing trace classification > detects runtime/contract drift when an observed session error contradicts the current read-only tool contract [0.01ms]\n(pass) OS self-healing trace classification > treats a stale optional task session as caller input rather than runtime drift\n(pass) OS self-healing trace classification > keeps safety blocks and validation errors out of the defect bucket unless current contracts contradict them [0.01ms]\n(pass) OS self-healing trace classification > keeps explicit code.call validation failures in the caller-input bucket [0.01ms]\n(pass) OS self-healing trace classification > does not manufacture defects from recurring execution-wrapper child failures [0.02ms]\n(pass) OS self-healing trace classification > surfaces repeated command failures as defect candidates while keeping isolated timeouts transient [0.02ms]\n(pass) OS self-healing trace classification > summarizes classifications without equating every non-OK trace with a product defect [0.02ms]\n\n 9 pass\n 0 fail\n 18 expect() calls\nRan 9 tests across 2 files. [166.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
