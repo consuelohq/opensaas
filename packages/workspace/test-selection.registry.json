@@ -2,17 +2,17 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2657,
-    "mappedTestCount": 2571,
-    "unmappedTestCount": 86,
-    "ruleCount": 68,
-    "explicitRuleCount": 49,
+    "testFileCount": 2658,
+    "mappedTestCount": 2573,
+    "unmappedTestCount": 85,
+    "ruleCount": 69,
+    "explicitRuleCount": 50,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
       "packages/os/tests": 274,
-      "packages/workspace/tests": 67,
+      "packages/workspace/tests": 68,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 563,
+      "test": 564,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -2538,6 +2538,33 @@
       "critical": true,
       "exclusive": true,
       "reason": "Self-healing monitor selection and classification changes must prove the focused trace-selection and classification contracts without selecting the unrelated package-wide OS baseline.",
+      "origin": "explicit"
+    },
+    {
+      "id": "workspace-stream-sync",
+      "source": [
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/scripts/lib/stream-sync-cleanup.js",
+        "packages/os/scripts/stream-sync.js",
+        "packages/os/scripts/lib/stream-sync-cleanup.js",
+        "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
+        "packages/workspace/tests/stream-sync-node-modules.test.js"
+      ],
+      "tests": [
+        {
+          "name": "Workspace stream sync contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/task-push-local-sync.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Stream synchronization changes must prove failed-merge cleanup, temporary worktree lifecycle, node_modules setup ordering, and shared Git task-push invariants without selecting the unrelated package-wide OS baseline.",
       "origin": "explicit"
     },
     {
@@ -16112,6 +16139,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/stream-sync-node-modules.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -16315,7 +16347,6 @@
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/session-start-compatibility.test.ts",
     "packages/workspace/tests/stream-lifecycle.test.ts",
-    "packages/workspace/tests/stream-sync-node-modules.test.js",
     "packages/workspace/tests/stream-workpads.test.js",
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
     "packages/workspace/tests/task-hook-workflow-contract.test.ts",

@@ -15,6 +15,7 @@ const {
   runGit,
   setBranchUpstream,
 } = require('./lib/git');
+const { restoreWorktreeAfterFailedMerge } = require('./lib/stream-sync-cleanup');
 const {
   DEFAULT_MAIN_BRANCH,
   getWorktreeRoot,
@@ -289,6 +290,7 @@ async function main() {
   const conflictFiles = getConflictFiles(repoRoot, worktreePath);
 
   if (conflictFiles.length === 0) {
+    restoreWorktreeAfterFailedMerge(repoRoot, worktreePath, streamBranch, createdTemporaryWorktree);
     throw new Error(mergeOutput || `merge failed for ${streamBranch}`);
   }
 
@@ -327,6 +329,8 @@ async function main() {
       return;
     }
   }
+
+  restoreWorktreeAfterFailedMerge(repoRoot, worktreePath, streamBranch, createdTemporaryWorktree);
 
   const checks = {
     skipped: true,
