@@ -284,6 +284,31 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused stream-sync contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/stream-sync-cleanup.js',
+      '--changed-file',
+      'packages/os/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/workspace/scripts/lib/stream-sync-cleanup.js',
+      '--changed-file',
+      'packages/workspace/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/workspace/tests/stream-sync-conflict-cleanup.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('workspace-stream-sync');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'Workspace stream sync contracts',
+    ]);
+  });
+
   it('uses focused bundled-skill contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
