@@ -102,6 +102,7 @@ no-test waiver: permanent regression test would duplicate the package manager lo
 - `yarn install --immutable --mode=skip-build` completed successfully but Yarn's link step toggled executable bits on two tracked bin files. The verification wrapper correctly treated that as mutation; the task restored those two modes to their original 0644 state before final review/verify.
 - Typed `task.push` and `task.pr` failed because the installed GitHub-auth wrapper could not obtain its token; the bundled `~/.consuelo/bin/gh` wrapper is also malformed. Recovery used the system GitHub CLI only for bounded PR read/create operations and plain non-force Git pushes after explicit ancestor/ref checks. No credential value was read or printed.
 - Typed `dailySchedules.publish` points to a missing installed `daily-schedules` script. Publication used the current repository-equivalent `packages/os/scripts/daily-schedules.ts` implementation, which writes the same private Daily Schedules artifact model.
+- Final `task.finish` cleanup hit the same installed GitHub-auth failure. The validated task branch is fully contained in `stream/security`, but its local/remote task branch and managed worktree were left intact rather than deleting them through an untyped fallback.
 
 ---
 
@@ -126,3 +127,5 @@ bun run task:finish
 - `yarn.lock`
 
 - 2026-08-20 14:12:28 apply-patch: `.task/security/daily-security-maintenance-2026-08-20/workpad.md`
+
+- 2026-08-20 14:13:24 apply-patch: `.task/security/daily-security-maintenance-2026-08-20/workpad.md`
