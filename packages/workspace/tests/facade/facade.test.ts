@@ -233,6 +233,13 @@ describe('typed facade executor', () => {
     expect(result.message).toContain('readOnly and mutating cannot both be true');
   });
 
+  it('rejects tools.search limits above the public maximum of 5', async () => {
+    const result = await executeTool('tools.search', { query: 'linear issue', limit: 8 }, stableOptions(successfulRunner()));
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.message).toContain('expected number to be <=5');
+  });
+
   it('provides fs.patch facade guidance with the fs.apply_patch manifest entry', async () => {
     const result = await executeTool('fs.patch', { path: 'tmp/example.txt' }, stableOptions(successfulRunner()));
 
@@ -1843,6 +1850,46 @@ describe('batch executor', () => {
     expect(result.ok).toBe(true);
     expect(result.data.completed).toBe(2);
     expect(result.now).toBe('1970-01-01T00:00:01.000Z');
+  });
+
+  it('annotates child results with the invoked tool name', async () => {
+    const result = await runBatch([
+      { tool: 'status', input: exampleInput('status') },
+      { tool: 'stream.list', input: exampleInput('stream.list') },
+    ], stableOptions(successfulRunner()));
+
+    expect(result.data.results.map((child) => child.tool)).toEqual([
+      'status',
+      'stream.list',
+    ]);
+  });
+
+  it('reports the failing step tool and child failure detail', async () => {
+    const result = await runBatch([
+      { tool: 'status', input: exampleInput('status') },
+    ], stableOptions(failingRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.data.completed).toBe(1);
+    expect(result.message).toContain('step 1 (status)');
+    expect(result.message).toContain('command failed');
+    expect(result.data.results[0]?.message).toBe('command failed');
+  });
+
+  it('accepts large successful child payloads without treating size as an overflow', async () => {
+    const payload = 'x'.repeat(120_000);
+    const runner: ToolRunner = async () => ({
+      stdout: JSON.stringify({ payload }),
+      stderr: '',
+      exitCode: 0,
+    });
+    const result = await runBatch([
+      { tool: 'status', input: exampleInput('status') },
+    ], stableOptions(runner));
+
+    expect(result.ok).toBe(true);
+    expect(result.data.completed).toBe(1);
+    expect(result.data.results[0]?.outputTokens).toBeGreaterThan(30_000);
   });
 
   it('stops after a failed step', async () => {

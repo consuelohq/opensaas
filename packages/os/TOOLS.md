@@ -7699,7 +7699,7 @@ await workspace.call({
 
 ### workspace.tools.search
 
-search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback
+search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback; limit is capped at 5
 
 | Field | Value |
 | --- | --- |

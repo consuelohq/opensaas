@@ -4385,7 +4385,7 @@ await workspace.call({
 
 ### workspace.tools.search
 
-search workspace tools by intent and return ranked usage guidance
+search workspace tools by intent and return ranked usage guidance; limit is capped at 5
 
 | Field | Value |
 | --- | --- |

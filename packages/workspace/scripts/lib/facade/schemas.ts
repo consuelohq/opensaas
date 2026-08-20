@@ -187,7 +187,7 @@ export const BatchInput = z.object({
 export const ToolsSearchInput = z.object({
   ...requestFields,
   query: z.string().min(1),
-  limit: z.number().int().positive().max(30).optional(),
+  limit: z.number().int().positive().max(5).optional(),
   category: optionalString,
   readOnly: z.boolean().optional(),
   mutating: z.boolean().optional(),
