@@ -3,6 +3,7 @@
     ".task/security/daily-security-maintenance-2026-08-20/verify.json",
     ".task/security/daily-security-maintenance-2026-08-20/workpad.md",
     "package.json",
+    "packages/os/scripts/daily-schedules.ts",
     "packages/os/scripts/lib/security-scan-runner.ts",
     "packages/os/scripts/lib/security-scan.ts",
     "packages/os/scripts/security-scan.ts",
@@ -10,5 +11,5 @@
     "packages/workspace/scripts/lib/task-workpad.js",
     "yarn.lock"
   ],
-  "updatedAt": "2026-08-20T14:09:08.999Z"
+  "updatedAt": "2026-08-20T14:12:24.542Z"
 }

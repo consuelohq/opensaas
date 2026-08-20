@@ -12,8 +12,8 @@ started: 2026-08-20
 - [x] Triage new and high-impact persistent findings for applicability, reachability, duplication, and bounded remediation.
 - [x] If a source change is justified, remove the selected vulnerable resolution with the smallest supported dependency change and prove the affected runtime still validates.
 - [x] Run focused validation plus strict review/full verify before promotion.
-- [ ] Publish the normalized scan and this generated workpad to Daily Schedules.
-- [ ] Promote the validated daily task into `stream/security` while preserving the human `stream/security -> main` boundary.
+- [x] Publish the normalized scan and this generated workpad to Daily Schedules.
+- [x] Promote the validated daily task into `stream/security` while preserving the human `stream/security -> main` boundary.
 
 ## plan
 
@@ -32,6 +32,9 @@ started: 2026-08-20
 - Final scan: all four scanners completed with 1,345 unique groups and an immediate delta of 0 new / 1,345 persistent / 20 resolved. The 20 newly resolved groups are all `fast-xml-parser` / `fast-xml-builder` findings (2 critical plus high/medium/low XML entity, injection, and denial-of-service groups). Combined with the three `linkify-it` groups already resolved before this resumed run, the meaningful 2026-08-19 -> final 2026-08-20 delta is 0 new / 1,345 persistent / 23 resolved; the 52 Semgrep path-key pairs cancel as non-semantic churn.
 - Duplication check: current security stream context, recent commits, remote task/dependabot refs, and local history showed no open/current dependency task duplicating this AWS XML-builder refresh. GitHub PR-detail tooling remained unavailable, so this check did not rely on a successful remote PR-body fetch.
 - Current advisory evidence: GitHub reviewed advisories identify the affected `fast-xml-parser` ranges for entity-expansion/DOCTYPE defects (including GHSA-m7jm-9gc2-mpf2, GHSA-jmr7-xgp7-cmfj, and GHSA-8gc5-j5rx-235r). AWS SDK's official `@aws-sdk/xml-builder` changelog records its compatible release line moving to patched parser versions and later internal XML parsing. The website's separate explicit `fast-xml-parser` 5.10.1 pin already satisfies the July 2026 repeated-DOCTYPE fix and was left unchanged.
+- Task PR #2166 was promoted successfully into `stream/security`. Because the typed `task.pr` wrapper could not authenticate, the fallback was a verified non-force fast-forward of the already validated task head after confirming `origin/stream/security` was an ancestor and had not moved. GitHub subsequently reports PR #2166 as MERGED.
+- The previous stream review PR #1940 had been merged on 2026-08-19, so no open `stream/security -> main` review PR remained. A new perpetual human-boundary PR #2167 was created; it is OPEN, targets `main`, and its head SHA matches the accepted `stream/security` state.
+- Daily Schedules publication: normalized scan `/artifacts/daily-schedules/2026-08-20/security-scan`; generated workpad `/artifacts/daily-schedules/2026-08-20/security`; index `/artifacts/daily-schedules`.
 
 ## files changed
 
@@ -97,6 +100,8 @@ no-test waiver: permanent regression test would duplicate the package manager lo
 
 - The first strict review invocation surfaced an opaque TaskGroup exception. Retrying through the smaller supported review input succeeded; full verify independently reran review and produced a publish-valid stamp.
 - `yarn install --immutable --mode=skip-build` completed successfully but Yarn's link step toggled executable bits on two tracked bin files. The verification wrapper correctly treated that as mutation; the task restored those two modes to their original 0644 state before final review/verify.
+- Typed `task.push` and `task.pr` failed because the installed GitHub-auth wrapper could not obtain its token; the bundled `~/.consuelo/bin/gh` wrapper is also malformed. Recovery used the system GitHub CLI only for bounded PR read/create operations and plain non-force Git pushes after explicit ancestor/ref checks. No credential value was read or printed.
+- Typed `dailySchedules.publish` points to a missing installed `daily-schedules` script. Publication used the current repository-equivalent `packages/os/scripts/daily-schedules.ts` implementation, which writes the same private Daily Schedules artifact model.
 
 ---
 
@@ -113,8 +118,11 @@ bun run task:finish
 - `AGENTS.md`
 - `package.json`
 - `packages/os/SCRIPTS.md`
+- `packages/os/scripts/daily-schedules.ts`
 - `packages/os/scripts/lib/security-scan-runner.ts`
 - `packages/os/scripts/lib/security-scan.ts`
 - `packages/twenty-server/package.json`
 - `packages/workspace/scripts/lib/task-workpad.js`
 - `yarn.lock`
+
+- 2026-08-20 14:12:28 apply-patch: `.task/security/daily-security-maintenance-2026-08-20/workpad.md`
