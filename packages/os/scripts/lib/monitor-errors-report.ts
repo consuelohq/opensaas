@@ -18,6 +18,7 @@ type TraceRow = {
   status: string | null;
   branch: string | null;
   task_session: string | null;
+  stderr: string | null;
 };
 
 export type MonitorErrorsReport = {
@@ -76,10 +77,17 @@ function aggregate(rows: TraceRow[]): MonitorTraceFailure[] {
     status: group.latest.status ?? 'error',
     ...(group.latest.branch ? { branch: group.latest.branch } : {}),
     ...(group.latest.task_session ? { taskSession: group.latest.task_session } : {}),
+    ...(group.latest.stderr ? { stderr: group.latest.stderr } : {}),
     occurrences: group.occurrences,
     affectedBranches: group.branches.size,
     affectedSessions: group.sessions.size,
   }));
+}
+
+function withoutRawStderr(failure: ClassifiedTraceFailure): ClassifiedTraceFailure {
+  const normalized = { ...failure };
+  delete normalized.stderr;
+  return normalized;
 }
 
 export function buildMonitorErrorsReport(options: {
@@ -91,7 +99,7 @@ export function buildMonitorErrorsReport(options: {
   const database = new Database(traceDb, { readonly: true, strict: true });
   try {
     const rows = database.query<TraceRow, []>(`
-      SELECT trace_id, ts, tool, code, status, branch, task_session
+      SELECT trace_id, ts, tool, code, status, branch, task_session, stderr
       FROM tool_traces
       WHERE ts >= datetime('now', '-24 hours')
         AND ok = 0
@@ -101,6 +109,7 @@ export function buildMonitorErrorsReport(options: {
     const contracts = toolContracts();
     const groups = aggregate(rows)
       .map((failure) => classifyTraceFailure(failure, contracts.get(failure.tool)))
+      .map(withoutRawStderr)
       .sort((left, right) => {
         if (left.actionable !== right.actionable) return left.actionable ? -1 : 1;
         if ((left.occurrences ?? 0) !== (right.occurrences ?? 0)) {

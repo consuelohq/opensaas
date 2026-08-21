@@ -2548,7 +2548,8 @@
         "packages/os/scripts/stream-sync.js",
         "packages/os/scripts/lib/stream-sync-cleanup.js",
         "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
-        "packages/workspace/tests/stream-sync-node-modules.test.js"
+        "packages/workspace/tests/stream-sync-node-modules.test.js",
+        "packages/workspace/tests/stream-sync-repo-option.test.ts"
       ],
       "tests": [
         {
@@ -2558,13 +2559,14 @@
             "test",
             "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
             "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-repo-option.test.ts",
             "packages/workspace/tests/task-push-local-sync.test.ts"
           ]
         }
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Stream synchronization changes must prove failed-merge cleanup, temporary worktree lifecycle, node_modules setup ordering, and shared Git task-push invariants without selecting the unrelated package-wide OS baseline.",
+      "reason": "Stream synchronization changes must prove typed facade option compatibility, failed-merge cleanup, temporary worktree lifecycle, node_modules setup ordering, and shared Git task-push invariants without selecting the unrelated package-wide OS baseline.",
       "origin": "explicit"
     },
     {

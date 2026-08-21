@@ -111,6 +111,34 @@ describe('OS self-healing trace classification', () => {
     }
   });
 
+  it('keeps obvious caller-caused filesystem command failures out of the defect bucket', () => {
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'fs.apply_patch',
+          code: 'COMMAND_FAILED',
+          occurrences: 6,
+          affectedSessions: 3,
+          stderr: 'error: patch hunk did not match: .task/example/workpad.md',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'fs.list',
+          code: 'COMMAND_FAILED',
+          occurrences: 8,
+          affectedBranches: 2,
+          stderr: "[fd error]: Search path '/Users/example/missing' is not a directory.",
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+  });
+
   it('surfaces repeated command failures as defect candidates while keeping isolated timeouts transient', () => {
     expect(
       classifyTraceFailure(failure({ code: 'COMMAND_FAILED', occurrences: 9, affectedBranches: 3 }), undefined),

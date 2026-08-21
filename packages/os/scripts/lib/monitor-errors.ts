@@ -172,6 +172,30 @@ export function classifyTraceFailure(
     );
   }
 
+  if (code === 'COMMAND_FAILED' && failure.stderr) {
+    const stderr = failure.stderr.toLowerCase();
+    if (failure.tool === 'fs.apply_patch' && stderr.includes('patch hunk did not match')) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'patch anchor no longer matched the target file; caller must refresh the patch context',
+      );
+    }
+    if (
+      failure.tool === 'fs.list' &&
+      ((stderr.includes('search path') && stderr.includes('is not a directory')) ||
+        stderr.includes('no valid search paths given'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'filesystem list targeted a path that does not exist as a searchable directory',
+      );
+    }
+  }
+
   if (code === 'COMMAND_FAILED' || code === 'PARSE_ERROR' || code === 'MALFORMED_OUTPUT') {
     if (recurring(failure)) {
       return classified(
