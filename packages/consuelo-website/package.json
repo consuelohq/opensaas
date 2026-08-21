@@ -3,7 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "overrides": {
-    "fast-xml-parser": "5.10.1"
+    "fast-xml-parser": "5.10.1",
+    "protobufjs": "7.6.5"
   },
   "scripts": {
     "dev": "bun run generate:footer-art && astro dev",
