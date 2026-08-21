@@ -41,6 +41,7 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --stream <branch>      stream branch (default: stream/<area>)');
+  writeStdout('  --repo <owner/name>    repository identity accepted by the typed facade');
   writeStdout('  --json                 output json');
   writeStdout('  --help                 show this help');
 }
@@ -75,6 +76,9 @@ function parseArgs(argv) {
         break;
       case '--stream':
         args.stream = value;
+        break;
+      case '--repo':
+        args.repo = value;
         break;
       case '--json':
         args.json = true;
