@@ -13,8 +13,8 @@ started: 2026-08-21
 - [x] Triage new and high-impact persistent findings for actual applicability/reachability before editing.
 - [x] Make only evidence-backed bounded remediation, or explicitly record a no-source-change decision.
 - [x] Run risk-matched validation, strict review, and publish-valid verify before promotion.
-- [ ] Promote the daily task into `stream/security` only; preserve the human `stream/security -> main` boundary.
-- [ ] Publish the normalized security report and this generated workpad into Daily Schedules.
+- [x] Promote the daily task into `stream/security` only; preserve the human `stream/security -> main` boundary.
+- [x] Publish the normalized security report and this generated workpad into Daily Schedules.
 
 ## plan
 
@@ -47,6 +47,10 @@ no-test waiver: a permanent runtime regression test is not appropriate for a gen
 - The final four-scanner rescan is complete at `/Users/kokayi/.consuelo/node/cache/security-scans/2026-08-21T13-40-30-184Z/security-scan-report.json`: 1,332 unique groups, 0 new, 1,332 persistent, 13 resolved. All 13 resolved groups are the website protobuf dependency cluster (1 critical, 5 high, 7 medium), including the critical RCE advisory and the July 7.x parser DoS advisory.
 - Source state inspected: synchronized `origin/stream/security` is `ab90ac35638a619f32f16a1df50ab79d5a4145cd`; `origin/main` is `b0e7016159103e3c3850dac6937f7b5333a72450` and is the merge base of the stream, so the stream preserves current main plus accepted security history.
 - Strict review reported 0 task issues / 0 blocking issues. Full `verify` inspected the three production files, passed, and issued `publishValid: true` at `.task/security/daily-security-maintenance-2026-08-21/verify.json`.
+- Task PR #2170 is merged into `stream/security`; post-promotion `stream.context` no longer lists it as open. The accepted stream head is `ba1110829eb5758c1b6bd060bfb8752192e2f96b`.
+- The human review boundary is intact: PR #2167 (`stream/security -> main`) is OPEN and MERGEABLE, and its GitHub head OID exactly matches `ba1110829eb5758c1b6bd060bfb8752192e2f96b`. It was not merged.
+- Daily Schedules normalized scan published at `/artifacts/daily-schedules/2026-08-21/security-scan`; the dated/filterable index is `/artifacts/daily-schedules`.
+- This generated workpad is published at `/artifacts/daily-schedules/2026-08-21/security`.
 
 ## files changed
 
@@ -79,6 +83,7 @@ no-test waiver: a permanent runtime regression test is not appropriate for a gen
 ## notes for ko
 
 - No deployment, release, credential rotation, IAM mutation, destructive production testing, or OS lifecycle operation is part of this run.
+- Human-only next action after this run: review PR #2167 and merge `stream/security` to `main` when appropriate.
 
 ## improvements noticed
 
@@ -102,6 +107,11 @@ bun run task:finish
 ## workspace-owned: files read
 
 - `packages/consuelo-website/package.json`
+- `packages/os/scripts/daily-schedules.ts`
 - `packages/os/scripts/security-scan.ts`
 
-- 2026-08-21 13:50:08 apply-patch: `.task/security/daily-security-maintenance-2026-08-21/workpad.md`
+- 2026-08-21 13:55:38 apply-patch: `.task/security/daily-security-maintenance-2026-08-21/workpad.md`
+
+- 2026-08-21 13:55:43 apply-patch: `.task/security/daily-security-maintenance-2026-08-21/workpad.md`
+
+- 2026-08-21 13:55:56 apply-patch: `.task/security/daily-security-maintenance-2026-08-21/workpad.md`
