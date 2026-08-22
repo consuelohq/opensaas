@@ -16,6 +16,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { resolveGitHubCli } = require('./lib/github');
 
 function parseTime(s) {
   if (!s) return 300;
@@ -263,7 +264,7 @@ function getPrChecks(prNumber) {
   try {
     const pr = Number(prNumber);
     if (!Number.isInteger(pr) || pr <= 0) throw new Error(`invalid PR number: ${prNumber}`);
-    const result = spawnSync('gh', ['pr', 'checks', String(pr), '--json', 'name,state,conclusion,bucket,link'], { encoding: 'utf8', timeout: 20000 });
+    const result = spawnSync(resolveGitHubCli(), ['pr', 'checks', String(pr), '--json', 'name,state,conclusion,bucket,link'], { encoding: 'utf8', timeout: 20000 });
     if (result.error) throw result.error;
     if (result.status !== 0 && result.status !== 8) {
       const detail = (result.stderr || result.stdout || `gh pr checks exited ${result.status}`).trim();

@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2652,
-    "mappedTestCount": 2567,
+    "testFileCount": 2658,
+    "mappedTestCount": 2573,
     "unmappedTestCount": 85,
-    "ruleCount": 65,
-    "explicitRuleCount": 46,
+    "ruleCount": 69,
+    "explicitRuleCount": 50,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 272,
+      "packages/os/tests": 274,
+      "packages/workspace/tests": 68,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 64,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 558,
+      "test": 564,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -2454,6 +2454,147 @@
       "origin": "explicit"
     },
     {
+      "id": "os-github-cli-runtime",
+      "source": [
+        "packages/workspace/scripts/github.js",
+        "packages/workspace/scripts/lib/github.js",
+        "packages/workspace/scripts/lib/pr-review-collector.js",
+        "packages/workspace/scripts/task-prs.js",
+        "packages/workspace/scripts/wait.js",
+        "packages/workspace/scripts/review.js",
+        "packages/workspace/scripts/lib/review-static-rules.js",
+        "packages/workspace/tests/github-cli-resolution.test.ts",
+        "packages/workspace/tests/review-error-handling-scope.test.ts",
+        "packages/os/scripts/github.js",
+        "packages/os/scripts/lib/github.js",
+        "packages/os/scripts/lib/pr-review-collector.js",
+        "packages/os/scripts/task-prs.js",
+        "packages/os/scripts/wait.js",
+        "packages/os/scripts/review.js",
+        "packages/os/scripts/lib/review-static-rules.js"
+      ],
+      "tests": [
+        {
+          "name": "Workspace GitHub CLI and review contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/github-cli-resolution.test.ts",
+            "packages/workspace/tests/github.test.ts",
+            "packages/workspace/tests/github-pr-reviews.test.ts",
+            "packages/workspace/tests/pr-review.test.js",
+            "packages/workspace/tests/review-error-handling-scope.test.ts"
+          ]
+        },
+        {
+          "name": "Workspace wait GitHub check contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/workspace",
+            "test",
+            "tests/wait.test.js"
+          ]
+        },
+        {
+          "name": "OS GitHub CLI contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github.test.ts",
+            "tests/github-pr-reviews.test.ts",
+            "tests/pr-review-collector.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "GitHub helper and task-lifecycle changes must prove external CLI resolution, PR review collection, wait/check polling, and the review static-rule boundary without falling back to the unrelated broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-self-healing-monitor",
+      "source": [
+        "packages/os/scripts/monitor-errors.ts",
+        "packages/os/scripts/lib/monitor-errors.ts",
+        "packages/os/scripts/lib/monitor-errors-report.ts",
+        "packages/os/tests/monitor-errors.test.ts",
+        "packages/os/tests/monitor-errors-report.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS self-healing monitor contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts",
+            "packages/os/tests/monitor-errors-report.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Self-healing monitor selection and classification changes must prove the focused trace-selection and classification contracts without selecting the unrelated package-wide OS baseline.",
+      "origin": "explicit"
+    },
+    {
+      "id": "workspace-stream-sync",
+      "source": [
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/scripts/lib/stream-sync-cleanup.js",
+        "packages/os/scripts/stream-sync.js",
+        "packages/os/scripts/lib/stream-sync-cleanup.js",
+        "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
+        "packages/workspace/tests/stream-sync-node-modules.test.js",
+        "packages/workspace/tests/stream-sync-repo-option.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "Workspace stream sync contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-repo-option.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Stream synchronization changes must prove typed facade option compatibility, failed-merge cleanup, temporary worktree lifecycle, node_modules setup ordering, and shared Git task-push invariants without selecting the unrelated package-wide OS baseline.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-deployment-provider-adapters",
+      "source": [
+        "packages/os/tools/deployment-provider/**"
+      ],
+      "tests": [
+        {
+          "name": "OS deployment-provider adapter contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tools/deployment-provider/cloudflare.test.ts",
+            "tools/deployment-provider/vercel.test.ts",
+            "tools/deployment-provider/handler.test.ts",
+            "tools/deployment-provider/facade.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Deployment-provider adapter changes must prove the focused provider, handler, and facade contracts without selecting the unrelated package-wide OS baseline.",
+      "origin": "explicit"
+    },
+    {
       "id": "auto:@consuelo/core:package-test",
       "source": [
         "packages/consuelo-core/**"
@@ -4265,6 +4406,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/index-path-exclusions.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/install-control-plane-cloudflare.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4771,6 +4917,11 @@
     },
     {
       "path": "packages/os/tests/memory.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/monitor-errors-report.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15895,6 +16046,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/github-cli-resolution.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/github-pr-reviews.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -15906,6 +16062,11 @@
     },
     {
       "path": "packages/workspace/tests/github.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/index-path-exclusions.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -15936,6 +16097,11 @@
     },
     {
       "path": "packages/workspace/tests/review-documentation-opportunity.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/review-error-handling-scope.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -15971,6 +16137,11 @@
     },
     {
       "path": "packages/workspace/tests/stream-lifecycle.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -16168,6 +16339,7 @@
     "packages/workspace/tests/git-diff.test.ts",
     "packages/workspace/tests/github-pr-reviews.test.ts",
     "packages/workspace/tests/github.test.ts",
+    "packages/workspace/tests/index-path-exclusions.test.js",
     "packages/workspace/tests/pr-links.test.js",
     "packages/workspace/tests/pr-ref.test.js",
     "packages/workspace/tests/pr-review.test.js",
@@ -16177,7 +16349,6 @@
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/session-start-compatibility.test.ts",
     "packages/workspace/tests/stream-lifecycle.test.ts",
-    "packages/workspace/tests/stream-sync-node-modules.test.js",
     "packages/workspace/tests/stream-workpads.test.js",
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
     "packages/workspace/tests/task-hook-workflow-contract.test.ts",

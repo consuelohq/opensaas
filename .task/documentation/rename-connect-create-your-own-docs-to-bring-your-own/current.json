@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/rename-connect-create-your-own-docs-to-bring-your-own",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2032,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2032",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2032",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2032/rename-connect-create-your-own-docs-to-bring-your-own",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2032",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2032/rename-connect-create-your-own-docs-to-bring-your-own",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-rename-connect-create-your-own-docs-to-bring-your-own",
+  "taskSession": "tsk_91c032510cab",
+  "tmuxSession": "opensaas-documentation-rename-connect-create-your-own-docs-to-bring-you-91c03251",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-rename-connect-create-your-own-docs-to-bring-your-own/.task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/session.json",
+  "createdAt": "2026-08-15T06:10:06.380Z"
+}

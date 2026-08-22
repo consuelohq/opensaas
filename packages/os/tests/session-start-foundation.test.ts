@@ -86,6 +86,10 @@ describe('session.start foundation', () => {
     const schema = getInputSchema('SessionStartInput');
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', workflow: 'task', createStream: true }).success).toBe(true);
+    expect(schema?.parse({ kind: 'task', area: 'workspace-agent', title: 'example', timeout: 120_000 })).toMatchObject({
+      kind: 'task',
+      timeout: 120_000,
+    });
     expect(schema?.safeParse({ kind: 'work', path: '/tmp/example-work' }).success).toBe(true);
     expect(schema?.safeParse({ kind: 'work' }).success).toBe(false);
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent' }).success).toBe(false);

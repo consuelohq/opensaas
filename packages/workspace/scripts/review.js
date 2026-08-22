@@ -10,6 +10,7 @@ const path = require('path');
 
 const { getTrackedChanges } = require('./lib/git');
 const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./lib/nx-projects');
+const { findUnhandledAsyncAwaitLines } = require('./lib/review-static-rules');
 const { computeVerificationState } = require('./lib/verification');
 const { beginReviewRun, finishReviewRun, makeReviewRunIdentity } = require('./lib/review-run-state');
 const { findDocumentationOpportunities } = require('./lib/review-documentation');
@@ -251,7 +252,10 @@ function isLoggerFile(f) {
 }
 
 function isReviewSelfFile(f) {
-  return f === 'packages/workspace/scripts/review.js' || f === 'packages/workspace/scripts/ai-review.js';
+  return f === 'packages/workspace/scripts/review.js'
+    || f === 'packages/workspace/scripts/ai-review.js'
+    || f === 'packages/os/scripts/review.js'
+    || f === 'packages/os/scripts/ai-review.js';
 }
 
 function checkLogging(file, lines) {
@@ -302,17 +306,11 @@ function checkSqlParam(file, lines) {
 
 function checkErrorHandling(file, lines) {
   if (isTestFile(file) || isReviewSelfFile(file)) return [];
-  const findings = [];
-  for (let i = 0; i < lines.length; i++) {
-    if (/async\s+\w+|async\s*\(/.test(lines[i])) {
-      // look for await within 30 lines
-      const window = lines.slice(i, Math.min(i + 30, lines.length)).join('\n');
-      if (/await\s/.test(window) && !/try\s*\{/.test(window) && !/\.catch\s*\(/.test(window)) {
-        findings.push({ line: i + 1, rule: 'ERROR_HANDLING', msg: 'async function with await but no try/catch within 30 lines' });
-      }
-    }
-  }
-  return findings;
+  return findUnhandledAsyncAwaitLines(lines).map((line) => ({
+    line,
+    rule: 'ERROR_HANDLING',
+    msg: 'async function with await but no try/catch within 30 lines',
+  }));
 }
 
 function checkTypeSafety(file, lines) {
