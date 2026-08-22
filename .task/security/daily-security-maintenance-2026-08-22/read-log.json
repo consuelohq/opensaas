@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/consuelo-website/package.json",
+    "packages/os/SCRIPTS.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/workspace/scripts/review.js"
+  ],
+  "updatedAt": "2026-08-22T13:54:34.122Z"
+}

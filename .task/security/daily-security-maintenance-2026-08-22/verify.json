@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/daily-security-maintenance-2026-08-22",
+  "base": "origin/stream/security",
+  "headSha": "823e7ef1d600afab435102ab7e3daa9f73d93336",
+  "changeHash": "ee589a3d03b5e013d9fd657569644fc0e5dabb0919e6d25fc3b7bb8b8923f069",
+  "changedFiles": [
+    "packages/consuelo-website/bun.lock",
+    "packages/consuelo-website/package-lock.json",
+    "packages/consuelo-website/package.json"
+  ],
+  "verifiedAt": "2026-08-22T13:54:24.414Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/daily-security-maintenance-2026-08-22/current.json",
+        ".task/security/daily-security-maintenance-2026-08-22/evidence-log.json",
+        ".task/security/daily-security-maintenance-2026-08-22/read-log.json",
+        ".task/security/daily-security-maintenance-2026-08-22/session.json",
+        ".task/security/daily-security-maintenance-2026-08-22/workpad.md",
+        ".task/tasks/security/daily-security-maintenance-2026-08-22.json",
+        "packages/consuelo-website/bun.lock",
+        "packages/consuelo-website/package-lock.json",
+        "packages/consuelo-website/package.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
