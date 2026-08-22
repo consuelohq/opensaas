@@ -3,6 +3,7 @@ import { z } from 'zod';
 const requestFields = {
   requestId: z.string().min(1).optional(),
   taskSession: z.string().min(1).optional(),
+  timeout: z.number().int().positive().optional(),
 };
 
 const workSessionField = {

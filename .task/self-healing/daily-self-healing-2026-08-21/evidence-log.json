@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/self-healing/daily-self-healing-2026-08-21",
+  "events": [
+    {
+      "id": "c4afb424-405a-4513-9ac9-fdaf970940d4",
+      "occurred_at": "2026-08-22T01:58:49.706Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/self-healing/daily-self-healing-2026-08-21/read-log.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-21",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-21"
+      }
+    },
+    {
+      "id": "9794ada2-121c-4bb2-8f60-01e7b8ea0ddc",
+      "occurred_at": "2026-08-22T01:58:50.098Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/self-healing/daily-self-healing-2026-08-21/evidence-log.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-21",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-21"
+      }
+    },
+    {
+      "id": "880aa844-5986-4d32-8759-2e3c58071f26",
+      "occurred_at": "2026-08-22T01:58:57.110Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/state/evidence-log.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-21",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-21"
+      }
+    },
+    {
+      "id": "18a59971-e3e5-420c-8cb5-2509e961d849",
+      "occurred_at": "2026-08-22T01:58:57.503Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-fs.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-21",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-21"
+      }
+    },
+    {
+      "id": "eacb1a05-966e-409a-b2c2-336bc1b02358",
+      "occurred_at": "2026-08-22T01:59:03.381Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/state/explore-state.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-21",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-21"
+      }
+    },
+    {
+      "id": "55a28981-825f-46c7-a3ac-fd45edbceff7",
+      "occurred_at": "2026-08-22T01:59:08.339Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/state/explore-state.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-21",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-21"
+      }
+    },
+    {
+      "id": "f90891ad-575b-4792-bb64-0a07d32d5876",
+      "occurred_at": "2026-08-22T01:59:16.892Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-registry.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-21",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-21"
+      }
+    },
+    {
+      "id": "5e5563b7-cd5b-42ab-a8e1-cab763b99581",
+      "occurred_at": "2026-08-22T02:00:16.328Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/self-healing/daily-self-healing-2026-08-21/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-21",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-21"
+      }
+    },
+    {
+      "id": "1d6960f9-b2b5-490a-a7e3-7b5436617a5a",
+      "occurred_at": "2026-08-22T02:00:16.737Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/self-healing/daily-self-healing-2026-08-21/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-21",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-21"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-22T02:00:16.792Z"
+}
