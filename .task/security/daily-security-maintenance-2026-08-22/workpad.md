@@ -8,14 +8,14 @@ started: 2026-08-22
 
 ## acceptance criteria
 
-- [ ] Inspect and synchronize `stream/security` with current `main` without discarding accepted stream history.
-- [ ] Run the canonical normalized security scan and record scanner completion plus new/persistent/resolved groups.
-- [ ] Triage material new and high-impact persistent findings for applicability, reachability, duplication, and release/runtime drift.
-- [ ] Make only a bounded source remediation that is justified by evidence; otherwise record an explicit no-source-change decision.
-- [ ] Validate any remediation with focused proof plus review/verify gates matched to risk.
-- [ ] Push the daily task and promote it into `stream/security` without merging the stream into `main`.
-- [ ] Publish the normalized scan and this generated workpad to Daily Schedules.
-- [ ] Leave the perpetual `stream/security` -> `main` review boundary intact and report any human-only action.
+- [x] Inspect and synchronize `stream/security` with current `main` without discarding accepted stream history.
+- [x] Run the canonical normalized security scan and record scanner completion plus new/persistent/resolved groups.
+- [x] Triage material new and high-impact persistent findings for applicability, reachability, duplication, and release/runtime drift.
+- [x] Make only a bounded source remediation that is justified by evidence; otherwise record an explicit no-source-change decision.
+- [x] Validate any remediation with focused proof plus review/verify gates matched to risk.
+- [x] Push the daily task and promote it into `stream/security` without merging the stream into `main`.
+- [x] Publish the normalized scan and this generated workpad to Daily Schedules.
+- [x] Leave the perpetual `stream/security` -> `main` review boundary intact and report any human-only action.
 
 ## plan
 
@@ -41,6 +41,11 @@ started: 2026-08-22
 - Normalizing task-worktree paths and comparing the final scan directly with Aug 21 yields 4 meaningful new / 1,310 persistent / 22 meaningful resolved groups. The 4 remaining new groups are the same new node-tar advisory in root `yarn.lock` (`tar` 6.2.1 and 7.5.9), the Twenty application seed lock (7.5.7), and vendored Open Design lock (7.5.13). Those were deliberately not force-upgraded: the 6.x root copy has an incompatible parent range, while the seed/vendor copies need ownership-specific dependency refresh rather than a blanket override.
 - The typed `review.run` transport failed twice with an `ExceptionGroup`; after confirming no review result artifact existed, the current repository-equivalent review script was run with `--base origin/stream/security --strict --no-tests --summary-json` and reported 0 task issues / 0 blocking issues. Its stderr contains unrelated pre-existing ESLint/typecheck failures outside this task.
 - The formal typed `verify` gate then completed successfully against `origin/stream/security`, inspected exactly the 3 production files changed here, reported review passed with 0 task/blocking issues, DB guardrails passed with 0 risks, and wrote a `publishValid: true` stamp at `.task/security/daily-security-maintenance-2026-08-22/verify.json`.
+- The typed `task.push` and `task.pr` lifecycle wrappers both failed on stale GitHub-auth parsing. After confirming `stream/security` had not moved and the task head was a strict fast-forward descendant, the task branch and then `stream/security` were advanced with bounded non-force Git pushes. GitHub now reports PR #2172 closed and merged at `2026-08-22T13:55:50Z`; `stream.context` no longer lists it among open security task PRs.
+- Post-promotion `stream.sync` reported `Already up to date`, no conflicts, and passed its stream safety checks. The final accepted stream head is `a92e6cbc83ec01b1215dae88dc24fa2eb12cb663` before this final record-only update.
+- The perpetual human review boundary is PR #2167 (`stream/security` -> `main`). A read-only GitHub API check reports it open, unmerged, mergeable, and its head SHA exactly matches the accepted stream head. `main` was not modified.
+- Daily Schedules publication succeeded through the current repository-equivalent publisher after the installed wrapper reported `Script not found "daily-schedules"`: normalized scan `/artifacts/daily-schedules/2026-08-22/security-scan`, workpad `/artifacts/daily-schedules/2026-08-22/security`, index `/artifacts/daily-schedules`.
+- Human-only action: review PR #2167 and merge `stream/security` -> `main` when appropriate. No deploy, release, credential rotation, production IAM change, destructive production test, or Consuelo OS lifecycle operation was performed.
 
 ## Test-first contract
 
@@ -88,6 +93,8 @@ started: 2026-08-22
 - `session.start({ kind: "task" })` is advertised as canonical but the installed runtime first rejected the top-level timeout and then reported `Script not found "session:start"`. Recovered through the supported `task.start` compatibility alias; task session `tsk_03e63af3e041` is active.
 - The typed GitHub `pr.list` probe failed with its known JSON parse error. GitHub state will use the typed facade when possible and a bounded GitHub CLI fallback only if required, with the tooling gap recorded.
 - `review.run` failed twice at the facade transport layer with `UNKNOWN / ExceptionGroup`. After checking for a durable review result and finding none, recovered with the repository-equivalent review script. The formal typed `verify` gate subsequently passed and issued the publish-valid stamp, so publish state is known and valid.
+- `task.push` and `task.pr` failed because their installed GitHub-auth helper cannot parse the current auth response; bounded non-force Git fast-forward fallback was used only after ancestry/stream-head checks. GitHub's public API independently confirmed task PR #2172 merged and review PR #2167 remains open.
+- `dailySchedules.publish` is stale and points at a missing `daily-schedules` script; the current repository-equivalent `packages/os/scripts/daily-schedules.ts` successfully published the normalized/redacted report and generated workpad.
 
 ---
 
@@ -110,4 +117,4 @@ bun run task:finish
 - `packages/os/skills/task/SKILL.md`
 - `packages/workspace/scripts/review.js`
 
-- 2026-08-22 13:54:43 apply-patch: `.task/security/daily-security-maintenance-2026-08-22/workpad.md`
+- 2026-08-22 13:57:49 apply-patch: `.task/security/daily-security-maintenance-2026-08-22/workpad.md`
