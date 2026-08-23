@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/security/daily-security-maintenance-2026-08-23",
+  "events": [
+    {
+      "id": "009d7644-faea-4b70-abac-653be5fdae27",
+      "occurred_at": "2026-08-23T13:39:14.345Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/security-scan.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/daily-security-maintenance-2026-08-23",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/daily-security-maintenance-2026-08-23"
+      }
+    },
+    {
+      "id": "47d291cd-4c61-4705-add0-a0bf0a15ac6d",
+      "occurred_at": "2026-08-23T13:50:13.054Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/review.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/daily-security-maintenance-2026-08-23",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/daily-security-maintenance-2026-08-23"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-23T13:50:13.110Z"
+}
