@@ -137,6 +137,32 @@ describe('OS self-healing trace classification', () => {
         undefined,
       ),
     ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'fs.search',
+          code: 'COMMAND_FAILED',
+          occurrences: 4,
+          affectedSessions: 1,
+          stderr: 'error: search failed: rg: packages/os/server: No such file or directory (os error 2)',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'fs.search',
+          code: 'COMMAND_FAILED',
+          occurrences: 4,
+          affectedSessions: 2,
+          stderr: 'error: search failed: ripgrep exited without a status',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
   });
 
   it('surfaces repeated command failures as defect candidates while keeping isolated timeouts transient', () => {

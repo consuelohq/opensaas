@@ -1,0 +1,95 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/self-healing/daily-self-healing-2026-08-22",
+  "base": "origin/stream/self-healing",
+  "headSha": "f55ced7445477b103e6924270f7fb4c4f14ddc8c",
+  "changeHash": "4c8d4ab0d8309d915aa8ce31baea33531ca00e26d96f31ab6db88f4deb7bb715",
+  "changedFiles": [
+    "packages/os/scripts/lib/monitor-errors.ts",
+    "packages/os/tests/monitor-errors.test.ts"
+  ],
+  "verifiedAt": "2026-08-23T01:34:22.721Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/self-healing/daily-self-healing-2026-08-22/current.json",
+        ".task/self-healing/daily-self-healing-2026-08-22/monitor-errors-report.json",
+        ".task/self-healing/daily-self-healing-2026-08-22/session.json",
+        ".task/self-healing/daily-self-healing-2026-08-22/verify.json",
+        ".task/self-healing/daily-self-healing-2026-08-22/workpad.md",
+        ".task/tasks/self-healing/daily-self-healing-2026-08-22.json",
+        "packages/os/scripts/lib/monitor-errors.ts",
+        "packages/os/tests/monitor-errors.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-self-healing-monitor",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Self-healing monitor selection and classification changes must prove the focused trace-selection and classification contracts without selecting the unrelated package-wide OS baseline.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/monitor-errors.ts",
+            "packages/os/tests/monitor-errors.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS self-healing monitor contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts",
+            "packages/os/tests/monitor-errors-report.test.ts"
+          ],
+          "ruleId": "os-self-healing-monitor",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS self-healing monitor contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts",
+            "packages/os/tests/monitor-errors-report.test.ts"
+          ],
+          "ruleId": "os-self-healing-monitor",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 126,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/monitor-errors-report.test.ts:\n(pass) monitor errors report trace selection > uses the persisted ok bit rather than free-form status/code text to select failures [8.25ms]\n(pass) monitor errors report trace selection > preserves persisted stderr so classification can distinguish caller failures [4.15ms]\n\npackages/os/tests/monitor-errors.test.ts:\n(pass) OS self-healing trace classification > treats a required task session on a mutating tool as expected policy enforcement [0.02ms]\n(pass) OS self-healing trace classification > detects runtime/contract drift when an observed session error contradicts the current read-only tool contract\n(pass) OS self-healing trace classification > treats a stale optional task session as caller input rather than runtime drift\n(pass) OS self-healing trace classification > keeps safety blocks and validation errors out of the defect bucket unless current contracts contradict them [0.01ms]\n(pass) OS self-healing trace classification > keeps explicit code.call validation failures in the caller-input bucket [0.01ms]\n(pass) OS self-healing trace classification > does not manufacture defects from recurring execution-wrapper child failures [0.02ms]\n(pass) OS self-healing trace classification > keeps obvious caller-caused filesystem command failures out of the defect bucket [0.03ms]\n(pass) OS self-healing trace classification > surfaces repeated command failures as defect candidates while keeping isolated timeouts transient [0.01ms]\n(pass) OS self-healing trace classification > summarizes classifications without equating every non-OK trace with a product defect [0.02ms]\n\n 11 pass\n 0 fail\n 26 expect() calls\nRan 11 tests across 2 files. [120.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
