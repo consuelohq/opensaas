@@ -1,7 +1,8 @@
 {
   "files": [
     "packages/os/package.json",
+    "packages/os/scripts/daily-schedules.ts",
     "packages/workspace/scripts/review.js"
   ],
-  "updatedAt": "2026-08-23T13:50:12.996Z"
+  "updatedAt": "2026-08-23T13:56:12.085Z"
 }

@@ -31,6 +31,8 @@ started: 2026-08-23
 - 2026-08-23 13:38:53 fs.write: `.task/security/daily-security-maintenance-2026-08-23/workpad.md`
 - 2026-08-23 13:42:54 fs.write: `.task/security/daily-security-maintenance-2026-08-23/workpad.md`
 - 2026-08-23 13:54:45 fs.write: `.task/security/daily-security-maintenance-2026-08-23/workpad.md`
+- 2026-08-23 13:56:29 fs.write: `.task/security/daily-security-maintenance-2026-08-23/workpad.md`
+- 2026-08-23 13:56:47 fs.write: `.task/security/daily-security-maintenance-2026-08-23/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -102,6 +104,7 @@ no-test waiver: not applicable unless the selected remediation is lockfile/confi
 ## workspace-owned: files read
 
 - `packages/os/package.json`
+- `packages/os/scripts/daily-schedules.ts`
 - `packages/os/scripts/lib/security-scan-runner.ts`
 - `packages/os/scripts/security-scan.ts`
 - `packages/workspace/scripts/review.js`
@@ -152,3 +155,23 @@ no-test waiver: not applicable unless the selected remediation is lockfile/confi
 - Typed `review.run` returned an unhandled TaskGroup exception; current repository-equivalent review completed and the formal typed `verify` gate subsequently passed.
 
 - 2026-08-23 13:54:45 append: `.task/security/daily-security-maintenance-2026-08-23/workpad.md`
+
+### Promotion result
+
+- Typed `task.push` and `task.pr` both failed on the current GitHub-auth parser (`Unexpected identifier "auth"` / missing wrapper token) after the validated task was ready.
+- After confirming a clean task worktree, `origin/stream/security` at `41ec7df1aae1c3af01bb6bfb16613f443091a563`, and that stream head was an ancestor of the validated task, the task commit was pushed normally (non-force) and then fast-forwarded into `stream/security` with the smallest bounded Git fallback.
+- GitHub's public pull-request state confirms task PR #2174 is closed as merged, with merged time `2026-08-23T13:55:37Z`.
+- The perpetual human review PR #2167 remains open from `stream/security` to `main`; its head matches the promoted security stream. `main` was not modified.
+- Promoted product commit at this point: `dae04c0822f51097f00761a0f6b1a82d77b59c8f`.
+- Remaining human-only action: review/merge PR #2167 into `main` when appropriate. No deploy, release, credential rotation, IAM mutation, destructive production test, or Consuelo OS lifecycle operation was performed.
+
+- 2026-08-23 13:56:29 append: `.task/security/daily-security-maintenance-2026-08-23/workpad.md`
+
+### Daily Schedules publication result
+
+- Normalized final scan published at `/artifacts/daily-schedules/2026-08-23/security-scan`.
+- This generated task workpad published at `/artifacts/daily-schedules/2026-08-23/security`.
+- Dated/filterable index refreshed at `/artifacts/daily-schedules`.
+- Native scanner secret-match contents were not published; publication used the normalized security report.
+
+- 2026-08-23 13:56:47 append: `.task/security/daily-security-maintenance-2026-08-23/workpad.md`
