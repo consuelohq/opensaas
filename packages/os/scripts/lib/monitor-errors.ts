@@ -194,6 +194,19 @@ export function classifyTraceFailure(
         'filesystem list targeted a path that does not exist as a searchable directory',
       );
     }
+    if (
+      failure.tool === 'fs.search' &&
+      stderr.includes('error: search failed: rg:') &&
+      stderr.includes('no such file or directory') &&
+      !stderr.includes('unable to run ripgrep')
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'filesystem search targeted a caller-selected path that does not exist',
+      );
+    }
   }
 
   if (code === 'COMMAND_FAILED' || code === 'PARSE_ERROR' || code === 'MALFORMED_OUTPUT') {
