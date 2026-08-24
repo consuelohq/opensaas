@@ -76,6 +76,7 @@ started: 2026-08-24
 - Initial typed GitHub `pr.list` inspection failed in the current wrapper with a JSON parse error; PR state will be rechecked through supported lifecycle output or a bounded fallback only if needed.
 - The typed `security.scan` facade still invokes the missing root `security:scan` script. After that canonical attempt failed, the task used the current repository implementation `packages/os/scripts/security-scan.ts` through task-scoped `code.call`; raw scanner reports remained private in the local Consuelo cache and only normalized counts/paths are published.
 - `task.push` and `task.pr` both failed in their current GitHub auth/JSON plumbing. Recovery used exact task-scoped non-force Git pushes only after verifying the task branch, remote task head, stream ancestry, and remote stream head; no reset, force-push, or destructive recovery was used.
+- `task.finish` hit the same GitHub auth/JSON parser failure after promotion. The already-promoted task worktree was preserved rather than deleted through an unsafe cleanup fallback.
 
 ## Test-first contract
 
@@ -116,3 +117,5 @@ bun run task:finish
 - `packages/workspace/scripts/verify.js`
 
 - 2026-08-24 15:26:43 apply-patch: `.task/security/daily-security-maintenance-2026-08-24/workpad.md`
+
+- 2026-08-24 15:27:29 apply-patch: `.task/security/daily-security-maintenance-2026-08-24/workpad.md`
