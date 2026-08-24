@@ -13,7 +13,7 @@ started: 2026-08-24
 - [x] Make only bounded, evidence-backed source changes; a no-source-change conclusion is valid.
 - [x] Validate any remediation with focused proof, review, and full verify before promotion.
 - [x] Promote the completed daily task into `stream/security` without merging the stream into `main`.
-- [ ] Publish the normalized security report and generated task workpad into Daily Schedules.
+- [x] Publish the normalized security report and generated task workpad into Daily Schedules.
 
 ## plan
 
@@ -31,7 +31,8 @@ started: 2026-08-24
 - Persistent critical/high triage selected root `@grpc/grpc-js@1.14.3` as the highest-confidence bounded remediation candidate. It is pulled by OpenTelemetry OTLP gRPC exporters under `@opentelemetry/sdk-node`, which `packages/twenty-server` depends on directly. Every observed parent range is `^1.7.1`, so the patched 1.14.4 release is semver-compatible.
 - The root Yarn lock was refreshed to `@grpc/grpc-js@1.14.4` without changing parent manifests. `yarn why @grpc/grpc-js --json` now resolves only 1.14.4, and a `twenty-server` workspace smoke successfully loads both `@opentelemetry/sdk-node` and `@grpc/grpc-js`.
 - Final repository-equivalent scan completed all four scanners at 1,286 unique groups (36 critical / 520 high / 588 medium / 138 low / 4 unknown). Compared with the initial 1,290-group scan, the remediation resolved exactly four high-severity `@grpc/grpc-js` groups and introduced no new groups. A second post-fix scan was stable at 1,286 with no additional delta.
-- Task PR #2176 was promoted successfully: `stream/security` now points at `021585670ed3943bf77dde057d744a299fa7ee83`, and #2176 no longer appears in the stream's open task PR list. Pull ref #2167 exists for the human `stream/security -> main` review boundary and its head exactly matches the accepted stream head. `main` remains unchanged by this workflow.
+- Task PR #2176 was promoted successfully: remediation commit `021585670ed3943bf77dde057d744a299fa7ee83` is contained in `stream/security`, and #2176 no longer appears in the stream's open task PR list. Pull ref #2167 exists for the human `stream/security -> main` review boundary and tracks the accepted stream head. `main` remains unchanged by this workflow.
+- Daily Schedules publication succeeded for the normalized scan and generated workpad; the dated/filterable index was refreshed.
 
 ## files changed
 
@@ -105,6 +106,7 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `packages/os/scripts/daily-schedules.ts`
 - `packages/os/scripts/lib/security-scan-runner.ts`
 - `packages/os/scripts/lib/security-scan.ts`
 - `packages/os/scripts/verify.js`
@@ -113,4 +115,4 @@ bun run task:finish
 - `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/scripts/verify.js`
 
-- 2026-08-24 15:25:49 apply-patch: `.task/security/daily-security-maintenance-2026-08-24/workpad.md`
+- 2026-08-24 15:26:43 apply-patch: `.task/security/daily-security-maintenance-2026-08-24/workpad.md`
