@@ -1,0 +1,20 @@
+{
+  "area": "self-healing",
+  "stream": "stream/self-healing",
+  "taskBranch": "task/self-healing/daily-self-healing-2026-08-23",
+  "baseBranch": "stream/self-healing",
+  "sourceBranch": "stream/self-healing",
+  "startFrom": "stream",
+  "prNumber": 2175,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2175",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2175",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2175/daily-self-healing-2026-08-23",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2175",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2175/daily-self-healing-2026-08-23",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-daily-self-healing-2026-08-23",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_30f40fbe4f20",
+  "tmuxSession": "opensaas-self-healing-daily-self-healing-2026-08-23-30f40fbe",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-daily-self-healing-2026-08-23/.task/self-healing/daily-self-healing-2026-08-23/session.json",
+  "createdAt": "2026-08-24T01:43:36.311Z"
+}

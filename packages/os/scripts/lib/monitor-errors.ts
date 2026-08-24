@@ -195,6 +195,18 @@ export function classifyTraceFailure(
       );
     }
     if (
+      failure.tool === 'fs.read' &&
+      stderr.includes('no active task found for branch') &&
+      stderr.includes('run task:start first')
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'filesystem read targeted a caller-selected branch that is not an active task',
+      );
+    }
+    if (
       failure.tool === 'fs.search' &&
       stderr.includes('error: search failed: rg:') &&
       stderr.includes('no such file or directory') &&
