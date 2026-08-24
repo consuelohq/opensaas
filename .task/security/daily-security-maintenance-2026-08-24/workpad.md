@@ -8,11 +8,11 @@ started: 2026-08-24
 
 ## acceptance criteria
 
-- [ ] Run the canonical deterministic repository security scan and record scanner completion plus normalized new/persistent/resolved groups.
-- [ ] Triage material findings for applicability, reachability, duplication, and current advisory evidence before editing.
-- [ ] Make only bounded, evidence-backed source changes; a no-source-change conclusion is valid.
-- [ ] Validate any remediation with focused proof, review, and full verify before promotion.
-- [ ] Promote the completed daily task into `stream/security` without merging the stream into `main`.
+- [x] Run the canonical deterministic repository security scan and record scanner completion plus normalized new/persistent/resolved groups.
+- [x] Triage material findings for applicability, reachability, duplication, and current advisory evidence before editing.
+- [x] Make only bounded, evidence-backed source changes; a no-source-change conclusion is valid.
+- [x] Validate any remediation with focused proof, review, and full verify before promotion.
+- [x] Promote the completed daily task into `stream/security` without merging the stream into `main`.
 - [ ] Publish the normalized security report and generated task workpad into Daily Schedules.
 
 ## plan
@@ -31,6 +31,7 @@ started: 2026-08-24
 - Persistent critical/high triage selected root `@grpc/grpc-js@1.14.3` as the highest-confidence bounded remediation candidate. It is pulled by OpenTelemetry OTLP gRPC exporters under `@opentelemetry/sdk-node`, which `packages/twenty-server` depends on directly. Every observed parent range is `^1.7.1`, so the patched 1.14.4 release is semver-compatible.
 - The root Yarn lock was refreshed to `@grpc/grpc-js@1.14.4` without changing parent manifests. `yarn why @grpc/grpc-js --json` now resolves only 1.14.4, and a `twenty-server` workspace smoke successfully loads both `@opentelemetry/sdk-node` and `@grpc/grpc-js`.
 - Final repository-equivalent scan completed all four scanners at 1,286 unique groups (36 critical / 520 high / 588 medium / 138 low / 4 unknown). Compared with the initial 1,290-group scan, the remediation resolved exactly four high-severity `@grpc/grpc-js` groups and introduced no new groups. A second post-fix scan was stable at 1,286 with no additional delta.
+- Task PR #2176 was promoted successfully: `stream/security` now points at `021585670ed3943bf77dde057d744a299fa7ee83`, and #2176 no longer appears in the stream's open task PR list. Pull ref #2167 exists for the human `stream/security -> main` review boundary and its head exactly matches the accepted stream head. `main` remains unchanged by this workflow.
 
 ## files changed
 
@@ -61,7 +62,8 @@ started: 2026-08-24
 
 ## notes for ko
 
-- none yet
+- Human-only next action: review the existing `stream/security -> main` PR #2167 and merge it when appropriate. This workflow intentionally stops at the security stream.
+- Daily Schedules publication targets: `/artifacts/daily-schedules/2026-08-24/security-scan`, `/artifacts/daily-schedules/2026-08-24/security`, and `/artifacts/daily-schedules`.
 
 ## improvements noticed
 
@@ -72,6 +74,7 @@ started: 2026-08-24
 - `session.start({kind:"task"})` hit a facade validation bug that injected an unsupported `timeout` key; the documented `task.start` compatibility alias succeeded and returned task session `tsk_a6e1b4f622a7`.
 - Initial typed GitHub `pr.list` inspection failed in the current wrapper with a JSON parse error; PR state will be rechecked through supported lifecycle output or a bounded fallback only if needed.
 - The typed `security.scan` facade still invokes the missing root `security:scan` script. After that canonical attempt failed, the task used the current repository implementation `packages/os/scripts/security-scan.ts` through task-scoped `code.call`; raw scanner reports remained private in the local Consuelo cache and only normalized counts/paths are published.
+- `task.push` and `task.pr` both failed in their current GitHub auth/JSON plumbing. Recovery used exact task-scoped non-force Git pushes only after verifying the task branch, remote task head, stream ancestry, and remote stream head; no reset, force-push, or destructive recovery was used.
 
 ## Test-first contract
 
@@ -109,3 +112,5 @@ bun run task:finish
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/scripts/test-selection.js`
 - `packages/workspace/scripts/verify.js`
+
+- 2026-08-24 15:25:49 apply-patch: `.task/security/daily-security-maintenance-2026-08-24/workpad.md`
