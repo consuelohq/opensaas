@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/self-healing/daily-self-healing-2026-08-23",
+  "events": [
+    {
+      "id": "c75a08ef-fd3f-402d-8b92-dc416cc4586f",
+      "occurred_at": "2026-08-24T01:43:56.314Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/monitor-errors.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-23",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-23"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-24T01:43:56.368Z"
+}

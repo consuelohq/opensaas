@@ -141,6 +141,32 @@ describe('OS self-healing trace classification', () => {
     expect(
       classifyTraceFailure(
         failure({
+          tool: 'fs.read',
+          code: 'COMMAND_FAILED',
+          occurrences: 3,
+          affectedBranches: 3,
+          stderr: 'error: no active task found for branch "stream/os". run task:start first.',
+        }),
+        readContract,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'fs.read',
+          code: 'COMMAND_FAILED',
+          occurrences: 3,
+          affectedBranches: 2,
+          stderr: 'error: filesystem reader exited unexpectedly',
+        }),
+        readContract,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+
+    expect(
+      classifyTraceFailure(
+        failure({
           tool: 'fs.search',
           code: 'COMMAND_FAILED',
           occurrences: 4,
