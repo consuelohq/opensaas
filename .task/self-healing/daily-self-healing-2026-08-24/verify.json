@@ -1,0 +1,50 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/self-healing/daily-self-healing-2026-08-24",
+  "base": "origin/stream/self-healing",
+  "headSha": "08731b542d654f797960140d0ab1a9c3b7eb7b49",
+  "changeHash": "7528c98abd1fc3dd1d1afe9183ab3b89311c7370c5557f0d10619e5dd3419354",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-25T02:17:12.483Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/self-healing/daily-self-healing-2026-08-24/current.json",
+        ".task/self-healing/daily-self-healing-2026-08-24/evidence-log.json",
+        ".task/self-healing/daily-self-healing-2026-08-24/monitor-errors-report.json",
+        ".task/self-healing/daily-self-healing-2026-08-24/read-log.json",
+        ".task/self-healing/daily-self-healing-2026-08-24/session.json",
+        ".task/self-healing/daily-self-healing-2026-08-24/verify.json",
+        ".task/self-healing/daily-self-healing-2026-08-24/workpad.md",
+        ".task/tasks/self-healing/daily-self-healing-2026-08-24.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
