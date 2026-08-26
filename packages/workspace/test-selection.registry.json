@@ -5,8 +5,8 @@
     "testFileCount": 2656,
     "mappedTestCount": 2570,
     "unmappedTestCount": 86,
-    "ruleCount": 66,
-    "explicitRuleCount": 47,
+    "ruleCount": 67,
+    "explicitRuleCount": 48,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -2045,6 +2045,31 @@
       "critical": true,
       "exclusive": true,
       "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-compact-explore-response",
+      "source": [
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/search/explore-output.js",
+        "packages/os/tools/decision-engine/handler.ts",
+        "packages/os/tests/explore-output-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS compact explore response contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-output-contract.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Compact explore response shaping and decision-engine integration must prove bounded summary/detail contracts without selecting the unrelated broad OS package suite.",
       "origin": "explicit"
     },
     {

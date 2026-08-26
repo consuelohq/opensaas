@@ -1278,4 +1278,27 @@ describe('test selection registry', () => {
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
+
+  it('uses focused compact explore response contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/explore.js',
+      '--changed-file',
+      'packages/os/scripts/lib/search/explore-output.js',
+      '--changed-file',
+      'packages/os/tools/decision-engine/handler.ts',
+      '--changed-file',
+      'packages/os/tests/explore-output-contract.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-compact-explore-response');
+    expect(suiteNames).toContain('OS compact explore response contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
 });

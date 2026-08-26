@@ -34,6 +34,7 @@ started: 2026-08-26
 
 - 2026-08-26 02:30:52 `review.run`: passed — OK
 - 2026-08-26 02:33:16 `review.run`: passed — OK
+- 2026-08-26 02:36:33 `verify`: failed — COMMAND_FAILED
 
 ## key decisions
 
@@ -133,3 +134,6 @@ no-test waiver: not applicable.
 
 - Post-merge strict review now sees the intended narrow surface (25 source/test files, excluding generated/docs metadata) and is clean: 0 task-owned issues, 0 pre-existing issues, 0 blocking issues. One non-blocking docs opportunity notes discoverable tool-contract metadata changed (`trc_8b3a0e05284b`).
 - Current `origin/main` remains exactly the validated second parent `1f3062c63239bd378eeb3b7d4b9f09efb32a178c`; the remote task branch is still at pre-reconciliation `36740d89ac39fd6edf4b028d429fdeb0be1ac102`, so no concurrent remote task mutation has occurred (`trc_20cfe7dab1cd`).
+
+- Canonical verify reached the selected test gate and failed only because the compact explore files were the remaining source files not owned by an explicit critical rule, so test-selection fell through to the unrelated broad `@consuelo/os package test`; that broad suite hit existing facade dry-run failures (`trc_6c341ea81d68`). Selection evidence isolated the uncovered files to `scripts/explore.js`, `lib/search/explore-output.js`, `tools/decision-engine/handler.ts`, and the compact explore test (`trc_9da5a931d9c1`).
+- Added a focused critical `os-compact-explore-response` selection rule plus regression test, regenerated the registry (`trc_7a77ad381c34`), and proved the new regression GREEN (`trc_aba7c09d9f1a`). The whole task selection now chooses only focused suites and explicitly excludes the broad OS package suite (`trc_a56c5d1d765e`).
