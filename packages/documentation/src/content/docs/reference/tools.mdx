@@ -38,7 +38,7 @@ evidence:
       - packages/os/tests/release-tool-surface.test.ts
       - packages/os/tests/release-orchestrator.test.ts
       - packages/os/tests/release-script-security.test.ts
-    runtime: The operator release workflow was validated against the signed runtime publication/promotion contracts and exact-version lifecycle update path on 2026-08-26.
+    runtime: The operator release workflow was validated against the signed runtime publication/promotion contracts, main-targeting review-PR guard, and exact-version lifecycle update path on 2026-08-26.
 ---
 
 A facade tool is a typed operation exposed through the workspace tool facade. The generated full manifest marks these entries with `kind: "facade-tool"`.
@@ -139,7 +139,7 @@ The call envelope also supports a top-level `workSession` for work-session node 
 
 ## Operator releases
 
-`release` is the canonical Consuelo OS operator release tool. Given a GitHub PR, it verifies the PR is ready for `main`, merges it, waits for the runtime publication associated with that exact merge SHA, promotes the exact immutable bundle through the requested release channel, and by default updates the current operator node to the exact released version and verifies the installed bundle. Use `releaseOnly: true` when the release should stop after channel promotion.
+`release` is the canonical Consuelo OS operator release tool. Pass the stream review PR whose base is `main`, not a task PR whose base is a stream. The tool rejects a non-`main` PR before waiting on its checks; for the correct review PR it verifies readiness, merges it, waits for the runtime publication associated with that exact merge SHA, promotes the exact immutable bundle through the requested release channel, and by default updates the current operator node to the exact released version and verifies the installed bundle. Use `releaseOnly: true` when the release should stop after channel promotion.
 
 ```json
 {

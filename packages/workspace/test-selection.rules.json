@@ -1900,6 +1900,7 @@
         "packages/os/tests/fixtures/tool-package-baseline.json",
         "packages/os/tests/tool-manifest.test.ts",
         "packages/os/tests/work-session-fs.test.ts",
+        "packages/os/tools/task-lifecycle/handler.ts",
         "packages/os/tools/filesystem/schema.ts",
         "packages/os/workflows/generated/workflow-bundles.json",
         "packages/os/scripts/lib/work-session-protection.ts"

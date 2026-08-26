@@ -142,9 +142,16 @@ function releasePlan(pr: number, channel: ReleaseChannel, releaseOnly: boolean):
   return steps;
 }
 
+function mainTargetingReviewPrError(pr: ReleasePr): Error {
+  return new Error(
+    `release requires PR #${pr.number} to be the main-targeting stream review PR (found base ${pr.baseRefName}); ` +
+      'promote the task PR into its stream first, then pass the stream review PR that targets main',
+  );
+}
+
 function ensurePrReady(pr: ReleasePr): void {
   if (pr.baseRefName !== 'main') {
-    throw new Error(`release requires PR #${pr.number} to target main (found ${pr.baseRefName})`);
+    throw mainTargetingReviewPrError(pr);
   }
   if (pr.isDraft) throw new Error(`release refuses draft PR #${pr.number}`);
   if (pr.reviewDecision === 'CHANGES_REQUESTED') {
@@ -191,10 +198,11 @@ export async function orchestrateRelease(
     let pr = await adapter.inspectPr(request.pr);
     if (pr.state === 'CLOSED') throw new Error(`PR #${request.pr} is closed without a merge`);
     if (pr.state === 'OPEN') {
+      if (pr.baseRefName !== 'main') throw mainTargetingReviewPrError(pr);
       if (hasPendingChecks(pr)) pr = await adapter.waitForPrChecks(request.pr);
       ensurePrReady(pr);
     } else if (pr.baseRefName !== 'main') {
-      throw new Error(`merged PR #${request.pr} did not target main`);
+      throw mainTargetingReviewPrError(pr);
     }
 
     if (request.dryRun) {

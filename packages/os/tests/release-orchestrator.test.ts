@@ -316,6 +316,24 @@ describe('release orchestrator', () => {
     expect(events).toEqual(['inspect-pr']);
   });
 
+  it('keeps task PRs fail-closed and tells callers to use the main-targeting stream review PR', async () => {
+    const events: string[] = [];
+    const adapter = fakeAdapter(events, {
+      inspectPr: async () => {
+        events.push('inspect-pr');
+        return readyPr({
+          state: 'MERGED',
+          baseRefName: 'stream/workspace-agents',
+          mergeSha: 'sha_task',
+        });
+      },
+    });
+
+    await expect(orchestrateRelease({ pr: 2185, channel: 'canary' }, adapter))
+      .rejects.toThrow(/main-targeting stream review PR/i);
+    expect(events).toEqual(['inspect-pr']);
+  });
+
   it('fails closed when the exact version is active through a different platform bundle', async () => {
     const events: string[] = [];
     const adapter = fakeAdapter(events, {
