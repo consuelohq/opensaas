@@ -1217,6 +1217,22 @@ describe('test selection registry', () => {
     }
   });
 
+  it('routes the canonical session lifecycle handler to focused work-session contracts without the whole OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tools/task-lifecycle/handler.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const selectedSuiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-work-session-fs');
+    expect(selectedSuiteNames).toContain('OS work-session filesystem authority contracts');
+    expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('routes work-session Code Call changes to focused authority tests', () => {
     const result = run([
       'check',

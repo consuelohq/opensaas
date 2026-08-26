@@ -17,6 +17,8 @@ import {
 } from '../scripts/lib/mcp-gateway';
 import { inspectMcpNodeRoutingBody } from '../scripts/lib/mcp-node-routing';
 import { MCP_ROUTE_SOURCE_HEADER } from '../scripts/lib/mcp-node-routing';
+import { executeTool } from '../scripts/lib/facade/executor';
+import type { CommandPlan } from '../scripts/lib/facade/types';
 import { createDefaultNodeYamlConfig, resolveConsueloHomeLayout, writeYamlConfig } from '../scripts/lib/consuelo-home';
 import { createWorkSession, readWorkSession } from '../scripts/lib/work-session';
 import {
@@ -62,6 +64,10 @@ describe('session.start foundation', () => {
       inputSchema: 'SessionStartInput',
       sessionRequired: false,
       description: expect.stringMatching(/canonical/i),
+      command: {
+        script: 'session:start',
+        executionScope: 'runtime',
+      },
     });
     expect(definitions.get('task.start')).toMatchObject({
       description: expect.stringMatching(/compatibility alias/i),
@@ -92,6 +98,30 @@ describe('session.start foundation', () => {
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', workflow: 'media' }).success).toBe(false);
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', pr: 2036 }).success).toBe(false);
     expect(schema?.safeParse({ kind: 'work', path: '/tmp/example-work', title: 'not-allowed' }).success).toBe(false);
+  });
+
+  it('should execute session.start from the shipped OS runtime package', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('session.start', {
+      kind: 'work',
+      path: '/tmp/session-runtime-scope',
+    }, {
+      cwd: process.cwd(),
+      runner: async (plan) => {
+        plans.push(plan);
+        return {
+          stdout: JSON.stringify({ workSession: 'wrk_runtime_scope' }),
+          stderr: '',
+          exitCode: 0,
+        };
+      },
+      logMode: 'silent',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(plans).toHaveLength(1);
+    expect(realpathSync(plans[0].cwd)).toBe(realpathSync(join(process.cwd(), 'packages/os')));
+    expect(plans[0].args.slice(0, 3)).toEqual(['run', 'session:start', '--']);
   });
 
   it('should create metadata-only work sessions when starting ordinary work', () => {
