@@ -374,6 +374,7 @@ function integratedRouteRecord(): WorkspaceRouteRecord {
       { surface: 'sites', pathPrefix: '/gateway/traces', auth: 'workspace-session', status: 'active', target: gatewayReadTarget() },
       { surface: 'sites', pathPrefix: '/gateway/diffs/write', auth: 'workspace-session', status: 'active', target: gatewayDiffsWriteTarget() },
       { surface: 'sites', pathPrefix: '/gateway/diffs', auth: 'workspace-session', status: 'active', target: gatewayDiffsReadTarget() },
+      { surface: 'sites', pathPrefix: '/gateway/configuration/source-control/github', auth: 'workspace-session', status: 'active', target: gatewayConfigurationWriteTarget() },
       { surface: 'sites', pathPrefix: '/gateway/configuration/overlay', auth: 'workspace-session', status: 'active', target: gatewayConfigurationWriteTarget() },
       { surface: 'sites', pathPrefix: '/gateway/configuration', auth: 'workspace-session', status: 'active', target: gatewayConfigurationReadTarget() },
       { surface: 'sites', pathPrefix: '/gateway/settings/overlay', auth: 'workspace-session', status: 'active', target: gatewayLegacySettingsWriteTarget() },
@@ -857,6 +858,14 @@ ${JSON.stringify([...response.headers])}`).not.toMatch(forbiddenBrowserLeakPatte
         gatewayRouteFamily: '/gateway/configuration/*',
         gatewayServiceName: 'configuration-sites-write-endpoints',
         publicBoundary: 'consuelo-gateway',
+      }),
+    ]));
+    expect(record.routes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        pathPrefix: '/gateway/configuration/source-control/github',
+        target: expect.objectContaining({
+          serviceName: 'configuration-sites-write-endpoints',
+        }),
       }),
     ]));
     for (const descriptor of configurationDescriptors) {
