@@ -31,12 +31,15 @@ started: 2026-08-26
 - 2026-08-26 02:00:36 fs.write: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
 - 2026-08-26 02:01:43 fs.write: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
 - 2026-08-26 02:05:45 fs.write: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
+- 2026-08-26 02:13:29 fs.write: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-08-26 02:02:10 `review.run`: passed — OK
 - 2026-08-26 02:02:20 `verify`: failed — COMMAND_FAILED
 - 2026-08-26 02:05:37 `verify`: passed — OK
+- 2026-08-26 02:13:42 `review.run`: passed — OK
+- 2026-08-26 02:13:51 `verify`: passed — OK
 
 ## key decisions
 
@@ -77,12 +80,21 @@ no-test waiver: not applicable
 
 ## workspace-owned: files read
 
+- `.github/workflows/consuelo-os-distribution-environments.yaml`
+- `.github/workflows/consuelo-os-runtime-promote.yaml`
+- `.github/workflows/consuelo-os-runtime-publish.yaml`
+- `.github/workflows/consuelo-production-release.yaml`
+- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
 - `packages/os/scripts/lib/workspace-edge-route-seed.ts`
 - `packages/os/tests/install-edge-site-publisher.test.ts`
 - `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
 - `packages/os/tests/workspace-edge-sites-gateway-integration.test.ts`
+- `packages/workspace/scripts/gh.js`
 - `packages/workspace/scripts/lib/db-guards.js`
 - `packages/workspace/scripts/lib/verification.js`
+- `packages/workspace/scripts/os-release-install.ts`
+- `packages/workspace/scripts/os-release-workspace-edge.ts`
+- `packages/workspace/scripts/os-release.ts`
 - `packages/workspace/scripts/verify.js`
 
 ## Red / green evidence
@@ -102,3 +114,14 @@ no-test waiver: not applicable
 - Live rollout caveat observed during investigation: a manual D1 `/artifacts` gateway route was reconciled away by the currently installed node heartbeat because installed code still advertises the old route set. Durable publication therefore requires this route-seed change to be installed before claiming the live Artifacts surface is fixed.
 
 - 2026-08-26 02:05:45 append: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
+
+## Rollout compatibility
+
+The initial route-seed fix requires every node heartbeat producer to run the new runtime before `/artifacts` remains in D1. A manual D1 gateway route proved that an older heartbeat removes the new control-plane route. To make the rollout safe with mixed node versions, the Workspace Edge router now treats `/artifacts` and nested paths as an alias to the already-existing private `/gateway/artifacts` route when that route resolves to `artifacts-sites-read-layer` with `workspace-session` auth. This overrides legacy public Artifacts snapshots at request time while preserving the full inbound artifact path to the node.
+
+- RED: legacy public snapshot fixture returned 200 instead of the required 401/private live route, trace `trc_79d2a1f9ab36`.
+- GREEN: both new/live and legacy Artifacts cases pass, trace `trc_8ee21344586a`.
+- Broader edge regression: 55/55 tests pass across edge router, Artifact redirects, Sites/Gateway integration, and node proxy, trace `trc_57e8472d8d44`.
+- The attempted signed dev-runtime workflow run `32921598861` was blocked by pre-existing distribution regression instability (CI test timeouts; local rerun also exposed an unrelated Caddy worker-port assertion). No runtime bundle was published from that failed run; this task does not bypass that release gate.
+
+- 2026-08-26 02:13:29 append: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`

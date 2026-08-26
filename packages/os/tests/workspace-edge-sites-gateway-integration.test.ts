@@ -652,6 +652,65 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
     expect(new URL(upstreamRequests[0]!.url).pathname).toBe('/artifacts/daily-schedules/2026-08-25/self-healing');
   });
 
+  it('migrates legacy public Artifacts snapshots to the existing private live gateway at request time', async () => {
+    const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
+    const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');
+    const seed = await importModule<EdgeRouteSeedContract>('scripts/lib/workspace-edge-route-seed.ts');
+    const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      hostname: 'internal.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      connectorId: 'connector_internal',
+      tunnelOriginUrl: 'https://c-97c89262e0970bc466db457d4484f366.consuelohq.com',
+      publishedSiteIds: ['launcher', 'artifacts', 'traces', 'docs', 'configuration', 'tools', 'nodes', 'environments', 'secrets'],
+    });
+    const publicArtifactsIndex = record.routes.findIndex((route) => route.pathPrefix === '/artifacts');
+    expect(publicArtifactsIndex).toBeGreaterThanOrEqual(0);
+    record.routes[publicArtifactsIndex] = {
+      surface: 'sites',
+      pathPrefix: '/artifacts',
+      auth: 'public',
+      status: 'active',
+      target: siteSnapshotTarget('artifacts'),
+    };
+
+    const db = d1.createInMemoryWorkspaceRouteD1();
+    await d1.migrateWorkspaceRouteD1(db);
+    await d1.upsertWorkspaceHostnameInD1(db, record);
+    const upstreamRequests: Request[] = [];
+    const r2Reads: string[] = [];
+    let authorized = false;
+    const router = edge.createWorkspaceCloudflareEdgeRouter({
+      registry: d1.createWorkspaceCloudflareD1RouteRegistry(db),
+      internalSigningSecret: 'edge-test-secret',
+      authorizeWorkspaceSession: async () => authorized,
+      siteSnapshots: {
+        cache: { async match() { return null; }, async put() {} },
+        r2: { async get(key) { r2Reads.push(key); return { text: async () => '<!doctype html><title>Stale empty Artifacts</title>' }; } },
+      },
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
+        return new Response('<!doctype html><title>Daily Schedules</title>', { status: 200, headers: { 'content-type': 'text/html' } });
+      },
+    });
+
+    const artifactUrl = 'https://internal.consuelohq.com/artifacts/daily-schedules/2026-08-25/self-healing';
+    const denied = await router.fetch(new Request(artifactUrl, { headers: { accept: 'application/json' } }));
+    expect(denied.status).toBe(401);
+    expect(await denied.json()).toEqual({ error: 'workspace_session_required' });
+    expect(upstreamRequests).toHaveLength(0);
+    expect(r2Reads).toHaveLength(0);
+
+    authorized = true;
+    const allowed = await router.fetch(new Request(artifactUrl, { headers: { cookie: 'consuelo_workspace_session=session-internal' } }));
+    expect(allowed.status).toBe(200);
+    expect(await allowed.text()).toContain('Daily Schedules');
+    expect(upstreamRequests).toHaveLength(1);
+    expect(new URL(upstreamRequests[0]!.url).pathname).toBe('/artifacts/daily-schedules/2026-08-25/self-healing');
+    expect(r2Reads).toHaveLength(0);
+  });
+
   it('should serve GET /traces from the published Site snapshot shell instead of the OS connector', async () => {
     const d1 = await importModule<D1RegistryContract>('scripts/lib/workspace-cloudflare-d1-route-registry.ts');
     const edge = await importModule<EdgeRouterContract>('scripts/lib/workspace-cloudflare-edge-router.ts');

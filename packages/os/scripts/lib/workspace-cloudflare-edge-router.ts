@@ -924,15 +924,38 @@ export const createWorkspaceCloudflareEdgeRouter = (
           }
           return createOAuthAuthorizationServerMetadataResponse();
         }
-        const resolution = await input.registry.resolve({
-          host: inboundUrl.hostname,
-          path: inboundUrl.pathname,
-          method: request.method,
-          ...(request.headers.get('x-consuelo-node-id')?.trim()
-            ? { nodeId: request.headers.get('x-consuelo-node-id')!.trim() }
-            : {}),
-          nowMs: now(),
-        });
+        const requestedNodeId = request.headers
+          .get('x-consuelo-node-id')
+          ?.trim();
+        const routeNowMs = now();
+        const resolveRoute = (path: string) =>
+          input.registry.resolve({
+            host: inboundUrl.hostname,
+            path,
+            method: request.method,
+            ...(requestedNodeId ? { nodeId: requestedNodeId } : {}),
+            nowMs: routeNowMs,
+          });
+
+        let resolution;
+        if (
+          inboundUrl.pathname === '/artifacts' ||
+          inboundUrl.pathname.startsWith('/artifacts/')
+        ) {
+          const liveArtifactsResolution = await resolveRoute('/gateway/artifacts');
+          if (
+            liveArtifactsResolution.allowed &&
+            liveArtifactsResolution.auth === 'workspace-session' &&
+            liveArtifactsResolution.target.kind === 'consuelo-gateway-service' &&
+            liveArtifactsResolution.target.serviceName === 'artifacts-sites-read-layer'
+          ) {
+            resolution = liveArtifactsResolution;
+          } else {
+            resolution = await resolveRoute(inboundUrl.pathname);
+          }
+        } else {
+          resolution = await resolveRoute(inboundUrl.pathname);
+        }
 
         if (!resolution.allowed) {
           return createSafeErrorResponse({

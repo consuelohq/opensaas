@@ -1,7 +1,8 @@
 {
   "files": [
-    "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
-    "packages/workspace/scripts/verify.js"
+    ".github/workflows/consuelo-os-distribution-environments.yaml",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/workspace/scripts/gh.js"
   ],
-  "updatedAt": "2026-08-26T02:05:03.446Z"
+  "updatedAt": "2026-08-26T02:12:26.708Z"
 }
