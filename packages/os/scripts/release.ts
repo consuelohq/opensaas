@@ -20,10 +20,12 @@ import {
   resolveGitHubCliPath,
 } from './lib/github-cli';
 import { selectReleasePlatformBundleId } from './lib/release-platform-bundle';
+import { withReleasePromotionDispatchLock } from './lib/release-promotion-dispatch-lock';
 import {
   evaluatePromotionCorrelation,
   promotionDeadline,
   selectActivePromotionRun,
+  type PromotionRunRow,
 } from './lib/release-promotion-correlation';
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
@@ -409,52 +411,79 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
         const queueDeadline = promotionDeadline(Date.now());
         let baseline = 0;
         let dispatched = false;
+        const listPromotionRuns = () => ghJson<PromotionRunRow[]>([
+          'run',
+          'list',
+          '--workflow',
+          RUNTIME_PROMOTE_WORKFLOW,
+          '--limit',
+          '20',
+          '--json',
+          'databaseId,displayTitle,status,conclusion,url',
+        ]);
         while (Date.now() < queueDeadline) {
-          const target = await fetchChannel(to);
-          if (
-            target?.releaseSetBundleId === releaseSetBundleId &&
-            target.sourceCommit === sourceCommit
-          ) {
+          const decision = await withReleasePromotionDispatchLock({
+            operationId: `release:${from}->${to}:${releaseSetBundleId}`,
+            waitTimeoutMs: Math.max(1, queueDeadline - Date.now()),
+          }, async () => {
+            try {
+              const target = await fetchChannel(to);
+              if (
+                target?.releaseSetBundleId === releaseSetBundleId &&
+                target.sourceCommit === sourceCommit
+              ) {
+                return { kind: 'success' as const };
+              }
+
+              const before = listPromotionRuns();
+              if (selectActivePromotionRun(before)) return { kind: 'wait' as const };
+
+              const nextBaseline = Math.max(0, ...before.map((run) => Number(run.databaseId) || 0));
+              commandOutput(ghPath, [
+                'workflow',
+                'run',
+                RUNTIME_PROMOTE_WORKFLOW,
+                '--repo',
+                repo,
+                '--ref',
+                'main',
+                '-f',
+                `from=${from}`,
+                '-f',
+                `to=${to}`,
+                '-f',
+                `bundle=${releaseSetBundleId}`,
+              ]);
+
+              const visibilityDeadline = Date.now() + 60_000;
+              while (Date.now() < visibilityDeadline) {
+                const visibleTarget = await fetchChannel(to);
+                if (
+                  visibleTarget?.releaseSetBundleId === releaseSetBundleId &&
+                  visibleTarget.sourceCommit === sourceCommit
+                ) {
+                  return { kind: 'success' as const };
+                }
+                const visibleRuns = listPromotionRuns();
+                if (visibleRuns.some((run) => Number(run.databaseId) > nextBaseline)) {
+                  return { kind: 'dispatched' as const, baseline: nextBaseline };
+                }
+                await sleep(1_000);
+              }
+              throw new Error(`promotion dispatch did not become observable for ${from} -> ${to}`);
+            } catch (error: unknown) {
+              throw releaseStepError(`serialize promotion dispatch ${from} -> ${to}`, error);
+            }
+          });
+
+          if (decision.kind === 'success') {
             return { runId: 0, status: 'completed', conclusion: 'success', url: '' };
           }
-
-          const before = ghJson<Array<{
-            databaseId: number;
-            displayTitle?: string;
-            status?: string;
-            conclusion?: string;
-            url?: string;
-          }>>([
-            'run',
-            'list',
-            '--workflow',
-            RUNTIME_PROMOTE_WORKFLOW,
-            '--limit',
-            '20',
-            '--json',
-            'databaseId,displayTitle,status,conclusion,url',
-          ]);
-          if (selectActivePromotionRun(before)) {
+          if (decision.kind === 'wait') {
             await sleep(3_000);
             continue;
           }
-
-          baseline = Math.max(0, ...before.map((run) => Number(run.databaseId) || 0));
-          commandOutput(ghPath, [
-            'workflow',
-            'run',
-            RUNTIME_PROMOTE_WORKFLOW,
-            '--repo',
-            repo,
-            '--ref',
-            'main',
-            '-f',
-            `from=${from}`,
-            '-f',
-            `to=${to}`,
-            '-f',
-            `bundle=${releaseSetBundleId}`,
-          ]);
+          baseline = decision.baseline;
           dispatched = true;
           break;
         }
@@ -464,22 +493,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
 
         const observationDeadline = promotionDeadline(Date.now());
         while (Date.now() < observationDeadline) {
-          const rows = ghJson<Array<{
-            databaseId: number;
-            displayTitle?: string;
-            status?: string;
-            conclusion?: string;
-            url?: string;
-          }>>([
-            'run',
-            'list',
-            '--workflow',
-            RUNTIME_PROMOTE_WORKFLOW,
-            '--limit',
-            '20',
-            '--json',
-            'databaseId,displayTitle,status,conclusion,url',
-          ]);
+          const rows = listPromotionRuns();
           const correlation = evaluatePromotionCorrelation({
             baselineRunId: baseline,
             runs: rows,
