@@ -4212,6 +4212,7 @@
       "command": {
         "script": "google",
         "branchMode": "none",
+        "executionScope": "runtime",
         "arguments": [
           {
             "source": "action",
