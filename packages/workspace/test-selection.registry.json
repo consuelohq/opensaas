@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2652,
-    "mappedTestCount": 2567,
-    "unmappedTestCount": 85,
-    "ruleCount": 65,
-    "explicitRuleCount": 46,
+    "testFileCount": 2655,
+    "mappedTestCount": 2569,
+    "unmappedTestCount": 86,
+    "ruleCount": 66,
+    "explicitRuleCount": 47,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 272,
+      "packages/os/tests": 274,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 64,
+      "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 558,
+      "test": 561,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -1603,6 +1603,74 @@
       "origin": "explicit"
     },
     {
+      "id": "os-secrets-management",
+      "source": [
+        "packages/os/scripts/lib/consuelo-sites-secrets-adapter.ts",
+        "packages/os/scripts/lib/node-sealed-credential-store.ts",
+        "packages/os/scripts/lib/secrets-site.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/server/route-policies.ts",
+        "packages/os/scripts/server/routes/secrets.ts",
+        "packages/os/tests/local-os-server-hono-architecture.test.ts",
+        "packages/os/tests/secrets-hono-routes.test.ts",
+        "packages/os/tests/secrets-surface.test.ts",
+        "packages/os/tests/workspace-gateway-node-end-to-end.test.ts",
+        "packages/os/tests/internal-launcher-regressions.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Secrets sealed credential contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/secrets-surface.test.ts",
+            "tests/secrets-hono-routes.test.ts",
+            "tests/node-sealed-credential-store.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets signed gateway bridge",
+          "command": [
+            "bun",
+            "test",
+            "--cwd",
+            "packages/os",
+            "tests/local-os-server-hono-architecture.test.ts",
+            "tests/workspace-gateway-node-end-to-end.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets edge route contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Secrets UI, sealed-envelope storage, signed node routes, and Workspace Edge write routing must prove browser-to-node encryption and metadata-only behavior without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
       "id": "os-internal-workspace-shell",
       "source": [
         "packages/os/scripts/lib/sites.ts",
@@ -1617,7 +1685,8 @@
         "packages/os/tests/sites-cli.test.ts",
         "packages/os/tests/launcher-local-customization.test.ts",
         "packages/os/tests/install-state.test.ts",
-        "packages/os/tests/local-agent-connectivity.test.ts"
+        "packages/os/tests/local-agent-connectivity.test.ts",
+        "packages/os/tests/internal-launcher-regressions.test.ts"
       ],
       "tests": [
         {
@@ -1634,7 +1703,8 @@
             "tests/sites-cli.test.ts",
             "tests/launcher-local-customization.test.ts",
             "tests/install-state.test.ts",
-            "tests/local-agent-connectivity.test.ts"
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
           ]
         },
         {
@@ -4265,6 +4335,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/index-path-exclusions.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/install-control-plane-cloudflare.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4356,6 +4431,11 @@
     },
     {
       "path": "packages/os/tests/internal-dashboard-integration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/internal-launcher-regressions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15910,6 +15990,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/index-path-exclusions.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -16168,6 +16253,7 @@
     "packages/workspace/tests/git-diff.test.ts",
     "packages/workspace/tests/github-pr-reviews.test.ts",
     "packages/workspace/tests/github.test.ts",
+    "packages/workspace/tests/index-path-exclusions.test.js",
     "packages/workspace/tests/pr-links.test.js",
     "packages/workspace/tests/pr-ref.test.js",
     "packages/workspace/tests/pr-review.test.js",

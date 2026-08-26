@@ -195,6 +195,8 @@ export function createWorkspaceNodeHeartbeatClient(input: {
         timestamp: now(),
         nonce: requiredString(createNonce(), 'nonce'),
         connectorStatus: config.connectorStatus,
+        platform: process.platform,
+        architecture: process.arch,
         capabilities: config.capabilities,
         // Inside the signed payload, so the authority can trust the key it is asked to publish.
         ...(config.encryptionPublicKeyJwk

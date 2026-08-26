@@ -999,6 +999,61 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes Secrets management changes through focused sealed-credential contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/consuelo-sites-secrets-adapter.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/node-sealed-credential-store.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/secrets-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/settings-site.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/workspace-cloudflare-edge-router.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/workspace-edge-route-seed.ts',
+      '--changed-file',
+      'packages/os/scripts/server/route-policies.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/secrets.ts',
+      '--changed-file',
+      'packages/os/tests/local-os-server-hono-architecture.test.ts',
+      '--changed-file',
+      'packages/os/tests/secrets-hono-routes.test.ts',
+      '--changed-file',
+      'packages/os/tests/secrets-surface.test.ts',
+      '--changed-file',
+      'packages/os/tests/settings-site.test.ts',
+      '--changed-file',
+      'packages/os/tests/workspace-edge-route-seed-contract.test.ts',
+      '--changed-file',
+      'packages/os/tests/workspace-gateway-node-end-to-end.test.ts',
+      '--json',
+    ]));
+
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    expect(matchedRuleIds).toContain('os-secrets-management');
+    expect(data.selectedSuites.map((suite) => suite.ruleId)).not.toContain(
+      'auto:@consuelo/os:package-test',
+    );
+    const suites = data.selectedSuites.filter(
+      (candidate) => candidate.ruleId === 'os-secrets-management',
+    );
+    expect(suites.length).toBeGreaterThanOrEqual(3);
+    expect(suites.every((suite) => suite.critical)).toBe(true);
+    expect(JSON.stringify(suites)).toContain('tests/secrets-surface.test.ts');
+    expect(JSON.stringify(suites)).toContain('tests/secrets-hono-routes.test.ts');
+    expect(JSON.stringify(suites)).toContain('tests/internal-launcher-regressions.test.ts');
+    expect(JSON.stringify(suites)).toContain('tests/workspace-gateway-node-end-to-end.test.ts');
+    expect(JSON.stringify(data.selectedSuites)).toContain(
+      'tests/workspace-edge-route-seed-contract.test.ts',
+    );
+  });
+
   it('routes internal workspace shell and root Sites changes through loud focused contracts', () => {
     const data = json(run([
       'check',
@@ -1032,6 +1087,7 @@ describe('test selection registry', () => {
       'tests/observability-traces-site.test.ts',
       'tests/sites-cli.test.ts',
       'tests/launcher-local-customization.test.ts',
+      'tests/internal-launcher-regressions.test.ts',
     ]));
   });
 
