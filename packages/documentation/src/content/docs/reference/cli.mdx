@@ -67,7 +67,7 @@ consuelo update --channel canary --version 1.2.3 --check
 
 Available release channels are `stable`, `beta`, `canary`, `dev`, and `nightly`.
 
-`--version X.Y.Z` makes `update` require that exact signed runtime version instead of accepting whichever version the channel pointer currently exposes. Operator release automation uses this to ensure the machine that initiated a release is activated on the exact bundle that was just promoted. The version check does not bypass channel signatures or downgrade policy.
+`--version X.Y.Z` makes `update` require that exact signed runtime version instead of accepting whichever version the channel pointer currently exposes. Operator release automation uses this to ensure the machine that initiated a release is activated on the platform-specific runtime bundle selected from that exact signed release. The version check does not bypass channel signatures or downgrade policy.
 
 ### Restart and update gateway reconciliation
 

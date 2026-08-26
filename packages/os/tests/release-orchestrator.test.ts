@@ -22,7 +22,8 @@ const readyPr = (overrides: Partial<ReleasePr> = {}): ReleasePr => ({
 
 const fakeAdapter = (events: string[], overrides: Partial<ReleaseAdapter> = {}): ReleaseAdapter => {
   const promoted = new Set<string>();
-  const bundleId = `sha256:${'a'.repeat(64)}`;
+  const releaseSetBundleId = `sha256:${'a'.repeat(64)}`;
+  const platformBundleId = `sha256:${'b'.repeat(64)}`;
   return {
   inspectPr: async () => {
     events.push('inspect-pr');
@@ -50,13 +51,14 @@ const fakeAdapter = (events: string[], overrides: Partial<ReleaseAdapter> = {}):
       channel: 'dev',
       sourceCommit: 'sha_main',
       version: '1.2.3',
-      bundleId: `sha256:${'a'.repeat(64)}`,
+      releaseSetBundleId,
+      platformBundleId,
     };
   },
   channelRelease: async (channel) => {
     events.push(`channel-release:${channel}`);
     return promoted.has(channel)
-      ? { channel, sourceCommit: 'sha_main', version: '1.2.3', bundleId }
+      ? { channel, sourceCommit: 'sha_main', version: '1.2.3', releaseSetBundleId, platformBundleId }
       : null;
   },
   promote: async ({ from, to }) => {
@@ -70,7 +72,7 @@ const fakeAdapter = (events: string[], overrides: Partial<ReleaseAdapter> = {}):
   },
   localStatus: async () => {
     events.push('local-status');
-    return { version: '1.2.3', bundleId };
+    return { version: '1.2.3', platformBundleId };
   },
   ...overrides,
   };
@@ -89,6 +91,8 @@ describe('release orchestrator', () => {
       mergeSha: 'sha_main',
       channel: 'canary',
       version: '1.2.3',
+      releaseSetBundleId: `sha256:${'a'.repeat(64)}`,
+      platformBundleId: `sha256:${'b'.repeat(64)}`,
       localUpdated: true,
     });
     expect(events).toEqual([
@@ -109,12 +113,13 @@ describe('release orchestrator', () => {
   it('chains legal promotion hops for stable instead of skipping release gates', async () => {
     const events: string[] = [];
     const promoted = new Set<string>();
-    const bundleId = `sha256:${'a'.repeat(64)}`;
+    const releaseSetBundleId = `sha256:${'a'.repeat(64)}`;
+    const platformBundleId = `sha256:${'b'.repeat(64)}`;
     const adapter = fakeAdapter(events, {
       channelRelease: async (channel) => {
         events.push(`channel-release:${channel}`);
         return promoted.has(channel)
-          ? { channel, sourceCommit: 'sha_main', version: '1.2.3', bundleId }
+          ? { channel, sourceCommit: 'sha_main', version: '1.2.3', releaseSetBundleId, platformBundleId }
           : null;
       },
       promote: async ({ from, to }) => {
@@ -144,6 +149,23 @@ describe('release orchestrator', () => {
     await expect(orchestrateRelease({ pr: 2185, channel: 'canary' }, adapter))
       .rejects.toThrow(/failed check/i);
     expect(events).toEqual(['inspect-pr']);
+  });
+
+  it('fails closed when the exact version is active through a different platform bundle', async () => {
+    const events: string[] = [];
+    const adapter = fakeAdapter(events, {
+      localStatus: async () => {
+        events.push('local-status');
+        return {
+          version: '1.2.3',
+          platformBundleId: `sha256:${'c'.repeat(64)}`,
+        };
+      },
+    });
+
+    await expect(
+      orchestrateRelease({ pr: 2185, channel: 'canary' }, adapter),
+    ).rejects.toThrow(/platform bundle/i);
   });
 
   it('dry-run plans the release without merging, promoting, or updating', async () => {

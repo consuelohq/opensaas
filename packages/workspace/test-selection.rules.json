@@ -274,6 +274,7 @@
         "packages/os/scripts/github.js",
         "packages/os/scripts/lib/distribution/release-channels.ts",
         "packages/os/scripts/lib/github-cli.ts",
+        "packages/os/scripts/lib/release-platform-bundle.ts",
         "packages/os/scripts/lib/release-promotion-correlation.ts",
         "packages/os/scripts/lib/release-orchestrator.ts",
         "packages/os/scripts/release-channels.ts",
@@ -284,6 +285,7 @@
         "packages/os/tests/github-cli-resolution.test.ts",
         "packages/os/tests/os-device-authority-release-contract.test.ts",
         "packages/os/tests/release-orchestrator.test.ts",
+        "packages/os/tests/release-local-platform-bundle.test.ts",
         "packages/os/tests/release-script-promotion-correlation.test.ts",
         "packages/os/tests/release-script-security.test.ts",
         "packages/os/tests/release-tool-surface.test.ts",
@@ -306,6 +308,7 @@
             "tests/distribution/release-channels.test.ts",
             "tests/github-cli-resolution.test.ts",
             "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
             "tests/release-script-promotion-correlation.test.ts",
             "tests/release-script-security.test.ts",
             "tests/release-tool-surface.test.ts"
