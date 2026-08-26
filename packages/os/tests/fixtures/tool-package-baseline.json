@@ -5100,7 +5100,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaAngleMeasureInput",
       "outputSchema": "MediaAngleMetrics",
       "command": {
         "script": "media",
@@ -5138,7 +5138,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaAudioExtractInput",
       "outputSchema": "MediaAudioArtifact",
       "command": {
         "script": "media",
@@ -5176,7 +5176,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaAudioNormalizeInput",
       "outputSchema": "MediaAudioArtifact",
       "command": {
         "script": "media",
@@ -5214,7 +5214,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaBreakdownPlanInput",
       "outputSchema": "MediaBreakdownPlan",
       "command": {
         "script": "media",
@@ -5252,7 +5252,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaCameraMotionInput",
       "outputSchema": "MediaCameraMotion",
       "command": {
         "script": "media",
@@ -5290,7 +5290,7 @@
         "safeToRetry": true
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaClipSearchInput",
       "outputSchema": "MediaClipSearchResult",
       "command": {
         "script": "media",
@@ -5327,7 +5327,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaComposeInput",
       "outputSchema": "MediaRenderResult",
       "command": {
         "script": "media",
@@ -5364,7 +5364,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaDoctorInput",
       "outputSchema": "MediaDependencyReport",
       "command": {
         "script": "media",
@@ -5405,7 +5405,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaExportInput",
       "outputSchema": "MediaExportPackage",
       "command": {
         "script": "media",
@@ -5444,7 +5444,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaFramesExtractInput",
       "outputSchema": "MediaFrameManifest",
       "command": {
         "script": "media",
@@ -5481,7 +5481,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaIngestInput",
       "outputSchema": "MediaIngestManifest",
       "command": {
         "script": "media",
@@ -5519,7 +5519,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaInstallInput",
       "outputSchema": "MediaInstallPlan",
       "command": {
         "script": "media",
@@ -5557,7 +5557,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaMotionTrackInput",
       "outputSchema": "MediaMotionTrack",
       "command": {
         "script": "media",
@@ -5595,7 +5595,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaObjectTrackInput",
       "outputSchema": "MediaObjectTrack",
       "command": {
         "script": "media",
@@ -5633,7 +5633,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaOverlayRenderInput",
       "outputSchema": "MediaOverlay",
       "command": {
         "script": "media",
@@ -5671,7 +5671,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaPoseEstimateInput",
       "outputSchema": "MediaPoseTrack",
       "command": {
         "script": "media",
@@ -5708,7 +5708,7 @@
         "safeToRetry": true
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaProbeInput",
       "outputSchema": "MediaAsset",
       "command": {
         "script": "media",
@@ -5745,7 +5745,7 @@
         "safeToRetry": true
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaQaInput",
       "outputSchema": "MediaQaResult",
       "command": {
         "script": "media",
@@ -5783,7 +5783,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaSceneDetectInput",
       "outputSchema": "MediaSceneDetectResult",
       "command": {
         "script": "media",
@@ -5916,7 +5916,7 @@
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaSportsScienceMetricsInput",
       "outputSchema": "MediaSportsScienceMetrics",
       "command": {
         "script": "media",
@@ -6136,7 +6136,7 @@
         "safeToRetry": true
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaTimelineValidateInput",
       "outputSchema": "MediaTimelineValidationResult",
       "command": {
         "script": "media",

@@ -37,7 +37,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaAngleMeasureInput",
       "outputSchema": "MediaAngleMetrics",
       "exampleInput": {
         "dryRun": true
@@ -88,7 +88,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaAudioExtractInput",
       "outputSchema": "MediaAudioArtifact",
       "exampleInput": {
         "dryRun": true
@@ -139,7 +139,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaAudioNormalizeInput",
       "outputSchema": "MediaAudioArtifact",
       "exampleInput": {
         "dryRun": true
@@ -190,7 +190,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaBreakdownPlanInput",
       "outputSchema": "MediaBreakdownPlan",
       "exampleInput": {
         "dryRun": true
@@ -241,7 +241,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaCameraMotionInput",
       "outputSchema": "MediaCameraMotion",
       "exampleInput": {
         "dryRun": true
@@ -292,7 +292,7 @@ export const toolSchemas = [
         "safeToRetry": true
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaClipSearchInput",
       "outputSchema": "MediaClipSearchResult",
       "exampleInput": {
         "dryRun": true
@@ -342,7 +342,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaComposeInput",
       "outputSchema": "MediaRenderResult",
       "exampleInput": {
         "dryRun": true
@@ -392,7 +392,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaDoctorInput",
       "outputSchema": "MediaDependencyReport",
       "exampleInput": {
         "dryRun": true
@@ -446,7 +446,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaExportInput",
       "outputSchema": "MediaExportPackage",
       "exampleInput": {
         "dryRun": true
@@ -498,7 +498,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaFramesExtractInput",
       "outputSchema": "MediaFrameManifest",
       "exampleInput": {
         "dryRun": true
@@ -548,7 +548,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaIngestInput",
       "outputSchema": "MediaIngestManifest",
       "exampleInput": {
         "dryRun": true
@@ -599,7 +599,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaInstallInput",
       "outputSchema": "MediaInstallPlan",
       "exampleInput": {
         "dryRun": true
@@ -650,7 +650,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaMotionTrackInput",
       "outputSchema": "MediaMotionTrack",
       "exampleInput": {
         "dryRun": true
@@ -701,7 +701,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaObjectTrackInput",
       "outputSchema": "MediaObjectTrack",
       "exampleInput": {
         "dryRun": true
@@ -752,7 +752,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaOverlayRenderInput",
       "outputSchema": "MediaOverlay",
       "exampleInput": {
         "dryRun": true
@@ -803,7 +803,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaPoseEstimateInput",
       "outputSchema": "MediaPoseTrack",
       "exampleInput": {
         "dryRun": true
@@ -853,7 +853,7 @@ export const toolSchemas = [
         "safeToRetry": true
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaProbeInput",
       "outputSchema": "MediaAsset",
       "exampleInput": {
         "dryRun": true
@@ -903,7 +903,7 @@ export const toolSchemas = [
         "safeToRetry": true
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaQaInput",
       "outputSchema": "MediaQaResult",
       "exampleInput": {
         "dryRun": true
@@ -954,7 +954,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaSceneDetectInput",
       "outputSchema": "MediaSceneDetectResult",
       "exampleInput": {
         "dryRun": true
@@ -1060,7 +1060,7 @@ export const toolSchemas = [
         "safeToRetry": false
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaSportsScienceMetricsInput",
       "outputSchema": "MediaSportsScienceMetrics",
       "exampleInput": {
         "dryRun": true
@@ -1226,7 +1226,7 @@ export const toolSchemas = [
         "safeToRetry": true
       },
       "defaultTimeout": 300000,
-      "inputSchema": "EmptyInput",
+      "inputSchema": "MediaTimelineValidateInput",
       "outputSchema": "MediaTimelineValidationResult",
       "exampleInput": {
         "dryRun": true

@@ -4,9 +4,11 @@
     "packages/os/scripts/lib/github-cli.ts",
     "packages/os/scripts/lib/install-state.ts",
     "packages/os/scripts/lib/worker-pool.ts",
+    "packages/os/tests/audit/script-parity-audit.test.ts",
     "packages/os/tests/fixtures/tool-package-baseline.json",
     "packages/os/tests/security-gateway.test.ts",
-    "packages/os/tests/tool-manifest.test.ts"
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tools/media/schema.ts"
   ],
-  "updatedAt": "2026-08-26T06:05:35.714Z"
+  "updatedAt": "2026-08-26T06:09:24.546Z"
 }

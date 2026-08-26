@@ -46,6 +46,9 @@ started: 2026-08-26
 - Caddy test now explicitly sets `CONSUELO_OS_WORKER_BASE_PORT=8999`, matching the architecture where worker-pool base is authoritative. Repro before the fix showed ambient `46321-46323` contaminating the test (`trc_f3f949cbfe7b`).
 - `tool-package-baseline.json` is regenerated from `buildToolManifest({ write: false })` so its ordering and definitions exactly match the canonical generator (`trc_924602fe2f01`).
 - Exact OS-contract command now passes: 47 passed, 5 skipped, 0 failed (`trc_5b0eb31da826`).
+- Full committed-head verify correctly rejected the temporary `EmptyInput` media scaffold because media taxonomy requires every `media.*` input contract to retain a named `Media…Input` identity (`trc_1883fded3453`). The 21 scaffold tools are now restored to their original named schema IDs, each backed by a minimal request/dry-run schema until real arguments are implemented (`trc_cf8d54d3f798`).
+- The script-parity characterization was also materially stale: current inventory has 516 scripts versus 395 classified, with 123 missing and 2 removed generated plists. It was refreshed conservatively—new OS-only paths stay `os-only-needs-review`, workspace-only stay `workspace-only-needs-port`, changed shared paths stay `changed-needs-review`, and only byte-identical paths are `same` (`trc_49325811ccfb`, `trc_cfdb8fafaac6`, `trc_d1a3899c63c8`).
+- After restoring named media schemas, regenerating canonical manifests/baseline, and normalizing the parity inventory, all affected deterministic suites pass together: media taxonomy 5/5, parity audit 1/1, facade 714/714, exact OS contracts 47 passed / 5 skipped (`trc_d8453cdeac56`).
 
 ## files changed
 
@@ -75,12 +78,15 @@ started: 2026-08-26
 - 2026-08-26 05:54:08 `review.run`: passed — OK
 - 2026-08-26 06:06:34 `checkFiles`: failed — COMMAND_FAILED
 - 2026-08-26 06:06:43 `review.run`: passed — OK
+- 2026-08-26 06:12:23 `checkFiles`: passed — OK
+- 2026-08-26 06:12:30 `review.run`: passed — OK
 
 ## key decisions
 
 - Do not bypass the required GitHub check or admin-merge a red PR; repair the narrow contract defects instead.
 - Keep browser service/test files untouched in this task.
-- For media scaffolds whose handler accepts zero facade arguments, publish `EmptyInput` instead of nonexistent named schemas. Do not weaken generic facade tests and do not invent unsupported argument contracts.
+- Correction after full package validation: media taxonomy explicitly requires named `Media…Input` contracts. The final design therefore keeps each original named schema and implements it as a minimal request/dry-run scaffold; `EmptyInput` was only an intermediate diagnostic and is not the final contract.
+- Script-parity refresh is deliberately conservative: no newly discovered OS-only script is labeled intentional without evidence.
 
 ## notes for ko
 
@@ -116,6 +122,7 @@ bun run task:finish
 - `packages/os/scripts/lib/worker-pool.ts`
 - `packages/os/scripts/media.ts`
 - `packages/os/scripts/release.ts`
+- `packages/os/tests/audit/script-parity-audit.test.ts`
 - `packages/os/tests/browser-service.test.ts`
 - `packages/os/tests/facade/facade.test.ts`
 - `packages/os/tests/fixtures/tool-package-baseline.json`
@@ -128,6 +135,6 @@ bun run task:finish
 - `packages/os/tools/subagent/schema.ts`
 - `packages/workspace/tests/browser-service.test.ts`
 
-- 2026-08-26 06:05:40 apply-patch: `packages/os/tests/security-gateway.test.ts`
+- 2026-08-26 06:12:13 apply-patch: `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md`
 
-- 2026-08-26 06:06:26 apply-patch: `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md`
+- 2026-08-26 06:12:18 apply-patch: `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md`
