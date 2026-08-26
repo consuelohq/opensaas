@@ -26,7 +26,10 @@ import {
   INSTALL_DASHBOARD_API_ROUTES,
   isInstallId,
 } from '../../../scripts/lib/install-telemetry-contract';
-import { createInternalUserDashboardPageHandler } from '../../../scripts/lib/internal-user-dashboard';
+import {
+  createInternalUserDashboardPageHandler,
+  INTERNAL_DASHBOARD_ENROLLMENT_RESET_PATH,
+} from '../../../scripts/lib/internal-user-dashboard';
 
 type WorkspaceEdgeLogContext = {
   component: 'workspace-edge';
@@ -68,6 +71,11 @@ export type WorkspaceEdgeHandlerOptions = {
   internalDashboardService?: InstallControlPlaneService;
   authorizeInternalDashboard?: InstallDashboardAuthorizer;
 };
+
+const AUTHORITY_ENROLLMENT_RESET_PATH =
+  '/internal/install-control-plane/enrollment/reset' as const;
+const INTERNAL_DASHBOARD_ORIGIN =
+  `https://${INSTALL_INTERNAL_DASHBOARD_HOST}` as const;
 
 const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
@@ -365,6 +373,135 @@ async function proxyInstallDiagnosticRequest(input: {
   }
 }
 
+function validEnrollmentResetTarget(value: unknown): value is {
+  workspace_host: string;
+  workspace_id?: string;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const target = value as Record<string, unknown>;
+  if (
+    typeof target.workspace_host !== 'string' ||
+    target.workspace_host.length > 253 ||
+    !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*\.consuelohq\.com$/.test(
+      target.workspace_host,
+    )
+  ) {
+    return false;
+  }
+  return (
+    target.workspace_id === undefined ||
+    (typeof target.workspace_id === 'string' &&
+      target.workspace_id.trim().length > 0 &&
+      target.workspace_id.length <= 256)
+  );
+}
+
+async function proxyEnrollmentResetRequest(input: {
+  request: Request;
+  stub?: AuthorityStub;
+  internalAuthSecret?: string;
+  authorize: InstallDashboardAuthorizer;
+}): Promise<Response | undefined> {
+  const incoming = new URL(input.request.url);
+  if (incoming.pathname !== INTERNAL_DASHBOARD_ENROLLMENT_RESET_PATH) {
+    return undefined;
+  }
+  if (input.request.method !== 'POST') {
+    return new Response(JSON.stringify({
+      error: {
+        code: 'METHOD_NOT_ALLOWED',
+        message: 'Enrollment reset requires POST.',
+      },
+    }), {
+      status: 405,
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'no-store',
+        allow: 'POST',
+      },
+    });
+  }
+  let authorized = false;
+  try {
+    authorized = await input.authorize(input.request);
+  } catch {
+    authorized = false;
+  }
+  if (!authorized) return forbiddenInternalDashboardResponse();
+  if (
+    input.request.headers.get('origin') !== INTERNAL_DASHBOARD_ORIGIN ||
+    input.request.headers.get('x-consuelo-dashboard-action') !==
+      'enrollment-reset'
+  ) {
+    return forbiddenInternalDashboardResponse();
+  }
+  const internalAuthSecret = input.internalAuthSecret?.trim();
+  if (!input.stub || !internalAuthSecret) return closedAuthResponse();
+
+  let target: unknown;
+  try {
+    const raw = await input.request.text();
+    if (raw.length > 4096) {
+      return new Response(JSON.stringify({
+          error: {
+            code: 'PAYLOAD_TOO_LARGE',
+            message: 'Enrollment reset payload exceeds the 4096 byte limit.',
+          },
+        }), {
+        status: 413,
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+          'cache-control': 'no-store',
+        },
+      });
+    }
+    target = JSON.parse(raw);
+  } catch {
+    target = undefined;
+  }
+  if (!validEnrollmentResetTarget(target)) {
+    return new Response(JSON.stringify({
+        error: {
+          code: 'INVALID_ENROLLMENT_TARGET',
+          message:
+            'A valid Consuelo workspace host and optional workspace ID are required.',
+        },
+      }), {
+      status: 400,
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'no-store',
+      },
+    });
+  }
+
+  try {
+    const response = await input.stub.fetch(
+      new Request(`https://os.consuelohq.com${AUTHORITY_ENROLLMENT_RESET_PATH}`, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          'x-consuelo-internal-auth-secret': internalAuthSecret,
+        },
+        body: JSON.stringify(target),
+      }),
+    );
+    return new Response(response.body, {
+      status: response.status,
+      headers: {
+        'content-type':
+          response.headers.get('content-type') ??
+          'application/json; charset=utf-8',
+        'cache-control': 'no-store',
+        'x-content-type-options': 'nosniff',
+      },
+    });
+  } catch {
+    return closedAuthResponse();
+  }
+}
+
 const NODE_CONTROL_PATHS = new Map<string, { authorityPath: string; method: 'GET' | 'POST' }>([
   ['/gateway/nodes/snapshot', { authorityPath: '/internal/workspace/nodes', method: 'GET' }],
   ['/gateway/nodes/default', { authorityPath: '/internal/workspace/nodes/default', method: 'POST' }],
@@ -559,6 +696,13 @@ export function createWorkspaceEdgeHandler(
             url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
             url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`)
           ) {
+            const enrollmentReset = await proxyEnrollmentResetRequest({
+              request,
+              stub,
+              internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+              authorize: authorizeInternalDashboard,
+            });
+            if (enrollmentReset) return enrollmentReset;
             const diagnostic = await proxyInstallDiagnosticRequest({
               request,
               stub,
