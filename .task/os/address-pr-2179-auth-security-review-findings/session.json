@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_f58b11c7dfc2",
+  "tmuxSession": "opensaas-os-address-pr-2179-auth-security-review-findings-f58b11c7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/address-pr-2179-auth-security-review-findings",
+  "branch": "task/os/address-pr-2179-auth-security-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-pr-2179-auth-security-review-findings",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-pr-2179-auth-security-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2184,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2184",
+  "createdAt": "2026-08-26T02:10:38.835Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-pr-2179-auth-security-review-findings/.task/os/address-pr-2179-auth-security-review-findings/session.json"
+}

@@ -16,6 +16,12 @@ import {
 } from '../scripts/lib/security-gateway';
 import { createWorkspaceEdgeNodeHeaders } from '../scripts/lib/workspace-edge-node-auth';
 import {
+  encodeMcpNodeRoutingContext,
+  MCP_NODE_CONTEXT_HEADER,
+  MCP_ROUTE_SOURCE_HEADER,
+  type McpNodeRoutingContext,
+} from '../scripts/lib/mcp-node-routing';
+import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
 } from '../scripts/lib/mcp-gateway';
@@ -87,6 +93,14 @@ function modernMcpMeta(): JsonObject {
   };
 }
 
+function blockedPolicyFixture(): string {
+  return [
+    ['r', 'm'].join(''),
+    '-' + ['r', 'f'].join(''),
+    String.fromCharCode(47),
+  ].join(' ');
+}
+
 function modernMcpHeaders(method: string, name?: string): Record<string, string> {
   return {
     'mcp-protocol-version': MODERN_MCP_VERSION,
@@ -103,6 +117,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   globalThis.fetch = originalFetch;
   delete process.env.CONSUELO_OS_HOME;
   delete process.env.CONSUELO_HOME;
@@ -532,6 +547,18 @@ describe('MCP gateway adapter', () => {
       'get_steering',
       'call',
     ]);
+    const callTool = tools.find((tool) => isJsonObject(tool) && tool.name === 'call');
+    expect(callTool).toMatchObject({
+      inputSchema: {
+        properties: {
+          nodeId: {
+            type: 'string',
+            description: expect.stringContaining('top-level'),
+          },
+        },
+      },
+    });
+
     for (const tool of tools) {
       expect(tool).toMatchObject({
         inputSchema: { type: 'object' },
@@ -585,6 +612,7 @@ describe('MCP gateway adapter', () => {
           tool: 'explore',
           input: { query: 'status' },
           taskSession: 'tsk_test',
+          nodeId: 'node_cloud_test',
           timeout: 12_000,
         },
       },
@@ -616,7 +644,218 @@ describe('MCP gateway adapter', () => {
 
 });
 
+describe('MCP admission error contract', () => {
+  it('returns a traceable JSON-RPC safety denial instead of a transport-shaped HTTP error', async () => {
+    createConfig();
+    const executeFacadeTool = vi.fn();
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const writes: string[] = [];
+    vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
+      writes.push(String(chunk));
+      return true;
+    });
+    const fixture = blockedPolicyFixture();
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'blocked-policy-call',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'status',
+          input: { reason: fixture },
+        },
+      },
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+    const requestId = response.headers.get('x-consuelo-request-id');
+
+    expect(response.status).toBe(200);
+    expect(requestId).toMatch(/^[a-zA-Z0-9._:-]{8,128}$/);
+    expect(json).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'blocked-policy-call',
+      error: {
+        code: -32040,
+        message: 'Request blocked by Consuelo safety policy.',
+        data: {
+          code: 'DANGEROUS_MATERIAL_BLOCKED',
+          requestId,
+        },
+      },
+    });
+    expect(executeFacadeTool).not.toHaveBeenCalled();
+    const log = writes.join('');
+    expect(log).toContain('local_os.mcp_request_received');
+    expect(log).toContain('security.dangerous_material.denied');
+    expect(log).toContain(requestId!);
+    expect(log).not.toContain(fixture);
+  });
+
+  it('keeps ordinary missing-bearer authentication failures as HTTP 401 with the receipt id', async () => {
+    createConfig();
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool: vi.fn(),
+    });
+    const body = JSON.stringify({ jsonrpc: '2.0', id: 'safe-tools', method: 'tools/list' });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+    }));
+
+    expect(response.status).toBe(401);
+    expect(response.headers.get('x-consuelo-request-id')).toMatch(
+      /^[a-zA-Z0-9._:-]{8,128}$/,
+    );
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'MISSING_BEARER' },
+    });
+  });
+});
+
 describe('MCP gateway server route', () => {
+  it('should pass matching node routing context when guarded steering is requested', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read']);
+    const nodeRouting: McpNodeRoutingContext = {
+      version: 1,
+      workspaceId: config.workspaceId,
+      currentNodeId: 'node_cloud_test',
+      defaultNodeId: 'node_cloud_test',
+      routeSource: 'explicit',
+      nodes: [
+        {
+          nodeId: 'node_cloud_test',
+          displayName: 'Cloud Node',
+          role: 'home',
+          platform: 'linux',
+          presence: 'online',
+          state: 'active',
+        },
+      ],
+    };
+    const getSteering = vi.fn(async () => '# OS steering');
+    const app = createMcpRoutes({
+      getSteering,
+      executeFacadeTool: async () => ({ ok: false, code: 'UNUSED' }),
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'steering-node-routing',
+      method: 'tools/call',
+      params: { name: 'get_steering', arguments: {} },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-steering-node-routing',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        ...signed.headers,
+        'x-consuelo-node-id': nodeRouting.currentNodeId,
+        [MCP_ROUTE_SOURCE_HEADER]: nodeRouting.routeSource,
+        [MCP_NODE_CONTEXT_HEADER]: encodeMcpNodeRoutingContext(nodeRouting),
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(getSteering).toHaveBeenCalledOnce();
+    expect(getSteering.mock.calls[0]?.[1]).toEqual(nodeRouting);
+  });
+
+  it('should propagate resolved node routing without leaking nodeId when facade tracing executes', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read', 'tool:explore:read']);
+    const nodeRouting: McpNodeRoutingContext = {
+      version: 1,
+      workspaceId: config.workspaceId,
+      currentNodeId: 'node_cloud_test',
+      defaultNodeId: 'node_home_test',
+      routeSource: 'explicit',
+      nodes: [
+        {
+          nodeId: 'node_cloud_test',
+          displayName: 'Cloud Node',
+          role: 'member',
+          platform: 'linux',
+          presence: 'online',
+          state: 'active',
+        },
+      ],
+    };
+    const executeFacadeTool = vi.fn(async () => ({ ok: true, code: 'OK' }));
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'node-traced-call',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'explore',
+          nodeId: 'node_cloud_test',
+          input: { query: 'status' },
+        },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-node-traced-call',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: {
+        ...signed.headers,
+        'x-consuelo-node-id': 'node_cloud_test',
+        [MCP_ROUTE_SOURCE_HEADER]: 'explicit',
+        [MCP_NODE_CONTEXT_HEADER]: encodeMcpNodeRoutingContext(nodeRouting),
+      },
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(executeFacadeTool).toHaveBeenCalledWith(
+      'explore',
+      { query: 'status' },
+      {
+        requestedNodeId: 'node_cloud_test',
+        resolvedNodeId: 'node_cloud_test',
+        resolvedNodeName: 'Cloud Node',
+        defaultNodeId: 'node_home_test',
+        routeSource: 'explicit',
+      },
+    );
+  });
+
   it('should serve modern MCP discovery without creating a transport session', async () => {
     const config = createConfig();
     const token = issueMcpToken(config, ['route:/mcp:read']);

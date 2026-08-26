@@ -1,10 +1,26 @@
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 import type {
   LifecycleHealthAcceptance,
   LifecycleServiceController,
 } from './types';
+const LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT = 'retire-legacy-system-daemons.sh';
+// Caddy and Cloudflared are the public MCP availability boundary. Ordinary
+// runtime activation may rotate the OS worker pool behind Caddy, but it must
+// not tear down the ingress that carries the client's HTTP connection.
+const MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS = new Set([
+  'com.consuelo.portless.system',
+  'com.consuelo.watchdog',
+  'com.consuelo.availability',
+]);
+const MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES = [
+  'com.consuelo.os.node-heartbeat.',
+];
+const MAC_GATEWAY_BOOTSTRAP_ATTEMPTS = 4;
+const MAC_GATEWAY_BOOTSTRAP_RETRY_MS = 200;
+const MAC_GATEWAY_KICKSTART_ATTEMPTS = 4;
+const MAC_GATEWAY_KICKSTART_RETRY_MS = 200;
 
 export type LifecycleProcessResult = {
   exitCode: number;
@@ -47,27 +63,238 @@ function commandFailure(result: LifecycleProcessResult, fallback: string): Error
   return new Error(result.stderr.trim() || result.stdout.trim() || fallback);
 }
 
+function isLegacyDefinitionsOnlyUnsupported(result: LifecycleProcessResult): boolean {
+  const detail = `${result.stdout}\n${result.stderr}`;
+  return /unknown option:\s*--definitions-only/i.test(detail);
+}
+
+function installedMacRestartableSidecarLaunchAgents(environment?: NodeJS.ProcessEnv): Array<{
+  label: string;
+  plistPath: string;
+}> {
+  const userHome = environment?.HOME?.trim();
+  if (!userHome) return [];
+  const launchAgentDir = join(userHome, 'Library', 'LaunchAgents');
+  if (!existsSync(launchAgentDir)) return [];
+  return readdirSync(launchAgentDir)
+    .filter((name) => name.endsWith('.plist'))
+    .map((name) => ({
+      label: name.slice(0, -'.plist'.length),
+      plistPath: join(launchAgentDir, name),
+    }))
+    .filter(({ label }) =>
+      MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS.has(label)
+      || MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES.some((prefix) => label.startsWith(prefix)),
+    )
+    .sort((left, right) => left.label.localeCompare(right.label));
+}
 export function createReloadServiceController(input: {
   osRoot: string;
+  activeRuntimeRoot?: string;
+  home?: string;
+  nodeHome?: string;
+  runtimeExecutable?: string;
   run?: LifecycleProcessRunner;
   platform?: NodeJS.Platform;
+  environment?: NodeJS.ProcessEnv;
+  userId?: number;
+  sleep?: (milliseconds: number) => Promise<void>;
 }): LifecycleServiceController {
-  const reloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
+  const bootstrapReloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
+  const activeRuntimeRoot = input.activeRuntimeRoot ?? input.osRoot;
+  const runtimeScripts = (runtimeRoot: string) => ({
+    reloadScript: resolve(runtimeRoot, 'scripts', 'consuelo-reload.js'),
+    daemonInstaller: resolve(runtimeRoot, 'scripts', 'install-system-daemons.sh'),
+    dependencyBootstrap: resolve(runtimeRoot, 'scripts', 'bootstrap.sh'),
+    caddyReconcileScript: resolve(
+      runtimeRoot,
+      'scripts',
+      'migrations',
+      'reconcile-caddy-worker-pool.ts',
+    ),
+  });
+  const lifecycleHome = input.home ?? (input.nodeHome ? resolve(input.nodeHome, '..') : undefined);
+  const runtimeExecutable = input.runtimeExecutable ?? process.execPath;
+  const legacySystemDaemonRetirementScript = resolve(input.osRoot, 'scripts', LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT);
   const uninstallScript = resolve(input.osRoot, 'scripts', 'uninstall-system-daemons.sh');
   const run = input.run ?? defaultRunner;
   const platform = input.platform ?? process.platform;
+  const sleepImpl = input.sleep ?? sleep;
+  const reconcileCaddy = async (runtimeRoot = activeRuntimeRoot): Promise<void> => {
+    if (platform !== 'darwin' || !lifecycleHome) return;
+    const { caddyReconcileScript } = runtimeScripts(runtimeRoot);
+    try {
+      const result = await run(
+        runtimeExecutable,
+        [caddyReconcileScript, lifecycleHome],
+        input.environment ?? process.env,
+      );
+      if (result.exitCode !== 0) {
+        throw commandFailure(result, `Caddy reconciliation exited ${result.exitCode}`);
+      }
+    } catch (error: unknown) {
+      throw new Error(
+        `activated runtime Caddy reconciliation failed: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
+  };
   return {
     async preflight() {
-      if (!existsSync(reloadScript)) {
-        throw new Error(`canonical reload adapter is missing: ${reloadScript}`);
+      if (!existsSync(bootstrapReloadScript)) {
+        throw new Error(`canonical reload adapter is missing: ${bootstrapReloadScript}`);
       }
+      if (platform === 'darwin') {
+        if (!existsSync(legacySystemDaemonRetirementScript)) {
+          throw new Error(`legacy system-daemon retirement adapter is missing: ${legacySystemDaemonRetirementScript}`);
+        }
+        const legacy = await run('bash', [legacySystemDaemonRetirementScript, '--check']);
+        if (legacy.exitCode === 2) {
+          throw new Error('Legacy root Consuelo LaunchDaemons are still installed. Retire them once with: ' + `sudo bash '${legacySystemDaemonRetirementScript}' --apply` + ', then rerun the lifecycle command.');
+        }
+        if (legacy.exitCode !== 0) {
+          throw commandFailure(legacy, `legacy system-daemon check exited ${legacy.exitCode}`);
+        }
+      }
+      const { caddyReconcileScript } = runtimeScripts(activeRuntimeRoot);
+      if (existsSync(caddyReconcileScript)) await reconcileCaddy(activeRuntimeRoot);
     },
     async restart(options = {}) {
       try {
-        const command = options.waitForCompletion ? 'restart-now' : 'restart';
-        const result = await run(process.execPath, [reloadScript, command]);
+        const runtimeRoot = options.runtimeRoot ?? activeRuntimeRoot;
+        const { reloadScript, daemonInstaller, dependencyBootstrap } = runtimeScripts(runtimeRoot);
+        if (platform === 'darwin') {
+          const dependencies = await run(
+            'bash',
+            [dependencyBootstrap, '--runtime-dependencies-only'],
+            input.environment ?? process.env,
+          );
+          if (dependencies.exitCode !== 0) {
+            const legacyRollbackCompatible = options.allowDestructiveFallback
+              && /unknown option:\s*--runtime-dependencies-only/i.test(
+                `${dependencies.stdout}\n${dependencies.stderr}`,
+              );
+            if (!legacyRollbackCompatible) {
+              throw commandFailure(
+                dependencies,
+                `runtime dependency reconciliation exited ${dependencies.exitCode}`,
+              );
+            }
+          }
+          const definitions = await run(
+            'bash',
+            [daemonInstaller, '--definitions-only', '--quiet'],
+            input.environment ?? process.env,
+          );
+          if (definitions.exitCode !== 0) {
+            const legacyRollbackCompatible = options.allowDestructiveFallback
+              && isLegacyDefinitionsOnlyUnsupported(definitions);
+            if (!legacyRollbackCompatible) {
+              throw commandFailure(definitions, `LaunchAgent definition refresh exited ${definitions.exitCode}`);
+            }
+            // Older immutable releases predate the definitions-only installer mode. During
+            // automatic rollback, runtime/current has already been repointed to that release,
+            // and the installed LaunchAgent definitions use the stable runtime/current path.
+            // Keep those definitions and continue with the target release's reload adapter.
+          }
+        }
+        await reconcileCaddy(runtimeRoot);
+        const rollingCommand = options.waitForCompletion ? 'rolling-reload-now' : 'rolling-reload';
+        let result = await run(runtimeExecutable, [reloadScript, rollingCommand]);
+        if (result.exitCode !== 0 && options.allowDestructiveFallback) {
+          const fallbackCommand = options.waitForCompletion ? 'reload-now' : 'reload';
+          result = await run(runtimeExecutable, [reloadScript, fallbackCommand]);
+        }
         if (result.exitCode !== 0) {
           throw commandFailure(result, `reload adapter exited ${result.exitCode}`);
+        }
+        if (platform === 'darwin' && options.waitForCompletion) {
+          const userId = input.userId ?? process.getuid?.();
+          if (userId === undefined) {
+            throw new Error('cannot resolve the user id for gateway restart');
+          }
+          const domain = 'gui/' + String(userId);
+          for (const gateway of installedMacRestartableSidecarLaunchAgents(input.environment)) {
+            await run('launchctl', ['bootout', domain + '/' + gateway.label]);
+            let bootstrapped = false;
+            let lastBootstrap: LifecycleProcessResult | undefined;
+            for (let attempt = 1; attempt <= MAC_GATEWAY_BOOTSTRAP_ATTEMPTS; attempt += 1) {
+              const bootstrap = await run('launchctl', [
+                'bootstrap',
+                domain,
+                gateway.plistPath,
+              ]);
+              lastBootstrap = bootstrap;
+              if (bootstrap.exitCode === 0) {
+                bootstrapped = true;
+                break;
+              }
+
+              const detail = `${bootstrap.stdout}\n${bootstrap.stderr}`;
+              const transientExitFive = bootstrap.exitCode === 5
+                || /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
+              if (!transientExitFive) break;
+
+              // launchd can briefly keep the old job in its teardown transaction after
+              // bootout. A bootstrap during that window reports exit 5 even though the
+              // plist is valid. If the job is already visible again, accept it; otherwise
+              // wait briefly and retry the same immutable plist.
+              const loaded = await run('launchctl', [
+                'print',
+                domain + '/' + gateway.label,
+              ]);
+              if (loaded.exitCode === 0) {
+                bootstrapped = true;
+                break;
+              }
+              if (attempt < MAC_GATEWAY_BOOTSTRAP_ATTEMPTS) {
+                await sleepImpl(MAC_GATEWAY_BOOTSTRAP_RETRY_MS);
+              }
+            }
+            if (!bootstrapped) {
+              const result = lastBootstrap ?? {
+                exitCode: 1,
+                stdout: '',
+                stderr: '',
+              };
+              const detail = result.stderr.trim() || result.stdout.trim()
+                || 'launchctl bootstrap exited ' + String(result.exitCode);
+              throw new Error('gateway bootstrap failed for ' + gateway.label + ': ' + detail);
+            }
+            let kickstarted = false;
+            let lastKickstart: LifecycleProcessResult | undefined;
+            for (let attempt = 1; attempt <= MAC_GATEWAY_KICKSTART_ATTEMPTS; attempt += 1) {
+              const kickstart = await run('launchctl', [
+                'kickstart',
+                '-k',
+                domain + '/' + gateway.label,
+              ]);
+              lastKickstart = kickstart;
+              if (kickstart.exitCode === 0) {
+                kickstarted = true;
+                break;
+              }
+
+              const detail = `${kickstart.stdout}\n${kickstart.stderr}`;
+              const transientLaunchdTransition = kickstart.exitCode === 5
+                || kickstart.exitCode === 37
+                || /Bootstrap failed:\s*5|Input\/output error|Operation already in progress/i.test(detail);
+              if (!transientLaunchdTransition) break;
+              if (attempt < MAC_GATEWAY_KICKSTART_ATTEMPTS) {
+                await sleepImpl(MAC_GATEWAY_KICKSTART_RETRY_MS);
+              }
+            }
+            if (!kickstarted) {
+              const result = lastKickstart ?? {
+                exitCode: 1,
+                stdout: '',
+                stderr: '',
+              };
+              const detail = result.stderr.trim() || result.stdout.trim()
+                || 'launchctl kickstart exited ' + String(result.exitCode);
+              throw new Error('gateway kickstart failed for ' + gateway.label + ': ' + detail);
+            }
+          }
         }
       } catch (error: unknown) {
         throw new Error(

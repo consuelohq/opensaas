@@ -109,7 +109,7 @@ every change — even tiny ones — follows this flow. no exceptions.
 ```bash
  1. bun run stream:context -- --area <area>              # understand the stream state
  2. bun run stream:sync -- --area <area>                 # sync stream with latest main
- 3. bun run task:start -- --area <area> --title "x"      # create task branch + worktree + PR
+ 3. bun run session:start -- --kind task --area <area> --title "x"  # canonical task-session constructor
  4. (make changes via task:fs and code-call)
  5. bun run verify                                       # run review + db guards, write stamp
  6. bun run task:push -- --message "type(scope): x" --changed  # push via github api
@@ -612,9 +612,20 @@ bun run task:start -- --github "https://github.com/consuelohq/opensaas/pull/686"
 
 Safety: the resolver does not strip arbitrary digits. GitHub and diffs URLs must contain `/pull/<number>`, Graphite URLs must contain `/github/pr/<owner>/<repo>/<number>`, wrong-repo URLs are rejected, and ambiguous free text is rejected. For `task:start`, a task PR is adopted by branch while a stream PR starts a new task from that stream.
 
-### task:start — start scoped work and return workflow guidance
+### session:start — canonical session constructor
 
-Call this directly at the beginning of every scoped repo task. Do not run `tools:search` or search for another task-start tool first. It creates the task branch, worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`. Use `--workflow` to select task, office, design, sites, or media; the default is `task`.
+`session:start` is the canonical constructor for Consuelo sessions. `--kind task` delegates to the existing task lifecycle and creates the normal task branch, worktree, PR, and `taskSession`. `--kind work` creates only durable local session metadata for an existing directory and returns a `workSession`; it does not create or copy files, create a branch, or create a PR.
+
+```bash
+bun run session:start -- --kind task --area os --title "start scoped work" --workflow task
+bun run session:start -- --kind work --path /Users/me/Developer/raycast-extension
+```
+
+The work-session path must already exist and be a directory. Work-session-aware edit behavior is provided by the tools that explicitly support `workSession`; creating a work session by itself does not widen filesystem mutation authority.
+
+### task:start — compatibility alias for task-session creation
+
+`task:start` remains available as a compatibility alias for existing agents, skills, hooks, and automation. It creates the task branch, durable worktree, task PR, and real `taskSession`, then returns the selected workflow bundle and post-start lifecycle guidance. The worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the durable default `~/.consuelo/node/tasks/worktrees`. Explicit worktree-root overrides remain supported, and active legacy temp worktrees are not moved out from under running tasks. Use `--workflow` to select task, office, design, sites, or media; the default is `task`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
@@ -687,12 +698,14 @@ bun run task:merge -- --json
 
 ---
 
-### task:finish — verify merge, remove worktree, delete branch
+### task:finish — verify merge, close task session, remove worktree, delete branch
 
 ```bash
 bun run task:finish -- --branch task/dialer/fix-thing  # finish exact task
 bun run task:finish -- --pr 213 --json
 ```
+
+`task:finish` is the normal final cleanup path. After merge verification it terminates only the task-owned tmux session, removes the linked worktree and local task branch, and removes durable registry/recovery state. An already-evicted task remains finishable from the durable registry even when its worktree is absent.
 
 **task:finish failure modes**
 
@@ -718,17 +731,21 @@ auto-detects the worktree path from `git worktree list` if `--worktree` is not p
 
 ---
 
-### task:cleanup — remove stale worktrees, branches, and task sessions
+### task:cleanup — evict inactive worktrees or remove finished task state
 
 ```bash
 bun run task:cleanup -- --preview     # preview worktrees, branches, and tmux sessions that would be removed
 bun run task:cleanup -- --merged      # remove branches already merged
-bun run task:cleanup -- --stale-days 7  # remove worktrees older than 7 days
+bun run task:cleanup -- --stale-days 7  # safely evict durable worktrees inactive for 7 days
 bun run task:cleanup -- --force       # force removal
 bun run task:cleanup -- --keep task/dialer/queue  # keep a specific branch
 ```
 
-when cleanup removes a task worktree, it reads `.task/session.json` and `.task/current.json` before removal and closes only the tmux session explicitly tied to that task metadata. preview mode reports the tmux session that would be closed without touching tmux. if tmux is unavailable, the metadata is missing, or the session no longer exists, cleanup continues safely and reports the warning/status instead of broad-scanning tmux sessions.
+`--stale-days` is reversible eviction, not task completion. Staleness is measured from the durable registry's `lastActiveAt`, not task creation time. Clean remote-backed worktrees can be removed directly while their branch, PR, and task identity remain intact. Dirty, non-ignored untracked, or locally-ahead state is first captured through a synthetic Git checkpoint and verified recovery bundle under `~/.consuelo/node/tasks/archives/<taskSession>/`; archive or verification failure leaves the worktree untouched. The next task-scoped call restores the worktree automatically and recreates missing tmux state.
+
+The OS supervisor runs the same safe eviction scan approximately hourly with a default 24-hour inactivity lease. Operator/debug overrides are `CONSUELO_TASK_WORKTREE_GC_INTERVAL_MS` and `CONSUELO_TASK_WORKTREE_EVICT_AFTER_MS`. Cleanup is lease-based rather than tied to a fixed wall-clock hour.
+
+Explicit/merged/force cleanup retains the existing destructive cleanup semantics and targets only the exact task-owned tmux session; it never broad-scans tmux.
 
 ---
 
@@ -1171,7 +1188,13 @@ Runs the typed lifecycle engine for install-state inspection, first install, ver
 
 `install` preserves the existing interactive onboarding flow. `update`, `restart`, `rollback`, and `repair` never repeat onboarding or replace workspace identity, node identity, secrets, databases, selected skills, or user-owned content. Mutating lifecycle success is accepted only after local worker health and, on connector-managed nodes, public connector health plus a signed heartbeat that reconciles the authority/D1 `/mcp` route. A missing heartbeat config keeps local-only installs usable. Successful activation retains only current, previous, explicitly pinned releases, and unresolved merge content bases. Staging, test-home, and dev-slot directories are bounded by count and age. Inconsistent references and symlinked release roots fail closed.
 
+`update` has one implementation in the lifecycle engine. Terminal invocations remain synchronous and return only after the selected release is accepted or rolled back. When the same command is invoked from the active Consuelo daemon, it first resolves the exact signed target release, then hands that target to the durable lifecycle operation worker and returns its `operationId` before the runtime restarts. The worker preserves the requested channel and survives service replacement through a one-shot LaunchAgent on macOS, a transient systemd user unit on managed Linux services, or the Windows service-host breakaway helper. `status --json` includes the latest durable lifecycle operation without exposing its worker PID as public identity.
+
+Routine `update` and `restart` treat public MCP ingress as an availability boundary. Before refreshing service definitions, the activated runtime reconciles checksum-pinned Caddy and Cloudflared binaries into Consuelo-managed paths and persists only those ingress dependency paths; stale global/Homebrew binaries are not accepted merely because they exist. Caddy and Cloudflared remain running while the supervised OS worker pool reloads one worker at a time from the activated release, so binary/definition convergence does not itself tear down public ingress; the lifecycle fails closed instead of dropping both workers when a healthy two-worker pool is unavailable. A worker entering drain marks `/ready` unavailable first, continues serving ordinary requests for a short propagation window so Caddy can remove it from new-request selection, stops accepting new application work, and waits until each in-flight response body finishes streaming or is canceled before the final bounded flush/listener-stop sequence. After each non-final replacement becomes directly ready, the supervisor waits one additional propagation window before draining the next sibling so Caddy's active health checker can re-admit that replacement first. Worker topology uses a stable pool base separate from each child worker's bind port: the supervisor exports `CONSUELO_OS_WORKER_BASE_PORT`, while `CONSUELO_OS_PORT` and `PORT` remain worker-local. Caddy reconciliation prefers the recorded worker-pool snapshot when available, so lifecycle work initiated on worker-1 cannot shift the desired pool from `base/base+1` to `base+1/base+2`. Activation and rollback service helpers are pinned to the immutable release path being reconciled rather than following the mutable `runtime/current` symlink. Even recovery-capable operations try the rolling path first; destructive supervisor replacement is used only when that rolling attempt cannot recover. Non-ingress support services may still reconcile independently. On macOS, support-sidecar bootstraps and kickstarts use bounded launchd transition retries, including exit 5 teardown races and exit 37 "operation already in progress" races. Destructive supervisor/ingress recovery remains reserved for explicit repair, rollback, install recovery, or manual terminal operations. Local MCP request receipts may include a short one-way `connectorKey` derived from `X-Openai-Session` for transport correlation; the raw OpenAI session value is never logged.
+
 Native Windows release acceptance runs `scripts/testing/windows-platform-acceptance.ps1`. Its fixture must materialize `scripts/server/supervisor.ts`, matching the SCM service configuration and the managed process entrypoint; `scripts/server/main.ts` is the direct worker/smoke entrypoint and is not a valid service-host fixture.
+
+Native macOS alpha packaging runs `scripts/testing/macos-alpha-package.sh`. With no flags it builds, ad-hoc signs, and archives `Consuelo.app` for development/CI. `--install` copies the alpha app to `~/Applications/Consuelo.app`; `--launch` installs and opens it. `CONSUELO_MAC_APP_INSTALL_DIR` may override the destination only with a path inside the current user's home directory. This remains separate from the public OS installer until Developer ID signing and notarization are available.
 
 `add skill` and `remove skill` are opposite views over the same selected-skill control plane. With no names, they open the Clack multiselect UI: add shows only bundled skills that are not selected; remove shows only selected bundled skills; labels are the skill names. With explicit names they are non-interactive and scriptable. Selection is persisted in `$CONSUELO_HOME/config.json.selectedSkills`, then the existing managed-component reconciler refreshes `$CONSUELO_HOME/components/installed-skills.json` and `~/Consuelo/Skills/<name>`. Clean removed skills are deleted; locally modified managed skills are deselected but preserved for explicit review. `~/Consuelo/Skills/skills.json` remains the full bundled catalog, not the selected-skill list.
 
@@ -1201,6 +1224,13 @@ bun run lifecycle -- updates notifications off
 bun run lifecycle -- updates notifications snooze --until 2026-08-01T12:00:00.000Z
 ```
 
+Agents use the same authority through the manifest-backed facade tools. `lifecycle.update` delegates to `scripts/lifecycle.ts update`; `lifecycle.status` delegates to `scripts/lifecycle.ts status`. They are discoverable through `tools.search` and do not implement a second updater.
+
+```bash
+workspace lifecycle.update '{"channel":"canary"}'
+workspace lifecycle.status '{}'
+```
+
 Production install and update require `CONSUELO_RELEASE_BASE_URL` plus trusted Ed25519 public keys supplied through `CONSUELO_RELEASE_PUBLIC_KEYS_JSON` or `CONSUELO_RELEASE_KEY_ID` and `CONSUELO_RELEASE_PUBLIC_KEY`.
 
 ---
@@ -1227,7 +1257,7 @@ See `docs/managed-components.md` for the schema, action table, safety invariants
 
 ### consuelo-reload — manage the local Consuelo OS server
 
-Use this command to inspect, start, stop, or restart the local Bun server. The supervised pool defaults to two workers; status reports desired/ready/draining/failed counts plus the Caddy loopback upstreams and marks HA ready only when at least two workers are ready and the Caddy upstream set exactly matches that pool. Rolling reload refuses stale/mismatched Caddy routing. When no user LaunchAgent is loaded, its direct fallback launches `scripts/start-consuelo-daemon.sh`, the single maintained OS daemon entrypoint.
+Use this command to inspect, start, stop, or restart the local Bun server. The supervised pool defaults to two workers; status reports desired/ready/draining/failed counts plus the Caddy loopback upstreams and marks HA ready only when at least two workers are ready and the Caddy upstream set exactly matches that pool. `CONSUELO_OS_WORKER_BASE_PORT` is the internal stable pool-base signal used by the supervisor and lifecycle workers; each child still receives its own `CONSUELO_OS_PORT`/`PORT` bind value. Rolling reload refuses stale/mismatched Caddy routing. Worker-pool reconciliation reloads Caddy only when the generated topology actually changes; an already-correct same-version update does not signal Caddy merely because reconciliation ran. During an ordinary roll, the retiring worker first advertises `/ready` unavailable, waits three seconds for Caddy's active health check to evacuate it, stops accepting new application work, and keeps request accounting active until each response body is fully consumed or canceled. On Unix, supervisor-managed graceful retirement uses a dedicated non-terminating worker signal instead of SIGTERM because Bun can close active HTTP sockets as soon as SIGTERM is delivered, before the JavaScript drain sequence completes. Only after accepted work settles does the worker keep the process alive for one more bounded propagation window before the listener closes and the worker exits. Between worker replacements, once the replacement is directly ready, the supervisor waits that same propagation interval again before retiring the next worker, ensuring Caddy has re-admitted the replacement and never loses its last healthy upstream. The final replacement needs no additional admission wait because no sibling remains to drain in that roll. `CONSUELO_OS_DRAIN_PROPAGATION_MS` controls these bounded propagation/admission windows for diagnostics. When no user LaunchAgent is loaded, its direct fallback launches `scripts/start-consuelo-daemon.sh`, the single maintained OS daemon entrypoint.
 
 Restart also scrubs the retired generic `MCP_BEARER_TOKEN` key from an older installed LaunchAgent. When cleanup is required it performs a launchd bootout/bootstrap rather than a simple kickstart, so the retired environment cannot survive in the loaded job definition.
 
@@ -1581,6 +1611,25 @@ bun run install:system-daemons:dry-run
 Generate and lint user LaunchAgent plist files plus shell syntax checks without installing, bootstrapping, or starting background services. Use this before local Mac testing.
 
 ## Sites page publishing
+
+### Launcher local customization
+
+The launcher at `$CONSUELO_HOME/sites/index.html` is generated OS output and is rewritten whenever Sites are materialized. Do not edit that HTML directly. Add local launcher sections to the durable global `$CONSUELO_HOME/consuelo.yaml` instead:
+
+```yaml
+version: 1
+launcher:
+  extraSections:
+    - id: internal
+      label: Internal
+      links:
+        - label: Users & installs
+          href: https://internal.consuelohq.com/users
+```
+
+`launcher.extraSections` is optional. Users without it receive the stock launcher. Each section id must be a lowercase slug and each link must use an HTTPS absolute URL or a root-relative path such as `/tools`; script URLs, protocol-relative URLs, insecure HTTP URLs, embedded credentials, and arbitrary HTML are rejected by config validation. Labels and hrefs are HTML-escaped again during rendering.
+
+Local sections render after the built-in Sites links and before Guides and Tips. The overlay remains user-owned state in `consuelo.yaml`, so lifecycle update, restart, rollback, and repair can replace the runtime without replacing launcher customization. After changing the file, any normal Sites materialization regenerates the launcher from the current runtime plus the local overlay.
 
 Render typed reader pages and publish generated local pages into OS Sites with immutable versions:
 

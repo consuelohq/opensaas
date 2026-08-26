@@ -39,6 +39,7 @@ const requiredFixtureFiles: Record<string, string> = {
   'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
   'scripts/native-lifecycle-operation.ts':
     'export const nativeLifecycleOperationFixture = true;\n',
+  'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
   'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
   'scripts/managed-components.ts':
     'export const managedComponentsCliFixture = true;\n',
@@ -139,7 +140,7 @@ afterEach(() => {
   for (const root of fixtureRoots.splice(0)) {
     rmSync(root, { force: true, recursive: true });
   }
-});
+}, 120_000);
 
 describe('runtime bundle contract', () => {
   it('defines the integration entrypoint and package-script keys without wiring shared scripts', () => {
@@ -859,6 +860,22 @@ describe('runtime bundle contract', () => {
           role: 'runtime',
         }),
         expect.objectContaining({
+          path: 'scripts/task-worktree-gc.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-eviction.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-gc.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-gc-scheduler.ts',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
           path: 'assets/consuelo-mark.png',
           role: 'runtime',
         }),
@@ -933,6 +950,16 @@ describe('runtime bundle contract', () => {
       writeFileSync(target, entry.bytes);
       chmodSync(target, entry.mode);
     }
+    const dependencyInstall = spawnSync(
+      'bun',
+      ['install', '--frozen-lockfile', '--production'],
+      {
+        cwd: runtimeRoot,
+        encoding: 'utf8',
+      },
+    );
+    expect(dependencyInstall.status, dependencyInstall.stderr).toBe(0);
+    expect(existsSync(join(runtimeRoot, 'node_modules', 'zod'))).toBe(true);
     const lifecycleStatus = spawnSync(
       'bun',
       [

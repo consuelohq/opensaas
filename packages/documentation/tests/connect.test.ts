@@ -13,12 +13,8 @@ const connectPages = [
   ['connect/agents/cursor.mdx', 'Cursor'],
   ['connect/agents/opencode.mdx', 'OpenCode'],
   ['connect/agents/gemini.mdx', 'Gemini'],
-  ['connect/agents/other-agents.mdx', 'Other agents'],
-  ['connect/nodes/how-nodes-work.mdx', 'How nodes work'],
-  ['connect/nodes/home-node.mdx', 'Home node'],
-  ['connect/nodes/local-nodes.mdx', 'Local nodes'],
-  ['connect/nodes/cloud-nodes.mdx', 'Cloud nodes'],
-  ['connect/apps-and-services/index.mdx', 'Apps and services'],
+  ['connect/agents/create-your-own.mdx', 'Create your own'],
+  ['connect/apps-and-services/index.mdx', 'Applications'],
   ['connect/apps-and-services/google-workspace.mdx', 'Google Workspace'],
   ['connect/apps-and-services/gmail.mdx', 'Gmail'],
   ['connect/apps-and-services/google-drive.mdx', 'Google Drive'],
@@ -40,7 +36,7 @@ const connectPages = [
   ['connect/apps-and-services/hubspot.mdx', 'HubSpot'],
   ['connect/apps-and-services/stripe.mdx', 'Stripe'],
   ['connect/apps-and-services/twilio.mdx', 'Twilio'],
-  ['connect/apps-and-services/additional-services.mdx', 'Additional services'],
+  ['connect/apps-and-services/create-your-own.mdx', 'Create your own'],
 ] as const;
 
 describe('Connect documentation contract', () => {
@@ -55,43 +51,28 @@ describe('Connect documentation contract', () => {
       "label: 'Cursor'",
       "label: 'OpenCode'",
       "label: 'Gemini'",
-      "label: 'Other agents'",
-      "label: 'Nodes'",
-      "label: 'How nodes work'",
-      "label: 'Home node'",
-      "label: 'Local nodes'",
-      "label: 'Cloud nodes'",
-      "label: 'Apps and services'",
-      "label: 'Overview', slug: 'connect/apps-and-services'",
-      "label: 'Productivity and communication'",
-      "label: 'Google Workspace'",
-      "label: 'Gmail'",
-      "label: 'Google Drive'",
-      "label: 'Google Calendar'",
-      "label: 'Slack'",
-      "label: 'Notion'",
-      "label: 'Code and development'",
-      "label: 'GitHub'",
-      "label: 'Linear'",
-      "label: 'Deploy and infrastructure'",
       "label: 'Cloudflare'",
-      "label: 'Railway'",
-      "label: 'Vercel'",
-      "label: 'Observe and monitor'",
       "label: 'Datadog'",
-      "label: 'Sentry'",
-      "label: 'Data and analytics'",
-      "label: 'Snowflake'",
-      "label: 'Supabase'",
-      "label: 'Sales and CRM'",
+      "label: 'GitHub'",
+      "label: 'Gmail'",
       "label: 'GoHighLevel'",
-      "label: 'LeadConnector dialer'",
-      "label: 'Salesforce'",
+      "label: 'Google Calendar'",
+      "label: 'Google Drive'",
+      "label: 'Google Workspace'",
       "label: 'HubSpot'",
-      "label: 'Payments and communication'",
+      "label: 'LeadConnector dialer'",
+      "label: 'Linear'",
+      "label: 'Notion'",
+      "label: 'Railway'",
+      "label: 'Salesforce'",
+      "label: 'Sentry'",
+      "label: 'Slack'",
+      "label: 'Snowflake'",
       "label: 'Stripe'",
+      "label: 'Supabase'",
       "label: 'Twilio'",
-      "label: 'Additional services'",
+      "label: 'Vercel'",
+      "label: 'Create your own'",
     ];
     let previousIndex = -1;
     for (const needle of orderedLabels) {
@@ -103,6 +84,19 @@ describe('Connect documentation contract', () => {
     for (const [sourcePath] of connectPages) {
       expect(existsSync(packageFile(`src/content/docs/${sourcePath}`))).toBe(true);
     }
+    expect(navigation).toContain("label: 'Applications'");
+    for (const removedGroup of [
+      'Productivity and communication',
+      'Code and development',
+      'Deploy and infrastructure',
+      'Observe and monitor',
+      'Data and analytics',
+      'Sales and CRM',
+      'Payments and communication',
+    ]) {
+      expect(navigation).not.toContain(`label: '${removedGroup}'`);
+    }
+    expect(navigation).not.toContain("label: 'Overview', slug: 'connect/apps-and-services'");
   });
 
   test('marks every Connect page as preview and records current evidence', () => {
@@ -152,16 +146,20 @@ describe('Connect documentation contract', () => {
     }
     expect(pages['connect/agents/chatgpt.mdx']).toContain('https://os.consuelohq.com/mcp');
     expect(pages['connect/agents/chatgpt.mdx']).toContain('OAuth');
-    expect(pages['connect/agents/other-agents.mdx']).toContain('Factory Droid');
-    expect(pages['connect/agents/other-agents.mdx']).toContain('Pi');
-    expect(pages['connect/agents/other-agents.mdx']).toContain('unsupported');
+    expect(pages['connect/agents/create-your-own.mdx']).toContain('Factory Droid');
+    expect(pages['connect/agents/create-your-own.mdx']).toContain('Pi');
+    expect(pages['connect/agents/create-your-own.mdx']).toContain('unsupported');
   });
 
   test('teaches available-today paths without presenting planned native tools as shipped', () => {
     const overview = read('src/content/docs/connect/apps-and-services/index.mdx');
-    expect(overview).toContain('Apps and services');
+    expect(overview).toContain('Applications');
     expect(overview).toContain('Available today');
     expect(overview).toContain('Native Consuelo tool');
+    expect(overview).not.toContain('Productivity and communication');
+    const applicationTitles = [...overview.matchAll(/<Card title="([^"]+)"/g)].map((match) => match[1]);
+    const appOnly = applicationTitles.filter((label) => label !== 'Create your own');
+    expect(appOnly).toEqual([...appOnly].sort((left, right) => left.localeCompare(right)));
 
     const google = read('src/content/docs/connect/apps-and-services/google-workspace.mdx');
     for (const term of [
@@ -233,20 +231,6 @@ describe('Connect documentation contract', () => {
     expect(slack).toContain('outbound');
   });
 
-  test('documents the current home, member, local, and cloud-node boundary', () => {
-    const how = read('src/content/docs/connect/nodes/how-nodes-work.mdx');
-    expect(how).toContain('home');
-    expect(how).toContain('member');
-    expect(how).toContain('created');
-    expect(how).toContain('reconnected');
-    const local = read('src/content/docs/connect/nodes/local-nodes.mdx');
-    expect(local).toContain('cloudflare-tunnel');
-    expect(local).toContain('websocket-relay');
-    const cloud = read('src/content/docs/connect/nodes/cloud-nodes.mdx');
-    expect(cloud).toContain('handled by the Consuelo team');
-    expect(cloud).not.toContain('Create a cloud node now');
-  });
-
   test('keeps a checked-in Connect claim ledger', () => {
     const ledger = read('evidence/connect-claims.md');
     for (const heading of [
@@ -263,7 +247,7 @@ describe('Connect documentation contract', () => {
     expect(ledger).toContain('Google Workspace');
     expect(ledger).toContain('Railway');
     expect(ledger).toContain('Apple Keychain');
-    expect(ledger).toContain('home node');
+    expect(ledger).not.toContain('| Node pages |');
   });
 
   test('removes directly superseded integration pages and preserves useful redirects', () => {
@@ -279,6 +263,8 @@ describe('Connect documentation contract', () => {
     expect(redirects).toContain("'/user-guide/integrations/overview': '/connect/apps-and-services/'");
     expect(redirects).toContain("'/connect/connectors': '/connect/apps-and-services/'");
     expect(redirects).toContain("'/connect/connectors/google-drive': '/connect/apps-and-services/google-drive/'");
+    expect(redirects).toContain("'/connect/agents/other-agents': '/connect/agents/create-your-own/'");
+    expect(redirects).toContain("'/connect/apps-and-services/additional-services': '/connect/apps-and-services/create-your-own/'");
     expect(redirects).toContain("'/user-guide/highlevel/embedded/getting-started':");
     expect(redirects).toContain("'/connect/apps-and-services/leadconnector-dialer/'");
 

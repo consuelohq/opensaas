@@ -6,6 +6,11 @@ import { dirname, join } from 'node:path';
 import { executeTool } from '../../scripts/lib/facade/executor';
 import type { CommandPlan } from '../../scripts/lib/facade/types';
 import { createGatewaySecurityConfig } from '../../scripts/lib/security-gateway';
+import {
+  createDefaultNodeYamlConfig,
+  resolveConsueloHomeLayout,
+  writeYamlConfig,
+} from '../../scripts/lib/consuelo-home';
 import { parseSubagentTraceEvents } from '../../scripts/lib/subagent/runtime';
 import { createLocalTraceSitesReadBackend } from '../../scripts/lib/trace-sites-local-read-backend';
 import {
@@ -15,12 +20,15 @@ import {
   recordToolTraceSafely,
   resolveCanonicalTraceDbPath,
 } from '../../scripts/lib/trace-persistence';
+import { withTraceRoutingContext } from '../../scripts/lib/trace-routing-context';
+import { createWorkSession } from '../../scripts/lib/work-session';
 import { authorizeConsueloOAuthMcpRequest } from '../../scripts/server/services/oauth-introspection';
 
 type TraceRow = Record<string, unknown>;
 
 const TRACE_ROWS_SQL = [
-  'SELECT trace_id, mcp_trace_id, source, tool, task_session, branch, worktree,',
+  'SELECT trace_id, mcp_trace_id, source, tool, task_session, branch, worktree, work_session, work_path,',
+  'requested_node_id, resolved_node_id, resolved_node_name, default_node_id, route_source,',
   'status, ok, code, exit_code, duration_ms, input_json,',
   'resolved_input_json, result_json, stderr,',
   'input_tokens, output_tokens, total_tokens',
@@ -86,9 +94,15 @@ function stableFacadeOptions() {
 async function run(): Promise<unknown> {
   try {
     if (scenario === 'facade') {
-    const result = await executeTool('task.current', {
+    const result = await withTraceRoutingContext({
+      requestedNodeId: 'node_cloud',
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      defaultNodeId: 'node_home',
+      routeSource: 'explicit',
+    }, () => executeTool('task.current', {
       apiKey: 'sk_test_secret_value_1234567890',
-    }, stableFacadeOptions());
+    }, stableFacadeOptions()));
     const backend = createLocalTraceSitesReadBackend({
       dbPath: resolveCanonicalTraceDbPath(),
     });
@@ -100,7 +114,15 @@ async function run(): Promise<unknown> {
       cursor: '000000000000',
       limit: 10,
     });
-      return { result, rows: traceRows(), recent };
+    const history = await backend.readHistoryPage?.({
+      workspaceId: 'workspace_trace_test',
+      workspaceHost: 'trace-test.consuelohq.com',
+      site: 'trace',
+      sourceMode: 'local-networked',
+      cursor: 'latest',
+      limit: 10,
+    });
+      return { result, rows: traceRows(), recent, history };
     }
 
     if (scenario === 'migration') {
@@ -128,8 +150,51 @@ async function run(): Promise<unknown> {
       inputTokens: 12,
       outputTokens: 34,
       totalTokens: 46,
+      routing: {
+        resolvedNodeId: 'node_migrated',
+        resolvedNodeName: 'Migrated Node',
+        defaultNodeId: 'node_migrated',
+        routeSource: 'default',
+      },
     });
       return { recorded, rows: traceRows() };
+    }
+
+    if (scenario === 'work-session') {
+      const workPath = join(tmpdir(), `consuelo-trace-work-session-${process.pid}`);
+      mkdirSync(workPath, { recursive: true });
+      const layout = resolveConsueloHomeLayout(home);
+      writeYamlConfig(
+        layout.nodeConfigPath,
+        createDefaultNodeYamlConfig({
+          nodeId: 'node_trace_work_session',
+          nodeName: 'Trace Work Session Test',
+          workspaceId: 'workspace_trace_test',
+        }),
+        false,
+      );
+      const metadata = createWorkSession({
+        home,
+        path: workPath,
+        now: () => new Date('2026-08-15T03:00:00.000Z'),
+        randomUUID: () => '12345678-1234-4234-9234-123456789abc',
+      });
+      try {
+        const result = await executeTool('fs.write', {
+          workSession: metadata.workSession,
+          path: 'src/index.ts',
+          content: 'export const observed = true;\n',
+          mkdirs: true,
+        }, stableFacadeOptions());
+        const traceDb = new Database(resolveCanonicalTraceDbPath(), { readonly: true });
+        const workSessionRow = traceDb.query(
+          'SELECT work_session, work_path FROM tool_traces WHERE trace_id = ?',
+        ).get(result.traceId);
+        traceDb.close();
+        return { result, recorded: result.ok === true, workSessionRow };
+      } finally {
+        rmSync(workPath, { recursive: true, force: true });
+      }
     }
 
     if (scenario === 'internal') {
@@ -280,6 +345,11 @@ async function run(): Promise<unknown> {
         requiredScope: 'mcp:read',
         authMode: 'oauth',
         principalKey: 'prn_0123456789abcdef0123456789abcdef',
+        requestedNodeId: 'node_cloud',
+        resolvedNodeId: 'node_cloud',
+        resolvedNodeName: 'Cloud Node',
+        defaultNodeId: 'node_home',
+        routeSource: 'explicit',
       });
       return { recorded, rows: traceRows() };
     }

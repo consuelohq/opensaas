@@ -160,6 +160,10 @@ function isVendoredThirdPartyFile(filePath) {
   return filePath.includes('/upstream/') || filePath.includes('/vendor/');
 }
 
+function isGeneratedArtifactFile(filePath) {
+  return filePath.includes('/generated/') || filePath.includes('/generated-metadata/');
+}
+
 function isReviewableFile(filePath) {
   return filePath.startsWith('packages/')
     && !isVendoredThirdPartyFile(filePath)
@@ -239,7 +243,7 @@ function readFileLines(filePath) {
 }
 
 function isTestFile(f) {
-  return /__tests__|\.spec\.|\.test\./.test(f);
+  return /__tests__|\.spec\.|\.test\.|\.stories\./.test(f);
 }
 
 function isLoggerFile(f) {
@@ -988,6 +992,7 @@ async function main() {
   const allFindings = [];
   const checkResults = {};
   for (const file of files) {
+    if (isGeneratedArtifactFile(file)) continue;
     const lines = readFileLines(file);
     for (const check of ALL_CHECKS) {
       const results = check(file, lines);

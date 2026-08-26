@@ -419,6 +419,7 @@ const renderManagedCloudNodeStartupScript = (input: {
   nodeId: string;
   nodeName: string;
   release: ManagedCloudNodeReleaseBootstrap;
+  provisioningEnrollment?: { jobId: string; enrollmentToken: string };
   home: string;
   statusPath: string;
   enrollmentStatusPath: string;
@@ -439,6 +440,12 @@ const renderManagedCloudNodeStartupScript = (input: {
     nodeId: input.nodeId,
     nodeName: input.nodeName,
     authorityOrigin: 'https://os.consuelohq.com',
+    ...(input.provisioningEnrollment
+      ? {
+          provisioningJobId: input.provisioningEnrollment.jobId,
+          provisioningEnrollmentToken: input.provisioningEnrollment.enrollmentToken,
+        }
+      : {}),
   });
 
   return [
@@ -609,6 +616,7 @@ export const planManagedCloudNode = (input: {
   zone?: string;
   machineType?: string;
   release: ManagedCloudNodeReleaseBootstrap;
+  provisioningEnrollment?: { jobId: string; enrollmentToken: string };
 }): ManagedCloudNodePlan => {
   const projectId = requireNonEmpty(input.projectId, 'projectId');
   const workspaceId = requireNonEmpty(input.workspaceId, 'workspaceId');
@@ -766,6 +774,7 @@ export const planManagedCloudNode = (input: {
     nodeId,
     nodeName,
     release,
+    provisioningEnrollment: input.provisioningEnrollment,
     home,
     statusPath,
     enrollmentStatusPath,

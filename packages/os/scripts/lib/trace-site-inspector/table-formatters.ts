@@ -1,10 +1,20 @@
 import {
+  parseTraceSearchTerms,
+  type TraceSearchField,
+  type TraceSearchTerm,
+} from '../trace-search-query';
+
+import {
   branchName,
   childTraceRecords,
   clean,
   extractTraceError,
   isFailure,
   parseMaybeJson,
+  traceNodeId,
+  traceNodeLabel,
+  traceRouteLabel,
+  traceRouteSource,
   type TraceRecord,
 } from './model';
 
@@ -16,6 +26,10 @@ export type TraceTableRowFormat = {
   outputLabel: string;
   inputFull: string;
   outputFull: string;
+  nodeId: string;
+  nodeLabel: string;
+  routeSource: string;
+  routeLabel: string;
   isError: boolean;
   statusLabel: 'success' | 'error';
 };
@@ -24,6 +38,8 @@ export type TraceTableFilterState = {
   query: string;
   tools: ReadonlySet<string>;
   branches: ReadonlySet<string>;
+  nodes: ReadonlySet<string>;
+  routes: ReadonlySet<string>;
   statuses: ReadonlySet<string>;
 };
 
@@ -35,15 +51,16 @@ export type TraceFilterFacet = {
 export type TraceFilterFacets = {
   tools: TraceFilterFacet[];
   branches: TraceFilterFacet[];
+  nodes: TraceFilterFacet[];
+  routes: TraceFilterFacet[];
   statuses: TraceFilterFacet[];
 };
 
 const TOOL_LABELS: Record<string, string> = {
   'fs.apply_patch': 'fs.patch',
-  'fs.search': 'files.search',
   get_steering: 'steering',
+  refresh_steering: 'steering.refresh',
   'review.run': 'review',
-  'tools.search': 'search',
 };
 
 export function isDefaultTraceTableRowVisible(row: TraceRecord): boolean {
@@ -57,6 +74,10 @@ export function formatTraceTableRow(row: TraceRecord): TraceTableRowFormat {
   const isError = isFailure(row);
   const inputLabel = summarizeInput(row, input, toolLabel);
   const outputLabel = summarizeOutput(row, input, toolLabel, isError);
+  const nodeId = traceNodeId(row);
+  const nodeLabel = traceNodeLabel(row);
+  const routeSource = traceRouteSource(row);
+  const routeLabel = traceRouteLabel(row);
   return {
     toolLabel,
     inputLabel,
@@ -76,6 +97,10 @@ export function formatTraceTableRow(row: TraceRecord): TraceTableRowFormat {
           row.output ??
           row.summary,
       ) || outputLabel,
+    nodeId,
+    nodeLabel,
+    routeSource,
+    routeLabel,
     isError,
     statusLabel: isError ? 'error' : 'success',
   };
@@ -127,10 +152,14 @@ export function semanticToolLabel(
 export function traceFilterFacets(rows: TraceRecord[]): TraceFilterFacets {
   const toolCounts = new Map<string, number>();
   const branchCounts = new Map<string, number>();
+  const nodeCounts = new Map<string, number>();
+  const routeCounts = new Map<string, number>();
   const statusCounts = new Map<string, number>();
   for (const row of rows) {
     if (!isDefaultTraceTableRowVisible(row)) continue;
     increment(branchCounts, branchName(row));
+    increment(nodeCounts, traceNodeLabel(row));
+    increment(routeCounts, traceRouteLabel(row));
     increment(statusCounts, isFailure(row) ? 'error' : 'success');
     const labels = new Set([
       formatTraceTableRow(row).toolLabel,
@@ -143,6 +172,8 @@ export function traceFilterFacets(rows: TraceRecord[]): TraceFilterFacets {
   return {
     tools: sortedFacets(toolCounts),
     branches: sortedFacets(branchCounts),
+    nodes: sortedFacets(nodeCounts),
+    routes: sortedFacets(routeCounts),
     statuses: sortedFacets(statusCounts),
   };
 }
@@ -153,6 +184,10 @@ export function matchesTraceTableFilters(
 ): boolean {
   const branch = branchName(row);
   if (filters.branches.size && !filters.branches.has(branch)) return false;
+  const node = traceNodeLabel(row);
+  if (filters.nodes.size && !filters.nodes.has(node)) return false;
+  const route = traceRouteLabel(row);
+  if (filters.routes.size && !filters.routes.has(route)) return false;
   const status = isFailure(row) ? 'error' : 'success';
   if (filters.statuses.size && !filters.statuses.has(status)) return false;
   const records = [row, ...childTraceRecords(row)];
@@ -164,22 +199,57 @@ export function matchesTraceTableFilters(
   ) {
     return false;
   }
-  const query = filters.query.trim().toLowerCase();
-  if (!query) return true;
-  return records.some((record) => {
-    const formatted = formatTraceTableRow(record);
-    return [
-      formatted.toolLabel,
-      formatted.inputLabel,
-      formatted.outputLabel,
-      branchName(record),
-      clean(record.traceId ?? record.trace),
-      clean(record.code),
-    ]
-      .join(' ')
-      .toLowerCase()
-      .includes(query);
-  });
+  const terms = parseTraceSearchTerms(filters.query);
+  if (!terms.length) return true;
+  return terms.every((term) =>
+    records.some((record) => traceRecordMatchesSearchTerm(record, term)),
+  );
+}
+
+function traceRecordMatchesSearchTerm(
+  record: TraceRecord,
+  term: TraceSearchTerm,
+): boolean {
+  const formatted = formatTraceTableRow(record);
+  const status = isFailure(record) ? 'error' : 'success';
+  const time = traceSearchTime(record);
+  const values: Record<TraceSearchField, string> = {
+    tool: formatted.toolLabel,
+    branch: branchName(record),
+    status: [status, clean(record.status)].filter(Boolean).join(' '),
+    node: formatted.nodeLabel,
+    route: formatted.routeLabel,
+    trace: clean(record.traceId ?? record.trace),
+    code: clean(record.code),
+    date: time,
+  };
+  if (term.field) return values[term.field].toLowerCase().includes(term.value);
+  return [
+    formatted.toolLabel,
+    formatted.nodeLabel,
+    formatted.routeLabel,
+    branchName(record),
+    clean(record.traceId ?? record.trace),
+    clean(record.code),
+    status,
+    time,
+  ]
+    .join(' ')
+    .toLowerCase()
+    .includes(term.value);
+}
+
+function traceSearchTime(record: TraceRecord): string {
+  const raw = clean(record.startTime ?? record.time ?? record.ts ?? record.displayTime);
+  if (!raw) return '';
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return raw;
+  return [
+    raw,
+    parsed.toISOString(),
+    parsed.toLocaleDateString('en-US', { timeZone: 'America/New_York' }),
+    parsed.toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false }),
+  ].join(' ');
 }
 
 function summarizeInput(
@@ -219,6 +289,9 @@ function summarizeInput(
       : 'inspect source';
   }
   if (tool === 'get_steering') return 'workspace guidance';
+  if (tool === 'refresh_steering') {
+    return clean(input?.reason) || 'refresh workspace guidance';
+  }
   if (tool === 'authentication.mcp' || tool === 'authorization.mcp') {
     return summarizeMcpAuthentication(input, tool);
   }
@@ -339,6 +412,7 @@ function summarizeOutput(
     );
   }
   if (tool === 'get_steering') return 'steering loaded';
+  if (tool === 'refresh_steering') return 'steering refreshed';
   const result = resultRecord(row);
   const data = record(result?.data) ?? result;
   if (tool === 'code.call') {

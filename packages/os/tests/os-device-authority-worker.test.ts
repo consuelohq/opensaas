@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
-import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
+import {
+  createMemoryDeviceGrantStore,
+  DurableStore,
+} from '../cloudflare/os-device-authority/src/stores';
+import type { StorageLike } from '../cloudflare/os-device-authority/src/types';
+import { createMemoryInstallControlPlaneRepository } from '../scripts/lib/install-control-plane';
 import { createConnectorOriginHostname } from '../scripts/lib/connector-origin-hostname';
 import { deriveWorkspaceEdgeNodeSecret } from '../scripts/lib/workspace-edge-node-auth';
 import {
@@ -12,6 +17,7 @@ import {
 import {
   createInMemoryWorkspaceRouteD1,
   migrateWorkspaceRouteD1,
+  resolveWorkspaceRouteFromD1,
   upsertWorkspaceHostnameInD1,
 } from '../scripts/lib/workspace-cloudflare-d1-route-registry';
 import {
@@ -71,6 +77,21 @@ function form(data: Record<string, string>): {
   return {
     body: new URLSearchParams(data).toString(),
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  };
+}
+
+function createSharedDurableStorage(): StorageLike {
+  const values = new Map<string, unknown>();
+  return {
+    async get<T>(key: string) {
+      return values.get(key) as T | undefined;
+    },
+    async put<T>(key: string, value: T) {
+      values.set(key, value);
+    },
+    async delete(key: string) {
+      return values.delete(key);
+    },
   };
 }
 
@@ -176,6 +197,22 @@ const googleFetch: typeof fetch = async (input) => {
   });
 };
 
+async function createVerifiedCanonicalDirectory(input?: {
+  userId?: string;
+  workspaceId?: string;
+}) {
+  const repository = createMemoryInstallControlPlaneRepository();
+  await repository.upsertUser({
+    userId: input?.userId ?? 'user_canonical_123',
+    email: 'ko@example.com',
+    workspaceIds: [input?.workspaceId ?? 'workspace_testing'],
+    workspaceMembershipVerifiedAt: '2026-06-13T00:00:00.000Z',
+    createdAt: '2026-06-12T00:00:00.000Z',
+    updatedAt: '2026-06-13T00:00:00.000Z',
+  });
+  return repository;
+}
+
 type CapturedRouteRegistry = {
   statements: string[];
   binding: {
@@ -238,10 +275,16 @@ function createCapturedWorkspaceConnectorProvisioner(): CapturedWorkspaceConnect
 
 async function seedGoogleAccountWorkspace(
   store: ReturnType<typeof createMemoryDeviceGrantStore>,
-  input: { workspaceSlug: string; workspaceHost: string; homeNodeId?: string },
+  input: {
+    workspaceId?: string;
+    workspaceSlug: string;
+    workspaceHost: string;
+    homeNodeId?: string;
+  },
 ): Promise<void> {
   await store.putAccountWorkspace({
     accountId: 'google:google-sub-123',
+    ...(input.workspaceId ? { workspaceId: input.workspaceId } : {}),
     workspaceSlug: input.workspaceSlug,
     workspaceHost: input.workspaceHost,
     ...(input.homeNodeId ? { homeNodeId: input.homeNodeId } : {}),
@@ -349,9 +392,97 @@ describe('os device authority worker', () => {
     );
   });
 
+  it('should route MCP provider errors through a durable Google callback boundary', async () => {
+    const storage = createSharedDurableStorage();
+    const createHandler = () =>
+      createOsDeviceAuthorityHandler({
+        store: new DurableStore(storage),
+        origin,
+        now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+        googleOAuthClientId: 'test-google-client-id',
+        googleOAuthClientSecret: 'test-google-client-secret',
+      });
+    const authorize = await createHandler()(
+      new Request(
+        `${origin}/oauth/authorize?${new URLSearchParams({
+          response_type: 'code',
+          client_id: 'chatgpt-consuelo-os',
+          redirect_uri: 'https://chatgpt.com/connector/oauth/callback',
+          scope: 'mcp:read',
+          resource: origin + '/mcp',
+          state: 'chatgpt-state',
+          code_challenge: 'durable-boundary-challenge',
+          code_challenge_method: 'S256',
+        })}`,
+      ),
+    );
+    const state = new URL(authorize.headers.get('location') ?? '').searchParams.get(
+      'state',
+    );
+    expect(state).toMatch(/^mcp_oauth_state_/);
+    await expect(
+      new DurableStore(storage).byMcpOAuthState(state ?? ''),
+    ).resolves.toMatchObject({ requestedState: 'chatgpt-state' });
+
+    const callback = await createHandler()(
+      new Request(
+        `${origin}/login/google/callback?error=access_denied&state=${encodeURIComponent(state ?? '')}`,
+      ),
+    );
+
+    expect(callback.status).toBe(302);
+    const callbackUrl = new URL(callback.headers.get('location') ?? '');
+    expect(callbackUrl.origin + callbackUrl.pathname).toBe(
+      'https://chatgpt.com/connector/oauth/callback',
+    );
+    expect(callbackUrl.searchParams.get('error')).toBe('access_denied');
+    expect(callbackUrl.searchParams.get('state')).toBe('chatgpt-state');
+    await expect(
+      new DurableStore(storage).byMcpOAuthState(state ?? ''),
+    ).resolves.toBeUndefined();
+  });
+
+  it('should route web provider errors through a durable Google callback boundary', async () => {
+    const storage = createSharedDurableStorage();
+    const createHandler = () =>
+      createOsDeviceAuthorityHandler({
+        store: new DurableStore(storage),
+        origin,
+        now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+        googleOAuthClientId: 'test-google-client-id',
+        googleOAuthClientSecret: 'test-google-client-secret',
+      });
+    const start = await createHandler()(
+      new Request(`${origin}/login/google/start?purpose=web&intent=login&return_to=%2F`),
+    );
+    const state = new URL(start.headers.get('location') ?? '').searchParams.get(
+      'state',
+    );
+    expect(state).toMatch(/^web_state_/);
+    await expect(
+      new DurableStore(storage).byWebOAuthState(state ?? ''),
+    ).resolves.toMatchObject({ intent: 'login', returnPath: '/' });
+
+    const callback = await createHandler()(
+      new Request(
+        `${origin}/login/google/callback?error=access_denied&state=${encodeURIComponent(state ?? '')}`,
+      ),
+    );
+
+    expect(callback.status).toBe(400);
+    expect(callback.headers.get('content-type')).toContain('application/json');
+    await expect(callback.json()).resolves.toEqual({ error: 'invalid_login' });
+    await expect(
+      new DurableStore(storage).byWebOAuthState(state ?? ''),
+    ).resolves.toBeUndefined();
+  });
+
   it('should deny central MCP OAuth when the Google account has no workspace membership', async () => {
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        workspaceId: 'workspace_missing',
+      }),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -403,6 +534,59 @@ describe('os device authority worker', () => {
     });
   });
 
+  it('should fail closed when canonical identity is unavailable during MCP OAuth callback', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedGoogleAccountWorkspace(store, {
+      workspaceId: 'workspace_legacy_only',
+      workspaceSlug: 'legacy-only',
+      workspaceHost: 'legacy-only.consuelohq.com',
+    });
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const challenge = b64(
+      new Uint8Array(
+        await crypto.subtle.digest(
+          'SHA-256',
+          new TextEncoder().encode('identity-unavailable-verifier'),
+        ),
+      ),
+    );
+    const authorize = await handler(
+      new Request(
+        `${origin}/oauth/authorize?${new URLSearchParams({
+          response_type: 'code',
+          client_id: 'chatgpt-consuelo-os',
+          redirect_uri: 'https://chatgpt.com/connector/oauth/callback',
+          scope: 'mcp:read',
+          resource: origin + '/mcp',
+          state: 'chatgpt-state',
+          code_challenge: challenge,
+          code_challenge_method: 'S256',
+        })}`,
+      ),
+    );
+    const state = new URL(authorize.headers.get('location') ?? '').searchParams.get(
+      'state',
+    );
+
+    const callback = await handler(
+      new Request(
+        `${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`,
+      ),
+    );
+    expect(callback.status).toBe(503);
+    await expect(callback.json()).resolves.toMatchObject({
+      error: 'temporarily_unavailable',
+      error_description: 'Consuelo identity is temporarily unavailable.',
+    });
+  });
+
   it.each([
     {
       condition: 'internal edge signing is configured',
@@ -420,6 +604,7 @@ describe('os device authority worker', () => {
     async ({ internalSigningSecret, expectSignature }) => {
       const store = createMemoryDeviceGrantStore();
       await seedGoogleAccountWorkspace(store, {
+        workspaceId: 'workspace_macbook_air_test',
         workspaceSlug: 'macbook-air-test',
         workspaceHost: 'macbook-air-test.consuelohq.com',
         homeNodeId: 'home-mac-mini',
@@ -470,6 +655,9 @@ describe('os device authority worker', () => {
 
       const handler = createOsDeviceAuthorityHandler({
         store,
+        installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+          workspaceId: 'workspace_macbook_air_test',
+        }),
         origin,
         now: () => Date.parse('2026-06-13T00:00:00.000Z'),
         googleOAuthClientId: 'test-google-client-id',
@@ -650,13 +838,37 @@ describe('os device authority worker', () => {
 
   it('should support ChatGPT CIMD clients and enforce resource echo during MCP OAuth token exchange', async () => {
     const store = createMemoryDeviceGrantStore();
+    const clientId =
+      'https://chatgpt.com/oauth/consuelo-test-client/client.json';
+    const workspaceSlug = 'dynamic-' + crypto.randomUUID().slice(0, 8);
+    const workspaceHost = workspaceSlug + '.consuelohq.com';
+    const workspaceId = `workspace_${workspaceSlug.replace(/-/g, '_')}`;
+    const resource = 'https://' + workspaceHost + '/mcp';
+    await seedGoogleAccountWorkspace(store, {
+      workspaceId,
+      workspaceSlug,
+      workspaceHost,
+    });
+    const installControlPlaneRepository = await createVerifiedCanonicalDirectory({
+      workspaceId,
+    });
     const handler = createOsDeviceAuthorityHandler({
       store,
+      installControlPlaneRepository,
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
       googleOAuthClientSecret: 'test-google-client-secret',
-      fetchImpl: googleFetch,
+      fetchImpl: async (input, init) => {
+        const url =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input.url;
+        if (url === clientId) throw new Error('unexpected ChatGPT CIMD fetch');
+        return await googleFetch(input, init);
+      },
     });
     const verifier = 'test-cimd-pkce-verifier';
     const challenge = b64(
@@ -667,13 +879,8 @@ describe('os device authority worker', () => {
         ),
       ),
     );
-    const clientId =
-      'https://chatgpt.com/oauth/consuelo-os/dynamic-workspace/client.json';
-    const redirectUri = 'https://chatgpt.com/connector/oauth/callback';
-    const workspaceSlug = 'dynamic-' + crypto.randomUUID().slice(0, 8);
-    const workspaceHost = workspaceSlug + '.consuelohq.com';
-    const resource = 'https://' + workspaceHost + '/mcp';
-    await seedGoogleAccountWorkspace(store, { workspaceSlug, workspaceHost });
+    const redirectUri =
+      'https://chatgpt.com/connector/oauth/consuelo-test-client';
 
     const authorize = await handler(
       new Request(
@@ -792,10 +999,115 @@ describe('os device authority worker', () => {
     });
   });
 
+  it('should use the canonical Consuelo account for ChatGPT CIMD reconnect', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const canonicalUserId = 'user_canonical_123';
+    const workspaceId = 'workspace_canonical';
+    const workspaceSlug = 'canonical-workspace';
+    const workspaceHost = `${workspaceSlug}.consuelohq.com`;
+    await store.putAccountWorkspace({
+      accountId: canonicalUserId,
+      workspaceId,
+      workspaceSlug,
+      workspaceHost,
+      updatedAt: Date.parse('2026-06-13T00:00:00.000Z'),
+    });
+
+    const clientId =
+      'https://chatgpt.com/oauth/canonical-consuelo/client.json';
+    const redirectUri =
+      'https://chatgpt.com/connector/oauth/canonical-consuelo';
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        userId: canonicalUserId,
+        workspaceId,
+      }),
+      origin,
+      now: () => Date.parse('2026-06-13T00:05:00.000Z'),
+      googleOAuthClientId: 'test-google-client-id',
+      googleOAuthClientSecret: 'test-google-client-secret',
+      fetchImpl: googleFetch,
+    });
+    const verifier = 'canonical-cimd-pkce-verifier';
+    const challenge = b64(
+      new Uint8Array(
+        await crypto.subtle.digest(
+          'SHA-256',
+          new TextEncoder().encode(verifier),
+        ),
+      ),
+    );
+    const resource = `https://${workspaceHost}/mcp`;
+
+    const authorize = await handler(
+      new Request(
+        `${origin}/oauth/authorize?${new URLSearchParams({
+          response_type: 'code',
+          client_id: clientId,
+          redirect_uri: redirectUri,
+          scope: 'mcp:read mcp:call tool:*:read',
+          resource,
+          state: 'canonical-chatgpt-state',
+          code_challenge: challenge,
+          code_challenge_method: 'S256',
+        })}`,
+      ),
+    );
+    expect(authorize.status).toBe(302);
+    const googleUrl = new URL(authorize.headers.get('location') ?? '');
+    const state = googleUrl.searchParams.get('state');
+    expect(state).toMatch(/^mcp_oauth_state_/);
+
+    const callback = await handler(
+      new Request(
+        `${origin}/login/google/callback?code=google-code&state=${encodeURIComponent(state ?? '')}`,
+      ),
+    );
+    expect(callback.status).toBe(302);
+    const callbackLocation = new URL(callback.headers.get('location') ?? '');
+    expect(callbackLocation.origin + callbackLocation.pathname).toBe(redirectUri);
+    const code = callbackLocation.searchParams.get('code') ?? '';
+    expect(code).toMatch(/^coa_code_/);
+
+    const tokenResponse = await handler(
+      new Request(`${origin}/oauth/token`, {
+        method: 'POST',
+        ...form({
+          grant_type: 'authorization_code',
+          client_id: clientId,
+          redirect_uri: redirectUri,
+          code,
+          code_verifier: verifier,
+          resource,
+        }),
+      }),
+    );
+    expect(tokenResponse.status).toBe(200);
+    const tokenJson = (await tokenResponse.json()) as Record<string, unknown>;
+    const introspection = await handler(
+      new Request(`${origin}/oauth/introspect`, {
+        method: 'POST',
+        ...form({
+          token: String(tokenJson.access_token),
+          resource,
+          scope: 'tool:status:read',
+        }),
+      }),
+    );
+    await expect(introspection.json()).resolves.toMatchObject({
+      active: true,
+      client_id: clientId,
+      workspace_host: workspaceHost,
+      resource,
+      sub: canonicalUserId,
+    });
+  });
+
   it('should reject a ChatGPT Client ID Metadata Document that does not bind the requested redirect URI', async () => {
     const store = createMemoryDeviceGrantStore();
     const clientId =
-      'https://chatgpt.com/oauth/consuelo-os/untrusted-redirect/client.json';
+      'https://chatgpt.com/oauth/consuelo-test-client/client.json';
     const handler = createOsDeviceAuthorityHandler({
       store,
       origin,
@@ -809,16 +1121,7 @@ describe('os device authority worker', () => {
             : input instanceof URL
               ? input.toString()
               : input.url;
-        if (url === clientId) {
-          return new Response(JSON.stringify({
-            client_id: clientId,
-            client_name: 'ChatGPT',
-            redirect_uris: ['https://chatgpt.com/connector/oauth/other-callback'],
-          }), {
-            status: 200,
-            headers: { 'content-type': 'application/json' },
-          });
-        }
+        if (url === clientId) throw new Error('unexpected ChatGPT CIMD fetch');
         return await googleFetch(input, init);
       },
     });
@@ -827,7 +1130,7 @@ describe('os device authority worker', () => {
       `${origin}/oauth/authorize?${new URLSearchParams({
         response_type: 'code',
         client_id: clientId,
-        redirect_uri: 'https://chatgpt.com/connector/oauth/callback',
+        redirect_uri: 'https://chatgpt.com/connector/oauth/other-client',
         scope: 'mcp:read',
         resource: 'https://workspace.consuelohq.com/mcp',
         state: 'chatgpt-state',
@@ -843,11 +1146,15 @@ describe('os device authority worker', () => {
   it('should issue and introspect OAuth access tokens for workspace MCP resources through Google approval', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedGoogleAccountWorkspace(store, {
+      workspaceId: 'workspace_macbook_air_test',
       workspaceSlug: 'macbook-air-test',
       workspaceHost: 'macbook-air-test.consuelohq.com',
     });
     const handler = createOsDeviceAuthorityHandler({
       store,
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        workspaceId: 'workspace_macbook_air_test',
+      }),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -947,6 +1254,9 @@ describe('os device authority worker', () => {
   it('should require workspace selection after Google approval when no pre-auth workspace was supplied', async () => {
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        workspaceId: 'workspace_macbook_air_test',
+      }),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -1337,11 +1647,236 @@ describe('os device authority worker', () => {
     );
   });
 
+  it('should reset a stale workspace enrollment so the next approval requires workspace selection', async () => {
+    const store = new DurableStore(createSharedDurableStorage());
+    const workspaceHost = 'trident.consuelohq.com';
+    const workspaceId = 'workspace_trident';
+    const accountId = 'account_google_123';
+    const nowMs = Date.parse('2026-08-17T00:00:00.000Z');
+    await store.putAccountWorkspace({
+      accountId,
+      workspaceId,
+      workspaceSlug: 'trident',
+      workspaceHost,
+      homeNodeId: 'trident',
+      defaultNodeId: 'trident',
+      updatedAt: nowMs,
+    });
+    await store.putWorkspaceMembership({
+      accountId,
+      workspaceId,
+      workspaceSlug: 'trident',
+      workspaceHost,
+      status: 'active',
+      createdAt: nowMs,
+      updatedAt: nowMs,
+    });
+    await store.putWorkspaceNode({
+      accountId,
+      workspaceId,
+      workspaceSlug: 'trident',
+      workspaceHost,
+      nodeId: 'trident',
+      nodeName: 'local',
+      role: 'home',
+      connectorId: 'connector_trident',
+      connectorStatus: 'disconnected',
+      state: 'active',
+      devicePublicKeyThumbprint: 'thumbprint-trident',
+      createdAt: nowMs,
+      updatedAt: nowMs,
+    });
+
+    const routeRegistry = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routeRegistry);
+    await upsertWorkspaceHostnameInD1(routeRegistry, {
+      workspaceId,
+      workspaceSlug: 'trident',
+      hostname: workspaceHost,
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        {
+          surface: 'os',
+          pathPrefix: '/',
+          auth: 'signed-connector',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_trident',
+            connectorStatus: 'disconnected',
+            tunnelOriginUrl: 'https://connector-trident.consuelohq.com',
+          },
+        },
+      ],
+    });
+
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => nowMs,
+      approvalAssertionSecret,
+      workspaceRouteRegistry: routeRegistry,
+      operatorEnrollmentResetSecret: 'operator-reset-secret',
+    });
+
+    const deniedReset = await handler(
+      new Request(`${origin}/internal/install-control-plane/enrollment/reset`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ workspace_host: workspaceHost, workspace_id: workspaceId }),
+      }),
+    );
+    expect(deniedReset.status).toBe(403);
+
+    const reset = await handler(
+      new Request(`${origin}/internal/install-control-plane/enrollment/reset`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-enrollment-reset-secret': 'operator-reset-secret',
+        },
+        body: JSON.stringify({ workspace_host: workspaceHost, workspace_id: workspaceId }),
+      }),
+    );
+    expect(reset.status).toBe(200);
+    await expect(reset.json()).resolves.toMatchObject({
+      status: 'reset',
+      workspace_host: workspaceHost,
+      workspace_id: workspaceId,
+      nodes_removed: 1,
+      route_revoked: true,
+    });
+    await expect(store.byAccountWorkspace(accountId)).resolves.toBeUndefined();
+    await expect(store.listWorkspaceMemberships(accountId)).resolves.toEqual([]);
+    await expect(store.listWorkspaceNodesByHost(workspaceHost)).resolves.toEqual([]);
+    await expect(
+      resolveWorkspaceRouteFromD1(routeRegistry, { host: workspaceHost, path: '/' }),
+    ).resolves.toMatchObject({
+      allowed: false,
+      status: 404,
+      errorCode: 'WORKSPACE_HOSTNAME_NOT_FOUND',
+    });
+
+    const repeatedReset = await handler(
+      new Request(`${origin}/internal/install-control-plane/enrollment/reset`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-enrollment-reset-secret': 'operator-reset-secret',
+        },
+        body: JSON.stringify({ workspace_host: workspaceHost, workspace_id: workspaceId }),
+      }),
+    );
+    expect(repeatedReset.status).toBe(200);
+    await expect(repeatedReset.json()).resolves.toMatchObject({
+      status: 'already_reset',
+      workspace_host: workspaceHost,
+      workspace_id: workspaceId,
+      nodes_removed: 0,
+      route_revoked: true,
+    });
+
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const codeResponse = await handler(
+      new Request(CONSUELO_DEVICE_CODE_URL, {
+        method: 'POST',
+        ...form({
+          client_id: 'consuelo-os-installer',
+          scope: 'workspace:read os:connector:register',
+          device_public_key_jwk: deviceKeyPair.publicKeyJwk,
+          device_key_algorithm: 'Ed25519',
+        }),
+      }),
+    );
+    const codeJson = (await codeResponse.json()) as Record<string, string | number>;
+    const approve = await handler(
+      new Request(`${origin}/login/device/approve`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-consuelo-account-assertion': await authAssertion({
+            accountId,
+            authMethod: 'google',
+            expiresAt: '2026-08-17T00:20:00.000Z',
+          }),
+        },
+        body: new URLSearchParams({
+          user_code: String(codeJson.user_code).replace('-', ''),
+        }).toString(),
+      }),
+    );
+    expect(approve.status).toBe(200);
+    await expect(approve.json()).resolves.toMatchObject({
+      status: 'workspace_required',
+      account_id: accountId,
+    });
+  });
+
+  it('should refuse an enrollment reset when one workspace host has multiple account owners', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const workspaceHost = 'shared.consuelohq.com';
+    const nowMs = Date.parse('2026-08-17T00:00:00.000Z');
+    for (const [accountId, nodeId] of [
+      ['account_a', 'node-a'],
+      ['account_b', 'node-b'],
+    ] as const) {
+      await store.putWorkspaceNode({
+        accountId,
+        workspaceId: 'workspace_shared',
+        workspaceSlug: 'shared',
+        workspaceHost,
+        nodeId,
+        nodeName: nodeId,
+        role: 'home',
+        connectorStatus: 'disconnected',
+        state: 'active',
+        devicePublicKeyThumbprint: `thumbprint-${nodeId}`,
+        createdAt: nowMs,
+        updatedAt: nowMs,
+      });
+    }
+    const routeRegistry = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routeRegistry);
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => nowMs,
+      workspaceRouteRegistry: routeRegistry,
+      operatorEnrollmentResetSecret: 'operator-reset-secret',
+    });
+
+    const response = await handler(
+      new Request(`${origin}/internal/install-control-plane/enrollment/reset`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-enrollment-reset-secret': 'operator-reset-secret',
+        },
+        body: JSON.stringify({
+          workspace_host: workspaceHost,
+          workspace_id: 'workspace_shared',
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error: 'ambiguous_enrollment_owner',
+    });
+    await expect(store.listWorkspaceNodesByHost(workspaceHost)).resolves.toHaveLength(2);
+  });
+
   it('should register the approved workspace host route after auth-first workspace selection', async () => {
     const routeRegistry = createCapturedRouteRegistry();
     const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        workspaceId: 'workspace_macbook_air_test',
+      }),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -1484,6 +2019,29 @@ describe('os device authority worker', () => {
     }
   });
 
+  it('should report managed cloud billing readiness only when both Stripe secrets exist', async () => {
+    const cases = [
+      { stripeSecretKey: undefined, stripeWebhookSecret: undefined, expected: false },
+      { stripeSecretKey: 'sk_test', stripeWebhookSecret: undefined, expected: false },
+      { stripeSecretKey: undefined, stripeWebhookSecret: 'whsec_test', expected: false },
+      { stripeSecretKey: 'sk_test', stripeWebhookSecret: 'whsec_test', expected: true },
+    ];
+    for (const testCase of cases) {
+      const handler = createOsDeviceAuthorityHandler({
+        store: createMemoryDeviceGrantStore(),
+        origin,
+        now: () => Date.parse('2026-06-13T00:00:00.000Z'),
+        stripeSecretKey: testCase.stripeSecretKey,
+        stripeWebhookSecret: testCase.stripeWebhookSecret,
+      });
+      const response = await handler(new Request(`${origin}/health`));
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toMatchObject({
+        managed_cloud_billing_configured: testCase.expected,
+      });
+    }
+  });
+
   it('should return a terminal failure when workspace connector provisioning fails', async () => {
     const entryPoints = [
       'Google OAuth callback',
@@ -1502,6 +2060,9 @@ describe('os device authority worker', () => {
       const deviceKeyPair = generateWorkspaceDeviceKeyPair();
       const handler = createOsDeviceAuthorityHandler({
         store,
+        installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+          workspaceId: 'workspace_macbook_air_test',
+        }),
         origin,
         now: () => Date.parse('2026-06-13T00:00:00.000Z'),
         approvalAssertionSecret,
@@ -1741,12 +2302,15 @@ describe('os device authority worker', () => {
     expect(routeRegistry.statements).toEqual([]);
   });
 
-  it('should reuse an existing Google account workspace during later auth-first installs', async () => {
+  it('should reuse an existing canonical account workspace during later auth-first installs', async () => {
     const routeRegistry = createCapturedRouteRegistry();
     const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
     const store = createMemoryDeviceGrantStore();
     const handler = createOsDeviceAuthorityHandler({
       store,
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        workspaceId: 'workspace_macbook_air_test',
+      }),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -1863,6 +2427,9 @@ describe('os device authority worker', () => {
     const connectorProvisioner = createCapturedWorkspaceConnectorProvisioner();
     const handler = createOsDeviceAuthorityHandler({
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory({
+        workspaceId: 'workspace_macbook_air_test',
+      }),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -1956,6 +2523,7 @@ describe('os device authority worker', () => {
     const handler = createOsDeviceAuthorityHandler({
       ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -2014,6 +2582,7 @@ describe('os device authority worker', () => {
     const handler = createOsDeviceAuthorityHandler({
       ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',
@@ -2085,6 +2654,7 @@ describe('os device authority worker', () => {
     const handler = createOsDeviceAuthorityHandler({
       ...successfulWorkspaceRouteSetup(),
       store: createMemoryDeviceGrantStore(),
+      installControlPlaneRepository: await createVerifiedCanonicalDirectory(),
       origin,
       now: () => Date.parse('2026-06-13T00:00:00.000Z'),
       googleOAuthClientId: 'test-google-client-id',

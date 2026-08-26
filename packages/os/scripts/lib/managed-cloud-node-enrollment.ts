@@ -35,6 +35,8 @@ export type ManagedCloudNodeOnboarding = {
   nodeId: string;
   nodeName: string;
   authorityOrigin?: string;
+  provisioningJobId?: string;
+  provisioningEnrollmentToken?: string;
 };
 
 type ApprovedDeviceGrant = Extract<
@@ -91,6 +93,11 @@ export type ManagedCloudNodeEnrollmentDependencies = {
     intervalSeconds: number;
     deviceKeyPair: WorkspaceDeviceKeyPair;
   }) => Promise<DeviceAccessTokenPollResult>;
+  enrollProvisioningCredential: (input: {
+    authorityOrigin: string;
+    onboarding: ManagedCloudNodeOnboarding;
+    deviceKeyPair: WorkspaceDeviceKeyPair;
+  }) => Promise<WorkspaceBootstrap>;
   provision: (input: ProvisionOptions) => unknown;
   activateHeartbeat: (input: {
     home: string;
@@ -273,6 +280,105 @@ export const writeManagedCloudNodeEnrollmentStatus = (
   chmodSync(path, 0o600);
 };
 
+export const defaultEnrollProvisioningCredential = async (input: {
+  authorityOrigin: string;
+  onboarding: ManagedCloudNodeOnboarding;
+  deviceKeyPair: WorkspaceDeviceKeyPair;
+  fetchImpl?: typeof fetch;
+}): Promise<WorkspaceBootstrap> => {
+  const jobId = input.onboarding.provisioningJobId?.trim();
+  const enrollmentToken = input.onboarding.provisioningEnrollmentToken?.trim();
+  if (!jobId || !enrollmentToken) {
+    throw new ManagedCloudNodeEnrollmentError(
+      'PROVISIONING_ENROLLMENT_INVALID',
+      'managed cloud provisioning enrollment credentials are incomplete',
+    );
+  }
+  let response: Response;
+  try {
+    response = await (input.fetchImpl ?? globalThis.fetch)(
+      new URL('/managed-cloud/provisioning/enroll', input.authorityOrigin),
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify({
+          jobId,
+          enrollmentToken,
+          devicePublicKeyJwk: input.deviceKeyPair.publicKeyJwk,
+          platform: 'linux',
+          architecture: process.arch,
+          channel: 'stable',
+          capabilities: ['mcp', 'tools'],
+        }),
+      },
+    );
+  } catch (error: unknown) {
+    throw new ManagedCloudNodeEnrollmentError(
+      'PROVISIONING_ENROLLMENT_UNAVAILABLE',
+      'managed cloud provisioning enrollment could not reach the control plane',
+      { cause: error },
+    );
+  }
+  let body: Record<string, unknown>;
+  try {
+    const parsed = await response.json();
+    body = parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : {};
+  } catch {
+    body = {};
+  }
+  if (!response.ok) {
+    const error = body.error && typeof body.error === 'object' ? body.error as Record<string, unknown> : {};
+    throw new ManagedCloudNodeEnrollmentError(
+      typeof error.code === 'string' ? error.code : 'PROVISIONING_ENROLLMENT_FAILED',
+      typeof error.message === 'string' ? error.message : 'managed cloud provisioning enrollment failed',
+    );
+  }
+  const workspaceId = typeof body.workspace_id === 'string' ? body.workspace_id : '';
+  const workspaceSlug = typeof body.workspace_slug === 'string' ? body.workspace_slug : '';
+  const workspaceHost = typeof body.workspace_host === 'string' ? body.workspace_host : '';
+  const nodeId = typeof body.node_id === 'string' ? body.node_id : '';
+  const nodeName = typeof body.node_name === 'string' ? body.node_name : input.onboarding.nodeName;
+  const connectorId = typeof body.connector_id === 'string' ? body.connector_id : '';
+  const connectorBootstrapToken = typeof body.connector_bootstrap_token === 'string' ? body.connector_bootstrap_token : '';
+  const cloudflareTunnelToken = typeof body.cloudflare_tunnel_token === 'string' ? body.cloudflare_tunnel_token : '';
+  if (
+    workspaceId !== input.onboarding.workspaceId ||
+    workspaceSlug !== input.onboarding.workspaceSlug ||
+    workspaceHost !== input.onboarding.workspaceHost ||
+    nodeId !== input.onboarding.nodeId ||
+    !connectorId ||
+    !connectorBootstrapToken ||
+    !cloudflareTunnelToken
+  ) {
+    throw new ManagedCloudNodeEnrollmentError(
+      'PROVISIONING_ENROLLMENT_IDENTITY_MISMATCH',
+      'managed cloud provisioning enrollment returned a different workspace or node identity',
+    );
+  }
+  const nodeRole = body.node_role === 'home' || body.node_role === 'member' ? body.node_role : undefined;
+  const nodeStatus = body.node_status === 'created' || body.node_status === 'existing' ? body.node_status : undefined;
+  return {
+    workspaceId,
+    workspaceSlug,
+    workspaceHost,
+    nodeId,
+    nodeName,
+    ...(nodeRole ? { nodeRole } : {}),
+    ...(nodeStatus ? { nodeStatus } : {}),
+    nodePublicKeyJwk: input.deviceKeyPair.publicKeyJwk,
+    nodeSigningKeyJwk: input.deviceKeyPair.signingKeyJwk,
+    nodeCapabilities: ['mcp', 'tools'],
+    authorityOrigin: input.authorityOrigin,
+    connectorId,
+    connectorTransport: 'cloudflare-tunnel',
+    connectorBootstrapToken,
+    ...(typeof body.edge_request_signing_secret === 'string' ? { edgeRequestSigningSecret: body.edge_request_signing_secret } : {}),
+    cloudflareTunnelToken,
+  };
+};
+
 const defaultSleep = (milliseconds: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -390,6 +496,7 @@ export const runManagedCloudNodeEnrollment = async (input: {
     loadOrCreateDeviceKeyPair: loadOrCreateManagedCloudNodeDeviceKeyPair,
     requestDeviceCode: requestWorkspaceDeviceCode,
     pollAccessToken: pollWorkspaceDeviceAccessToken,
+    enrollProvisioningCredential: defaultEnrollProvisioningCredential,
     provision: provisionLocalOs,
     activateHeartbeat: activateManagedCloudNodeHeartbeat,
     now: Date.now,
@@ -402,6 +509,47 @@ export const runManagedCloudNodeEnrollment = async (input: {
       home: input.home,
       nodeId: input.onboarding.nodeId,
     });
+    const hasProvisioningCredential = Boolean(
+      input.onboarding.provisioningJobId?.trim() || input.onboarding.provisioningEnrollmentToken?.trim(),
+    );
+    if (hasProvisioningCredential) {
+      if (!input.onboarding.provisioningJobId?.trim() || !input.onboarding.provisioningEnrollmentToken?.trim()) {
+        throw new ManagedCloudNodeEnrollmentError(
+          'PROVISIONING_ENROLLMENT_INVALID',
+          'managed cloud provisioning enrollment credentials are incomplete',
+        );
+      }
+      const workspaceBootstrap = await dependencies.enrollProvisioningCredential({
+        authorityOrigin: input.onboarding.authorityOrigin ?? 'https://os.consuelohq.com',
+        onboarding: input.onboarding,
+        deviceKeyPair,
+      });
+      dependencies.provision({
+        home: input.home,
+        mode: 'cloud',
+        platform: 'linux',
+        workspaceBootstrap,
+      });
+      await dependencies.activateHeartbeat({
+        home: input.home,
+        connectorId: workspaceBootstrap.connectorId,
+      });
+      const status = {
+        schemaVersion: 1,
+        phase: 'enrolled',
+        workspaceId: workspaceBootstrap.workspaceId,
+        workspaceSlug: workspaceBootstrap.workspaceSlug,
+        nodeId: workspaceBootstrap.nodeId ?? input.onboarding.nodeId,
+        connectorId: workspaceBootstrap.connectorId,
+      } as const;
+      dependencies.writeStatus(status);
+      return {
+        status: 'enrolled' as const,
+        workspaceId: status.workspaceId,
+        nodeId: status.nodeId,
+        connectorId: status.connectorId,
+      };
+    }
     const requested = await dependencies.requestDeviceCode({
       clientId: MANAGED_CLOUD_NODE_DEVICE_CLIENT_ID,
       scope: [...MANAGED_CLOUD_NODE_DEVICE_SCOPE],

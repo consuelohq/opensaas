@@ -57,6 +57,45 @@ describe('workspace node heartbeat client', () => {
           routeReady: true,
           connectorId: 'connector_member',
           edgeRequestSigningSecret: 'wen_heartbeat_reconciled_secret',
+          workspace: {
+            workspaceId: 'workspace_123',
+            workspaceHost: 'workspace-123.consuelohq.com',
+            currentNodeId: 'node_member',
+            defaultNodeId: 'node_home',
+            nodeCount: 2,
+            nodes: [
+              {
+                workspaceId: 'workspace_123',
+                nodeId: 'node_home',
+                displayName: 'Home Mac',
+                role: 'home',
+                platform: 'darwin',
+                architecture: 'arm64',
+                channel: 'canary',
+                capabilities: ['mcp'],
+                agents: ['codex'],
+                createdAt: '2026-07-22T19:00:00.000Z',
+                lastSeenAt: '2026-07-22T19:59:45.000Z',
+                presence: 'online',
+                state: 'active',
+              },
+              {
+                workspaceId: 'workspace_123',
+                nodeId: 'node_member',
+                displayName: 'Cloud node',
+                role: 'member',
+                platform: 'linux',
+                architecture: 'x64',
+                channel: 'canary',
+                capabilities: ['mcp', 'tools'],
+                agents: null,
+                createdAt: '2026-07-22T19:30:00.000Z',
+                lastSeenAt: '2026-07-22T20:00:00.000Z',
+                presence: 'online',
+                state: 'active',
+              },
+            ],
+          },
         });
       },
     });
@@ -71,6 +110,16 @@ describe('workspace node heartbeat client', () => {
       routeReady: true,
       connectorId: 'connector_member',
       edgeRequestSigningSecret: 'wen_heartbeat_reconciled_secret',
+      workspace: {
+        workspaceId: 'workspace_123',
+        workspaceHost: 'workspace-123.consuelohq.com',
+        currentNodeId: 'node_member',
+        defaultNodeId: 'node_home',
+        nodes: [
+          expect.objectContaining({ nodeId: 'node_home', displayName: 'Home Mac' }),
+          expect.objectContaining({ nodeId: 'node_member', displayName: 'Cloud node' }),
+        ],
+      },
     });
     expect(second).toEqual(first);
     expect(requests).toHaveLength(2);

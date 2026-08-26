@@ -32,6 +32,8 @@ const expectedMistakeClasses = [
   'runtime_missing',
   'cwd_out_of_scope',
   'invalid_source',
+  'work_session_protected_root',
+  'containment_unavailable',
   'unsafe_shell',
 ];
 

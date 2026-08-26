@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   createWorkerPoolSupervisor,
+  resolveWorkerGracefulDrainSignal,
   resolveWorkerPoolConfiguration,
   type WorkerProcessHandle,
 } from '../scripts/lib/worker-pool';
@@ -35,6 +36,12 @@ async function waitFor(condition: () => boolean, timeoutMs = 500): Promise<void>
 }
 
 describe('OS worker pool lifecycle', () => {
+  it('uses a non-terminating graceful drain signal on Unix workers', () => {
+    expect(resolveWorkerGracefulDrainSignal('darwin')).toBe('SIGUSR2');
+    expect(resolveWorkerGracefulDrainSignal('linux')).toBe('SIGUSR2');
+    expect(resolveWorkerGracefulDrainSignal('win32')).toBe('SIGTERM');
+  });
+
   it('defaults to an HA pair and assigns deterministic bounded ports', () => {
     expect(resolveWorkerPoolConfiguration({})).toMatchObject({
       desiredWorkers: 2,
@@ -51,6 +58,19 @@ describe('OS worker pool lifecycle', () => {
       desiredWorkers: 3,
       basePort: 47000,
       workerPorts: [47000, 47001, 47002],
+    });
+
+    expect(
+      resolveWorkerPoolConfiguration({
+        CONSUELO_OS_WORKER_COUNT: '2',
+        CONSUELO_OS_WORKER_BASE_PORT: '48100',
+        CONSUELO_OS_PORT: '48101',
+        PORT: '48101',
+      }),
+    ).toMatchObject({
+      desiredWorkers: 2,
+      basePort: 48100,
+      workerPorts: [48100, 48101],
     });
 
     expect(() =>
@@ -211,6 +231,7 @@ describe('OS worker pool lifecycle', () => {
         CONSUELO_OS_WORKER_COUNT: '2',
         CONSUELO_OS_PORT: '47030',
         CONSUELO_OS_WORKER_RESTART_DELAY_MS: '0',
+        CONSUELO_OS_DRAIN_PROPAGATION_MS: '3000',
       }),
       instanceId: () => `rolling-${++nextInstance}`,
       spawnWorker(spec): WorkerProcessHandle {
@@ -232,7 +253,8 @@ describe('OS worker pool lifecycle', () => {
         return true;
       },
       writeSnapshot: () => {},
-      sleep: async () => {
+      sleep: async (milliseconds) => {
+        events.push(`sleep:${milliseconds}`);
         await new Promise<void>((resolveSleep) => setTimeout(resolveSleep, 0));
       },
     });
@@ -255,15 +277,56 @@ describe('OS worker pool lifecycle', () => {
       event === `ready:worker-0:${after.workers[0]?.workerInstanceId}`,
     );
     const worker1Drain = events.findIndex((event) =>
-      event === `kill:worker-1:${originalWorker1}:SIGTERM`,
+      event === `kill:worker-1:${originalWorker1}:${resolveWorkerGracefulDrainSignal()}`,
+    );
+    const worker0CaddyAdmission = events.findIndex((event, index) =>
+      index > worker0ReplacementReady && event === 'sleep:3000',
     );
     expect(worker0ReplacementReady).toBeGreaterThan(-1);
-    expect(worker1Drain).toBeGreaterThan(worker0ReplacementReady);
+    expect(worker0CaddyAdmission).toBeGreaterThan(worker0ReplacementReady);
+    expect(worker1Drain).toBeGreaterThan(worker0CaddyAdmission);
+    expect(events.filter((event) => event === 'sleep:3000')).toHaveLength(1);
 
     await supervisor.stop();
   });
 
-  it('tracks active work and refuses new work after draining starts', async () => {
+  it('should budget both propagation windows before force-closing a draining worker', async () => {
+    const sleeps: number[] = [];
+    const signals: Array<NodeJS.Signals | undefined> = [];
+    const exit = deferredExit();
+    const supervisor = createWorkerPoolSupervisor({
+      configuration: resolveWorkerPoolConfiguration({
+        CONSUELO_OS_WORKER_COUNT: '1',
+        CONSUELO_OS_PORT: '47035',
+        CONSUELO_OS_DRAIN_TIMEOUT_MS: '100',
+        CONSUELO_OS_DRAIN_PROPAGATION_MS: '25',
+      }),
+      spawnWorker(): WorkerProcessHandle {
+        return {
+          pid: 3500,
+          exited: exit.promise,
+          kill(signal) {
+            signals.push(signal);
+            if (signal === 'SIGKILL') exit.resolve(0);
+            return true;
+          },
+        };
+      },
+      probeReady: async () => true,
+      writeSnapshot: () => {},
+      sleep: async (milliseconds) => {
+        sleeps.push(milliseconds);
+      },
+    });
+
+    await supervisor.start();
+    await supervisor.stop();
+
+    expect(sleeps).toContain(150);
+    expect(signals).toEqual([resolveWorkerGracefulDrainSignal(), 'SIGKILL']);
+  });
+
+  it('announces drain before refusing new work so the load balancer can evacuate the worker', async () => {
     const state = createWorkerRuntimeState({
       workerId: 'worker-0',
       workerInstanceId: 'instance-a',
@@ -278,11 +341,25 @@ describe('OS worker pool lifecycle', () => {
     });
 
     state.startDraining();
+    expect(state.snapshot()).toMatchObject({ draining: true });
+    expect(state.beginRequest()).toBe(true);
+    state.stopAcceptingRequests();
     expect(state.beginRequest()).toBe(false);
     const idle = state.waitForIdle(100);
     state.endRequest();
+    state.endRequest();
     await expect(idle).resolves.toBe(true);
     expect(state.snapshot()).toMatchObject({ activeRequests: 0, draining: true });
+  });
+
+  it('keeps worker bind ports separate from the stable worker-pool base', () => {
+    const supervisor = readFileSync(resolve(osRoot, 'scripts/server/supervisor.ts'), 'utf8');
+    expect(supervisor).toContain('CONSUELO_OS_WORKER_BASE_PORT: String(configuration.basePort)');
+    expect(supervisor).toContain('CONSUELO_OS_PORT: String(spec.port)');
+    expect(supervisor).toContain('PORT: String(spec.port)');
+
+    const reload = readFileSync(resolve(osRoot, 'scripts/consuelo-reload.js'), 'utf8');
+    expect(reload).toContain('CONSUELO_OS_WORKER_BASE_PORT');
   });
 
   it('wires managed macOS/direct and Linux service launch paths to the supervisor', () => {

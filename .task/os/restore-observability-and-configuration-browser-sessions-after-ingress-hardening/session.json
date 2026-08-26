@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d270967a68de",
+  "tmuxSession": "opensaas-os-restore-observability-and-configuration-browser--d270967a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-observability-and-configuration-browser-sessions-after-ingress-hardening",
+  "branch": "task/os/restore-observability-and-configuration-browser-sessions-after-ingress-hardening",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-observability-and-configuration-browser-sessions-after-ingress-hardening",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-observability-and-configuration-browser-sessions-after-ingress-hardening",
+  "prNumber": 1913,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1913",
+  "createdAt": "2026-08-13T19:29:01.553Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-observability-and-configuration-browser-sessions-after-ingress-hardening/.task/os/restore-observability-and-configuration-browser-sessions-after-ingress-hardening/session.json"
+}

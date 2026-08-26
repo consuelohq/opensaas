@@ -8,9 +8,16 @@
     "typecheck": "tsc --noEmit",
     "build": "mkdir -p ./dist && bun build ./src/main.ts --compile --outfile ./dist/dialer-server",
     "start": "./dist/dialer-server",
+    "release:smoke": "bun ./scripts/production-smoke.ts",
+    "release:railway": "bun ./scripts/railway-deployment.ts",
+    "release:rollback-railway": "bun ./scripts/rollback-production.ts",
+    "release:manifest": "bun ./scripts/write-release-manifest.ts",
+    "db:migrate": "bun ./scripts/migrate-database.ts",
     "validate:local-runtime": "bun ./scripts/validate-local-runtime.ts",
     "validate:provider-test": "bun ./scripts/validate-provider-test.ts",
-    "validate:groq-transcription": "bun ./scripts/validate-groq-transcription.ts"
+    "validate:groq-transcription": "bun ./scripts/validate-groq-transcription.ts",
+    "lab:local": "bun ./scripts/local-dialer-lab.ts",
+    "lab:verify": "CONSUELO_RUN_LOCAL_DIALER_LAB_INTEGRATION=1 bun test ./src/lab/local-dialer-lab.integration.test.ts"
   },
   "dependencies": {
     "@consuelo/dialer": "workspace:*",
@@ -19,6 +26,7 @@
     "hono": "^4.11.9",
     "ioredis": "5.6.0",
     "pg": "8.12.0",
+    "stripe": "19.3.1",
     "twilio": "^5.12.1"
   },
   "devDependencies": {

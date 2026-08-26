@@ -33,9 +33,11 @@ import {
 } from './lib/sites';
 import type { SitePageKind } from './lib/sites';
 import { readArtifactCatalog } from './lib/artifacts';
-import { loadOsConfig } from './lib/install-state';
+import { loadOsConfig, readLocalNodeIdentity } from './lib/install-state';
 import { runConfigurationOverlayCommand } from './lib/settings-overlay-command';
 import { readSteeringSnapshot } from './lib/steering-snapshot-cache';
+import { recordToolTraceSafely } from './lib/trace-persistence';
+import type { McpNodeRoutingContext } from './lib/mcp-node-routing';
 import type { CallInput, CallOutput, SkillContext } from './lib/types';
 
 function writeStdout(value: string): void {
@@ -63,12 +65,53 @@ function createTraceId(): string {
   return `trc_${randomUUID().replaceAll('-', '').slice(0, 12)}`;
 }
 
-function envPresence(): Record<string, unknown> {
+function envPresence(nodeRouting?: McpNodeRoutingContext): Record<string, unknown> {
   const graphqlUrl = process.env.CONSUELO_GRAPHQL_URL;
   const paths = getRuntimePaths();
+  const config = loadOsConfig(paths.home);
+  const localNode = readLocalNodeIdentity(paths.home);
+  const trustedNodeRouting = nodeRouting &&
+    (!config?.workspace?.id || nodeRouting.workspaceId === config.workspace.id) &&
+    (!localNode?.nodeId || nodeRouting.currentNodeId === localNode.nodeId)
+    ? nodeRouting
+    : undefined;
+  const workspace = config?.workspace
+    ? {
+        id: config.workspace.id,
+        slug: config.workspace.slug,
+        host: config.workspace.host,
+      }
+    : trustedNodeRouting?.workspaceId
+      ? { id: trustedNodeRouting.workspaceId }
+      : process.env.CONSUELO_WORKSPACE_ID
+      ? { id: process.env.CONSUELO_WORKSPACE_ID }
+      : null;
   return {
-    workspaceId: process.env.CONSUELO_WORKSPACE_ID ?? null,
-    userId: process.env.CONSUELO_USER_ID ?? null,
+    workspace,
+    node: localNode
+      ? {
+          id: localNode.nodeId,
+          name: localNode.nodeName,
+          ...(localNode.nodeRole ? { role: localNode.nodeRole } : {}),
+        }
+      : null,
+    ...(trustedNodeRouting
+      ? {
+          routing: {
+            currentNodeId: trustedNodeRouting.currentNodeId,
+            defaultNodeId: trustedNodeRouting.defaultNodeId ?? null,
+            routeSource: trustedNodeRouting.routeSource,
+            availableNodes: trustedNodeRouting.nodes.map((node) => ({
+              nodeId: node.nodeId,
+              displayName: node.displayName,
+              ...(node.role ? { role: node.role } : {}),
+              ...(node.platform ? { platform: node.platform } : {}),
+              ...(node.presence ? { presence: node.presence } : {}),
+              ...(node.state ? { state: node.state } : {}),
+            })),
+          },
+        }
+      : {}),
     graphqlUrlHost: graphqlUrl ? new URL(graphqlUrl).host : null,
     hasGraphqlApiKey: Boolean(process.env.CONSUELO_INTERNAL_GRAPHQL_API_KEY),
     consueloHome: paths.home,
@@ -90,6 +133,7 @@ export type SitesCommandResult = {
   docsIndexPath: string;
   configurationIndexPath: string;
   toolsIndexPath: string;
+  nodesIndexPath: string;
   environmentsIndexPath: string;
   secretsIndexPath: string;
   url: string;
@@ -103,6 +147,7 @@ export type SitesCommandResult = {
   docsIndexExists: boolean;
   configurationIndexExists: boolean;
   toolsIndexExists: boolean;
+  nodesIndexExists: boolean;
   environmentsIndexExists: boolean;
   secretsIndexExists: boolean;
   message: string;
@@ -216,6 +261,7 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     docsIndexPath: sitesPaths.docsIndexPath,
     configurationIndexPath: sitesPaths.configurationIndexPath,
     toolsIndexPath: sitesPaths.toolsIndexPath,
+    nodesIndexPath: sitesPaths.nodesIndexPath,
     environmentsIndexPath: sitesPaths.environmentsIndexPath,
     secretsIndexPath: sitesPaths.secretsIndexPath,
     url: pathToFileURL(sitesPaths.indexPath).href,
@@ -229,6 +275,7 @@ function sitesStatusResult(command: string, home: string, dbPath: string): Sites
     docsIndexExists: fs.existsSync(sitesPaths.docsIndexPath),
     configurationIndexExists: fs.existsSync(sitesPaths.configurationIndexPath),
     toolsIndexExists: fs.existsSync(sitesPaths.toolsIndexPath),
+    nodesIndexExists: fs.existsSync(sitesPaths.nodesIndexPath),
     environmentsIndexExists: fs.existsSync(sitesPaths.environmentsIndexPath),
     secretsIndexExists: fs.existsSync(sitesPaths.secretsIndexPath),
     message: `Sites index: ${sitesPaths.indexPath}`,
@@ -462,18 +509,32 @@ function renderSitesCommandResult(result: SitesCommandResult): string {
     `Artifact count: ${result.artifacts}`,
   ].join('\n');
 }
-export function getSteering(options: { forceSnapshotRefresh?: boolean } = {}): string {
+export function getSteering(options: {
+  forceSnapshotRefresh?: boolean;
+  nodeRouting?: McpNodeRoutingContext;
+} = {}): string {
   const runtimePaths = ensureRuntimePaths();
   const packageRoot = getPackageRoot();
+  const runtimeIdentity = envPresence(options.nodeRouting);
   const sections = [
     '# Consuelo OS runtime context',
     '',
     '## Runtime identity',
     '',
     '```json',
-    safeJson(envPresence()),
+    safeJson(runtimeIdentity),
     '```',
   ];
+  if (Object.hasOwn(runtimeIdentity, 'routing')) {
+    sections.push(
+      '',
+      '## Workspace node routing',
+      '',
+      'Nodes are routing targets, not tools. Do not use `tools.search` to look for a node name.',
+      'To execute on a non-default node, pass `nodeId` at the top level of `os.call` using the exact canonical `nodeId` from `routing.availableNodes` above. Do not put `nodeId` inside the selected tool `input`.',
+      'Omit `nodeId` to use the workspace default node. If an explicit target is unknown, offline, or unavailable, fail closed instead of silently retrying on the default node.',
+    );
+  }
   sections.push(readSteeringSnapshot({
     home: runtimePaths.home,
     packageRoot,
@@ -527,6 +588,10 @@ function recordStarted(traceId: string, name: string, input: unknown): void {
   recordExecutionStarted({ traceId, name, input });
 }
 
+function estimatedSteeringTokens(steering: string): number {
+  return Math.max(1, Math.floor(steering.length / 4));
+}
+
 function finishSteeringExecution(args: {
   traceId: string;
   name: string;
@@ -537,9 +602,10 @@ function finishSteeringExecution(args: {
   reason?: string;
 }): void {
   const durationMs = Date.now() - args.started;
+  const outputTokens = estimatedSteeringTokens(args.steering);
   const result: Record<string, unknown> = {
     chars: args.steering.length,
-    estimatedOutputTokens: Math.max(1, Math.floor(args.steering.length / 4)),
+    estimatedOutputTokens: outputTokens,
     content: args.steering,
     decision: args.decision,
   };
@@ -557,6 +623,51 @@ function finishSteeringExecution(args: {
       code: args.code,
     },
     durationMs,
+  });
+  recordToolTraceSafely({
+    traceId: args.traceId,
+    source: 'steering',
+    tool: args.name,
+    status: 'succeeded',
+    ok: true,
+    code: args.code,
+    exitCode: 0,
+    durationMs,
+    input: args.reason !== undefined ? { reason: args.reason } : {},
+    result: {
+      decision: args.decision,
+      chars: args.steering.length,
+      message: args.name === 'refresh_steering' ? 'steering refreshed' : 'steering loaded',
+    },
+    inputTokens: 0,
+    outputTokens,
+    totalTokens: outputTokens,
+  });
+}
+
+function failSteeringToolTrace(args: {
+  traceId: string;
+  name: string;
+  started: number;
+  code: string;
+  message: string;
+  reason?: string;
+}): void {
+  recordToolTraceSafely({
+    traceId: args.traceId,
+    source: 'steering',
+    tool: args.name,
+    status: 'failed',
+    ok: false,
+    code: args.code,
+    exitCode: 1,
+    durationMs: Date.now() - args.started,
+    input: args.reason !== undefined ? { reason: args.reason } : {},
+    result: { message: args.message },
+    stderr: args.message,
+    inputTokens: 0,
+    outputTokens: 0,
+    totalTokens: 0,
   });
 }
 
@@ -693,12 +804,20 @@ export function executeGetSteering(
     return steering;
   } catch (error: unknown) {
     const durationMs = Date.now() - started;
+    const message = error instanceof Error ? error.message : 'OS bootstrap failed.';
     recordExecutionFinished({
       traceId,
       status: 'failed',
       errorCode: 'BOOTSTRAP_FAILED',
-      errorMessage: error instanceof Error ? error.message : 'OS bootstrap failed.',
+      errorMessage: message,
       durationMs,
+    });
+    failSteeringToolTrace({
+      traceId,
+      name: 'get_steering',
+      started,
+      code: 'BOOTSTRAP_FAILED',
+      message,
     });
     throw error;
   }
@@ -761,12 +880,21 @@ export function executeRefreshSteering(
     return steering;
   } catch (error: unknown) {
     const durationMs = Date.now() - started;
+    const message = error instanceof Error ? error.message : 'OS steering refresh failed.';
     recordExecutionFinished({
       traceId,
       status: 'failed',
       errorCode: 'REFRESH_STEERING_FAILED',
-      errorMessage: error instanceof Error ? error.message : 'OS steering refresh failed.',
+      errorMessage: message,
       durationMs,
+    });
+    failSteeringToolTrace({
+      traceId,
+      name: 'refresh_steering',
+      started,
+      code: 'REFRESH_STEERING_FAILED',
+      message,
+      reason: normalizedReason,
     });
     throw error;
   }

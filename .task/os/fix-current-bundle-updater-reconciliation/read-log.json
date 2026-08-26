@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/os/tests/os-device-authority-release-contract.test.ts",
+    "packages/workspace/scripts/os-release-device-auth.ts"
+  ],
+  "updatedAt": "2026-08-15T09:38:30.703Z"
+}

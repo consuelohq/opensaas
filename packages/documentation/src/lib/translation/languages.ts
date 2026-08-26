@@ -29,3 +29,13 @@ export function getSupportedTranslationLanguage(code: string | null): SupportedT
 export function isSupportedTranslationLanguage(code: string | null): boolean {
   return getSupportedTranslationLanguage(code) !== null;
 }
+
+export function resolvePreferredTranslationLanguage(languages: readonly string[]): string | null {
+  for (const rawLanguage of languages) {
+    const code = rawLanguage.trim().toLowerCase().split('-')[0] ?? '';
+    if (!code) continue;
+    if (code === sourceLanguage) return null;
+    if (supportedLanguageByCode.has(code)) return code;
+  }
+  return null;
+}

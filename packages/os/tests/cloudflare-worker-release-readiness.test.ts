@@ -6,28 +6,30 @@ import {
 } from '../scripts/lib/cloudflare-worker-release-readiness';
 
 describe('Cloudflare Worker release readiness', () => {
-  it('rejects incomplete secret metadata before deployment', async () => {
+  it('allows deployment with the optional internal dashboard disabled', async () => {
     const commands: string[][] = [];
-    await expect(deployCloudflareWorker({
+    await deployCloudflareWorker({
       target: 'workspace-edge',
       runner: async ({ argv }) => {
         commands.push(argv);
-        return {
-          exitCode: 0,
-          stdout: JSON.stringify([{ name: 'CONSUELO_EDGE_SIGNING_SECRET' }]),
-          stderr: '',
-        };
+        return argv[1] === 'secret'
+          ? {
+              exitCode: 0,
+              stdout: JSON.stringify([
+                { name: 'CONSUELO_EDGE_SIGNING_SECRET' },
+                { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET' },
+              ]),
+              stderr: '',
+            }
+          : { exitCode: 0, stdout: '', stderr: '' };
       },
-    })).rejects.toThrow(
-      'Workspace edge secret WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET is not configured',
-    );
-    expect(commands).toEqual([[
+    });
+    expect(commands[1]).toEqual([
       'wrangler',
-      'secret',
-      'list',
+      'deploy',
       '--config',
       'cloudflare/workspace-edge/wrangler.toml',
-    ]]);
+    ]);
   });
 
   it('validates required secrets before issuing deployment', async () => {
@@ -42,6 +44,8 @@ describe('Cloudflare Worker release readiness', () => {
               stdout: JSON.stringify({ secrets: [
                 { name: 'CLOUDFLARE_API_TOKEN' },
                 { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET' },
+                { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET' },
+                { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET' },
               ] }),
               stderr: '',
             }

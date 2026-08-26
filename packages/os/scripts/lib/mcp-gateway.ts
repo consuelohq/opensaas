@@ -5,6 +5,7 @@ import {
   modernMcpRoutingFromBody,
   stampModernMcpResult,
 } from './mcp-protocol';
+import { normalizeMcpNodeId, normalizeMcpWorkSession } from './mcp-node-routing';
 
 type JsonObject = Record<string, unknown>;
 type JsonRpcId = string | number | null;
@@ -19,6 +20,7 @@ type FacadeCall = {
   tool: string;
   input: JsonObject;
   taskSession?: string;
+  workSession?: string;
   timeout?: number;
 };
 
@@ -69,7 +71,7 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
   {
     name: 'call',
     title: 'Call an OS tool',
-    description: 'Run one typed Consuelo OS tool through the authenticated facade described by get_steering.',
+    description: 'Run one typed Consuelo OS tool through the authenticated facade described by get_steering. To target a specific workspace node, pass top-level nodeId from routing.availableNodes; node names are routing targets, not tools.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -87,6 +89,18 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
           type: 'string',
           minLength: 1,
           description: 'Required task session for task-scoped tools.',
+        },
+        workSession: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 240,
+          description: 'Work session used to route non-task work to its owning node.',
+        },
+        nodeId: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 160,
+          description: 'Optional top-level workspace node target from get_steering routing.availableNodes. Omit to use the workspace default node.',
         },
         timeout: {
           type: 'integer',
@@ -150,7 +164,7 @@ function hasOnlyKeys(value: JsonObject, keys: readonly string[]): boolean {
 
 function parseFacadeCall(params: unknown): FacadeCall | null {
   const args = toolArgumentsFromParams(params);
-  if (!args || !hasOnlyKeys(args, ['tool', 'input', 'taskSession', 'timeout'])) return null;
+  if (!args || !hasOnlyKeys(args, ['tool', 'input', 'taskSession', 'workSession', 'nodeId', 'timeout'])) return null;
 
   const tool = typeof args.tool === 'string' ? args.tool.trim() : '';
   if (!tool) return null;
@@ -166,6 +180,12 @@ function parseFacadeCall(params: unknown): FacadeCall | null {
     return null;
   }
 
+  const workSession = normalizeMcpWorkSession(args.workSession);
+  if (workSession === null) return null;
+  if (typeof taskSession === 'string' && workSession) return null;
+
+  if (normalizeMcpNodeId(args.nodeId) === null) return null;
+
   const timeout = args.timeout;
   if (
     timeout !== undefined
@@ -178,6 +198,7 @@ function parseFacadeCall(params: unknown): FacadeCall | null {
     tool,
     input: callInput,
     ...(typeof taskSession === 'string' ? { taskSession: taskSession.trim() } : {}),
+    ...(workSession ? { workSession } : {}),
     ...(typeof timeout === 'number' ? { timeout } : {}),
   };
 }
@@ -191,6 +212,7 @@ function facadeToolInput(call: FacadeCall): JsonObject {
   return {
     ...call.input,
     ...(call.taskSession ? { taskSession: call.taskSession } : {}),
+    ...(call.workSession ? { workSession: call.workSession } : {}),
     ...(call.timeout ? { timeout: call.timeout } : {}),
   };
 }

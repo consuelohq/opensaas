@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-macos-gateway-restart-resilient-during-updates",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2079,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2079",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2079",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2079/make-macos-gateway-restart-resilient-during-updates",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2079",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2079/make-macos-gateway-restart-resilient-during-updates",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-macos-gateway-restart-resilient-during-updates",
+  "taskSession": "tsk_714558dcf064",
+  "tmuxSession": "opensaas-os-make-macos-gateway-restart-resilient-during-upda-714558dc",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-macos-gateway-restart-resilient-during-updates/.task/os/make-macos-gateway-restart-resilient-during-updates/session.json",
+  "createdAt": "2026-08-15T19:01:58.873Z"
+}

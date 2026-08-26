@@ -3,8 +3,15 @@ import { describe, expect, it } from 'vitest';
 import {
   formatTraceTableRow,
   isDefaultTraceTableRowVisible,
+  matchesTraceTableFilters,
+  traceFilterFacets,
+  type TraceTableFilterState,
   type TraceTableRecord,
 } from '../scripts/lib/trace-site-inspector/table-formatters';
+import {
+  branchName,
+  childTraceRecords,
+} from '../scripts/lib/trace-site-inspector/model';
 import {
   deriveTraceHistoryCursor,
   parseTraceHistoryResponse,
@@ -22,6 +29,18 @@ const record = (overrides: Partial<TraceTableRecord> = {}): TraceTableRecord => 
   ok: true,
   code: 'OK',
   input: '{}',
+  ...overrides,
+});
+
+const filterState = (
+  overrides: Partial<TraceTableFilterState> = {},
+): TraceTableFilterState => ({
+  query: '',
+  branches: new Set(),
+  tools: new Set(),
+  nodes: new Set(),
+  routes: new Set(),
+  statuses: new Set(),
   ...overrides,
 });
 
@@ -61,6 +80,123 @@ describe('OS-owned Trace Burn table formatting', () => {
 
     expect(formatted.inputLabel).toBe('OAuth · /mcp · mcp:read');
     expect(formatted.inputLabel).not.toBe('request details');
+  });
+
+  it('should format node routing metadata when a trace resolves an explicit node', () => {
+    const parent = record({
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      defaultNodeId: 'node_home',
+      routeSource: 'explicit',
+    });
+
+    expect(formatTraceTableRow(parent)).toMatchObject({
+      nodeId: 'node_cloud',
+      nodeLabel: 'Cloud Node',
+      routeSource: 'explicit',
+      routeLabel: 'Explicit',
+    });
+  });
+
+  it('should inherit direct parent routing metadata when a batch child omits routing fields', () => {
+    const parent = record({
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      defaultNodeId: 'node_home',
+      routeSource: 'explicit',
+      batchResultsJson: JSON.stringify([
+        { tool: 'fs.read', ok: true, code: 'OK', input: { path: 'README.md' } },
+      ]),
+    });
+
+    const child = childTraceRecords(parent)[0];
+    expect(formatTraceTableRow(child)).toMatchObject({
+      nodeId: 'node_cloud',
+      nodeLabel: 'Cloud Node',
+      routeLabel: 'Explicit',
+    });
+  });
+
+  it('should inherit metadata-only parent routing when a batch child omits routing fields', () => {
+    const parent = record({
+      metadata: {
+        requestedNodeId: 'node_cloud',
+        resolvedNodeId: 'node_cloud',
+        resolvedNodeName: 'Metadata Cloud Node',
+        defaultNodeId: 'node_home',
+        routeSource: 'task',
+      },
+      batchResultsJson: JSON.stringify([
+        { tool: 'fs.read', ok: true, code: 'OK', input: { path: 'README.md' } },
+      ]),
+    });
+
+    const child = childTraceRecords(parent)[0];
+    expect(formatTraceTableRow(child)).toMatchObject({
+      nodeId: 'node_cloud',
+      nodeLabel: 'Metadata Cloud Node',
+      routeSource: 'task',
+      routeLabel: 'Task',
+    });
+  });
+
+  it('uses the work-session path as the existing session label and inherits it into batch children', () => {
+    const parent = record({
+      workSession: 'wrk_raycast',
+      workPath: '/Users/[user]/Developer/raycast-extensions/example',
+      batchResultsJson: JSON.stringify([
+        { tool: 'fs.read', ok: true, code: 'OK', input: { path: 'package.json' } },
+      ]),
+    });
+
+    expect(branchName(parent)).toBe('/Users/[user]/Developer/raycast-extensions/example');
+    const child = childTraceRecords(parent)[0];
+    expect(child).toMatchObject({
+      workSession: 'wrk_raycast',
+      workPath: '/Users/[user]/Developer/raycast-extensions/example',
+    });
+    expect(branchName(child)).toBe('/Users/[user]/Developer/raycast-extensions/example');
+    expect(traceFilterFacets([parent]).branches).toEqual([
+      { value: '/Users/[user]/Developer/raycast-extensions/example', count: 1 },
+    ]);
+  });
+
+  it('keeps the existing task branch fallback for task-session traces', () => {
+    expect(branchName(record({
+      branch: 'task/workspace-agent/session-observability',
+      taskSession: 'tsk_session_observability',
+    }))).toBe('task/workspace-agent/session-observability');
+  });
+
+  it('should expose only non-empty node and route facets when traces include mixed routing metadata', () => {
+    const routed = record({
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      routeSource: 'explicit',
+    });
+    const historic = record({ traceId: 'historic-without-routing' });
+
+    expect(traceFilterFacets([routed, historic])).toMatchObject({
+      nodes: [{ value: 'Cloud Node', count: 1 }],
+      routes: [{ value: 'Explicit', count: 1 }],
+    });
+  });
+
+  it('should match node and route filters when routing labels are selected', () => {
+    const parent = record({
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      routeSource: 'explicit',
+    });
+
+    expect(matchesTraceTableFilters(parent, filterState({
+      query: 'cloud',
+      nodes: new Set(['Cloud Node']),
+      routes: new Set(['Explicit']),
+    }))).toBe(true);
+    expect(matchesTraceTableFilters(parent, filterState({
+      nodes: new Set(['Local Mac']),
+    }))).toBe(false);
   });
 
   it('summarizes wait and status plumbing without request-details placeholders', () => {
@@ -116,12 +252,15 @@ describe('OS-owned Trace Burn table formatting', () => {
 
   it('owns older/newer cursor URLs and parses authenticated history pages', () => {
     const history = traceHistoryUrl('id:row_42', 250);
+    const search = traceHistoryUrl('latest', 100, 'branch:feature/search date:2026-08-13');
     const live = traceLiveUrl('000000000042', 25);
 
     expect(history).toContain('/gateway/traces/recent?');
     expect(history).toContain('direction=older');
     expect(history).toContain('cursor=id%3Arow_42');
     expect(history).toContain('includeRawPayload=true');
+    expect(search).toContain('cursor=latest');
+    expect(search).toContain('query=branch%3Afeature%2Fsearch+date%3A2026-08-13');
     expect(live).toContain('direction=newer');
     expect(live).toContain('cursor=000000000042');
 
