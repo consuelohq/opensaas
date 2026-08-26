@@ -17,6 +17,7 @@ import {
   assertGitHubCliAuthenticated,
   resolveGitHubCliPath,
 } from './lib/github-cli';
+import { evaluatePromotionCorrelation } from './lib/release-promotion-correlation';
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 const RUNTIME_PUBLISH_WORKFLOW = 'consuelo-os-runtime-publish.yaml';
@@ -393,9 +394,8 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
       }
     },
     channelRelease: fetchChannel,
-    async promote({ from, to, bundleId }) {
+    async promote({ from, to, bundleId, sourceCommit }) {
       try {
-        const runName = `Consuelo OS promote ${from} -> ${to} ${bundleId}`;
         const before = ghJson<Array<{ databaseId: number }>>([
           'run',
           'list',
@@ -422,7 +422,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
           '-f',
           `bundle=${bundleId}`,
         ]);
-        const deadline = Date.now() + 5 * 60_000;
+        const deadline = Date.now() + 25 * 60_000;
         while (Date.now() < deadline) {
           const rows = ghJson<Array<{
             databaseId: number;
@@ -440,20 +440,20 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
             '--json',
             'databaseId,displayTitle,status,conclusion,url',
           ]);
-          const match = rows.find(
-            (row) => Number(row.databaseId) > baseline && clean(row.displayTitle) === runName,
-          );
-          if (match) {
-            return {
-              runId: match.databaseId,
-              status: clean(match.status),
-              conclusion: clean(match.conclusion),
-              url: clean(match.url),
-            };
+          const correlation = evaluatePromotionCorrelation({
+            baselineRunId: baseline,
+            runs: rows,
+            targetRelease: await fetchChannel(to),
+            expectedBundleId: bundleId,
+            expectedSourceCommit: sourceCommit,
+          });
+          if (correlation.kind === 'success') return correlation.run;
+          if (correlation.kind === 'failure') {
+            throw new Error(correlation.reason);
           }
-          await sleep(2_000);
+          await sleep(3_000);
         }
-        throw new Error(`timed out finding promotion run ${from} -> ${to}`);
+        throw new Error(`timed out waiting for exact promotion ${from} -> ${to}`);
       } catch (error: unknown) {
         throw releaseStepError(`promote ${from} -> ${to}`, error);
       }
