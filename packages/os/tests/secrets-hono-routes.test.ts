@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -35,6 +35,7 @@ function signedRequest(input: {
   method?: 'GET' | 'POST';
   body?: string;
   activeToken?: AgentAppToken;
+  headers?: Record<string, string>;
 }): Request {
   const method = input.method ?? 'GET';
   const body = input.body ?? '';
@@ -52,6 +53,7 @@ function signedRequest(input: {
     headers: {
       ...signed.headers,
       ...(method === 'POST' ? { 'content-type': 'application/json' } : {}),
+      ...input.headers,
     },
     ...(method === 'POST' ? { body } : {}),
   });
@@ -185,6 +187,7 @@ describe('Hono Secrets route', () => {
       nonce: 'secrets-install-envelope-nonce',
       method: 'POST',
       body,
+      headers: { 'x-consuelo-application-id': 'attacker-controlled-app' },
     }));
     expect(response.status).toBe(200);
     const payload = await response.json() as Record<string, unknown>;
@@ -198,6 +201,16 @@ describe('Hono Secrets route', () => {
       },
     });
     expect(JSON.stringify(payload)).not.toContain(plaintext);
+
+    const auditEvent = JSON.parse(
+      readFileSync(join(home, 'logs', 'control-plane-audit.jsonl'), 'utf8').trim(),
+    ) as Record<string, unknown>;
+    expect(auditEvent).toMatchObject({
+      event: 'credential.installed',
+      actorId: 'caller_secrets_hono',
+      applicationId: 'app_secrets_hono',
+    });
+    expect(auditEvent.applicationId).not.toBe('attacker-controlled-app');
 
     const listed = await handleRequest(signedRequest({
       path: '/gateway/secrets/bindings',

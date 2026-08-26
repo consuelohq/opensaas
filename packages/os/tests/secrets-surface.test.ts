@@ -72,6 +72,12 @@ describe('secrets page is a compact sealed-credential manager', () => {
     expect(html).not.toContain('JSON.stringify({ bindingId, plaintext })');
   });
 
+  it('invalidates cached sealing setup after a failed install so key rotation can recover', () => {
+    expect(html).toMatch(
+      /catch \{\s*secretSetup = null;\s*value\.value = '';\s*setText\('secret-form-status'/,
+    );
+  });
+
   it('stays concise and never renders a reveal or plaintext value surface', () => {
     expect(html).toContain('Encrypted in this browser before it is sent.');
     expect(html).not.toContain('Values are never returned to this page or to an agent. Never paste a credential into an agent conversation.');
