@@ -355,7 +355,10 @@ export const INTERNAL_DASHBOARD_JAVASCRIPT = `
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) {
-          if (status instanceof HTMLElement) status.textContent = typeof result.error === 'string' ? result.error : 'Enrollment reset failed';
+          const errorMessage = result && typeof result.error === 'object' && result.error && typeof result.error.message === 'string'
+            ? result.error.message
+            : 'Enrollment reset failed';
+          if (status instanceof HTMLElement) status.textContent = errorMessage;
           candidate.disabled = false;
           return;
         }

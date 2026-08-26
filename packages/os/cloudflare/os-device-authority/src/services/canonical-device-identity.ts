@@ -9,6 +9,8 @@ export type CanonicalDeviceIdentityDeniedReason =
   | 'workspace_verification_required';
 
 export const CANONICAL_WORKSPACE_VERIFICATION_MAX_AGE_MS = 15 * 60 * 1000;
+export const CANONICAL_ESTABLISHED_WORKSPACE_VERIFICATION_MAX_AGE_MS =
+  7 * 24 * 60 * 60 * 1000;
 
 export type CanonicalDeviceIdentityDenialDescription = {
   status: 403 | 409 | 503;
@@ -64,6 +66,14 @@ export type CanonicalDeviceIdentityResult =
     }
   | { status: 'denied'; reason: CanonicalDeviceIdentityDeniedReason };
 
+function membershipVerificationIsCurrent(
+  membership: { verifiedAt: string },
+  nowMs: number,
+  maxAgeMs: number,
+): boolean {
+  return nowMs - Date.parse(membership.verifiedAt) <= maxAgeMs;
+}
+
 export async function resolveCanonicalDeviceIdentity(input: {
   repository?: InstallControlPlaneRepository;
   store: Store;
@@ -109,7 +119,15 @@ export async function resolveCanonicalDeviceIdentity(input: {
         ({ workspaceId }) => workspaceId === canonicalWorkspace.workspaceId,
       )
     : undefined;
-  if (canonicalWorkspace && canonicalMembership) {
+  if (
+    canonicalWorkspace &&
+    canonicalMembership &&
+    membershipVerificationIsCurrent(
+      canonicalMembership,
+      input.nowMs,
+      CANONICAL_ESTABLISHED_WORKSPACE_VERIFICATION_MAX_AGE_MS,
+    )
+  ) {
     return {
       status: 'resolved',
       canonicalUserId: user.userId,
@@ -130,7 +148,15 @@ export async function resolveCanonicalDeviceIdentity(input: {
         ({ workspaceId }) => workspaceId === legacyWorkspace.workspaceId,
       )
     : undefined;
-  if (legacyWorkspace && legacyMembership) {
+  if (
+    legacyWorkspace &&
+    legacyMembership &&
+    membershipVerificationIsCurrent(
+      legacyMembership,
+      input.nowMs,
+      CANONICAL_ESTABLISHED_WORKSPACE_VERIFICATION_MAX_AGE_MS,
+    )
+  ) {
     return {
       status: 'resolved',
       canonicalUserId: user.userId,
@@ -144,7 +170,13 @@ export async function resolveCanonicalDeviceIdentity(input: {
     };
   }
 
-  const newestWorkspace = verifiedMemberships[0]!;
+  const newestWorkspace = verifiedMemberships.reduce(
+    (newestVerifiedMembership, membership) =>
+      Date.parse(membership.verifiedAt) >
+      Date.parse(newestVerifiedMembership.verifiedAt)
+        ? membership
+        : newestVerifiedMembership,
+  );
   const verificationAgeMs = input.nowMs - Date.parse(newestWorkspace.verifiedAt);
   if (verificationAgeMs > CANONICAL_WORKSPACE_VERIFICATION_MAX_AGE_MS) {
     return { status: 'denied', reason: 'workspace_verification_required' };

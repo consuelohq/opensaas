@@ -48,6 +48,7 @@ describe('internal user dashboard', () => {
     expect(INTERNAL_DASHBOARD_JAVASCRIPT).toContain("method: 'POST'");
     expect(INTERNAL_DASHBOARD_JAVASCRIPT).toContain('/api/internal/os/v1/enrollment/reset');
     expect(INTERNAL_DASHBOARD_JAVASCRIPT).toContain('x-consuelo-dashboard-action');
+    expect(INTERNAL_DASHBOARD_JAVASCRIPT).toContain('result.error.message');
     expect(INTERNAL_DASHBOARD_JAVASCRIPT).not.toContain("method: 'PATCH'");
     expect(INTERNAL_DASHBOARD_JAVASCRIPT).not.toContain('method: \'DELETE\'');
   });

@@ -407,7 +407,12 @@ async function proxyEnrollmentResetRequest(input: {
     return undefined;
   }
   if (input.request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'method_not_allowed' }), {
+    return new Response(JSON.stringify({
+      error: {
+        code: 'METHOD_NOT_ALLOWED',
+        message: 'Enrollment reset requires POST.',
+      },
+    }), {
       status: 405,
       headers: {
         'content-type': 'application/json; charset=utf-8',
@@ -437,7 +442,12 @@ async function proxyEnrollmentResetRequest(input: {
   try {
     const raw = await input.request.text();
     if (raw.length > 4096) {
-      return new Response(JSON.stringify({ error: 'payload_too_large' }), {
+      return new Response(JSON.stringify({
+          error: {
+            code: 'PAYLOAD_TOO_LARGE',
+            message: 'Enrollment reset payload exceeds the 4096 byte limit.',
+          },
+        }), {
         status: 413,
         headers: {
           'content-type': 'application/json; charset=utf-8',
@@ -450,7 +460,13 @@ async function proxyEnrollmentResetRequest(input: {
     target = undefined;
   }
   if (!validEnrollmentResetTarget(target)) {
-    return new Response(JSON.stringify({ error: 'invalid_enrollment_target' }), {
+    return new Response(JSON.stringify({
+        error: {
+          code: 'INVALID_ENROLLMENT_TARGET',
+          message:
+            'A valid Consuelo workspace host and optional workspace ID are required.',
+        },
+      }), {
       status: 400,
       headers: {
         'content-type': 'application/json; charset=utf-8',
