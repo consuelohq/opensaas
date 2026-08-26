@@ -691,6 +691,7 @@ export const GhInput = z.object({
 
 export const GoogleInput = z.object({
   ...requestFields,
+  ...dryRunField,
   action: z.enum(['status', 'connect', 'run']),
   args: stringArray,
   account: z.string().min(3).optional(),
