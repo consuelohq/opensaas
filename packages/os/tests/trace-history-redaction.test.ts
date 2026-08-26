@@ -179,6 +179,34 @@ describe('trace history redaction boundary', () => {
     expect(estimate?.outputTokens).toBe(0);
   });
 
+  it('uses resolved input instead of counting both raw and resolved payloads', () => {
+    const resolvedInput = JSON.stringify({
+      command: 'inspect the workspace',
+      resolvedPath: '/workspace/project',
+    });
+    const rawInput = JSON.stringify({
+      command: 'inspect the workspace',
+      resolvedPath: '.',
+    });
+    const resolvedOnly = estimateTraceCost({
+      tool: 'code.call',
+      inputTokens: 0,
+      outputTokens: 0,
+      rawResolvedInputJson: resolvedInput,
+      rawResultJson: '',
+    });
+    const rawAndResolved = estimateTraceCost({
+      tool: 'code.call',
+      inputTokens: 0,
+      outputTokens: 0,
+      rawInputJson: rawInput,
+      rawResolvedInputJson: resolvedInput,
+      rawResultJson: '',
+    });
+
+    expect(rawAndResolved?.inputTokens).toBe(resolvedOnly?.inputTokens);
+  });
+
   it('keeps recorded total tokens authoritative and detects model names from sanitized text fallbacks', () => {
     const estimate = estimateTraceCost({
       tool: 'subagent',

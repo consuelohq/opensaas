@@ -48,14 +48,14 @@ type EstimateInput = {
 };
 
 export function estimateTraceCost(input: EstimateInput): TraceCostEstimate | null {
-  const payloads = [input.rawResolvedInputJson, input.rawInputJson, input.rawResultJson]
-    .map((value) => String(value ?? '').trim())
-    .filter(Boolean);
+  const inputPayload = String(input.rawResolvedInputJson ?? input.rawInputJson ?? '').trim();
+  const outputPayload = String(input.rawResultJson ?? '').trim();
+  const payloads = [inputPayload, outputPayload].filter(Boolean);
   const recordedInput = positiveNumber(input.inputTokens);
   const recordedOutput = positiveNumber(input.outputTokens);
   const recordedTotal = positiveNumber(input.totalTokens);
-  const inputWeight = estimateTokens(payloads.slice(0, 2).join('\n'));
-  const outputWeight = estimateTokens(String(input.rawResultJson ?? '').trim());
+  const inputWeight = estimateTokens(inputPayload);
+  const outputWeight = estimateTokens(outputPayload);
   const { inputTokens, outputTokens } = allocateTokens({
     recordedInput,
     recordedOutput,
