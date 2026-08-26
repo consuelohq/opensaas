@@ -6,12 +6,14 @@ import { fileURLToPath } from 'node:url';
 
 import {
   orchestrateRelease,
+  selectRuntimePublishCandidate,
   type ReleaseAdapter,
   type ReleaseChannel,
   type ReleaseCheck,
   type ReleaseIdentity,
   type ReleasePr,
   type ReleaseRun,
+  type RuntimePublishListRow,
 } from './lib/release-orchestrator';
 import {
   assertGitHubCliAuthenticated,
@@ -323,13 +325,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
       try {
         const deadline = Date.now() + 10 * 60_000;
         while (Date.now() < deadline) {
-          const rows = ghJson<Array<{
-            databaseId: number;
-            headSha?: string;
-            status?: string;
-            conclusion?: string;
-            url?: string;
-          }>>([
+          const rows = ghJson<RuntimePublishListRow[]>([
             'run',
             'list',
             '--workflow',
@@ -341,18 +337,11 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
             '--json',
             'databaseId,headSha,status,conclusion,url',
           ]);
-          const match = rows.find((row) => clean(row.headSha) === mergeSha);
-          if (match) {
-            return {
-              runId: match.databaseId,
-              status: clean(match.status),
-              conclusion: clean(match.conclusion),
-              url: clean(match.url),
-            };
-          }
+          const candidate = selectRuntimePublishCandidate(rows, mergeSha);
+          if (candidate) return candidate;
           await sleep(3_000);
         }
-        throw new Error(`timed out finding runtime publication for ${mergeSha}`);
+        throw new Error(`timed out finding viable runtime publication for ${mergeSha}`);
       } catch (error: unknown) {
         throw releaseStepError(`find runtime publication for ${mergeSha}`, error);
       }
