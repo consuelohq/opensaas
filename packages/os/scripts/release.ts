@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -20,7 +21,13 @@ import {
   resolveGitHubCliPath,
 } from './lib/github-cli';
 import { selectReleasePlatformBundleId } from './lib/release-platform-bundle';
-import { withReleasePromotionDispatchLock } from './lib/release-promotion-dispatch-lock';
+import {
+  RELEASE_PROMOTION_LOCK_BRANCH,
+  RELEASE_PROMOTION_LOCK_PATH,
+  withReleasePromotionDispatchLock,
+  type ReleasePromotionDispatchLockAdapter,
+  type ReleasePromotionLockMarker,
+} from './lib/release-promotion-dispatch-lock';
 import {
   evaluatePromotionCorrelation,
   promotionDeadline,
@@ -140,6 +147,30 @@ function commandOutput(command: string, args: string[], timeout = 30_000): strin
   return clean(result.stdout);
 }
 
+function commandAttempt(
+  command: string,
+  args: string[],
+  timeout = 30_000,
+): { stdout: string; stderr: string; status: number } {
+  const result = spawnSync(command, args, {
+    encoding: 'utf8',
+    timeout,
+    maxBuffer: 20 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  if (result.error) throw new Error(safeErrorText(result.error.message));
+  return {
+    stdout: clean(result.stdout),
+    stderr: safeErrorText(result.stderr),
+    status: result.status ?? 1,
+  };
+}
+
+function httpStatusFromErrorText(value: string): number | null {
+  const match = value.match(/\(HTTP\s+(\d{3})\)/i);
+  return match ? Number(match[1]) : null;
+}
+
 function commandOutputAllowingStatus(
   command: string,
   args: string[],
@@ -176,6 +207,135 @@ function releaseStepError(context: string, error: unknown): Error {
 function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
   const ghJson = <T>(args: string[], timeout?: number): T =>
     parseJson<T>(commandOutput(ghPath, [...args, '--repo', repo], timeout), `gh ${args.join(' ')}`);
+  const ghApiAttempt = (args: string[], timeout?: number) =>
+    commandAttempt(ghPath, ['api', ...args], timeout);
+
+  const createPromotionLockAdapter = (
+    sourceCommit: string,
+    listPromotionRuns: () => PromotionRunRow[],
+  ): ReleasePromotionDispatchLockAdapter => {
+    const refEndpoint = `repos/${repo}/git/ref/heads/${RELEASE_PROMOTION_LOCK_BRANCH}`;
+    const refsEndpoint = `repos/${repo}/git/refs`;
+    const contentsEndpoint = `repos/${repo}/contents/${RELEASE_PROMOTION_LOCK_PATH}`;
+
+    const ensureLockBranch = () => {
+      const current = ghApiAttempt(['--method', 'GET', refEndpoint]);
+      if (current.status === 0) return;
+      if (httpStatusFromErrorText(current.stderr) !== 404) {
+        throw new Error(current.stderr || current.stdout || 'failed to read release lock branch');
+      }
+
+      const created = ghApiAttempt([
+        '--method',
+        'POST',
+        refsEndpoint,
+        '-f',
+        `ref=refs/heads/${RELEASE_PROMOTION_LOCK_BRANCH}`,
+        '-f',
+        `sha=${sourceCommit}`,
+      ]);
+      if (created.status === 0) return;
+      if (httpStatusFromErrorText(created.stderr) === 422) {
+        const raced = ghApiAttempt(['--method', 'GET', refEndpoint]);
+        if (raced.status === 0) return;
+      }
+      throw new Error(created.stderr || created.stdout || 'failed to create release lock branch');
+    };
+
+    const readRawLock = (): {
+      marker: ReleasePromotionLockMarker;
+      blobSha: string;
+    } | null => {
+      ensureLockBranch();
+      const result = ghApiAttempt([
+        '--method',
+        'GET',
+        contentsEndpoint,
+        '-f',
+        `ref=${RELEASE_PROMOTION_LOCK_BRANCH}`,
+      ]);
+      if (result.status !== 0) {
+        if (httpStatusFromErrorText(result.stderr) === 404) return null;
+        throw new Error(result.stderr || result.stdout || 'failed to read release promotion lock');
+      }
+      const body = parseJson<{
+        sha?: string;
+        content?: string;
+        encoding?: string;
+      }>(result.stdout, 'release promotion lock contents');
+      const blobSha = clean(body.sha);
+      if (!blobSha || clean(body.encoding) !== 'base64' || !clean(body.content)) {
+        throw new Error('release promotion lock contents are malformed');
+      }
+      const decoded = Buffer.from(clean(body.content).replace(/\s+/g, ''), 'base64').toString('utf8');
+      const marker = parseJson<ReleasePromotionLockMarker>(decoded, 'release promotion lock marker');
+      if (
+        !clean(marker.ownerId) ||
+        !clean(marker.operationId) ||
+        !Number.isFinite(marker.acquiredAtMs) ||
+        marker.acquiredAtMs <= 0
+      ) {
+        throw new Error('release promotion lock marker is malformed');
+      }
+      return { marker, blobSha };
+    };
+
+    return {
+      now: () => Date.now(),
+      sleep,
+      async createMarker({ operationId, acquiredAtMs }) {
+        return {
+          ownerId: randomUUID(),
+          operationId,
+          acquiredAtMs,
+        };
+      },
+      async tryCreateLock(marker) {
+        ensureLockBranch();
+        const content = Buffer.from(JSON.stringify(marker), 'utf8').toString('base64');
+        const result = ghApiAttempt([
+          '--method',
+          'PUT',
+          contentsEndpoint,
+          '-f',
+          `message=lock Consuelo OS runtime promotion (${marker.ownerId})`,
+          '-f',
+          `content=${content}`,
+          '-f',
+          `branch=${RELEASE_PROMOTION_LOCK_BRANCH}`,
+        ]);
+        if (result.status === 0) return true;
+        const httpStatus = httpStatusFromErrorText(result.stderr);
+        if (httpStatus === 409 || httpStatus === 422) return false;
+        throw new Error(result.stderr || result.stdout || 'failed to acquire release promotion lock');
+      },
+      async readLock() {
+        return readRawLock()?.marker ?? null;
+      },
+      async deleteLockIfOwned(ownerId) {
+        const current = readRawLock();
+        if (!current || current.marker.ownerId !== ownerId) return false;
+        const result = ghApiAttempt([
+          '--method',
+          'DELETE',
+          contentsEndpoint,
+          '-f',
+          `message=unlock Consuelo OS runtime promotion (${ownerId})`,
+          '-f',
+          `sha=${current.blobSha}`,
+          '-f',
+          `branch=${RELEASE_PROMOTION_LOCK_BRANCH}`,
+        ]);
+        if (result.status === 0) return true;
+        const httpStatus = httpStatusFromErrorText(result.stderr);
+        if (httpStatus === 404 || httpStatus === 409 || httpStatus === 422) return false;
+        throw new Error(result.stderr || result.stdout || 'failed to release promotion lock');
+      },
+      async hasActivePromotion() {
+        return Boolean(selectActivePromotionRun(listPromotionRuns()));
+      },
+    };
+  };
 
   const listChecks = (pr: number): ReleaseCheck[] => {
     const result = commandOutputAllowingStatus(
@@ -421,11 +581,12 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
           '--json',
           'databaseId,displayTitle,status,conclusion,url',
         ]);
+        const promotionLockAdapter = createPromotionLockAdapter(sourceCommit, listPromotionRuns);
         while (Date.now() < queueDeadline) {
           const decision = await withReleasePromotionDispatchLock({
             operationId: `release:${from}->${to}:${releaseSetBundleId}`,
             waitTimeoutMs: Math.max(1, queueDeadline - Date.now()),
-          }, async () => {
+          }, promotionLockAdapter, async () => {
             try {
               const target = await fetchChannel(to);
               if (

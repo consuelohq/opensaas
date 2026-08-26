@@ -100,9 +100,12 @@ export function selectRuntimePublishCandidate(
   excludedRunIds: readonly number[] = [],
 ): ReleaseRun | null {
   const excluded = new Set(excludedRunIds);
+  const newestExcludedRunId = excludedRunIds.length > 0
+    ? Math.max(...excludedRunIds.map((runId) => Number(runId) || 0))
+    : 0;
   const exact = rows.filter(
     (row) => clean(row.headSha) === mergeSha && !excluded.has(Number(row.databaseId)),
-  );
+  ).sort((left, right) => Number(right.databaseId) - Number(left.databaseId));
   const success = exact.find(
     (row) => clean(row.status) === 'completed' && clean(row.conclusion) === 'success',
   );
@@ -112,7 +115,10 @@ export function selectRuntimePublishCandidate(
   if (active) return toReleaseRun(active);
 
   const terminalFailure = exact.find(
-    (row) => clean(row.status) === 'completed' && clean(row.conclusion) !== 'cancelled',
+    (row) =>
+      clean(row.status) === 'completed' &&
+      clean(row.conclusion) !== 'cancelled' &&
+      Number(row.databaseId) > newestExcludedRunId,
   );
   return terminalFailure ? toReleaseRun(terminalFailure) : null;
 }

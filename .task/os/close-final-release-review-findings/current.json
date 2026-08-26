@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-final-release-review-findings",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2227,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2227",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2227",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2227/close-final-release-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2227",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2227/close-final-release-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-final-release-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_254cc8bc75b9",
+  "tmuxSession": "opensaas-os-close-final-release-review-findings-254cc8bc",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-final-release-review-findings/.task/os/close-final-release-review-findings/session.json",
+  "createdAt": "2026-08-26T18:21:46.559Z"
+}
