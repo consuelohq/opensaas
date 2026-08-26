@@ -43,6 +43,43 @@ describe('canonical device identity resolution', () => {
     });
   });
 
+  it('should select the newest verified membership when the directory response is unordered', async () => {
+    const repository = {
+      ...createMemoryInstallControlPlaneRepository(),
+      findCanonicalUsersByEmail: async () => [
+        {
+          userId: 'user_123',
+          email: 'ko@example.com',
+          workspaceMemberships: [
+            {
+              workspaceId: 'workspace_stale',
+              verifiedAt: '2026-08-13T11:30:00.000Z',
+            },
+            {
+              workspaceId: 'workspace_fresh',
+              verifiedAt: '2026-08-13T12:04:00.000Z',
+            },
+          ],
+        },
+      ],
+    };
+
+    await expect(
+      resolveCanonicalDeviceIdentity({
+        repository,
+        store: createMemoryDeviceGrantStore(),
+        email: 'ko@example.com',
+        googleSubject: 'google-sub-123',
+        nowMs: Date.parse('2026-08-13T12:05:00.000Z'),
+      }),
+    ).resolves.toEqual({
+      status: 'resolved',
+      canonicalUserId: 'user_123',
+      canonicalWorkspaceId: 'workspace_fresh',
+      operatingAccountId: 'user_123',
+    });
+  });
+
   it('preserves an established canonical workspace after the first-claim verification window', async () => {
     const repository = createMemoryInstallControlPlaneRepository();
     await repository.upsertUser({
@@ -96,7 +133,7 @@ describe('canonical device identity resolution', () => {
     { reason: 'user_not_found' as const, status: 403, code: 'CANONICAL_USER_NOT_FOUND' },
     { reason: 'ambiguous_user' as const, status: 409, code: 'CANONICAL_USER_AMBIGUOUS' },
     { reason: 'workspace_verification_required' as const, status: 403, code: 'WORKSPACE_VERIFICATION_REQUIRED' },
-  ])('describes $reason without collapsing the operator signal', ({ reason, status, code }) => {
+  ])('should preserve mapped denial details when reason is $reason', ({ reason, status, code }) => {
     expect(describeCanonicalDeviceIdentityDenial(reason)).toMatchObject({ status, code });
   });
 
@@ -138,6 +175,39 @@ describe('canonical device identity resolution', () => {
         workspaceSlug: 'existing-route',
         workspaceHost: 'existing-route.consuelohq.com',
       },
+    });
+  });
+
+  it('should deny an established workspace when its signed membership verification is no longer current', async () => {
+    const repository = createMemoryInstallControlPlaneRepository();
+    await repository.upsertUser({
+      userId: 'user_123',
+      email: 'ko@example.com',
+      workspaceIds: ['workspace_revoked'],
+      workspaceMembershipVerifiedAt: '2026-08-01T12:00:00.000Z',
+      createdAt: '2026-08-01T12:00:00.000Z',
+      updatedAt: '2026-08-01T12:00:00.000Z',
+    });
+    const store = createMemoryDeviceGrantStore();
+    await store.putAccountWorkspace({
+      accountId: 'user_123',
+      workspaceId: 'workspace_revoked',
+      workspaceSlug: 'revoked-route',
+      workspaceHost: 'revoked-route.consuelohq.com',
+      updatedAt: Date.parse('2026-08-01T12:00:00.000Z'),
+    });
+
+    await expect(
+      resolveCanonicalDeviceIdentity({
+        repository,
+        store,
+        email: 'ko@example.com',
+        googleSubject: 'google-sub-123',
+        nowMs: Date.parse('2026-08-14T12:05:00.000Z'),
+      }),
+    ).resolves.toEqual({
+      status: 'denied',
+      reason: 'workspace_verification_required',
     });
   });
 

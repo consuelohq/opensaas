@@ -444,7 +444,7 @@ describe('Branch 6 internal dashboard integration', () => {
     expect(downloaded).not.toContain('must-be-redacted');
   });
 
-  it('proxies only same-origin owner-authorized enrollment resets to Device Authority', async () => {
+  it('should proxy enrollment resets when the owner request is same-origin and authorized', async () => {
     const routeRegistry = createInMemoryWorkspaceRouteD1();
     await migrateWorkspaceRouteD1(routeRegistry);
     const service = createInstallControlPlaneService({
@@ -515,6 +515,50 @@ describe('Branch 6 internal dashboard integration', () => {
       },
     }));
     expect(crossOrigin.status).toBe(403);
+    expect(resetCalls).toBe(1);
+
+    const wrongMethod = await edge(new Request(
+      'https://internal.consuelohq.com/api/internal/os/v1/enrollment/reset',
+      {
+        headers: {
+          cookie: '__Host-consuelo_os_session=target-session',
+          origin: 'https://internal.consuelohq.com',
+          'x-consuelo-dashboard-action': 'enrollment-reset',
+        },
+      },
+    ));
+    expect(wrongMethod.status).toBe(405);
+    await expect(wrongMethod.json()).resolves.toEqual({
+      error: {
+        code: 'METHOD_NOT_ALLOWED',
+        message: 'Enrollment reset requires POST.',
+      },
+    });
+
+    const invalidTarget = await edge(new Request(request(), {
+      body: JSON.stringify({ workspace_id: 'workspace_maya' }),
+    }));
+    expect(invalidTarget.status).toBe(400);
+    await expect(invalidTarget.json()).resolves.toEqual({
+      error: {
+        code: 'INVALID_ENROLLMENT_TARGET',
+        message: 'A valid Consuelo workspace host and optional workspace ID are required.',
+      },
+    });
+
+    const oversizedPayload = await edge(new Request(request(), {
+      body: JSON.stringify({
+        workspace_host: 'maya.consuelohq.com',
+        workspace_id: 'x'.repeat(4097),
+      }),
+    }));
+    expect(oversizedPayload.status).toBe(413);
+    await expect(oversizedPayload.json()).resolves.toEqual({
+      error: {
+        code: 'PAYLOAD_TOO_LARGE',
+        message: 'Enrollment reset payload exceeds the 4096 byte limit.',
+      },
+    });
     expect(resetCalls).toBe(1);
   });
 
