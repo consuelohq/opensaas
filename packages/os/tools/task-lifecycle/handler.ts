@@ -298,6 +298,7 @@ export const toolHandlers = [
     "name": "session.start",
     "command": {
       "script": "session:start",
+      "executionScope": "runtime",
       "branchMode": "none",
       "arguments": [
         {
