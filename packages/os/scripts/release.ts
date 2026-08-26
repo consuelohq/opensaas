@@ -22,6 +22,7 @@ import {
 import { selectReleasePlatformBundleId } from './lib/release-platform-bundle';
 import {
   evaluatePromotionCorrelation,
+  promotionDeadline,
   selectActivePromotionRun,
 } from './lib/release-promotion-correlation';
 
@@ -324,7 +325,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
         throw releaseStepError(`merge PR #${pr}`, error);
       }
     },
-    async findRuntimePublish(mergeSha) {
+    async findRuntimePublish(mergeSha, excludedRunIds = []) {
       try {
         const deadline = Date.now() + 10 * 60_000;
         while (Date.now() < deadline) {
@@ -340,7 +341,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
             '--json',
             'databaseId,headSha,status,conclusion,url',
           ]);
-          const candidate = selectRuntimePublishCandidate(rows, mergeSha);
+          const candidate = selectRuntimePublishCandidate(rows, mergeSha, excludedRunIds);
           if (candidate) return candidate;
           await sleep(3_000);
         }
@@ -405,10 +406,10 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
     channelRelease: fetchChannel,
     async promote({ from, to, releaseSetBundleId, sourceCommit }) {
       try {
-        const deadline = Date.now() + 25 * 60_000;
+        const queueDeadline = promotionDeadline(Date.now());
         let baseline = 0;
         let dispatched = false;
-        while (Date.now() < deadline) {
+        while (Date.now() < queueDeadline) {
           const target = await fetchChannel(to);
           if (
             target?.releaseSetBundleId === releaseSetBundleId &&
@@ -461,7 +462,8 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
           throw new Error(`timed out waiting for protected promotion queue ${from} -> ${to}`);
         }
 
-        while (Date.now() < deadline) {
+        const observationDeadline = promotionDeadline(Date.now());
+        while (Date.now() < observationDeadline) {
           const rows = ghJson<Array<{
             databaseId: number;
             displayTitle?: string;

@@ -15,6 +15,13 @@ export type PromotionCorrelation =
 
 const clean = (value: unknown): string => String(value ?? '').trim();
 
+export function promotionDeadline(
+  nowMs: number,
+  timeoutMs = 25 * 60_000,
+): number {
+  return nowMs + timeoutMs;
+}
+
 export function selectActivePromotionRun(runs: PromotionRunRow[]): ReleaseRun | null {
   const active = runs
     .filter((run) => clean(run.status) !== 'completed')

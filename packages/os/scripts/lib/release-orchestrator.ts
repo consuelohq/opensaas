@@ -43,7 +43,7 @@ export type ReleaseAdapter = {
   inspectPr(pr: number): Promise<ReleasePr>;
   waitForPrChecks(pr: number): Promise<ReleasePr>;
   mergePr(input: { pr: number; mergeMethod: 'merge' | 'squash' | 'rebase' }): Promise<{ mergeSha: string }>;
-  findRuntimePublish(mergeSha: string): Promise<ReleaseRun>;
+  findRuntimePublish(mergeSha: string, excludedRunIds?: readonly number[]): Promise<ReleaseRun>;
   waitForRun(runId: number): Promise<ReleaseRun>;
   resolveDevRelease(mergeSha: string): Promise<ReleaseIdentity | null>;
   channelRelease(channel: ReleaseChannel): Promise<ReleaseIdentity | null>;
@@ -97,8 +97,12 @@ function toReleaseRun(row: RuntimePublishListRow): ReleaseRun {
 export function selectRuntimePublishCandidate(
   rows: RuntimePublishListRow[],
   mergeSha: string,
+  excludedRunIds: readonly number[] = [],
 ): ReleaseRun | null {
-  const exact = rows.filter((row) => clean(row.headSha) === mergeSha);
+  const excluded = new Set(excludedRunIds);
+  const exact = rows.filter(
+    (row) => clean(row.headSha) === mergeSha && !excluded.has(Number(row.databaseId)),
+  );
   const success = exact.find(
     (row) => clean(row.status) === 'completed' && clean(row.conclusion) === 'success',
   );
@@ -204,12 +208,16 @@ export async function orchestrateRelease(
     if (!mergeSha) throw new Error(`release could not resolve the main merge SHA for PR #${request.pr}`);
 
     let completedRuntimeRun: ReleaseRun | null = null;
+    const cancelledRuntimeRunIds: number[] = [];
     for (let attempt = 0; attempt < 2; attempt += 1) {
-      const runtimeRun = await adapter.findRuntimePublish(mergeSha);
+      const runtimeRun = await adapter.findRuntimePublish(mergeSha, cancelledRuntimeRunIds);
       completedRuntimeRun = runtimeRun.status === 'completed'
         ? runtimeRun
         : await adapter.waitForRun(runtimeRun.runId);
       if (completedRuntimeRun.conclusion === 'success') break;
+      if (completedRuntimeRun.conclusion === 'cancelled') {
+        cancelledRuntimeRunIds.push(completedRuntimeRun.runId);
+      }
       if (completedRuntimeRun.conclusion !== 'cancelled' || attempt === 1) {
         throw new Error(`runtime publication failed for ${mergeSha}: ${completedRuntimeRun.conclusion || completedRuntimeRun.status}`);
       }
