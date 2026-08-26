@@ -122,8 +122,8 @@ async function connectGoogle(input: {
   account?: string;
   timeoutMs?: number;
 }): Promise<unknown> {
-  const account = accountFor(input.home, input.account);
   await ensureGoogleWorkspaceOAuthCredentials({ home: input.home, executable: input.executable });
+  const account = accountFor(input.home, input.account);
   const service = createGoogleService({ executable: input.executable });
   return Effect.runPromise(service.connect({ account, timeoutMs: input.timeoutMs }));
 }

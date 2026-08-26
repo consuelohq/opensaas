@@ -55,7 +55,7 @@ export function estimateTraceCost(input: EstimateInput): TraceCostEstimate | nul
   const recordedOutput = positiveNumber(input.outputTokens);
   const recordedTotal = positiveNumber(input.totalTokens);
   const inputWeight = estimateTokens(payloads.slice(0, 2).join('\n'));
-  const outputWeight = estimateTokens(payloads.at(-1) ?? '');
+  const outputWeight = estimateTokens(String(input.rawResultJson ?? '').trim());
   const { inputTokens, outputTokens } = allocateTokens({
     recordedInput,
     recordedOutput,

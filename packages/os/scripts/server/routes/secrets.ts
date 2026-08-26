@@ -28,6 +28,16 @@ const INSTALL_PATH = '/gateway/secrets/install';
 const READ_SCOPE = 'route:/gateway/secrets:read';
 const WRITE_SCOPE = 'route:/gateway/secrets:write';
 const ALLOWED_INSTALL_KEYS = new Set(['bindingId', 'envelope']);
+const ALLOWED_ENVELOPE_KEYS = new Set([
+  'version',
+  'algorithm',
+  'recipient',
+  'ephemeralPublicKeyJwk',
+  'iv',
+  'ciphertext',
+  'authTag',
+]);
+const ALLOWED_RECIPIENT_KEYS = new Set(['workspaceId', 'nodeId', 'bindingId']);
 
 function requiredHeader(
   request: Request,
@@ -99,9 +109,31 @@ function parseInstallBody(body: string): { bindingId: string; envelope: SealedCr
   if (!record.envelope || typeof record.envelope !== 'object' || Array.isArray(record.envelope)) {
     return invalidInstallRequest();
   }
+  const envelope = record.envelope as Record<string, unknown>;
+  if (
+    Object.keys(envelope).length !== ALLOWED_ENVELOPE_KEYS.size
+    || Object.keys(envelope).some((key) => !ALLOWED_ENVELOPE_KEYS.has(key))
+    || envelope.version !== 1
+    || envelope.algorithm !== 'X25519'
+    || typeof envelope.ephemeralPublicKeyJwk !== 'string'
+    || typeof envelope.iv !== 'string'
+    || typeof envelope.ciphertext !== 'string'
+    || typeof envelope.authTag !== 'string'
+    || !envelope.recipient
+    || typeof envelope.recipient !== 'object'
+    || Array.isArray(envelope.recipient)
+  ) return invalidInstallRequest();
+  const recipient = envelope.recipient as Record<string, unknown>;
+  if (
+    Object.keys(recipient).length !== ALLOWED_RECIPIENT_KEYS.size
+    || Object.keys(recipient).some((key) => !ALLOWED_RECIPIENT_KEYS.has(key))
+    || typeof recipient.workspaceId !== 'string'
+    || typeof recipient.nodeId !== 'string'
+    || typeof recipient.bindingId !== 'string'
+  ) return invalidInstallRequest();
   return {
     bindingId: record.bindingId.trim(),
-    envelope: record.envelope as SealedCredentialEnvelope,
+    envelope: envelope as SealedCredentialEnvelope,
   };
 }
 

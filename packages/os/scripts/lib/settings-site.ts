@@ -1310,6 +1310,9 @@ export function renderConfigurationSite(
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${copy.title} - Consuelo OS</title>
+  <link rel="icon" href="https://consuelohq.com/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="https://consuelohq.com/favicon-32x32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="https://consuelohq.com/apple-touch-icon.png" />
   <style>${configurationStyles()}</style>
 </head>
 <body>

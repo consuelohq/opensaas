@@ -324,6 +324,17 @@ export function workspaceRouteSwitcherStyles(): string {
     .workspace-route-group[data-route-group="Connect"] > p { grid-column: 1 / -1; }
     .workspace-route-card { grid-template-columns: 1fr; gap: 3px; align-content: start; min-height: 56px; border: 1px solid var(--workspace-menu-rule); padding: 8px; }
     .workspace-route-card span { font-size: 15px; }
+    @media (max-height: 760px) and (min-width: 701px) {
+      .workspace-route-menu { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 6px; padding: 5px; zoom: .86; }
+      .workspace-route-primary-slot { padding-bottom: 4px; }
+      .workspace-route-group { padding-top: 4px; }
+      .workspace-route-group > p { margin: 1px 5px 2px; font-size: 9px; }
+      .workspace-route-option { grid-template-columns: 78px minmax(0, 1fr); gap: 5px; padding: 4px 5px; }
+      .workspace-route-option span { font-size: 11px; }
+      .workspace-route-option small { font-size: 8px; line-height: 1.15; }
+      .workspace-route-group[data-route-group="Connect"] { grid-template-columns: 1fr; gap: 2px; }
+      .workspace-route-card { min-height: 0; padding: 4px; }
+    }
     @media (max-width: 700px) {
       .workspace-route-menu { position: fixed; top: 52px; left: 50vw; right: auto; transform: translateX(-50%); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 7px; width: calc(100vw - 24px); max-width: 520px; overflow: hidden; padding: 6px; }
       .workspace-route-trigger { max-width: min(170px, calc(100vw - 150px)); }

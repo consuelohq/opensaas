@@ -37,6 +37,9 @@ describe('configuration site', () => {
     expect(snapshot.skills).toEqual([]);
     expect(snapshot.runBooks.length).toBeGreaterThan(0);
     expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('<link rel="icon" href="https://consuelohq.com/favicon.svg" type="image/svg+xml" />');
+    expect(html).toContain('<link rel="icon" href="https://consuelohq.com/favicon-32x32.png" sizes="32x32" type="image/png" />');
+    expect(html).toContain('<link rel="apple-touch-icon" href="https://consuelohq.com/apple-touch-icon.png" />');
     expect(html).toContain('data-workspace-shell');
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).toContain('aria-label="Workspace routes"');

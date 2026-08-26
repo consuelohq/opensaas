@@ -56,6 +56,16 @@ const ASSETS: Record<string, ManagedGogAsset> = {
     fileName: `gogcli_${GOG_VERSION}_linux_amd64.tar.gz`,
     sha256: '6576828ed6852949ba424b967c3ff4268b3d9c90e201f90fe3d539fe3a151ebb',
   },
+  'win32:arm64': {
+    version: GOG_VERSION,
+    fileName: `gogcli_${GOG_VERSION}_windows_arm64.zip`,
+    sha256: 'ed28faa690ed036001e3969855010bcb9fdc2256695791836bfbc63c10ae50ef',
+  },
+  'win32:x64': {
+    version: GOG_VERSION,
+    fileName: `gogcli_${GOG_VERSION}_windows_amd64.zip`,
+    sha256: '5523764e142d36a460b8c51779fe79b1e34ffcdcb960addd7901542d206e927d',
+  },
 };
 
 export type ManagedGogRunResult = { exitCode: number; stdout: string; stderr: string };
@@ -80,8 +90,11 @@ export function managedGogAsset(
   return { ...asset };
 }
 
-export function managedGogPath(home: string): string {
-  return path.join(path.resolve(home), 'bin', process.platform === 'win32' ? 'gog.exe' : 'gog');
+export function managedGogPath(
+  home: string,
+  platform: NodeJS.Platform | string = process.platform,
+): string {
+  return path.join(path.resolve(home), 'bin', platform === 'win32' ? 'gog.exe' : 'gog');
 }
 
 export function managedGogLicensePath(home: string): string {
@@ -115,13 +128,23 @@ async function currentVersion(executable: string, run: ManagedGogRunner): Promis
   }
 }
 
-function findExtractedBinary(root: string): string | undefined {
+export function managedGogExtractionCommand(archivePath: string, extractPath: string): string[] {
+  return archivePath.endsWith('.zip')
+    ? ['tar', '-xf', archivePath, '-C', extractPath]
+    : ['tar', '-xzf', archivePath, '-C', extractPath];
+}
+
+function findExtractedBinary(
+  root: string,
+  platform: NodeJS.Platform | string,
+): string | undefined {
+  const expectedName = platform === 'win32' ? 'gog.exe' : 'gog';
   for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
     const candidate = path.join(root, entry.name);
     if (entry.isDirectory()) {
-      const nested = findExtractedBinary(candidate);
+      const nested = findExtractedBinary(candidate, platform);
       if (nested) return nested;
-    } else if (entry.isFile() && entry.name === 'gog') {
+    } else if (entry.isFile() && entry.name === expectedName) {
       return candidate;
     }
   }
@@ -134,8 +157,10 @@ export async function ensureManagedGog(input: {
   arch?: NodeJS.Architecture | string;
   fetchImpl?: typeof fetch;
   run?: ManagedGogRunner;
+  downloadTimeoutMs?: number;
 }): Promise<{ path: string; version: string; changed: boolean }> {
-  const executable = managedGogPath(input.home);
+  const platform = input.platform ?? process.platform;
+  const executable = managedGogPath(input.home, platform);
   const run = input.run ?? defaultRunner;
   const existing = await currentVersion(executable, run);
   if (existing === GOG_VERSION) {
@@ -143,11 +168,25 @@ export async function ensureManagedGog(input: {
     return { path: executable, version: GOG_VERSION, changed: false };
   }
 
-  const asset = managedGogAsset(input.platform ?? process.platform, input.arch ?? process.arch);
+  const asset = managedGogAsset(platform, input.arch ?? process.arch);
   const fetchImpl = input.fetchImpl ?? globalThis.fetch;
-  const response = await fetchImpl(`${RELEASE_BASE}/${asset.fileName}`, {
-    headers: { accept: 'application/octet-stream', 'user-agent': 'consuelo-os' },
-  });
+  const downloadTimeoutMs = Math.max(1, input.downloadTimeoutMs ?? 60_000);
+  const abortController = new AbortController();
+  const abortTimer = setTimeout(() => abortController.abort(), downloadTimeoutMs);
+  let response: Response;
+  try {
+    response = await fetchImpl(`${RELEASE_BASE}/${asset.fileName}`, {
+      headers: { accept: 'application/octet-stream', 'user-agent': 'consuelo-os' },
+      signal: abortController.signal,
+    });
+  } catch (error: unknown) {
+    if (abortController.signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) {
+      throw new Error(`gog download timed out after ${downloadTimeoutMs}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(abortTimer);
+  }
   if (!response.ok) throw new Error(`gog download failed with HTTP ${response.status}`);
   const bytes = Buffer.from(await response.arrayBuffer());
   const digest = createHash('sha256').update(bytes).digest('hex');
@@ -159,9 +198,9 @@ export async function ensureManagedGog(input: {
     const extractPath = path.join(temporaryRoot, 'extract');
     fs.mkdirSync(extractPath, { recursive: true, mode: 0o700 });
     fs.writeFileSync(archivePath, bytes, { mode: 0o600 });
-    const extracted = await run(['tar', '-xzf', archivePath, '-C', extractPath]);
+    const extracted = await run(managedGogExtractionCommand(archivePath, extractPath));
     if (extracted.exitCode !== 0) throw new Error('gog release archive could not be extracted');
-    const source = findExtractedBinary(extractPath);
+    const source = findExtractedBinary(extractPath, platform);
     if (!source) throw new Error('gog release archive did not contain the gog executable');
 
     fs.mkdirSync(path.dirname(executable), { recursive: true, mode: 0o700 });

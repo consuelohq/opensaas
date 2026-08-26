@@ -22,6 +22,7 @@ type GoogleWorkspaceNodeContext = {
 };
 
 type GoogleWorkspaceOAuthCredentials = {
+  accountEmail?: string;
   installed: {
     client_id: string;
     client_secret: string;
@@ -75,6 +76,16 @@ export function readGoogleWorkspaceNodeContext(home: string): GoogleWorkspaceNod
 
 export function googleWorkspaceAccount(home: string): string | undefined {
   return readGoogleWorkspaceNodeContext(home).accountEmail;
+}
+
+function persistGoogleWorkspaceAccount(home: string, accountEmail: string): void {
+  const layout = resolveConsueloHomeLayout(home);
+  const configPath = path.join(layout.nodeDir, 'security', 'generated', 'workspace-node-heartbeat.json');
+  const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8')) as Record<string, unknown>;
+  parsed.accountEmail = accountEmail;
+  fs.writeFileSync(configPath, `${JSON.stringify(parsed, null, 2)}
+`, { mode: 0o600 });
+  fs.chmodSync(configPath, 0o600);
 }
 
 function errorMessage(value: unknown, fallback: string): string {
@@ -142,7 +153,11 @@ export async function fetchGoogleWorkspaceOAuthCredentials(input: {
     throw new Error('The Google connection service returned invalid OAuth credentials.');
   }
   const record = installed as Record<string, unknown>;
+  const accountEmail = typeof (body as Record<string, unknown>).accountEmail === 'string'
+    ? (body as Record<string, unknown>).accountEmail.trim()
+    : '';
   return {
+    ...(accountEmail ? { accountEmail } : {}),
     installed: {
       client_id: requiredString(record.client_id, 'OAuth client ID'),
       client_secret: requiredString(record.client_secret, 'OAuth client secret'),
@@ -187,17 +202,27 @@ export async function ensureGoogleWorkspaceOAuthCredentials(input: {
 }): Promise<{ changed: boolean }> {
   try {
     const processRunner = input.process ?? createNodeProviderProcess();
+    const context = readGoogleWorkspaceNodeContext(input.home);
+    let credentials: GoogleWorkspaceOAuthCredentials | undefined;
+    if (!context.accountEmail) {
+      credentials = await fetchGoogleWorkspaceOAuthCredentials({
+        home: input.home,
+        fetchImpl: input.fetchImpl,
+      });
+      if (credentials.accountEmail) persistGoogleWorkspaceAccount(input.home, credentials.accountEmail);
+    }
     if (await credentialsConfigured(processRunner, input.executable)) return { changed: false };
-    const credentials = await fetchGoogleWorkspaceOAuthCredentials({
+    credentials ??= await fetchGoogleWorkspaceOAuthCredentials({
       home: input.home,
       fetchImpl: input.fetchImpl,
     });
+    const { accountEmail: _accountEmail, ...clientCredentials } = credentials;
     const result = await processRunner.run({
       command: input.executable,
       args: ['--json', '--no-input', 'auth', 'credentials', 'set', '-'],
       cwd: process.cwd(),
       env: process.env,
-      stdin: JSON.stringify(credentials),
+      stdin: JSON.stringify(clientCredentials),
       timeoutMs: 30_000,
     }).pipe(Effect.runPromise);
     if (result.exitCode !== 0 || result.runtimeMissing || result.timedOut || result.cancelled) {

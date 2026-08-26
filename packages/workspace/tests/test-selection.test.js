@@ -1058,6 +1058,19 @@ describe('test selection registry', () => {
     );
   });
 
+  it('selects Secrets contracts for every route seed and registry source independently', () => {
+    for (const changedFile of [
+      'packages/os/scripts/lib/workspace-edge-route-seed.ts',
+      'packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts',
+      'packages/os/tests/workspace-edge-route-seed-contract.test.ts',
+    ]) {
+      const data = json(run(['check', '--changed-file', changedFile, '--json']));
+      expect(data.matchedRules.map((rule) => rule.id), changedFile).toContain(
+        'os-secrets-management',
+      );
+    }
+  });
+
   it('routes internal workspace shell and root Sites changes through loud focused contracts', () => {
     const data = json(run([
       'check',

@@ -970,14 +970,17 @@
         "packages/os/scripts/lib/consuelo-sites-secrets-adapter.ts",
         "packages/os/scripts/lib/node-sealed-credential-store.ts",
         "packages/os/scripts/lib/secrets-site.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
         "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/scripts/server/route-policies.ts",
         "packages/os/scripts/server/routes/secrets.ts",
+        "packages/os/tests/internal-launcher-regressions.test.ts",
         "packages/os/tests/local-os-server-hono-architecture.test.ts",
         "packages/os/tests/secrets-hono-routes.test.ts",
         "packages/os/tests/secrets-surface.test.ts",
-        "packages/os/tests/workspace-gateway-node-end-to-end.test.ts",
-        "packages/os/tests/internal-launcher-regressions.test.ts"
+        "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+        "packages/os/tests/workspace-gateway-node-end-to-end.test.ts"
       ],
       "tests": [
         {
