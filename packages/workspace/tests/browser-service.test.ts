@@ -63,8 +63,8 @@ function manifest(packageName: 'workspace' | 'os'): Array<{
 describe('browser persistent headed handoff', () => {
   it('should leave a headed browser running when user login is required', async () => {
     const testContext = context({
-      [`--profile ${profilePath} get url`]: 'https://dash.cloudflare.com/',
-      [`--profile ${profilePath} get title`]: 'Cloudflare',
+      [`--profile ${profilePath} --headed get url`]: 'https://dash.cloudflare.com/',
+      [`--profile ${profilePath} --headed get title`]: 'Cloudflare',
     });
 
     const result = await Effect.runPromise(headedBrowserEffect({
@@ -73,10 +73,9 @@ describe('browser persistent headed handoff', () => {
 
     expect(testContext.calls.map((call) => call.args)).toEqual([
       ['close', '--all'],
-      ['--profile', profilePath, '--headed', 'open', 'about:blank'],
-      ['--profile', profilePath, 'open', 'https://dash.cloudflare.com/'],
-      ['--profile', profilePath, 'get', 'url'],
-      ['--profile', profilePath, 'get', 'title'],
+      ['--profile', profilePath, '--headed', 'open', 'https://dash.cloudflare.com/'],
+      ['--profile', profilePath, '--headed', 'get', 'url'],
+      ['--profile', profilePath, '--headed', 'get', 'title'],
     ]);
     expect(testContext.calls.flatMap((call) => call.args)).not.toContain('auth');
     expect(testContext.calls.filter((call) => call.args[0] === 'close')).toHaveLength(1);
@@ -113,8 +112,9 @@ describe('browser persistent headed handoff', () => {
     }, testContext));
 
     expect(calls[0]?.args).toEqual(['close', '--all']);
-    expect(calls[1]?.args).toEqual(['--profile', profilePath, '--headed', 'open', 'about:blank']);
-    expect(calls[2]?.args).toEqual(['--profile', profilePath, 'open', 'https://github.com/']);
+    expect(calls[1]?.args).toEqual(['--profile', profilePath, '--headed', 'open', 'https://github.com/']);
+    expect(calls[2]?.args).toEqual(['--profile', profilePath, '--headed', 'get', 'url']);
+    expect(calls[3]?.args).toEqual(['--profile', profilePath, '--headed', 'get', 'title']);
     expect(result.leftRunning).toBe(true);
   });
 
@@ -128,10 +128,7 @@ describe('browser persistent headed handoff', () => {
 
     expect(testContext.calls[0]?.args).toEqual(['close', '--all']);
     expect(testContext.calls[1]?.args).toEqual([
-      '--profile', profilePath, '--headed', 'open', 'about:blank',
-    ]);
-    expect(testContext.calls[2]?.args).toEqual([
-      '--profile', profilePath, 'open', 'https://github.com/',
+      '--profile', profilePath, '--headed', 'open', 'https://github.com/',
     ]);
   });
 
@@ -165,11 +162,10 @@ describe('browser persistent headed handoff', () => {
       headed: true,
       provider: 'ios',
     }, headedContext.value));
-    expect(headedContext.calls.slice(1, 5).map((call) => call.args)).toEqual([
-      ['--profile', profilePath, '--provider', 'ios', '--headed', 'open', 'about:blank'],
-      ['--profile', profilePath, '--provider', 'ios', 'open', 'https://example.com/'],
-      ['--profile', profilePath, '--provider', 'ios', 'get', 'url'],
-      ['--profile', profilePath, '--provider', 'ios', 'get', 'title'],
+    expect(headedContext.calls.slice(1, 4).map((call) => call.args)).toEqual([
+      ['--profile', profilePath, '--provider', 'ios', '--headed', 'open', 'https://example.com/'],
+      ['--profile', profilePath, '--provider', 'ios', '--headed', 'get', 'url'],
+      ['--profile', profilePath, '--provider', 'ios', '--headed', 'get', 'title'],
     ]);
   });
 

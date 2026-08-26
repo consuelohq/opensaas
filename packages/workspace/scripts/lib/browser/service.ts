@@ -67,15 +67,15 @@ export function headedBrowserEffect(input: { url: string; provider?: string }, c
   return Effect.gen(function* () {
     const url = yield* validateUrl(input.url);
     const provider = providerArgs(input.provider);
+    const headedArgs = [...provider, '--headed'];
     const close = yield* runBrowserCommandEffect({ args: ['close', '--all'], useProfile: false }, context);
     if (close.runtimeMissing || close.timedOut) {
       return yield* Effect.fail(commandFailure('browser daemon restart', close));
     }
 
-    yield* runRequired('headed browser launch', { args: [...provider, '--headed', 'open', 'about:blank'] }, context);
-    yield* runRequired('headed browser navigation', { args: [...provider, 'open', url] }, context);
-    const currentUrl = yield* runRequired('browser URL read', { args: [...provider, 'get', 'url'] }, context);
-    const title = yield* runRequired('browser title read', { args: [...provider, 'get', 'title'] }, context);
+    yield* runRequired('headed browser launch', { args: [...headedArgs, 'open', url] }, context);
+    const currentUrl = yield* runRequired('browser URL read', { args: [...headedArgs, 'get', 'url'] }, context);
+    const title = yield* runRequired('browser title read', { args: [...headedArgs, 'get', 'title'] }, context);
 
     return {
       mode: 'headed',

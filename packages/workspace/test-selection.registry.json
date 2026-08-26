@@ -3,10 +3,10 @@
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
     "testFileCount": 2662,
-    "mappedTestCount": 2576,
-    "unmappedTestCount": 86,
-    "ruleCount": 67,
-    "explicitRuleCount": 48,
+    "mappedTestCount": 2577,
+    "unmappedTestCount": 85,
+    "ruleCount": 68,
+    "explicitRuleCount": 49,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -787,6 +787,34 @@
       ],
       "critical": true,
       "reason": "OS trace watcher changes must preserve terminal rendering, canonical sidecar resolution, and real SQLite CLI behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-browser-headed-handoff",
+      "source": [
+        "packages/os/scripts/lib/browser/**",
+        "packages/os/tests/browser-service.test.ts",
+        "packages/workspace/scripts/lib/browser/**",
+        "packages/workspace/tests/browser-service.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS headed browser handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/tests/browser-service.test.ts",
+            "-t",
+            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -16290,7 +16318,6 @@
     "packages/workspace/scripts/lib/stream-instructions.test.ts",
     "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
     "packages/workspace/tests/browser-review-contract.test.ts",
-    "packages/workspace/tests/browser-service.test.ts",
     "packages/workspace/tests/chunker.test.js",
     "packages/workspace/tests/code-call-parity.test.ts",
     "packages/workspace/tests/code-call-service-architecture.test.ts",
