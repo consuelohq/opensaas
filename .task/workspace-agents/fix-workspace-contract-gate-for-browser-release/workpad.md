@@ -13,6 +13,7 @@ started: 2026-08-26
 - [x] `subagent` preserves `dryRun` through input validation so synthetic dry-run cannot spawn a provider process.
 - [x] The fs mixed-pagination regression asserts the current canonical validation message.
 - [x] No browser runtime behavior is changed by this CI-unblock task; only the stale duplicate workspace browser test was synced to the already-shipped runtime contract.
+- [x] `Consuelo / OS contracts` passes with canonical generated fixtures and deterministic worker-pool test environment.
 
 ## plan
 
@@ -41,6 +42,10 @@ started: 2026-08-26
 - The first exact CI retry exposed the stale duplicate workspace browser test (`trc_4ac7b4781abf`); syncing it to the OS regression contract made both browser suites pass 38/38 (`trc_40c2082d146c`).
 - Final strict review against `origin/stream/workspace-agents`: 0 issues, 0 blockers (`trc_2ffa8f7fe24a`). Static checks pass (`trc_8fe0ccb94bc1`).
 - Task read-log corruption from the filesystem logger was repaired to valid JSON (`trc_9f544b244cdb`).
+- Release orchestration then correctly refused GitHub's failed `Consuelo / OS contracts` check. Local reproduction of the exact job command isolated two stale contracts (`trc_6faac7854848`): the characterized tool-package baseline was not regenerated after intentional media schema changes, and the Caddy test inherited `CONSUELO_OS_WORKER_BASE_PORT` from ambient runtime state while expecting `8999-9001`.
+- Caddy test now explicitly sets `CONSUELO_OS_WORKER_BASE_PORT=8999`, matching the architecture where worker-pool base is authoritative. Repro before the fix showed ambient `46321-46323` contaminating the test (`trc_f3f949cbfe7b`).
+- `tool-package-baseline.json` is regenerated from `buildToolManifest({ write: false })` so its ordering and definitions exactly match the canonical generator (`trc_924602fe2f01`).
+- Exact OS-contract command now passes: 47 passed, 5 skipped, 0 failed (`trc_5b0eb31da826`).
 
 ## files changed
 
@@ -51,6 +56,8 @@ started: 2026-08-26
 - `packages/os/tests/facade/facade.test.ts`
 - `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
 - `packages/workspace/tests/browser-service.test.ts`
+- `packages/os/tests/security-gateway.test.ts`
+- `packages/os/tests/fixtures/tool-package-baseline.json`
 - scoped `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/**` metadata/workpad
 
 ## workspace-owned: files changed
@@ -66,6 +73,8 @@ started: 2026-08-26
 - 2026-08-26 05:48:06 `checkFiles`: passed — OK
 - 2026-08-26 05:54:02 `checkFiles`: passed — OK
 - 2026-08-26 05:54:08 `review.run`: passed — OK
+- 2026-08-26 06:06:34 `checkFiles`: failed — COMMAND_FAILED
+- 2026-08-26 06:06:43 `review.run`: passed — OK
 
 ## key decisions
 
@@ -97,14 +106,28 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `.github/workflows/consuelo-ci.yaml`
+- `packages/os/manifests/generated/tool.manifest.json`
 - `packages/os/scripts/lib/facade/executor.ts`
 - `packages/os/scripts/lib/facade/schemas.ts`
+- `packages/os/scripts/lib/github-cli.ts`
+- `packages/os/scripts/lib/install-state.ts`
+- `packages/os/scripts/lib/release-orchestrator.ts`
+- `packages/os/scripts/lib/worker-pool.ts`
 - `packages/os/scripts/media.ts`
+- `packages/os/scripts/release.ts`
 - `packages/os/tests/browser-service.test.ts`
 - `packages/os/tests/facade/facade.test.ts`
+- `packages/os/tests/fixtures/tool-package-baseline.json`
+- `packages/os/tests/security-gateway.test.ts`
+- `packages/os/tests/tool-manifest.test.ts`
+- `packages/os/tests/tool-package-layout.test.ts`
 - `packages/os/tools/media/handler.ts`
 - `packages/os/tools/media/schema.ts`
+- `packages/os/tools/release/handler.ts`
 - `packages/os/tools/subagent/schema.ts`
 - `packages/workspace/tests/browser-service.test.ts`
 
-- 2026-08-26 05:54:42 apply-patch: `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md`
+- 2026-08-26 06:05:40 apply-patch: `packages/os/tests/security-gateway.test.ts`
+
+- 2026-08-26 06:06:26 apply-patch: `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md`
