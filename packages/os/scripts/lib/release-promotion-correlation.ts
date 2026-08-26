@@ -22,7 +22,7 @@ function isExactRelease(
 ): boolean {
   return Boolean(
     release &&
-      release.bundleId === bundleId &&
+      release.releaseSetBundleId === bundleId &&
       release.sourceCommit === sourceCommit,
   );
 }

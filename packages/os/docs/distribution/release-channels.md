@@ -164,7 +164,7 @@ Add the new public key to `CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS` before selec
 
 ## Operator-node checkpoint
 
-The top-level `release` workflow updates the operator node by default after the exact bundle reaches the requested channel, then verifies that lifecycle status reports the same version and bundle ID. Use `releaseOnly: true` or `--release-only` to stop after channel promotion. A read-only manual checkpoint remains useful for another test machine:
+The top-level `release` workflow promotes the exact release-set bundle, then updates the operator node by default and verifies lifecycle status against the exact platform-specific runtime bundle selected for that OS/architecture. Release-set and installed platform bundle IDs are intentionally distinct identities. Use `releaseOnly: true` or `--release-only` to stop after channel promotion. A read-only manual checkpoint remains useful for another test machine:
 
 ```bash
 curl -fsSL "https://<release-host>/channels/canary.json" | jq '{channel: .payload.channel, version: .payload.version, bundleId: .payload.bundleId, platforms: [.payload.platforms[] | (.platform + "-" + .architecture)]}'

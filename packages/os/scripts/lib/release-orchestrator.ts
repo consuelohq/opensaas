@@ -27,7 +27,8 @@ export type ReleaseIdentity = {
   channel: ReleaseChannel;
   sourceCommit: string;
   version: string;
-  bundleId: string;
+  releaseSetBundleId: string;
+  platformBundleId: string;
 };
 
 export type ReleaseAdapter = {
@@ -41,11 +42,11 @@ export type ReleaseAdapter = {
   promote(input: {
     from: ReleaseChannel;
     to: ReleaseChannel;
-    bundleId: string;
+    releaseSetBundleId: string;
     sourceCommit: string;
   }): Promise<ReleaseRun>;
   updateLocal(input: { channel: ReleaseChannel; version: string }): Promise<{ accepted: boolean }>;
-  localStatus(): Promise<{ version?: string; bundleId?: string }>;
+  localStatus(): Promise<{ version?: string; platformBundleId?: string }>;
 };
 
 export type ReleaseRequest = {
@@ -61,7 +62,8 @@ export type ReleaseResult = {
   channel: ReleaseChannel;
   mergeSha?: string;
   version?: string;
-  bundleId?: string;
+  releaseSetBundleId?: string;
+  platformBundleId?: string;
   runtimeRunUrl?: string;
   noRuntimeChange?: boolean;
   localUpdated: boolean;
@@ -119,7 +121,8 @@ function sameRelease(
       candidate.channel === channel &&
       candidate.sourceCommit === release.sourceCommit &&
       candidate.version === release.version &&
-      candidate.bundleId === release.bundleId,
+      candidate.releaseSetBundleId === release.releaseSetBundleId &&
+      candidate.platformBundleId === release.platformBundleId,
   );
 }
 
@@ -193,7 +196,7 @@ export async function orchestrateRelease(
       const promotion = await adapter.promote({
         from,
         to,
-        bundleId: devRelease.bundleId,
+        releaseSetBundleId: devRelease.releaseSetBundleId,
         sourceCommit: mergeSha,
       });
       const completedPromotion = promotion.status === 'completed'
@@ -211,9 +214,12 @@ export async function orchestrateRelease(
     if (!releaseOnly) {
       await adapter.updateLocal({ channel, version: devRelease.version });
       const status = await adapter.localStatus();
-      if (status.version !== devRelease.version || status.bundleId !== devRelease.bundleId) {
+      if (
+        status.version !== devRelease.version ||
+        status.platformBundleId !== devRelease.platformBundleId
+      ) {
         throw new Error(
-          `local lifecycle verification failed: expected ${devRelease.version} / ${devRelease.bundleId}`,
+          `local lifecycle verification failed: expected version ${devRelease.version} with platform bundle ${devRelease.platformBundleId}`,
         );
       }
     }
@@ -223,7 +229,8 @@ export async function orchestrateRelease(
       channel,
       mergeSha,
       version: devRelease.version,
-      bundleId: devRelease.bundleId,
+      releaseSetBundleId: devRelease.releaseSetBundleId,
+      platformBundleId: devRelease.platformBundleId,
       runtimeRunUrl: completedRuntimeRun.url,
       localUpdated: !releaseOnly,
       dryRun: false,

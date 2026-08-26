@@ -6,7 +6,8 @@ const exactRelease = {
   channel: 'canary' as const,
   sourceCommit: '507866b966cb90ecb3d8240c265037d2269864dc',
   version: '0.1.72',
-  bundleId: `sha256:${'4'.repeat(64)}`,
+  releaseSetBundleId: `sha256:${'4'.repeat(64)}`,
+  platformBundleId: `sha256:${'5'.repeat(64)}`,
 };
 
 describe('release promotion correlation', () => {
@@ -23,7 +24,7 @@ describe('release promotion correlation', () => {
         },
       ],
       targetRelease: exactRelease,
-      expectedBundleId: exactRelease.bundleId,
+      expectedBundleId: exactRelease.releaseSetBundleId,
       expectedSourceCommit: exactRelease.sourceCommit,
     })).toEqual({
       kind: 'success',
@@ -44,7 +45,7 @@ describe('release promotion correlation', () => {
         { databaseId: 101, status: 'completed', conclusion: 'success', url: 'https://example.test/run/101' },
       ],
       targetRelease: null,
-      expectedBundleId: exactRelease.bundleId,
+      expectedBundleId: exactRelease.releaseSetBundleId,
       expectedSourceCommit: exactRelease.sourceCommit,
     })).toEqual({ kind: 'pending' });
   });
@@ -57,9 +58,9 @@ describe('release promotion correlation', () => {
       ],
       targetRelease: {
         ...exactRelease,
-        bundleId: `sha256:${'9'.repeat(64)}`,
+        releaseSetBundleId: `sha256:${'9'.repeat(64)}`,
       },
-      expectedBundleId: exactRelease.bundleId,
+      expectedBundleId: exactRelease.releaseSetBundleId,
       expectedSourceCommit: exactRelease.sourceCommit,
     })).toEqual({
       kind: 'failure',
@@ -74,7 +75,7 @@ describe('release promotion correlation', () => {
         { databaseId: 100, status: 'completed', conclusion: 'failure', url: 'https://example.test/run/100' },
       ],
       targetRelease: null,
-      expectedBundleId: exactRelease.bundleId,
+      expectedBundleId: exactRelease.releaseSetBundleId,
       expectedSourceCommit: exactRelease.sourceCommit,
     })).toEqual({ kind: 'pending' });
   });

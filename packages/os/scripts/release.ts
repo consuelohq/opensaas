@@ -17,6 +17,7 @@ import {
   assertGitHubCliAuthenticated,
   resolveGitHubCliPath,
 } from './lib/github-cli';
+import { selectReleasePlatformBundleId } from './lib/release-platform-bundle';
 import { evaluatePromotionCorrelation } from './lib/release-promotion-correlation';
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
@@ -249,20 +250,35 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
         sourceCommit?: string;
         version?: string;
         bundleId?: string;
+        platforms?: Array<{
+          platform?: string;
+          architecture?: string;
+          bundleId?: string;
+        }>;
       };
     };
     const payload = signed.payload;
     if (!payload) return null;
-    const bundleId = clean(payload.bundleId);
+    const releaseSetBundleId = clean(payload.bundleId);
     const version = clean(payload.version);
     const sourceCommit = clean(payload.sourceCommit);
     if (
       payload.channel !== channel ||
       !/^[0-9a-f]{40}$/i.test(sourceCommit) ||
       !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version) ||
-      !/^sha256:[a-f0-9]{64}$/.test(bundleId)
+      !/^sha256:[a-f0-9]{64}$/.test(releaseSetBundleId)
     ) return null;
-    return { channel, sourceCommit, version, bundleId };
+    const platformBundleId = selectReleasePlatformBundleId(payload.platforms, {
+      platform: process.platform,
+      architecture: process.arch,
+    });
+    return {
+      channel,
+      sourceCommit,
+      version,
+      releaseSetBundleId,
+      platformBundleId,
+    };
   };
 
   const lifecycleJson = <T>(args: string[], timeout = 120_000): T =>
@@ -394,7 +410,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
       }
     },
     channelRelease: fetchChannel,
-    async promote({ from, to, bundleId, sourceCommit }) {
+    async promote({ from, to, releaseSetBundleId, sourceCommit }) {
       try {
         const before = ghJson<Array<{ databaseId: number }>>([
           'run',
@@ -420,7 +436,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
           '-f',
           `to=${to}`,
           '-f',
-          `bundle=${bundleId}`,
+          `bundle=${releaseSetBundleId}`,
         ]);
         const deadline = Date.now() + 25 * 60_000;
         while (Date.now() < deadline) {
@@ -444,7 +460,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
             baselineRunId: baseline,
             runs: rows,
             targetRelease: await fetchChannel(to),
-            expectedBundleId: bundleId,
+            expectedBundleId: releaseSetBundleId,
             expectedSourceCommit: sourceCommit,
           });
           if (correlation.kind === 'success') return correlation.run;
@@ -490,7 +506,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
         if (!status.ok) throw new Error('local lifecycle status failed after update');
         return {
           version: clean(status.result?.version),
-          bundleId: clean(status.result?.bundleId),
+          platformBundleId: clean(status.result?.bundleId),
         };
       } catch (error: unknown) {
         throw releaseStepError('read local lifecycle status', error);
