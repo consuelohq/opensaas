@@ -4249,7 +4249,8 @@
             "kind": "value"
           }
         ],
-        "jsonFlag": "--json"
+        "jsonFlag": "--json",
+        "executionScope": "runtime"
       },
       "exampleInput": {
         "action": "run",
