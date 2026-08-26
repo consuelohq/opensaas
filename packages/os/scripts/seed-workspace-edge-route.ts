@@ -17,19 +17,40 @@ export const readArg = (name: string): string | undefined => {
   return value;
 };
 
+const readRequiredIdentity = (
+  field: 'workspaceId' | 'workspaceSlug' | 'hostname' | 'baseDomain',
+  value: string | undefined,
+): string => {
+  const normalized = value?.trim();
+  if (!normalized) {
+    throw new Error(
+      `workspace edge seed requires explicit workspace identity: ${field}`,
+    );
+  }
+  return normalized;
+};
+
 const readInput = (): WorkspaceEdgeRouteSeedInput => ({
-  workspaceId:
+  workspaceId: readRequiredIdentity(
+    'workspaceId',
     readArg('--workspace-id') ??
-    process.env.CONSUELO_WORKSPACE_EDGE_SEED_WORKSPACE_ID,
-  workspaceSlug:
+      process.env.CONSUELO_WORKSPACE_EDGE_SEED_WORKSPACE_ID,
+  ),
+  workspaceSlug: readRequiredIdentity(
+    'workspaceSlug',
     readArg('--workspace-slug') ??
-    process.env.CONSUELO_WORKSPACE_EDGE_SEED_WORKSPACE_SLUG,
-  hostname:
+      process.env.CONSUELO_WORKSPACE_EDGE_SEED_WORKSPACE_SLUG,
+  ),
+  hostname: readRequiredIdentity(
+    'hostname',
     readArg('--workspace-host') ??
-    process.env.CONSUELO_WORKSPACE_EDGE_SEED_WORKSPACE_HOST,
-  baseDomain:
+      process.env.CONSUELO_WORKSPACE_EDGE_SEED_WORKSPACE_HOST,
+  ),
+  baseDomain: readRequiredIdentity(
+    'baseDomain',
     readArg('--base-domain') ??
-    process.env.CONSUELO_WORKSPACE_EDGE_SEED_BASE_DOMAIN,
+      process.env.CONSUELO_WORKSPACE_EDGE_SEED_BASE_DOMAIN,
+  ),
   appUpstreamUrl:
     readArg('--app-upstream-url') ??
     process.env.CONSUELO_WORKSPACE_EDGE_SEED_APP_UPSTREAM_URL,

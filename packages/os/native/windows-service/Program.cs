@@ -261,13 +261,15 @@ namespace Consuelo.Windows.Service
         }
 
         private const uint JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x00002000;
+        private const uint JOB_OBJECT_LIMIT_BREAKAWAY_OK = 0x00000800;
 
         private static IntPtr CreateKillOnCloseJob()
         {
             var handle = CreateJobObject(IntPtr.Zero, null);
             if (handle == IntPtr.Zero) throw new InvalidOperationException("Windows Job Object creation failed");
             var limits = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION();
-            limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+            limits.BasicLimitInformation.LimitFlags =
+                JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_BREAKAWAY_OK;
             var length = Marshal.SizeOf(typeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
             var memory = Marshal.AllocHGlobal(length);
             try
@@ -337,11 +339,20 @@ namespace Consuelo.Windows.Service
 
     internal static class Program
     {
+        private const uint CREATE_BREAKAWAY_FROM_JOB = 0x01000000;
+        private const uint CREATE_NO_WINDOW = 0x08000000;
+        private const uint DETACHED_PROCESS = 0x00000008;
+
         private static int Main(string[] args)
         {
             try
             {
                 var configPath = ReadArgument(args, "--config");
+                if (HasArgument(args, "--launch-lifecycle"))
+                {
+                    LaunchLifecycleWorker(configPath, ArgumentsAfter(args, "--launch-lifecycle"));
+                    return 0;
+                }
                 var service = new ConsueloService(configPath);
                 if (Environment.UserInteractive && HasArgument(args, "--console"))
                 {
@@ -358,6 +369,165 @@ namespace Consuelo.Windows.Service
                 Console.Error.WriteLine(error.Message);
                 return 1;
             }
+        }
+
+        private static void LaunchLifecycleWorker(string configPath, string[] lifecycleArguments)
+        {
+            var settings = RuntimeSettings.Load(configPath);
+            ValidateLifecycleArguments(settings, lifecycleArguments);
+            var workerPath = Path.GetFullPath(
+                Path.Combine(settings.RuntimeCurrent, "scripts", "native-lifecycle-operation.ts")
+            );
+            if (!workerPath.StartsWith(
+                    settings.RuntimeCurrent + Path.DirectorySeparatorChar,
+                    StringComparison.OrdinalIgnoreCase)
+                || !File.Exists(workerPath))
+            {
+                throw new InvalidOperationException("Consuelo lifecycle worker entrypoint is invalid");
+            }
+
+            var commandLine = new StringBuilder();
+            commandLine.Append(QuoteArgument(settings.BunExecutable));
+            commandLine.Append(' ');
+            commandLine.Append(QuoteArgument(workerPath));
+            foreach (var argument in lifecycleArguments)
+            {
+                commandLine.Append(' ');
+                commandLine.Append(QuoteArgument(argument));
+            }
+
+            var startup = new STARTUPINFO();
+            startup.cb = Marshal.SizeOf(typeof(STARTUPINFO));
+            PROCESS_INFORMATION processInformation;
+            var created = CreateProcessW(
+                settings.BunExecutable,
+                commandLine,
+                IntPtr.Zero,
+                IntPtr.Zero,
+                false,
+                CREATE_BREAKAWAY_FROM_JOB | CREATE_NO_WINDOW | DETACHED_PROCESS,
+                IntPtr.Zero,
+                settings.RuntimeCurrent,
+                ref startup,
+                out processInformation
+            );
+            if (!created)
+            {
+                throw new InvalidOperationException(
+                    "Consuelo lifecycle worker could not break away from the runtime Job Object (Win32 "
+                    + Marshal.GetLastWin32Error()
+                    + ")"
+                );
+            }
+            CloseHandle(processInformation.hThread);
+            CloseHandle(processInformation.hProcess);
+        }
+
+        private static void ValidateLifecycleArguments(
+            RuntimeSettings settings,
+            string[] lifecycleArguments
+        )
+        {
+            if (lifecycleArguments.Length == 0 || lifecycleArguments.Length % 2 != 0)
+            {
+                throw new InvalidOperationException(
+                    "lifecycle worker arguments must be flag/value pairs"
+                );
+            }
+            var allowed = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "--home",
+                "--operation-id",
+                "--kind",
+                "--target-version",
+                "--channel",
+                "--remove-node",
+                "--remove-user-content",
+            };
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            string requestedHome = null;
+            string kind = null;
+            for (var index = 0; index < lifecycleArguments.Length; index += 2)
+            {
+                var flag = lifecycleArguments[index];
+                var value = lifecycleArguments[index + 1];
+                if (!allowed.Contains(flag) || !seen.Add(flag) || string.IsNullOrWhiteSpace(value))
+                {
+                    throw new InvalidOperationException("unsupported lifecycle worker argument " + flag);
+                }
+                if (flag == "--home") requestedHome = value;
+                if (flag == "--kind") kind = value;
+            }
+            if (requestedHome == null
+                || !string.Equals(
+                    Path.GetFullPath(requestedHome).TrimEnd(
+                        Path.DirectorySeparatorChar,
+                        Path.AltDirectorySeparatorChar
+                    ),
+                    settings.ConsueloHome,
+                    StringComparison.OrdinalIgnoreCase
+                ))
+            {
+                throw new InvalidOperationException(
+                    "lifecycle worker home must match the managed Consuelo home"
+                );
+            }
+            if (kind != "update"
+                && kind != "rollback"
+                && kind != "repair"
+                && kind != "restart"
+                && kind != "uninstall")
+            {
+                throw new InvalidOperationException("unsupported lifecycle worker operation kind");
+            }
+        }
+
+        private static string[] ArgumentsAfter(string[] args, string name)
+        {
+            for (var index = 0; index < args.Length; index += 1)
+            {
+                if (string.Equals(args[index], name, StringComparison.OrdinalIgnoreCase))
+                {
+                    var result = new string[args.Length - index - 1];
+                    Array.Copy(args, index + 1, result, 0, result.Length);
+                    return result;
+                }
+            }
+            throw new InvalidOperationException(name + " is required");
+        }
+
+        private static string QuoteArgument(string value)
+        {
+            if (value.Length > 0
+                && value.IndexOf(' ') < 0
+                && value.IndexOf('\t') < 0
+                && value.IndexOf('"') < 0)
+            {
+                return value;
+            }
+            var builder = new StringBuilder("\"");
+            var backslashes = 0;
+            foreach (var character in value)
+            {
+                if (character == '\\')
+                {
+                    backslashes += 1;
+                    continue;
+                }
+                if (character == '"')
+                {
+                    builder.Append('\\', backslashes * 2 + 1);
+                    builder.Append('"');
+                    backslashes = 0;
+                    continue;
+                }
+                builder.Append('\\', backslashes);
+                backslashes = 0;
+                builder.Append(character);
+            }
+            builder.Append('\\', backslashes * 2);
+            builder.Append('"');
+            return builder.ToString();
         }
 
         private static string ReadArgument(string[] args, string name)
@@ -377,5 +547,54 @@ namespace Consuelo.Windows.Service
             }
             return false;
         }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct STARTUPINFO
+        {
+            public int cb;
+            public string lpReserved;
+            public string lpDesktop;
+            public string lpTitle;
+            public int dwX;
+            public int dwY;
+            public int dwXSize;
+            public int dwYSize;
+            public int dwXCountChars;
+            public int dwYCountChars;
+            public int dwFillAttribute;
+            public int dwFlags;
+            public short wShowWindow;
+            public short cbReserved2;
+            public IntPtr lpReserved2;
+            public IntPtr hStdInput;
+            public IntPtr hStdOutput;
+            public IntPtr hStdError;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct PROCESS_INFORMATION
+        {
+            public IntPtr hProcess;
+            public IntPtr hThread;
+            public int dwProcessId;
+            public int dwThreadId;
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool CreateProcessW(
+            string applicationName,
+            StringBuilder commandLine,
+            IntPtr processAttributes,
+            IntPtr threadAttributes,
+            bool inheritHandles,
+            uint creationFlags,
+            IntPtr environment,
+            string currentDirectory,
+            [In] ref STARTUPINFO startupInfo,
+            out PROCESS_INFORMATION processInformation
+        );
+
+        [DllImport("kernel32.dll")]
+        private static extern bool CloseHandle(IntPtr handle);
     }
 }

@@ -18,6 +18,11 @@ function renderSignature(entry: ToolManifestEntry): string {
 }
 
 function exampleData(entry: ToolManifestEntry): unknown {
+  if (entry.outputSchema === 'SessionStartOutput') {
+    return entry.exampleInput.kind === 'work'
+      ? { sessionKind: 'work', workSession: 'wrk_example123', ownerNodeId: 'node_example', path: '/Users/example/work' }
+      : { sessionKind: 'task', taskSession: 'tsk_example123', taskBranch: 'task/workspace-agents/example', worktreePath: '/Users/example/.consuelo/node/tasks/worktrees/task-workspace-agents-example' };
+  }
   if (entry.outputSchema === 'ToolsSearchOutput') {
     return {
       query: 'linear issue',
@@ -185,7 +190,7 @@ function renderDocs(): string {
     '})',
     '```',
     '',
-    'Task-scoped work must pass the `taskSession` returned by `task.start`. The facade resolves the session to the correct branch and worktree before invoking the underlying script.',
+    'Task-scoped work must pass the `taskSession` returned by `session.start({ kind: \"task\" })`; `task.start` remains a compatibility alias. Work sessions use `session.start({ kind: \"work\", path })` and pass `workSession` only for ordinary filesystem work outside managed repositories. The facade resolves session authority before invoking the underlying script.',
     '',
     '## Tool index',
     '',

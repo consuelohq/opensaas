@@ -86,6 +86,16 @@ describe('OS device authority architecture', () => {
       { method: 'POST', path: '/auth/handoff', trust: 'authority-session' },
       { method: 'GET', path: '/auth/consume', trust: 'public' },
       { method: 'POST', path: '/auth/logout', trust: 'workspace-session' },
+      { method: 'GET', path: '/auth/synthetic/checkout', trust: 'authority-session' },
+      { method: 'POST', path: '/auth/synthetic/checkout/start', trust: 'authority-session' },
+      { method: 'GET', path: '/auth/synthetic/checkout/result', trust: 'authority-session' },
+      { method: 'POST', path: '/webhooks/stripe', trust: 'webhook-signature' },
+      { method: 'POST', path: '/webhooks/stripe-synthetic', trust: 'webhook-signature' },
+      {
+        method: 'POST',
+        path: '/internal/auth/session/handoff',
+        trust: 'internal',
+      },
       {
         method: 'POST',
         path: '/internal/auth/session/validate',
@@ -102,6 +112,21 @@ describe('OS device authority architecture', () => {
         method: 'POST',
         path: '/login/oauth/access_token',
         trust: 'device-proof',
+      },
+      {
+        method: 'POST',
+        path: '/internal/managed-cloud/provisioning/claim',
+        trust: 'internal',
+      },
+      {
+        method: 'POST',
+        path: '/internal/managed-cloud/provisioning/state',
+        trust: 'internal',
+      },
+      {
+        method: 'POST',
+        path: '/managed-cloud/provisioning/enroll',
+        trust: 'node-bootstrap',
       },
       { method: 'GET', path: '/workspace/agents', trust: 'public' },
       {

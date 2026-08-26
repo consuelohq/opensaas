@@ -1,4 +1,5 @@
 {
+  "version": 1,
   "definitions": [
     {
       "name": "aiReview",
@@ -2160,7 +2161,7 @@
         "code",
         "call"
       ],
-      "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
+      "description": "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
       "category": "codemode",
       "underlying": "os code.call",
       "capabilities": {
@@ -2413,6 +2414,67 @@
       },
       "exampleInput": {
         "verify": true
+      },
+      "sessionRequired": false
+    },
+    {
+      "name": "dailySchedules.publish",
+      "methodPath": [
+        "dailySchedules",
+        "publish"
+      ],
+      "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
+      "category": "artifacts",
+      "underlying": "Consuelo durable artifact catalog",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 120000,
+      "inputSchema": "DailySchedulesPublishInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "daily-schedules",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "kind",
+            "flag": "--kind",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "sourceFile",
+            "flag": "--source-file",
+            "kind": "value"
+          },
+          {
+            "source": "content",
+            "flag": "--content",
+            "kind": "value"
+          },
+          {
+            "source": "format",
+            "flag": "--format",
+            "kind": "value"
+          },
+          {
+            "source": "date",
+            "flag": "--date",
+            "kind": "value"
+          },
+          {
+            "source": "title",
+            "flag": "--title",
+            "kind": "value"
+          }
+        ]
+      },
+      "exampleInput": {
+        "kind": "security-workpad",
+        "sourceFile": "/tmp/security-workpad.md"
       },
       "sessionRequired": false
     },
@@ -3316,7 +3378,7 @@
         "fs",
         "apply_patch"
       ],
-      "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+      "description": "apply an anchored patch inside an authorized task worktree or work-session directory",
       "category": "filesystem",
       "underlying": "workspace fs.apply_patch",
       "capabilities": {
@@ -3633,7 +3695,7 @@
         "fs",
         "trash"
       ],
-      "description": "An agent safe file deletion path. Prefered over rm rf",
+      "description": "move files to trash inside an authorized task worktree or work-session directory",
       "category": "filesystem",
       "underlying": "workspace fs.trash",
       "capabilities": {
@@ -3671,7 +3733,7 @@
         "fs",
         "write"
       ],
-      "description": "write a file in a task worktree",
+      "description": "write a file inside an authorized task worktree or work-session directory",
       "category": "filesystem",
       "underlying": "workspace fs.write",
       "capabilities": {
@@ -4135,6 +4197,107 @@
       "exampleInput": {
         "method": "get",
         "url": "https://example.com"
+      },
+      "sessionRequired": false
+    },
+    {
+      "name": "lifecycle.status",
+      "methodPath": [
+        "lifecycle",
+        "status"
+      ],
+      "description": "check Consuelo OS lifecycle and runtime status, including the latest durable update operation",
+      "category": "lifecycle",
+      "underlying": "workspace lifecycle.status",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "consuelo",
+          "os",
+          "runtime",
+          "release",
+          "lifecycle",
+          "status",
+          "update status",
+          "upgrade status"
+        ],
+        "entities": [
+          "consuelo os",
+          "runtime release",
+          "lifecycle operation"
+        ]
+      },
+      "command": {
+        "script": "lifecycle",
+        "subcommand": "status",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [],
+        "executionScope": "runtime"
+      },
+      "exampleInput": {},
+      "sessionRequired": false
+    },
+    {
+      "name": "lifecycle.update",
+      "methodPath": [
+        "lifecycle",
+        "update"
+      ],
+      "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater",
+      "category": "lifecycle",
+      "underlying": "workspace lifecycle.update",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 120000,
+      "inputSchema": "LifecycleUpdateInput",
+      "outputSchema": "RawOutput",
+      "search": {
+        "keywords": [
+          "consuelo",
+          "os",
+          "runtime",
+          "release",
+          "lifecycle",
+          "update",
+          "upgrade",
+          "updater",
+          "install latest"
+        ],
+        "entities": [
+          "consuelo os",
+          "runtime release",
+          "lifecycle updater"
+        ]
+      },
+      "command": {
+        "script": "lifecycle",
+        "subcommand": "update",
+        "branchMode": "none",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "channel",
+            "flag": "--channel",
+            "kind": "value"
+          }
+        ],
+        "executionScope": "runtime"
+      },
+      "exampleInput": {
+        "channel": "stable"
       },
       "sessionRequired": false
     },
@@ -6143,6 +6306,32 @@
       "sessionRequired": false
     },
     {
+      "name": "monitor.errors",
+      "methodPath": [
+        "monitor",
+        "errors"
+      ],
+      "description": "analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates",
+      "category": "observability",
+      "underlying": "Consuelo canonical OS trace database and current OS tool contracts",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 120000,
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "monitor:errors",
+        "branchMode": "optional",
+        "arguments": []
+      },
+      "exampleInput": {},
+      "sessionRequired": false
+    },
+    {
       "name": "prReview",
       "methodPath": [
         "prReview"
@@ -6336,6 +6525,32 @@
       },
       "sessionRequired": true,
       "workflowRole": "validation.review"
+    },
+    {
+      "name": "security.scan",
+      "methodPath": [
+        "security",
+        "scan"
+      ],
+      "description": "run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths",
+      "category": "security",
+      "underlying": "Consuelo defensive repository security scanners",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 900000,
+      "inputSchema": "EmptyInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "security:scan",
+        "branchMode": "optional",
+        "arguments": []
+      },
+      "exampleInput": {},
+      "sessionRequired": false
     },
     {
       "name": "sentry.config",
@@ -6729,6 +6944,80 @@
       "sessionRequired": false
     },
     {
+      "name": "session.start",
+      "methodPath": [
+        "session",
+        "start"
+      ],
+      "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+      "category": "session lifecycle",
+      "underlying": "os session.start",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 60000,
+      "inputSchema": "SessionStartInput",
+      "outputSchema": "RawOutput",
+      "command": {
+        "script": "session:start",
+        "branchMode": "none",
+        "arguments": [
+          {
+            "source": "kind",
+            "flag": "--kind",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "path",
+            "flag": "--path",
+            "kind": "value"
+          },
+          {
+            "source": "area",
+            "flag": "--area",
+            "kind": "value"
+          },
+          {
+            "source": "stream",
+            "flag": "--stream",
+            "kind": "value"
+          },
+          {
+            "source": "title",
+            "flag": "--title",
+            "kind": "value"
+          },
+          {
+            "source": "workflow",
+            "flag": "--workflow",
+            "kind": "value"
+          },
+          {
+            "source": "bodyFile",
+            "flag": "--body-file",
+            "kind": "value"
+          },
+          {
+            "source": "startFrom",
+            "flag": "--start-from",
+            "kind": "value"
+          }
+        ],
+        "jsonFlag": "--json"
+      },
+      "exampleInput": {
+        "kind": "task",
+        "stream": "stream/workspace-agent",
+        "title": "example task",
+        "workflow": "task"
+      },
+      "sessionRequired": false
+    },
+    {
       "name": "status",
       "methodPath": [
         "status"
@@ -6943,7 +7232,7 @@
         "deterministic": false,
         "safeToRetry": false
       },
-      "defaultTimeout": 300000,
+      "defaultTimeout": 900000,
       "inputSchema": "SubagentInput",
       "outputSchema": "SubagentOutput",
       "command": {
@@ -7471,7 +7760,7 @@
         "task",
         "start"
       ],
-      "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+      "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
       "category": "task lifecycle",
       "underlying": "os task.start",
       "capabilities": {

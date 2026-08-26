@@ -1,7 +1,8 @@
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -15,6 +16,11 @@ type TraceRow = {
   task_session: string | null;
   branch: string | null;
   worktree: string | null;
+  requested_node_id: string | null;
+  resolved_node_id: string | null;
+  resolved_node_name: string | null;
+  default_node_id: string | null;
+  route_source: string | null;
   status: string;
   ok: number;
   code: string | null;
@@ -37,14 +43,17 @@ type ScenarioResult = {
   firstRows?: TraceRow[];
   secondRows?: TraceRow[];
   recent?: { events?: Array<Record<string, unknown>> };
+  history?: { rows?: Array<Record<string, unknown>> };
   recorded?: boolean;
   immediateDbExists?: boolean;
   events?: Array<Record<string, unknown>>;
   status?: number;
   body?: Record<string, unknown>;
+  workSessionRow?: Record<string, unknown>;
 };
 
 let tempHome: string;
+const OS_PACKAGE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 beforeEach(() => {
   tempHome = mkdtempSync(join(tmpdir(), 'consuelo-trace-persistence-'));
@@ -58,9 +67,11 @@ function runScenario(name: string): ScenarioResult {
   const env = { ...process.env, CONSUELO_HOME: tempHome };
   delete env.CONSUELO_TRACE_DB;
   delete env.TRACE_DB;
-  const fixture = join(process.cwd(), 'tests', 'fixtures', 'trace-persistence-runtime.ts');
+  delete env.TASK_BRANCH;
+  delete env.TASK_WORKTREE;
+  const fixture = join(OS_PACKAGE_ROOT, 'tests', 'fixtures', 'trace-persistence-runtime.ts');
   const run = spawnSync('bun', [fixture, name, tempHome], {
-    cwd: process.cwd(),
+    cwd: OS_PACKAGE_ROOT,
     env,
     encoding: 'utf8',
   });
@@ -113,6 +124,11 @@ describe('canonical OS trace persistence', () => {
       ok: 1,
       code: 'OK',
       exit_code: 0,
+      requested_node_id: 'node_cloud',
+      resolved_node_id: 'node_cloud',
+      resolved_node_name: 'Cloud Node',
+      default_node_id: 'node_home',
+      route_source: 'explicit',
     });
     expect(rows[0].input_json).toContain('[REDACTED_SECRET]');
     expect(rows[0].input_json).not.toContain('sk_test_secret_value_1234567890');
@@ -130,6 +146,15 @@ describe('canonical OS trace persistence', () => {
         success: true,
       }),
     ]);
+    expect(output.history?.rows).toEqual([
+      expect.objectContaining({
+        traceId: result.traceId,
+        nodeId: 'node_cloud',
+        nodeName: 'Cloud Node',
+        defaultNodeId: 'node_home',
+        routeSource: 'explicit',
+      }),
+    ]);
   });
 
   it('migrates an existing tool_traces table and preserves correlation and token fields', () => {
@@ -144,8 +169,22 @@ describe('canonical OS trace persistence', () => {
         input_tokens: 12,
         output_tokens: 34,
         total_tokens: 46,
+        resolved_node_id: 'node_migrated',
+        resolved_node_name: 'Migrated Node',
+        default_node_id: 'node_migrated',
+        route_source: 'default',
       }),
     ]);
+  });
+
+  it('should persist work-session identity when recording canonical work-path trace metadata', () => {
+    const output = runScenario('work-session');
+
+    expect(output.recorded).toBe(true);
+    expect(output.workSessionRow).toEqual({
+      work_session: expect.stringMatching(/^wrk_/),
+      work_path: expect.stringContaining('consuelo-trace-work-session-'),
+    });
   });
 
   it('persists code.call and batch parent envelopes alongside nested child traces', () => {
@@ -220,6 +259,10 @@ describe('canonical OS trace persistence', () => {
       }),
     ]));
     expect(secondRows).toHaveLength(firstRows.length);
+    const eventKeys = (rows: typeof firstRows) => rows
+      .map((row) => `${row.mcp_trace_id}:${row.source}:${row.tool}`)
+      .sort();
+    expect(eventKeys(secondRows)).toEqual(eventKeys(firstRows));
     expect(new Set(secondRows.map((row) => row.mcp_trace_id))).toEqual(new Set([result.traceId as string]));
   });
 
@@ -273,13 +316,25 @@ describe('canonical OS trace persistence', () => {
       requiredScope: 'mcp:read',
       authMode: 'oauth',
       principalKey: 'prn_0123456789abcdef0123456789abcdef',
+      requestedNodeId: 'node_cloud',
+      resolvedNodeId: 'node_cloud',
+      resolvedNodeName: 'Cloud Node',
+      defaultNodeId: 'node_home',
+      routeSource: 'explicit',
+    });
+    expect(output.rows?.[0]).toMatchObject({
+      requested_node_id: 'node_cloud',
+      resolved_node_id: 'node_cloud',
+      resolved_node_name: 'Cloud Node',
+      default_node_id: 'node_home',
+      route_source: 'explicit',
     });
     expect(JSON.stringify(input)).not.toContain('google:');
     expect(JSON.stringify(input)).not.toContain('chatgpt.com');
   });
 
   it('exports the canonical trace path for the installed daemon', () => {
-    const daemon = readFileSync(join(process.cwd(), 'scripts', 'start-consuelo-daemon.sh'), 'utf8');
+    const daemon = readFileSync(join(OS_PACKAGE_ROOT, 'scripts', 'start-consuelo-daemon.sh'), 'utf8');
     expect(daemon).toContain('CONSUELO_TRACE_DB');
     expect(daemon).toContain('$CONSUELO_HOME/node/db/traces.db');
   });

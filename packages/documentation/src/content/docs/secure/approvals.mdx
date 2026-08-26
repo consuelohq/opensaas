@@ -16,9 +16,9 @@ evidence:
     runtime: Current filesystem, shell, and destructive-material guardrails were exercised by focused tests on 2026-07-13.
   - source: packages/os/scripts/os.ts
     tests:
-      - packages/os/tests/office-landing-page.test.ts
+      - packages/os/tests/facade/facade.test.ts
       - packages/os/tests/security-gateway.test.ts
-    runtime: Current requiresApproval metadata, APPROVAL_REQUIRED results, and dangerous-action policy were verified from source and focused tests on 2026-07-13.
+    runtime: Current requiresApproval metadata, APPROVAL_REQUIRED results, and dangerous-action policy were verified from source and focused tests on 2026-08-12.
 ---
 
 Consuelo uses approval at two different moments. **Connection approval** decides whether a device or client may join a workspace. **Action approval** decides whether one sensitive operation may execute. They are not interchangeable.

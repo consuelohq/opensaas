@@ -81,6 +81,28 @@ export const createLeadConnectorPublicRoutes = (
         application.processWebhook({ rawBody, headers }),
       );
       if (!result.ok) return leadConnectorErrorResponse(context, result.error);
+      if (result.value.event?.type === 'installation.uninstalled') {
+        if (dependencies.commercial) {
+          const appId = result.value.event.data.appId;
+          const commercialResult = await runApplicationEffect(
+            dependencies.commercial.processInstallationUninstall({
+              id: result.value.event.id,
+              workspaceId: result.value.event.workspaceId,
+              locationId: result.value.event.locationId,
+              appId: typeof appId === 'string' ? appId : null,
+            }),
+          );
+          if (!commercialResult.ok) {
+            return dialerErrorResponse(context, commercialResult.error);
+          }
+        }
+        const disabled = await runApplicationEffect(
+          application.disableInstallation(result.value.workspaceId),
+        );
+        if (!disabled.ok) {
+          return leadConnectorErrorResponse(context, disabled.error);
+        }
+      }
       return context.json({
         received: true,
         duplicate: result.value.duplicate,
@@ -134,6 +156,37 @@ export const createLeadConnectorAuthenticatedRoutes = (
             stageId: readOptionalString(body.stageId),
             status: readOptionalString(body.status),
             limit: readOptionalLimit(body.limit),
+          }),
+        );
+        return result.ok
+          ? context.json(result.value)
+          : leadConnectorErrorResponse(context, result.error);
+      } catch (error: unknown) {
+        return leadConnectorErrorResponse(context, error);
+      }
+    },
+  );
+
+  routes.post(
+    '/v1/integrations/leadconnector/queues/preview',
+    async (context) => {
+      try {
+        const body = await readJsonObject(context.req.raw);
+        if (!body) return invalidRequestResponse(context);
+        const pipelineId = readOptionalString(body.pipelineId);
+        const stageId = readOptionalString(body.stageId);
+        if (!pipelineId || !stageId) {
+          return invalidRequestResponse(
+            context,
+            'Pipeline and stage are required',
+          );
+        }
+        const identity = context.get('identity');
+        const result = await runApplicationEffect(
+          application.resolveQueueCandidates({
+            workspaceId: identity.workspaceId,
+            pipelineId,
+            stageId,
           }),
         );
         return result.ok

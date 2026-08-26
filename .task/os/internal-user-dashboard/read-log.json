@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/internal-user-dashboard/workpad.md",
+    "packages/os/docs/install-telemetry-contract.md",
+    "packages/os/scripts/lib/install-telemetry-contract.ts",
+    "packages/os/scripts/lib/trace-site-inspector/browser.ts",
+    "packages/os/scripts/lib/trace-site.ts",
+    "packages/os/tests/trace-sites-browser-client.test.ts"
+  ],
+  "updatedAt": "2026-08-13T18:14:23.867Z"
+}

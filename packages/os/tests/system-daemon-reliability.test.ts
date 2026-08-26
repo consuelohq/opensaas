@@ -53,6 +53,44 @@ afterEach(() => {
 });
 
 describe('macOS runtime service reliability', () => {
+  it('should point runtime-owned LaunchAgents at the mutable active runtime instead of an immutable release path', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-current-');
+    const scriptsDirectory = join(fixtureRoot, 'scripts');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const activeRuntime = join(consueloHome, 'runtime', 'current');
+    mkdirSync(scriptsDirectory, { recursive: true });
+    mkdirSync(activeRuntime, { recursive: true });
+    copyFileSync(resolve(osRoot, 'scripts/generate-system-daemons.sh'), join(scriptsDirectory, 'generate-system-daemons.sh'));
+
+    const result = run('bash', [join(scriptsDirectory, 'generate-system-daemons.sh')], {
+      ...process.env,
+      HOME: home,
+      USER: process.env.USER ?? 'nobody',
+      CONSUELO_HOME: consueloHome,
+      PORTLESS_ENABLED: '0',
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    const generatedDirectory = join(consueloHome, 'node', 'security', 'generated');
+    const workspace = readFileSync(join(generatedDirectory, 'com.consuelo.system.plist'), 'utf8');
+    const caddy = readFileSync(join(generatedDirectory, 'com.consuelo.caddy.plist'), 'utf8');
+    const watchdog = readFileSync(join(generatedDirectory, 'com.consuelo.watchdog.plist'), 'utf8');
+    expect(workspace).toContain(`${activeRuntime}/scripts/start-consuelo-daemon.sh`);
+    expect(caddy).toContain(`${activeRuntime}/scripts/start-caddy-daemon.sh`);
+    expect(watchdog).toContain(`${activeRuntime}/scripts/workspace-watchdog.sh`);
+    expect(workspace).not.toContain(`${fixtureRoot}/scripts/start-consuelo-daemon.sh`);
+  });
+
+  it('should support refreshing LaunchAgent definitions without restarting live services', () => {
+    const installer = readFileSync(resolve(osRoot, 'scripts/install-system-daemons.sh'), 'utf8');
+    expect(installer).toContain('--definitions-only');
+    expect(installer).toContain('definitions_only=0');
+    expect(installer).toContain('install_launch_agent_definitions');
+    expect(installer).toContain('if [ "$definitions_only" -eq 1 ]; then');
+    expect(installer).toContain('LaunchAgent definitions refreshed without restarting services');
+  });
+
   it('should wire opt-in availability and OS-owned watchdog state when installing and uninstalling daemons', () => {
     const install = readFileSync(
       resolve(osRoot, 'scripts/install-system-daemons.sh'),
@@ -206,6 +244,28 @@ describe('macOS runtime service reliability', () => {
     expect(watchdog).not.toContain('<key>KeepAlive</key>');
     expect(watchdog).toContain('<key>CONSUELO_HOME</key>');
     expect(watchdog).toContain(`<string>${consueloHome}</string>`);
+    expect(watchdog).toContain('<key>WORKSPACE_WATCHDOG_LOCAL_PORT</key>');
+    expect(watchdog).toContain('<string>46320</string>');
+    expect(watchdog).toContain('<key>WORKSPACE_WATCHDOG_LOCAL_URL</key>');
+    expect(watchdog).toContain('http://127.0.0.1:46320/health');
+    expect(watchdog).toContain('<key>WORKSPACE_WATCHDOG_CADDY_LABEL</key>');
+    expect(watchdog).toContain('<string>com.consuelo.caddy</string>');
+  });
+
+  it('should probe the Caddy HA ingress instead of one worker backend', () => {
+    const watchdog = readFileSync(
+      resolve(osRoot, 'scripts/workspace-watchdog.sh'),
+      'utf8',
+    );
+
+    expect(watchdog).toContain('CONSUELO_CADDY_INGRESS_PORT:-46320');
+    expect(watchdog).not.toContain('PORT:-46321');
+    expect(watchdog).toContain(
+      'maybe_restart "$caddy_label" "Caddy ingress tcp probe failed',
+    );
+    expect(watchdog).toContain(
+      'maybe_restart "$workspace_label" "pooled OS health failed',
+    );
   });
 
   it('should persist probe failures and restart only when the failure threshold is reached', () => {
@@ -250,12 +310,14 @@ describe('macOS runtime service reliability', () => {
     const second = run('bash', [watchdog], environment);
     expect(second.status, `${second.stdout}\n${second.stderr}`).toBe(0);
     expect(readFileSync(join(stateDirectory, 'local-tcp-failure-count'), 'utf8').trim()).toBe('0');
-    expect(readFileSync(consueloLog, 'utf8').trim()).toBe('restart --quiet');
-    expect(existsSync(launchLog)).toBe(false);
+    expect(existsSync(consueloLog)).toBe(false);
+    expect(readFileSync(launchLog, 'utf8')).toContain(
+      'kickstart -k gui/' + String(process.getuid?.()) + '/com.consuelo.caddy',
+    );
   });
 
-  it('should delegate missing-label recovery to the canonical Consuelo restart command', () => {
-    const fixtureRoot = temporaryDirectory('consuelo-watchdog-bootstrap-');
+  it('should kickstart launchd when canonical rolling recovery rejects an unhealthy pool', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-watchdog-recovery-fallback-');
     const fakeBin = join(fixtureRoot, 'bin');
     const home = join(fixtureRoot, 'home');
     const consueloHome = join(home, '.consuelo');
@@ -263,6 +325,55 @@ describe('macOS runtime service reliability', () => {
     const consueloLog = join(fixtureRoot, 'consuelo.log');
     mkdirSync(fakeBin, { recursive: true });
     mkdirSync(home, { recursive: true });
+    installFakeConsuelo(consueloHome);
+    writeExecutable(
+      join(consueloHome, 'bin', 'consuelo'),
+      '#!/bin/bash\nprintf "%s\\n" "$*" >> "$WATCHDOG_CONSUELO_LOG"\nexit 1\n',
+    );
+    writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 1\n');
+    writeExecutable(
+      join(fakeBin, 'launchctl'),
+      '#!/bin/bash\nprintf "%s\\n" "$*" >> "$WATCHDOG_LAUNCH_LOG"\nexit 0\n',
+    );
+
+    const result = run('bash', [resolve(osRoot, 'scripts/workspace-watchdog.sh')], {
+      ...process.env,
+      HOME: home,
+      CONSUELO_HOME: consueloHome,
+      WORKSPACE_WATCHDOG_PATH: `${fakeBin}:/usr/bin:/bin:/usr/sbin:/sbin`,
+      WORKSPACE_WATCHDOG_DISABLE_EXTERNAL: '1',
+      WORKSPACE_WATCHDOG_LOCAL_HTTP_FAILURE_THRESHOLD: '1',
+      WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
+      WATCHDOG_LAUNCH_LOG: launchLog,
+      WATCHDOG_CONSUELO_LOG: consueloLog,
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    expect(readFileSync(consueloLog, 'utf8')).toContain('restart --quiet');
+    expect(readFileSync(launchLog, 'utf8')).toContain(
+      'kickstart -k gui/' + String(process.getuid?.()) + '/com.consuelo.system',
+    );
+    expect(result.stdout).toContain(
+      'falling back to launchd recovery for com.consuelo.system',
+    );
+  });
+
+  it('should bootstrap a missing Caddy label when the HA ingress is unavailable', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-watchdog-bootstrap-');
+    const fakeBin = join(fixtureRoot, 'bin');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    const launchLog = join(fixtureRoot, 'launchctl.log');
+    const consueloLog = join(fixtureRoot, 'consuelo.log');
+    mkdirSync(fakeBin, { recursive: true });
+    mkdirSync(home, { recursive: true });
+    mkdirSync(launchAgents, { recursive: true });
+    writeFileSync(
+      join(launchAgents, 'com.consuelo.caddy.plist'),
+      '<plist><dict><key>Label</key><string>com.consuelo.caddy</string></dict></plist>\n',
+    );
     installFakeConsuelo(consueloHome);
     writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 1\n');
     writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
@@ -284,8 +395,13 @@ describe('macOS runtime service reliability', () => {
     });
 
     expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
-    expect(readFileSync(consueloLog, 'utf8').trim()).toBe('restart --quiet');
-    expect(existsSync(launchLog)).toBe(false);
+    expect(existsSync(consueloLog)).toBe(false);
+    const launches = readFileSync(launchLog, 'utf8');
+    expect(launches).toContain('bootstrap gui/' + String(process.getuid?.()));
+    expect(launches).toContain('com.consuelo.caddy.plist');
+    expect(launches).toContain(
+      'kickstart -k gui/' + String(process.getuid?.()) + '/com.consuelo.caddy',
+    );
   });
 
   it('should open a recovery circuit when restart attempts exceed the bounded window', () => {
@@ -326,12 +442,12 @@ describe('macOS runtime service reliability', () => {
       expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
     }
 
-    const launches = readFileSync(consueloLog, 'utf8')
+    const launches = readFileSync(launchLog, 'utf8')
       .trim()
       .split('\n')
-      .filter((line) => line === 'restart --quiet');
+      .filter((line) => line.includes('kickstart -k') && line.includes('com.consuelo.caddy'));
     expect(launches).toHaveLength(2);
-    expect(existsSync(launchLog)).toBe(false);
+    expect(existsSync(consueloLog)).toBe(false);
     expect(
       existsSync(
         join(
@@ -339,7 +455,7 @@ describe('macOS runtime service reliability', () => {
           'node',
           'runtime',
           'watchdog',
-          'com.consuelo.system.degraded',
+          'com.consuelo.caddy.degraded',
         ),
       ),
     ).toBe(true);

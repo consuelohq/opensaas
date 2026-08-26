@@ -9,6 +9,7 @@ export type TraceLivePage = TraceHistoryPage;
 
 export type TracePrefetchRequestDetail = {
   cursor: string;
+  query?: string;
   rowCount: number;
   lastVirtualIndex: number;
   accept: (rows: TraceRecord[], nextCursor: string | null) => void;
@@ -39,8 +40,12 @@ export function deriveTraceHistoryCursor(
   return key ? `id:${key}` : null;
 }
 
-export function traceHistoryUrl(cursor: string, limit = 100): string {
-  return traceCursorUrl('older', cursor, limit);
+export function traceHistoryUrl(
+  cursor: string,
+  limit = 100,
+  query = '',
+): string {
+  return traceCursorUrl('older', cursor, limit, query);
 }
 
 export function traceLiveUrl(cursor: string, limit = 100): string {
@@ -51,6 +56,7 @@ function traceCursorUrl(
   direction: 'older' | 'newer',
   cursor: string,
   limit: number,
+  query = '',
 ): string {
   const params = new URLSearchParams({
     direction,
@@ -60,6 +66,8 @@ function traceCursorUrl(
     sourceMode: 'local-networked',
     includeRawPayload: 'true',
   });
+  const normalizedQuery = query.trim();
+  if (normalizedQuery) params.set('query', normalizedQuery);
   return `/gateway/traces/recent?${params.toString()}`;
 }
 
@@ -116,13 +124,14 @@ export function installTracePaginationTransport(): () => void {
     const detail = prefetchDetail(event.detail);
     if (!detail) return;
     event.preventDefault();
-    if (inFlight.has(detail.cursor)) return;
+    const requestKey = `${detail.query ?? ''}\u0000${detail.cursor}`;
+    if (inFlight.has(requestKey)) return;
 
-    inFlight.add(detail.cursor);
-    void fetchTraceHistoryPage(detail.cursor)
+    inFlight.add(requestKey);
+    void fetchTraceHistoryPage(detail.cursor, detail.query ?? '')
       .then((page) => detail.accept(page.rows, page.nextCursor))
       .catch(() => detail.fail())
-      .finally(() => inFlight.delete(detail.cursor));
+      .finally(() => inFlight.delete(requestKey));
   };
 
   document.addEventListener('trace:prefetch-request', handlePrefetch);
@@ -132,13 +141,14 @@ export function installTracePaginationTransport(): () => void {
 
 async function fetchTraceHistoryPage(
   cursor: string,
+  query = '',
 ): Promise<TraceHistoryPage> {
   try {
     const transport = window.__consueloTraceHistoryTransport;
     if (!transport) {
       throw new Error('Trusted trace history transport is unavailable.');
     }
-    const payload = await transport.fetchJson(traceHistoryUrl(cursor));
+    const payload = await transport.fetchJson(traceHistoryUrl(cursor, 100, query));
     return parseTraceHistoryResponse(payload);
   } catch (error: unknown) {
     throw error instanceof Error

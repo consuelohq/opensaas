@@ -1078,7 +1078,10 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).toContain('X-Content-Type-Options "nosniff"');
     expect(caddyfile).toContain('Referrer-Policy "no-referrer"');
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850 {');
-    expect(caddyfile).toContain('header_up -X-Consuelo-Edge-Signature');
+    expect(caddyfile).not.toContain('header_up -X-Consuelo-Edge-Signature');
+    expect(caddyfile).not.toContain('header_up -X-Consuelo-Surface');
+    expect(caddyfile).not.toContain('header_up -X-Consuelo-Connector-Id');
+    expect(caddyfile).toContain('header_up -X-Consuelo-Edge-Cache-Authority');
     expect(caddyfile).toContain('header_up -X-Consuelo-Route');
     expect(caddyfile).not.toContain('header_up X-Forwarded-Host');
     expect(caddyfile).not.toContain('header_up X-Forwarded-Proto');
@@ -1106,6 +1109,7 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850 127.0.0.1:8851 {');
     expect(caddyfile).toContain('lb_policy round_robin');
     expect(caddyfile).toContain('health_uri /ready');
+    expect(caddyfile).toContain('handle /health {');
     expect(caddyfile).toContain('health_interval 2s');
     expect(caddyfile).toContain('health_timeout 1s');
     expect(caddyfile).toContain('lb_try_duration 10s');

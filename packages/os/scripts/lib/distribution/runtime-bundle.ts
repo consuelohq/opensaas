@@ -147,12 +147,19 @@ export type RuntimeBundleBuildOptions = {
   platform: string;
   sourceCommit: string;
   sourceRoot: string;
+  vendoredSources?: RuntimeBundleVendoredSource[];
   version: string;
+};
+
+export type RuntimeBundleVendoredSource = {
+  path: string;
+  sourcePath: string;
 };
 
 export type RuntimeBundleFingerprintOptions = {
   includePaths?: string[];
   sourceRoot: string;
+  vendoredSources?: RuntimeBundleVendoredSource[];
 };
 
 export type RuntimeBundleArchiveEntry = {
@@ -174,6 +181,7 @@ const REQUIRED_RUNTIME_INPUTS = [
   'bun.lock',
   'scripts/os.ts',
   'scripts/native-lifecycle-operation.ts',
+  'scripts/retire-legacy-system-daemons.sh',
   'scripts/server/main.ts',
   'scripts/server/supervisor.ts',
   'scripts/lib/install-state.ts',
@@ -234,6 +242,7 @@ const PLATFORM_ADAPTER_FILES = new Set([
   'scripts/bootstrap.sh',
   'scripts/generate-system-daemons.sh',
   'scripts/install-system-daemons.sh',
+  'scripts/retire-legacy-system-daemons.sh',
   'scripts/install.ts',
   'scripts/windows-platform.ts',
   'scripts/lib/windows-platform.ts',
@@ -592,17 +601,49 @@ type CollectedRuntimeFiles = {
   files: Array<RuntimeBundleFile & { bytes: Buffer }>;
 };
 
+function resolveVendoredSources(
+  sourceRoot: string,
+  sources: RuntimeBundleVendoredSource[] = [],
+): Map<string, string> {
+  const resolvedSources = new Map<string, string>();
+  for (const source of sources) {
+    const archivePath = normalizeRelativePath(source.path);
+    if (resolvedSources.has(archivePath)) {
+      throw new Error(`duplicate vendored runtime path: ${archivePath}`);
+    }
+    const sourcePath = resolve(sourceRoot, source.sourcePath);
+    if (!existsSync(sourcePath)) {
+      throw new Error(
+        `vendored runtime source is missing: ${source.sourcePath}`,
+      );
+    }
+    const stat = lstatSync(sourcePath);
+    if (stat.isSymbolicLink() || !stat.isFile()) {
+      throw new Error(
+        `vendored runtime source must be a regular file: ${source.sourcePath}`,
+      );
+    }
+    resolvedSources.set(archivePath, sourcePath);
+  }
+  return resolvedSources;
+}
+
 function collectRuntimeFiles(
   input: RuntimeBundleFingerprintOptions,
 ): CollectedRuntimeFiles {
   const sourceRoot = resolve(input.sourceRoot);
   assertRequiredInputs(sourceRoot);
+  const vendoredSources = resolveVendoredSources(
+    sourceRoot,
+    input.vendoredSources,
+  );
 
   const requestedPaths = input.includePaths
     ? [...new Set(input.includePaths.map(normalizeRelativePath))]
     : DEFAULT_DISCOVERY_PATHS.flatMap((candidate) =>
         listFilesRecursively(sourceRoot, candidate),
       );
+  requestedPaths.push(...vendoredSources.keys());
   const paths = [...new Set(requestedPaths)].sort();
   const excludedCounts = {
     'operator-only': 0,
@@ -629,7 +670,7 @@ function collectRuntimeFiles(
       continue;
     }
 
-    const absolutePath = join(sourceRoot, filePath);
+    const absolutePath = vendoredSources.get(filePath) ?? join(sourceRoot, filePath);
     if (!existsSync(absolutePath)) {
       throw new Error(`runtime-bundle input is missing: ${filePath}`);
     }
@@ -1052,6 +1093,9 @@ export async function buildRuntimeBundle(
   const collected = collectRuntimeFiles({
     sourceRoot,
     ...(options.includePaths ? { includePaths: options.includePaths } : {}),
+    ...(options.vendoredSources
+      ? { vendoredSources: options.vendoredSources }
+      : {}),
   });
   const files = collected.files.map(({ bytes: _bytes, ...file }) => file);
   const releaseFingerprint = releaseFingerprintForFiles(files);

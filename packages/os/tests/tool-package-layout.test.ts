@@ -45,7 +45,13 @@ describe('canonical tool package layout', () => {
     expect(sortedDefinitions(definitions as JsonObject[])).toEqual(sortedDefinitions(baseline.definitions));
 
     for (const toolPackage of toolPackages) {
-      expect(toolPackage.sourcePath).toBe('packages/os/tools/' + toolPackage.domain + '/manifest.ts');
+      const sourceDirectory =
+        toolPackage.domain === 'deployment'
+          ? 'deployment-provider'
+          : toolPackage.domain;
+      expect(toolPackage.sourcePath).toBe(
+        'packages/os/tools/' + sourceDirectory + '/manifest.ts',
+      );
       expect(toolPackage.definitions.map((definition) => definition.name).sort())
         .toEqual(toolPackage.handlers.map((handler) => handler.name).sort());
       expect(toolPackage.definitions.map((definition) => definition.name).sort())
@@ -56,8 +62,8 @@ describe('canonical tool package layout', () => {
   it('generates full, core, and workflow outputs deterministically with no committed drift', () => {
     const built = buildToolManifest({ write: false });
     expect(built.full.tools.map((entry) => entry.definition)).toEqual(baseline.definitions);
-    expect(built.full.tools).toHaveLength(148);
-    expect(built.core.tools).toHaveLength(13);
+    expect(built.full.tools).toHaveLength(baseline.definitions.length);
+    expect(built.core.tools).toHaveLength(14);
     expect(built.workflows.workflows.map((workflow) => workflow.id)).toEqual(workflows.map((workflow) => workflow.id));
     expect(manifestConfig.outputs).toEqual({
       full: 'packages/os/manifests/generated/tool.manifest.json',
@@ -93,7 +99,7 @@ describe('canonical tool package layout', () => {
 
     const generated = buildToolManifest({ write: false });
     const names = generated.full.tools.map((entry) => entry.name);
-    expect(names).toHaveLength(148);
+    expect(names).toHaveLength(baseline.definitions.length);
     expect(generated.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
     expect(generated.full.tools.some((entry) => entry.sourcePath.includes('/tooling/'))).toBe(false);
   });

@@ -54,11 +54,123 @@ function readExecution(home: string): Record<string, unknown> {
 afterEach(() => {
   delete process.env.CONSUELO_HOME;
   delete process.env.CONSUELO_USER_HOME;
+  delete process.env.CONSUELO_WORKSPACE_ID;
+  delete process.env.CONSUELO_USER_ID;
   for (const home of homes.splice(0)) fs.rmSync(home, { recursive: true, force: true });
   for (const home of userHomes.splice(0)) fs.rmSync(home, { recursive: true, force: true });
 });
 
 describe('OS steering execution recording', () => {
+  it('projects authoritative installed workspace and node identity instead of stale env identity', () => {
+    const home = makeHome();
+    fs.writeFileSync(path.join(home, 'config.json'), `${JSON.stringify({
+      version: 1,
+      mode: 'local',
+      home,
+      port: 46321,
+      artifactStorage: 'local',
+      workspace: {
+        id: 'workspace_authoritative',
+        slug: 'authoritative',
+        host: 'authoritative.consuelohq.com',
+      },
+      agents: [],
+      createdAt: '2026-08-12T00:00:00.000Z',
+      updatedAt: '2026-08-12T00:00:00.000Z',
+    }, null, 2)}\n`);
+    fs.mkdirSync(path.join(home, 'node'), { recursive: true });
+    fs.writeFileSync(path.join(home, 'node', 'node.yaml'), [
+      'version: 1',
+      'node:',
+      '  id: node_authoritative',
+      '  name: Cloud Node',
+      '  role: home',
+      'capabilities:',
+      '  - local-runtime',
+      'workspaces:',
+      '  - id: workspace_authoritative',
+      '    state: workspaces/workspace_authoritative/state',
+      '',
+    ].join('\n'));
+    process.env.CONSUELO_WORKSPACE_ID = 'workspace_stale_env';
+    process.env.CONSUELO_USER_ID = 'user_stale_env';
+
+    const { steering } = runOsSnippet<{ steering: string }>(home, `
+      const { getSteering } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({ steering: getSteering() }));
+    `);
+
+    expect(steering).toContain('"workspace"');
+    expect(steering).toContain('"id": "workspace_authoritative"');
+    expect(steering).toContain('"node"');
+    expect(steering).toContain('"id": "node_authoritative"');
+    expect(steering).toContain('"name": "Cloud Node"');
+    expect(steering).not.toContain('workspace_stale_env');
+    expect(steering).not.toContain('user_stale_env');
+    expect(steering).not.toContain('"userId"');
+  });
+
+  it('projects central default and available nodes without replacing the installed node identity', () => {
+    const home = makeHome();
+    fs.writeFileSync(path.join(home, 'config.json'), `${JSON.stringify({
+      version: 1,
+      mode: 'local',
+      home,
+      port: 46321,
+      artifactStorage: 'local',
+      workspace: {
+        id: 'workspace_nodes',
+        slug: 'nodes',
+        host: 'nodes.consuelohq.com',
+      },
+      agents: [],
+      createdAt: '2026-08-12T00:00:00.000Z',
+      updatedAt: '2026-08-12T00:00:00.000Z',
+    }, null, 2)}\n`);
+    fs.mkdirSync(path.join(home, 'node'), { recursive: true });
+    fs.writeFileSync(path.join(home, 'node', 'node.yaml'), [
+      'version: 1',
+      'node:',
+      '  id: node_local',
+      '  name: Local Node',
+      '  role: member',
+      'capabilities:',
+      '  - local-runtime',
+      'workspaces:',
+      '  - id: workspace_nodes',
+      '    state: workspaces/workspace_nodes/state',
+      '',
+    ].join('\n'));
+
+    const { steering } = runOsSnippet<{ steering: string }>(home, `
+      const { getSteering } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({
+        steering: getSteering({
+          nodeRouting: {
+            version: 1,
+            workspaceId: 'workspace_nodes',
+            currentNodeId: 'node_local',
+            defaultNodeId: 'node_cloud',
+            routeSource: 'explicit',
+            nodes: [
+              { nodeId: 'node_local', displayName: 'Local Node', role: 'member', presence: 'online' },
+              { nodeId: 'node_cloud', displayName: 'Cloud Node', role: 'home', platform: 'linux', presence: 'online' },
+            ],
+          },
+        }),
+      }));
+    `);
+
+    expect(steering).toContain('"id": "node_local"');
+    expect(steering).toContain('"defaultNodeId": "node_cloud"');
+    expect(steering).toContain('"routeSource": "explicit"');
+    expect(steering).toContain('"displayName": "Cloud Node"');
+    expect(steering).toContain('"presence": "online"');
+    expect(steering).toContain('pass `nodeId` at the top level of `os.call`');
+    expect(steering).toContain('Nodes are routing targets, not tools');
+    expect(steering).toContain('Omit `nodeId` to use the workspace default node');
+  });
+
   it('appends installed skill metadata without inlining skill bodies', () => {
     const home = makeHome();
     const skillsDir = path.join(home, 'skills');

@@ -241,6 +241,7 @@ function readChangedFiles(repoRoot, base) {
 }
 
 const REVIEW_STDERR_LIMIT = 4000;
+const REGISTRY_FAILURE_OUTPUT_LIMIT = 2000;
 
 function compactText(text, limit = REVIEW_STDERR_LIMIT) {
   const value = String(text || '');
@@ -249,6 +250,19 @@ function compactText(text, limit = REVIEW_STDERR_LIMIT) {
     chars: value.length,
     truncated: value.length > limit,
   };
+}
+
+function compactRegistryFailureOutput(text) {
+  const value = String(text || '')
+    .replace(/\u001b\[[0-9;]*m/g, '')
+    .replace(/gh[ops]_[A-Za-z0-9_]+/g, '<redacted-token>')
+    .trim();
+  if (!value) return [];
+
+  const tail = value.length > REGISTRY_FAILURE_OUTPUT_LIMIT
+    ? `... truncated ${value.length - REGISTRY_FAILURE_OUTPUT_LIMIT} chars\n${value.slice(-REGISTRY_FAILURE_OUTPUT_LIMIT)}`
+    : value;
+  return tail.split(/\r?\n/).filter(Boolean);
 }
 
 function countFindings(value) {
@@ -299,7 +313,7 @@ function runReview(repoRoot, base, args) {
     };
   }
 
-  const reviewArgs = ['run', 'review', '--', '--base', base, '--summary-json', '--quiet', ...args.reviewArgs];
+  const reviewArgs = ['run', 'review', '--', '--base', base, '--summary-json', '--quiet', '--no-tests', ...args.reviewArgs];
   const result = spawnSync('bun', reviewArgs, {
     cwd: repoRoot,
     encoding: 'utf8',
@@ -419,6 +433,9 @@ function createBecause(result) {
           ? failure.exitCode
           : 'unknown';
         lines.push(`registry failure: ${name} (exit ${exitCode})`);
+        for (const outputLine of compactRegistryFailureOutput(failure && failure.outputTail)) {
+          lines.push(`registry output: ${outputLine}`);
+        }
       }
     } else if (selection.zeroSuiteReason) {
       lines.push(`registry selected 0 suites because ${selection.zeroSuiteReason}`);

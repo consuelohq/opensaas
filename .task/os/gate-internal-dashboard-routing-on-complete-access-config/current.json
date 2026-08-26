@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/gate-internal-dashboard-routing-on-complete-access-config",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2149,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2149",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2149",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2149/gate-internal-dashboard-routing-on-complete-access-config",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2149",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2149/gate-internal-dashboard-routing-on-complete-access-config",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-gate-internal-dashboard-routing-on-complete-access-config",
+  "taskSession": "tsk_be4cc7cc41f5",
+  "tmuxSession": "opensaas-os-gate-internal-dashboard-routing-on-complete-acce-be4cc7cc",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-gate-internal-dashboard-routing-on-complete-access-config/.task/os/gate-internal-dashboard-routing-on-complete-access-config/session.json",
+  "createdAt": "2026-08-16T22:29:43.195Z"
+}

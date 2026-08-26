@@ -88,6 +88,7 @@ function makeHome(html = '<!doctype html><title>Internal workspace</title><main>
     ['docs', 'index.html'],
     ['configuration', 'index.html'],
     ['tools', 'index.html'],
+    ['nodes', 'index.html'],
     ['environments', 'index.html'],
     ['secrets', 'index.html'],
   ];
@@ -134,10 +135,14 @@ contractDescribe('install edge site publisher', () => {
       'https://internal.consuelohq.com/docs',
       'https://internal.consuelohq.com/configuration',
       'https://internal.consuelohq.com/tools',
+      'https://internal.consuelohq.com/nodes',
       'https://internal.consuelohq.com/environments',
       'https://internal.consuelohq.com/secrets',
     ]);
-    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'traces', 'traces', 'traces', 'docs', 'configuration', 'tools', 'environments', 'secrets']);
+    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'traces', 'traces', 'traces', 'docs', 'configuration', 'tools', 'nodes', 'environments', 'secrets']);
+    expect(new Set(first.snapshots.map((snapshot) => snapshot.versionId))).toEqual(
+      new Set([first.versionId]),
+    );
     expect(first.routeSql).toMatch(/INSERT INTO workspace_route_registry/i);
     expect(first.routeSql).toMatch(/ON CONFLICT\(hostname\) DO UPDATE/i);
     expect(first.routeSql).not.toMatch(/INSERT OR REPLACE INTO workspace_route_registry/i);
@@ -152,6 +157,7 @@ contractDescribe('install edge site publisher', () => {
     expect(first.routeSql).toContain('\"pathPrefix\":\"/docs\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/configuration\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/tools\"');
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/nodes\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/environments\"');
     expect(first.routeSql).toContain('\"pathPrefix\":\"/secrets\"');
     expect(first.routeSql).toContain('\"location\":\"/configuration\"');
@@ -197,7 +203,7 @@ contractDescribe('install edge site publisher', () => {
         );
         if (!snapshot) throw new Error(`unexpected verification URL: ${url}`);
         if (
-          ['launcher', 'traces', 'configuration', 'tools', 'environments', 'secrets'].includes(
+          ['launcher', 'traces', 'configuration', 'tools', 'nodes', 'environments', 'secrets'].includes(
             snapshot.siteId,
           )
         ) {
@@ -257,6 +263,7 @@ contractDescribe('install edge site publisher', () => {
           'https://internal.consuelohq.com/docs',
         'https://internal.consuelohq.com/configuration',
         'https://internal.consuelohq.com/tools',
+        'https://internal.consuelohq.com/nodes',
         'https://internal.consuelohq.com/environments',
         'https://internal.consuelohq.com/secrets',
       ],

@@ -15,7 +15,7 @@ import {
   type PullRequestIndexData,
   type PullRequestReviewData,
   type RepoLocator,
-} from '../../../../diff-cockpit/src/index';
+} from '../vendor/diff-cockpit';
 import {
   loadNodeYamlConfig,
   loadWorkspaceYamlConfig,

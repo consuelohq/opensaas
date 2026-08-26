@@ -238,6 +238,8 @@ describe('subagent orchestration contract', () => {
       const started = await executeTool('subagent', startInput, options(worktree, env));
       expect(started.ok).toBe(true);
       expect(started.data.status).toBe('running');
+      expect(started.exitCode).toBe(0);
+      expect(started.data.exitCode).toBe(0);
       expect(started.data.runId).toMatch(/^run_/);
 
       const retried = await executeTool('subagent', startInput, options(worktree, env));
@@ -251,6 +253,39 @@ describe('subagent orchestration contract', () => {
       expect(logs.data.runId).toBe(started.data.runId);
       expect(logs.data.finalMessage).toBe('fake complete');
       expect(readFileSync(fake.spawnPath, 'utf8').trim().split('\n')).toHaveLength(1);
+    } finally {
+      rmSync(durableHome, { recursive: true, force: true });
+      rmSync(worktree, { recursive: true, force: true });
+    }
+  });
+
+  it('caps attachment waitMs to the effective subagent timeout', async () => {
+    const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
+    const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
+    try {
+      const fake = writeFakeCodex(durableHome);
+      const instructionPath = writeInstruction(worktree);
+      const env = {
+        ...process.env,
+        CONSUELO_HOME: durableHome,
+        WORKSPACE_SUBAGENT_CODEX_BIN: fake.executable,
+        CODEX_ARGS_PATH: fake.argsPath,
+        CODEX_SPAWN_PATH: fake.spawnPath,
+        CODEX_PROMPT_PATH: fake.promptPath,
+        CODEX_SLEEP: '0.2',
+      };
+      const started = await executeTool('subagent', input({ action: 'start', instructionPath, requestId: 'req_subagent_wait_cap' }), options(worktree, env));
+      expect(started.ok).toBe(true);
+
+      const before = Date.now();
+      const waited = await executeTool('subagent', {
+        action: 'wait',
+        runId: started.data.runId,
+        waitMs: 500,
+        timeoutMs: 20,
+      }, options(durableHome, env));
+      expect(waited.code).toBe('WAIT_TIMEOUT');
+      expect(Date.now() - before).toBeLessThan(180);
     } finally {
       rmSync(durableHome, { recursive: true, force: true });
       rmSync(worktree, { recursive: true, force: true });
@@ -411,6 +446,8 @@ describe('subagent orchestration contract', () => {
       expect(waited.data.runId).toBe(started.data.runId);
       expect(['running', 'completion_unknown']).toContain(waited.data.status);
       expect(waited.code).toBe('WAIT_TIMEOUT');
+      expect(waited.exitCode).toBe(0);
+      expect(waited.data.exitCode).toBe(0);
 
       const cancelled = await executeTool('subagent', { action: 'cancel', runId: started.data.runId }, options(durableHome, env));
       expect(cancelled.data.runId).toBe(started.data.runId);
@@ -646,7 +683,9 @@ describe('subagent orchestration contract', () => {
   });
 
   it('documents attach-only lifecycle and merge-sensitive task boundaries', () => {
-    const description = getToolManifestEntry('subagent')?.description || '';
+    const entry = getToolManifestEntry('subagent');
+    const description = entry?.description || '';
+    expect(entry?.defaultTimeout).toBe(900_000);
     expect(description).toContain('task.push publishes only the task branch');
     expect(description).toContain('task.pr merges to the stream');
     expect(description).toContain('status/wait/logs attach');

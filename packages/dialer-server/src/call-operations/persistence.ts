@@ -25,9 +25,16 @@ const SCHEMA_STATEMENTS = [
     transcription_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     transcription_language TEXT,
     transcript_retention_days INTEGER NOT NULL DEFAULT 30 CHECK (transcript_retention_days > 0),
+    avg_deal_value NUMERIC,
+    avg_close_rate NUMERIC,
+    cost_per_attempt NUMERIC,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`,
+  `ALTER TABLE dialer_workspace_settings
+    ADD COLUMN IF NOT EXISTS avg_deal_value NUMERIC,
+    ADD COLUMN IF NOT EXISTS avg_close_rate NUMERIC,
+    ADD COLUMN IF NOT EXISTS cost_per_attempt NUMERIC`,
   `CREATE TABLE IF NOT EXISTS dialer_call_sessions (
     id TEXT NOT NULL,
     workspace_id TEXT NOT NULL,
@@ -54,6 +61,12 @@ const SCHEMA_STATEMENTS = [
     tags JSONB NOT NULL DEFAULT '[]'::jsonb,
     crm_sync_status TEXT NOT NULL DEFAULT 'pending',
     crm_sync_error_code TEXT,
+    recording_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    recording_status TEXT,
+    recording_sid TEXT,
+    recording_duration_seconds INTEGER,
+    recording_failure_code TEXT,
+    transcription_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     transcript_status TEXT,
     transcript_provider TEXT,
     transcript_model TEXT,
@@ -68,6 +81,12 @@ const SCHEMA_STATEMENTS = [
   )`,
   `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS representative_name TEXT`,
   `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS contact_name TEXT`,
+  `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_enabled BOOLEAN NOT NULL DEFAULT FALSE`,
+  `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_status TEXT`,
+  `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_sid TEXT`,
+  `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_duration_seconds INTEGER`,
+  `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS recording_failure_code TEXT`,
+  `ALTER TABLE dialer_call_sessions ADD COLUMN IF NOT EXISTS transcription_enabled BOOLEAN NOT NULL DEFAULT FALSE`,
   `CREATE TABLE IF NOT EXISTS dialer_call_legs (
     id TEXT NOT NULL,
     workspace_id TEXT NOT NULL,
@@ -116,6 +135,7 @@ const SCHEMA_STATEMENTS = [
     session_id TEXT NOT NULL,
     event_type TEXT NOT NULL CHECK (event_type IN (
       'transfer_initiated',
+      'transfer_dialing',
       'transfer_consulting',
       'transfer_completed',
       'transfer_cancelled',
@@ -127,6 +147,11 @@ const SCHEMA_STATEMENTS = [
     FOREIGN KEY (workspace_id, session_id)
       REFERENCES dialer_call_sessions(workspace_id, id) ON DELETE CASCADE
   )`,
+  `ALTER TABLE dialer_call_events DROP CONSTRAINT IF EXISTS dialer_call_events_event_type_check`,
+  `ALTER TABLE dialer_call_events ADD CONSTRAINT dialer_call_events_event_type_check CHECK (event_type IN (
+    'transfer_initiated', 'transfer_dialing', 'transfer_consulting',
+    'transfer_completed', 'transfer_cancelled', 'transfer_failed'
+  ))`,
   `CREATE INDEX IF NOT EXISTS dialer_call_sessions_active_idx
     ON dialer_call_sessions(workspace_id, status, started_at DESC)`,
   `CREATE INDEX IF NOT EXISTS dialer_call_sessions_history_idx
@@ -171,6 +196,11 @@ type SessionRow = {
   note?: string | null;
   tags?: unknown;
   crm_sync_status?: 'pending' | 'synced' | 'failed' | null;
+  recording_enabled?: boolean;
+  recording_status?: CallSessionSummary['recordingStatus'];
+  recording_sid?: string | null;
+  recording_duration_seconds?: number | string | null;
+  transcription_enabled?: boolean;
   transcript_status?: CallSessionSummary['transcriptStatus'];
   transcript_provider?: string | null;
   transcript_model?: string | null;
@@ -277,11 +307,16 @@ const mapSession = (
     note: row.note ?? null,
     tags: stringArray(row.tags),
     crmSyncStatus: row.crm_sync_status ?? null,
+    recordingEnabled: row.recording_enabled === true,
+    recordingStatus: row.recording_status ?? null,
+    recordingSid: row.recording_sid ?? null,
+    recordingDurationSeconds: numberOrNull(row.recording_duration_seconds),
     transcriptStatus: row.transcript_status ?? null,
     transcriptProvider: row.transcript_provider ?? null,
     transcriptModel: row.transcript_model ?? null,
     transcriptLanguage: row.transcript_language ?? null,
     transcriptRetentionDays: numberOrNull(row.transcript_retention_days),
+    transcriptionEnabled: row.transcription_enabled === true,
     opportunity: opportunitySnapshot(row.opportunity_snapshot),
     startedAt,
     answeredAt: isoOrNull(row.answered_at),
@@ -404,9 +439,9 @@ export const createPostgresCallOperationsRepository = (
       database,
       'resolve-transcription-context-for-session',
       `SELECT sessions.workspace_id, sessions.id AS session_id,
-        COALESCE(settings.transcription_enabled, FALSE) AS transcription_enabled,
+        sessions.transcription_enabled AS transcription_enabled,
         settings.transcription_language,
-        COALESCE(settings.transcript_retention_days, 30) AS transcript_retention_days
+        COALESCE(sessions.transcript_retention_days, settings.transcript_retention_days, 30) AS transcript_retention_days
        FROM dialer_call_sessions sessions
        LEFT JOIN dialer_workspace_settings settings
          ON settings.workspace_id = sessions.workspace_id
@@ -542,12 +577,13 @@ export const createPostgresCallOperationsRepository = (
           selection_strategy, requested_fanout, actual_fanout, queue_id,
           pipeline_id, stage_id, contact_id, contact_name, opportunity_id,
           started_at, status, opportunity_snapshot,
+          recording_enabled, recording_status, transcription_enabled,
           transcript_status, transcript_retention_days
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
           $17, $18, $19,
-          CASE WHEN COALESCE((SELECT transcription_enabled FROM dialer_workspace_settings WHERE workspace_id = $2), FALSE)
-            THEN 'pending' ELSE NULL END,
+          $20, CASE WHEN $20 THEN 'pending' ELSE NULL END,
+          $21, CASE WHEN $21 THEN 'pending' ELSE NULL END,
           COALESCE((SELECT transcript_retention_days FROM dialer_workspace_settings WHERE workspace_id = $2), 30)
         )
         ON CONFLICT (workspace_id, id) DO UPDATE SET
@@ -567,6 +603,16 @@ export const createPostgresCallOperationsRepository = (
           representative_name = COALESCE(EXCLUDED.representative_name, dialer_call_sessions.representative_name),
           contact_name = COALESCE(EXCLUDED.contact_name, dialer_call_sessions.contact_name),
           opportunity_snapshot = COALESCE(EXCLUDED.opportunity_snapshot, dialer_call_sessions.opportunity_snapshot),
+          recording_enabled = EXCLUDED.recording_enabled,
+          recording_status = CASE
+            WHEN EXCLUDED.recording_enabled THEN COALESCE(dialer_call_sessions.recording_status, 'pending')
+            ELSE NULL
+          END,
+          transcription_enabled = EXCLUDED.transcription_enabled,
+          transcript_status = CASE
+            WHEN EXCLUDED.transcription_enabled THEN COALESCE(dialer_call_sessions.transcript_status, 'pending')
+            ELSE NULL
+          END,
           updated_at = NOW()
         RETURNING workspace_id, id
       )
@@ -578,7 +624,7 @@ export const createPostgresCallOperationsRepository = (
         calls.provider_call_id, calls.contact_id, calls.position,
         calls.caller_identity, calls.status, 'active'
       FROM upserted_session session
-      CROSS JOIN jsonb_to_recordset($20::jsonb) AS calls(
+      CROSS JOIN jsonb_to_recordset($22::jsonb) AS calls(
         id TEXT,
         provider_call_id TEXT,
         contact_id TEXT,
@@ -614,6 +660,8 @@ export const createPostgresCallOperationsRepository = (
         request.opportunitySnapshot
           ? JSON.stringify(request.opportunitySnapshot)
           : null,
+        request.recordingEnabled === true,
+        request.transcriptionEnabled === true,
         JSON.stringify(
           request.calls.map((call) => ({
             id: randomUUID(),
@@ -856,6 +904,83 @@ export const createPostgresCallOperationsRepository = (
         request.sessionId,
         request.status,
         request.errorCode ?? null,
+      ],
+    ).pipe(Effect.asVoid),
+  claimCallRecording: (request) =>
+    queryEffect<{ workspace_id: string; session_id: string }>(
+      database,
+      'claim-call-recording',
+      `UPDATE dialer_call_sessions AS sessions
+       SET recording_status = 'starting',
+           recording_failure_code = NULL,
+           updated_at = NOW()
+       FROM dialer_call_legs AS legs
+       WHERE legs.workspace_id = sessions.workspace_id
+         AND legs.session_id = sessions.id
+         AND legs.provider_call_id = $1
+         AND sessions.recording_enabled = TRUE
+         AND sessions.recording_sid IS NULL
+         AND sessions.recording_status = 'pending'
+       RETURNING sessions.workspace_id, sessions.id AS session_id`,
+      [request.providerCallId],
+    ).pipe(
+      Effect.map(({ rows }) =>
+        rows[0]
+          ? {
+              workspaceId: rows[0].workspace_id,
+              sessionId: rows[0].session_id,
+              providerCallId: request.providerCallId,
+            }
+          : null,
+      ),
+    ),
+  setCallRecordingStarted: (request) =>
+    queryEffect(
+      database,
+      'set-call-recording-started',
+      `UPDATE dialer_call_sessions
+       SET recording_sid = $3,
+           recording_status = $4,
+           recording_failure_code = NULL,
+           updated_at = NOW()
+       WHERE workspace_id = $1 AND id = $2`,
+      [
+        request.workspaceId,
+        request.sessionId,
+        request.recordingSid,
+        request.status,
+      ],
+    ).pipe(Effect.asVoid),
+  setCallRecordingFailed: (request) =>
+    queryEffect(
+      database,
+      'set-call-recording-failed',
+      `UPDATE dialer_call_sessions
+       SET recording_status = 'failed',
+           recording_failure_code = $3,
+           updated_at = NOW()
+       WHERE workspace_id = $1 AND id = $2`,
+      [request.workspaceId, request.sessionId, request.failureCode],
+    ).pipe(Effect.asVoid),
+  recordCallRecordingStatus: (request) =>
+    queryEffect(
+      database,
+      'record-call-recording-status',
+      `UPDATE dialer_call_sessions AS sessions
+       SET recording_sid = $2,
+           recording_status = $3,
+           recording_duration_seconds = COALESCE($4, recording_duration_seconds),
+           recording_failure_code = CASE WHEN $3 IN ('failed', 'absent') THEN UPPER($3) ELSE NULL END,
+           updated_at = NOW()
+       FROM dialer_call_legs AS legs
+       WHERE legs.workspace_id = sessions.workspace_id
+         AND legs.session_id = sessions.id
+         AND legs.provider_call_id = $1`,
+      [
+        request.providerCallId,
+        request.recordingSid,
+        request.recordingStatus,
+        request.recordingDurationSeconds ?? null,
       ],
     ).pipe(Effect.asVoid),
 });

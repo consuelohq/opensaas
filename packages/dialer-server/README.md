@@ -97,6 +97,39 @@ Transfer controls are intentionally absent from both LeadConnector surfaces. A f
 
 The Worker sets an explicit `frame-ancestors` allowlist for the provider-owned application hosts and enables microphone permission for the iframe.
 
+## Local Postgres/Redis benchmark lab
+
+The dialer has a provider-free local lab for predictive-model development. It starts disposable PostgreSQL and Redis processes on isolated loopback ports, runs the real dialer database migrations, seeds deterministic synthetic histories, runs the benchmark scenarios, then shuts both services down and removes their temporary data directories. It does not read Railway, Twilio, LeadConnector, or other production credentials.
+
+Requirements:
+
+- Bun
+- PostgreSQL 16+ with `pg_config`, `initdb`, and `pg_ctl` available on `PATH`
+- Redis with `redis-server` available on `PATH`
+
+Run the fast smoke lab before predictive-model work:
+
+```bash
+bun run --cwd packages/dialer-server lab:local -- --scale smoke
+```
+
+Run the opt-in service integration contract when changing the lab itself; the normal unit suite skips this database/process-spawning check:
+
+```bash
+bun run --cwd packages/dialer-server lab:verify
+```
+
+Use the standard dataset for D1/D2/D3 model comparisons, and the large dataset only for intentional local performance work:
+
+```bash
+bun run --cwd packages/dialer-server lab:local -- --scale standard
+bun run --cwd packages/dialer-server lab:local -- --scale large
+```
+
+The scales currently seed 250 / 5,000 / 25,000 callable contacts and four synthetic historical attempts per training contact. `--seed <integer>` makes an alternate deterministic history. Output is JSON and includes schema-migration timing, persisted fixture counts, predictive ranking latency by candidate-pool size, hazard aggregation latency, attempt-ingest throughput, Redis coordination latency, and cleanup verification.
+
+Benchmark timings are observational baselines, not normal PR pass/fail thresholds. Correctness, deterministic fixtures, successful real migrations, and clean service teardown are the required gates. This lets future dialer work compare richer provider-neutral signal models without coupling the benchmark to GoHighLevel, Twilio, Railway, or a production database.
+
 ## Validation
 
 ```bash

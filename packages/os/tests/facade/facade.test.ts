@@ -1,4 +1,5 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -97,14 +98,44 @@ function exampleInput(entryName: string): ToolInput {
   return input;
 }
 
-function writeTaskSession(tempRoot: string, taskSession: string, branch: string = TEST_BRANCH): void {
+function writeTaskSession(
+  tempRoot: string,
+  taskSession: string,
+  branch: string = TEST_BRANCH,
+  worktree: string = tempRoot,
+): void {
   mkdirSync(join(tempRoot, '.task'), { recursive: true });
   writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
     taskSession,
     tmuxSession: 'opensaas-test',
     branch,
-    worktree: tempRoot,
+    worktree,
   }, null, 2));
+}
+
+function runGit(cwd: string, args: string[]): void {
+  const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
+  if (result.status !== 0) throw new Error(`git ${args.join(' ')} failed: ${result.stderr}`);
+}
+
+function createLinkedTaskSession(
+  prefix: string,
+  taskSession: string,
+  branch: string = TEST_BRANCH,
+): { container: string; mainRepo: string; worktree: string } {
+  const container = mkdtempSync(join(tmpdir(), prefix));
+  const mainRepo = join(container, 'main');
+  const worktree = join(container, 'task');
+  mkdirSync(mainRepo, { recursive: true });
+  runGit(mainRepo, ['init', '-b', 'main']);
+  runGit(mainRepo, ['config', 'user.email', 'tests@consuelo.local']);
+  runGit(mainRepo, ['config', 'user.name', 'Consuelo Tests']);
+  writeFileSync(join(mainRepo, 'README.md'), 'initial\n');
+  runGit(mainRepo, ['add', 'README.md']);
+  runGit(mainRepo, ['commit', '-m', 'initial']);
+  runGit(mainRepo, ['worktree', 'add', '-b', branch, worktree]);
+  writeTaskSession(mainRepo, taskSession, branch, worktree);
+  return { container, mainRepo, worktree };
 }
 
 const SNAPSHOT_EXCLUDED_TOOLS = new Set(['fs.read', 'fs.search']);
@@ -800,6 +831,49 @@ describe('typed facade executor', () => {
     expect(plans).toHaveLength(0);
   });
 
+  it('resolves taskSession from the durable registry when local session files are unavailable', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'workspace-durable-session-'));
+    const repo = join(root, 'repo');
+    const worktree = join(root, 'task');
+    const home = join(root, 'home');
+    const branch = 'task/workspace-agents/durable-session';
+    const taskSession = 'tsk_durable_session';
+    try {
+      mkdirSync(repo, { recursive: true });
+      for (const args of [
+        ['init', '-q'],
+        ['config', 'user.email', 'tests@consuelo.local'],
+        ['config', 'user.name', 'Consuelo Tests'],
+      ]) {
+        const result = spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
+        if (result.status !== 0) throw new Error(result.stderr);
+      }
+      writeFileSync(join(repo, 'README.md'), 'fixture\n');
+      for (const args of [['add', 'README.md'], ['commit', '-qm', 'fixture'], ['worktree', 'add', '-qb', branch, worktree]]) {
+        const result = spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
+        if (result.status !== 0) throw new Error(result.stderr);
+      }
+      const registryRoot = join(home, 'node', 'tasks', 'registry');
+      mkdirSync(registryRoot, { recursive: true });
+      writeFileSync(join(registryRoot, `${taskSession}.json`), JSON.stringify({ taskSession, taskBranch: branch, branch, worktreePath: worktree, worktree }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', { taskSession, path: 'README.md' }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: repo,
+        env: { ...process.env, CONSUELO_HOME: home, WORKSPACE_WORKTREE_ROOT: join(root, 'legacy-empty') },
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe(branch);
+      expect(plans[0].env.TASK_WORKTREE).toBe(worktree);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('uses options.env worktree root for taskSession discovery', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-env-'));
     const worktreeRoot = join(tempRoot, 'custom-worktrees');
@@ -827,6 +901,54 @@ describe('typed facade executor', () => {
 
       expect(result.ok).toBe(true);
       expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/env-root');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('resolves task.current from an explicit surviving taskSession', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-current-session-'));
+    const branch = 'task/os/session-current';
+    try {
+      writeTaskSession(tempRoot, 'tsk_current_session', branch);
+      const result = await executeTool('task.current', {
+        taskSession: 'tsk_current_session',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data).toMatchObject({ branch, area: 'os', worktree: tempRoot });
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('runs session-scoped task lifecycle commands from the task worktree', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-lifecycle-session-'));
+    const worktreeRoot = join(tempRoot, 'worktrees');
+    const worktree = join(worktreeRoot, 'task-os-lifecycle-session');
+    const plans: CommandPlan[] = [];
+    try {
+      mkdirSync(worktree, { recursive: true });
+      writeTaskSession(worktree, 'tsk_lifecycle_session', 'task/os/lifecycle-session');
+      const result = await executeTool('task.push', {
+        taskSession: 'tsk_lifecycle_session',
+        message: 'fix(os): lifecycle session fixture',
+        changed: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: process.cwd(),
+        env: { ...process.env, WORKSPACE_WORKTREE_ROOT: worktreeRoot },
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].cwd).toBe(worktree);
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -1159,23 +1281,21 @@ describe('typed facade executor', () => {
   });
 
   it('allows matching taskSession and branch for code.call', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-session-'));
+    const task = createLinkedTaskSession('workspace-code-call-session-', 'tsk_code_call');
     try {
-      writeTaskSession(tempRoot, 'tsk_code_call', TEST_BRANCH);
       const result = await executeTool('code.call', {
         taskSession: 'tsk_code_call',
         branch: TEST_BRANCH,
         language: 'python',
         mode: 'read',
         code: 'import os\nprint(os.environ["TASK_BRANCH"])\nprint(os.environ["TASK_WORKTREE"])',
-        cwd: tempRoot,
-      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
+      }, { ...stableOptions(successfulRunner()), cwd: task.mainRepo });
 
       expect(result.ok).toBe(true);
       expect(result.code).toBe('OK');
-      expect(result.data?.stdout?.trim().split('\n')).toEqual([TEST_BRANCH, tempRoot]);
+      expect(result.data?.stdout?.trim().split('\n')).toEqual([TEST_BRANCH, task.worktree]);
     } finally {
-      rmSync(tempRoot, { recursive: true, force: true });
+      rmSync(task.container, { recursive: true, force: true });
     }
   });
 
@@ -1243,23 +1363,21 @@ describe('typed facade executor', () => {
   });
 
   it('runs code.call edit mode inside an explicit task worktree', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-edit-session-'));
+    const task = createLinkedTaskSession('workspace-code-call-edit-session-', 'tsk_code_call_edit');
     try {
-      writeTaskSession(tempRoot, 'tsk_code_call_edit', TEST_BRANCH);
       const result = await executeTool('code.call', {
         taskSession: 'tsk_code_call_edit',
         language: 'python',
         mode: 'edit',
         code: 'from pathlib import Path\nPath("edited.txt").write_text("changed")\nprint("edited")',
-        cwd: tempRoot,
-      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
+      }, { ...stableOptions(successfulRunner()), cwd: task.mainRepo });
 
       expect(result.ok).toBe(true);
       expect(result.code).toBe('OK');
       expect(result.data?.stdout?.trim()).toBe('edited');
       expect(result.data?.filesChanged).toContain('edited.txt');
     } finally {
-      rmSync(tempRoot, { recursive: true, force: true });
+      rmSync(task.container, { recursive: true, force: true });
     }
   });
 

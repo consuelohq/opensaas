@@ -85,6 +85,12 @@ export type ParallelCompatibilityRuntimeService = {
   getGroupIdForCall: (
     callSid: string,
   ) => Effect.Effect<string | null, DialerApplicationError>;
+  startCallRecording: (input: {
+    callSid: string;
+  }) => Effect.Effect<
+    { recordingSid: string; status: string },
+    DialerApplicationError
+  >;
   getGroup: (
     groupId: string,
   ) => Effect.Effect<ParallelGroup | null, DialerApplicationError>;

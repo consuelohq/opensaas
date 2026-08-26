@@ -1,9 +1,159 @@
 [
   {
-    "title": "v0.8.0",
-    "date": "Jul 23, 2026",
-    "summary": "July expanded Consuelo OS into a fuller operating and release platform, hardened secure connector and workspace control paths, refreshed the public website, and made traces, documentation, and deployment providers more dependable.",
+    "title": "v0.9.0",
+    "date": "Aug 20, 2026",
+    "summary": "August expanded Consuelo OS into a managed control plane with cloud checkout, live workspace navigation, and more resilient lifecycle updates; made task and work sessions durable and observable; hardened site publication and security; and advanced dialer, website, and docs experiences.",
     "weeks": [
+      {
+        "label": "Week of Aug 14 through Aug 20",
+        "summary": "The week made OS updates and routing more resilient, shipped live workspace navigation and managed checkout, introduced durable task and work sessions, hardened site publication and dependencies, and polished responsive documentation.",
+        "sections": [
+          {
+            "title": "OS",
+            "items": [
+              "Added a live workspace Overview with heatmap and stable navigation, preloaded Home routes with live node pricing, managed cloud checkout, and explicit node targeting for agent and plugin calls.",
+              "Made lifecycle updates safer by draining workers without interrupting MCP response streams, retrying gateway and macOS bootstrap handoffs, preserving authenticated workspace routes, and improving rollback and current-bundle convergence.",
+              "Hardened launcher and gateway coherence, local recovery, node discovery, OAuth reconnect and callback routing, runtime health recovery, and targeted device delivery."
+            ]
+          },
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Introduced unified task and work sessions with filesystem and code authority, session observability, durable task worktrees, recoverable eviction, and stronger task and subagent recovery flows."
+            ]
+          },
+          {
+            "title": "Security and Sites",
+            "items": [
+              "Repaired hosted site snapshot publication and verification while keeping private launcher access intact, and moved website XML dependencies onto patched releases."
+            ]
+          },
+          {
+            "title": "Docs",
+            "items": [
+              "Refined the docs home, desktop and responsive chrome, navigation and translation behavior, mobile browse menu, and Connect content around Bring Your Own workflows."
+            ]
+          },
+          {
+            "title": "Release",
+            "items": [
+              "Improved workspace shell and edge-migration sequencing plus lifecycle handoff so releases recover routes and services more reliably."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Aug 7 through Aug 13",
+        "summary": "The week expanded the OS into a managed control plane, hardened MCP and worker lifecycle, productized skills and task workflows, reconciled major dialer work, and completed another website and documentation polish wave.",
+        "sections": [
+          {
+            "title": "OS",
+            "items": [
+              "Added managed cloud pricing and plans, one-click cloud provisioning, an install control plane, an internal user dashboard, launcher node controls, durable launcher customization, and richer macOS update and node experiences.",
+              "Added node-aware steering, MCP routing, trace observability, and task affinity, then introduced supervised and load-balanced worker pools with safer rolling reloads and watchdog recovery.",
+              "Added install telemetry and correlated observability, universal lifecycle update handoff, managed-site rematerialization after updates, and restored authenticated workspace and Trace Burn surfaces."
+            ]
+          },
+          {
+            "title": "Tools and Workflows",
+            "items": [
+              "Added branch-planning and skill-management workflows, redesigned tool search and benchmarking, refined skill templates and documentation, and improved help UX.",
+              "Hardened task start, push, and stream handoff; repository-aware sync and recovery; review feedback handling; and durable subagent lifecycle and termination behavior."
+            ]
+          },
+          {
+            "title": "Security",
+            "items": [
+              "Shipped dual-era MCP transport, hardened OAuth and request-origin validation plus Caddy and WAF routing, preserved connector routes through Sites refresh, and reconciled remaining workspace security gaps."
+            ]
+          },
+          {
+            "title": "Dialer",
+            "items": [
+              "Reconciled the commercial dialer and LeadConnector stack onto main, including plans and billing, phone-number provisioning, transfers, click-to-call operator UI, deployment and rollback support, and production release controls."
+            ]
+          },
+          {
+            "title": "Website",
+            "items": [
+              "Unified brand assets and landing interactions, reworked the cloud footer illustration, improved mobile hero behavior, renamed hero messaging around the digital worker, and restored trace-page design ownership."
+            ]
+          },
+          {
+            "title": "Docs",
+            "items": [
+              "Reorganized public documentation navigation and memory, refreshed the nodes architecture with cloud, local, and routing guidance, polished docs shell interactions, and updated skill and subagent guidance."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "v0.8.0",
+    "date": "Jul 31, 2026",
+    "summary": "July expanded Consuelo OS into a cross-platform operating, release, and managed-node platform, hardened launcher, security, and hosted-site paths, refreshed the public website, and advanced LeadConnector and deployment tooling.",
+    "weeks": [
+      {
+        "label": "Week of Jul 31 through Aug 6",
+        "summary": "The week centered on dialer intelligence and operator tooling while hardening OS enrollment, updater continuity, task-context propagation, and authenticated observability.",
+        "sections": [
+          {
+            "title": "Dialer",
+            "items": [
+              "Added outcome learning and LeadConnector call ranking, then introduced transcription and admin call history.",
+              "Redesigned LeadConnector operator surfaces and strengthened browser-agent bridging, conference winner handoff, marketplace and telephony connectivity, and attempt-state cleanup.",
+              "Hardened caller ID and Redis lock lifecycles, terminal browser-agent release, cleanup normalization, and provider error redaction."
+            ]
+          },
+          {
+            "title": "OS",
+            "items": [
+              "Made fresh Linux node enrollment complete unattended and made updater activation restart-safe.",
+              "Propagated task context through batch execution and route updates, restored authenticated workspace observability, and aligned visible steering install state."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Jul 24 through Jul 30",
+        "summary": "The week turned the OS distribution foundation into cross-platform delivery, expanded authenticated launcher and cloud-node setup, hardened hosted site publication, and added new LeadConnector and homepage experiences.",
+        "sections": [
+          {
+            "title": "OS and Release",
+            "items": [
+              "Promoted Linux, Windows, and macOS native lifecycle delivery with deterministic runtime bundles, automatic release channels, cross-platform fingerprints, Windows service packaging, and signed installer contracts.",
+              "Added sealed per-node credential delivery, install-time encryption keys, credential brokering, canonical steering and update paths, deployment schema packaging, and OS bin PATH setup.",
+              "Improved managed cloud enrollment and reprovisioning so placeholder auth can hand off to real workspaces and existing node identities can be safely replaced.",
+              "Unified node heartbeat and agent presence while completing provider control-plane and release audits."
+            ]
+          },
+          {
+            "title": "Launcher and Auth",
+            "items": [
+              "Added authenticated launcher workspace routing, universal workspace login handoff, Hono-backed workspace traces, and repaired Google sign-in and support-route behavior."
+            ]
+          },
+          {
+            "title": "Security and Sites",
+            "items": [
+              "Restored public MCP routing through Caddy, tightened hosted installer and daemon dry-run boundaries, repaired workspace site snapshot publication, kept launchers private during publication, and verified transformed snapshots by source hash."
+            ]
+          },
+          {
+            "title": "Dialer",
+            "items": [
+              "Completed the LeadConnector end-to-end cutover and added admin and progressive CRM overlays with safer marketplace lifecycle behavior."
+            ]
+          },
+          {
+            "title": "Website",
+            "items": [
+              "Added a rotating homepage assistant hero and completed its follow-up review polish."
+            ]
+          }
+        ]
+      },
       {
         "label": "Week of Jul 17 through Jul 23",
         "summary": "The latest week established the OS distribution foundation, added multi-provider deployment support, strengthened universal login and lifecycle safety, and refreshed the website hero.",

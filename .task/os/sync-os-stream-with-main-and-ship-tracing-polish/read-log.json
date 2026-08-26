@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os/sync-os-stream-with-main-and-ship-tracing-polish/workpad.md",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/lifecycle/service.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/lifecycle-restart-contract.test.ts",
+    "packages/os/tests/local-agent-connectivity.test.ts",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-15T07:42:08.955Z"
+}

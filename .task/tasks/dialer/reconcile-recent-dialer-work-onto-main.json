@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/reconcile-recent-dialer-work-onto-main",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1899,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1899",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconcile-recent-dialer-work-onto-main",
+  "createdAt": "2026-08-13T00:06:43.267Z",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1899",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1899/reconcile-recent-dialer-work-onto-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1899",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1899/reconcile-recent-dialer-work-onto-main",
+  "taskSession": "tsk_50ad50478c0c",
+  "tmuxSession": "opensaas-dialer-reconcile-recent-dialer-work-onto-main-50ad5047",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconcile-recent-dialer-work-onto-main/.task/dialer/reconcile-recent-dialer-work-onto-main/session.json"
+}

@@ -93,4 +93,22 @@ test('verify human output identifies failed registry suites', () => {
   );
   expect(source).toContain('registry failure:');
   expect(source).toContain('selection.failedSuites');
+  expect(source).toContain('failure.outputTail');
+  expect(source).toContain('compactRegistryFailureOutput');
+});
+
+
+test('verify keeps review semantic-only because selected suites own test execution', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+
+  expect(verifySource).toContain(
+    "'--summary-json', '--quiet', '--no-tests', ...args.reviewArgs",
+  );
+  expect(verifySource).toContain(
+    "const selectionArgs = ['packages/workspace/scripts/test-selection.js', 'check', '--base', base];",
+  );
+  expect(verifySource).toContain("selectionArgs.push('--run', '--json');");
 });

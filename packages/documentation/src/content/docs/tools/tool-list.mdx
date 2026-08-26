@@ -2,16 +2,16 @@
 title: Tool List
 description: Alphabetical list of every tool in the current Consuelo OS generated manifest.
 status: preview
-verifiedAt: 2026-08-11
+verifiedAt: 2026-08-14
 evidence:
   - source: packages/os/manifests/generated/tool.manifest.json
     tests:
       - packages/os/tests/tool-manifest.test.ts
       - packages/os/tests/tools-search-v2.test.ts
-    runtime: Generated from all 154 named tools in the checked-in manifest on 2026-08-11.
+    runtime: Generated from all 159 named tools in the checked-in manifest and reconciled with the current subagent schema on 2026-08-14.
 ---
 
-This page lists all **154 tools** in the current generated Consuelo OS manifest, alphabetically. Use **On this page** on the right as the fast index: every tool below is a real heading, so you can jump directly to it.
+This page lists all **159 tools** in the current generated Consuelo OS manifest, alphabetically. Use **On this page** as the fast index: every tool below is a real heading, so you can jump directly to it.
 
 For discovery by capability instead of name, use `tools.search`. For the calling model and result envelope, see [How tools work](/build/tools/how-tools-work/).
 
@@ -157,7 +157,7 @@ Category: `decision engine` · Access: `read-only`
 
 run multiple workspace tools sequentially or in parallel with compact per-step results
 
-Category: `composed` · Access: `mutating` · Core tool
+Category: `composed` · Access: `mutating`
 
 ## `browser`
 
@@ -265,7 +265,7 @@ Category: `utilities` · Access: `mutating`
 
 capture a browser screenshot
 
-Category: `utilities` · Access: `mixed/unspecified`
+Category: `utilities` · Access: `read-only`
 
 ## `browser.snap`
 
@@ -313,7 +313,7 @@ Category: `composed` · Access: `read-only`
 
 Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
 
-Category: `codemode` · Access: `mutating` · Core tool
+Category: `codemode` · Access: `mutating`
 
 ## `code.run`
 
@@ -332,6 +332,12 @@ Category: `decision engine` · Access: `read-only`
 run verification or targeted validation through confirm
 
 Category: `decision engine` · Access: `read-only`
+
+## `dailySchedules.publish`
+
+publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index
+
+Category: `artifacts` · Access: `mutating`
 
 ## `decideNext`
 
@@ -409,13 +415,13 @@ Category: `decision engine` · Access: `read-only`
 
 a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.
 
-Category: `decision engine` · Access: `read-only` · Core tool
+Category: `decision engine` · Access: `read-only`
 
 ## `fs.apply_patch`
 
 apply an anchored patch file with embedded task-worktree-relative paths
 
-Category: `filesystem` · Access: `mutating` · Core tool
+Category: `filesystem` · Access: `mutating`
 
 ## `fs.list`
 
@@ -439,7 +445,7 @@ Category: `filesystem` · Access: `read-only`
 
 An agent safe file deletion path. Prefered over rm rf
 
-Category: `filesystem` · Access: `mutating` · Core tool
+Category: `filesystem` · Access: `mutating`
 
 ## `fs.write`
 
@@ -481,13 +487,25 @@ Category: `utilities` · Access: `read-only`
 
 typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers
 
-Category: `github` · Access: `mutating` · Core tool
+Category: `github` · Access: `mutating`
 
 ## `http`
 
 make HTTP requests through the workspace http wrapper (wraps xh)
 
 Category: `http` · Access: `mutating`
+
+## `lifecycle.status`
+
+check Consuelo OS lifecycle and runtime status, including the latest durable update operation
+
+Category: `lifecycle` · Access: `read-only`
+
+## `lifecycle.update`
+
+update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater
+
+Category: `lifecycle` · Access: `mutating`
 
 ## `linear.createIssue`
 
@@ -631,7 +649,7 @@ Category: `media` · Access: `mutating`
 
 Check installed media runtime dependencies and optional profile readiness.
 
-Category: `media` · Access: `mixed/unspecified`
+Category: `media` · Access: `read-only`
 
 ## `media.export`
 
@@ -739,7 +757,13 @@ Category: `media` · Access: `mutating`
 
 search, read, save, list, and inspect local project memory and workspace traces
 
-Category: `memory` · Access: `mutating` · Core tool
+Category: `memory` · Access: `mutating`
+
+## `monitor.errors`
+
+analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates
+
+Category: `observability` · Access: `read-only`
 
 ## `prReview`
 
@@ -757,7 +781,13 @@ Category: `utilities` · Access: `mutating`
 
 run the workspace review checks
 
-Category: `review` · Access: `read-only` · Core tool
+Category: `review` · Access: `read-only`
+
+## `security.scan`
+
+run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths
+
+Category: `security` · Access: `read-only`
 
 ## `sentry.config`
 
@@ -817,7 +847,7 @@ Category: `utilities` · Access: `read-only`
 
 show recent stream context
 
-Category: `stream` · Access: `read-only` · Core tool
+Category: `stream` · Access: `read-only`
 
 ## `stream.create`
 
@@ -835,11 +865,11 @@ Category: `stream` · Access: `read-only`
 
 sync a stream branch with main
 
-Category: `stream` · Access: `mutating` · Core tool
+Category: `stream` · Access: `mutating`
 
 ## `subagent`
 
-run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.
+run or start a subagent from an instruction handoff. Write the handoff to OS tmp first under the canonical opensaas-handoffs root; model and reasoning selection are provider-specific and surfaced explicitly. Edit self-bootstrap may call task.start first, or an existing taskSession may be supplied. task.push publishes only the task branch. task.pr merges to the stream and must not be called when the handoff says stop after push. status/wait/logs attach to an existing run and never spawn; cancel targets runId. requestId makes retries idempotent. Provider capability limitations are returned explicitly and never silently weakened. Return one compact trace-style summary with traceId, files read, files edited, tools called, and token usage.
 
 Category: `subagent` · Access: `mutating`
 
@@ -901,7 +931,7 @@ Category: `task lifecycle` · Access: `mutating`
 
 Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.
 
-Category: `task lifecycle` · Access: `mutating` · Core tool
+Category: `task lifecycle` · Access: `mutating`
 
 ## `taskMeta.smoke`
 
@@ -913,13 +943,13 @@ Category: `task lifecycle` · Access: `read-only`
 
 run the workspace temp-file helper
 
-Category: `utilities` · Access: `mutating` · Core tool
+Category: `utilities` · Access: `mutating`
 
 ## `tools.search`
 
-search workspace tools by intent and return ranked usage guidance
+search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback
 
-Category: `tooling` · Access: `read-only` · Core tool
+Category: `tooling` · Access: `read-only`
 
 ## `verify`
 

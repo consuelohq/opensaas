@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import {
   cpSync,
   mkdirSync,
@@ -7,6 +8,8 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { createLeadConnectorMarketplaceBootstrap } from '../src/deployment/marketplace-bootstrap.js';
 
 const packageRoot = fileURLToPath(new URL('..', import.meta.url));
 const outputDirectory = join(packageRoot, 'dist', 'embed-app');
@@ -24,10 +27,20 @@ if (!result.success) {
   for (const log of result.logs) process.stderr.write(`${log.message}\n`);
   process.exit(1);
 }
-cpSync(
+const assetVersion = (fileName: 'main.css' | 'main.js'): string =>
+  createHash('sha256')
+    .update(readFileSync(join(outputDirectory, fileName)))
+    .digest('hex')
+    .slice(0, 16);
+
+const indexTemplate = readFileSync(
   join(packageRoot, 'src', 'embed', 'index.html'),
-  join(outputDirectory, 'index.html'),
+  'utf8',
 );
+const versionedIndex = indexTemplate
+  .replace('./main.css', `./main.css?v=${assetVersion('main.css')}`)
+  .replace('./main.js', `./main.js?v=${assetVersion('main.js')}`);
+writeFileSync(join(outputDirectory, 'index.html'), versionedIndex);
 cpSync(
   join(
     packageRoot,
@@ -59,6 +72,16 @@ const clickToCallSource = readFileSync(
   ),
   'utf8',
 ).trim();
+const clickToCallCss = readFileSync(
+  join(
+    packageRoot,
+    'src',
+    'embed',
+    'public',
+    'consuelo-lead-connector-click-to-call.css',
+  ),
+  'utf8',
+).trim();
 if (clickToCallSource.toLowerCase().includes('</script>')) {
   throw new Error('Click-to-call source cannot contain a closing script tag');
 }
@@ -68,4 +91,44 @@ writeFileSync(
     'consuelo-lead-connector-click-to-call.marketplace.html',
   ),
   `<script>\n${clickToCallSource}\n</script>\n`,
+);
+writeFileSync(
+  join(
+    outputDirectory,
+    'consuelo-lead-connector-click-to-call.marketplace-loader.html',
+  ),
+  createLeadConnectorMarketplaceBootstrap({
+    assetOrigin: 'https://calls.consuelohq.com',
+  }),
+);
+const marketplaceArtifacts = {
+  javascript: 'consuelo-lead-connector-click-to-call.marketplace.js',
+  css: 'consuelo-lead-connector-click-to-call.marketplace.css',
+};
+writeFileSync(
+  join(outputDirectory, marketplaceArtifacts.javascript),
+  `${clickToCallSource}\n`,
+);
+writeFileSync(
+  join(outputDirectory, marketplaceArtifacts.css),
+  `${clickToCallCss}\n`,
+);
+writeFileSync(
+  join(outputDirectory, 'build-marker.json'),
+  `${JSON.stringify(
+    {
+      buildMarker: 'consuelo-lead-connector-commercial-v1',
+      marketplace: marketplaceArtifacts,
+      marketplaceLoader:
+        'consuelo-lead-connector-click-to-call.marketplace-loader.html',
+      hashes: {
+        javascript: createHash('sha256')
+          .update(clickToCallSource)
+          .digest('hex'),
+        css: createHash('sha256').update(clickToCallCss).digest('hex'),
+      },
+    },
+    null,
+    2,
+  )}\n`,
 );
