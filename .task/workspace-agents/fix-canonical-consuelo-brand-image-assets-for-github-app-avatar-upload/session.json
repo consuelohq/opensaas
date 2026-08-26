@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_91f7e2670fae",
+  "tmuxSession": "opensaas-workspace-agents-fix-canonical-consuelo-brand-image-assets-for-gi-91f7e267",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload",
+  "branch": "task/workspace-agents/fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2221,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2221",
+  "createdAt": "2026-08-26T15:09:09.278Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload/.task/workspace-agents/fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload/session.json"
+}

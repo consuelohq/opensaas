@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload",
+  "base": "origin/main",
+  "headSha": "72dcc3081f9df811320c05805458be0180ec94ef",
+  "changeHash": "5dc354ed601abb180f8a3ff976666addff23455f15518c647c3420d4f03ea061",
+  "changedFiles": [
+    "packages/consuelo-website/public/apple-touch-icon-800x800.png",
+    "packages/consuelo-website/public/apple-touch-icon.png",
+    "packages/consuelo-website/public/favicon-192x192.png",
+    "packages/consuelo-website/public/favicon-32x32.png",
+    "packages/consuelo-website/public/favicon-512x512.png",
+    "packages/consuelo-website/public/favicon.ico"
+  ],
+  "verifiedAt": "2026-08-26T15:23:52.972Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload.json",
+        ".task/workspace-agents/fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload/current.json",
+        ".task/workspace-agents/fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload/evidence-log.json",
+        ".task/workspace-agents/fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload/read-log.json",
+        ".task/workspace-agents/fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload/session.json",
+        ".task/workspace-agents/fix-canonical-consuelo-brand-image-assets-for-github-app-avatar-upload/workpad.md",
+        "packages/consuelo-website/public/apple-touch-icon-800x800.png",
+        "packages/consuelo-website/public/apple-touch-icon.png",
+        "packages/consuelo-website/public/favicon-192x192.png",
+        "packages/consuelo-website/public/favicon-32x32.png",
+        "packages/consuelo-website/public/favicon-512x512.png",
+        "packages/consuelo-website/public/favicon.ico"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "no testable source files changed",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
