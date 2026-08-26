@@ -166,6 +166,19 @@ describe('trace history redaction boundary', () => {
     expect(fallbackMetadata.pricingSource).toBe('sol_fallback');
   });
 
+  it('does not count an input-only failed trace as output payload', () => {
+    const estimate = estimateTraceCost({
+      tool: 'code.call',
+      inputTokens: 0,
+      outputTokens: 0,
+      rawInputJson: JSON.stringify({ command: 'failed before producing a result' }),
+      rawResultJson: '',
+    });
+
+    expect(estimate?.inputTokens).toBeGreaterThan(0);
+    expect(estimate?.outputTokens).toBe(0);
+  });
+
   it('keeps recorded total tokens authoritative and detects model names from sanitized text fallbacks', () => {
     const estimate = estimateTraceCost({
       tool: 'subagent',

@@ -231,6 +231,24 @@ describe('Hono Secrets route', () => {
     expect(plaintextResponse.status).toBe(400);
     expect(await plaintextResponse.text()).not.toContain(plaintext);
 
+    const strictBindingId = 'STRICT_ENVELOPE';
+    const strictEnvelope = sealCredential({
+      recipientPublicKeyJwk: publicKeyJwk,
+      recipient: { workspaceId, nodeId, bindingId: strictBindingId },
+      plaintext,
+    });
+    const extraEnvelopeResponse = await handleRequest(signedRequest({
+      path: '/gateway/secrets/install',
+      nonce: 'secrets-reject-extra-envelope-field-nonce',
+      method: 'POST',
+      body: JSON.stringify({
+        bindingId: strictBindingId,
+        envelope: { ...strictEnvelope, plaintext },
+      }),
+    }));
+    expect(extraEnvelopeResponse.status).toBe(400);
+    expect(await extraEnvelopeResponse.text()).not.toContain(plaintext);
+
     const bodyBinding = 'EXPECTED_BINDING';
     const envelopeRecipient = { workspaceId, nodeId, bindingId: 'DIFFERENT_BINDING' };
     const mismatchBody = JSON.stringify({
