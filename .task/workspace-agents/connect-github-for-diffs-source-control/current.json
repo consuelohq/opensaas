@@ -1,0 +1,20 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/connect-github-for-diffs-source-control",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2178,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2178",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2178",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2178/connect-github-for-diffs-source-control",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2178",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2178/connect-github-for-diffs-source-control",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-connect-github-for-diffs-source-control",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_0c44fa7c4a1a",
+  "tmuxSession": "opensaas-workspace-agents-connect-github-for-diffs-source-control-0c44fa7c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-connect-github-for-diffs-source-control/.task/workspace-agents/connect-github-for-diffs-source-control/session.json",
+  "createdAt": "2026-08-26T01:29:23.963Z"
+}

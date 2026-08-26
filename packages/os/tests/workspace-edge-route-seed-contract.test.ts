@@ -111,6 +111,7 @@ contractDescribe('workspace edge route seed contract', () => {
       '/settings',
       '/gateway/traces/events',
       '/gateway/traces',
+      '/gateway/configuration/source-control/github',
       '/gateway/configuration/overlay',
       '/gateway/configuration',
       '/gateway/settings/overlay',
@@ -158,6 +159,16 @@ contractDescribe('workspace edge route seed contract', () => {
           serviceName: 'trace-sites-read-layer',
           gatewayRouteFamily: '/gateway/traces/*',
           publicSiteRouteFamily: '/observability/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/configuration/source-control/github',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'configuration-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/configuration/*',
+          publicSiteRouteFamily: '/configuration/*',
         }),
       }),
       expect.objectContaining({

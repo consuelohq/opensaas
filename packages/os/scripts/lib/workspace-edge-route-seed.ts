@@ -281,6 +281,18 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
 const buildConfigurationGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
+    pathPrefix: '/gateway/configuration/source-control/github',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'configuration-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/configuration/*',
+      publicSiteRouteFamily: '/configuration/*',
+    },
+  },
+  {
+    surface: 'sites',
     pathPrefix: '/gateway/configuration/overlay',
     auth: 'workspace-session',
     status: 'active',

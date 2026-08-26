@@ -570,6 +570,38 @@ describe('test selection registry', () => {
     );
   });
 
+  it('uses focused GitHub source-control contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/github-source-control-client.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/source-control-config.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/settings.ts',
+      '--changed-file',
+      'packages/os/scripts/server/services/diffs-gateway.ts',
+      '--changed-file',
+      'packages/os/tests/github-source-control-authority.test.ts',
+      '--changed-file',
+      'packages/os/tests/diffs-hono-routes.test.ts',
+      '--changed-file',
+      'packages/os/tests/settings-hono-routes.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-github-source-control');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(['OS GitHub source-control contracts']);
+  });
+
   it('uses focused hosted-site reconciliation contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

@@ -1,8 +1,8 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createDefaultWorkspaceYamlConfig,
@@ -10,6 +10,7 @@ import {
   writeYamlConfig,
 } from '../scripts/lib/consuelo-home';
 import { readFullToolManifest } from '../scripts/lib/manifest';
+import { generateWorkspaceDeviceKeyPair } from '../scripts/lib/workspace-device-login-client';
 import {
   createGatewaySecurityConfig,
   issueAgentAppToken,
@@ -79,6 +80,23 @@ beforeEach(() => {
     }),
     false,
   );
+  const nodeKeys = generateWorkspaceDeviceKeyPair();
+  const heartbeatPath = join(
+    resolveConsueloHomeLayout(home).nodeDir,
+    'security',
+    'generated',
+    'workspace-node-heartbeat.json',
+  );
+  mkdirSync(join(resolveConsueloHomeLayout(home).nodeDir, 'security', 'generated'), { recursive: true });
+  writeFileSync(heartbeatPath, JSON.stringify({
+    authorityOrigin: 'https://os.consuelohq.com',
+    workspaceId,
+    nodeId: 'node_configuration_hono',
+    connectorStatus: 'connected',
+    capabilities: [],
+    publicKeyJwk: nodeKeys.publicKeyJwk,
+    signingKeyJwk: nodeKeys.signingKeyJwk,
+  }), 'utf8');
   token = issueAgentAppToken({
     config,
     callerId: 'caller_configuration_hono',
@@ -101,6 +119,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   delete process.env.CONSUELO_HOME;
   delete process.env.CONSUELO_OS_HOME;
   delete process.env.CONSUELO_OS_AUTH_CONFIG;
@@ -193,6 +212,98 @@ describe('Hono Configuration routes', () => {
           codeRoots: ['src'],
           ready: true,
         }],
+      },
+    });
+  });
+
+  it('starts GitHub installation from Configuration without asking for connection bindings', async () => {
+    const authorityCalls: Request[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      authorityCalls.push(request.clone());
+      return Response.json({
+        installUrl: 'https://github.com/apps/consuelo-source-control/installations/new?state=ghs_test',
+      });
+    });
+
+    const path = '/gateway/configuration/source-control/github/connect?return_to=%2Fdiffs';
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path,
+      nonce: 'configuration-github-connect-nonce',
+    }));
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get('location')).toBe(
+      'https://github.com/apps/consuelo-source-control/installations/new?state=ghs_test',
+    );
+    expect(authorityCalls).toHaveLength(1);
+    expect(new URL(authorityCalls[0]!.url).pathname).toBe(
+      '/workspace/source-control/github/install/start',
+    );
+    expect(authorityCalls[0]!.headers.get('x-consuelo-node-signature')).toBeTruthy();
+    const authorityBody = await authorityCalls[0]!.json() as Record<string, unknown>;
+    expect(authorityBody).toMatchObject({
+      workspaceId,
+      nodeId: 'node_configuration_hono',
+      returnPath: '/diffs',
+    });
+  });
+
+  it('claims a GitHub installation handoff and derives repository configuration', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      expect(new URL(request.url).pathname).toBe(
+        '/workspace/source-control/github/install/claim',
+      );
+      expect(request.headers.get('x-consuelo-node-signature')).toBeTruthy();
+      return Response.json({
+        connectionId: 'ghc_primary',
+        accountLogin: 'consuelohq',
+        repositorySelection: 'selected',
+        returnPath: '/diffs',
+        repositories: [
+          { id: 101, nameWithOwner: 'consuelohq/opensaas', defaultBranch: 'main' },
+          { id: 202, nameWithOwner: 'consuelohq/docs', defaultBranch: 'main' },
+        ],
+      });
+    });
+
+    const body = JSON.stringify({ handoff: 'ghh_test' });
+    const response = await handleRequest(signedRequest({
+      method: 'POST',
+      path: '/gateway/configuration/source-control/github/complete',
+      body,
+      nonce: 'configuration-github-complete-nonce',
+    }));
+
+    expect(response.status).toBe(200);
+    const serialized = await response.text();
+    expect(serialized).not.toContain('github-installation-token');
+    expect(JSON.parse(serialized)).toMatchObject({
+      ok: true,
+      returnPath: '/diffs',
+      snapshot: {
+        configured: true,
+        defaultRepositoryId: 'github-101',
+        repositories: [
+          {
+            id: 'github-101',
+            provider: 'github',
+            nameWithOwner: 'consuelohq/opensaas',
+            defaultBranch: 'main',
+            connectionRef: 'github-installation:ghc_primary',
+            ready: true,
+          },
+          {
+            id: 'github-202',
+            provider: 'github',
+            nameWithOwner: 'consuelohq/docs',
+            defaultBranch: 'main',
+            connectionRef: 'github-installation:ghc_primary',
+            ready: true,
+          },
+        ],
       },
     });
   });
