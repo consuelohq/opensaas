@@ -3,13 +3,13 @@
   "worktree_id": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
   "events": [
     {
-      "id": "92a3300a-cb1c-4aeb-9692-c5ae20ce6a14",
-      "occurred_at": "2026-08-26T06:14:25.178Z",
+      "id": "20a66794-3ab9-4361-8011-8fa333e4d07a",
+      "occurred_at": "2026-08-26T06:17:55.084Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/os/scripts/server/routes/traces.ts",
+      "file_path": "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
       "status": "observed",
       "confidence_delta": 0.03,
       "worktree_id": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
@@ -19,13 +19,13 @@
       }
     },
     {
-      "id": "87b1eb73-e0e7-4c81-87a2-acf843525922",
-      "occurred_at": "2026-08-26T06:14:51.572Z",
+      "id": "0f3ccaff-9c23-4ba3-aef5-72f33e41388b",
+      "occurred_at": "2026-08-26T06:18:28.378Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/os/scripts/lib/trace-database-schema.ts",
+      "file_path": "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
       "status": "observed",
       "confidence_delta": 0.03,
       "worktree_id": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
@@ -35,13 +35,61 @@
       }
     },
     {
-      "id": "bb74a2a8-edc8-44b5-ab38-76a7a1e64b5b",
-      "occurred_at": "2026-08-26T06:15:24.635Z",
+      "id": "1e7b3901-e29e-435b-9f25-fb1188dab868",
+      "occurred_at": "2026-08-26T06:19:09.948Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+      "file_path": "packages/os/scripts/lib/worker-pool.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release"
+      }
+    },
+    {
+      "id": "3ad553b4-9021-4ccf-b16b-e197480c0754",
+      "occurred_at": "2026-08-26T06:21:59.240Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/supervisor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release"
+      }
+    },
+    {
+      "id": "06483eba-4b43-4458-a71a-7df2767e626c",
+      "occurred_at": "2026-08-26T06:23:47.911Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release"
+      }
+    },
+    {
+      "id": "e4fbbffe-3720-474f-99d9-391203288482",
+      "occurred_at": "2026-08-26T06:23:51.669Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
       "status": "observed",
       "confidence_delta": 0.03,
       "worktree_id": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
@@ -52,5 +100,5 @@
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-08-26T06:15:24.698Z"
+  "updated_at": "2026-08-26T06:23:51.729Z"
 }

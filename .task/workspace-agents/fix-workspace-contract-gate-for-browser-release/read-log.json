@@ -1,6 +1,8 @@
 {
   "files": [
-    "packages/os/scripts/lib/trace-sites-local-read-backend.ts"
+    "packages/os/scripts/lib/worker-pool.ts",
+    "packages/os/scripts/server/supervisor.ts",
+    "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
   ],
-  "updatedAt": "2026-08-26T06:15:24.572Z"
+  "updatedAt": "2026-08-26T06:23:51.608Z"
 }

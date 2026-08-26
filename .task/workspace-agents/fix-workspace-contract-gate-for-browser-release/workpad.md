@@ -51,6 +51,8 @@ started: 2026-08-26
 - After restoring named media schemas, regenerating canonical manifests/baseline, and normalizing the parity inventory, all affected deterministic suites pass together: media taxonomy 5/5, parity audit 1/1, facade 714/714, exact OS contracts 47 passed / 5 skipped (`trc_d8453cdeac56`).
 - Full publish verification then exposed two remaining required-package regressions (`trc_f46c7f2d6c4a`): `workflow-intent.test.ts` still asserted the pre-`session.start` task.start description, and signed workspace-gateway trace reads crashed under Node because trace persistence/read code directly loaded `bun:sqlite`.
 - The workflow assertion now matches the already-canonical compatibility contract for `task.start`. Trace database access now follows the existing runtime-state portability pattern: Bun uses `bun:sqlite`; Node uses `node:sqlite`, with a shared query/get/all adapter. The signed edge → local OS trace E2E now passes 1/1 under Node (`trc_3d63d785d65f`).
+- Full verification then exposed remaining direct `bun:sqlite` imports inside the trace gateway test fixture plus two worker-pool process timeouts (`trc_96ab82895353`). The trace fixture now uses the shared portable trace DB adapter throughout; its full suite passes 14/14 (`trc_976224cd17f9` after the final fixture replacements).
+- Worker-pool timeout root cause was test setup, not supervisor behavior: a fresh temporary `CONSUELO_HOME` had no required `runtime/current`, so the supervisor exited before spawning workers. Debug proof: `trc_a4c8bafef1df`. The fixture now creates `runtime/current` pointing to the checked-out runtime and explicitly pins `CONSUELO_OS_WORKER_BASE_PORT` to its random test port. Real process integration passes 2/2, including crash replacement and orphan reclamation (`trc_66b15d14c945`).
 
 ## files changed
 
@@ -84,6 +86,9 @@ started: 2026-08-26
 - 2026-08-26 06:12:30 `review.run`: passed — OK
 - 2026-08-26 06:16:03 `checkFiles`: passed — OK
 - 2026-08-26 06:16:10 `review.run`: passed — OK
+- 2026-08-26 06:23:30 `checkFiles`: passed — OK
+- 2026-08-26 06:23:38 `review.run`: passed — OK
+- 2026-08-26 06:24:10 `review.run`: passed — OK
 
 ## key decisions
 
@@ -131,6 +136,7 @@ bun run task:finish
 - `packages/os/scripts/media.ts`
 - `packages/os/scripts/release.ts`
 - `packages/os/scripts/server/routes/traces.ts`
+- `packages/os/scripts/server/supervisor.ts`
 - `packages/os/tests/audit/script-parity-audit.test.ts`
 - `packages/os/tests/browser-service.test.ts`
 - `packages/os/tests/facade/facade.test.ts`
@@ -138,6 +144,8 @@ bun run task:finish
 - `packages/os/tests/security-gateway.test.ts`
 - `packages/os/tests/tool-manifest.test.ts`
 - `packages/os/tests/tool-package-layout.test.ts`
+- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+- `packages/os/tests/worker-pool-process.test.ts`
 - `packages/os/tests/workflow-intent.test.ts`
 - `packages/os/tests/workspace-gateway-node-end-to-end.test.ts`
 - `packages/os/tools/media/handler.ts`
@@ -146,7 +154,4 @@ bun run task:finish
 - `packages/os/tools/subagent/schema.ts`
 - `packages/workspace/tests/browser-service.test.ts`
 
-- 2026-08-26 06:15:39 apply-patch: `packages/os/scripts/lib/trace-database-schema.ts`
-- 2026-08-26 06:15:39 apply-patch: `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
-
-- 2026-08-26 06:15:56 apply-patch: `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md`
+- 2026-08-26 06:23:57 apply-patch: `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
