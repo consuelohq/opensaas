@@ -1974,6 +1974,33 @@
         }
       ],
       "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-browser-headed-handoff",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/browser/**",
+        "packages/os/tests/browser-service.test.ts",
+        "packages/workspace/scripts/lib/browser/**",
+        "packages/workspace/tests/browser-service.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS headed browser handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/tests/browser-service.test.ts",
+            "-t",
+            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+          ]
+        }
+      ],
+      "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests."
     }
   ]
 }

@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2669,
-    "mappedTestCount": 2583,
-    "unmappedTestCount": 86,
-    "ruleCount": 69,
-    "explicitRuleCount": 50,
+    "testFileCount": 2670,
+    "mappedTestCount": 2585,
+    "unmappedTestCount": 85,
+    "ruleCount": 70,
+    "explicitRuleCount": 51,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 288,
+      "packages/os/tests": 289,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 575,
+      "test": 576,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -2669,6 +2669,34 @@
       "origin": "explicit"
     },
     {
+      "id": "os-browser-headed-handoff",
+      "source": [
+        "packages/os/scripts/lib/browser/**",
+        "packages/os/tests/browser-service.test.ts",
+        "packages/workspace/scripts/lib/browser/**",
+        "packages/workspace/tests/browser-service.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS headed browser handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/tests/browser-service.test.ts",
+            "-t",
+            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
       "id": "auto:@consuelo/core:package-test",
       "source": [
         "packages/consuelo-core/**"
@@ -4491,6 +4519,11 @@
     },
     {
       "path": "packages/os/tests/github.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/google-cli.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -16446,7 +16479,6 @@
     "packages/workspace/scripts/lib/stream-instructions.test.ts",
     "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
     "packages/workspace/tests/browser-review-contract.test.ts",
-    "packages/workspace/tests/browser-service.test.ts",
     "packages/workspace/tests/chunker.test.js",
     "packages/workspace/tests/code-call-parity.test.ts",
     "packages/workspace/tests/code-call-service-architecture.test.ts",
