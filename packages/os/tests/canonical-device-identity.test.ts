@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveCanonicalDeviceIdentity } from '../cloudflare/os-device-authority/src/services/canonical-device-identity';
+import {
+  describeCanonicalDeviceIdentityDenial,
+  resolveCanonicalDeviceIdentity,
+} from '../cloudflare/os-device-authority/src/services/canonical-device-identity';
 import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
 import { createMemoryInstallControlPlaneRepository } from '../scripts/lib/install-control-plane';
 
@@ -40,7 +43,7 @@ describe('canonical device identity resolution', () => {
     });
   });
 
-  it('preserves an existing canonical account workspace when membership is still active', async () => {
+  it('preserves an established canonical workspace after the first-claim verification window', async () => {
     const repository = createMemoryInstallControlPlaneRepository();
     await repository.upsertUser({
       userId: 'user_123',
@@ -73,7 +76,7 @@ describe('canonical device identity resolution', () => {
         store,
         email: 'ko@example.com',
         googleSubject: 'google-sub-123',
-        nowMs: Date.parse('2026-08-13T12:05:00.000Z'),
+        nowMs: Date.parse('2026-08-14T12:05:00.000Z'),
       }),
     ).resolves.toEqual({
       status: 'resolved',
@@ -86,6 +89,15 @@ describe('canonical device identity resolution', () => {
         workspaceHost: 'existing-route.consuelohq.com',
       },
     });
+  });
+
+  it.each([
+    { reason: 'directory_unavailable' as const, status: 503, code: 'DEVICE_DIRECTORY_UNAVAILABLE' },
+    { reason: 'user_not_found' as const, status: 403, code: 'CANONICAL_USER_NOT_FOUND' },
+    { reason: 'ambiguous_user' as const, status: 409, code: 'CANONICAL_USER_AMBIGUOUS' },
+    { reason: 'workspace_verification_required' as const, status: 403, code: 'WORKSPACE_VERIFICATION_REQUIRED' },
+  ])('describes $reason without collapsing the operator signal', ({ reason, status, code }) => {
+    expect(describeCanonicalDeviceIdentityDenial(reason)).toMatchObject({ status, code });
   });
 
   it('keeps a legacy Google account only as an internal node compatibility alias while binding canonical identity', async () => {
