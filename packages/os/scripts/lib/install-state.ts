@@ -73,6 +73,7 @@ export type WorkspaceBootstrap = {
   workspaceId: string;
   workspaceSlug: string;
   workspaceHost: string;
+  accountEmail?: string;
   connectorId: string;
   connectorTransport: 'cloudflare-tunnel' | 'websocket-relay';
   nodeId?: string;
@@ -1072,6 +1073,9 @@ function materializeWorkspaceConnectorBootstrap(input: {
           'https://os.consuelohq.com',
         osHome: input.runtimeHome,
         workspaceId: input.workspaceBootstrap.workspaceId,
+        ...(input.workspaceBootstrap.accountEmail
+          ? { accountEmail: input.workspaceBootstrap.accountEmail }
+          : {}),
         nodeId: input.workspaceBootstrap.nodeId,
         connectorStatus: 'disconnected',
         connectorHealthUrl,

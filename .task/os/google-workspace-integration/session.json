@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_210df22a13c0",
+  "tmuxSession": "opensaas-os-google-workspace-integration-210df22a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/google-workspace-integration",
+  "branch": "task/os/google-workspace-integration",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2201,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2201",
+  "createdAt": "2026-08-26T05:02:54.513Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/.task/os/google-workspace-integration/session.json"
+}
