@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_3169b98fd8f6",
+  "tmuxSession": "opensaas-os-promote-google-workspace-integration-to-main-and-3169b98f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/promote-google-workspace-integration-to-main-and-canary",
+  "branch": "task/os/promote-google-workspace-integration-to-main-and-canary",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-promote-google-workspace-integration-to-main-and-canary",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-promote-google-workspace-integration-to-main-and-canary",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2210,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2210",
+  "createdAt": "2026-08-26T05:59:20.326Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-promote-google-workspace-integration-to-main-and-canary/.task/os/promote-google-workspace-integration-to-main-and-canary/session.json"
+}

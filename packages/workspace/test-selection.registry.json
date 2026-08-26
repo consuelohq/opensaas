@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2662,
-    "mappedTestCount": 2577,
+    "testFileCount": 2668,
+    "mappedTestCount": 2583,
     "unmappedTestCount": 85,
-    "ruleCount": 68,
-    "explicitRuleCount": 49,
+    "ruleCount": 69,
+    "explicitRuleCount": 50,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 281,
+      "packages/os/tests": 287,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 568,
+      "test": 574,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -2124,6 +2124,53 @@
       "critical": true,
       "exclusive": true,
       "reason": "Compact explore response shaping and decision-engine integration must prove bounded summary/detail contracts without selecting the unrelated broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-google-workspace",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/google-workspace.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+        "packages/os/manifests/manifest.config.ts",
+        "packages/os/scripts/google.ts",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/google-workspace-auth.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/managed-gog.ts",
+        "packages/os/scripts/lib/workspace-device-authorization.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/tests/google-skill.test.ts",
+        "packages/os/tests/google-tool.test.ts",
+        "packages/os/tests/google-workspace-auth.test.ts",
+        "packages/os/tests/managed-gog.test.ts",
+        "packages/os/tests/native-google-device-approval.test.ts",
+        "packages/os/tools/google/handler.ts",
+        "packages/os/tools/google/manifest.ts",
+        "packages/os/tools/google/schema.ts",
+        "packages/os/tools/google/service.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Google Workspace contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-gog.test.ts",
+            "tests/google-tool.test.ts",
+            "tests/google-skill.test.ts",
+            "tests/google-workspace-auth.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/install-state.test.ts",
+            "tests/tool-manifest.test.ts",
+            "tests/tool-package-layout.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Google Workspace runtime, first-use OAuth, signed node bootstrap, tool policy, installer, and bundled-skill changes must prove the focused Google and shared OS contracts without selecting the historically noisy unrelated package-wide OS suite.",
       "origin": "explicit"
     },
     {
@@ -3962,6 +4009,16 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/artifacts-edge-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifacts-facade-runtime.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/artifacts-hono-routes.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4392,6 +4449,21 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/google-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/google-tool.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/google-workspace-auth.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/health-readiness.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4688,6 +4760,11 @@
     },
     {
       "path": "packages/os/tests/managed-components.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-gog.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

@@ -24,6 +24,7 @@ import { toolPackage as package22 } from './security/manifest';
 import { toolPackage as package23 } from './monitor/manifest';
 import { toolPackage as package24 } from './daily-schedules/manifest';
 import { toolPackage as package25 } from './release/manifest';
+import { toolPackage as package26 } from './google/manifest';
 
 import type { ToolPackage } from './package';
 
@@ -54,4 +55,5 @@ export const toolPackages = [
   package23,
   package24,
   package25,
+  package26,
 ] satisfies readonly ToolPackage[];

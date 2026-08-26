@@ -82,6 +82,7 @@ const retainedCoreToolNames = [
   'fs.apply_patch',
   'fs.trash',
   'github',
+  'google',
   'session.start',
   'task.start',
   'review.run',
@@ -252,7 +253,7 @@ describe('tool manifest generator', () => {
     expect(registry.report.oldRegularToolCount).toBe(0);
     expect(registry.report.oldDevToolCount).toBe(baselineDefinitions.length);
     expect(registry.report.duplicateNames).toEqual([]);
-    expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'media.svg.convert']));
+    expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'google', 'media.svg.convert']));
     expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
     expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });

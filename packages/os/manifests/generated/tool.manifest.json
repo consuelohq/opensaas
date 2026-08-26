@@ -157,6 +157,12 @@
       "kind": "facade-tool",
       "path": "packages/os/tools/release/manifest.ts",
       "entryCount": 1
+    },
+    {
+      "label": "google",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/google/manifest.ts",
+      "entryCount": 1
     }
   ],
   "tools": [
@@ -238,6 +244,7 @@
           "script": "artifacts",
           "subcommand": "check",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -278,6 +285,7 @@
           "script": "artifacts",
           "subcommand": "generate-demo",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -336,6 +344,7 @@
           "script": "artifacts",
           "subcommand": "generate-digital-eguide",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -399,6 +408,7 @@
           "script": "artifacts",
           "subcommand": "generate-email",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -457,6 +467,7 @@
           "script": "artifacts",
           "subcommand": "generate-image-brief",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -515,6 +526,7 @@
           "script": "artifacts",
           "subcommand": "generate-motion-frame",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -573,6 +585,7 @@
           "script": "artifacts",
           "subcommand": "generate-website",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -631,6 +644,7 @@
           "script": "artifacts",
           "subcommand": "get-design-system",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -671,6 +685,7 @@
           "script": "artifacts",
           "subcommand": "list-design-systems",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -711,6 +726,7 @@
           "script": "artifacts",
           "subcommand": "list-skills",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -751,6 +767,7 @@
           "script": "artifacts",
           "subcommand": "od:build",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -793,6 +810,7 @@
           "script": "artifacts",
           "subcommand": "publish",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -872,6 +890,7 @@
           "script": "artifacts",
           "subcommand": "railway:check",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -912,6 +931,7 @@
           "script": "artifacts",
           "subcommand": "refresh",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -960,6 +980,7 @@
           "script": "artifacts",
           "subcommand": "render-hyperframes",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -1018,6 +1039,7 @@
           "script": "artifacts",
           "subcommand": "run",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -1060,6 +1082,7 @@
           "script": "artifacts",
           "subcommand": "ui:bg",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -1102,6 +1125,7 @@
           "script": "artifacts",
           "subcommand": "ui:logs",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -1142,6 +1166,7 @@
           "script": "artifacts",
           "subcommand": "ui:status",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -1182,6 +1207,7 @@
           "script": "artifacts",
           "subcommand": "ui:stop",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -1224,6 +1250,7 @@
           "script": "artifacts",
           "subcommand": "upstream-status",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -5017,6 +5044,107 @@
         "exampleInput": {
           "operation": "pr.reviews",
           "pr": 436
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "google",
+      "kind": "facade-tool",
+      "source": "google",
+      "sourcePath": "packages/os/tools/google/manifest.ts",
+      "category": "google",
+      "description": "use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Google Workspace runtime; first use can open Google OAuth and saved authorization is reused",
+      "core": true,
+      "definition": {
+        "name": "google",
+        "methodPath": [
+          "google"
+        ],
+        "description": "use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Google Workspace runtime; first use can open Google OAuth and saved authorization is reused",
+        "category": "google",
+        "underlying": "workspace google",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "GoogleInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "google",
+            "gmail",
+            "calendar",
+            "drive",
+            "docs",
+            "sheets",
+            "contacts"
+          ],
+          "keywords": [
+            "email",
+            "mail",
+            "event",
+            "document",
+            "spreadsheet",
+            "contact",
+            "workspace"
+          ]
+        },
+        "command": {
+          "script": "google",
+          "executionScope": "runtime",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "action",
+              "flag": "--action",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "args",
+              "flag": "--arg",
+              "kind": "commandArray"
+            },
+            {
+              "source": "account",
+              "flag": "--account",
+              "kind": "value"
+            },
+            {
+              "source": "mode",
+              "flag": "--mode",
+              "kind": "value"
+            },
+            {
+              "source": "approved",
+              "flag": "--approved",
+              "kind": "boolean"
+            },
+            {
+              "source": "approvalReason",
+              "flag": "--approval-reason",
+              "kind": "value"
+            },
+            {
+              "source": "timeoutMs",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "action": "run",
+          "args": [
+            "gmail",
+            "search",
+            "newer_than:7d"
+          ],
+          "mode": "read"
         },
         "sessionRequired": false
       }
