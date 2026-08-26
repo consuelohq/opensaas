@@ -27,6 +27,10 @@ export type ReleasePromotionDispatchLockAdapter = {
   hasActiveReleaseStateRun(): Promise<boolean>;
 };
 
+export type ReleasePromotionLockLease = {
+  renew(): Promise<void>;
+};
+
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -40,7 +44,7 @@ export async function withReleasePromotionDispatchLock<T>(
     pollIntervalMs?: number;
   },
   adapter: ReleasePromotionDispatchLockAdapter,
-  operation: () => Promise<T>,
+  operation: (lease: ReleasePromotionLockLease) => Promise<T>,
 ): Promise<T> {
   try {
     const waitTimeoutMs = input.waitTimeoutMs ?? 25 * 60_000;
@@ -75,6 +79,26 @@ export async function withReleasePromotionDispatchLock<T>(
 
       const heartbeatController = new AbortController();
       let heartbeatError: Error | null = null;
+      let renewalChain = Promise.resolve();
+      const renewLease = async () => {
+        let renewalError: Error | null = null;
+        const renewal = renewalChain.then(async () => {
+          try {
+            const renewed = await adapter.renewLockIfOwned(marker.ownerId, adapter.now());
+            if (!renewed) {
+              throw new Error('release promotion dispatch lock ownership changed during renewal');
+            }
+          } catch (error: unknown) {
+            renewalError = new Error(
+              `release promotion dispatch lock renewal failed: ${errorMessage(error)}`,
+            );
+          }
+        });
+        renewalChain = renewal.catch(() => undefined);
+        await renewal;
+        if (renewalError) throw renewalError;
+      };
+      const lease: ReleasePromotionLockLease = { renew: renewLease };
       const heartbeat = (async () => {
         try {
           while (!heartbeatController.signal.aborted) {
@@ -82,13 +106,7 @@ export async function withReleasePromotionDispatchLock<T>(
               signal: heartbeatController.signal,
             });
             if (heartbeatController.signal.aborted) return;
-            const renewed = await adapter.renewLockIfOwned(marker.ownerId, adapter.now());
-            if (!renewed) {
-              heartbeatError = new Error(
-                'release promotion dispatch lock ownership changed during heartbeat',
-              );
-              return;
-            }
+            await renewLease();
           }
         } catch (error: unknown) {
           if (heartbeatController.signal.aborted) return;
@@ -102,7 +120,7 @@ export async function withReleasePromotionDispatchLock<T>(
       let operationResult: T | undefined;
       let operationError: unknown;
       try {
-        operationResult = await operation();
+        operationResult = await operation(lease);
         succeeded = true;
       } catch (error: unknown) {
         operationError = error;

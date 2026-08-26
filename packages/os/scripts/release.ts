@@ -26,6 +26,7 @@ import {
   RELEASE_PROMOTION_LOCK_PATH,
   withReleasePromotionDispatchLock,
   type ReleasePromotionDispatchLockAdapter,
+  type ReleasePromotionLockLease,
   type ReleasePromotionLockMarker,
 } from './lib/release-promotion-dispatch-lock';
 import {
@@ -614,12 +615,25 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
           ...listPromotionRuns(),
           ...listWorkflowRuns(RUNTIME_ROLLBACK_WORKFLOW),
         ];
+        const listReleaseStateRunsWithLease = async (lease: ReleasePromotionLockLease) => {
+          await lease.renew();
+          const publishRuns = listWorkflowRuns(RUNTIME_PUBLISH_WORKFLOW);
+          await lease.renew();
+          const promotionRuns = listPromotionRuns();
+          await lease.renew();
+          const rollbackRuns = listWorkflowRuns(RUNTIME_ROLLBACK_WORKFLOW);
+          await lease.renew();
+          return {
+            all: [...publishRuns, ...promotionRuns, ...rollbackRuns],
+            promotionRuns,
+          };
+        };
         const promotionLockAdapter = createPromotionLockAdapter(sourceCommit, listReleaseStateRuns);
         while (Date.now() < queueDeadline) {
           const decision = await withReleasePromotionDispatchLock({
             operationId: `release:${from}->${to}:${releaseSetBundleId}`,
             waitTimeoutMs: Math.max(1, queueDeadline - Date.now()),
-          }, promotionLockAdapter, async () => {
+          }, promotionLockAdapter, async (lease) => {
             try {
               const target = await fetchChannel(to);
               if (
@@ -629,14 +643,16 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
                 return { kind: 'success' as const };
               }
 
-              const releaseStateBefore = listReleaseStateRuns();
-              if (selectActiveReleaseStateRun(releaseStateBefore)) return { kind: 'wait' as const };
+              const releaseStateBefore = await listReleaseStateRunsWithLease(lease);
+              if (selectActiveReleaseStateRun(releaseStateBefore.all)) {
+                return { kind: 'wait' as const };
+              }
 
-              const promotionRunsBefore = listPromotionRuns();
               const nextBaseline = Math.max(
                 0,
-                ...promotionRunsBefore.map((run) => Number(run.databaseId) || 0),
+                ...releaseStateBefore.promotionRuns.map((run) => Number(run.databaseId) || 0),
               );
+              await lease.renew();
               commandOutput(ghPath, [
                 'workflow',
                 'run',
@@ -652,6 +668,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
                 '-f',
                 `bundle=${releaseSetBundleId}`,
               ]);
+              await lease.renew();
 
               const visibilityDeadline = Date.now() + 60_000;
               while (Date.now() < visibilityDeadline) {
@@ -662,7 +679,9 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
                 ) {
                   return { kind: 'success' as const };
                 }
+                await lease.renew();
                 const visibleRuns = listPromotionRuns();
+                await lease.renew();
                 if (visibleRuns.some((run) => Number(run.databaseId) > nextBaseline)) {
                   return { kind: 'dispatched' as const, baseline: nextBaseline };
                 }
