@@ -1,5 +1,11 @@
 import type { ReleaseIdentity, ReleaseRun } from './release-orchestrator';
 
+export const RELEASE_STATE_WORKFLOWS = [
+  'consuelo-os-runtime-publish.yaml',
+  'consuelo-os-runtime-promote.yaml',
+  'consuelo-os-runtime-rollback.yaml',
+] as const;
+
 export type PromotionRunRow = {
   databaseId: number;
   displayTitle?: string;
@@ -22,7 +28,7 @@ export function promotionDeadline(
   return nowMs + timeoutMs;
 }
 
-export function selectActivePromotionRun(runs: PromotionRunRow[]): ReleaseRun | null {
+export function selectActiveReleaseStateRun(runs: PromotionRunRow[]): ReleaseRun | null {
   const active = runs
     .filter((run) => clean(run.status) !== 'completed')
     .sort((left, right) => Number(left.databaseId) - Number(right.databaseId))[0];

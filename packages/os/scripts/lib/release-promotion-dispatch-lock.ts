@@ -20,7 +20,7 @@ export type ReleasePromotionDispatchLockAdapter = {
   tryCreateLock(marker: ReleasePromotionLockMarker): Promise<boolean>;
   readLock(): Promise<ReleasePromotionLockMarker | null>;
   deleteLockIfOwned(ownerId: string): Promise<boolean>;
-  hasActivePromotion(): Promise<boolean>;
+  hasActiveReleaseStateRun(): Promise<boolean>;
 };
 
 export async function withReleasePromotionDispatchLock<T>(
@@ -43,7 +43,7 @@ export async function withReleasePromotionDispatchLock<T>(
       const current = await adapter.readLock();
       if (current) {
         const ageMs = Math.max(0, adapter.now() - current.acquiredAtMs);
-        if (ageMs >= staleAfterMs && !(await adapter.hasActivePromotion())) {
+        if (ageMs >= staleAfterMs && !(await adapter.hasActiveReleaseStateRun())) {
           await adapter.deleteLockIfOwned(current.ownerId);
           continue;
         }
