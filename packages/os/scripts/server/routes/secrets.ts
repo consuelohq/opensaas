@@ -18,8 +18,9 @@ import {
   NodeSealedCredentialStoreFailure,
 } from '../../lib/node-sealed-credential-store';
 import { resolveConsueloHome } from '../../lib/consuelo-home';
-import { authorizeSignedRequest } from '../middleware/auth';
+import { authenticateSignedRequest, authorizeSignedRequest } from '../middleware/auth';
 import { internalError, jsonResponse } from '../middleware/errors';
+import type { AuthenticatedMcpPrincipal } from '../security/authenticated-principal';
 
 const BINDINGS_PATH = '/gateway/secrets/bindings';
 const SETUP_PATH = '/gateway/secrets/setup';
@@ -59,19 +60,18 @@ function signedIdentity(request: Request): { workspaceId: string; nodeId: string
   return { workspaceId, nodeId };
 }
 
-function actorFromRequest(
-  request: Request,
+function actorFromPrincipal(
+  principal: AuthenticatedMcpPrincipal,
   identity: { workspaceId: string; nodeId: string },
 ): ControlPlaneAuditActor {
+  const applicationId = principal.appId?.trim();
   return {
     actorType: 'user',
-    actorId: request.headers.get('x-consuelo-caller-id')?.trim() || 'signed-caller',
+    actorId: principal.callerId.trim() || principal.subjectId,
     workspaceId: identity.workspaceId,
     nodeId: identity.nodeId,
-    correlationId: request.headers.get('x-consuelo-request-id')?.trim() || randomUUID(),
-    ...(request.headers.get('x-consuelo-application-id')?.trim()
-      ? { applicationId: request.headers.get('x-consuelo-application-id')!.trim() }
-      : {}),
+    correlationId: randomUUID(),
+    ...(applicationId ? { applicationId } : {}),
   };
 }
 
@@ -195,13 +195,13 @@ export function createSecretRoutes(): Hono {
     const request = context.req.raw;
     const body = await request.clone().text();
     try {
-      const denied = await authorizeSignedRequest({
+      const authentication = await authenticateSignedRequest({
         request,
         path: INSTALL_PATH,
         body,
         requiredScope: WRITE_SCOPE,
       });
-      if (denied) return denied;
+      if (!authentication.ok) return authentication.response;
       const identity = signedIdentity(request);
       if (identity instanceof Response) return identity;
       const parsed = parseInstallBody(body);
@@ -221,7 +221,7 @@ export function createSecretRoutes(): Hono {
           bindingId: parsed.bindingId,
         },
         envelope: parsed.envelope,
-        actor: actorFromRequest(request, identity),
+        actor: actorFromPrincipal(authentication.principal, identity),
       });
       return jsonResponse({ ok: true, binding });
     } catch (error: unknown) {

@@ -323,6 +323,7 @@ export function secretsClientScript(): string {
         await loadBindings();
         setText('secret-page-status', bindingId + ' stored.');
       } catch {
+        secretSetup = null;
         value.value = '';
         setText('secret-form-status', 'Secret was not saved. Check the name and try again.');
       } finally {
