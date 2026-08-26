@@ -36,9 +36,11 @@ describe('release script security boundary', () => {
 
     expect(release).toContain('RELEASE_STATE_WORKFLOWS');
     expect(release).toContain('listReleaseStateRuns');
-    expect(release).toContain('const releaseStateBefore = listReleaseStateRuns();');
-    expect(release).toContain('selectActiveReleaseStateRun(releaseStateBefore)');
+    expect(release).toContain('listReleaseStateRunsWithLease');
+    expect(release).toContain('const releaseStateBefore = await listReleaseStateRunsWithLease(lease);');
+    expect(release).toContain('selectActiveReleaseStateRun(releaseStateBefore.all)');
     expect(release).toContain('createPromotionLockAdapter(sourceCommit, listReleaseStateRuns)');
+    expect(release).toContain('await lease.renew();');
     expect(release).toContain('evaluatePromotionCorrelation({');
     expect(release).toContain('const rows = listPromotionRuns();');
   });

@@ -125,6 +125,55 @@ describe('release promotion dispatch lock', () => {
     expect(shared.lock).toBeNull();
   });
 
+  it('supports explicit owner renewal when synchronous work would starve the timer heartbeat', async () => {
+    const shared: SharedRemote = {
+      activePromotion: false,
+      lock: null,
+      renewals: 0,
+      sequence: 0,
+    };
+    const firstOperator = createAdapter(shared);
+    const secondOperator = createAdapter(shared);
+    let active = 0;
+    let maxActive = 0;
+
+    const first = withReleasePromotionDispatchLock({
+      operationId: 'release:first-manual-renew',
+      waitTimeoutMs: 1_000,
+      staleAfterMs: 25,
+      heartbeatIntervalMs: 1_000,
+      pollIntervalMs: 5,
+    }, firstOperator, async (lease) => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      await new Promise((resolve) => setTimeout(resolve, 15));
+      await lease.renew();
+      await new Promise((resolve) => setTimeout(resolve, 15));
+      await lease.renew();
+      await new Promise((resolve) => setTimeout(resolve, 15));
+      active -= 1;
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const second = withReleasePromotionDispatchLock({
+      operationId: 'release:second-manual-renew',
+      waitTimeoutMs: 1_000,
+      staleAfterMs: 25,
+      heartbeatIntervalMs: 1_000,
+      pollIntervalMs: 5,
+    }, secondOperator, async () => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      active -= 1;
+    });
+
+    await Promise.all([first, second]);
+
+    expect(shared.renewals).toBeGreaterThanOrEqual(2);
+    expect(maxActive).toBe(1);
+    expect(shared.lock).toBeNull();
+  });
+
   it('recovers a stale repository lock only when no protected promotion is active', async () => {
     const shared: SharedRemote = {
       activePromotion: false,
