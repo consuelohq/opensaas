@@ -34,7 +34,7 @@ function createAdapter(shared: SharedRemote): ReleasePromotionDispatchLockAdapte
       shared.lock = null;
       return true;
     },
-    hasActivePromotion: async () => shared.activePromotion,
+    hasActiveReleaseStateRun: async () => shared.activePromotion,
   };
 }
 

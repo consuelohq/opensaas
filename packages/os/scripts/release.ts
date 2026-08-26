@@ -31,14 +31,15 @@ import {
 import {
   evaluatePromotionCorrelation,
   promotionDeadline,
-  selectActivePromotionRun,
+  RELEASE_STATE_WORKFLOWS,
+  selectActiveReleaseStateRun,
   type PromotionRunRow,
 } from './lib/release-promotion-correlation';
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 // These workflow filenames are part of the operator release contract; keep them aligned with GitHub Actions.
-const RUNTIME_PUBLISH_WORKFLOW = 'consuelo-os-runtime-publish.yaml';
-const RUNTIME_PROMOTE_WORKFLOW = 'consuelo-os-runtime-promote.yaml';
+const [RUNTIME_PUBLISH_WORKFLOW, RUNTIME_PROMOTE_WORKFLOW, RUNTIME_ROLLBACK_WORKFLOW] =
+  RELEASE_STATE_WORKFLOWS;
 const DEFAULT_RELEASE_BASE_URL = 'https://install.consuelohq.com/os/releases';
 const PACKAGE_ROOT = path.resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -212,7 +213,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
 
   const createPromotionLockAdapter = (
     sourceCommit: string,
-    listPromotionRuns: () => PromotionRunRow[],
+    listReleaseStateRuns: () => PromotionRunRow[],
   ): ReleasePromotionDispatchLockAdapter => {
     const refEndpoint = `repos/${repo}/git/ref/heads/${RELEASE_PROMOTION_LOCK_BRANCH}`;
     const refsEndpoint = `repos/${repo}/git/refs`;
@@ -331,8 +332,8 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
         if (httpStatus === 404 || httpStatus === 409 || httpStatus === 422) return false;
         throw new Error(result.stderr || result.stdout || 'failed to release promotion lock');
       },
-      async hasActivePromotion() {
-        return Boolean(selectActivePromotionRun(listPromotionRuns()));
+      async hasActiveReleaseStateRun() {
+        return Boolean(selectActiveReleaseStateRun(listReleaseStateRuns()));
       },
     };
   };
@@ -571,17 +572,23 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
         const queueDeadline = promotionDeadline(Date.now());
         let baseline = 0;
         let dispatched = false;
-        const listPromotionRuns = () => ghJson<PromotionRunRow[]>([
+        const listWorkflowRuns = (workflow: string) => ghJson<PromotionRunRow[]>([
           'run',
           'list',
           '--workflow',
-          RUNTIME_PROMOTE_WORKFLOW,
+          workflow,
           '--limit',
           '20',
           '--json',
           'databaseId,displayTitle,status,conclusion,url',
         ]);
-        const promotionLockAdapter = createPromotionLockAdapter(sourceCommit, listPromotionRuns);
+        const listPromotionRuns = () => listWorkflowRuns(RUNTIME_PROMOTE_WORKFLOW);
+        const listReleaseStateRuns = () => [
+          ...listWorkflowRuns(RUNTIME_PUBLISH_WORKFLOW),
+          ...listPromotionRuns(),
+          ...listWorkflowRuns(RUNTIME_ROLLBACK_WORKFLOW),
+        ];
+        const promotionLockAdapter = createPromotionLockAdapter(sourceCommit, listReleaseStateRuns);
         while (Date.now() < queueDeadline) {
           const decision = await withReleasePromotionDispatchLock({
             operationId: `release:${from}->${to}:${releaseSetBundleId}`,
@@ -596,10 +603,14 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
                 return { kind: 'success' as const };
               }
 
-              const before = listPromotionRuns();
-              if (selectActivePromotionRun(before)) return { kind: 'wait' as const };
+              const releaseStateBefore = listReleaseStateRuns();
+              if (selectActiveReleaseStateRun(releaseStateBefore)) return { kind: 'wait' as const };
 
-              const nextBaseline = Math.max(0, ...before.map((run) => Number(run.databaseId) || 0));
+              const promotionRunsBefore = listPromotionRuns();
+              const nextBaseline = Math.max(
+                0,
+                ...promotionRunsBefore.map((run) => Number(run.databaseId) || 0),
+              );
               commandOutput(ghPath, [
                 'workflow',
                 'run',
