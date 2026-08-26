@@ -67,7 +67,6 @@ const SITE_SNAPSHOT_ROUTES: ReadonlyArray<{
   siteId: WorkspaceSiteSnapshotId;
 }> = [
   { pathPrefix: '/', siteId: 'launcher' },
-  { pathPrefix: '/artifacts', siteId: 'artifacts' },
   { pathPrefix: '/observability', siteId: 'traces' },
   { pathPrefix: '/observability/traces', siteId: 'traces' },
   { pathPrefix: '/traces', siteId: 'traces' },
@@ -396,6 +395,18 @@ const buildSecretGatewayRoutes = (): WorkspaceRouteD1Route[] => [
 ];
 
 const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/artifacts',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'artifacts-sites-read-layer',
+      gatewayRouteFamily: '/gateway/artifacts/*',
+      publicSiteRouteFamily: '/artifacts/*',
+    },
+  },
   {
     surface: 'sites',
     pathPrefix: '/gateway/artifacts',

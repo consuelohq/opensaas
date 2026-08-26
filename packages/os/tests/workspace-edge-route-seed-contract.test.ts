@@ -120,6 +120,7 @@ contractDescribe('workspace edge route seed contract', () => {
       '/gateway/environments/delete',
       '/gateway/environments',
       '/gateway/secrets',
+      '/artifacts',
       '/gateway/artifacts',
       '/gateway/diffs/write',
       '/gateway/diffs',
@@ -247,6 +248,16 @@ contractDescribe('workspace edge route seed contract', () => {
         target: { kind: 'redirect', location: '/configuration', statusCode: 308 },
       }),
       expect.objectContaining({
+        pathPrefix: '/artifacts',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'artifacts-sites-read-layer',
+          gatewayRouteFamily: '/gateway/artifacts/*',
+          publicSiteRouteFamily: '/artifacts/*',
+        }),
+      }),
+      expect.objectContaining({
         pathPrefix: '/gateway/artifacts',
         auth: 'workspace-session',
         target: expect.objectContaining({
@@ -327,7 +338,6 @@ contractDescribe('workspace edge route seed contract', () => {
     );
     expect(snapshotRoutes.map((route) => route.pathPrefix)).toEqual([
       '/',
-      '/artifacts',
       '/observability',
       '/observability/traces',
       '/traces',
@@ -340,6 +350,13 @@ contractDescribe('workspace edge route seed contract', () => {
       '/environments',
       '/secrets',
     ]);
+    expect(record.routes.find((route) => route.pathPrefix === '/artifacts')).toMatchObject({
+      auth: 'workspace-session',
+      target: {
+        kind: 'consuelo-gateway-service',
+        serviceName: 'artifacts-sites-read-layer',
+      },
+    });
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/diffs',
@@ -672,16 +689,22 @@ contractDescribe('workspace edge route seed contract', () => {
         },
       });
     }
-    for (const siteId of ['artifacts', 'docs']) {
-      expect(refreshed.routes.find((route) => route.target.siteId === siteId)).toMatchObject({
-        target: {
-          siteId,
-          versionId: 'sha256-user-published',
-          manifestKey: 'sites/workspace_internal/' + siteId + '/sha256-user-published/index.html',
-          contentHash: 'f'.repeat(64),
-        },
-      });
-    }
+    expect(refreshed.routes.find((route) => route.target.siteId === 'docs')).toMatchObject({
+      target: {
+        siteId: 'docs',
+        versionId: 'sha256-user-published',
+        manifestKey: 'sites/workspace_internal/docs/sha256-user-published/index.html',
+        contentHash: 'f'.repeat(64),
+      },
+    });
+    expect(refreshed.routes.find((route) => route.pathPrefix === '/artifacts')).toMatchObject({
+      auth: 'workspace-session',
+      target: {
+        kind: 'consuelo-gateway-service',
+        serviceName: 'artifacts-sites-read-layer',
+      },
+    });
+    expect(refreshed.routes.some((route) => route.target.siteId === 'artifacts')).toBe(false);
     db.close();
   });
 
