@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2668,
-    "mappedTestCount": 2582,
+    "testFileCount": 2669,
+    "mappedTestCount": 2583,
     "unmappedTestCount": 86,
-    "ruleCount": 68,
-    "explicitRuleCount": 49,
+    "ruleCount": 69,
+    "explicitRuleCount": 50,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 287,
+      "packages/os/tests": 288,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 574,
+      "test": 575,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -841,6 +841,7 @@
         "packages/os/assets/vendor/observability-traces-v38/inspector.js",
         "packages/os/package.json",
         "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/scripts/lib/trace-cost-estimator.ts",
         "packages/os/scripts/lib/trace-site-inspector/**",
         "packages/os/scripts/lib/trace-sites-gateway-*.ts",
         "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
@@ -1629,6 +1630,77 @@
       "origin": "explicit"
     },
     {
+      "id": "os-secrets-management",
+      "source": [
+        "packages/os/scripts/lib/consuelo-sites-secrets-adapter.ts",
+        "packages/os/scripts/lib/node-sealed-credential-store.ts",
+        "packages/os/scripts/lib/secrets-site.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/scripts/server/route-policies.ts",
+        "packages/os/scripts/server/routes/secrets.ts",
+        "packages/os/tests/internal-launcher-regressions.test.ts",
+        "packages/os/tests/local-os-server-hono-architecture.test.ts",
+        "packages/os/tests/secrets-hono-routes.test.ts",
+        "packages/os/tests/secrets-surface.test.ts",
+        "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+        "packages/os/tests/workspace-gateway-node-end-to-end.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Secrets sealed credential contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/secrets-surface.test.ts",
+            "tests/secrets-hono-routes.test.ts",
+            "tests/node-sealed-credential-store.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets signed gateway bridge",
+          "command": [
+            "bun",
+            "test",
+            "--cwd",
+            "packages/os",
+            "tests/local-os-server-hono-architecture.test.ts",
+            "tests/workspace-gateway-node-end-to-end.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets edge route contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Secrets UI, sealed-envelope storage, signed node routes, and Workspace Edge write routing must prove browser-to-node encryption and metadata-only behavior without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
       "id": "os-internal-workspace-shell",
       "source": [
         "packages/os/scripts/lib/sites.ts",
@@ -1643,7 +1715,8 @@
         "packages/os/tests/sites-cli.test.ts",
         "packages/os/tests/launcher-local-customization.test.ts",
         "packages/os/tests/install-state.test.ts",
-        "packages/os/tests/local-agent-connectivity.test.ts"
+        "packages/os/tests/local-agent-connectivity.test.ts",
+        "packages/os/tests/internal-launcher-regressions.test.ts"
       ],
       "tests": [
         {
@@ -1660,7 +1733,8 @@
             "tests/sites-cli.test.ts",
             "tests/launcher-local-customization.test.ts",
             "tests/install-state.test.ts",
-            "tests/local-agent-connectivity.test.ts"
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
           ]
         },
         {
@@ -4542,6 +4616,11 @@
     },
     {
       "path": "packages/os/tests/internal-dashboard-integration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/internal-launcher-regressions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

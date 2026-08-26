@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { toolHandlers } from '../tools/google/handler';
+
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 describe('bundled Google skill', () => {
@@ -18,6 +20,10 @@ describe('bundled Google skill', () => {
       tools: ['os.get_steering', 'os.call'],
     });
     expect(String(metadata.description)).toMatch(/Gmail.*Calendar.*Drive.*Docs.*Sheets.*Contacts/i);
+  });
+
+  it('executes the package-owned Google command from the installed runtime', () => {
+    expect(toolHandlers[0]?.command.executionScope).toBe('runtime');
   });
 
   it('teaches the OS-native google tool rather than OpenClaw installation commands', () => {

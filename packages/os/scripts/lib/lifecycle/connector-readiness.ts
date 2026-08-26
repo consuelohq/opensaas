@@ -7,6 +7,7 @@ import type { LifecycleConnectorReadiness } from './types';
 type HeartbeatOutput = {
   skipped?: boolean;
   routeReady?: boolean;
+  mcpReady?: boolean;
 };
 
 const sleep = (milliseconds: number): Promise<void> =>
@@ -105,7 +106,12 @@ export function createConnectorReadinessAcceptance(input: {
               configPath,
               env,
             });
-            if (heartbeat && !heartbeat.skipped && heartbeat.routeReady === true) {
+            if (
+              heartbeat
+              && !heartbeat.skipped
+              && heartbeat.routeReady === true
+              && heartbeat.mcpReady !== false
+            ) {
               return true;
             }
           }

@@ -20,18 +20,19 @@ afterEach(() => {
   for (const root of roots.splice(0)) fs.rmSync(root, { recursive: true, force: true });
 });
 
-function fixtureHome(): string {
+function fixtureHome(options: { accountEmail?: string | null } = {}): string {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-google-auth-'));
   roots.push(home);
   const layout = resolveConsueloHomeLayout(home);
   const pair = generateWorkspaceDeviceKeyPair();
+  const accountEmail = options.accountEmail === undefined ? 'person@example.com' : options.accountEmail;
   const configPath = path.join(layout.nodeDir, 'security', 'generated', 'workspace-node-heartbeat.json');
   fs.mkdirSync(path.dirname(configPath), { recursive: true });
   fs.writeFileSync(configPath, JSON.stringify({
     authorityOrigin: 'https://os.consuelohq.com',
     workspaceId: 'ws_123',
     nodeId: 'node_123',
-    accountEmail: 'person@example.com',
+    ...(accountEmail ? { accountEmail } : {}),
     publicKeyJwk: pair.publicKeyJwk,
     signingKeyJwk: pair.signingKeyJwk,
   }));
@@ -76,6 +77,38 @@ describe('Google Workspace OAuth bootstrap', () => {
     expect(typeof body.nonce).toBe('string');
   });
 
+  it('backfills the verified account for an upgraded node before first use', async () => {
+    const home = fixtureHome({ accountEmail: null });
+    let fetchCount = 0;
+    const processRunner: ProviderProcess = {
+      execPath: process.execPath,
+      run: () => Effect.succeed({
+        stdout: JSON.stringify({ account: { credentials_exists: true } }),
+        stderr: '',
+        exitCode: 0,
+        timedOut: false,
+        cancelled: false,
+        runtimeMissing: false,
+        stdoutTruncated: false,
+        stderrTruncated: false,
+      }),
+    };
+
+    const result = await ensureGoogleWorkspaceOAuthCredentials({
+      home,
+      executable: '/managed/gog',
+      process: processRunner,
+      fetchImpl: async () => {
+        fetchCount += 1;
+        return Response.json({ credentials, accountEmail: 'verified@example.com' });
+      },
+    });
+
+    expect(result.changed).toBe(true);
+    expect(fetchCount).toBe(1);
+    expect(googleWorkspaceAccount(home)).toBe('verified@example.com');
+  });
+
   it('pipes the client secret over stdin instead of argv and stores it once', async () => {
     const home = fixtureHome();
     const calls: ProviderProcessRequest[] = [];
@@ -110,5 +143,51 @@ describe('Google Workspace OAuth bootstrap', () => {
     expect(calls[1]?.args).toEqual(['--json', '--no-input', 'auth', 'credentials', 'set', '-']);
     expect(calls[1]?.args.join(' ')).not.toContain('client-secret');
     expect(calls[1]?.stdin).toContain('client-secret');
+  });
+
+  it('refreshes an existing OAuth client after authority credential rotation', async () => {
+    const home = fixtureHome();
+    const calls: ProviderProcessRequest[] = [];
+    let fetchCount = 0;
+    const processRunner: ProviderProcess = {
+      execPath: process.execPath,
+      run: (request) => {
+        calls.push(request);
+        return Effect.succeed({
+          stdout: request.args.includes('status')
+            ? JSON.stringify({ account: { credentials_exists: true } })
+            : JSON.stringify({ stored: true }),
+          stderr: '',
+          exitCode: 0,
+          timedOut: false,
+          cancelled: false,
+          runtimeMissing: false,
+          stdoutTruncated: false,
+          stderrTruncated: false,
+        });
+      },
+    };
+
+    const result = await ensureGoogleWorkspaceOAuthCredentials({
+      home,
+      executable: '/managed/gog',
+      process: processRunner,
+      fetchImpl: async () => {
+        fetchCount += 1;
+        return Response.json({
+          credentials: {
+            installed: {
+              ...credentials.installed,
+              client_secret: 'rotated-client-secret',
+            },
+          },
+        });
+      },
+    });
+
+    expect(result.changed).toBe(true);
+    expect(fetchCount).toBe(1);
+    expect(calls).toHaveLength(2);
+    expect(calls[1]?.stdin).toContain('rotated-client-secret');
   });
 });

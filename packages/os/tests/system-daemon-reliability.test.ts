@@ -500,7 +500,7 @@ describe('macOS runtime service reliability', () => {
     expect(existsSync(consueloLog)).toBe(false);
   });
 
-  it('should reconcile signed public route state before escalating a locally healthy node to restart', () => {
+  it('should reject route registration when the routed MCP probe is not ready', () => {
     const fixtureRoot = temporaryDirectory('consuelo-watchdog-public-route-');
     const fakeBin = join(fixtureRoot, 'bin');
     const home = join(fixtureRoot, 'home');
@@ -523,7 +523,7 @@ describe('macOS runtime service reliability', () => {
     writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
     writeExecutable(
       join(fakeBin, 'bun'),
-      '#!/bin/bash\nprintf "heartbeat\\n" >> "$WATCHDOG_EVENT_LOG"\nprintf \'{"nodeId":"node_home","routeReady":false}\\n\'\n',
+      '#!/bin/bash\nprintf "heartbeat\\n" >> "$WATCHDOG_EVENT_LOG"\nprintf \'{"nodeId":"node_home","routeReady":true,"mcpReady":false}\\n\'\n',
     );
     writeExecutable(
       join(consueloHome, 'bin', 'consuelo'),

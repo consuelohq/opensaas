@@ -10,6 +10,7 @@ import {
   GOG_LICENSE_NOTICE,
   GOG_VERSION,
   managedGogAsset,
+  managedGogExtractionCommand,
   managedGogLicensePath,
   managedGogPath,
 } from '../scripts/lib/managed-gog';
@@ -31,6 +32,18 @@ describe('managed gog runtime', () => {
       fileName: 'gogcli_0.38.1_linux_amd64.tar.gz',
       sha256: '6576828ed6852949ba424b967c3ff4268b3d9c90e201f90fe3d539fe3a151ebb',
     });
+    expect(managedGogAsset('win32', 'x64')).toEqual({
+      version: '0.38.1',
+      fileName: 'gogcli_0.38.1_windows_amd64.zip',
+      sha256: '5523764e142d36a460b8c51779fe79b1e34ffcdcb960addd7901542d206e927d',
+    });
+    expect(managedGogPath('/tmp/consuelo-google', 'win32')).toBe('/tmp/consuelo-google/bin/gog.exe');
+    expect(managedGogExtractionCommand('release.zip', '/extract')).toEqual([
+      'tar', '-xf', 'release.zip', '-C', '/extract',
+    ]);
+    expect(managedGogExtractionCommand('release.tar.gz', '/extract')).toEqual([
+      'tar', '-xzf', 'release.tar.gz', '-C', '/extract',
+    ]);
   });
 
   it('fails closed for unsupported release targets', () => {
@@ -45,6 +58,52 @@ describe('managed gog runtime', () => {
       expect(readFileSync(managedGogLicensePath(home), 'utf8')).toBe(GOG_LICENSE_NOTICE);
       expect(GOG_LICENSE_NOTICE).toContain('Copyright (c) 2026 Peter Steinberger');
       expect(ensureManagedGogLicense(home)).toEqual({ changed: false });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('bounds an optional runtime download with an abort signal', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-gog-timeout-'));
+    let signal: AbortSignal | null | undefined;
+    try {
+      await expect(ensureManagedGog({
+        home,
+        platform: 'darwin',
+        arch: 'arm64',
+        downloadTimeoutMs: 25,
+        fetchImpl: async (_url, init) => {
+          signal = init?.signal;
+          throw new DOMException('aborted', 'AbortError');
+        },
+      })).rejects.toThrow(/timed out/i);
+      expect(signal).toBeInstanceOf(AbortSignal);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('keeps the download timeout active while consuming the response body', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-gog-body-timeout-'));
+    try {
+      await expect(ensureManagedGog({
+        home,
+        platform: 'darwin',
+        arch: 'arm64',
+        downloadTimeoutMs: 10,
+        fetchImpl: async (_url, init) => {
+          const signal = init?.signal;
+          return {
+            ok: true,
+            status: 200,
+            arrayBuffer: async () => {
+              await new Promise((resolve) => setTimeout(resolve, 40));
+              if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
+              return new TextEncoder().encode('body-arrived-after-timeout').buffer;
+            },
+          } as Response;
+        },
+      })).rejects.toThrow(/timed out/i);
     } finally {
       rmSync(home, { recursive: true, force: true });
     }

@@ -77,6 +77,74 @@ const AUTHORITY_ENROLLMENT_RESET_PATH =
 const INTERNAL_DASHBOARD_ORIGIN =
   `https://${INSTALL_INTERNAL_DASHBOARD_HOST}` as const;
 
+const ENROLLMENT_RESET_ERROR_MESSAGES: Record<string, string> = {
+  forbidden: 'Enrollment reset is not authorized.',
+  workspace_route_registry_unavailable:
+    'The workspace route registry is unavailable. Try again shortly.',
+  invalid_enrollment_reset_target:
+    'A valid workspace host and optional workspace ID are required.',
+  enrollment_owner_not_found:
+    'No enrollment owner was found for this workspace.',
+  ambiguous_enrollment_owner:
+    'Multiple enrollment owners were found for this workspace.',
+  ambiguous_enrollment_workspace:
+    'Multiple workspace enrollments were found for this host.',
+  enrollment_workspace_id_not_found:
+    'No workspace ID was found for this enrollment.',
+  enrollment_target_mismatch:
+    'The enrollment target does not match the registered workspace.',
+  enrollment_route_mismatch:
+    'The enrollment route does not match the registered workspace.',
+};
+
+function normalizedEnrollmentResetError(value: unknown): {
+  error: { code: string; message: string };
+} {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    'error' in value &&
+    typeof value.error === 'object' &&
+    value.error !== null &&
+    'code' in value.error &&
+    typeof value.error.code === 'string' &&
+    'message' in value.error &&
+    typeof value.error.message === 'string'
+  ) {
+    return {
+      error: {
+        code: value.error.code,
+        message: value.error.message,
+      },
+    };
+  }
+
+  const legacyCode =
+    typeof value === 'object' &&
+    value !== null &&
+    'error' in value &&
+    typeof value.error === 'string'
+      ? value.error
+      : undefined;
+  if (!legacyCode) {
+    return {
+      error: {
+        code: 'ENROLLMENT_RESET_FAILED',
+        message: 'Enrollment reset failed.',
+      },
+    };
+  }
+
+  return {
+    error: {
+      code: legacyCode.toUpperCase(),
+      message:
+        ENROLLMENT_RESET_ERROR_MESSAGES[legacyCode] ??
+        `Enrollment reset failed: ${legacyCode.replaceAll('_', ' ')}.`,
+    },
+  };
+}
+
 const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
@@ -487,16 +555,31 @@ async function proxyEnrollmentResetRequest(input: {
         body: JSON.stringify(target),
       }),
     );
-    return new Response(response.body, {
-      status: response.status,
-      headers: {
-        'content-type':
-          response.headers.get('content-type') ??
-          'application/json; charset=utf-8',
-        'cache-control': 'no-store',
-        'x-content-type-options': 'nosniff',
+    if (response.ok) {
+      return new Response(response.body, {
+        status: response.status,
+        headers: {
+          'content-type':
+            response.headers.get('content-type') ??
+            'application/json; charset=utf-8',
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+        },
+      });
+    }
+
+    const authorityError = await response.json().catch(() => undefined);
+    return new Response(
+      JSON.stringify(normalizedEnrollmentResetError(authorityError)),
+      {
+        status: response.status,
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+        },
       },
-    });
+    );
   } catch {
     return closedAuthResponse();
   }

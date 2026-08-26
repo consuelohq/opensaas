@@ -563,8 +563,8 @@
         },
         "command": {
           "script": "google",
-          "executionScope": "runtime",
           "branchMode": "none",
+          "executionScope": "runtime",
           "arguments": [
             {
               "source": "action",
