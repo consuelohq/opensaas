@@ -383,6 +383,7 @@ export type InstallDashboardDeviceSummary = {
   nodeId: string;
   userId?: string;
   workspaceId?: string;
+  workspaceHost?: string;
   displayName?: string;
   state: 'active' | 'offline' | 'revoked';
   connectorStatus?: 'connected' | 'disconnected';

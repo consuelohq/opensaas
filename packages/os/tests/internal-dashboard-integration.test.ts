@@ -444,6 +444,80 @@ describe('Branch 6 internal dashboard integration', () => {
     expect(downloaded).not.toContain('must-be-redacted');
   });
 
+  it('proxies only same-origin owner-authorized enrollment resets to Device Authority', async () => {
+    const routeRegistry = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routeRegistry);
+    const service = createInstallControlPlaneService({
+      repository: createMemoryInstallControlPlaneRepository(),
+    });
+    let resetCalls = 0;
+    const edge = createWorkspaceEdgeHandler(
+      {
+        WORKSPACE_ROUTE_REGISTRY: routeRegistry,
+        CONSUELO_EDGE_SIGNING_SECRET: 'signing-secret',
+        WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET: 'edge-secret',
+        OS_DEVICE_AUTHORITY: {
+          idFromName: (name: string) => name,
+          get: () => ({
+            fetch: async (request: Request) => {
+              const pathname = new URL(request.url).pathname;
+              if (pathname === '/internal/auth/session/validate') {
+                return new Response(null, { status: 204 });
+              }
+              if (pathname === '/internal/install-control-plane/enrollment/reset') {
+                resetCalls += 1;
+                expect(request.headers.get('x-consuelo-internal-auth-secret')).toBe('edge-secret');
+                await expect(request.json()).resolves.toEqual({
+                  workspace_host: 'maya.consuelohq.com',
+                  workspace_id: 'workspace_maya',
+                });
+                return Response.json({ status: 'reset', nodes_removed: 1 });
+              }
+              return new Response('not found', { status: 404 });
+            },
+          }),
+        },
+      },
+      {
+        internalDashboardService: service,
+        authorizeInternalDashboard: async () => true,
+        now: () => NOW,
+      },
+    );
+    const request = () => new Request(
+      'https://internal.consuelohq.com/api/internal/os/v1/enrollment/reset',
+      {
+        method: 'POST',
+        headers: {
+          cookie: '__Host-consuelo_os_session=target-session',
+          origin: 'https://internal.consuelohq.com',
+          'content-type': 'application/json',
+          'x-consuelo-dashboard-action': 'enrollment-reset',
+        },
+        body: JSON.stringify({
+          workspace_host: 'maya.consuelohq.com',
+          workspace_id: 'workspace_maya',
+        }),
+      },
+    );
+
+    const response = await edge(request());
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ status: 'reset' });
+    expect(resetCalls).toBe(1);
+
+    const crossOrigin = await edge(new Request(request(), {
+      headers: {
+        cookie: '__Host-consuelo_os_session=target-session',
+        origin: 'https://evil.example',
+        'content-type': 'application/json',
+        'x-consuelo-dashboard-action': 'enrollment-reset',
+      },
+    }));
+    expect(crossOrigin.status).toBe(403);
+    expect(resetCalls).toBe(1);
+  });
+
   it('accepts only short-lived signed canonical user-directory syncs on Device Authority', async () => {
     const repository = createMemoryInstallControlPlaneRepository();
     const authority = createOsDeviceAuthorityHandler({
