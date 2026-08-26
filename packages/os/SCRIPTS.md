@@ -1703,6 +1703,20 @@ The legacy `settings` command remains an alias during migration. Mutations are s
 
 ---
 
+## release -- merge, promote, and update Consuelo OS in one operation
+
+`release` is the operator-facing end-to-end release command. It accepts a PR, verifies and merges it to `main`, waits for the runtime publication tied to the exact merge SHA, promotes that immutable bundle to the requested channel, and updates this node to the exact released version unless `--release-only` is supplied. The command uses the authenticated real GitHub CLI, not the Consuelo `gh` facade shim, and leaves signing/provider secrets inside the existing protected GitHub workflows.
+
+```bash
+bun run --cwd packages/os release -- --pr 2185 --channel canary --json
+bun run --cwd packages/os release -- --pr 2185 --channel stable --release-only --json
+bun run --cwd packages/os release -- --pr 2185 --channel canary --dry-run --json
+```
+
+The supported target channels are `dev`, `canary`, `beta`, and `stable`. Later-stage promotion still walks the legal chain one hop at a time. `--dry-run` inspects the PR and returns the intended plan without merging, dispatching a promotion, or updating the local runtime.
+
+---
+
 ## release channels -- immutable Consuelo OS runtime publication
 
 `release:channels` is the Bun-owned JSON CLI for automatic version allocation, immutable publication, signed channel inspection, protected promotion, and rollback. It supports `publish`, `promote`, `inspect`, and `rollback-channel`; mutating commands default to dry-run and require `--apply` for provider changes.
@@ -1722,5 +1736,7 @@ Supporting scripts:
 - `release:prepare` verifies the complete platform set, creates detached Ed25519 signatures, and emits the publication input.
 
 Runtime recovery capabilities are derived from the signed bundle file inventory instead of being manually claimed. Every promoted platform bundle must carry the same complete recovery-capability set, and lifecycle verification also requires the archive source commit and capabilities to match the signed channel entry.
+
+Promotion resolves an exact immutable bundle from the source channel's verified history when a newer publication advances the source pointer while the promotion is queued. This is allowed only when the requested bundle is already recorded in that source channel's history. Promotion never moves a target channel backward; intentional downgrades continue to use `rollback-channel`.
 
 The protected environments are `consuelo-os-dev`, `consuelo-os-canary`, `consuelo-os-beta`, and `consuelo-os-stable`. See `docs/distribution/release-channels.md` for variables, secrets, first-release seeding, key rotation, concurrency, retry, and human device checkpoints.

@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2656,
-    "mappedTestCount": 2570,
+    "testFileCount": 2662,
+    "mappedTestCount": 2576,
     "unmappedTestCount": 86,
     "ruleCount": 67,
     "explicitRuleCount": 48,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 275,
+      "packages/os/tests": 281,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 562,
+      "test": 568,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -916,10 +916,29 @@
       "id": "os-release-surface-freshness",
       "source": [
         ".github/workflows/consuelo-os-runtime-publish.yaml",
+        ".github/workflows/consuelo-os-runtime-promote.yaml",
+        "packages/os/SCRIPTS.md",
+        "packages/os/docs/distribution/release-channels.md",
         "packages/os/package.json",
+        "packages/os/scripts/github.js",
+        "packages/os/scripts/lib/distribution/release-channels.ts",
+        "packages/os/scripts/lib/github-cli.ts",
+        "packages/os/scripts/lib/release-platform-bundle.ts",
+        "packages/os/scripts/lib/release-promotion-correlation.ts",
+        "packages/os/scripts/lib/release-orchestrator.ts",
+        "packages/os/scripts/release-channels.ts",
+        "packages/os/scripts/release.ts",
         "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/tests/distribution/release-channel-workflows.test.ts",
+        "packages/os/tests/distribution/release-channels.test.ts",
+        "packages/os/tests/github-cli-resolution.test.ts",
         "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/os/tests/release-orchestrator.test.ts",
+        "packages/os/tests/release-local-platform-bundle.test.ts",
+        "packages/os/tests/release-script-promotion-correlation.test.ts",
+        "packages/os/tests/release-script-security.test.ts",
+        "packages/os/tests/release-tool-surface.test.ts",
+        "packages/os/tools/release/**",
         "packages/workspace/scripts/os-release.ts",
         "packages/workspace/scripts/os-release-device-auth.ts",
         "packages/workspace/scripts/os-release-workspace-edge.ts",
@@ -934,7 +953,14 @@
             "packages/os",
             "test",
             "tests/os-device-authority-release-contract.test.ts",
-            "tests/distribution/release-channel-workflows.test.ts"
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
           ]
         },
         {
@@ -960,7 +986,7 @@
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+      "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -4318,6 +4344,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/github-cli-resolution.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/github-pr-reviews.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -5029,6 +5060,31 @@
     },
     {
       "path": "packages/os/tests/redaction.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-local-platform-bundle.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-orchestrator.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-script-promotion-correlation.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-script-security.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-tool-surface.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
