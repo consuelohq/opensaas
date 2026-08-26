@@ -267,10 +267,29 @@
       "exclusive": true,
       "source": [
         ".github/workflows/consuelo-os-runtime-publish.yaml",
+        ".github/workflows/consuelo-os-runtime-promote.yaml",
+        "packages/os/SCRIPTS.md",
+        "packages/os/docs/distribution/release-channels.md",
         "packages/os/package.json",
+        "packages/os/scripts/github.js",
+        "packages/os/scripts/lib/distribution/release-channels.ts",
+        "packages/os/scripts/lib/github-cli.ts",
+        "packages/os/scripts/lib/release-platform-bundle.ts",
+        "packages/os/scripts/lib/release-promotion-correlation.ts",
+        "packages/os/scripts/lib/release-orchestrator.ts",
+        "packages/os/scripts/release-channels.ts",
+        "packages/os/scripts/release.ts",
         "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/tests/distribution/release-channel-workflows.test.ts",
+        "packages/os/tests/distribution/release-channels.test.ts",
+        "packages/os/tests/github-cli-resolution.test.ts",
         "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/os/tests/release-orchestrator.test.ts",
+        "packages/os/tests/release-local-platform-bundle.test.ts",
+        "packages/os/tests/release-script-promotion-correlation.test.ts",
+        "packages/os/tests/release-script-security.test.ts",
+        "packages/os/tests/release-tool-surface.test.ts",
+        "packages/os/tools/release/**",
         "packages/workspace/scripts/os-release.ts",
         "packages/workspace/scripts/os-release-device-auth.ts",
         "packages/workspace/scripts/os-release-workspace-edge.ts",
@@ -285,7 +304,14 @@
             "packages/os",
             "test",
             "tests/os-device-authority-release-contract.test.ts",
-            "tests/distribution/release-channel-workflows.test.ts"
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
           ]
         },
         {
@@ -309,7 +335,7 @@
           ]
         }
       ],
-      "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests."
+      "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests."
     },
     {
       "id": "os-workspace-edge-rollout",
@@ -1439,6 +1465,72 @@
         }
       ],
       "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests."
+    },
+    {
+      "id": "os-compact-explore-response",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/search/explore-output.js",
+        "packages/os/tools/decision-engine/handler.ts",
+        "packages/os/tests/explore-output-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS compact explore response contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-output-contract.test.ts"
+          ]
+        }
+      ],
+      "reason": "Compact explore response shaping and decision-engine integration must prove bounded summary/detail contracts without selecting the unrelated broad OS package suite."
+    },
+    {
+      "id": "os-github-source-control",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts",
+        "packages/os/scripts/lib/github-source-control-client.ts",
+        "packages/os/scripts/lib/source-control-config.ts",
+        "packages/os/scripts/server/routes/settings.ts",
+        "packages/os/scripts/server/services/diffs-gateway.ts",
+        "packages/os/tests/diffs-hono-routes.test.ts",
+        "packages/os/tests/github-source-control-authority.test.ts",
+        "packages/os/tests/settings-hono-routes.test.ts",
+        "packages/os/tests/settings-sites-gateway-endpoints.test.ts",
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/os-device-authority/src/worker.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/tests/settings-site.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        }
+      ],
+      "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite."
     },
     {
       "id": "dialer-package",

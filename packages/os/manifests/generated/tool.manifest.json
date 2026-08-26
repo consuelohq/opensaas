@@ -151,6 +151,12 @@
       "kind": "facade-tool",
       "path": "packages/os/tools/daily-schedules/manifest.ts",
       "entryCount": 1
+    },
+    {
+      "label": "release",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/release/manifest.ts",
+      "entryCount": 1
     }
   ],
   "tools": [
@@ -4110,6 +4116,11 @@
               "kind": "boolean"
             },
             {
+              "source": "detail",
+              "flag": "--detail",
+              "kind": "value"
+            },
+            {
               "source": "reindex",
               "flag": "--reindex",
               "kind": "boolean"
@@ -5129,7 +5140,7 @@
       "source": "lifecycle",
       "sourcePath": "packages/os/tools/lifecycle/manifest.ts",
       "category": "lifecycle",
-      "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater",
+      "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater; optionally require an exact released version",
       "core": false,
       "definition": {
         "name": "lifecycle.update",
@@ -5137,7 +5148,7 @@
           "lifecycle",
           "update"
         ],
-        "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater",
+        "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater; optionally require an exact released version",
         "category": "lifecycle",
         "underlying": "workspace lifecycle.update",
         "capabilities": {
@@ -5159,7 +5170,9 @@
             "update",
             "upgrade",
             "updater",
-            "install latest"
+            "install latest",
+            "exact version",
+            "pin version"
           ],
           "entities": [
             "consuelo os",
@@ -5177,6 +5190,11 @@
             {
               "source": "channel",
               "flag": "--channel",
+              "kind": "value"
+            },
+            {
+              "source": "version",
+              "flag": "--version",
               "kind": "value"
             }
           ]
@@ -7650,6 +7668,93 @@
         },
         "exampleInput": {
           "pr": 225
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "release",
+      "kind": "facade-tool",
+      "source": "release",
+      "sourcePath": "packages/os/tools/release/manifest.ts",
+      "category": "release",
+      "description": "release a Consuelo OS PR end-to-end: verify and merge it to main, wait for the exact merged SHA runtime publication, promote that exact immutable bundle through dev/canary/beta/stable as requested, then by default update this node to the exact released version and verify it; use when Ko says release, deploy this PR, release to canary, or release and update",
+      "core": false,
+      "definition": {
+        "name": "release",
+        "methodPath": [
+          "release"
+        ],
+        "description": "release a Consuelo OS PR end-to-end: verify and merge it to main, wait for the exact merged SHA runtime publication, promote that exact immutable bundle through dev/canary/beta/stable as requested, then by default update this node to the exact released version and verify it; use when Ko says release, deploy this PR, release to canary, or release and update",
+        "category": "release",
+        "underlying": "workspace release",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 1200000,
+        "inputSchema": "ReleaseInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "release",
+            "deploy this pr",
+            "release to canary",
+            "release to beta",
+            "release to production",
+            "release to stable",
+            "release and update",
+            "ship pr",
+            "promote runtime",
+            "update local after release",
+            "consuelo os release"
+          ],
+          "entities": [
+            "Consuelo OS",
+            "runtime release",
+            "release channel",
+            "GitHub PR"
+          ]
+        },
+        "command": {
+          "script": "release",
+          "executionScope": "runtime",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "pr",
+              "flag": "--pr",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "repo",
+              "flag": "--repo",
+              "kind": "value"
+            },
+            {
+              "source": "channel",
+              "flag": "--channel",
+              "kind": "value"
+            },
+            {
+              "source": "mergeMethod",
+              "flag": "--merge-method",
+              "kind": "value"
+            },
+            {
+              "source": "releaseOnly",
+              "flag": "--release-only",
+              "kind": "boolean"
+            }
+          ]
+        },
+        "exampleInput": {
+          "pr": 2185,
+          "channel": "canary"
         },
         "sessionRequired": false
       }

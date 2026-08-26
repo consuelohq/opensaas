@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/smoke-release-tool-with-comment-only-change",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2191,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2191",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2191",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2191/smoke-release-tool-with-comment-only-change",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2191",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2191/smoke-release-tool-with-comment-only-change",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-smoke-release-tool-with-comment-only-change",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d117b2bbb97c",
+  "tmuxSession": "opensaas-os-smoke-release-tool-with-comment-only-change-d117b2bb",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-smoke-release-tool-with-comment-only-change/.task/os/smoke-release-tool-with-comment-only-change/session.json",
+  "createdAt": "2026-08-26T04:08:26.575Z"
+}
