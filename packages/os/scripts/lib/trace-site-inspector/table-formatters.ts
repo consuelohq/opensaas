@@ -61,7 +61,6 @@ const TOOL_LABELS: Record<string, string> = {
   get_steering: 'steering',
   refresh_steering: 'steering.refresh',
   'review.run': 'review',
-  'tools.search': 'search',
 };
 
 export function isDefaultTraceTableRowVisible(row: TraceRecord): boolean {

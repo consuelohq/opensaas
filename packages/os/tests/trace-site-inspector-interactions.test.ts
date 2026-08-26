@@ -44,6 +44,11 @@ describe('Trace Burn keyboard and row interaction contracts', () => {
       traceId: 'trc_3',
       input: { pattern: 'childTraceRecords' },
     }).toolLabel).toBe('fs.search');
+    expect(formatTraceTableRow({
+      name: 'tools.search',
+      traceId: 'trc_4',
+      input: { query: 'release canary' },
+    }).toolLabel).toBe('tools.search');
   });
 
   it('should fall through empty work paths when choosing the session label', () => {

@@ -27,10 +27,11 @@ started: 2026-08-26
 
 ## files changed
 
-- `packages/os/scripts/lib/trace-site-inspector/table-formatters.ts` — preserve the canonical `fs.search` label.
-- `packages/os/scripts/lib/trace-site-inspector/model.ts` — map batch result envelopes to the authoritative batch step tool/input and stop treating ordinary tool result arrays as nested traces.
-- `packages/os/tests/trace-site-inspector-interactions.test.ts` — add regressions for the label, generic result envelopes, batch inputs, and ghost trace rows.
-- `packages/os/assets/vendor/observability-traces-v38/inspector.js` — rebuilt generated browser runtime from OS-owned source.
+- `packages/os/assets/vendor/observability-traces-v38/inspector.js`
+- `packages/os/scripts/lib/trace-site-inspector/model.ts`
+- `packages/os/scripts/lib/trace-site-inspector/table-formatters.ts`
+- `packages/os/tests/trace-site-inspector-interactions.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -51,6 +52,8 @@ started: 2026-08-26
 - Browser runtime rebuild: `build:observability-traces-runtime` completed successfully.
 - 2026-08-26 01:55:10 `review.run`: passed — OK
 - 2026-08-26 01:55:37 `verify`: passed — OK
+- 2026-08-26 02:09:24 `review.run`: passed — OK
+- 2026-08-26 02:09:35 `verify`: passed — OK
 
 ## key decisions
 
@@ -97,3 +100,5 @@ bun run task:finish
 - 2026-08-26 01:56:28 apply-patch: `.task/workspace-agents/fix-tracing-tool-labels-and-batch-child-inputs/workpad.md`
 
 - 2026-08-26 01:57:39 apply-patch: `.task/workspace-agents/fix-tracing-tool-labels-and-batch-child-inputs/workpad.md`
+- 2026-08-26 02:08:02 apply-patch: `packages/os/scripts/lib/trace-site-inspector/table-formatters.ts`
+- 2026-08-26 02:08:02 apply-patch: `packages/os/tests/trace-site-inspector-interactions.test.ts`
