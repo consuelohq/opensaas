@@ -12,6 +12,11 @@ import {
   type WorkspaceChromeOptions,
   type WorkspaceSurfaceId,
 } from './workspace-chrome';
+import {
+  renderSecretsContent,
+  secretsClientScript,
+  secretsSiteStyles,
+} from './secrets-site';
 
 const overviewAssetDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -51,7 +56,7 @@ const PAGE_COPY: Record<ConfigurationPageId, {
   },
   secrets: {
     title: 'Secrets',
-    description: 'Connect credentials to the nodes and tools that need them without exposing secret values to agents.',
+    description: 'Store credentials securely for this workspace.',
   },
 };
 
@@ -345,7 +350,7 @@ function configurationStyles(): string {
     @media (prefers-reduced-motion: reduce) {
       .overview-heat-cell { transition: none; }
     }
-  ` + workspaceRouteSwitcherStyles() + nodesSiteStyles();
+  ` + workspaceRouteSwitcherStyles() + nodesSiteStyles() + secretsSiteStyles();
 }
 
 function configurationClientScript(): string {
@@ -1272,75 +1277,6 @@ function renderToolPanels(): string {
           <div id="tool-inventory" class="tool-inventory" aria-live="polite"></div>
           <p class="sr-only">Disabled items are Available to re-enable. Use the Re-enable toggle beside the item.</p>
         </section>`;
-}
-
-// Metadata only. No value column and no reveal control are rendered.
-function secretsClientScript(): string {
-  return `
-    const byId = (id) => document.getElementById(id);
-    const setHidden = (id, value) => { const element = byId(id); if (element) element.hidden = value; };
-    const setText = (id, value) => { const element = byId(id); if (element) element.textContent = value; };
-    const renderBindingRow = (binding) => {
-      const row = document.createElement('tr');
-      for (const value of [binding.bindingId, binding.nodeId, binding.status, binding.updatedAt]) {
-        const cell = document.createElement('td');
-        cell.textContent = String(value ?? '');
-        row.append(cell);
-      }
-      return row;
-    };
-    fetch('/gateway/secrets/bindings', {
-      headers: { Accept: 'application/json' },
-      credentials: 'same-origin',
-      cache: 'no-store',
-    })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error('secrets unavailable')))
-      .then((payload) => {
-        const bindings = Array.isArray(payload && payload.bindings) ? payload.bindings : [];
-        const rows = byId('secret-rows');
-        if (rows) {
-          rows.replaceChildren();
-          if (bindings.length) {
-            for (const binding of bindings) rows.append(renderBindingRow(binding));
-          } else {
-            const row = document.createElement('tr');
-            const cell = document.createElement('td');
-            cell.colSpan = 4;
-            cell.className = 'empty';
-            cell.textContent = 'No credentials are connected yet.';
-            row.append(cell);
-            rows.append(row);
-          }
-        }
-        setText('secret-summary', bindings.length + (bindings.length === 1 ? ' binding' : ' bindings'));
-        setHidden('secret-loading', true);
-        setHidden('secret-error', true);
-        const content = byId('secret-content');
-        if (content) content.setAttribute('aria-busy', 'false');
-      })
-      .catch(() => {
-        setHidden('secret-loading', true);
-        setHidden('secret-error', false);
-        const content = byId('secret-content');
-        if (content) content.setAttribute('aria-busy', 'false');
-      });
-  `;
-}
-
-function renderSecretsContent(): string {
-  return `
-      <p id="secret-loading" class="sr-only" aria-live="polite">Loading secret connections</p>
-      <section id="secret-error" class="state-panel" aria-live="polite" hidden>
-        <strong>Secret connections unavailable</strong>
-        <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
-      </section>
-      <div id="secret-content" aria-busy="true">
-        <section class="panel-section">
-          <header class="panel-header"><h2>Connected credentials</h2><p id="secret-summary" class="muted">0 bindings</p></header>
-          <p class="muted">Values are never returned to this page or to an agent. Never paste a credential into an agent conversation.</p>
-          <div class="table-wrap"><table><thead><tr><th>Binding</th><th>Node</th><th>Status</th><th>Updated</th></tr></thead><tbody id="secret-rows"></tbody></table></div>
-        </section>
-      </div>`;
 }
 
 function renderEnvironmentContent(): string {

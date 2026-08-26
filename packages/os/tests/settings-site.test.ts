@@ -48,11 +48,11 @@ describe('configuration site', () => {
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/secrets"');
-    expect(html).toContain('>Overview</span><small>Workspace health and operating context.</small>');
+    expect(html).toContain('>Overview</span><small>Workspace health and context.</small>');
     expect(html).toContain('href="https://docs.consuelohq.com/"');
     expect(html).toContain('target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/"');
-    expect(html).toContain('>Artifacts</span><small>Browse agent work and generated outputs.</small>');
-    expect(html).toContain('>Code</span><small>Review code diffs and changes.</small>');
+    expect(html).toContain('>Artifacts</span><small>Browse generated agent work.</small>');
+    expect(html).toContain('>Code</span><small>Review code changes safely.</small>');
     expect(html).toContain('data-route-group="Connect"');
     expect(html).toContain('>ChatGPT<');
     expect(html).toContain('href="https://chatgpt.com/plugins#settings/Connectors?create-connector=true&amp;redirectAfter=%2Fplugins"');
@@ -232,9 +232,9 @@ describe('configuration site', () => {
     expect(secretsHtml).toContain('<title>Secrets - Consuelo OS</title>');
     expect(secretsHtml).toContain('<h1>Secrets</h1>');
     expect(secretsHtml).toContain('aria-current="page" href="/secrets"');
-    expect(secretsHtml).toContain('Connected credentials');
+    expect(secretsHtml).toContain('+ New secret');
     expect(secretsHtml).toContain('/gateway/secrets/bindings');
-    expect(secretsHtml).toContain('Values are never returned to this page or to an agent');
+    expect(secretsHtml).toContain('Encrypted in this browser before it is sent.');
     expect(secretsHtml).not.toContain('/gateway/configuration/snapshot');
     expect(secretsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
   });
