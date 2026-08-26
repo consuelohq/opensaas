@@ -177,48 +177,17 @@ function configurationClientScript(): string {
 
     let currentSourceControl = { configured: false, defaultRepositoryId: null, repositories: [] };
 
-    const sourceControlField = (id, value) => {
-      const element = byId(id);
-      if (element instanceof HTMLInputElement || element instanceof HTMLSelectElement) element.value = value ?? '';
-    };
-
-    function resetSourceControlForm() {
-      const form = byId('source-control-form');
-      if (form instanceof HTMLFormElement) form.reset();
-      sourceControlField('source-control-provider', 'github');
-      sourceControlField('source-control-branch', 'main');
-      const defaultInput = byId('source-control-default');
-      if (defaultInput instanceof HTMLInputElement) defaultInput.checked = currentSourceControl.repositories.length === 0;
-      setText('source-control-form-status', 'Repository root is used when code roots are empty.');
-    }
-
-    function editSourceControlRepository(repository) {
-      sourceControlField('source-control-id', repository.id || '');
-      sourceControlField('source-control-name', repository.name || '');
-      sourceControlField('source-control-provider', repository.provider || 'github');
-      sourceControlField('source-control-repo', repository.nameWithOwner || '');
-      sourceControlField('source-control-branch', repository.defaultBranch || 'main');
-      sourceControlField('source-control-connection', repository.connectionRef || '');
-      sourceControlField('source-control-roots', (repository.codeRoots || []).join(', '));
-      const defaultInput = byId('source-control-default');
-      if (defaultInput instanceof HTMLInputElement) defaultInput.checked = currentSourceControl.defaultRepositoryId === repository.id;
-      setText('source-control-form-status', 'Editing ' + (repository.nameWithOwner || repository.id) + '.');
-      byId('source-control-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
     function sourceControlRow(repository) {
       const isDefault = currentSourceControl.defaultRepositoryId === repository.id;
       const status = repository.ready ? pill('connected') : pill('not_configured');
       return '<tr data-source-control-id="' + escapeHtml(repository.id) + '">' +
         '<td>' + (isDefault ? '<strong>Default</strong>' : '<span class="muted">—</span>') + '</td>' +
         '<td><code>' + escapeHtml(repository.nameWithOwner || '') + '</code><br>' + status + '</td>' +
-        '<td>' + escapeHtml(repository.provider || 'github') + '</td>' +
         '<td><code>' + escapeHtml(repository.defaultBranch || 'main') + '</code></td>' +
-        '<td><code>' + escapeHtml(repository.connectionRef || 'not connected') + '</code></td>' +
-        '<td><code>' + escapeHtml((repository.codeRoots || []).join(', ') || 'repository root') + '</code></td>' +
-        '<td><div class="row-actions"><button type="button" data-source-action="edit">Edit</button>' +
-          (!isDefault ? '<button type="button" data-source-action="default">Make default</button>' : '') +
-          '<button type="button" class="danger-button" data-source-action="remove">Remove</button></div></td>' +
+        '<td>' + (repository.ready ? 'GitHub' : '<span class="muted">Reconnect GitHub</span>') + '</td>' +
+        '<td><div class="row-actions">' +
+          (!isDefault ? '<button type="button" data-source-action="default">Make default</button>' : '<span class="muted">—</span>') +
+          '</div></td>' +
       '</tr>';
     }
 
@@ -227,18 +196,10 @@ function configurationClientScript(): string {
         const id = row.getAttribute('data-source-control-id');
         const repository = currentSourceControl.repositories.find((candidate) => candidate.id === id);
         if (!repository) return;
-        row.querySelector('[data-source-action="edit"]')?.addEventListener('click', () => editSourceControlRepository(repository));
         row.querySelector('[data-source-action="default"]')?.addEventListener('click', () => void persistSourceControl({
           ...currentSourceControl,
           defaultRepositoryId: repository.id,
         }, 'Default repository updated.'));
-        row.querySelector('[data-source-action="remove"]')?.addEventListener('click', () => {
-          const repositories = currentSourceControl.repositories.filter((candidate) => candidate.id !== repository.id);
-          const defaultRepositoryId = currentSourceControl.defaultRepositoryId === repository.id
-            ? (repositories[0]?.id || null)
-            : currentSourceControl.defaultRepositoryId;
-          void persistSourceControl({ ...currentSourceControl, repositories, defaultRepositoryId }, 'Repository removed.');
-        });
       });
     }
 
@@ -251,16 +212,17 @@ function configurationClientScript(): string {
       const rows = byId('source-control-repository-list');
       if (rows) rows.innerHTML = currentSourceControl.repositories.length
         ? currentSourceControl.repositories.map(sourceControlRow).join('')
-        : emptyRow(7, 'No source-control repositories configured. Diffs will stay in setup mode.');
+        : emptyRow(5, 'No GitHub repositories connected yet.');
       setText('source-control-summary', currentSourceControl.repositories.length
-        ? currentSourceControl.repositories.length + ' repositor' + (currentSourceControl.repositories.length === 1 ? 'y' : 'ies') + (currentSourceControl.configured ? ' · ready' : ' · connection required')
-        : 'No repositories connected');
+        ? 'GitHub connected · ' + currentSourceControl.repositories.length + ' repositor' + (currentSourceControl.repositories.length === 1 ? 'y' : 'ies') + (currentSourceControl.configured ? ' ready' : ' selected')
+        : 'Connect GitHub to choose repositories');
+      const connect = byId('source-control-connect-github');
+      if (connect) connect.textContent = currentSourceControl.repositories.length ? 'Manage GitHub access' : 'Connect GitHub';
       bindSourceControlRows();
-      resetSourceControlForm();
     }
 
     async function persistSourceControl(next, successMessage) {
-      setText('source-control-form-status', 'Saving source-control configuration…');
+      setText('source-control-status', 'Saving source-control configuration…');
       try {
         const response = await fetch('/gateway/configuration/source-control', {
           method: 'POST',
@@ -283,42 +245,10 @@ function configurationClientScript(): string {
           throw new Error(payload?.error?.message || 'Source-control update was denied.');
         }
         renderSourceControl(payload.snapshot);
-        setText('source-control-form-status', successMessage || 'Source-control configuration updated.');
+        setText('source-control-status', successMessage || 'Source-control configuration updated.');
       } catch (/** @type {unknown} */ error) {
-        setText('source-control-form-status', error instanceof Error ? error.message : 'Source-control update failed.');
+        setText('source-control-status', error instanceof Error ? error.message : 'Source-control update failed.');
       }
-    }
-
-    function submitSourceControl(event) {
-      event.preventDefault();
-      const form = event.currentTarget;
-      if (!(form instanceof HTMLFormElement)) return;
-      const data = new FormData(form);
-      const id = String(data.get('id') || '').trim();
-      const nameWithOwner = String(data.get('nameWithOwner') || '').trim();
-      const connectionRef = String(data.get('connectionRef') || '').trim();
-      if (!id || !nameWithOwner || !connectionRef) {
-        setText('source-control-form-status', 'Project ID, repository, and connection binding are required.');
-        return;
-      }
-      const repository = {
-        id,
-        ...(String(data.get('name') || '').trim() ? { name: String(data.get('name')).trim() } : {}),
-        provider: String(data.get('provider') || 'github').trim() || 'github',
-        nameWithOwner,
-        defaultBranch: String(data.get('defaultBranch') || 'main').trim() || 'main',
-        connectionRef,
-        codeRoots: String(data.get('codeRoots') || '').split(',').map((value) => value.trim()).filter(Boolean),
-        ready: true,
-      };
-      const repositories = currentSourceControl.repositories.filter((candidate) => candidate.id !== id);
-      repositories.push(repository);
-      const defaultInput = byId('source-control-default');
-      const makeDefault = defaultInput instanceof HTMLInputElement && defaultInput.checked;
-      const defaultRepositoryId = makeDefault || !currentSourceControl.defaultRepositoryId
-        ? id
-        : currentSourceControl.defaultRepositoryId;
-      void persistSourceControl({ ...currentSourceControl, repositories, defaultRepositoryId }, 'Repository saved.');
     }
 
     async function loadSourceControl() {
@@ -330,12 +260,45 @@ function configurationClientScript(): string {
         renderSourceControl(payload.snapshot);
       } catch {
         setText('source-control-summary', 'Source-control configuration unavailable');
-        setHtml('source-control-repository-list', emptyRow(7, 'Source-control configuration could not be loaded.'));
+        setHtml('source-control-repository-list', emptyRow(5, 'Source-control configuration could not be loaded.'));
       }
     }
 
-    byId('source-control-form')?.addEventListener('submit', (event) => void submitSourceControl(event));
-    byId('source-control-form-reset')?.addEventListener('click', resetSourceControlForm);
+    async function completeGitHubSourceControlFromLocation() {
+      const url = new URL(window.location.href);
+      const handoff = url.searchParams.get('github_handoff');
+      if (!handoff) return false;
+      setText('source-control-status', 'Finishing GitHub connection…');
+      try {
+        const response = await fetch('/gateway/configuration/source-control/github/complete', {
+          method: 'POST',
+          headers: { accept: 'application/json', 'content-type': 'application/json' },
+          body: JSON.stringify({ handoff }),
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload || payload.ok === false || !payload.snapshot) {
+          throw new Error(payload?.error?.message || 'GitHub connection could not be completed.');
+        }
+        renderSourceControl(payload.snapshot);
+        setText('source-control-status', payload.snapshot.repositories?.length
+          ? 'GitHub connected.'
+          : 'GitHub connected, but no repositories are selected.');
+        url.searchParams.delete('github_handoff');
+        url.searchParams.delete('return_to');
+        history.replaceState({}, '', url.pathname + url.search);
+        const returnPath = typeof payload.returnPath === 'string' ? payload.returnPath : '/configuration';
+        if (returnPath !== '/configuration' && returnPath !== window.location.pathname) window.location.assign(returnPath);
+        return true;
+      } catch (/** @type {unknown} */ error) {
+        setText('source-control-status', error instanceof Error ? error.message : 'GitHub connection failed.');
+        return true;
+      }
+    }
+
+    async function initSourceControl() {
+      const completed = await completeGitHubSourceControlFromLocation();
+      if (!completed) await loadSourceControl();
+    }
 
     function bindToggles() {
       document.querySelectorAll('.configuration-toggle').forEach((input) => {
@@ -429,7 +392,7 @@ function configurationClientScript(): string {
     }
 
     void loadConfiguration();
-    void loadSourceControl();
+    void initSourceControl();
   `;
 }
 
@@ -629,24 +592,12 @@ function renderOverviewPanels(): string {
         <section class="panel-section" id="source-control">
           <header class="panel-header">
             <h2>Source control</h2>
-            <p>Choose the repositories Diffs can review. Store the credential in <a href="/secrets">Secrets</a>, then enter its connection binding ID here; secret values never load into this page.</p>
+            <p>Connect GitHub, choose the repositories Consuelo may review in GitHub's own access screen, and come back here ready to use Diffs.</p>
             <p id="source-control-summary" class="muted">Loading source-control configuration…</p>
           </header>
-          <form id="source-control-form" class="source-control-form">
-            <div class="form-grid">
-              <label class="field"><span>Project ID</span><input id="source-control-id" name="id" required maxlength="80" placeholder="app" autocomplete="off" /></label>
-              <label class="field"><span>Display name</span><input id="source-control-name" name="name" maxlength="120" placeholder="App" autocomplete="off" /></label>
-              <label class="field"><span>Provider</span><select id="source-control-provider" name="provider"><option value="github">GitHub</option></select></label>
-              <label class="field"><span>Repository</span><input id="source-control-repo" name="nameWithOwner" required placeholder="owner/repository" autocomplete="off" /></label>
-              <label class="field"><span>Default branch</span><input id="source-control-branch" name="defaultBranch" value="main" required autocomplete="off" /></label>
-              <label class="field"><span>Connection binding</span><input id="source-control-connection" name="connectionRef" required placeholder="github-app:primary" autocomplete="off" /></label>
-              <label class="field field-wide"><span>Code roots</span><input id="source-control-roots" name="codeRoots" placeholder="src, packages/app (blank = repository root)" autocomplete="off" /></label>
-            </div>
-            <label class="inline-check"><input id="source-control-default" name="makeDefault" type="checkbox" /> Make this the default repository</label>
-            <div class="actions"><button type="submit">Save repository</button><button id="source-control-form-reset" type="button">Clear</button></div>
-            <p id="source-control-form-status" class="muted" aria-live="polite">Repository root is used when code roots are empty.</p>
-          </form>
-          <div class="table-wrap"><table><thead><tr><th>Default</th><th>Repository</th><th>Provider</th><th>Branch</th><th>Connection</th><th>Code roots</th><th>Actions</th></tr></thead><tbody id="source-control-repository-list"></tbody></table></div>
+          <div class="actions"><a id="source-control-connect-github" href="/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration">Connect GitHub</a></div>
+          <p id="source-control-status" class="muted" aria-live="polite">GitHub manages repository access; Consuelo stores only the workspace connection.</p>
+          <div class="table-wrap"><table><thead><tr><th>Default</th><th>Repository</th><th>Branch</th><th>Access</th><th>Actions</th></tr></thead><tbody id="source-control-repository-list"></tbody></table></div>
         </section>
         <section class="panel-section" id="connections">
           <header class="panel-header"><h2>Connections</h2><p>Cloud and local agent connections for this workspace.</p></header>

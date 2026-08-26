@@ -9,9 +9,15 @@ import {
 import {
   buildWorkspaceSourceControlSnapshot,
   parseWorkspaceSourceControlConfiguration,
+  updateWorkspaceSourceControlFromGitHubInstallation,
   updateWorkspaceSourceControlConfiguration,
   type WorkspaceSourceControlConfigurationInput,
 } from '../../lib/source-control-config';
+import {
+  claimGitHubSourceControlInstall,
+  githubInstallationConnectionRef,
+  startGitHubSourceControlInstall,
+} from '../../lib/github-source-control-client';
 import {
   applySettingsGatewayOverlayPatch,
   readSettingsGatewaySnapshot,
@@ -66,8 +72,130 @@ function sourceControlConfigurationError(_error: unknown): Response {
   }, 400);
 }
 
+function safeSourceControlReturnPath(value: string | null): string {
+  if (!value) return '/configuration';
+  const trimmed = value.trim();
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.includes('\\')) {
+    return '/configuration';
+  }
+  try {
+    const parsed = new URL(trimmed, 'https://workspace.invalid');
+    if (parsed.origin !== 'https://workspace.invalid' || parsed.hash) return '/configuration';
+    return `${parsed.pathname}${parsed.search}`;
+  } catch {
+    return '/configuration';
+  }
+}
+
 export function createSettingsRoutes(): Hono {
   const app = new Hono();
+
+  app.get('/gateway/configuration/source-control/github/connect', async (context) => {
+    const request = context.req.raw;
+    const requestUrl = new URL(request.url);
+    const signedPath = `${requestUrl.pathname}${requestUrl.search}`;
+    try {
+      const authentication = await authenticateSignedRequest({
+        request,
+        path: signedPath,
+        body: '',
+        requiredScope: 'route:/gateway/configuration:write',
+      });
+      if (!authentication.ok) return authentication.response;
+      const workspaceId = authentication.principal.workspaceId?.trim();
+      if (!workspaceId) {
+        return jsonResponse({
+          ok: false,
+          error: { code: 'WORKSPACE_ID_REQUIRED', message: 'Signed workspace identity is required.' },
+        }, 403);
+      }
+      const home = requireConfigurationHome(
+        'Consuelo OS home is required to connect GitHub.',
+      );
+      if (home instanceof Response) return home;
+      const returnPath = safeSourceControlReturnPath(requestUrl.searchParams.get('return_to'));
+      const { installUrl } = await startGitHubSourceControlInstall({ home, returnPath });
+      return new Response(null, {
+        status: 302,
+        headers: { location: installUrl, 'cache-control': 'no-store' },
+      });
+    } catch (error: unknown) {
+      return jsonResponse({
+        ok: false,
+        error: {
+          code: 'GITHUB_CONNECT_FAILED',
+          message: error instanceof Error ? error.message : 'GitHub connection could not be started.',
+        },
+      }, 503);
+    }
+  });
+
+  app.post('/gateway/configuration/source-control/github/complete', async (context) => {
+    const request = context.req.raw;
+    try {
+      const body = await request.clone().text();
+      const authentication = await authenticateSignedRequest({
+        request,
+        path: '/gateway/configuration/source-control/github/complete',
+        body,
+        requiredScope: 'route:/gateway/configuration:write',
+      });
+      if (!authentication.ok) return authentication.response;
+      const workspaceId = authentication.principal.workspaceId?.trim();
+      if (!workspaceId) {
+        return jsonResponse({
+          ok: false,
+          error: { code: 'WORKSPACE_ID_REQUIRED', message: 'Signed workspace identity is required.' },
+        }, 403);
+      }
+      const home = requireConfigurationHome(
+        'Consuelo OS home is required to finish connecting GitHub.',
+      );
+      if (home instanceof Response) return home;
+      let handoff = '';
+      try {
+        const parsed = JSON.parse(body) as unknown;
+        handoff = parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+          && typeof (parsed as Record<string, unknown>).handoff === 'string'
+          ? ((parsed as Record<string, unknown>).handoff as string).trim()
+          : '';
+      } catch {
+        handoff = '';
+      }
+      if (!handoff) {
+        return jsonResponse({
+          ok: false,
+          error: { code: 'GITHUB_HANDOFF_REQUIRED', message: 'GitHub connection handoff is required.' },
+        }, 400);
+      }
+      const claim = await claimGitHubSourceControlInstall({ home, handoff });
+      const snapshot = updateWorkspaceSourceControlFromGitHubInstallation({
+        home,
+        workspaceId,
+        installation: {
+          connectionRef: githubInstallationConnectionRef(claim.connectionId),
+          repositories: claim.repositories,
+        },
+      });
+      return jsonResponse({
+        ok: true,
+        snapshot,
+        returnPath: safeSourceControlReturnPath(claim.returnPath),
+        github: {
+          accountLogin: claim.accountLogin,
+          repositorySelection: claim.repositorySelection,
+        },
+      });
+    } catch (error: unknown) {
+      return jsonResponse({
+        ok: false,
+        error: {
+          code: 'GITHUB_CONNECT_FAILED',
+          message: error instanceof Error ? error.message : 'GitHub connection could not be completed.',
+        },
+      }, 503);
+    }
+  });
 
   app.get('/gateway/configuration/source-control', async (context) => {
     const request = context.req.raw;
