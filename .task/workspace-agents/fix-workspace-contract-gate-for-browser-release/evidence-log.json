@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
+  "events": [
+    {
+      "id": "b47eb894-63ec-49d0-9cbe-9a45965a03bc",
+      "occurred_at": "2026-08-26T05:53:13.912Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/browser-service.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T05:53:13.979Z"
+}

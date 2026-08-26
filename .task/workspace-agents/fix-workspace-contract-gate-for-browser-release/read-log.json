@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".github/workflows/consuelo-ci.yaml",
+    ".task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/media/schema.ts",
+    "packages/os/scripts/media.ts",
+    "packages/os/tests/browser-service.test.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tools/media/handler.ts",
+    "packages/os/tools/media/schema.ts",
+    "packages/os/tools/subagent/schema.ts",
+    "packages/workspace/tests/browser-service.test.ts"
+  ],
+  "updatedAt": "2026-08-26T05:54:34.955Z"
+}
