@@ -23,6 +23,14 @@ export type ReleaseRun = {
   url: string;
 };
 
+export type RuntimePublishListRow = {
+  databaseId: number;
+  headSha?: string;
+  status?: string;
+  conclusion?: string;
+  url?: string;
+};
+
 export type ReleaseIdentity = {
   channel: ReleaseChannel;
   sourceCommit: string;
@@ -72,6 +80,38 @@ export type ReleaseResult = {
 };
 
 const CHANNEL_ORDER: ReleaseChannel[] = ['dev', 'canary', 'beta', 'stable'];
+
+function clean(value: unknown): string {
+  return String(value ?? '').trim();
+}
+
+function toReleaseRun(row: RuntimePublishListRow): ReleaseRun {
+  return {
+    runId: row.databaseId,
+    status: clean(row.status),
+    conclusion: clean(row.conclusion),
+    url: clean(row.url),
+  };
+}
+
+export function selectRuntimePublishCandidate(
+  rows: RuntimePublishListRow[],
+  mergeSha: string,
+): ReleaseRun | null {
+  const exact = rows.filter((row) => clean(row.headSha) === mergeSha);
+  const success = exact.find(
+    (row) => clean(row.status) === 'completed' && clean(row.conclusion) === 'success',
+  );
+  if (success) return toReleaseRun(success);
+
+  const active = exact.find((row) => clean(row.status) !== 'completed');
+  if (active) return toReleaseRun(active);
+
+  const terminalFailure = exact.find(
+    (row) => clean(row.status) === 'completed' && clean(row.conclusion) !== 'cancelled',
+  );
+  return terminalFailure ? toReleaseRun(terminalFailure) : null;
+}
 
 function releasePlan(pr: number, channel: ReleaseChannel, releaseOnly: boolean): string[] {
   const steps = [
@@ -163,12 +203,19 @@ export async function orchestrateRelease(
     }
     if (!mergeSha) throw new Error(`release could not resolve the main merge SHA for PR #${request.pr}`);
 
-    const runtimeRun = await adapter.findRuntimePublish(mergeSha);
-    const completedRuntimeRun = runtimeRun.status === 'completed'
-      ? runtimeRun
-      : await adapter.waitForRun(runtimeRun.runId);
-    if (completedRuntimeRun.conclusion !== 'success') {
-      throw new Error(`runtime publication failed for ${mergeSha}: ${completedRuntimeRun.conclusion || completedRuntimeRun.status}`);
+    let completedRuntimeRun: ReleaseRun | null = null;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const runtimeRun = await adapter.findRuntimePublish(mergeSha);
+      completedRuntimeRun = runtimeRun.status === 'completed'
+        ? runtimeRun
+        : await adapter.waitForRun(runtimeRun.runId);
+      if (completedRuntimeRun.conclusion === 'success') break;
+      if (completedRuntimeRun.conclusion !== 'cancelled' || attempt === 1) {
+        throw new Error(`runtime publication failed for ${mergeSha}: ${completedRuntimeRun.conclusion || completedRuntimeRun.status}`);
+      }
+    }
+    if (!completedRuntimeRun || completedRuntimeRun.conclusion !== 'success') {
+      throw new Error(`runtime publication failed for ${mergeSha}: no successful exact-SHA publication`);
     }
 
     const devRelease = await adapter.resolveDevRelease(mergeSha);

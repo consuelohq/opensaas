@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_5e55668973f7",
+  "tmuxSession": "opensaas-os-fix-release-publication-wait-race-5e556689",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-release-publication-wait-race",
+  "branch": "task/os/fix-release-publication-wait-race",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-release-publication-wait-race",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-release-publication-wait-race",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2217,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2217",
+  "createdAt": "2026-08-26T14:59:12.724Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-release-publication-wait-race/.task/os/fix-release-publication-wait-race/session.json"
+}
