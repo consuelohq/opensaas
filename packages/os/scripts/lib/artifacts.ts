@@ -309,6 +309,56 @@ function replaceDirectory(sourceDir: string, destinationDir: string): void {
   fs.cpSync(sourceDir, destinationDir, { recursive: true, errorOnExist: true });
 }
 
+function currentArtifactMaterializations(
+  home: string,
+  artifacts: ArtifactRecord[],
+): Array<{ artifact: ArtifactRecord; sourceDir: string }> {
+  return artifacts.map((artifact) => {
+    const sourceDir = artifactVersionDir(home, artifact.path, artifact.currentVersionId);
+    if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
+      throw new Error(
+        `current artifact version is missing for ${artifact.path}: ${artifact.currentVersionId}`,
+      );
+    }
+    return { artifact, sourceDir };
+  });
+}
+
+function replaceArtifactCurrentDirectory(input: {
+  home: string;
+  routePath: string;
+  sourceDir: string;
+  catalog: ArtifactCatalog;
+}): void {
+  const routePath = normalizeRoutePath(input.routePath);
+  const descendantPrefix = `${routePath}/`;
+  const descendants = Object.values(input.catalog.artifacts)
+    .filter((artifact) => artifact.path.startsWith(descendantPrefix))
+    .sort((left, right) => left.path.length - right.path.length);
+  const materializations = currentArtifactMaterializations(input.home, descendants);
+
+  replaceDirectory(input.sourceDir, artifactCurrentDir(input.home, routePath));
+  for (const { artifact, sourceDir } of materializations) {
+    replaceDirectory(sourceDir, artifactCurrentDir(input.home, artifact.path));
+  }
+}
+
+export function reconcileArtifactCurrentTree(
+  home: string,
+  catalog = readArtifactCatalog(home),
+): number {
+  const currentRoot = path.join(artifactsRoot(home), 'current');
+  const artifacts = Object.values(catalog.artifacts)
+    .sort((left, right) => left.path.length - right.path.length);
+  const materializations = currentArtifactMaterializations(home, artifacts);
+
+  fs.rmSync(currentRoot, { recursive: true, force: true });
+  for (const { artifact, sourceDir } of materializations) {
+    replaceDirectory(sourceDir, artifactCurrentDir(home, artifact.path));
+  }
+  return artifacts.length;
+}
+
 function listTreeFiles(root: string): string[] {
   if (!fs.existsSync(root)) return [];
   const files: string[] = [];
@@ -362,7 +412,9 @@ function displayFilter(entry: ArtifactEntry): string {
 
 function renderArtifactsIndex(catalog: ArtifactCatalog): string {
   const logoDataUri = consueloMarkDataUri();
-  const entries = [...catalog.entries].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+  const entries = catalog.entries
+    .filter((entry) => !entry.path.startsWith('/daily-schedules/'))
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
   const cards = entries.map((entry) => `
         <article class="post-item" data-template="${escapeHtml(displayFilter(entry))}" data-category="${escapeHtml(entry.category)}">
           <h3><a href="${escapeHtml(entry.url)}">${escapeHtml(entry.title)}</a></h3>
@@ -516,8 +568,12 @@ export function publishArtifact(input: PublishArtifactInput): PublishArtifactRes
   const versionDir = artifactVersionDir(input.home, routePath, versionId);
   copyPublishTarget(input.target, versionDir);
   const digest = digestTree(versionDir);
-  const currentDir = artifactCurrentDir(input.home, routePath);
-  replaceDirectory(versionDir, currentDir);
+  replaceArtifactCurrentDirectory({
+    home: input.home,
+    routePath,
+    sourceDir: versionDir,
+    catalog,
+  });
 
   const category = input.category?.trim() || pathSegments(routePath)[0] || 'uncategorized';
   const template = input.template ?? 'uncategorized';
@@ -586,7 +642,12 @@ export function rollbackArtifact(input: RollbackArtifactInput): PublishArtifactR
   const versionDir = artifactVersionDir(input.home, artifact.path, versionId);
   fs.mkdirSync(path.dirname(versionDir), { recursive: true });
   fs.cpSync(sourceDir, versionDir, { recursive: true, errorOnExist: true });
-  replaceDirectory(versionDir, artifactCurrentDir(input.home, artifact.path));
+  replaceArtifactCurrentDirectory({
+    home: input.home,
+    routePath: artifact.path,
+    sourceDir: versionDir,
+    catalog,
+  });
 
   const version: ArtifactVersion = {
     ...target,
