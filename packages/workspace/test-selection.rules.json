@@ -267,10 +267,25 @@
       "exclusive": true,
       "source": [
         ".github/workflows/consuelo-os-runtime-publish.yaml",
+        ".github/workflows/consuelo-os-runtime-promote.yaml",
+        "packages/os/SCRIPTS.md",
+        "packages/os/docs/distribution/release-channels.md",
         "packages/os/package.json",
+        "packages/os/scripts/github.js",
+        "packages/os/scripts/lib/distribution/release-channels.ts",
+        "packages/os/scripts/lib/github-cli.ts",
+        "packages/os/scripts/lib/release-orchestrator.ts",
+        "packages/os/scripts/release-channels.ts",
+        "packages/os/scripts/release.ts",
         "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/tests/distribution/release-channel-workflows.test.ts",
+        "packages/os/tests/distribution/release-channels.test.ts",
+        "packages/os/tests/github-cli-resolution.test.ts",
         "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/os/tests/release-orchestrator.test.ts",
+        "packages/os/tests/release-script-security.test.ts",
+        "packages/os/tests/release-tool-surface.test.ts",
+        "packages/os/tools/release/**",
         "packages/workspace/scripts/os-release.ts",
         "packages/workspace/scripts/os-release-device-auth.ts",
         "packages/workspace/scripts/os-release-workspace-edge.ts",
@@ -285,7 +300,12 @@
             "packages/os",
             "test",
             "tests/os-device-authority-release-contract.test.ts",
-            "tests/distribution/release-channel-workflows.test.ts"
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
           ]
         },
         {
@@ -309,7 +329,7 @@
           ]
         }
       ],
-      "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests."
+      "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests."
     },
     {
       "id": "os-workspace-edge-rollout",

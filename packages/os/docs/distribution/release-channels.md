@@ -12,6 +12,7 @@ Consuelo OS publishes immutable, signed runtime bundles and moves signed channel
 - The release-set bundle ID identifies the complete required platform set: `darwin-arm64`, `linux-x64`, and `windows-x64`.
 - The release rule is explicit: promotion never rebuilds or relabels an archive. It changes only the signed channel pointer, Deployment evidence, GitHub Release prerelease/latest status, and the corresponding protected channel branch.
 - Legal promotion edges are only `dev -> canary`, `canary -> beta`, and `beta -> stable`.
+- A protected promotion may use an exact bundle from the source channel's recorded history when a newer publication has already advanced that source pointer. The bundle must remain a verified immutable release that previously occupied the source channel, and the target channel must move forward in SemVer. Intentional downgrades use rollback instead of promotion.
 - Stable promotion and stable rollback execute through the protected `consuelo-os-stable` GitHub environment and require explicit approval evidence.
 - `schemaVersion` describes the channel-manifest format. Runtime SemVer describes the shipped runtime. A schema-format change requires an explicit migration decision and does not imply a runtime version bump by itself.
 - Every state mutation checks an expected revision when supplied. GitHub Actions concurrency groups serialize mutations, while revision checks fail stale jobs closed.
@@ -65,6 +66,8 @@ GitHub uses immutable tags named `consuelo-os-vX.Y.Z`. Each tag has one GitHub R
 
 All commands emit JSON. Mutating commands default to dry-run unless `--apply` is supplied. `--apply` and `--dry-run` are mutually exclusive.
 
+For normal operator work, prefer the top-level `release` tool/command. It owns the common `PR -> main -> exact runtime publication -> protected promotion -> exact local update -> verification` sequence. The lower-level `release:channels` commands below remain the state-machine and recovery surface used by the protected workflows.
+
 ### Plan or publish dev
 
 ```bash
@@ -110,7 +113,7 @@ bun run --cwd packages/os release:channels -- promote \
   --json
 ```
 
-Use `canary -> beta` and `beta -> stable` for later stages. The CLI rejects skipped or reversed edges.
+Use `canary -> beta` and `beta -> stable` for later stages. The CLI rejects skipped or reversed edges. If the source pointer has advanced while a promotion is queued, the exact bundle must still exist in the source channel's verified history, and promotion rejects any move that would make the target channel's SemVer go backward.
 
 ### Inspect
 
@@ -159,9 +162,9 @@ Add the new public key to `CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS` before selec
 - Provider errors are redacted. Restore the same authoritative state and rerun the same command; do not allocate a new version or rebuild.
 - If publication partially reaches a provider, inspect the immutable tag, Release assets, R2 objects, Deployment, and channel history before retrying. Never overwrite an object with different bytes.
 
-## Human device checkpoint
+## Operator-node checkpoint
 
-This worker does not install, update, reset, restart, or uninstall Consuelo OS on Ko's Mac Mini or MacBook Air. After the release reaches the intended channel, a human may run this read-only checkpoint on the selected test Mac:
+The top-level `release` workflow updates the operator node by default after the exact bundle reaches the requested channel, then verifies that lifecycle status reports the same version and bundle ID. Use `releaseOnly: true` or `--release-only` to stop after channel promotion. A read-only manual checkpoint remains useful for another test machine:
 
 ```bash
 curl -fsSL "https://<release-host>/channels/canary.json" | jq '{channel: .payload.channel, version: .payload.version, bundleId: .payload.bundleId, platforms: [.payload.platforms[] | (.platform + "-" + .architecture)]}'
