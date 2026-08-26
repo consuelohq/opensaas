@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2667,
-    "mappedTestCount": 2581,
+    "testFileCount": 2669,
+    "mappedTestCount": 2583,
     "unmappedTestCount": 86,
     "ruleCount": 69,
     "explicitRuleCount": 50,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 286,
+      "packages/os/tests": 288,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 573,
+      "test": 575,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -4051,6 +4051,16 @@
     },
     {
       "path": "packages/os/tests/artifacts-edge-redirect.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifacts-edge-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifacts-facade-runtime.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
