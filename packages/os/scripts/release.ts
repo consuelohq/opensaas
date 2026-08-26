@@ -313,6 +313,32 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
       async readLock() {
         return readRawLock()?.marker ?? null;
       },
+      async renewLockIfOwned(ownerId, renewedAtMs) {
+        const current = readRawLock();
+        if (!current || current.marker.ownerId !== ownerId) return false;
+        const renewedMarker: ReleasePromotionLockMarker = {
+          ...current.marker,
+          acquiredAtMs: renewedAtMs,
+        };
+        const content = Buffer.from(JSON.stringify(renewedMarker), 'utf8').toString('base64');
+        const result = ghApiAttempt([
+          '--method',
+          'PUT',
+          contentsEndpoint,
+          '-f',
+          `message=renew Consuelo OS runtime promotion lock (${ownerId})`,
+          '-f',
+          `content=${content}`,
+          '-f',
+          `sha=${current.blobSha}`,
+          '-f',
+          `branch=${RELEASE_PROMOTION_LOCK_BRANCH}`,
+        ]);
+        if (result.status === 0) return true;
+        const httpStatus = httpStatusFromErrorText(result.stderr);
+        if (httpStatus === 404 || httpStatus === 409 || httpStatus === 422) return false;
+        throw new Error(result.stderr || result.stdout || 'failed to renew promotion lock');
+      },
       async deleteLockIfOwned(ownerId) {
         const current = readRawLock();
         if (!current || current.marker.ownerId !== ownerId) return false;
