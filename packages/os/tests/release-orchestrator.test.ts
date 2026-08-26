@@ -124,6 +124,28 @@ describe('release orchestrator', () => {
     ], 'sha_main')).toBeNull();
   });
 
+  it('excludes an already observed cancelled run even when GitHub still reports its stale row as active', () => {
+    expect(selectRuntimePublishCandidate([
+      {
+        databaseId: 100,
+        headSha: 'sha_main',
+        status: 'in_progress',
+        conclusion: '',
+        url: 'https://example.test/run/100',
+      },
+      {
+        databaseId: 101,
+        headSha: 'sha_main',
+        status: 'queued',
+        conclusion: '',
+        url: 'https://example.test/run/101',
+      },
+    ], 'sha_main', [100])).toMatchObject({
+      runId: 101,
+      status: 'queued',
+    });
+  });
+
   it('still returns a genuine exact-SHA publication failure when no retry is active', () => {
     expect(selectRuntimePublishCandidate([
       {
@@ -144,12 +166,12 @@ describe('release orchestrator', () => {
     const events: string[] = [];
     let publicationLookup = 0;
     const adapter = fakeAdapter(events, {
-      findRuntimePublish: async () => {
+      findRuntimePublish: async (_mergeSha, excludedRunIds = []) => {
         publicationLookup += 1;
-        events.push(`find-runtime-publish:${publicationLookup}`);
-        return publicationLookup === 1
-          ? { runId: 100, status: 'in_progress', conclusion: '', url: 'https://example.test/run/100' }
-          : { runId: 101, status: 'in_progress', conclusion: '', url: 'https://example.test/run/101' };
+        events.push(`find-runtime-publish:${publicationLookup}:exclude=${excludedRunIds.join(',')}`);
+        return excludedRunIds.includes(100)
+          ? { runId: 101, status: 'in_progress', conclusion: '', url: 'https://example.test/run/101' }
+          : { runId: 100, status: 'in_progress', conclusion: '', url: 'https://example.test/run/100' };
       },
       waitForRun: async (runId) => {
         events.push(`wait-run:${runId}`);
@@ -165,9 +187,9 @@ describe('release orchestrator', () => {
     expect(events).toEqual([
       'inspect-pr',
       'merge-pr',
-      'find-runtime-publish:1',
+      'find-runtime-publish:1:exclude=',
       'wait-run:100',
-      'find-runtime-publish:2',
+      'find-runtime-publish:2:exclude=100',
       'wait-run:101',
       'resolve-dev-release',
     ]);

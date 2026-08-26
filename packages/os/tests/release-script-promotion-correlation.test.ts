@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   evaluatePromotionCorrelation,
+  promotionDeadline,
   selectActivePromotionRun,
 } from '../scripts/lib/release-promotion-correlation';
 
@@ -14,6 +15,18 @@ const exactRelease = {
 };
 
 describe('release promotion correlation', () => {
+  it('starts a fresh full observation window after waiting behind the protected promotion queue', () => {
+    const timeoutMs = 25 * 60_000;
+    const queueStartedAt = 1_000;
+    const queueDeadline = promotionDeadline(queueStartedAt, timeoutMs);
+    const dispatchedAt = queueDeadline - 60_000;
+    const postDispatchDeadline = promotionDeadline(dispatchedAt, timeoutMs);
+
+    expect(queueDeadline - queueStartedAt).toBe(timeoutMs);
+    expect(postDispatchDeadline - dispatchedAt).toBe(timeoutMs);
+    expect(postDispatchDeadline).toBeGreaterThan(queueDeadline);
+  });
+
   it('serializes behind the oldest active protected promotion before dispatching another one', () => {
     expect(selectActivePromotionRun([
       { databaseId: 103, displayTitle: 'Consuelo OS runtime promote', status: 'queued', url: 'https://example.test/run/103' },
