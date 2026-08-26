@@ -70,6 +70,7 @@
     "code-run": "bun ./scripts/code-run.ts",
     "code-call": "bun ./scripts/code-call.ts",
     "github": "bun ./scripts/github.js",
+    "google": "bun ./scripts/google.ts",
     "release": "bun ./scripts/release.ts",
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",
     "git:diff": "bun ./scripts/git-diff.js",

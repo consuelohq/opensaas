@@ -49,6 +49,7 @@ export type Grant = {
   devicePublicKeyThumbprint: string;
   lastPoll?: number;
   accountId?: string;
+  accountEmail?: string;
   accountAuthMethod?: StrongerAuthMethod;
   connectorToken?: string;
   connectorExpiresAt?: number;
@@ -590,6 +591,8 @@ export type Env = {
   OS_DEVICE_AUTH_ASSERTION_SECRET?: string;
   GOOGLE_OAUTH_CLIENT_ID?: string;
   GOOGLE_OAUTH_CLIENT_SECRET?: string;
+  GOOGLE_WORKSPACE_OAUTH_CLIENT_ID?: string;
+  GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET?: string;
   GITHUB_APP_ID?: string;
   GITHUB_APP_SLUG?: string;
   GITHUB_APP_PRIVATE_KEY?: string;
@@ -680,6 +683,8 @@ export type DeviceAuthorityRuntime = {
   approvalAssertionSecret?: string;
   googleOAuthClientId?: string;
   googleOAuthClientSecret?: string;
+  googleWorkspaceOAuthClientId?: string;
+  googleWorkspaceOAuthClientSecret?: string;
   githubAppId?: string;
   githubAppSlug?: string;
   githubAppPrivateKey?: string;
