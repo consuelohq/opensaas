@@ -599,6 +599,7 @@ export const ExploreInput = z.object({
   limit: z.number().int().positive().optional(),
   changedOnly: z.boolean().optional(),
   reindex: z.boolean().optional(),
+  detail: z.enum(['compact', 'full']).optional(),
 });
 
 export const DecideNextInput = z.object({
@@ -1461,7 +1462,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   MemoryListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
   MemorySaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MemoryTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
-  ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
+  ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; detail?: \"compact\" | \"full\"; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
   ConfirmInput: '{ verify?: boolean; test?: string; requestId?: string; taskSession?: string }',

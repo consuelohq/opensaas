@@ -4,6 +4,7 @@ import { ORIGIN } from './constants';
 import { json } from './http';
 import { registerDeviceRoutes } from './routes/device';
 import { registerGoogleOAuthRoutes } from './routes/google-oauth';
+import { registerGitHubSourceControlRoutes } from './routes/github-source-control';
 import { registerHealthRoutes } from './routes/health';
 import { registerInstallControlPlaneRoutes } from './routes/install-control-plane';
 import { registerManagedCloudProvisioningRoutes } from './routes/managed-cloud-provisioning';
@@ -30,6 +31,9 @@ export type CreateDeviceAuthorityHandlerInput = {
   approvalAssertionSecret?: string;
   googleOAuthClientId?: string;
   googleOAuthClientSecret?: string;
+  githubAppId?: string;
+  githubAppSlug?: string;
+  githubAppPrivateKey?: string;
   fetchImpl?: typeof fetch;
   workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
@@ -71,6 +75,7 @@ export function createOsDeviceAuthorityApp(
   registerMcpProxyRoutes(app, runtime);
   registerMcpOAuthRoutes(app, runtime);
   registerGoogleOAuthRoutes(app, runtime);
+  registerGitHubSourceControlRoutes(app, runtime);
   registerWebAuthRoutes(app, runtime);
   registerDeviceRoutes(app, runtime);
   registerWorkspaceAgentRoutes(app, runtime);

@@ -1233,4 +1233,72 @@ describe('test selection registry', () => {
     );
   });
 
+
+  it('uses focused GitHub source-control contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/app.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/stores.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/types.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/worker.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/settings-site.ts',
+      '--changed-file',
+      'packages/os/tests/settings-site.test.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/github-source-control-client.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/source-control-config.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/settings.ts',
+      '--changed-file',
+      'packages/os/scripts/server/services/diffs-gateway.ts',
+      '--changed-file',
+      'packages/os/tests/github-source-control-authority.test.ts',
+      '--changed-file',
+      'packages/os/tests/diffs-hono-routes.test.ts',
+      '--changed-file',
+      'packages/os/tests/settings-hono-routes.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-github-source-control');
+    expect(suiteNames).toContain('OS GitHub source-control contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+
+  it('uses focused compact explore response contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/explore.js',
+      '--changed-file',
+      'packages/os/scripts/lib/search/explore-output.js',
+      '--changed-file',
+      'packages/os/tools/decision-engine/handler.ts',
+      '--changed-file',
+      'packages/os/tests/explore-output-contract.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-compact-explore-response');
+    expect(suiteNames).toContain('OS compact explore response contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
 });

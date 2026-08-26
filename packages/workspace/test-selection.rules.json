@@ -1372,6 +1372,72 @@
       "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests."
     },
     {
+      "id": "os-compact-explore-response",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/search/explore-output.js",
+        "packages/os/tools/decision-engine/handler.ts",
+        "packages/os/tests/explore-output-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS compact explore response contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-output-contract.test.ts"
+          ]
+        }
+      ],
+      "reason": "Compact explore response shaping and decision-engine integration must prove bounded summary/detail contracts without selecting the unrelated broad OS package suite."
+    },
+    {
+      "id": "os-github-source-control",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts",
+        "packages/os/scripts/lib/github-source-control-client.ts",
+        "packages/os/scripts/lib/source-control-config.ts",
+        "packages/os/scripts/server/routes/settings.ts",
+        "packages/os/scripts/server/services/diffs-gateway.ts",
+        "packages/os/tests/diffs-hono-routes.test.ts",
+        "packages/os/tests/github-source-control-authority.test.ts",
+        "packages/os/tests/settings-hono-routes.test.ts",
+        "packages/os/tests/settings-sites-gateway-endpoints.test.ts",
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/os-device-authority/src/worker.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/tests/settings-site.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        }
+      ],
+      "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite."
+    },
+    {
       "id": "dialer-package",
       "critical": true,
       "source": [

@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2652,
-    "mappedTestCount": 2567,
-    "unmappedTestCount": 85,
-    "ruleCount": 65,
-    "explicitRuleCount": 46,
+    "testFileCount": 2656,
+    "mappedTestCount": 2570,
+    "unmappedTestCount": 86,
+    "ruleCount": 67,
+    "explicitRuleCount": 48,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 272,
+      "packages/os/tests": 275,
       "packages/twenty-server/test/integration/graphql/utils": 65,
-      "packages/workspace/tests": 64,
+      "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 558,
+      "test": 562,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -2045,6 +2045,74 @@
       "critical": true,
       "exclusive": true,
       "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-compact-explore-response",
+      "source": [
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/search/explore-output.js",
+        "packages/os/tools/decision-engine/handler.ts",
+        "packages/os/tests/explore-output-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS compact explore response contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-output-contract.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Compact explore response shaping and decision-engine integration must prove bounded summary/detail contracts without selecting the unrelated broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-github-source-control",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts",
+        "packages/os/scripts/lib/github-source-control-client.ts",
+        "packages/os/scripts/lib/source-control-config.ts",
+        "packages/os/scripts/server/routes/settings.ts",
+        "packages/os/scripts/server/services/diffs-gateway.ts",
+        "packages/os/tests/diffs-hono-routes.test.ts",
+        "packages/os/tests/github-source-control-authority.test.ts",
+        "packages/os/tests/settings-hono-routes.test.ts",
+        "packages/os/tests/settings-sites-gateway-endpoints.test.ts",
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/os-device-authority/src/worker.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/tests/settings-site.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite.",
       "origin": "explicit"
     },
     {
@@ -4175,6 +4243,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/explore-output-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/facade/facade.test.ts",
       "group": "packages/os/tests/facade",
       "kind": "test"
@@ -4250,6 +4323,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/github-source-control-authority.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/github.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4261,6 +4339,11 @@
     },
     {
       "path": "packages/os/tests/hosted-release-worker-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/index-path-exclusions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -15910,6 +15993,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/index-path-exclusions.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -16168,6 +16256,7 @@
     "packages/workspace/tests/git-diff.test.ts",
     "packages/workspace/tests/github-pr-reviews.test.ts",
     "packages/workspace/tests/github.test.ts",
+    "packages/workspace/tests/index-path-exclusions.test.js",
     "packages/workspace/tests/pr-links.test.js",
     "packages/workspace/tests/pr-ref.test.js",
     "packages/workspace/tests/pr-review.test.js",

@@ -26,6 +26,10 @@ import {
   withCredential,
   type CredentialBrokerPolicy,
 } from '../../lib/credential-broker';
+import {
+  getGitHubSourceControlToken,
+  githubInstallationConnectionId,
+} from '../../lib/github-source-control-client';
 import type { ControlPlaneAuditActor } from '../../lib/control-plane-audit';
 import {
   buildWorkspaceSourceControlSnapshot,
@@ -57,6 +61,8 @@ export class DiffsGatewayError extends Error {
 
 type CacheEntry = { expiresAt: number; value: unknown };
 const productReadCache = new Map<string, CacheEntry>();
+type ManagedGitHubTokenEntry = { expiresAt: number; token: string };
+const managedGitHubTokenCache = new Map<string, ManagedGitHubTokenEntry>();
 
 function requireHome(home?: string): string {
   const resolved = home ?? process.env.CONSUELO_HOME ?? process.env.CONSUELO_OS_HOME;
@@ -122,6 +128,40 @@ async function withGithubCredential<T>(input: {
   operation: (token: string, cacheNamespace: string) => Promise<T>;
 }): Promise<T> {
   const layout = resolveConsueloHomeLayout(input.home);
+  const cacheNamespace = sourceControlCacheNamespace({
+    workspaceId: input.workspaceId,
+    connectionRef: input.repository.connectionRef,
+    provider: input.repository.provider,
+    owner: input.repository.owner,
+    repo: input.repository.repository,
+  });
+  const managedConnectionId = githubInstallationConnectionId(input.repository.connectionRef);
+  if (managedConnectionId) {
+    try {
+      const now = Date.now();
+      const cached = managedGitHubTokenCache.get(managedConnectionId);
+      if (cached && cached.expiresAt > now + 60_000) {
+        return await input.operation(cached.token, cacheNamespace);
+      }
+      const credential = await getGitHubSourceControlToken({
+        home: layout.home,
+        connectionId: managedConnectionId,
+      });
+      const expiresAt = Date.parse(credential.expiresAt);
+      managedGitHubTokenCache.set(managedConnectionId, {
+        token: credential.token,
+        expiresAt,
+      });
+      return await input.operation(credential.token, cacheNamespace);
+    } catch (error: unknown) {
+      if (error instanceof DiffsGatewayError) throw error;
+      throw new DiffsGatewayError(
+        'SOURCE_CONTROL_CONNECTION_UNAVAILABLE',
+        503,
+        `The GitHub connection for ${input.repository.nameWithOwner} is unavailable on this node.`,
+      );
+    }
+  }
   if (!fs.existsSync(layout.nodeConfigPath)) {
     throw new DiffsGatewayError(
       'SOURCE_CONTROL_NODE_UNAVAILABLE',
@@ -130,13 +170,6 @@ async function withGithubCredential<T>(input: {
     );
   }
   const nodeId = loadNodeYamlConfig(layout.nodeConfigPath).node.id;
-  const cacheNamespace = sourceControlCacheNamespace({
-    workspaceId: input.workspaceId,
-    connectionRef: input.repository.connectionRef,
-    provider: input.repository.provider,
-    owner: input.repository.owner,
-    repo: input.repository.repository,
-  });
   try {
     return await withCredential(
       {
@@ -603,19 +636,20 @@ export function renderSourceControlSetupPage(): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consuelo Diffs · Connect source control</title>
+  <title>Consuelo Diffs · Connect GitHub</title>
   <style>
     :root{color-scheme:light dark;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#faf7f2;color:#1c1a17}
     @media(prefers-color-scheme:dark){:root{background:#0f0f0d;color:#f7efe7}}
     *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:32px}
     main{width:min(720px,100%);border:1px solid color-mix(in srgb,currentColor 20%,transparent);padding:clamp(28px,6vw,64px)}
-    p{line-height:1.6;max-width:60ch}a{color:inherit;text-underline-offset:4px}code{font:inherit}
+    p{line-height:1.6;max-width:60ch}a{color:inherit;text-underline-offset:4px}code{font:inherit}.button{display:inline-block;margin-top:8px;padding:10px 14px;border:1px solid currentColor;text-decoration:none}
   </style>
 </head>
-<body><main><p>Consuelo Diffs</p><h1>Connect source control</h1><p>This workspace does not have a ready source-control repository yet. Add a GitHub repository and connection in <a href="/configuration">Configuration</a>, then return to <code>/diffs</code>.</p></main></body>
+<body><main><p>Consuelo Diffs</p><h1>Connect GitHub</h1><p>Choose repositories on GitHub, then Consuelo will bring you back here with the selected repositories ready for Diffs.</p><a class="button" href="/gateway/configuration/source-control/github/connect?return_to=%2Fdiffs">Connect GitHub</a></main></body>
 </html>`;
 }
 
 export function clearDiffsGatewayCacheForTests(): void {
   productReadCache.clear();
+  managedGitHubTokenCache.clear();
 }
