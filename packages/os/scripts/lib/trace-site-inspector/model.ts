@@ -274,14 +274,22 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
     const mergedRecord = stepRecord ? { ...stepRecord, ...record } : record;
     const data = asRecord(mergedRecord.data);
     const parentMetadata = asRecord(parent.metadata);
-    const label =
+    const stepTool = clean(
+      stepRecord?.tool ??
+        stepRecord?.name ??
+        stepRecord?.facadeTool ??
+        stepRecord?.label,
+    );
+    const childTool =
+      stepTool ||
       clean(
-        mergedRecord.tool ??
-          mergedRecord.name ??
-          mergedRecord.facadeTool ??
-          mergedRecord.label,
+        record.tool ??
+          record.name ??
+          record.traceName ??
+          record.facadeTool ??
+          record.label,
       ) || 'child';
-    const segment = `${siblingIndex}:${label}`;
+    const segment = `${siblingIndex}:${childTool}`;
     const path = parentPath ? `${parentPath}/${segment}` : segment;
     const nativeKey = stableTraceKey(record);
     const selectionKey = nativeKey || `${parentKey}::child:${path}`;
@@ -294,16 +302,9 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
           : '');
     const child = {
       ...mergedRecord,
-      name:
-        mergedRecord.name ??
-        mergedRecord.tool ??
-        mergedRecord.facadeTool ??
-        mergedRecord.label,
-      traceName:
-        mergedRecord.traceName ??
-        mergedRecord.name ??
-        mergedRecord.tool ??
-        mergedRecord.facadeTool,
+      tool: childTool,
+      name: childTool,
+      traceName: childTool,
       traceId: mergedRecord.traceId ?? mergedRecord.trace_id,
       branch: mergedRecord.branch ?? parent.branch,
       taskSession: mergedRecord.taskSession ?? parent.taskSession,
@@ -356,15 +357,22 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
         mergedRecord.total_tokens ??
         data?.totalTokens,
       input:
+        stepRecord?.input ??
+        record.rawResolvedInputJson ??
+        record.rawInputJson ??
+        record.inputObj ??
         record.input ??
-        record.rawInputJson ??
-        record.inputObj ??
-        stepRecord?.input ??
         data?.input,
-      rawInputJson:
+      rawResolvedInputJson:
+        stepRecord?.input ??
+        record.rawResolvedInputJson ??
         record.rawInputJson ??
         record.inputObj ??
+        mergedRecord.rawResolvedInputJson,
+      rawInputJson:
         stepRecord?.input ??
+        record.rawInputJson ??
+        record.inputObj ??
         mergedRecord.rawInputJson,
       output:
         mergedRecord.output ??
@@ -381,7 +389,9 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
     result.push(child);
 
     const nestedParsed = parseMaybeJson(
-      record.children ?? record.results ?? data?.children ?? data?.results,
+      record.children ??
+        data?.children ??
+        (childTool === 'batch' ? record.results ?? data?.results : undefined),
     );
     if (Array.isArray(nestedParsed)) {
       nestedParsed.forEach((nested, index) =>
