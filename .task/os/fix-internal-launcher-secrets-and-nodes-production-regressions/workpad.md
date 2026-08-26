@@ -28,7 +28,33 @@ started: 2026-08-26
 
 ## files changed
 
+- `packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts`
+- `packages/os/cloudflare/os-device-authority/src/services/nodes.ts`
+- `packages/os/scripts/lib/consuelo-sites-secrets-adapter.ts`
+- `packages/os/scripts/lib/node-sealed-credential-store.ts`
+- `packages/os/scripts/lib/secrets-site.ts`
+- `packages/os/scripts/lib/settings-site.ts`
+- `packages/os/scripts/lib/workspace-chrome.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-edge-router.ts`
+- `packages/os/scripts/lib/workspace-edge-route-seed.ts`
+- `packages/os/scripts/lib/workspace-node-heartbeat-client.ts`
+- `packages/os/scripts/server/route-policies.ts`
+- `packages/os/scripts/server/routes/secrets.ts`
+- `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
+- `packages/os/tests/local-os-server-hono-architecture.test.ts`
+- `packages/os/tests/observability-traces-site.test.ts`
+- `packages/os/tests/secrets-hono-routes.test.ts`
+- `packages/os/tests/secrets-surface.test.ts`
+- `packages/os/tests/settings-site.test.ts`
+- `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
+- `packages/os/tests/workspace-gateway-node-end-to-end.test.ts`
+- `packages/os/tests/workspace-node-registry-routing.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
 - `packages/os/tests/internal-launcher-regressions.test.ts`
+
 
 ## workspace-owned: files changed
 
@@ -130,3 +156,6 @@ no-test waiver: not applicable
 - The sole failure expects obsolete Caddy worker ports `9000/9001`; current generated configuration uses pooled ports `46321/46322/46323`. It is unrelated to this slice and is being passed per Ko's instruction.
 - A no-commit cherry-pick conflict in `settings-site.ts` and the generated registry was resolved by retaining stream behavior and manually integrating the needed secret changes; cherry-pick state was cleanly quit.
 - Nx resolved the package as `openworkspace`, but the isolated worktree root does not register `packages/workspace`; its resolved Vitest binary ran the registry suite successfully (45/45).
+
+- Publish verification caught and corrected the tracing description assertion; focused tracing plus launcher rerun passed 17/17.
+- The broad OS package suite still fails unrelated facade dry-run contracts. Ko explicitly approved passing those unrelated failures; the generated unrelated session.start facade snapshot was removed before review.
