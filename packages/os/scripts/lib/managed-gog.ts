@@ -173,12 +173,14 @@ export async function ensureManagedGog(input: {
   const downloadTimeoutMs = Math.max(1, input.downloadTimeoutMs ?? 60_000);
   const abortController = new AbortController();
   const abortTimer = setTimeout(() => abortController.abort(), downloadTimeoutMs);
-  let response: Response;
+  let bytes: Buffer;
   try {
-    response = await fetchImpl(`${RELEASE_BASE}/${asset.fileName}`, {
+    const response = await fetchImpl(`${RELEASE_BASE}/${asset.fileName}`, {
       headers: { accept: 'application/octet-stream', 'user-agent': 'consuelo-os' },
       signal: abortController.signal,
     });
+    if (!response.ok) throw new Error(`gog download failed with HTTP ${response.status}`);
+    bytes = Buffer.from(await response.arrayBuffer());
   } catch (error: unknown) {
     if (abortController.signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) {
       throw new Error(`gog download timed out after ${downloadTimeoutMs}ms`);
@@ -187,8 +189,6 @@ export async function ensureManagedGog(input: {
   } finally {
     clearTimeout(abortTimer);
   }
-  if (!response.ok) throw new Error(`gog download failed with HTTP ${response.status}`);
-  const bytes = Buffer.from(await response.arrayBuffer());
   const digest = createHash('sha256').update(bytes).digest('hex');
   if (digest !== asset.sha256) throw new Error('gog download checksum did not match the pinned release');
 
