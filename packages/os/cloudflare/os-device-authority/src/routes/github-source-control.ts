@@ -76,7 +76,7 @@ type SignedNodeRequest = {
   body: Record<string, unknown>;
 };
 
-async function authenticateSignedNodeRequest(
+export async function authenticateSignedNodeRequest(
   request: Request,
   runtime: DeviceAuthorityRuntime,
 ): Promise<SignedNodeRequest | Response> {

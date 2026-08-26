@@ -157,6 +157,12 @@
       "kind": "facade-tool",
       "path": "packages/os/tools/release/manifest.ts",
       "entryCount": 1
+    },
+    {
+      "label": "google",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/google/manifest.ts",
+      "entryCount": 1
     }
   ],
   "tools": [
@@ -5038,6 +5044,106 @@
         "exampleInput": {
           "operation": "pr.reviews",
           "pr": 436
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "google",
+      "kind": "facade-tool",
+      "source": "google",
+      "sourcePath": "packages/os/tools/google/manifest.ts",
+      "category": "google",
+      "description": "use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Google Workspace runtime; first use can open Google OAuth and saved authorization is reused",
+      "core": true,
+      "definition": {
+        "name": "google",
+        "methodPath": [
+          "google"
+        ],
+        "description": "use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Google Workspace runtime; first use can open Google OAuth and saved authorization is reused",
+        "category": "google",
+        "underlying": "workspace google",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "GoogleInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "google",
+            "gmail",
+            "calendar",
+            "drive",
+            "docs",
+            "sheets",
+            "contacts"
+          ],
+          "keywords": [
+            "email",
+            "mail",
+            "event",
+            "document",
+            "spreadsheet",
+            "contact",
+            "workspace"
+          ]
+        },
+        "command": {
+          "script": "google",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "action",
+              "flag": "--action",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "args",
+              "flag": "--arg",
+              "kind": "commandArray"
+            },
+            {
+              "source": "account",
+              "flag": "--account",
+              "kind": "value"
+            },
+            {
+              "source": "mode",
+              "flag": "--mode",
+              "kind": "value"
+            },
+            {
+              "source": "approved",
+              "flag": "--approved",
+              "kind": "boolean"
+            },
+            {
+              "source": "approvalReason",
+              "flag": "--approval-reason",
+              "kind": "value"
+            },
+            {
+              "source": "timeoutMs",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "action": "run",
+          "args": [
+            "gmail",
+            "search",
+            "newer_than:7d"
+          ],
+          "mode": "read"
         },
         "sessionRequired": false
       }

@@ -35,6 +35,7 @@ import {
 } from './lib/install-state';
 import { verifyLocalAgents } from './lib/local-agent-connectivity';
 import { workspaceBootstrapFromApprovedDeviceGrant } from './lib/managed-cloud-node-enrollment';
+import { ensureManagedGog } from './lib/managed-gog';
 import { materializeSites } from './lib/sites';
 import {
   pollWorkspaceDeviceAccessToken,
@@ -1495,6 +1496,15 @@ async function main(): Promise<void> {
         artifactStorage: options.artifactMode,
         workspaceBootstrap,
       });
+      if (!options.dryRun) {
+        try {
+          await ensureManagedGog({ home: result.home });
+        } catch (error: unknown) {
+          info(
+            `Google runtime provisioning was deferred to first use: ${formatUnknownError(error)}`,
+          );
+        }
+      }
     } catch (error: unknown) {
       await telemetry.recordFailure({
         stage: activeStage,
