@@ -21,6 +21,7 @@ import { selectReleasePlatformBundleId } from './lib/release-platform-bundle';
 import { evaluatePromotionCorrelation } from './lib/release-promotion-correlation';
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
+// These workflow filenames are part of the operator release contract; keep them aligned with GitHub Actions.
 const RUNTIME_PUBLISH_WORKFLOW = 'consuelo-os-runtime-publish.yaml';
 const RUNTIME_PROMOTE_WORKFLOW = 'consuelo-os-runtime-promote.yaml';
 const DEFAULT_RELEASE_BASE_URL = 'https://install.consuelohq.com/os/releases';
