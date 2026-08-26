@@ -248,7 +248,7 @@ describe('lifecycle restart parity', () => {
     }
   });
 
-  it('kickstarts an already-loaded sidecar without a bootout/bootstrap teardown', async () => {
+  it('reloads an already-loaded sidecar definition before kickstart', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-loaded-sidecar-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
@@ -271,6 +271,8 @@ describe('lifecycle restart parity', () => {
 
       expect(launchctl).toEqual([
         ['print', 'gui/501/' + label],
+        ['bootout', 'gui/501/' + label],
+        ['bootstrap', 'gui/501', join(launchAgents, label + '.plist')],
         ['kickstart', '-k', 'gui/501/' + label],
       ]);
     } finally {

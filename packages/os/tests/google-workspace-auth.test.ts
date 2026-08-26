@@ -104,7 +104,7 @@ describe('Google Workspace OAuth bootstrap', () => {
       },
     });
 
-    expect(result.changed).toBe(false);
+    expect(result.changed).toBe(true);
     expect(fetchCount).toBe(1);
     expect(googleWorkspaceAccount(home)).toBe('verified@example.com');
   });
@@ -143,5 +143,51 @@ describe('Google Workspace OAuth bootstrap', () => {
     expect(calls[1]?.args).toEqual(['--json', '--no-input', 'auth', 'credentials', 'set', '-']);
     expect(calls[1]?.args.join(' ')).not.toContain('client-secret');
     expect(calls[1]?.stdin).toContain('client-secret');
+  });
+
+  it('refreshes an existing OAuth client after authority credential rotation', async () => {
+    const home = fixtureHome();
+    const calls: ProviderProcessRequest[] = [];
+    let fetchCount = 0;
+    const processRunner: ProviderProcess = {
+      execPath: process.execPath,
+      run: (request) => {
+        calls.push(request);
+        return Effect.succeed({
+          stdout: request.args.includes('status')
+            ? JSON.stringify({ account: { credentials_exists: true } })
+            : JSON.stringify({ stored: true }),
+          stderr: '',
+          exitCode: 0,
+          timedOut: false,
+          cancelled: false,
+          runtimeMissing: false,
+          stdoutTruncated: false,
+          stderrTruncated: false,
+        });
+      },
+    };
+
+    const result = await ensureGoogleWorkspaceOAuthCredentials({
+      home,
+      executable: '/managed/gog',
+      process: processRunner,
+      fetchImpl: async () => {
+        fetchCount += 1;
+        return Response.json({
+          credentials: {
+            installed: {
+              ...credentials.installed,
+              client_secret: 'rotated-client-secret',
+            },
+          },
+        });
+      },
+    });
+
+    expect(result.changed).toBe(true);
+    expect(fetchCount).toBe(1);
+    expect(calls).toHaveLength(2);
+    expect(calls[1]?.stdin).toContain('rotated-client-secret');
   });
 });

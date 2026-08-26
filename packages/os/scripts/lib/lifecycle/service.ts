@@ -221,37 +221,51 @@ export function createReloadServiceController(input: {
           for (const gateway of installedMacRestartableSidecarLaunchAgents(input.environment)) {
             const service = domain + '/' + gateway.label;
             const loaded = await run('launchctl', ['print', service]);
-            let available = loaded.exitCode === 0;
+            const definitionReloadRequired = loaded.exitCode === 0;
+            let available = false;
             let lastBootstrap: LifecycleProcessResult | undefined;
 
-            if (!available) {
-              for (let attempt = 1; attempt <= MAC_GATEWAY_BOOTSTRAP_ATTEMPTS; attempt += 1) {
-                const bootstrap = await run('launchctl', [
-                  'bootstrap',
-                  domain,
-                  gateway.plistPath,
-                ]);
-                lastBootstrap = bootstrap;
-                if (bootstrap.exitCode === 0) {
-                  available = true;
-                  break;
-                }
+            if (definitionReloadRequired) {
+              const bootout = await run('launchctl', ['bootout', service]);
+              const detail = bootout.stdout + '\n' + bootout.stderr;
+              const alreadyUnloaded = bootout.exitCode === 3
+                || /No such process|Could not find service|not loaded/i.test(detail);
+              if (bootout.exitCode !== 0 && !alreadyUnloaded) {
+                throw new Error(
+                  'gateway definition unload failed for ' + gateway.label + ': '
+                  + (bootout.stderr.trim() || bootout.stdout.trim()
+                    || 'launchctl bootout exited ' + String(bootout.exitCode)),
+                );
+              }
+            }
 
-                const detail = bootstrap.stdout + '\n' + bootstrap.stderr;
-                const transientExitFive = bootstrap.exitCode === 5
-                  || /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
-                if (!transientExitFive) break;
+            for (let attempt = 1; attempt <= MAC_GATEWAY_BOOTSTRAP_ATTEMPTS; attempt += 1) {
+              const bootstrap = await run('launchctl', [
+                'bootstrap',
+                domain,
+                gateway.plistPath,
+              ]);
+              lastBootstrap = bootstrap;
+              if (bootstrap.exitCode === 0) {
+                available = true;
+                break;
+              }
 
-                // A prior launchd transaction can finish between print and bootstrap.
-                // Accept an already-visible immutable job; otherwise retry after it settles.
-                const visible = await run('launchctl', ['print', service]);
-                if (visible.exitCode === 0) {
-                  available = true;
-                  break;
-                }
-                if (attempt < MAC_GATEWAY_BOOTSTRAP_ATTEMPTS) {
-                  await sleepImpl(MAC_GATEWAY_BOOTSTRAP_RETRY_MS);
-                }
+              const detail = bootstrap.stdout + '\n' + bootstrap.stderr;
+              const transientExitFive = bootstrap.exitCode === 5
+                || /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
+              if (!transientExitFive) break;
+
+              const visible = await run('launchctl', ['print', service]);
+              if (visible.exitCode === 0 && !definitionReloadRequired) {
+                available = true;
+                break;
+              }
+              if (visible.exitCode === 0 && definitionReloadRequired) {
+                await run('launchctl', ['bootout', service]);
+              }
+              if (attempt < MAC_GATEWAY_BOOTSTRAP_ATTEMPTS) {
+                await sleepImpl(MAC_GATEWAY_BOOTSTRAP_RETRY_MS);
               }
             }
 

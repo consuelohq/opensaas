@@ -83,6 +83,32 @@ describe('managed gog runtime', () => {
     }
   });
 
+  it('keeps the download timeout active while consuming the response body', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-gog-body-timeout-'));
+    try {
+      await expect(ensureManagedGog({
+        home,
+        platform: 'darwin',
+        arch: 'arm64',
+        downloadTimeoutMs: 10,
+        fetchImpl: async (_url, init) => {
+          const signal = init?.signal;
+          return {
+            ok: true,
+            status: 200,
+            arrayBuffer: async () => {
+              await new Promise((resolve) => setTimeout(resolve, 40));
+              if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
+              return new TextEncoder().encode('body-arrived-after-timeout').buffer;
+            },
+          } as Response;
+        },
+      })).rejects.toThrow(/timed out/i);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('rejects a tampered release before extraction or install', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-gog-checksum-'));
     try {
