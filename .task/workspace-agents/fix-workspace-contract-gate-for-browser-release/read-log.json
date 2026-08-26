@@ -2,7 +2,8 @@
   "files": [
     "packages/os/scripts/lib/worker-pool.ts",
     "packages/os/scripts/server/supervisor.ts",
+    "packages/os/tests/media/31-svg-convert.test.ts",
     "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
   ],
-  "updatedAt": "2026-08-26T06:23:51.608Z"
+  "updatedAt": "2026-08-26T06:28:16.792Z"
 }

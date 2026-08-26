@@ -53,6 +53,7 @@ started: 2026-08-26
 - The workflow assertion now matches the already-canonical compatibility contract for `task.start`. Trace database access now follows the existing runtime-state portability pattern: Bun uses `bun:sqlite`; Node uses `node:sqlite`, with a shared query/get/all adapter. The signed edge → local OS trace E2E now passes 1/1 under Node (`trc_3d63d785d65f`).
 - Full verification then exposed remaining direct `bun:sqlite` imports inside the trace gateway test fixture plus two worker-pool process timeouts (`trc_96ab82895353`). The trace fixture now uses the shared portable trace DB adapter throughout; its full suite passes 14/14 (`trc_976224cd17f9` after the final fixture replacements).
 - Worker-pool timeout root cause was test setup, not supervisor behavior: a fresh temporary `CONSUELO_HOME` had no required `runtime/current`, so the supervisor exited before spawning workers. Debug proof: `trc_a4c8bafef1df`. The fixture now creates `runtime/current` pointing to the checked-out runtime and explicitly pins `CONSUELO_OS_WORKER_BASE_PORT` to its random test port. Real process integration passes 2/2, including crash replacement and orphan reclamation (`trc_66b15d14c945`).
+- GitHub's clean `Consuelo / verify` log narrowed the remaining CI-only package failures to three `media.svg.convert` cases whose fixture shell-called system ffmpeg (`trc_895246c52ea0`). The fixture now writes a deterministic embedded 8×8 PNG instead; SVG conversion behavior is unchanged and the complete SVG suite passes 11/11 (`trc_8f00c6d3ce4f`).
 
 ## files changed
 
@@ -141,6 +142,7 @@ bun run task:finish
 - `packages/os/tests/browser-service.test.ts`
 - `packages/os/tests/facade/facade.test.ts`
 - `packages/os/tests/fixtures/tool-package-baseline.json`
+- `packages/os/tests/media/31-svg-convert.test.ts`
 - `packages/os/tests/security-gateway.test.ts`
 - `packages/os/tests/tool-manifest.test.ts`
 - `packages/os/tests/tool-package-layout.test.ts`
@@ -154,4 +156,6 @@ bun run task:finish
 - `packages/os/tools/subagent/schema.ts`
 - `packages/workspace/tests/browser-service.test.ts`
 
-- 2026-08-26 06:23:57 apply-patch: `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+- 2026-08-26 06:28:41 apply-patch: `packages/os/tests/media/31-svg-convert.test.ts`
+
+- 2026-08-26 06:28:57 apply-patch: `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md`
