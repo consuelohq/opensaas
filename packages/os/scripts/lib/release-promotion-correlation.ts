@@ -15,6 +15,19 @@ export type PromotionCorrelation =
 
 const clean = (value: unknown): string => String(value ?? '').trim();
 
+export function selectActivePromotionRun(runs: PromotionRunRow[]): ReleaseRun | null {
+  const active = runs
+    .filter((run) => clean(run.status) !== 'completed')
+    .sort((left, right) => Number(left.databaseId) - Number(right.databaseId))[0];
+  if (!active) return null;
+  return {
+    runId: Number(active.databaseId),
+    status: clean(active.status),
+    conclusion: clean(active.conclusion),
+    url: clean(active.url),
+  };
+}
+
 function isExactRelease(
   release: ReleaseIdentity | null,
   bundleId: string,

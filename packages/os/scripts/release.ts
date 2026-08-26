@@ -20,7 +20,10 @@ import {
   resolveGitHubCliPath,
 } from './lib/github-cli';
 import { selectReleasePlatformBundleId } from './lib/release-platform-bundle';
-import { evaluatePromotionCorrelation } from './lib/release-promotion-correlation';
+import {
+  evaluatePromotionCorrelation,
+  selectActivePromotionRun,
+} from './lib/release-promotion-correlation';
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 // These workflow filenames are part of the operator release contract; keep them aligned with GitHub Actions.
@@ -402,33 +405,62 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
     channelRelease: fetchChannel,
     async promote({ from, to, releaseSetBundleId, sourceCommit }) {
       try {
-        const before = ghJson<Array<{ databaseId: number }>>([
-          'run',
-          'list',
-          '--workflow',
-          RUNTIME_PROMOTE_WORKFLOW,
-          '--limit',
-          '10',
-          '--json',
-          'databaseId',
-        ]);
-        const baseline = Math.max(0, ...before.map((run) => Number(run.databaseId) || 0));
-        commandOutput(ghPath, [
-          'workflow',
-          'run',
-          RUNTIME_PROMOTE_WORKFLOW,
-          '--repo',
-          repo,
-          '--ref',
-          'main',
-          '-f',
-          `from=${from}`,
-          '-f',
-          `to=${to}`,
-          '-f',
-          `bundle=${releaseSetBundleId}`,
-        ]);
         const deadline = Date.now() + 25 * 60_000;
+        let baseline = 0;
+        let dispatched = false;
+        while (Date.now() < deadline) {
+          const target = await fetchChannel(to);
+          if (
+            target?.releaseSetBundleId === releaseSetBundleId &&
+            target.sourceCommit === sourceCommit
+          ) {
+            return { runId: 0, status: 'completed', conclusion: 'success', url: '' };
+          }
+
+          const before = ghJson<Array<{
+            databaseId: number;
+            displayTitle?: string;
+            status?: string;
+            conclusion?: string;
+            url?: string;
+          }>>([
+            'run',
+            'list',
+            '--workflow',
+            RUNTIME_PROMOTE_WORKFLOW,
+            '--limit',
+            '20',
+            '--json',
+            'databaseId,displayTitle,status,conclusion,url',
+          ]);
+          if (selectActivePromotionRun(before)) {
+            await sleep(3_000);
+            continue;
+          }
+
+          baseline = Math.max(0, ...before.map((run) => Number(run.databaseId) || 0));
+          commandOutput(ghPath, [
+            'workflow',
+            'run',
+            RUNTIME_PROMOTE_WORKFLOW,
+            '--repo',
+            repo,
+            '--ref',
+            'main',
+            '-f',
+            `from=${from}`,
+            '-f',
+            `to=${to}`,
+            '-f',
+            `bundle=${releaseSetBundleId}`,
+          ]);
+          dispatched = true;
+          break;
+        }
+        if (!dispatched) {
+          throw new Error(`timed out waiting for protected promotion queue ${from} -> ${to}`);
+        }
+
         while (Date.now() < deadline) {
           const rows = ghJson<Array<{
             databaseId: number;
