@@ -35,6 +35,7 @@ started: 2026-08-26
 - 2026-08-26 02:30:52 `review.run`: passed — OK
 - 2026-08-26 02:33:16 `review.run`: passed — OK
 - 2026-08-26 02:36:33 `verify`: failed — COMMAND_FAILED
+- 2026-08-26 02:40:57 `review.run`: passed — OK
 
 ## key decisions
 
@@ -137,3 +138,10 @@ no-test waiver: not applicable.
 
 - Canonical verify reached the selected test gate and failed only because the compact explore files were the remaining source files not owned by an explicit critical rule, so test-selection fell through to the unrelated broad `@consuelo/os package test`; that broad suite hit existing facade dry-run failures (`trc_6c341ea81d68`). Selection evidence isolated the uncovered files to `scripts/explore.js`, `lib/search/explore-output.js`, `tools/decision-engine/handler.ts`, and the compact explore test (`trc_9da5a931d9c1`).
 - Added a focused critical `os-compact-explore-response` selection rule plus regression test, regenerated the registry (`trc_7a77ad381c34`), and proved the new regression GREEN (`trc_aba7c09d9f1a`). The whole task selection now chooses only focused suites and explicitly excludes the broad OS package suite (`trc_a56c5d1d765e`).
+
+## Final validation and publish recovery
+
+- Final strict review after the compact-explore selection fix remains clean: 0 task-owned/pre-existing/blocking issues (`trc_09a7cb6405f7`).
+- Canonical full verify is now GREEN and publish-valid on HEAD `9454c91dd833408723b4a2f387e44385b9e6fa2a`: review passed, focused selected tests passed, DB guard passed with only the expected route-seed warning and 0 findings (`trc_4a3bbf53bba8`).
+- Browser proof on the reconciled code preserves current-main Overview/heatmap/chrome while showing managed source control: Configuration renders `Manage GitHub access`, `consuelohq/opensaas`, `main`, and GitHub state (`trc_52b60e169212`); Diffs renders the direct `Connect GitHub` CTA (`trc_5e2422727df0`); clicking it reaches the GitHub connect route and returns to Configuration (`trc_35ef54cf6f5e`). Browser and preview process were closed/terminated (`trc_656a3a553410`, `trc_e4d759980575`).
+- Publish topology requires preserving the validated merge commit with `origin/main` as its second parent. The native `task.push` is a GitHub file-API publisher that creates a single-parent commit from changed files; using it for the main reconciliation would flatten roughly 1,600 merged-main files and discard the conflict-resolution ancestry. `stream.sync` cannot semantically resolve the 16 non-metadata conflicts. Therefore the bounded recovery is: fast-forward the existing task branch with the already-validated local merge commits using `git push`, then immediately return to the native lifecycle (`task.push` only for scoped task metadata/verify evidence, `task.pr`, `task.finish`). The remote task branch has not moved since task creation, so this is a fast-forward, not a rewrite.
