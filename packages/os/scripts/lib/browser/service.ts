@@ -12,6 +12,8 @@ import type {
   BrowserStatus,
 } from './types';
 
+const HUMAN_BROWSER_SESSION = 'consuelo-human';
+
 export function createBrowserContext(env: NodeJS.ProcessEnv = process.env): BrowserContext {
   const config = resolveBrowserConfig(env);
   return { config, process: createBrowserProcess(config.defaultTimeoutMs) };
@@ -49,10 +51,20 @@ export function runBrowserCommandEffect(
   input: { args: string[]; useProfile?: boolean; timeoutMs?: number },
   context: BrowserContext,
 ) {
-  const args = input.useProfile === false
-    ? input.args
-    : ['--profile', context.config.profilePath, ...input.args];
-  return context.process.run({ args, timeoutMs: input.timeoutMs });
+  if (input.useProfile === false) {
+    return context.process.run({ args: input.args, timeoutMs: input.timeoutMs });
+  }
+
+  return Effect.gen(function* () {
+    const sessions = yield* context.process.run({
+      args: ['session', 'list'],
+      timeoutMs: input.timeoutMs,
+    });
+    const args = sessions.exitCode === 0 && hasSession(sessions.stdout, HUMAN_BROWSER_SESSION)
+      ? ['--session', HUMAN_BROWSER_SESSION, '--headed', ...input.args]
+      : ['--profile', context.config.profilePath, ...input.args];
+    return yield* context.process.run({ args, timeoutMs: input.timeoutMs });
+  });
 }
 
 function runRequired(
@@ -73,9 +85,24 @@ export function headedBrowserEffect(input: { url: string; provider?: string }, c
       return yield* Effect.fail(commandFailure('browser daemon restart', close));
     }
 
-    yield* runRequired('headed browser launch', { args: [...headedArgs, 'open', url] }, context);
-    const currentUrl = yield* runRequired('browser URL read', { args: [...headedArgs, 'get', 'url'] }, context);
-    const title = yield* runRequired('browser title read', { args: [...headedArgs, 'get', 'title'] }, context);
+    const launch = yield* context.process.run({
+      args: [
+        '--session', HUMAN_BROWSER_SESSION,
+        '--profile', context.config.profilePath,
+        ...headedArgs,
+        'open', url,
+      ],
+    });
+    yield* ensureSuccess('headed browser launch', launch);
+
+    const currentUrl = yield* context.process.run({
+      args: ['--session', HUMAN_BROWSER_SESSION, ...headedArgs, 'get', 'url'],
+    });
+    yield* ensureSuccess('browser URL read', currentUrl);
+    const title = yield* context.process.run({
+      args: ['--session', HUMAN_BROWSER_SESSION, ...headedArgs, 'get', 'title'],
+    });
+    yield* ensureSuccess('browser title read', title);
 
     return {
       mode: 'headed',
@@ -102,13 +129,25 @@ export function openBrowserEffect(input: BrowserOpenInput, context: BrowserConte
   });
 }
 
+function sessionNames(summary: string): string[] {
+  if (/no active sessions/i.test(summary)) return [];
+  return summary
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^\s*[→*]?\s*/, '').trim())
+    .filter((line) => line.length > 0 && !/^active sessions:?$/i.test(line));
+}
+
+function hasSession(summary: string, name: string): boolean {
+  return sessionNames(summary).includes(name);
+}
+
 function hasActiveSession(summary: string): boolean {
-  return /(?:^|\n)\s*[→*]\s+\S/.test(summary);
+  return sessionNames(summary).length > 0;
 }
 
 export function statusBrowserEffect(_input: Record<string, never>, context: BrowserContext) {
   return Effect.gen(function* () {
-    const session = yield* runRequired('browser status', { args: ['session', 'list'] }, context);
+    const session = yield* runRequired('browser status', { args: ['session', 'list'], useProfile: false }, context);
     const sessionSummary = session.stdout.trim();
     if (!hasActiveSession(sessionSummary)) {
       return {
@@ -120,8 +159,13 @@ export function statusBrowserEffect(_input: Record<string, never>, context: Brow
       } satisfies BrowserStatus;
     }
 
-    const url = yield* runRequired('browser URL read', { args: ['get', 'url'] }, context);
-    const title = yield* runRequired('browser title read', { args: ['get', 'title'] }, context);
+    const routeArgs = hasSession(sessionSummary, HUMAN_BROWSER_SESSION)
+      ? ['--session', HUMAN_BROWSER_SESSION, '--headed']
+      : ['--profile', context.config.profilePath];
+    const urlResult = yield* context.process.run({ args: [...routeArgs, 'get', 'url'] });
+    const url = yield* ensureSuccess('browser URL read', urlResult);
+    const titleResult = yield* context.process.run({ args: [...routeArgs, 'get', 'title'] });
+    const title = yield* ensureSuccess('browser title read', titleResult);
 
     return {
       profilePath: context.config.profilePath,

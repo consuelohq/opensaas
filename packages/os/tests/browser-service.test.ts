@@ -9,6 +9,7 @@ import {
   closeBrowserEffect,
   headedBrowserEffect,
   openBrowserEffect,
+  runBrowserCommandEffect,
   statusBrowserEffect,
 } from '../scripts/lib/browser/service';
 import { BrowserServiceError } from '../scripts/lib/browser/errors';
@@ -63,8 +64,8 @@ function manifest(packageName: 'workspace' | 'os'): Array<{
 describe('browser persistent headed handoff', () => {
   it('should leave a headed browser running when user login is required', async () => {
     const testContext = context({
-      [`--profile ${profilePath} --headed get url`]: 'https://dash.cloudflare.com/',
-      [`--profile ${profilePath} --headed get title`]: 'Cloudflare',
+      [`--session consuelo-human --headed get url`]: 'https://dash.cloudflare.com/',
+      [`--session consuelo-human --headed get title`]: 'Cloudflare',
     });
 
     const result = await Effect.runPromise(headedBrowserEffect({
@@ -73,9 +74,9 @@ describe('browser persistent headed handoff', () => {
 
     expect(testContext.calls.map((call) => call.args)).toEqual([
       ['close', '--all'],
-      ['--profile', profilePath, '--headed', 'open', 'https://dash.cloudflare.com/'],
-      ['--profile', profilePath, '--headed', 'get', 'url'],
-      ['--profile', profilePath, '--headed', 'get', 'title'],
+      ['--session', 'consuelo-human', '--profile', profilePath, '--headed', 'open', 'https://dash.cloudflare.com/'],
+      ['--session', 'consuelo-human', '--headed', 'get', 'url'],
+      ['--session', 'consuelo-human', '--headed', 'get', 'title'],
     ]);
     expect(testContext.calls.flatMap((call) => call.args)).not.toContain('auth');
     expect(testContext.calls.filter((call) => call.args[0] === 'close')).toHaveLength(1);
@@ -112,9 +113,9 @@ describe('browser persistent headed handoff', () => {
     }, testContext));
 
     expect(calls[0]?.args).toEqual(['close', '--all']);
-    expect(calls[1]?.args).toEqual(['--profile', profilePath, '--headed', 'open', 'https://github.com/']);
-    expect(calls[2]?.args).toEqual(['--profile', profilePath, '--headed', 'get', 'url']);
-    expect(calls[3]?.args).toEqual(['--profile', profilePath, '--headed', 'get', 'title']);
+    expect(calls[1]?.args).toEqual(['--session', 'consuelo-human', '--profile', profilePath, '--headed', 'open', 'https://github.com/']);
+    expect(calls[2]?.args).toEqual(['--session', 'consuelo-human', '--headed', 'get', 'url']);
+    expect(calls[3]?.args).toEqual(['--session', 'consuelo-human', '--headed', 'get', 'title']);
     expect(result.leftRunning).toBe(true);
   });
 
@@ -128,7 +129,22 @@ describe('browser persistent headed handoff', () => {
 
     expect(testContext.calls[0]?.args).toEqual(['close', '--all']);
     expect(testContext.calls[1]?.args).toEqual([
-      '--profile', profilePath, '--headed', 'open', 'https://github.com/',
+      '--session', 'consuelo-human', '--profile', profilePath, '--headed', 'open', 'https://github.com/',
+    ]);
+  });
+
+  it('should keep every command in the active human session headed', async () => {
+    const testContext = context({
+      'session list': 'Active sessions:\n→ consuelo-human',
+    });
+
+    await Effect.runPromise(runBrowserCommandEffect({
+      args: ['snapshot', '-i'],
+    }, testContext.value));
+
+    expect(testContext.calls.map((call) => call.args)).toEqual([
+      ['session', 'list'],
+      ['--session', 'consuelo-human', '--headed', 'snapshot', '-i'],
     ]);
   });
 
@@ -139,7 +155,8 @@ describe('browser persistent headed handoff', () => {
       url: 'https://example.com',
     }, testContext.value));
 
-    expect(testContext.calls[0]?.args).toEqual([
+    expect(testContext.calls[0]?.args).toEqual(['session', 'list']);
+    expect(testContext.calls[1]?.args).toEqual([
       '--profile', profilePath, 'open', 'https://example.com/',
     ]);
     expect(testContext.calls.some((call) => call.args[0] === 'close')).toBe(false);
@@ -152,7 +169,8 @@ describe('browser persistent headed handoff', () => {
       url: 'https://example.com',
       provider: 'ios',
     }, existingContext.value));
-    expect(existingContext.calls[0]?.args).toEqual([
+    expect(existingContext.calls[0]?.args).toEqual(['session', 'list']);
+    expect(existingContext.calls[1]?.args).toEqual([
       '--profile', profilePath, '--provider', 'ios', 'open', 'https://example.com/',
     ]);
 
@@ -163,9 +181,9 @@ describe('browser persistent headed handoff', () => {
       provider: 'ios',
     }, headedContext.value));
     expect(headedContext.calls.slice(1, 4).map((call) => call.args)).toEqual([
-      ['--profile', profilePath, '--provider', 'ios', '--headed', 'open', 'https://example.com/'],
-      ['--profile', profilePath, '--provider', 'ios', '--headed', 'get', 'url'],
-      ['--profile', profilePath, '--provider', 'ios', '--headed', 'get', 'title'],
+      ['--session', 'consuelo-human', '--profile', profilePath, '--provider', 'ios', '--headed', 'open', 'https://example.com/'],
+      ['--session', 'consuelo-human', '--provider', 'ios', '--headed', 'get', 'url'],
+      ['--session', 'consuelo-human', '--provider', 'ios', '--headed', 'get', 'title'],
     ]);
   });
 
@@ -202,7 +220,7 @@ describe('browser persistent headed handoff', () => {
 
   it('should report safe browser status without authentication values', async () => {
     const testContext = context({
-      [`--profile ${profilePath} session list`]: 'Active sessions:\n→ default',
+      'session list': 'Active sessions:\n→ default',
       [`--profile ${profilePath} get url`]: 'https://dash.cloudflare.com/',
       [`--profile ${profilePath} get title`]: 'Cloudflare Dashboard',
     });
@@ -217,6 +235,23 @@ describe('browser persistent headed handoff', () => {
       title: 'Cloudflare Dashboard',
     });
     expect(serialized).not.toMatch(/cookie|localStorage|sessionStorage|token|password/i);
+  });
+
+  it('should report status from the active human session without demoting it', async () => {
+    const testContext = context({
+      'session list': 'Active sessions:\n  default\n→ consuelo-human',
+      '--session consuelo-human --headed get url': 'https://github.com/',
+      '--session consuelo-human --headed get title': 'GitHub',
+    });
+
+    const result = await Effect.runPromise(statusBrowserEffect({}, testContext.value));
+
+    expect(testContext.calls.map((call) => call.args)).toEqual([
+      ['session', 'list'],
+      ['--session', 'consuelo-human', '--headed', 'get', 'url'],
+      ['--session', 'consuelo-human', '--headed', 'get', 'title'],
+    ]);
+    expect(result).toMatchObject({ reachable: true, url: 'https://github.com/', title: 'GitHub' });
   });
 
   it('should not launch a browser while reporting an inactive status', async () => {
@@ -240,7 +275,7 @@ describe('browser persistent headed handoff', () => {
     const result = await Effect.runPromise(statusBrowserEffect({}, testContext));
 
     expect(calls.map((call) => call.args)).toEqual([
-      ['--profile', profilePath, 'session', 'list'],
+      ['session', 'list'],
     ]);
     expect(result).toMatchObject({ reachable: false, url: '', title: '' });
   });
