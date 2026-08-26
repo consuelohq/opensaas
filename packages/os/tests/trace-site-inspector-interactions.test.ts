@@ -39,6 +39,16 @@ describe('Trace Burn keyboard and row interaction contracts', () => {
   it('uses safe tool aliases instead of falling back to trace', () => {
     expect(formatTraceTableRow({ toolName: 'fs.read', traceId: 'trc_1' }).toolLabel).toBe('fs.read');
     expect(formatTraceTableRow({ facadeTool: 'github', traceId: 'trc_2' }).toolLabel).toBe('github');
+    expect(formatTraceTableRow({
+      name: 'fs.search',
+      traceId: 'trc_3',
+      input: { pattern: 'childTraceRecords' },
+    }).toolLabel).toBe('fs.search');
+    expect(formatTraceTableRow({
+      name: 'tools.search',
+      traceId: 'trc_4',
+      input: { query: 'release canary' },
+    }).toolLabel).toBe('tools.search');
   });
 
   it('should fall through empty work paths when choosing the session label', () => {
@@ -63,6 +73,54 @@ describe('Trace Burn keyboard and row interaction contracts', () => {
     expect(children).toHaveLength(1);
     expect(formatTraceTableRow(children[0]).toolLabel).toBe('fs.read');
     expect(totalTokens(children[0])).toBe(8);
+  });
+
+  it('maps batch result envelopes to their originating steps without turning tool results into ghost traces', () => {
+    const children = childTraceRecords({
+      traceId: 'trc_parent_envelopes',
+      name: 'batch',
+      rawResolvedInputJson: {
+        steps: [
+          {
+            tool: 'fs.read',
+            input: { path: 'packages/os/scripts/lib/trace-site-inspector/model.ts' },
+          },
+          {
+            tool: 'explore',
+            input: { query: 'find inspector', limit: 2 },
+          },
+        ],
+      },
+      batchResultsJson: [
+        {
+          name: 'trace',
+          ok: true,
+          code: 'OK',
+          message: 'command completed',
+          data: { type: 'text-page' },
+        },
+        {
+          ok: true,
+          code: 'OK',
+          message: 'command completed',
+          data: {
+            query: 'find inspector',
+            results: [
+              { path: 'packages/os/a.ts', score: 1 },
+              { path: 'packages/os/b.ts', score: 0.9 },
+            ],
+          },
+        },
+      ],
+    });
+
+    expect(children).toHaveLength(2);
+    expect(children.map((child) => formatTraceTableRow(child).toolLabel)).toEqual([
+      'fs.read',
+      'explore',
+    ]);
+    expect(formatTraceTableRow(children[0]).inputLabel).toBe('read model.ts');
+    expect(formatTraceTableRow(children[1]).inputLabel).toBe('find inspector');
   });
 
   it('closing the inspector clears the selected row instead of leaving a stale highlight', () => {
