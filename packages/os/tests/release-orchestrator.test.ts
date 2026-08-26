@@ -146,6 +146,55 @@ describe('release orchestrator', () => {
     });
   });
 
+  it('ignores an older exact-SHA failure after a newer cancelled attempt starts replacement recovery', () => {
+    expect(selectRuntimePublishCandidate([
+      {
+        databaseId: 102,
+        headSha: 'sha_main',
+        status: 'completed',
+        conclusion: 'cancelled',
+        url: 'https://example.test/run/102',
+      },
+      {
+        databaseId: 101,
+        headSha: 'sha_main',
+        status: 'completed',
+        conclusion: 'failure',
+        url: 'https://example.test/run/101',
+      },
+    ], 'sha_main', [102])).toBeNull();
+  });
+
+  it('returns a newer replacement failure after a cancelled exact-SHA attempt', () => {
+    expect(selectRuntimePublishCandidate([
+      {
+        databaseId: 103,
+        headSha: 'sha_main',
+        status: 'completed',
+        conclusion: 'failure',
+        url: 'https://example.test/run/103',
+      },
+      {
+        databaseId: 102,
+        headSha: 'sha_main',
+        status: 'completed',
+        conclusion: 'cancelled',
+        url: 'https://example.test/run/102',
+      },
+      {
+        databaseId: 101,
+        headSha: 'sha_main',
+        status: 'completed',
+        conclusion: 'failure',
+        url: 'https://example.test/run/101',
+      },
+    ], 'sha_main', [102])).toMatchObject({
+      runId: 103,
+      status: 'completed',
+      conclusion: 'failure',
+    });
+  });
+
   it('still returns a genuine exact-SHA publication failure when no retry is active', () => {
     expect(selectRuntimePublishCandidate([
       {
