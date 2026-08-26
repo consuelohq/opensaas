@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-08-26T02:05:03.446Z"
+}

@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_9366c42429d0",
+  "tmuxSession": "opensaas-os-serve-live-artifacts-through-authenticated-gatew-9366c424",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/serve-live-artifacts-through-authenticated-gateway",
+  "branch": "task/os/serve-live-artifacts-through-authenticated-gateway",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-serve-live-artifacts-through-authenticated-gateway",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-serve-live-artifacts-through-authenticated-gateway",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2182,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2182",
+  "createdAt": "2026-08-26T02:00:30.206Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-serve-live-artifacts-through-authenticated-gateway/.task/os/serve-live-artifacts-through-authenticated-gateway/session.json"
+}
