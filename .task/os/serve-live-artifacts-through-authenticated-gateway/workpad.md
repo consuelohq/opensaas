@@ -32,6 +32,7 @@ started: 2026-08-26
 - 2026-08-26 02:01:43 fs.write: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
 - 2026-08-26 02:05:45 fs.write: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
 - 2026-08-26 02:13:29 fs.write: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
+- 2026-08-26 02:15:20 fs.write: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
 
 ## workspace-owned: validation evidence
 
@@ -125,3 +126,13 @@ The initial route-seed fix requires every node heartbeat producer to run the new
 - The attempted signed dev-runtime workflow run `32921598861` was blocked by pre-existing distribution regression instability (CI test timeouts; local rerun also exposed an unrelated Caddy worker-port assertion). No runtime bundle was published from that failed run; this task does not bypass that release gate.
 
 - 2026-08-26 02:13:29 append: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
+
+## Live publication evidence
+
+- Workspace Edge compatibility fix deployed directly from verified task commit `3c120fa24a`; Cloudflare Worker version `7c949c80-cdcb-4972-9688-f43c4c08212b`, trace `trc_f0420ba96cd8`.
+- Production unauthenticated verification now treats both `/artifacts` and nested dated artifact URLs as private live routes: JSON requests return 401 `workspace_session_required`; browser HTML requests redirect to the Google web login with the exact artifact `return_to`, trace `trc_614b6d6186b2`. The legacy public snapshot is no longer served.
+- D1 currently retains the durable legacy-compatible `/gateway/artifacts` route as `workspace-session` -> `consuelo-gateway-service` -> `artifacts-sites-read-layer`, trace `trc_0adb0b9add74`. The Edge compatibility alias therefore survives old node heartbeats.
+- Local canonical artifact catalog is populated: 39 entries; `/daily-schedules` has 49 versions; latest self-healing workpad/report are dated 2026-08-25 and latest security workpad/scan are dated 2026-08-24, trace `trc_fc5bad93d580`.
+- Agent browser reached the expected Google auth boundary but its isolated profile requires a password, so authenticated visual verification was intentionally not forced. Existing user browser sessions should render the live archive after refresh/sign-in.
+
+- 2026-08-26 02:15:20 append: `.task/os/serve-live-artifacts-through-authenticated-gateway/workpad.md`
