@@ -11,6 +11,7 @@ import {
 type SharedRemote = {
   activePromotion: boolean;
   lock: ReleasePromotionLockMarker | null;
+  renewals?: number;
   sequence: number;
 };
 
@@ -29,6 +30,12 @@ function createAdapter(shared: SharedRemote): ReleasePromotionDispatchLockAdapte
       return true;
     },
     readLock: async () => shared.lock,
+    renewLockIfOwned: async (ownerId, renewedAtMs) => {
+      if (shared.lock?.ownerId !== ownerId) return false;
+      shared.lock = { ...shared.lock, acquiredAtMs: renewedAtMs };
+      shared.renewals = (shared.renewals ?? 0) + 1;
+      return true;
+    },
     deleteLockIfOwned: async (ownerId) => {
       if (shared.lock?.ownerId !== ownerId) return false;
       shared.lock = null;
@@ -76,6 +83,45 @@ describe('release promotion dispatch lock', () => {
 
     expect(maxActive).toBe(1);
     expect(order).toEqual(['first:enter', 'first:exit', 'second:enter', 'second:exit']);
+    expect(shared.lock).toBeNull();
+  });
+
+  it('renews a live owner before the stale lease can be reclaimed by another operator', async () => {
+    const shared: SharedRemote = {
+      activePromotion: false,
+      lock: null,
+      renewals: 0,
+      sequence: 0,
+    };
+    const firstOperator = createAdapter(shared);
+    const secondOperator = createAdapter(shared);
+    let active = 0;
+    let maxActive = 0;
+
+    const criticalSection = async (
+      name: string,
+      adapter: ReleasePromotionDispatchLockAdapter,
+      holdMs: number,
+    ) => withReleasePromotionDispatchLock({
+      operationId: `release:${name}`,
+      waitTimeoutMs: 1_000,
+      staleAfterMs: 25,
+      heartbeatIntervalMs: 5,
+      pollIntervalMs: 5,
+    }, adapter, async () => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      await new Promise((resolve) => setTimeout(resolve, holdMs));
+      active -= 1;
+    });
+
+    const first = criticalSection('first', firstOperator, 80);
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    const second = criticalSection('second', secondOperator, 1);
+    await Promise.all([first, second]);
+
+    expect(shared.renewals).toBeGreaterThan(0);
+    expect(maxActive).toBe(1);
     expect(shared.lock).toBeNull();
   });
 
