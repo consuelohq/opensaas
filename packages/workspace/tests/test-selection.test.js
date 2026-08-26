@@ -1374,4 +1374,27 @@ describe('test selection registry', () => {
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
+
+  it('uses focused headed browser handoff contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/browser/service.ts',
+      '--changed-file',
+      'packages/os/tests/browser-service.test.ts',
+      '--changed-file',
+      'packages/workspace/scripts/lib/browser/service.ts',
+      '--changed-file',
+      'packages/workspace/tests/browser-service.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-browser-headed-handoff');
+    expect(suiteNames).toContain('OS headed browser handoff contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
 });
