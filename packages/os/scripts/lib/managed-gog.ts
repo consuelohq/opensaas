@@ -6,6 +6,29 @@ import path from 'node:path';
 export const GOG_VERSION = '0.38.1';
 const RELEASE_BASE = `https://github.com/openclaw/gogcli/releases/download/v${GOG_VERSION}`;
 
+export const GOG_LICENSE_NOTICE = `MIT License
+
+Copyright (c) 2026 Peter Steinberger
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+`;
+
 type ManagedGogAsset = {
   version: string;
   fileName: string;
@@ -61,6 +84,22 @@ export function managedGogPath(home: string): string {
   return path.join(path.resolve(home), 'bin', process.platform === 'win32' ? 'gog.exe' : 'gog');
 }
 
+export function managedGogLicensePath(home: string): string {
+  return path.join(path.resolve(home), 'licenses', 'gogcli-MIT.txt');
+}
+
+export function ensureManagedGogLicense(home: string): { changed: boolean } {
+  const noticePath = managedGogLicensePath(home);
+  try {
+    if (fs.readFileSync(noticePath, 'utf8') === GOG_LICENSE_NOTICE) return { changed: false };
+  } catch {
+    // Missing or unreadable notices are reconciled below.
+  }
+  fs.mkdirSync(path.dirname(noticePath), { recursive: true, mode: 0o755 });
+  fs.writeFileSync(noticePath, GOG_LICENSE_NOTICE, { encoding: 'utf8', mode: 0o644 });
+  return { changed: true };
+}
+
 function parsedVersion(output: string): string | undefined {
   return output.match(/\bv(\d+\.\d+\.\d+)\b/)?.[1];
 }
@@ -99,7 +138,10 @@ export async function ensureManagedGog(input: {
   const executable = managedGogPath(input.home);
   const run = input.run ?? defaultRunner;
   const existing = await currentVersion(executable, run);
-  if (existing === GOG_VERSION) return { path: executable, version: GOG_VERSION, changed: false };
+  if (existing === GOG_VERSION) {
+    ensureManagedGogLicense(input.home);
+    return { path: executable, version: GOG_VERSION, changed: false };
+  }
 
   const asset = managedGogAsset(input.platform ?? process.platform, input.arch ?? process.arch);
   const fetchImpl = input.fetchImpl ?? globalThis.fetch;
@@ -134,5 +176,6 @@ export async function ensureManagedGog(input: {
 
   const installed = await currentVersion(executable, run);
   if (installed !== GOG_VERSION) throw new Error(`managed gog verification failed after install (expected ${GOG_VERSION})`);
+  ensureManagedGogLicense(input.home);
   return { path: executable, version: GOG_VERSION, changed: true };
 }

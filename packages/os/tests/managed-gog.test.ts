@@ -1,13 +1,16 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 import {
+  ensureManagedGogLicense,
   ensureManagedGog,
+  GOG_LICENSE_NOTICE,
   GOG_VERSION,
   managedGogAsset,
+  managedGogLicensePath,
   managedGogPath,
 } from '../scripts/lib/managed-gog';
 
@@ -32,6 +35,19 @@ describe('managed gog runtime', () => {
 
   it('fails closed for unsupported release targets', () => {
     expect(() => managedGogAsset('aix', 'ppc64')).toThrow(/unsupported/i);
+  });
+
+  it('reconciles the upstream MIT license notice into the managed runtime home', () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-gog-license-'));
+    try {
+      expect(managedGogLicensePath(home)).toBe(join(home, 'licenses', 'gogcli-MIT.txt'));
+      expect(ensureManagedGogLicense(home)).toEqual({ changed: true });
+      expect(readFileSync(managedGogLicensePath(home), 'utf8')).toBe(GOG_LICENSE_NOTICE);
+      expect(GOG_LICENSE_NOTICE).toContain('Copyright (c) 2026 Peter Steinberger');
+      expect(ensureManagedGogLicense(home)).toEqual({ changed: false });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
   });
 
   it('rejects a tampered release before extraction or install', async () => {
