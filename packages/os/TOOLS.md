@@ -1964,7 +1964,7 @@ a repo-aware decision search tool for coding agents. It answers where to spend a
 | Field | Value |
 | --- | --- |
 | Category | decision engine |
-| Signature | `workspace.explore({ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.explore({ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; detail?: "compact" | "full"; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace explore` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 300000ms |

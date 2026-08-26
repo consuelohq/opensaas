@@ -599,6 +599,7 @@ export const ExploreInput = z.object({
   limit: z.number().int().positive().optional(),
   changedOnly: z.boolean().optional(),
   reindex: z.boolean().optional(),
+  detail: z.enum(['compact', 'full']).optional(),
 });
 
 export const DecideNextInput = z.object({
@@ -1197,6 +1198,17 @@ export const LifecycleUpdateInput = z.object({
   ...requestFields,
   ...dryRunField,
   channel: z.enum(['stable', 'beta', 'canary', 'dev', 'nightly']).optional(),
+  version: z.string().regex(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/).optional(),
+});
+
+export const ReleaseInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  pr: z.number().int().positive(),
+  repo: z.string().min(1).optional(),
+  channel: z.enum(['dev', 'canary', 'beta', 'stable']).optional(),
+  mergeMethod: z.enum(['merge', 'squash', 'rebase']).optional(),
+  releaseOnly: z.boolean().optional(),
 });
 
 export const ServerInput = z.object({
@@ -1403,6 +1415,7 @@ export const schemaRegistry = {
   RailwayRedeployInput,
   WebsiteDeployInput,
   LifecycleUpdateInput,
+  ReleaseInput,
   ServerInput,
   CheckFilesInput,
   EditFlowInput,
@@ -1461,7 +1474,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   MemoryListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
   MemorySaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MemoryTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
-  ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
+  ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; detail?: \"compact\" | \"full\"; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
   ConfirmInput: '{ verify?: boolean; test?: string; requestId?: string; taskSession?: string }',
@@ -1524,7 +1537,8 @@ export const schemaTypeSignatures: Record<string, string> = {
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  LifecycleUpdateInput: '{ channel?: "stable" | "beta" | "canary" | "dev" | "nightly"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  LifecycleUpdateInput: '{ channel?: "stable" | "beta" | "canary" | "dev" | "nightly"; version?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ReleaseInput: '{ pr: number; repo?: string; channel?: "dev" | "canary" | "beta" | "stable"; mergeMethod?: "merge" | "squash" | "rebase"; releaseOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ServerInput: '{ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CheckFilesInput: '{ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }',
   EditFlowInput: '{ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }',

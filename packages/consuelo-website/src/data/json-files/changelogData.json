@@ -1,9 +1,47 @@
 [
   {
     "title": "v0.9.0",
-    "date": "Aug 13, 2026",
-    "summary": "August opened with a broader OS control plane, managed cloud and node-aware routing, more durable agent workflows, a commercial dialer foundation, and a polished website and documentation experience.",
+    "date": "Aug 20, 2026",
+    "summary": "August expanded Consuelo OS into a managed control plane with cloud checkout, live workspace navigation, and more resilient lifecycle updates; made task and work sessions durable and observable; hardened site publication and security; and advanced dialer, website, and docs experiences.",
     "weeks": [
+      {
+        "label": "Week of Aug 14 through Aug 20",
+        "summary": "The week made OS updates and routing more resilient, shipped live workspace navigation and managed checkout, introduced durable task and work sessions, hardened site publication and dependencies, and polished responsive documentation.",
+        "sections": [
+          {
+            "title": "OS",
+            "items": [
+              "Added a live workspace Overview with heatmap and stable navigation, preloaded Home routes with live node pricing, managed cloud checkout, and explicit node targeting for agent and plugin calls.",
+              "Made lifecycle updates safer by draining workers without interrupting MCP response streams, retrying gateway and macOS bootstrap handoffs, preserving authenticated workspace routes, and improving rollback and current-bundle convergence.",
+              "Hardened launcher and gateway coherence, local recovery, node discovery, OAuth reconnect and callback routing, runtime health recovery, and targeted device delivery."
+            ]
+          },
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Introduced unified task and work sessions with filesystem and code authority, session observability, durable task worktrees, recoverable eviction, and stronger task and subagent recovery flows."
+            ]
+          },
+          {
+            "title": "Security and Sites",
+            "items": [
+              "Repaired hosted site snapshot publication and verification while keeping private launcher access intact, and moved website XML dependencies onto patched releases."
+            ]
+          },
+          {
+            "title": "Docs",
+            "items": [
+              "Refined the docs home, desktop and responsive chrome, navigation and translation behavior, mobile browse menu, and Connect content around Bring Your Own workflows."
+            ]
+          },
+          {
+            "title": "Release",
+            "items": [
+              "Improved workspace shell and edge-migration sequencing plus lifecycle handoff so releases recover routes and services more reliably."
+            ]
+          }
+        ]
+      },
       {
         "label": "Week of Aug 7 through Aug 13",
         "summary": "The week expanded the OS into a managed control plane, hardened MCP and worker lifecycle, productized skills and task workflows, reconciled major dialer work, and completed another website and documentation polish wave.",

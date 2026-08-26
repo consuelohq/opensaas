@@ -2,7 +2,7 @@
 title: CLI
 description: User-facing Consuelo OS lifecycle, update, channel, and skill-management commands.
 status: preview
-verifiedAt: 2026-08-15
+verifiedAt: 2026-08-26
 evidence:
   - source: packages/os/scripts/lifecycle.ts
     tests:
@@ -62,9 +62,12 @@ See [Install a skill](/build/skills/install-a-skill/) for selection, materializa
 consuelo update --check
 consuelo update --yes
 consuelo update --channel beta --check
+consuelo update --channel canary --version 1.2.3 --check
 ```
 
 Available release channels are `stable`, `beta`, `canary`, `dev`, and `nightly`.
+
+`--version X.Y.Z` makes `update` require that exact signed runtime version instead of accepting whichever version the channel pointer currently exposes. Operator release automation uses this to ensure the machine that initiated a release is activated on the platform-specific runtime bundle selected from that exact signed release. The version check does not bypass channel signatures or downgrade policy.
 
 ### Restart and update gateway reconciliation
 

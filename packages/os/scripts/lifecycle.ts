@@ -80,6 +80,7 @@ type ParsedLifecycleArgs = {
   command: string;
   positional: string[];
   channel?: LifecycleReleaseChannel;
+  expectedVersion?: string;
   check: boolean;
   yes: boolean;
   dryRun: boolean;
@@ -161,6 +162,13 @@ function parseArgs(argv: string[]): ParsedLifecycleArgs {
         throw new Error(`unsupported release channel: ${value}`);
       }
       parsed.channel = value as LifecycleReleaseChannel;
+      index += 1;
+    } else if (arg === '--version') {
+      const value = nextValue(argv, index, arg);
+      if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(value)) {
+        throw new Error(`unsupported release version: ${value}`);
+      }
+      parsed.expectedVersion = value;
       index += 1;
     } else if (arg === '--home') {
       parsed.home = nextValue(argv, index, arg);
@@ -364,6 +372,9 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
   }
   if (parsed.channel && !['install', 'update'].includes(parsed.command)) {
     throw new Error('--channel is only valid for install or update');
+  }
+  if (parsed.expectedVersion && parsed.command !== 'update') {
+    throw new Error('--version is only valid for update');
   }
   if (parsed.snoozedUntil && parsed.command !== 'updates') {
     throw new Error('--until is only valid for update notification snooze');
@@ -730,6 +741,7 @@ async function executeCommand(
     case 'update':
       return engine.update({
         channel: parsed.channel,
+        expectedVersion: parsed.expectedVersion,
         check: parsed.check,
         yes: parsed.yes,
       });
@@ -834,6 +846,7 @@ export async function runLifecycleCli(
     } else if (runsInsideActiveDaemon && parsed.command === 'update' && !parsed.check) {
       const checked = await engine.update({
         channel: parsed.channel,
+        expectedVersion: parsed.expectedVersion,
         check: true,
         yes: parsed.yes,
       });

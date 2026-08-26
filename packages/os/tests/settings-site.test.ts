@@ -110,11 +110,15 @@ describe('configuration site', () => {
     expect(html).toContain('Calls');
     expect(html).toContain('Tokens');
     expect(html).toContain('Cost');
-    expect(html).toContain('id="source-control-form"');
+    expect(html).toContain('id="source-control-connect-github"');
     expect(html).toContain('id="source-control-repository-list"');
     expect(html).toContain('/gateway/configuration/source-control');
-    expect(html).toContain('connection binding');
-    expect(html).toContain('href="/secrets"');
+    expect(html).toContain('/gateway/configuration/source-control/github/connect');
+    expect(html).toContain('/gateway/configuration/source-control/github/complete');
+    expect(html).toContain('Connect GitHub');
+    expect(html).not.toContain('id="source-control-form"');
+    expect(html).not.toContain('id="source-control-connection"');
+    expect(html).not.toContain('Connection binding');
     expect(html).not.toContain('credentialValue');
     expect(html).not.toContain('githubToken');
     expect(html).not.toContain('/gateway/settings/');
