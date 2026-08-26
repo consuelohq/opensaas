@@ -1,14 +1,6 @@
 {
   "files": [
-    ".github/workflows/consuelo-ci.yaml",
-    "packages/os/scripts/lib/github-cli.ts",
-    "packages/os/scripts/lib/install-state.ts",
-    "packages/os/scripts/lib/worker-pool.ts",
-    "packages/os/tests/audit/script-parity-audit.test.ts",
-    "packages/os/tests/fixtures/tool-package-baseline.json",
-    "packages/os/tests/security-gateway.test.ts",
-    "packages/os/tests/tool-manifest.test.ts",
-    "packages/os/tools/media/schema.ts"
+    "packages/os/scripts/lib/trace-sites-local-read-backend.ts"
   ],
-  "updatedAt": "2026-08-26T06:09:24.546Z"
+  "updatedAt": "2026-08-26T06:15:24.572Z"
 }

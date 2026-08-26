@@ -49,6 +49,8 @@ started: 2026-08-26
 - Full committed-head verify correctly rejected the temporary `EmptyInput` media scaffold because media taxonomy requires every `media.*` input contract to retain a named `Media…Input` identity (`trc_1883fded3453`). The 21 scaffold tools are now restored to their original named schema IDs, each backed by a minimal request/dry-run schema until real arguments are implemented (`trc_cf8d54d3f798`).
 - The script-parity characterization was also materially stale: current inventory has 516 scripts versus 395 classified, with 123 missing and 2 removed generated plists. It was refreshed conservatively—new OS-only paths stay `os-only-needs-review`, workspace-only stay `workspace-only-needs-port`, changed shared paths stay `changed-needs-review`, and only byte-identical paths are `same` (`trc_49325811ccfb`, `trc_cfdb8fafaac6`, `trc_d1a3899c63c8`).
 - After restoring named media schemas, regenerating canonical manifests/baseline, and normalizing the parity inventory, all affected deterministic suites pass together: media taxonomy 5/5, parity audit 1/1, facade 714/714, exact OS contracts 47 passed / 5 skipped (`trc_d8453cdeac56`).
+- Full publish verification then exposed two remaining required-package regressions (`trc_f46c7f2d6c4a`): `workflow-intent.test.ts` still asserted the pre-`session.start` task.start description, and signed workspace-gateway trace reads crashed under Node because trace persistence/read code directly loaded `bun:sqlite`.
+- The workflow assertion now matches the already-canonical compatibility contract for `task.start`. Trace database access now follows the existing runtime-state portability pattern: Bun uses `bun:sqlite`; Node uses `node:sqlite`, with a shared query/get/all adapter. The signed edge → local OS trace E2E now passes 1/1 under Node (`trc_3d63d785d65f`).
 
 ## files changed
 
@@ -80,6 +82,8 @@ started: 2026-08-26
 - 2026-08-26 06:06:43 `review.run`: passed — OK
 - 2026-08-26 06:12:23 `checkFiles`: passed — OK
 - 2026-08-26 06:12:30 `review.run`: passed — OK
+- 2026-08-26 06:16:03 `checkFiles`: passed — OK
+- 2026-08-26 06:16:10 `review.run`: passed — OK
 
 ## key decisions
 
@@ -119,9 +123,14 @@ bun run task:finish
 - `packages/os/scripts/lib/github-cli.ts`
 - `packages/os/scripts/lib/install-state.ts`
 - `packages/os/scripts/lib/release-orchestrator.ts`
+- `packages/os/scripts/lib/runtime-state.ts`
+- `packages/os/scripts/lib/trace-database-schema.ts`
+- `packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts`
+- `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
 - `packages/os/scripts/lib/worker-pool.ts`
 - `packages/os/scripts/media.ts`
 - `packages/os/scripts/release.ts`
+- `packages/os/scripts/server/routes/traces.ts`
 - `packages/os/tests/audit/script-parity-audit.test.ts`
 - `packages/os/tests/browser-service.test.ts`
 - `packages/os/tests/facade/facade.test.ts`
@@ -129,12 +138,15 @@ bun run task:finish
 - `packages/os/tests/security-gateway.test.ts`
 - `packages/os/tests/tool-manifest.test.ts`
 - `packages/os/tests/tool-package-layout.test.ts`
+- `packages/os/tests/workflow-intent.test.ts`
+- `packages/os/tests/workspace-gateway-node-end-to-end.test.ts`
 - `packages/os/tools/media/handler.ts`
 - `packages/os/tools/media/schema.ts`
 - `packages/os/tools/release/handler.ts`
 - `packages/os/tools/subagent/schema.ts`
 - `packages/workspace/tests/browser-service.test.ts`
 
-- 2026-08-26 06:12:13 apply-patch: `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md`
+- 2026-08-26 06:15:39 apply-patch: `packages/os/scripts/lib/trace-database-schema.ts`
+- 2026-08-26 06:15:39 apply-patch: `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
 
-- 2026-08-26 06:12:18 apply-patch: `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md`
+- 2026-08-26 06:15:56 apply-patch: `.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/workpad.md`
