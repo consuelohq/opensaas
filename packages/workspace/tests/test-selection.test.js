@@ -110,6 +110,7 @@ describe('test selection registry', () => {
 
     expect(rule).toBeDefined();
     expect(rule.source).toContain('packages/os/scripts/lib/trace-site-inspector/**');
+    expect(rule.source).toContain('packages/os/scripts/lib/trace-cost-estimator.ts');
     expect(serialized).not.toContain('packages/workspace/scripts/trace-site-inspector');
     expect(serialized).not.toContain('packages/workspace/tests/trace-site-inspector');
     expect(serialized).not.toContain('trace-gateway-service.test.ts');
@@ -117,7 +118,7 @@ describe('test selection registry', () => {
     const result = run([
       'check',
       '--changed-file',
-      'packages/os/scripts/lib/trace-site-inspector/table-formatters.ts',
+      'packages/os/scripts/lib/trace-cost-estimator.ts',
       '--json',
     ]);
     const data = json(result);
@@ -127,6 +128,9 @@ describe('test selection registry', () => {
 
     expect(data.matchedRules.map((matched) => matched.id)).toContain(
       'trace-site-pagination',
+    );
+    expect(data.matchedRules.map((matched) => matched.id)).not.toContain(
+      'auto:@consuelo/os:package-test',
     );
     expect(suites.length).toBeGreaterThan(0);
     for (const suite of suites) {

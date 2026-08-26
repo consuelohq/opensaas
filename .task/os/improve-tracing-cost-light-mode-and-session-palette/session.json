@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_4d48dbe21130",
+  "tmuxSession": "opensaas-os-improve-tracing-cost-light-mode-and-session-pale-4d48dbe2",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/improve-tracing-cost-light-mode-and-session-palette",
+  "branch": "task/os/improve-tracing-cost-light-mode-and-session-palette",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2203,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2203",
+  "createdAt": "2026-08-26T05:25:30.976Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette/.task/os/improve-tracing-cost-light-mode-and-session-palette/session.json"
+}

@@ -192,6 +192,7 @@
         "packages/os/assets/vendor/observability-traces-v38/inspector.js",
         "packages/os/package.json",
         "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/scripts/lib/trace-cost-estimator.ts",
         "packages/os/scripts/lib/trace-site-inspector/**",
         "packages/os/scripts/lib/trace-sites-gateway-*.ts",
         "packages/os/scripts/lib/trace-sites-local-read-backend.ts",

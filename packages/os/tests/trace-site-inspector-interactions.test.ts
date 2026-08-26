@@ -20,6 +20,10 @@ import {
   formatTraceTableRow,
   matchesTraceTableFilters,
 } from '../scripts/lib/trace-site-inspector/table-formatters';
+import {
+  SESSION_COLOR_TONES,
+  sessionColorTone,
+} from '../scripts/lib/trace-site-inspector/session-colors';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const inspectorRoot = resolve(here, '../scripts/lib/trace-site-inspector');
@@ -55,6 +59,14 @@ describe('Trace Burn keyboard and row interaction contracts', () => {
     expect(branchName({ workPath: '', workSession: 'wrk_session_1' })).toBe('wrk_session_1');
     expect(branchName({ workPath: '', branch: 'task/os/example', taskSession: 'tsk_1' })).toBe('task/os/example');
     expect(branchName({ workPath: 'Raycast Extension', workSession: 'wrk_session_2' })).toBe('Raycast Extension');
+  });
+
+  it('maps sessions deterministically through a broad light/dark color preset ring', () => {
+    expect(SESSION_COLOR_TONES.length).toBeGreaterThanOrEqual(12);
+    expect(new Set(SESSION_COLOR_TONES.map((tone) => tone.dark)).size).toBe(SESSION_COLOR_TONES.length);
+    expect(new Set(SESSION_COLOR_TONES.map((tone) => tone.light)).size).toBe(SESSION_COLOR_TONES.length);
+    expect(sessionColorTone('task/os/worker-a')).toEqual(sessionColorTone('task/os/worker-a'));
+    expect(sessionColorTone('no-branch')).toBeNull();
   });
 
   it('uses persisted token counts first and estimates historical payload burn when counts are absent', () => {

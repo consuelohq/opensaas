@@ -15,6 +15,7 @@ import type {
 import { redactTraceJson, redactTraceText } from './redaction';
 import { ensureTraceDatabaseSchema } from './trace-database-schema';
 import { compileTraceHistorySearch } from './trace-search-query';
+import { estimateTraceCost } from './trace-cost-estimator';
 
 export type LocalTraceSitesReadBackendOptions = {
   dbPath: string;
@@ -323,6 +324,15 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
   );
   const rawResultJson = sanitizeTracePayloadJson(cleanString(row.result_json));
   const rawStderr = sanitizeLocalTraceText(cleanString(row.stderr));
+  const costEstimate = estimateTraceCost({
+    tool,
+    inputTokens,
+    outputTokens,
+    totalTokens: tokens,
+    rawInputJson,
+    rawResolvedInputJson,
+    rawResultJson,
+  });
   const requestedNodeId = cleanString(row.requested_node_id);
   const resolvedNodeId = cleanString(row.resolved_node_id);
   const resolvedNodeName = cleanString(row.resolved_node_name);
@@ -360,14 +370,24 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     tokens,
     inputTokens,
     outputTokens,
-    cost: 0,
-    costLabel: '$0.0000',
+    cost: costEstimate?.cost ?? 0,
+    costLabel: costEstimate?.costLabel ?? '—',
     trace: traceId,
     traceId,
     metadata: {
       rowid: row.rowid,
       source: cleanString(row.source),
       mcpTraceId: cleanString(row.mcp_trace_id),
+      ...(costEstimate
+        ? {
+            pricingModel: costEstimate.model,
+            pricingRateModel: costEstimate.rateModel,
+            pricingSource: costEstimate.pricingSource,
+            pricingProvider: costEstimate.provider,
+            pricingEstimated: true,
+            cachedInputTokens: costEstimate.cachedInputTokens,
+          }
+        : {}),
       ...(cleanString(row.work_session) ? { workSession: cleanString(row.work_session) } : {}),
       ...(cleanString(row.work_path)
         ? { workPath: sanitizeLocalTraceText(cleanString(row.work_path)) }
