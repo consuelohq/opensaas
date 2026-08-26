@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { evaluatePromotionCorrelation } from '../scripts/lib/release-promotion-correlation';
+import {
+  evaluatePromotionCorrelation,
+  selectActivePromotionRun,
+} from '../scripts/lib/release-promotion-correlation';
 
 const exactRelease = {
   channel: 'canary' as const,
@@ -11,6 +14,19 @@ const exactRelease = {
 };
 
 describe('release promotion correlation', () => {
+  it('serializes behind the oldest active protected promotion before dispatching another one', () => {
+    expect(selectActivePromotionRun([
+      { databaseId: 103, displayTitle: 'Consuelo OS runtime promote', status: 'queued', url: 'https://example.test/run/103' },
+      { databaseId: 102, displayTitle: 'Consuelo OS runtime promote', status: 'in_progress', url: 'https://example.test/run/102' },
+      { databaseId: 101, displayTitle: 'Consuelo OS runtime promote', status: 'completed', conclusion: 'failure' },
+    ])).toEqual({
+      runId: 102,
+      status: 'in_progress',
+      conclusion: '',
+      url: 'https://example.test/run/102',
+    });
+  });
+
   it('uses the signed target pointer as authoritative even when the protected workflow keeps its generic display title', () => {
     expect(evaluatePromotionCorrelation({
       baselineRunId: 100,
