@@ -689,6 +689,17 @@ export const GhInput = z.object({
   args: stringArray,
 });
 
+export const GoogleInput = z.object({
+  ...requestFields,
+  action: z.enum(['status', 'connect', 'run']),
+  args: stringArray,
+  account: z.string().min(3).optional(),
+  mode: z.enum(['read', 'write']).optional(),
+  approved: z.boolean().optional(),
+  approvalReason: z.string().optional(),
+  timeoutMs: z.number().int().positive().max(10 * 60_000).optional(),
+});
+
 
 export const GithubInput = z.object({
   ...requestFields,
@@ -1364,6 +1375,7 @@ export const schemaRegistry = {
   PrReviewInput,
   AiReviewInput,
   GhInput,
+  GoogleInput,
   GithubInput,
   GitDiffInput,
   BrowserInput,
@@ -1487,6 +1499,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  GoogleInput: '{ action: "status" | "connect" | "run"; args?: string[]; account?: string; mode?: "read" | "write"; approved?: boolean; approvalReason?: string; timeoutMs?: number; requestId?: string; taskSession?: string }',
   GithubInput: '{ operation: \"pr.view\" | \"pr.checks\" | \"pr.reviews\" | \"pr.files\" | \"pr.diff\" | \"pr.list\" | \"pr.merge\" | \"branch.compare\" | \"repo.view\" | \"raw\"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: \"summary\" | \"review\" | \"merge\" | \"checks\" | \"files\" | \"full\"; fields?: string[]; limit?: number; state?: \"open\" | \"closed\" | \"merged\" | \"all\"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: \"merge\" | \"squash\" | \"rebase\"; rawArgs?: string[]; args?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GitDiffInput: '{ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',

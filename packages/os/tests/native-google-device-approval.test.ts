@@ -108,6 +108,7 @@ describe('native Google OS device approval', () => {
 
     await expect(store.byUserCode(userCode)).resolves.toMatchObject({
       accountId: 'user_canonical_123',
+      accountEmail: 'ko@example.com',
       accountAuthMethod: 'google',
       canonicalUserId: 'user_canonical_123',
       canonicalWorkspaceId: 'workspace_canonical_123',

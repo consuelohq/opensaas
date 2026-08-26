@@ -303,6 +303,7 @@ async function handleGoogleOAuthRequest(
       grant.canonicalWorkspaceId = canonicalIdentity.canonicalWorkspaceId;
       grant.workspaceId = canonicalIdentity.canonicalWorkspaceId;
       grant.accountId = accountId;
+      grant.accountEmail = identity.email;
       grant.accountAuthMethod = 'google';
       if (canonicalIdentity.workspaceRoute) {
         assignGrantWorkspace({

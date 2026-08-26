@@ -1,0 +1,138 @@
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+export const GOG_VERSION = '0.38.1';
+const RELEASE_BASE = `https://github.com/openclaw/gogcli/releases/download/v${GOG_VERSION}`;
+
+type ManagedGogAsset = {
+  version: string;
+  fileName: string;
+  sha256: string;
+};
+
+const ASSETS: Record<string, ManagedGogAsset> = {
+  'darwin:arm64': {
+    version: GOG_VERSION,
+    fileName: `gogcli_${GOG_VERSION}_darwin_arm64.tar.gz`,
+    sha256: 'bad68687094d2ba034d3b2c369ef2e608ce233f5b6d3752cb05508b0c49bd502',
+  },
+  'darwin:x64': {
+    version: GOG_VERSION,
+    fileName: `gogcli_${GOG_VERSION}_darwin_amd64.tar.gz`,
+    sha256: '43b98b982c4573f2db17f7dd901f12596a2a8bc50727cad1014d1f3c791ed0f6',
+  },
+  'linux:arm64': {
+    version: GOG_VERSION,
+    fileName: `gogcli_${GOG_VERSION}_linux_arm64.tar.gz`,
+    sha256: '462342542472dcf361744cfe5e15a3540364b4c5120577e4519fffbd1afc6596',
+  },
+  'linux:x64': {
+    version: GOG_VERSION,
+    fileName: `gogcli_${GOG_VERSION}_linux_amd64.tar.gz`,
+    sha256: '6576828ed6852949ba424b967c3ff4268b3d9c90e201f90fe3d539fe3a151ebb',
+  },
+};
+
+export type ManagedGogRunResult = { exitCode: number; stdout: string; stderr: string };
+export type ManagedGogRunner = (command: readonly string[]) => Promise<ManagedGogRunResult>;
+
+const defaultRunner: ManagedGogRunner = async (command) => {
+  const child = Bun.spawn([...command], { stdout: 'pipe', stderr: 'pipe' });
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(child.stdout).text(),
+    new Response(child.stderr).text(),
+    child.exited,
+  ]);
+  return { exitCode, stdout, stderr };
+};
+
+export function managedGogAsset(
+  platform: NodeJS.Platform | string = process.platform,
+  arch: NodeJS.Architecture | string = process.arch,
+): ManagedGogAsset {
+  const asset = ASSETS[`${platform}:${arch}`];
+  if (!asset) throw new Error(`unsupported gog release target: ${platform}/${arch}`);
+  return { ...asset };
+}
+
+export function managedGogPath(home: string): string {
+  return path.join(path.resolve(home), 'bin', process.platform === 'win32' ? 'gog.exe' : 'gog');
+}
+
+function parsedVersion(output: string): string | undefined {
+  return output.match(/\bv(\d+\.\d+\.\d+)\b/)?.[1];
+}
+
+async function currentVersion(executable: string, run: ManagedGogRunner): Promise<string | undefined> {
+  if (!fs.existsSync(executable)) return undefined;
+  try {
+    const result = await run([executable, '--version']);
+    if (result.exitCode !== 0) return undefined;
+    return parsedVersion(`${result.stdout}\n${result.stderr}`);
+  } catch {
+    return undefined;
+  }
+}
+
+function findExtractedBinary(root: string): string | undefined {
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    const candidate = path.join(root, entry.name);
+    if (entry.isDirectory()) {
+      const nested = findExtractedBinary(candidate);
+      if (nested) return nested;
+    } else if (entry.isFile() && entry.name === 'gog') {
+      return candidate;
+    }
+  }
+  return undefined;
+}
+
+export async function ensureManagedGog(input: {
+  home: string;
+  platform?: NodeJS.Platform | string;
+  arch?: NodeJS.Architecture | string;
+  fetchImpl?: typeof fetch;
+  run?: ManagedGogRunner;
+}): Promise<{ path: string; version: string; changed: boolean }> {
+  const executable = managedGogPath(input.home);
+  const run = input.run ?? defaultRunner;
+  const existing = await currentVersion(executable, run);
+  if (existing === GOG_VERSION) return { path: executable, version: GOG_VERSION, changed: false };
+
+  const asset = managedGogAsset(input.platform ?? process.platform, input.arch ?? process.arch);
+  const fetchImpl = input.fetchImpl ?? globalThis.fetch;
+  const response = await fetchImpl(`${RELEASE_BASE}/${asset.fileName}`, {
+    headers: { accept: 'application/octet-stream', 'user-agent': 'consuelo-os' },
+  });
+  if (!response.ok) throw new Error(`gog download failed with HTTP ${response.status}`);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  const digest = createHash('sha256').update(bytes).digest('hex');
+  if (digest !== asset.sha256) throw new Error('gog download checksum did not match the pinned release');
+
+  const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-gog-'));
+  try {
+    const archivePath = path.join(temporaryRoot, asset.fileName);
+    const extractPath = path.join(temporaryRoot, 'extract');
+    fs.mkdirSync(extractPath, { recursive: true, mode: 0o700 });
+    fs.writeFileSync(archivePath, bytes, { mode: 0o600 });
+    const extracted = await run(['tar', '-xzf', archivePath, '-C', extractPath]);
+    if (extracted.exitCode !== 0) throw new Error('gog release archive could not be extracted');
+    const source = findExtractedBinary(extractPath);
+    if (!source) throw new Error('gog release archive did not contain the gog executable');
+
+    fs.mkdirSync(path.dirname(executable), { recursive: true, mode: 0o700 });
+    const temporaryExecutable = `${executable}.tmp-${process.pid}`;
+    fs.copyFileSync(source, temporaryExecutable);
+    fs.chmodSync(temporaryExecutable, 0o755);
+    fs.renameSync(temporaryExecutable, executable);
+    fs.chmodSync(executable, 0o755);
+  } finally {
+    fs.rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+
+  const installed = await currentVersion(executable, run);
+  if (installed !== GOG_VERSION) throw new Error(`managed gog verification failed after install (expected ${GOG_VERSION})`);
+  return { path: executable, version: GOG_VERSION, changed: true };
+}
