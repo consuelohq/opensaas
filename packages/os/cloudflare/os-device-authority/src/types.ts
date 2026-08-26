@@ -652,6 +652,7 @@ export type CheckoutTelemetryEvent = {
   errorCode?: string;
   durationMs?: number;
   cloudflareRayId?: string;
+  dedupeKey?: string;
 };
 
 export type CheckoutObservability = {
