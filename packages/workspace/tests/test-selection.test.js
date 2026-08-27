@@ -1306,6 +1306,22 @@ describe('test selection registry', () => {
     expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('routes script parity classification changes to the focused audit without the whole OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/audit/fixtures/script-parity-classifications.json',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const selectedSuiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-script-parity-audit');
+    expect(selectedSuiteNames).toContain('OS script parity audit contracts');
+    expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('routes work-session Code Call changes to focused authority tests', () => {
     const result = run([
       'check',
@@ -1368,6 +1384,29 @@ describe('test selection registry', () => {
   });
 
 
+  it('uses focused headed browser handoff contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/browser/service.ts',
+      '--changed-file',
+      'packages/os/tests/browser-service.test.ts',
+      '--changed-file',
+      'packages/workspace/scripts/lib/browser/service.ts',
+      '--changed-file',
+      'packages/workspace/tests/browser-service.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-browser-headed-handoff');
+    expect(suiteNames).toContain('OS headed browser handoff contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+
   it('uses focused compact explore response contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -1391,25 +1430,32 @@ describe('test selection registry', () => {
   });
 
 
-  it('uses focused headed browser handoff contracts instead of the broad OS package suite', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/os/scripts/lib/browser/service.ts',
-      '--changed-file',
-      'packages/os/tests/browser-service.test.ts',
-      '--changed-file',
-      'packages/workspace/scripts/lib/browser/service.ts',
-      '--changed-file',
-      'packages/workspace/tests/browser-service.test.ts',
-      '--json',
-    ]);
-    const data = json(result);
+
+
+  it('routes reconciled workspace-agents files to focused contracts without the broad OS package suite', () => {
+    const changedFiles = [
+      'packages/os/tests/facade/facade.test.ts',
+      'packages/os/tests/media/31-svg-convert.test.ts',
+      'packages/os/tools/media/schema.ts',
+      'packages/os/tests/trace-sites-gateway-live-endpoints.test.ts',
+      'packages/os/tests/worker-pool-process.test.ts',
+      'packages/os/tests/workflow-intent.test.ts',
+    ];
+    const args = ['check'];
+    for (const changedFile of changedFiles) args.push('--changed-file', changedFile);
+    args.push('--json');
+    const data = json(run(args));
     const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
     const suiteNames = data.selectedSuites.map((suite) => suite.name);
 
-    expect(matchedRuleIds).toContain('os-browser-headed-handoff');
-    expect(suiteNames).toContain('OS headed browser handoff contracts');
+    for (const ruleId of [
+      'os-work-session-fs',
+      'os-media-contracts',
+      'trace-site-pagination',
+      'os-lifecycle-update-handoff',
+      'workspace-session-integration',
+    ]) expect(matchedRuleIds).toContain(ruleId);
+    expect(suiteNames).toContain('OS media contracts');
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 

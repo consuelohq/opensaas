@@ -142,6 +142,33 @@
       "reason": "OS trace watcher changes must preserve terminal rendering, canonical sidecar resolution, and real SQLite CLI behavior."
     },
     {
+      "id": "os-browser-headed-handoff",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/browser/**",
+        "packages/os/tests/browser-service.test.ts",
+        "packages/workspace/scripts/lib/browser/**",
+        "packages/workspace/tests/browser-service.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS headed browser handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/tests/browser-service.test.ts",
+            "-t",
+            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+          ]
+        }
+      ],
+      "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "workspace-audit-docs",
       "critical": false,
       "source": [
@@ -215,7 +242,8 @@
         "packages/os/scripts/lib/trace-database-schema.ts",
         "packages/os/scripts/lib/trace-search-query.ts",
         "packages/os/tests/trace-persistence.test.ts",
-        "packages/os/tests/trace-search-query.test.ts"
+        "packages/os/tests/trace-search-query.test.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
       ],
       "tests": [
         {
@@ -232,7 +260,8 @@
             "tests/trace-site-inspector-os-owned.test.ts",
             "tests/observability-traces-site.test.ts",
             "tests/redaction.test.ts",
-            "tests/runtime-bundle-managed-site-assets.test.ts"
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
           ]
         },
         {
@@ -599,7 +628,8 @@
         "packages/os/tests/health-readiness.test.ts",
         "packages/os/scripts/bootstrap.sh",
         "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
-        "packages/os/tests/caddy-worker-pool-migration.test.ts"
+        "packages/os/tests/caddy-worker-pool-migration.test.ts",
+        "packages/os/tests/worker-pool-process.test.ts"
       ],
       "tests": [
         {
@@ -627,7 +657,8 @@
             "packages/os/tests/tool-package-layout.test.ts",
             "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
             "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
-            "packages/os/tests/caddy-worker-pool-migration.test.ts"
+            "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/worker-pool-process.test.ts"
           ]
         },
         {
@@ -1778,7 +1809,8 @@
         "packages/os/scripts/session-start.ts",
         "packages/os/scripts/lib/work-session.ts",
         "packages/os/scripts/lib/observability-traces-site.ts",
-        "packages/os/tests/observability-traces-site.test.ts"
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/workflow-intent.test.ts"
       ],
       "tests": [
         {
@@ -1796,7 +1828,8 @@
             "packages/workspace/tests/task-hooks.test.ts",
             "packages/workspace/tests/workflow-intent.test.ts",
             "packages/workspace/tests/session-start-compatibility.test.ts",
-            "packages/os/tests/observability-traces-site.test.ts"
+            "packages/os/tests/observability-traces-site.test.ts",
+            "packages/os/tests/workflow-intent.test.ts"
           ]
         }
       ],
@@ -1903,7 +1936,8 @@
         "packages/os/tools/task-lifecycle/handler.ts",
         "packages/os/tools/filesystem/schema.ts",
         "packages/os/workflows/generated/workflow-bundles.json",
-        "packages/os/scripts/lib/work-session-protection.ts"
+        "packages/os/scripts/lib/work-session-protection.ts",
+        "packages/os/tests/facade/facade.test.ts"
       ],
       "tests": [
         {
@@ -1928,7 +1962,7 @@
             "run",
             "packages/os/tests/facade/facade.test.ts",
             "-t",
-            "fs\\.(apply_patch|write)"
+            "fs\\.(apply_patch|write|read)"
           ]
         },
         {
@@ -1980,31 +2014,50 @@
       "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests."
     },
     {
-      "id": "os-browser-headed-handoff",
+      "id": "os-script-parity-audit",
       "critical": true,
       "exclusive": true,
       "source": [
-        "packages/os/scripts/lib/browser/**",
-        "packages/os/tests/browser-service.test.ts",
-        "packages/workspace/scripts/lib/browser/**",
-        "packages/workspace/tests/browser-service.test.ts"
+        "packages/os/tests/audit/script-parity-audit.test.ts",
+        "packages/os/tests/audit/fixtures/script-parity-classifications.json"
       ],
       "tests": [
         {
-          "name": "OS headed browser handoff contracts",
+          "name": "OS script parity audit contracts",
           "command": [
             "bun",
             "x",
             "vitest",
             "run",
-            "packages/os/tests/browser-service.test.ts",
-            "packages/workspace/tests/browser-service.test.ts",
-            "-t",
-            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+            "packages/os/tests/audit/script-parity-audit.test.ts"
           ]
         }
       ],
-      "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests."
+      "reason": "OS/workspace script inventory and classification changes must prove the focused parity audit without selecting the unrelated whole-OS package suite."
+    },
+    {
+      "id": "os-media-contracts",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tools/media/schema.ts",
+        "packages/os/tests/media/20-audio-transcribe.test.ts",
+        "packages/os/tests/media/31-svg-convert.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS media contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/media/20-audio-transcribe.test.ts",
+            "tests/media/31-svg-convert.test.ts"
+          ]
+        }
+      ],
+      "reason": "Media schema, transcription, and SVG conversion changes must run the package-native focused media contracts without selecting the unrelated whole-OS package suite."
     }
   ]
 }

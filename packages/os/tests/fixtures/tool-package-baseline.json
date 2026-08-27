@@ -6292,6 +6292,8 @@
         "arguments": []
       },
       "exampleInput": {
+        "input": "media/input.wav",
+        "mode": "fixture",
         "dryRun": true
       },
       "sessionRequired": false,
