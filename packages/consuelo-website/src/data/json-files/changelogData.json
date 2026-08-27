@@ -1,9 +1,44 @@
 [
   {
     "title": "v0.9.0",
-    "date": "Aug 20, 2026",
-    "summary": "August expanded Consuelo OS into a managed control plane with cloud checkout, live workspace navigation, and more resilient lifecycle updates; made task and work sessions durable and observable; hardened site publication and security; and advanced dialer, website, and docs experiences.",
+    "date": "Aug 27, 2026",
+    "summary": "August expanded Consuelo OS into a managed control plane with cloud checkout, live workspace navigation, native Google and GitHub integrations, safer one-command releases, durable task and browser sessions, richer tracing, and more resilient security and lifecycle recovery.",
     "weeks": [
+      {
+        "label": "Week of Aug 21 through Aug 27",
+        "summary": "The week added native Google and GitHub workflows, a safer end-to-end release path, restored live Artifacts, upgraded tracing, isolated persistent browser sessions, and closed several authentication, secrets, and release-lifecycle gaps.",
+        "sections": [
+          {
+            "title": "Release",
+            "items": [
+              "Added a one-command release and update flow that can take an approved pull request through main merge, immutable runtime publication, exact channel promotion, and local exact-version update and verification.",
+              "Hardened release promotion against queue, lock, retry, cancellation, and correlation races, and repaired session and release lifecycle contracts after main synchronization."
+            ]
+          },
+          {
+            "title": "OS",
+            "items": [
+              "Added a native Google Workspace integration exposed as Google, with first-use OAuth recovery, read-only safeguards, and explicit approval for mutations.",
+              "Restored live Artifacts routing and refresh behavior, kept the Artifacts surface out of stale static snapshots, and brought forward the long-lived How to Speak, Security Report, and OS Spec artifacts.",
+              "Upgraded tracing with token- and model-aware estimated costs, system-driven light and dark modes, a larger stable session palette, and more accurate tool labels for batched traces."
+            ]
+          },
+          {
+            "title": "Security and Source Control",
+            "items": [
+              "Added GitHub App-based source-control connection and repository discovery while keeping installation credentials server-side and using opaque handoffs in the browser.",
+              "Repaired GitHub authentication handoff, strengthened secrets audit identity and key rotation, improved enrollment-reset error handling, and restored owner recovery controls."
+            ]
+          },
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Isolated persistent headed browser sessions so human authentication windows stay visible and survive later browser commands without being replaced by headless sessions.",
+              "Stabilized session-start and worker process handling so task sessions and workspace-agent releases recover more reliably across main synchronization."
+            ]
+          }
+        ]
+      },
       {
         "label": "Week of Aug 14 through Aug 20",
         "summary": "The week made OS updates and routing more resilient, shipped live workspace navigation and managed checkout, introduced durable task and work sessions, hardened site publication and dependencies, and polished responsive documentation.",
