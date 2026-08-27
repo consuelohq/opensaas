@@ -5,8 +5,8 @@
     "testFileCount": 2668,
     "mappedTestCount": 2583,
     "unmappedTestCount": 85,
-    "ruleCount": 69,
-    "explicitRuleCount": 50,
+    "ruleCount": 70,
+    "explicitRuleCount": 51,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -2621,6 +2621,29 @@
       "critical": true,
       "exclusive": true,
       "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-script-parity-audit",
+      "source": [
+        "packages/os/tests/audit/script-parity-audit.test.ts",
+        "packages/os/tests/audit/fixtures/script-parity-classifications.json"
+      ],
+      "tests": [
+        {
+          "name": "OS script parity audit contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/audit/script-parity-audit.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "OS/workspace script inventory and classification changes must prove the focused parity audit without selecting the unrelated whole-OS package suite.",
       "origin": "explicit"
     },
     {
