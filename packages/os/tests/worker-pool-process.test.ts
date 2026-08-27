@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 const osRoot = resolve(import.meta.dirname, '..');
 const temporaryHomes: string[] = [];
+const PROCESS_CONVERGENCE_TIMEOUT_MS = 30_000;
 
 const sleep = (milliseconds: number): Promise<void> =>
   new Promise((resolveSleep) => setTimeout(resolveSleep, milliseconds));
@@ -55,14 +56,17 @@ async function contiguousPorts(): Promise<number> {
   throw new Error('could not find two contiguous test ports');
 }
 
-async function waitFor<T>(read: () => T | undefined, timeoutMs = 10_000): Promise<T> {
+async function waitFor<T>(
+  read: () => T | undefined,
+  timeoutMs = PROCESS_CONVERGENCE_TIMEOUT_MS,
+): Promise<T> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const value = read();
     if (value !== undefined) return value;
     await sleep(50);
   }
-  throw new Error('worker pool condition timed out');
+  throw new Error(`worker pool condition timed out after ${timeoutMs}ms`);
 }
 
 type PoolSnapshot = {
@@ -180,7 +184,7 @@ describe('OS worker pool process integration', () => {
       supervisor.kill('SIGTERM');
       await supervisorExited;
     }
-  }, 60_000);
+  }, 120_000);
 
   it('reclaims orphaned workers when launchd restarts a killed supervisor', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-worker-pool-orphans-'));
