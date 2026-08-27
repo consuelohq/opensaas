@@ -938,6 +938,8 @@ describe('workspace node management and presence', () => {
       timestamp: baseNow - WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS + 1,
       nonce: 'heartbeat-receipt-retention',
       connectorStatus: 'connected',
+      platform: 'darwin',
+      architecture: 'arm64',
       capabilities: ['mcp'],
     });
     const signature = createDevicePublicKeyProof({
@@ -962,6 +964,10 @@ describe('workspace node management and presence', () => {
       nonce: 'heartbeat-receipt-retention',
       expiresAt: baseNow + WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS,
       nowMs: baseNow,
+    });
+    await expect(backingStore.byWorkspaceNodeId('node-member')).resolves.toMatchObject({
+      platform: 'darwin',
+      architecture: 'arm64',
     });
   });
 

@@ -381,6 +381,7 @@ export async function startManagedCloudCheckout(input: {
       synthetic: false,
       outcome: 'error',
       errorCode,
+      dedupeKey: stripeEventId ? `stripe:${stripeEventId}:checkout_failed` : undefined,
     });
     if (errorCode === 'BILLING_UNAVAILABLE') {
       await input.runtime.checkoutObservability?.captureException(error, {
@@ -623,7 +624,9 @@ export async function handleManagedCloudStripeWebhook(input: {
   } catch {
     throw new ManagedCloudBillingError('PAYMENT_INVALID', 400, 'Invalid Stripe webhook payload.');
   }
-  const eventType = field(record(parsed).type);
+  const stripeEvent = record(parsed);
+  const stripeEventId = field(stripeEvent.id);
+  const eventType = field(stripeEvent.type);
   if (eventType !== 'checkout.session.completed') return { handled: false };
   const event = checkoutSessionEvent(parsed);
   if (!event?.checkoutId) {
@@ -645,6 +648,7 @@ export async function handleManagedCloudStripeWebhook(input: {
       currency: checkout.currency,
       synthetic: false,
       outcome: 'success',
+      dedupeKey: stripeEventId ? `stripe:${stripeEventId}:checkout_completed` : undefined,
     });
     return { handled: true, checkout };
   } catch (error: unknown) {

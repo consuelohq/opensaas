@@ -1363,7 +1363,9 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
 }
 
 function getTimeoutMs(entry: ToolManifestEntry, input: ToolInput): number {
-  return typeof input.timeout === 'number' ? input.timeout : entry.defaultTimeout;
+  if (typeof input.timeout === 'number') return input.timeout;
+  if (typeof input.timeoutMs === 'number') return input.timeoutMs;
+  return entry.defaultTimeout;
 }
 
 async function runWithRetry(

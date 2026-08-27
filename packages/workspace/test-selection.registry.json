@@ -2,17 +2,17 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2658,
-    "mappedTestCount": 2573,
-    "unmappedTestCount": 85,
-    "ruleCount": 69,
-    "explicitRuleCount": 50,
+    "testFileCount": 2676,
+    "mappedTestCount": 2592,
+    "unmappedTestCount": 84,
+    "ruleCount": 76,
+    "explicitRuleCount": 57,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 274,
-      "packages/workspace/tests": 68,
+      "packages/os/tests": 291,
+      "packages/workspace/tests": 69,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 564,
+      "test": 582,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -790,6 +790,34 @@
       "origin": "explicit"
     },
     {
+      "id": "os-browser-headed-handoff",
+      "source": [
+        "packages/os/scripts/lib/browser/**",
+        "packages/os/tests/browser-service.test.ts",
+        "packages/workspace/scripts/lib/browser/**",
+        "packages/workspace/tests/browser-service.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS headed browser handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/tests/browser-service.test.ts",
+            "-t",
+            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
       "id": "workspace-audit-docs",
       "source": [
         "packages/workspace/SCRIPTS.md",
@@ -841,6 +869,7 @@
         "packages/os/assets/vendor/observability-traces-v38/inspector.js",
         "packages/os/package.json",
         "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/scripts/lib/trace-cost-estimator.ts",
         "packages/os/scripts/lib/trace-site-inspector/**",
         "packages/os/scripts/lib/trace-sites-gateway-*.ts",
         "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
@@ -863,7 +892,8 @@
         "packages/os/scripts/lib/trace-database-schema.ts",
         "packages/os/scripts/lib/trace-search-query.ts",
         "packages/os/tests/trace-persistence.test.ts",
-        "packages/os/tests/trace-search-query.test.ts"
+        "packages/os/tests/trace-search-query.test.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
       ],
       "tests": [
         {
@@ -880,7 +910,8 @@
             "tests/trace-site-inspector-os-owned.test.ts",
             "tests/observability-traces-site.test.ts",
             "tests/redaction.test.ts",
-            "tests/runtime-bundle-managed-site-assets.test.ts"
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
           ]
         },
         {
@@ -916,10 +947,31 @@
       "id": "os-release-surface-freshness",
       "source": [
         ".github/workflows/consuelo-os-runtime-publish.yaml",
+        ".github/workflows/consuelo-os-runtime-promote.yaml",
+        "packages/os/SCRIPTS.md",
+        "packages/os/docs/distribution/release-channels.md",
         "packages/os/package.json",
+        "packages/os/scripts/github.js",
+        "packages/os/scripts/lib/distribution/release-channels.ts",
+        "packages/os/scripts/lib/github-cli.ts",
+        "packages/os/scripts/lib/release-platform-bundle.ts",
+        "packages/os/scripts/lib/release-promotion-dispatch-lock.ts",
+        "packages/os/scripts/lib/release-promotion-correlation.ts",
+        "packages/os/scripts/lib/release-orchestrator.ts",
+        "packages/os/scripts/release-channels.ts",
+        "packages/os/scripts/release.ts",
         "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/tests/distribution/release-channel-workflows.test.ts",
+        "packages/os/tests/distribution/release-channels.test.ts",
+        "packages/os/tests/github-cli-resolution.test.ts",
         "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/os/tests/release-orchestrator.test.ts",
+        "packages/os/tests/release-local-platform-bundle.test.ts",
+        "packages/os/tests/release-script-promotion-correlation.test.ts",
+        "packages/os/tests/release-promotion-dispatch-lock.test.ts",
+        "packages/os/tests/release-script-security.test.ts",
+        "packages/os/tests/release-tool-surface.test.ts",
+        "packages/os/tools/release/**",
         "packages/workspace/scripts/os-release.ts",
         "packages/workspace/scripts/os-release-device-auth.ts",
         "packages/workspace/scripts/os-release-workspace-edge.ts",
@@ -934,7 +986,15 @@
             "packages/os",
             "test",
             "tests/os-device-authority-release-contract.test.ts",
-            "tests/distribution/release-channel-workflows.test.ts"
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
           ]
         },
         {
@@ -960,7 +1020,7 @@
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+      "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -1226,7 +1286,8 @@
         "packages/os/tests/health-readiness.test.ts",
         "packages/os/scripts/bootstrap.sh",
         "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
-        "packages/os/tests/caddy-worker-pool-migration.test.ts"
+        "packages/os/tests/caddy-worker-pool-migration.test.ts",
+        "packages/os/tests/worker-pool-process.test.ts"
       ],
       "tests": [
         {
@@ -1254,7 +1315,8 @@
             "packages/os/tests/tool-package-layout.test.ts",
             "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
             "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
-            "packages/os/tests/caddy-worker-pool-migration.test.ts"
+            "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/worker-pool-process.test.ts"
           ]
         },
         {
@@ -1603,6 +1665,77 @@
       "origin": "explicit"
     },
     {
+      "id": "os-secrets-management",
+      "source": [
+        "packages/os/scripts/lib/consuelo-sites-secrets-adapter.ts",
+        "packages/os/scripts/lib/node-sealed-credential-store.ts",
+        "packages/os/scripts/lib/secrets-site.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/scripts/server/route-policies.ts",
+        "packages/os/scripts/server/routes/secrets.ts",
+        "packages/os/tests/internal-launcher-regressions.test.ts",
+        "packages/os/tests/local-os-server-hono-architecture.test.ts",
+        "packages/os/tests/secrets-hono-routes.test.ts",
+        "packages/os/tests/secrets-surface.test.ts",
+        "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+        "packages/os/tests/workspace-gateway-node-end-to-end.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Secrets sealed credential contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/secrets-surface.test.ts",
+            "tests/secrets-hono-routes.test.ts",
+            "tests/node-sealed-credential-store.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets signed gateway bridge",
+          "command": [
+            "bun",
+            "test",
+            "--cwd",
+            "packages/os",
+            "tests/local-os-server-hono-architecture.test.ts",
+            "tests/workspace-gateway-node-end-to-end.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets edge route contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ]
+        },
+        {
+          "name": "OS Secrets syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Secrets UI, sealed-envelope storage, signed node routes, and Workspace Edge write routing must prove browser-to-node encryption and metadata-only behavior without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
       "id": "os-internal-workspace-shell",
       "source": [
         "packages/os/scripts/lib/sites.ts",
@@ -1617,7 +1750,8 @@
         "packages/os/tests/sites-cli.test.ts",
         "packages/os/tests/launcher-local-customization.test.ts",
         "packages/os/tests/install-state.test.ts",
-        "packages/os/tests/local-agent-connectivity.test.ts"
+        "packages/os/tests/local-agent-connectivity.test.ts",
+        "packages/os/tests/internal-launcher-regressions.test.ts"
       ],
       "tests": [
         {
@@ -1634,7 +1768,8 @@
             "tests/sites-cli.test.ts",
             "tests/launcher-local-customization.test.ts",
             "tests/install-state.test.ts",
-            "tests/local-agent-connectivity.test.ts"
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
           ]
         },
         {
@@ -2048,6 +2183,121 @@
       "origin": "explicit"
     },
     {
+      "id": "os-compact-explore-response",
+      "source": [
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/search/explore-output.js",
+        "packages/os/tools/decision-engine/handler.ts",
+        "packages/os/tests/explore-output-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS compact explore response contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-output-contract.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Compact explore response shaping and decision-engine integration must prove bounded summary/detail contracts without selecting the unrelated broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-google-workspace",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/google-workspace.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+        "packages/os/manifests/manifest.config.ts",
+        "packages/os/scripts/google.ts",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/google-workspace-auth.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/managed-gog.ts",
+        "packages/os/scripts/lib/workspace-device-authorization.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/tests/google-skill.test.ts",
+        "packages/os/tests/google-tool.test.ts",
+        "packages/os/tests/google-workspace-auth.test.ts",
+        "packages/os/tests/managed-gog.test.ts",
+        "packages/os/tests/native-google-device-approval.test.ts",
+        "packages/os/tools/google/handler.ts",
+        "packages/os/tools/google/manifest.ts",
+        "packages/os/tools/google/schema.ts",
+        "packages/os/tools/google/service.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Google Workspace contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-gog.test.ts",
+            "tests/google-tool.test.ts",
+            "tests/google-skill.test.ts",
+            "tests/google-workspace-auth.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/install-state.test.ts",
+            "tests/tool-manifest.test.ts",
+            "tests/tool-package-layout.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Google Workspace runtime, first-use OAuth, signed node bootstrap, tool policy, installer, and bundled-skill changes must prove the focused Google and shared OS contracts without selecting the historically noisy unrelated package-wide OS suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-github-source-control",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts",
+        "packages/os/scripts/lib/github-source-control-client.ts",
+        "packages/os/scripts/lib/source-control-config.ts",
+        "packages/os/scripts/server/routes/settings.ts",
+        "packages/os/scripts/server/services/diffs-gateway.ts",
+        "packages/os/tests/diffs-hono-routes.test.ts",
+        "packages/os/tests/github-source-control-authority.test.ts",
+        "packages/os/tests/settings-hono-routes.test.ts",
+        "packages/os/tests/settings-sites-gateway-endpoints.test.ts",
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/os-device-authority/src/worker.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/tests/settings-site.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite.",
+      "origin": "explicit"
+    },
+    {
       "id": "dialer-package",
       "source": [
         "packages/dialer/**"
@@ -2246,7 +2496,8 @@
         "packages/os/scripts/session-start.ts",
         "packages/os/scripts/lib/work-session.ts",
         "packages/os/scripts/lib/observability-traces-site.ts",
-        "packages/os/tests/observability-traces-site.test.ts"
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/workflow-intent.test.ts"
       ],
       "tests": [
         {
@@ -2264,7 +2515,8 @@
             "packages/workspace/tests/task-hooks.test.ts",
             "packages/workspace/tests/workflow-intent.test.ts",
             "packages/workspace/tests/session-start-compatibility.test.ts",
-            "packages/os/tests/observability-traces-site.test.ts"
+            "packages/os/tests/observability-traces-site.test.ts",
+            "packages/os/tests/workflow-intent.test.ts"
           ]
         }
       ],
@@ -2371,9 +2623,11 @@
         "packages/os/tests/fixtures/tool-package-baseline.json",
         "packages/os/tests/tool-manifest.test.ts",
         "packages/os/tests/work-session-fs.test.ts",
+        "packages/os/tools/task-lifecycle/handler.ts",
         "packages/os/tools/filesystem/schema.ts",
         "packages/os/workflows/generated/workflow-bundles.json",
-        "packages/os/scripts/lib/work-session-protection.ts"
+        "packages/os/scripts/lib/work-session-protection.ts",
+        "packages/os/tests/facade/facade.test.ts"
       ],
       "tests": [
         {
@@ -2398,7 +2652,7 @@
             "run",
             "packages/os/tests/facade/facade.test.ts",
             "-t",
-            "fs\\.(apply_patch|write)"
+            "fs\\.(apply_patch|write|read)"
           ]
         },
         {
@@ -2451,6 +2705,54 @@
       "critical": true,
       "exclusive": true,
       "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-script-parity-audit",
+      "source": [
+        "packages/os/tests/audit/script-parity-audit.test.ts",
+        "packages/os/tests/audit/fixtures/script-parity-classifications.json"
+      ],
+      "tests": [
+        {
+          "name": "OS script parity audit contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/audit/script-parity-audit.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "OS/workspace script inventory and classification changes must prove the focused parity audit without selecting the unrelated whole-OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-media-contracts",
+      "source": [
+        "packages/os/tools/media/schema.ts",
+        "packages/os/tests/media/20-audio-transcribe.test.ts",
+        "packages/os/tests/media/31-svg-convert.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS media contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/media/20-audio-transcribe.test.ts",
+            "tests/media/31-svg-convert.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Media schema, transcription, and SVG conversion changes must run the package-native focused media contracts without selecting the unrelated whole-OS package suite.",
       "origin": "explicit"
     },
     {
@@ -3981,6 +4283,16 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/artifacts-edge-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifacts-facade-runtime.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/artifacts-hono-routes.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4316,6 +4628,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/explore-output-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/facade/facade.test.ts",
       "group": "packages/os/tests/facade",
       "kind": "test"
@@ -4386,12 +4703,42 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/github-cli-resolution.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/github-pr-reviews.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/github-source-control-authority.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/github.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/google-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/google-skill.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/google-tool.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/google-workspace-auth.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4502,6 +4849,11 @@
     },
     {
       "path": "packages/os/tests/internal-dashboard-integration.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/internal-launcher-regressions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4692,6 +5044,11 @@
     },
     {
       "path": "packages/os/tests/managed-components.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/managed-gog.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -5097,6 +5454,36 @@
     },
     {
       "path": "packages/os/tests/redaction.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-local-platform-bundle.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-orchestrator.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-promotion-dispatch-lock.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-script-promotion-correlation.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-script-security.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-tool-surface.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -16151,6 +16538,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/stream-sync-repo-option.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/stream-workpads.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -16317,7 +16709,6 @@
     "packages/workspace/scripts/lib/stream-instructions.test.ts",
     "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
     "packages/workspace/tests/browser-review-contract.test.ts",
-    "packages/workspace/tests/browser-service.test.ts",
     "packages/workspace/tests/chunker.test.js",
     "packages/workspace/tests/code-call-parity.test.ts",
     "packages/workspace/tests/code-call-service-architecture.test.ts",

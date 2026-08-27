@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/improve-tracing-cost-light-mode-and-session-palette",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2203,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2203",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2203",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2203/improve-tracing-cost-light-mode-and-session-palette",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2203",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2203/improve-tracing-cost-light-mode-and-session-palette",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4d48dbe21130",
+  "tmuxSession": "opensaas-os-improve-tracing-cost-light-mode-and-session-pale-4d48dbe2",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette/.task/os/improve-tracing-cost-light-mode-and-session-palette/session.json",
+  "createdAt": "2026-08-26T05:25:30.977Z"
+}

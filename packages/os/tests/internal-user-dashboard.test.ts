@@ -30,7 +30,7 @@ describe('internal user dashboard', () => {
     expect(resolveInternalDashboardRoute('/not-a-real-surface')).toEqual({ kind: 'users', nav: 'users' });
   });
 
-  it('uses only the Branch 1 read API and never invents a user-detail backend route', () => {
+  it('keeps the read API bounded and exposes only the explicit enrollment reset mutation', () => {
     expect(INTERNAL_DASHBOARD_API_REQUESTS.overview).toEqual([
       INSTALL_DASHBOARD_API_ROUTES.overview,
       INSTALL_DASHBOARD_API_ROUTES.users,
@@ -45,8 +45,11 @@ describe('internal user dashboard', () => {
     const serialized = JSON.stringify(INTERNAL_DASHBOARD_API_REQUESTS);
     expect(serialized).not.toContain('/users/:');
     expect(serialized).not.toContain('/api/internal/os/v1/users/');
-    expect(INTERNAL_DASHBOARD_JAVASCRIPT).not.toContain('method: \'POST\'');
-    expect(INTERNAL_DASHBOARD_JAVASCRIPT).not.toContain('method: \'PATCH\'');
+    expect(INTERNAL_DASHBOARD_JAVASCRIPT).toContain("method: 'POST'");
+    expect(INTERNAL_DASHBOARD_JAVASCRIPT).toContain('/api/internal/os/v1/enrollment/reset');
+    expect(INTERNAL_DASHBOARD_JAVASCRIPT).toContain('x-consuelo-dashboard-action');
+    expect(INTERNAL_DASHBOARD_JAVASCRIPT).toContain('result.error.message');
+    expect(INTERNAL_DASHBOARD_JAVASCRIPT).not.toContain("method: 'PATCH'");
     expect(INTERNAL_DASHBOARD_JAVASCRIPT).not.toContain('method: \'DELETE\'');
   });
 
@@ -105,6 +108,20 @@ describe('internal user dashboard', () => {
     expect(install).not.toContain('Revoke device');
     expect(install).not.toContain('Delete user');
     expect(install).not.toContain('Retry install');
+  });
+
+  it('renders a bounded enrollment reset control without destructive user actions', () => {
+    const devices = renderInternalUserDashboard({
+      pathname: '/devices',
+      assetMode: 'inline',
+      fixtureMode: true,
+    });
+
+    expect(devices).toContain('data-enrollment-reset');
+    expect(devices).toContain('data-workspace-host="maya.consuelohq.com"');
+    expect(devices).toContain('Reset workspace enrollment');
+    expect(devices).not.toContain('Delete user');
+    expect(devices).not.toContain('Delete workspace');
   });
 
   it('authors responsive, reduced-motion, and light/dark screen behavior explicitly', () => {

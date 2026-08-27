@@ -2,7 +2,7 @@
 title: Traces
 description: Follow trace IDs across current local records and the authenticated Trace Sites gateway.
 status: preview
-verifiedAt: 2026-08-15
+verifiedAt: 2026-08-26
 evidence:
   - source: packages/os/scripts/server/routes/traces.ts
     tests:
@@ -25,6 +25,12 @@ evidence:
       - packages/os/tests/trace-search-query.test.ts
       - packages/os/tests/observability-traces-site.test.ts
     runtime: Task and work-session labels, sanitized work paths, and session search behavior were verified through focused contracts on 2026-08-15.
+  - source: packages/os/scripts/lib/trace-cost-estimator.ts
+    tests:
+      - packages/os/tests/trace-history-redaction.test.ts
+      - packages/os/tests/trace-site-inspector-interactions.test.ts
+      - packages/os/tests/observability-traces-site.test.ts
+    runtime: Trace cost estimation, model/provider fallback metadata, status-column removal, and adaptive trace-table theming were verified through focused contracts on 2026-08-26.
 ---
 
 A trace ID is the thread you follow through related evidence. In the current implementation it can connect a request to an OS run, execution events, a tool call, an artifact version, or an error. Which records exist depends on the surface that handled the work.
@@ -54,6 +60,12 @@ The Observability trace table uses one **Session** column for both kinds of scop
 Browser trace history sanitizes local usernames in work paths before returning them. For example, `/Users/alex/Developer/raycast-extension` is shown as `/Users/[user]/Developer/raycast-extension`.
 
 Use `session:<value>` in trace search to match the existing task branch or task-session fields as well as a work-session ID or work-session path.
+
+## Read cost as an estimate
+
+The trace table's **Cost** value is an observability estimate, not a provider invoice. It uses recorded input and output token counts when they are available. Historical traces that only recorded a total token count preserve that total and estimate the input/output split from the sanitized payload sizes.
+
+When a trace exposes safe model or provider metadata, the estimator keeps that identity and uses a matching known rate when one is registered. Unknown or missing model pricing falls back to the current Sol-equivalent baseline instead of displaying a misleading `$0.0000`. A trace with no token or payload basis shows `—` rather than zero.
 
 ## Trace IDs do not erase storage boundaries
 

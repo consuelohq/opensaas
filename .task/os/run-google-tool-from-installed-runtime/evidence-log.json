@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/run-google-tool-from-installed-runtime",
+  "events": [
+    {
+      "id": "347b3a81-6083-492c-b59b-e0bcd4712976",
+      "occurred_at": "2026-08-26T06:19:53.078Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/google-tool.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/run-google-tool-from-installed-runtime",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/run-google-tool-from-installed-runtime"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T06:19:53.151Z"
+}

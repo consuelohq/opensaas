@@ -10,6 +10,7 @@ import {
   listArtifactVersions,
   publishArtifact,
   readArtifactCatalog,
+  reconcileArtifactCurrentTree,
   refreshArtifactsSite,
   rollbackArtifact,
 } from './lib/artifacts';
@@ -156,11 +157,12 @@ function runDomainCommand(args: ParsedArgs): CommandResult {
     }
     case 'refresh': {
       const catalog = readArtifactCatalog(args.home);
+      const currentArtifacts = reconcileArtifactCurrentTree(args.home, catalog);
       const siteIndexPath = refreshArtifactsSite(args.home, catalog);
       return {
         ok: true,
-        output: { catalog, siteIndexPath },
-        text: `artifacts refreshed\nindex: ${siteIndexPath}\nentries: ${catalog.entries.length}\n`,
+        output: { catalog, siteIndexPath, currentArtifacts },
+        text: `artifacts refreshed\nindex: ${siteIndexPath}\nentries: ${catalog.entries.length}\ncurrent: ${currentArtifacts}\n`,
       };
     }
     case 'list': {

@@ -1,0 +1,60 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/regenerate-canonical-consuelo-brand-assets-from-stream",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "f7c7bf318954270a86a51102e9d1b1750fcb38a4",
+  "changeHash": "81551bed0a8aa07efe416beb07a31b6960a1a98f9ebc67db942743f4f622408e",
+  "changedFiles": [
+    "packages/consuelo-website/public/apple-touch-icon-800x800.png",
+    "packages/consuelo-website/public/apple-touch-icon.png",
+    "packages/consuelo-website/public/favicon-192x192.png",
+    "packages/consuelo-website/public/favicon-32x32.png",
+    "packages/consuelo-website/public/favicon-512x512.png",
+    "packages/consuelo-website/public/favicon.ico"
+  ],
+  "verifiedAt": "2026-08-26T15:31:12.545Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/regenerate-canonical-consuelo-brand-assets-from-stream.json",
+        ".task/workspace-agents/regenerate-canonical-consuelo-brand-assets-from-stream/current.json",
+        ".task/workspace-agents/regenerate-canonical-consuelo-brand-assets-from-stream/session.json",
+        ".task/workspace-agents/regenerate-canonical-consuelo-brand-assets-from-stream/verify.json",
+        ".task/workspace-agents/regenerate-canonical-consuelo-brand-assets-from-stream/workpad.md",
+        "packages/consuelo-website/public/apple-touch-icon-800x800.png",
+        "packages/consuelo-website/public/apple-touch-icon.png",
+        "packages/consuelo-website/public/favicon-192x192.png",
+        "packages/consuelo-website/public/favicon-32x32.png",
+        "packages/consuelo-website/public/favicon-512x512.png",
+        "packages/consuelo-website/public/favicon.ico"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "no testable source files changed",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

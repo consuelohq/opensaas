@@ -896,6 +896,13 @@ export function promoteReleaseChannel(
     return { changed: false, idempotent: true, operations: [], state };
   }
   assertStableApproval(input.to, input.approval);
+  const release = state.releases[input.bundleId];
+  if (!release) throw new Error('verified immutable release does not exist');
+  if (existingTarget && compareSemver(release.version, existingTarget.version) <= 0) {
+    throw new Error(
+      `promotion would move ${input.to} backwards from ${existingTarget.version} to ${release.version}; use rollback for an intentional downgrade`,
+    );
+  }
   const sourceManifest = state.channels[input.from];
   const source = sourceManifest?.payload;
   if (!sourceManifest || !source) throw new Error(`source channel ${input.from} does not exist`);
@@ -907,10 +914,12 @@ export function promoteReleaseChannel(
     throw new Error(`source channel ${input.from} signature verification failed`);
   }
   if (source.bundleId !== input.bundleId) {
-    throw new Error(`source channel ${input.from} does not reference requested bundle`);
+    if (!state.channelHistory[input.from].includes(input.bundleId)) {
+      throw new Error(
+        `verified immutable release does not exist in source channel ${input.from} history`,
+      );
+    }
   }
-  const release = state.releases[input.bundleId];
-  if (!release) throw new Error('verified immutable release does not exist');
   verifyReleaseStateConsensus(state, input.bundleId);
 
   const next = cloneState(state);
