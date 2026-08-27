@@ -2071,14 +2071,21 @@
         "packages/workspace/scripts/review.js",
         "packages/workspace/scripts/lib/review-static-rules.js",
         "packages/workspace/tests/github-cli-resolution.test.ts",
+        "packages/workspace/tests/github.test.ts",
+        "packages/workspace/tests/github-pr-reviews.test.ts",
+        "packages/workspace/tests/pr-review.test.js",
         "packages/workspace/tests/review-error-handling-scope.test.ts",
+        "packages/workspace/tests/wait.test.js",
         "packages/os/scripts/github.js",
         "packages/os/scripts/lib/github.js",
         "packages/os/scripts/lib/pr-review-collector.js",
         "packages/os/scripts/task-prs.js",
         "packages/os/scripts/wait.js",
         "packages/os/scripts/review.js",
-        "packages/os/scripts/lib/review-static-rules.js"
+        "packages/os/scripts/lib/review-static-rules.js",
+        "packages/os/tests/github.test.ts",
+        "packages/os/tests/github-pr-reviews.test.ts",
+        "packages/os/tests/pr-review-collector.test.js"
       ],
       "tests": [
         {

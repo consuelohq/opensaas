@@ -196,6 +196,26 @@ describe('test selection registry', () => {
     );
   });
 
+  it('keeps GitHub contract tests inside the focused GitHub verification boundary', () => {
+    for (const changedFile of [
+      'packages/os/tests/github.test.ts',
+      'packages/os/tests/github-pr-reviews.test.ts',
+      'packages/os/tests/pr-review-collector.test.js',
+      'packages/workspace/tests/github.test.ts',
+      'packages/workspace/tests/github-pr-reviews.test.ts',
+      'packages/workspace/tests/pr-review.test.js',
+      'packages/workspace/tests/wait.test.js',
+    ]) {
+      const data = json(run(['check', '--changed-file', changedFile, '--json']));
+      const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+      const suiteRuleIds = data.selectedSuites.map((suite) => suite.ruleId);
+
+      expect(matchedRuleIds, changedFile).toContain('os-github-cli-runtime');
+      expect(suiteRuleIds, changedFile).not.toContain('auto:@consuelo/os:package-test');
+      expect(suiteRuleIds, changedFile).toContain('os-github-cli-runtime');
+    }
+  });
+
   it('uses exclusive frontend config contracts instead of unrelated package suites', () => {
     const result = run([
       'check',

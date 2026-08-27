@@ -80,6 +80,68 @@ describe('OS self-healing trace classification', () => {
     ).toBe('caller-input');
   });
 
+  it('keeps explicit MCP authentication and scope enforcement out of the defect bucket', () => {
+    for (const code of ['UNKNOWN_TOKEN', 'MISSING_SCOPE']) {
+      expect(
+        classifyTraceFailure(
+          failure({
+            tool: 'authorization.mcp',
+            code,
+            occurrences: 24,
+          }),
+          undefined,
+        ),
+      ).toMatchObject({ classification: 'expected-policy', actionable: false });
+    }
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'authorization.mcp',
+          code: 'OAUTH_INTROSPECTION_UNAVAILABLE',
+          occurrences: 4,
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
+  it('keeps work-session and filesystem containment enforcement non-actionable without masking unrelated permission failures', () => {
+    expect(
+      classifyTraceFailure(
+        failure({ tool: 'fs.write', code: 'WORK_SESSION_NOT_FOUND', occurrences: 27 }),
+        mutatingContract,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({ tool: 'fs.write', code: 'PERMISSION_DENIED', occurrences: 54 }),
+        mutatingContract,
+      ),
+    ).toMatchObject({ classification: 'expected-policy', actionable: false });
+
+    for (const [tool, stderr] of [
+      ['fs.write', 'PATH_OUTSIDE_ROOT: Path escapes the allowed root: ../outside.txt'],
+      ['fs.apply_patch', 'error: unsafe mutation path resolves outside allowed root: escape/outside.txt'],
+      ['fs.trash', 'failed to trash escape/outside.txt: unsafe mutation path resolves outside allowed root: escape/outside.txt'],
+    ] as const) {
+      expect(
+        classifyTraceFailure(
+          failure({ tool, code: 'COMMAND_FAILED', occurrences: 27, stderr }),
+          mutatingContract,
+        ),
+      ).toMatchObject({ classification: 'expected-policy', actionable: false });
+    }
+
+    expect(
+      classifyTraceFailure(
+        failure({ tool: 'deployment.environment', code: 'PERMISSION_DENIED', occurrences: 4 }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
   it('keeps explicit code.call validation failures in the caller-input bucket', () => {
     expect(
       classifyTraceFailure(
@@ -189,6 +251,32 @@ describe('OS self-healing trace classification', () => {
         undefined,
       ),
     ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'fs.search',
+          code: 'COMMAND_FAILED',
+          occurrences: 8,
+          affectedSessions: 5,
+          stderr: 'error: search failed: rg: regex parse error:\n(?:waitFor()\n^\nerror: unclosed group',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'fs.list',
+          code: 'COMMAND_FAILED',
+          occurrences: 6,
+          affectedSessions: 3,
+          stderr: '[fd error]: regex parse error:\n*browser*\n^\nerror: repetition operator missing expression',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
   });
 
   it('surfaces repeated command failures as defect candidates while keeping isolated timeouts transient', () => {

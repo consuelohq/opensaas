@@ -3,8 +3,8 @@
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
     "testFileCount": 2676,
-    "mappedTestCount": 2592,
-    "unmappedTestCount": 84,
+    "mappedTestCount": 2596,
+    "unmappedTestCount": 80,
     "ruleCount": 76,
     "explicitRuleCount": 57,
     "autoRuleCount": 19,
@@ -2766,14 +2766,21 @@
         "packages/workspace/scripts/review.js",
         "packages/workspace/scripts/lib/review-static-rules.js",
         "packages/workspace/tests/github-cli-resolution.test.ts",
+        "packages/workspace/tests/github.test.ts",
+        "packages/workspace/tests/github-pr-reviews.test.ts",
+        "packages/workspace/tests/pr-review.test.js",
         "packages/workspace/tests/review-error-handling-scope.test.ts",
+        "packages/workspace/tests/wait.test.js",
         "packages/os/scripts/github.js",
         "packages/os/scripts/lib/github.js",
         "packages/os/scripts/lib/pr-review-collector.js",
         "packages/os/scripts/task-prs.js",
         "packages/os/scripts/wait.js",
         "packages/os/scripts/review.js",
-        "packages/os/scripts/lib/review-static-rules.js"
+        "packages/os/scripts/lib/review-static-rules.js",
+        "packages/os/tests/github.test.ts",
+        "packages/os/tests/github-pr-reviews.test.ts",
+        "packages/os/tests/pr-review-collector.test.js"
       ],
       "tests": [
         {
@@ -16728,12 +16735,9 @@
     "packages/workspace/tests/fs-read.test.ts",
     "packages/workspace/tests/fs-search.test.ts",
     "packages/workspace/tests/git-diff.test.ts",
-    "packages/workspace/tests/github-pr-reviews.test.ts",
-    "packages/workspace/tests/github.test.ts",
     "packages/workspace/tests/index-path-exclusions.test.js",
     "packages/workspace/tests/pr-links.test.js",
     "packages/workspace/tests/pr-ref.test.js",
-    "packages/workspace/tests/pr-review.test.js",
     "packages/workspace/tests/research-ingest.test.js",
     "packages/workspace/tests/review-documentation-opportunity.test.js",
     "packages/workspace/tests/review-generated-artifact-contract.test.js",
@@ -16761,7 +16765,6 @@
     "packages/workspace/tests/trace-site-inspector.test.ts",
     "packages/workspace/tests/twenty-server-email-build-contract.test.ts",
     "packages/workspace/tests/verification.test.js",
-    "packages/workspace/tests/wait.test.js",
     "tests/operator.test.ts"
   ],
   "projects": [

@@ -101,6 +101,44 @@ export function classifyTraceFailure(
     );
   }
 
+  if (
+    code === 'WORK_SESSION_NOT_FOUND' &&
+    (failure.tool === 'fs.write' || failure.tool === 'fs.apply_patch' || failure.tool === 'fs.trash')
+  ) {
+    return classified(
+      failure,
+      'caller-input',
+      false,
+      'caller supplied a work session that is unknown or no longer available on this node',
+    );
+  }
+
+  if (
+    code === 'PERMISSION_DENIED' &&
+    (failure.tool === 'fs.write' || failure.tool === 'fs.apply_patch' || failure.tool === 'fs.trash')
+  ) {
+    return classified(
+      failure,
+      'expected-policy',
+      false,
+      'filesystem mutation was rejected by the work-session ownership or protected-root boundary',
+    );
+  }
+
+  if (
+    failure.tool === 'authorization.mcp' &&
+    (code === 'UNKNOWN_TOKEN' || code === 'MISSING_SCOPE')
+  ) {
+    return classified(
+      failure,
+      'expected-policy',
+      false,
+      code === 'UNKNOWN_TOKEN'
+        ? 'MCP authorization correctly rejected an inactive or unrecognized bearer token'
+        : 'MCP authorization correctly rejected a bearer token that lacks the required scope',
+    );
+  }
+
   if (code === 'UNKNOWN_TOOL_SCOPE' && contract) {
     return classified(
       failure,
@@ -174,6 +212,17 @@ export function classifyTraceFailure(
 
   if (code === 'COMMAND_FAILED' && failure.stderr) {
     const stderr = failure.stderr.toLowerCase();
+    if (
+      (failure.tool === 'fs.write' || failure.tool === 'fs.apply_patch' || failure.tool === 'fs.trash') &&
+      (stderr.includes('path_outside_root') || stderr.includes('unsafe mutation path resolves outside allowed root'))
+    ) {
+      return classified(
+        failure,
+        'expected-policy',
+        false,
+        'filesystem mutation attempted to escape its authorized root and was rejected as designed',
+      );
+    }
     if (failure.tool === 'fs.apply_patch' && stderr.includes('patch hunk did not match')) {
       return classified(
         failure,
@@ -217,6 +266,17 @@ export function classifyTraceFailure(
         'caller-input',
         false,
         'filesystem search targeted a caller-selected path that does not exist',
+      );
+    }
+    if (
+      (failure.tool === 'fs.search' || failure.tool === 'fs.list') &&
+      stderr.includes('regex parse error')
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'filesystem query contained invalid regular-expression syntax',
       );
     }
   }
