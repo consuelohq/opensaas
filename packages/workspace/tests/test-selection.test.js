@@ -1233,6 +1233,22 @@ describe('test selection registry', () => {
     expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('routes script parity classification changes to the focused audit without the whole OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/audit/fixtures/script-parity-classifications.json',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const selectedSuiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-script-parity-audit');
+    expect(selectedSuiteNames).toContain('OS script parity audit contracts');
+    expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('routes work-session Code Call changes to focused authority tests', () => {
     const result = run([
       'check',

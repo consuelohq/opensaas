@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createMemoryDeviceGrantStore,
@@ -19,6 +19,7 @@ import { inspectMcpNodeRoutingBody } from '../scripts/lib/mcp-node-routing';
 import { MCP_ROUTE_SOURCE_HEADER } from '../scripts/lib/mcp-node-routing';
 import { executeTool } from '../scripts/lib/facade/executor';
 import type { CommandPlan } from '../scripts/lib/facade/types';
+import { startTaskSession } from '../scripts/session-start';
 import { createDefaultNodeYamlConfig, resolveConsueloHomeLayout, writeYamlConfig } from '../scripts/lib/consuelo-home';
 import { createWorkSession, readWorkSession } from '../scripts/lib/work-session';
 import {
@@ -122,6 +123,28 @@ describe('session.start foundation', () => {
     expect(plans).toHaveLength(1);
     expect(realpathSync(plans[0].cwd)).toBe(realpathSync(join(process.cwd(), 'packages/os')));
     expect(plans[0].args.slice(0, 3)).toEqual(['run', 'session:start', '--']);
+  });
+
+  it('should preserve the configured project cwd when runtime session.start delegates task creation', async () => {
+    const previousBun = (globalThis as { Bun?: unknown }).Bun;
+    const spawn = vi.fn().mockReturnValue({
+      exited: Promise.resolve(0),
+    });
+    (globalThis as { Bun?: unknown }).Bun = { spawn };
+    try {
+      await startTaskSession({
+        kind: 'task',
+        json: true,
+        forwarded: ['--area', 'workspace-agents', '--title', 'cwd regression', '--json'],
+      }, '/tmp/configured-project-checkout');
+
+      expect(spawn).toHaveBeenCalledTimes(1);
+      expect(spawn.mock.calls[0]?.[1]).toMatchObject({
+        cwd: '/tmp/configured-project-checkout',
+      });
+    } finally {
+      (globalThis as { Bun?: unknown }).Bun = previousBun;
+    }
   });
 
   it('should create metadata-only work sessions when starting ordinary work', () => {

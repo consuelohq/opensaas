@@ -213,6 +213,10 @@
       "status": "changed-needs-review",
       "reason": "scripts/github.js exists in both workspace and OS script trees with different bytes; keep it under explicit parity review until the divergence is reconciled or documented."
     },
+    "scripts/google.ts": {
+      "status": "os-only-intentional",
+      "reason": "Canonical OS Google Workspace facade and managed gog entrypoint; intentionally owned by the installed OS runtime."
+    },
     "scripts/install-system-daemons.sh": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -549,6 +553,10 @@
       "status": "os-only-needs-review",
       "reason": "scripts/lib/google-cloud-public-pricing-refresh.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
+    "scripts/lib/google-workspace-auth.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned Google Workspace OAuth and account authorization runtime with no workspace-script counterpart."
+    },
     "scripts/lib/graphql-client.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -760,6 +768,10 @@
     "scripts/lib/managed-components.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned deterministic provenance, update planning, merge classification, and bounded component resolution engine has no workspace counterpart."
+    },
+    "scripts/lib/managed-gog.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned managed gog installation and runtime dependency lifecycle used by the Google facade."
     },
     "scripts/lib/managed-os-mcp-origin-class-migration.ts": {
       "status": "os-only-intentional",
