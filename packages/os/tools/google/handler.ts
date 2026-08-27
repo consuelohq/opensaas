@@ -18,8 +18,8 @@ export const toolHandlers = [
     name: 'google',
     command: {
       script: 'google',
-      executionScope: 'runtime',
       branchMode: 'none',
+      executionScope: 'runtime',
       arguments: [
         value('action', '--action', true),
         array('args', '--arg'),

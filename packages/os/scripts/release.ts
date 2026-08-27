@@ -1,29 +1,46 @@
 #!/usr/bin/env bun
 
 import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
   orchestrateRelease,
+  selectRuntimePublishCandidate,
   type ReleaseAdapter,
   type ReleaseChannel,
   type ReleaseCheck,
   type ReleaseIdentity,
   type ReleasePr,
   type ReleaseRun,
+  type RuntimePublishListRow,
 } from './lib/release-orchestrator';
 import {
   assertGitHubCliAuthenticated,
   resolveGitHubCliPath,
 } from './lib/github-cli';
 import { selectReleasePlatformBundleId } from './lib/release-platform-bundle';
-import { evaluatePromotionCorrelation } from './lib/release-promotion-correlation';
+import {
+  RELEASE_PROMOTION_LOCK_BRANCH,
+  RELEASE_PROMOTION_LOCK_PATH,
+  withReleasePromotionDispatchLock,
+  type ReleasePromotionDispatchLockAdapter,
+  type ReleasePromotionLockLease,
+  type ReleasePromotionLockMarker,
+} from './lib/release-promotion-dispatch-lock';
+import {
+  evaluatePromotionCorrelation,
+  promotionDeadline,
+  RELEASE_STATE_WORKFLOWS,
+  selectActiveReleaseStateRun,
+  type PromotionRunRow,
+} from './lib/release-promotion-correlation';
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 // These workflow filenames are part of the operator release contract; keep them aligned with GitHub Actions.
-const RUNTIME_PUBLISH_WORKFLOW = 'consuelo-os-runtime-publish.yaml';
-const RUNTIME_PROMOTE_WORKFLOW = 'consuelo-os-runtime-promote.yaml';
+const [RUNTIME_PUBLISH_WORKFLOW, RUNTIME_PROMOTE_WORKFLOW, RUNTIME_ROLLBACK_WORKFLOW] =
+  RELEASE_STATE_WORKFLOWS;
 const DEFAULT_RELEASE_BASE_URL = 'https://install.consuelohq.com/os/releases';
 const PACKAGE_ROOT = path.resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -132,6 +149,30 @@ function commandOutput(command: string, args: string[], timeout = 30_000): strin
   return clean(result.stdout);
 }
 
+function commandAttempt(
+  command: string,
+  args: string[],
+  timeout = 30_000,
+): { stdout: string; stderr: string; status: number } {
+  const result = spawnSync(command, args, {
+    encoding: 'utf8',
+    timeout,
+    maxBuffer: 20 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  if (result.error) throw new Error(safeErrorText(result.error.message));
+  return {
+    stdout: clean(result.stdout),
+    stderr: safeErrorText(result.stderr),
+    status: result.status ?? 1,
+  };
+}
+
+function httpStatusFromErrorText(value: string): number | null {
+  const match = value.match(/\(HTTP\s+(\d{3})\)/i);
+  return match ? Number(match[1]) : null;
+}
+
 function commandOutputAllowingStatus(
   command: string,
   args: string[],
@@ -168,6 +209,161 @@ function releaseStepError(context: string, error: unknown): Error {
 function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
   const ghJson = <T>(args: string[], timeout?: number): T =>
     parseJson<T>(commandOutput(ghPath, [...args, '--repo', repo], timeout), `gh ${args.join(' ')}`);
+  const ghApiAttempt = (args: string[], timeout?: number) =>
+    commandAttempt(ghPath, ['api', ...args], timeout);
+
+  const createPromotionLockAdapter = (
+    sourceCommit: string,
+    listReleaseStateRuns: () => PromotionRunRow[],
+  ): ReleasePromotionDispatchLockAdapter => {
+    const refEndpoint = `repos/${repo}/git/ref/heads/${RELEASE_PROMOTION_LOCK_BRANCH}`;
+    const refsEndpoint = `repos/${repo}/git/refs`;
+    const contentsEndpoint = `repos/${repo}/contents/${RELEASE_PROMOTION_LOCK_PATH}`;
+
+    const ensureLockBranch = () => {
+      const current = ghApiAttempt(['--method', 'GET', refEndpoint]);
+      if (current.status === 0) return;
+      if (httpStatusFromErrorText(current.stderr) !== 404) {
+        throw new Error(current.stderr || current.stdout || 'failed to read release lock branch');
+      }
+
+      const created = ghApiAttempt([
+        '--method',
+        'POST',
+        refsEndpoint,
+        '-f',
+        `ref=refs/heads/${RELEASE_PROMOTION_LOCK_BRANCH}`,
+        '-f',
+        `sha=${sourceCommit}`,
+      ]);
+      if (created.status === 0) return;
+      if (httpStatusFromErrorText(created.stderr) === 422) {
+        const raced = ghApiAttempt(['--method', 'GET', refEndpoint]);
+        if (raced.status === 0) return;
+      }
+      throw new Error(created.stderr || created.stdout || 'failed to create release lock branch');
+    };
+
+    const readRawLock = (): {
+      marker: ReleasePromotionLockMarker;
+      blobSha: string;
+    } | null => {
+      ensureLockBranch();
+      const result = ghApiAttempt([
+        '--method',
+        'GET',
+        contentsEndpoint,
+        '-f',
+        `ref=${RELEASE_PROMOTION_LOCK_BRANCH}`,
+      ]);
+      if (result.status !== 0) {
+        if (httpStatusFromErrorText(result.stderr) === 404) return null;
+        throw new Error(result.stderr || result.stdout || 'failed to read release promotion lock');
+      }
+      const body = parseJson<{
+        sha?: string;
+        content?: string;
+        encoding?: string;
+      }>(result.stdout, 'release promotion lock contents');
+      const blobSha = clean(body.sha);
+      if (!blobSha || clean(body.encoding) !== 'base64' || !clean(body.content)) {
+        throw new Error('release promotion lock contents are malformed');
+      }
+      const decoded = Buffer.from(clean(body.content).replace(/\s+/g, ''), 'base64').toString('utf8');
+      const marker = parseJson<ReleasePromotionLockMarker>(decoded, 'release promotion lock marker');
+      if (
+        !clean(marker.ownerId) ||
+        !clean(marker.operationId) ||
+        !Number.isFinite(marker.acquiredAtMs) ||
+        marker.acquiredAtMs <= 0
+      ) {
+        throw new Error('release promotion lock marker is malformed');
+      }
+      return { marker, blobSha };
+    };
+
+    return {
+      now: () => Date.now(),
+      sleep,
+      async createMarker({ operationId, acquiredAtMs }) {
+        return {
+          ownerId: randomUUID(),
+          operationId,
+          acquiredAtMs,
+        };
+      },
+      async tryCreateLock(marker) {
+        ensureLockBranch();
+        const content = Buffer.from(JSON.stringify(marker), 'utf8').toString('base64');
+        const result = ghApiAttempt([
+          '--method',
+          'PUT',
+          contentsEndpoint,
+          '-f',
+          `message=lock Consuelo OS runtime promotion (${marker.ownerId})`,
+          '-f',
+          `content=${content}`,
+          '-f',
+          `branch=${RELEASE_PROMOTION_LOCK_BRANCH}`,
+        ]);
+        if (result.status === 0) return true;
+        const httpStatus = httpStatusFromErrorText(result.stderr);
+        if (httpStatus === 409 || httpStatus === 422) return false;
+        throw new Error(result.stderr || result.stdout || 'failed to acquire release promotion lock');
+      },
+      async readLock() {
+        return readRawLock()?.marker ?? null;
+      },
+      async renewLockIfOwned(ownerId, renewedAtMs) {
+        const current = readRawLock();
+        if (!current || current.marker.ownerId !== ownerId) return false;
+        const renewedMarker: ReleasePromotionLockMarker = {
+          ...current.marker,
+          acquiredAtMs: renewedAtMs,
+        };
+        const content = Buffer.from(JSON.stringify(renewedMarker), 'utf8').toString('base64');
+        const result = ghApiAttempt([
+          '--method',
+          'PUT',
+          contentsEndpoint,
+          '-f',
+          `message=renew Consuelo OS runtime promotion lock (${ownerId})`,
+          '-f',
+          `content=${content}`,
+          '-f',
+          `sha=${current.blobSha}`,
+          '-f',
+          `branch=${RELEASE_PROMOTION_LOCK_BRANCH}`,
+        ]);
+        if (result.status === 0) return true;
+        const httpStatus = httpStatusFromErrorText(result.stderr);
+        if (httpStatus === 404 || httpStatus === 409 || httpStatus === 422) return false;
+        throw new Error(result.stderr || result.stdout || 'failed to renew promotion lock');
+      },
+      async deleteLockIfOwned(ownerId) {
+        const current = readRawLock();
+        if (!current || current.marker.ownerId !== ownerId) return false;
+        const result = ghApiAttempt([
+          '--method',
+          'DELETE',
+          contentsEndpoint,
+          '-f',
+          `message=unlock Consuelo OS runtime promotion (${ownerId})`,
+          '-f',
+          `sha=${current.blobSha}`,
+          '-f',
+          `branch=${RELEASE_PROMOTION_LOCK_BRANCH}`,
+        ]);
+        if (result.status === 0) return true;
+        const httpStatus = httpStatusFromErrorText(result.stderr);
+        if (httpStatus === 404 || httpStatus === 409 || httpStatus === 422) return false;
+        throw new Error(result.stderr || result.stdout || 'failed to release promotion lock');
+      },
+      async hasActiveReleaseStateRun() {
+        return Boolean(selectActiveReleaseStateRun(listReleaseStateRuns()));
+      },
+    };
+  };
 
   const listChecks = (pr: number): ReleaseCheck[] => {
     const result = commandOutputAllowingStatus(
@@ -319,17 +515,11 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
         throw releaseStepError(`merge PR #${pr}`, error);
       }
     },
-    async findRuntimePublish(mergeSha) {
+    async findRuntimePublish(mergeSha, excludedRunIds = []) {
       try {
         const deadline = Date.now() + 10 * 60_000;
         while (Date.now() < deadline) {
-          const rows = ghJson<Array<{
-            databaseId: number;
-            headSha?: string;
-            status?: string;
-            conclusion?: string;
-            url?: string;
-          }>>([
+          const rows = ghJson<RuntimePublishListRow[]>([
             'run',
             'list',
             '--workflow',
@@ -341,18 +531,11 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
             '--json',
             'databaseId,headSha,status,conclusion,url',
           ]);
-          const match = rows.find((row) => clean(row.headSha) === mergeSha);
-          if (match) {
-            return {
-              runId: match.databaseId,
-              status: clean(match.status),
-              conclusion: clean(match.conclusion),
-              url: clean(match.url),
-            };
-          }
+          const candidate = selectRuntimePublishCandidate(rows, mergeSha, excludedRunIds);
+          if (candidate) return candidate;
           await sleep(3_000);
         }
-        throw new Error(`timed out finding runtime publication for ${mergeSha}`);
+        throw new Error(`timed out finding viable runtime publication for ${mergeSha}`);
       } catch (error: unknown) {
         throw releaseStepError(`find runtime publication for ${mergeSha}`, error);
       }
@@ -413,50 +596,121 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
     channelRelease: fetchChannel,
     async promote({ from, to, releaseSetBundleId, sourceCommit }) {
       try {
-        const before = ghJson<Array<{ databaseId: number }>>([
+        const queueDeadline = promotionDeadline(Date.now());
+        let baseline = 0;
+        let dispatched = false;
+        const listWorkflowRuns = (workflow: string) => ghJson<PromotionRunRow[]>([
           'run',
           'list',
           '--workflow',
-          RUNTIME_PROMOTE_WORKFLOW,
+          workflow,
           '--limit',
-          '10',
+          '20',
           '--json',
-          'databaseId',
+          'databaseId,displayTitle,status,conclusion,url',
         ]);
-        const baseline = Math.max(0, ...before.map((run) => Number(run.databaseId) || 0));
-        commandOutput(ghPath, [
-          'workflow',
-          'run',
-          RUNTIME_PROMOTE_WORKFLOW,
-          '--repo',
-          repo,
-          '--ref',
-          'main',
-          '-f',
-          `from=${from}`,
-          '-f',
-          `to=${to}`,
-          '-f',
-          `bundle=${releaseSetBundleId}`,
-        ]);
-        const deadline = Date.now() + 25 * 60_000;
-        while (Date.now() < deadline) {
-          const rows = ghJson<Array<{
-            databaseId: number;
-            displayTitle?: string;
-            status?: string;
-            conclusion?: string;
-            url?: string;
-          }>>([
-            'run',
-            'list',
-            '--workflow',
-            RUNTIME_PROMOTE_WORKFLOW,
-            '--limit',
-            '20',
-            '--json',
-            'databaseId,displayTitle,status,conclusion,url',
-          ]);
+        const listPromotionRuns = () => listWorkflowRuns(RUNTIME_PROMOTE_WORKFLOW);
+        const listReleaseStateRuns = () => [
+          ...listWorkflowRuns(RUNTIME_PUBLISH_WORKFLOW),
+          ...listPromotionRuns(),
+          ...listWorkflowRuns(RUNTIME_ROLLBACK_WORKFLOW),
+        ];
+        const listReleaseStateRunsWithLease = async (lease: ReleasePromotionLockLease) => {
+          await lease.renew();
+          const publishRuns = listWorkflowRuns(RUNTIME_PUBLISH_WORKFLOW);
+          await lease.renew();
+          const promotionRuns = listPromotionRuns();
+          await lease.renew();
+          const rollbackRuns = listWorkflowRuns(RUNTIME_ROLLBACK_WORKFLOW);
+          await lease.renew();
+          return {
+            all: [...publishRuns, ...promotionRuns, ...rollbackRuns],
+            promotionRuns,
+          };
+        };
+        const promotionLockAdapter = createPromotionLockAdapter(sourceCommit, listReleaseStateRuns);
+        while (Date.now() < queueDeadline) {
+          const decision = await withReleasePromotionDispatchLock({
+            operationId: `release:${from}->${to}:${releaseSetBundleId}`,
+            waitTimeoutMs: Math.max(1, queueDeadline - Date.now()),
+          }, promotionLockAdapter, async (lease) => {
+            try {
+              const target = await fetchChannel(to);
+              if (
+                target?.releaseSetBundleId === releaseSetBundleId &&
+                target.sourceCommit === sourceCommit
+              ) {
+                return { kind: 'success' as const };
+              }
+
+              const releaseStateBefore = await listReleaseStateRunsWithLease(lease);
+              if (selectActiveReleaseStateRun(releaseStateBefore.all)) {
+                return { kind: 'wait' as const };
+              }
+
+              const nextBaseline = Math.max(
+                0,
+                ...releaseStateBefore.promotionRuns.map((run) => Number(run.databaseId) || 0),
+              );
+              await lease.renew();
+              commandOutput(ghPath, [
+                'workflow',
+                'run',
+                RUNTIME_PROMOTE_WORKFLOW,
+                '--repo',
+                repo,
+                '--ref',
+                'main',
+                '-f',
+                `from=${from}`,
+                '-f',
+                `to=${to}`,
+                '-f',
+                `bundle=${releaseSetBundleId}`,
+              ]);
+              await lease.renew();
+
+              const visibilityDeadline = Date.now() + 60_000;
+              while (Date.now() < visibilityDeadline) {
+                const visibleTarget = await fetchChannel(to);
+                if (
+                  visibleTarget?.releaseSetBundleId === releaseSetBundleId &&
+                  visibleTarget.sourceCommit === sourceCommit
+                ) {
+                  return { kind: 'success' as const };
+                }
+                await lease.renew();
+                const visibleRuns = listPromotionRuns();
+                await lease.renew();
+                if (visibleRuns.some((run) => Number(run.databaseId) > nextBaseline)) {
+                  return { kind: 'dispatched' as const, baseline: nextBaseline };
+                }
+                await sleep(1_000);
+              }
+              throw new Error(`promotion dispatch did not become observable for ${from} -> ${to}`);
+            } catch (error: unknown) {
+              throw releaseStepError(`serialize promotion dispatch ${from} -> ${to}`, error);
+            }
+          });
+
+          if (decision.kind === 'success') {
+            return { runId: 0, status: 'completed', conclusion: 'success', url: '' };
+          }
+          if (decision.kind === 'wait') {
+            await sleep(3_000);
+            continue;
+          }
+          baseline = decision.baseline;
+          dispatched = true;
+          break;
+        }
+        if (!dispatched) {
+          throw new Error(`timed out waiting for protected promotion queue ${from} -> ${to}`);
+        }
+
+        const observationDeadline = promotionDeadline(Date.now());
+        while (Date.now() < observationDeadline) {
+          const rows = listPromotionRuns();
           const correlation = evaluatePromotionCorrelation({
             baselineRunId: baseline,
             runs: rows,

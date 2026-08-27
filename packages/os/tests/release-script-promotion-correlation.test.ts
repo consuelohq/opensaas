@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { evaluatePromotionCorrelation } from '../scripts/lib/release-promotion-correlation';
+import {
+  evaluatePromotionCorrelation,
+  promotionDeadline,
+  RELEASE_STATE_WORKFLOWS,
+  selectActiveReleaseStateRun,
+} from '../scripts/lib/release-promotion-correlation';
 
 const exactRelease = {
   channel: 'canary' as const,
@@ -11,6 +16,40 @@ const exactRelease = {
 };
 
 describe('release promotion correlation', () => {
+  it('defines the complete GitHub release-state concurrency workflow set', () => {
+    expect(RELEASE_STATE_WORKFLOWS).toEqual([
+      'consuelo-os-runtime-publish.yaml',
+      'consuelo-os-runtime-promote.yaml',
+      'consuelo-os-runtime-rollback.yaml',
+    ]);
+  });
+
+  it('starts a fresh full observation window after waiting behind the protected promotion queue', () => {
+    const timeoutMs = 25 * 60_000;
+    const queueStartedAt = 1_000;
+    const queueDeadline = promotionDeadline(queueStartedAt, timeoutMs);
+    const dispatchedAt = queueDeadline - 60_000;
+    const postDispatchDeadline = promotionDeadline(dispatchedAt, timeoutMs);
+
+    expect(queueDeadline - queueStartedAt).toBe(timeoutMs);
+    expect(postDispatchDeadline - dispatchedAt).toBe(timeoutMs);
+    expect(postDispatchDeadline).toBeGreaterThan(queueDeadline);
+  });
+
+  it('serializes behind the oldest active shared release-state run before dispatching a promotion', () => {
+    expect(selectActiveReleaseStateRun([
+      { databaseId: 104, displayTitle: 'Consuelo OS runtime rollback', status: 'queued', url: 'https://example.test/run/104' },
+      { databaseId: 103, displayTitle: 'Consuelo OS runtime promote', status: 'completed', conclusion: 'success' },
+      { databaseId: 102, displayTitle: 'Consuelo OS runtime publish', status: 'in_progress', url: 'https://example.test/run/102' },
+      { databaseId: 101, displayTitle: 'Consuelo OS runtime promote', status: 'completed', conclusion: 'failure' },
+    ])).toEqual({
+      runId: 102,
+      status: 'in_progress',
+      conclusion: '',
+      url: 'https://example.test/run/102',
+    });
+  });
+
   it('uses the signed target pointer as authoritative even when the protected workflow keeps its generic display title', () => {
     expect(evaluatePromotionCorrelation({
       baselineRunId: 100,

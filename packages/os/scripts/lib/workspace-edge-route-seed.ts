@@ -382,6 +382,18 @@ const buildEnvironmentGatewayRoutes = (): WorkspaceRouteD1Route[] => [
 const buildSecretGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
+    pathPrefix: '/gateway/secrets/install',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'secrets-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/secrets/*',
+      publicSiteRouteFamily: '/secrets/*',
+    },
+  },
+  {
+    surface: 'sites',
     pathPrefix: '/gateway/secrets',
     auth: 'workspace-session',
     status: 'active',

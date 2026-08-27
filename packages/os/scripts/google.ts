@@ -14,12 +14,13 @@ import {
   type GoogleRunInput,
 } from '../tools/google/service';
 
-type GoogleCliArgs = {
+export type GoogleCliArgs = {
   action: 'status' | 'connect' | 'run';
   args: string[];
   account?: string;
   mode: 'read' | 'write';
   approved: boolean;
+  quiet: boolean;
   approvalReason?: string;
   timeoutMs?: number;
 };
@@ -39,12 +40,13 @@ function positiveInteger(raw: string, flag: string): number {
   return parsed;
 }
 
-function parseArgs(argv: readonly string[]): GoogleCliArgs {
+export function parseGoogleCliArgs(argv: readonly string[]): GoogleCliArgs {
   let action: GoogleCliArgs['action'] | undefined;
   const args: string[] = [];
   let account: string | undefined;
   let mode: GoogleCliArgs['mode'] = 'read';
   let approved = false;
+  let quiet = false;
   let approvalReason: string | undefined;
   let timeoutMs: number | undefined;
 
@@ -78,6 +80,8 @@ function parseArgs(argv: readonly string[]): GoogleCliArgs {
       index += 1;
     } else if (argument === '--json') {
       // Facade compatibility: output is always structured JSON.
+    } else if (argument === '--quiet') {
+      quiet = true;
     } else {
       throw new Error(`unknown option: ${argument}`);
     }
@@ -91,6 +95,7 @@ function parseArgs(argv: readonly string[]): GoogleCliArgs {
     ...(account ? { account } : {}),
     mode,
     approved,
+    quiet,
     ...(approvalReason ? { approvalReason } : {}),
     ...(timeoutMs ? { timeoutMs } : {}),
   };
@@ -122,8 +127,8 @@ async function connectGoogle(input: {
   account?: string;
   timeoutMs?: number;
 }): Promise<unknown> {
-  const account = accountFor(input.home, input.account);
   await ensureGoogleWorkspaceOAuthCredentials({ home: input.home, executable: input.executable });
+  const account = accountFor(input.home, input.account);
   const service = createGoogleService({ executable: input.executable });
   return Effect.runPromise(service.connect({ account, timeoutMs: input.timeoutMs }));
 }
@@ -174,10 +179,11 @@ async function runGoogle(input: {
 
 export async function runGoogleCli(argv: readonly string[]): Promise<number> {
   let args: GoogleCliArgs;
+  const quiet = argv.includes('--quiet');
   try {
-    args = parseArgs(argv);
+    args = parseGoogleCliArgs(argv);
   } catch (error: unknown) {
-    output({ ok: false, error: failure(error) });
+    if (!quiet) output({ ok: false, error: failure(error) });
     return 1;
   }
 
@@ -198,10 +204,10 @@ export async function runGoogleCli(argv: readonly string[]): Promise<number> {
     } else {
       data = await runGoogle({ home, executable: runtime.path, args });
     }
-    output({ ok: true, data, runtime: { version: runtime.version } });
+    if (!args.quiet) output({ ok: true, data, runtime: { version: runtime.version } });
     return 0;
   } catch (error: unknown) {
-    output({ ok: false, error: failure(error) });
+    if (!args.quiet) output({ ok: false, error: failure(error) });
     return 1;
   }
 }

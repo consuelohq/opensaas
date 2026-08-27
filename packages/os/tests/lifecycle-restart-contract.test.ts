@@ -209,11 +209,7 @@ describe('lifecycle restart parity', () => {
       ]) {
         expect(launchctl).toContainEqual({
           command: 'launchctl',
-          args: ['bootout', 'gui/501/' + label],
-        });
-        expect(launchctl).toContainEqual({
-          command: 'launchctl',
-          args: ['bootstrap', 'gui/501', join(launchAgents, label + '.plist')],
+          args: ['print', 'gui/501/' + label],
         });
         expect(launchctl).toContainEqual({
           command: 'launchctl',
@@ -225,7 +221,66 @@ describe('lifecycle restart parity', () => {
     }
   });
 
-  it('retries a transient macOS gateway bootstrap after bootout settles', async () => {
+  it('does not synchronously restart the watchdog that invoked canonical restart', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-from-watchdog-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    writeFileSync(join(launchAgents, 'com.consuelo.watchdog.plist'), '<plist/>\n');
+    const calls: Array<{ command: string; args: string[] }> = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home, XPC_SERVICE_NAME: 'com.consuelo.watchdog' },
+        userId: 501,
+        run: async (command, args) => {
+          calls.push({ command, args });
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await controller.restart({ waitForCompletion: true });
+
+      expect(JSON.stringify(calls.filter((call) => call.command === 'launchctl')))
+        .not.toContain('com.consuelo.watchdog');
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('reloads an already-loaded sidecar definition before kickstart', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-loaded-sidecar-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.availability';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    const launchctl: string[][] = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        run: async (command, args) => {
+          if (command === 'launchctl') launchctl.push(args);
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await controller.restart({ waitForCompletion: true });
+
+      expect(launchctl).toEqual([
+        ['print', 'gui/501/' + label],
+        ['bootout', 'gui/501/' + label],
+        ['bootstrap', 'gui/501', join(launchAgents, label + '.plist')],
+        ['kickstart', '-k', 'gui/501/' + label],
+      ]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('retries a transient macOS gateway bootstrap while a missing job settles', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-retry-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });

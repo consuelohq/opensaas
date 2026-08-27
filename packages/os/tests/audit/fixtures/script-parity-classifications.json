@@ -1042,6 +1042,10 @@
       "status": "os-only-needs-review",
       "reason": "scripts/lib/release-promotion-correlation.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
+    "scripts/lib/release-promotion-dispatch-lock.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned release promotion dispatch lock coordinates immutable runtime channel promotion and prevents concurrent release-state dispatch; no workspace counterpart is intended."
+    },
     "scripts/lib/review-documentation.js": {
       "status": "workspace-only-needs-port",
       "reason": "scripts/lib/review-documentation.js exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
@@ -1065,6 +1069,10 @@
     "scripts/lib/search/retriever.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/lib/secrets-site.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned Secrets management UI surface for the local workspace shell; it is runtime presentation code with no workspace-script counterpart."
     },
     "scripts/lib/security-gateway.ts": {
       "status": "os-only-intentional",
@@ -1263,6 +1271,10 @@
       "status": "os-only-intentional",
       "reason": "scripts/lib/tool-scope-authorization.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
     },
+    "scripts/lib/trace-cost-estimator.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned observability cost estimator derives non-zero trace cost estimates from runtime model/token metadata; no workspace-script counterpart is intended."
+    },
     "scripts/lib/trace-database-schema.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/trace-database-schema.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
@@ -1298,6 +1310,10 @@
     "scripts/lib/trace-site-inspector/pagination-browser.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/trace-site-inspector/pagination-browser.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/lib/trace-site-inspector/session-colors.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned trace inspector presentation helper assigns deterministic session colors for the observability UI; no workspace-script counterpart is intended."
     },
     "scripts/lib/trace-site-inspector/table-formatters.ts": {
       "status": "os-only-needs-review",

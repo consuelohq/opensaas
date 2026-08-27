@@ -214,6 +214,21 @@ describe('typed facade executor', () => {
     expect(JSON.stringify({ environmentInput, rawInput })).not.toContain(secret);
   });
 
+  it('uses a tool timeoutMs input as the outer facade deadline', async () => {
+    let observedTimeoutMs = 0;
+    const result = await executeTool('google', {
+      action: 'connect',
+      account: 'person@example.com',
+      timeoutMs: 600_000,
+    }, stableOptions(async (_plan, timeoutMs) => {
+      observedTimeoutMs = timeoutMs;
+      return { stdout: JSON.stringify({ ok: true }), stderr: '', exitCode: 0 };
+    }));
+
+    expect(result.ok).toBe(true);
+    expect(observedTimeoutMs).toBe(600_000);
+  });
+
   it('plans canonical memory search through the memory runtime', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('memory', {

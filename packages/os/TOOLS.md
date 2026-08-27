@@ -3198,7 +3198,7 @@ use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Googl
 | Field | Value |
 | --- | --- |
 | Category | google |
-| Signature | `workspace.google({ action: "status" &#124; "connect" &#124; "run"; args?: string[]; account?: string; mode?: "read" &#124; "write"; approved?: boolean; approvalReason?: string; timeoutMs?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.google({ action: "status" &#124; "connect" &#124; "run"; args?: string[]; account?: string; mode?: "read" &#124; "write"; approved?: boolean; approvalReason?: string; timeoutMs?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace google` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |

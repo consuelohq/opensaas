@@ -1,4 +1,5 @@
 {
+  "version": 1,
   "definitions": [
     {
       "name": "aiReview",
@@ -4211,6 +4212,7 @@
       "command": {
         "script": "google",
         "branchMode": "none",
+        "executionScope": "runtime",
         "arguments": [
           {
             "source": "action",
@@ -4249,8 +4251,7 @@
             "kind": "value"
           }
         ],
-        "jsonFlag": "--json",
-        "executionScope": "runtime"
+        "jsonFlag": "--json"
       },
       "exampleInput": {
         "action": "run",

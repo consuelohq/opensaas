@@ -11,6 +11,30 @@ function unavailable(message: string): Response {
   );
 }
 
+async function canonicalAccountEmail(
+  runtime: DeviceAuthorityRuntime,
+  accountId: string,
+): Promise<string | undefined> {
+  const repository = runtime.installControlPlaneRepository;
+  if (!repository) return undefined;
+  try {
+    let cursor: string | undefined;
+    do {
+      const page = await repository.listUsers({
+        nowMs: runtime.now(),
+        limit: 100,
+        ...(cursor ? { cursor } : {}),
+      });
+      const match = page.items.find((user) => user.userId === accountId);
+      if (match?.email?.trim()) return match.email.trim();
+      cursor = page.nextCursor;
+    } while (cursor);
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
 async function handleOAuthClient(request: Request, runtime: DeviceAuthorityRuntime): Promise<Response> {
   let auth;
   try {
@@ -27,6 +51,7 @@ async function handleOAuthClient(request: Request, runtime: DeviceAuthorityRunti
     );
   }
   if (auth instanceof Response) return auth;
+  const accountEmail = await canonicalAccountEmail(runtime, auth.node.accountId);
   const clientId = runtime.googleWorkspaceOAuthClientId?.trim() ?? '';
   const clientSecret = runtime.googleWorkspaceOAuthClientSecret?.trim() ?? '';
   if (!clientId || !clientSecret) {
@@ -34,6 +59,7 @@ async function handleOAuthClient(request: Request, runtime: DeviceAuthorityRunti
   }
   return json(
     {
+      ...(accountEmail ? { accountEmail } : {}),
       credentials: {
         installed: {
           client_id: clientId,

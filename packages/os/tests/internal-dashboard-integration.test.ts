@@ -444,13 +444,14 @@ describe('Branch 6 internal dashboard integration', () => {
     expect(downloaded).not.toContain('must-be-redacted');
   });
 
-  it('should proxy enrollment resets when the owner request is same-origin and authorized', async () => {
+  it('should proxy enrollment resets and normalize authority errors when the owner request is same-origin and authorized', async () => {
     const routeRegistry = createInMemoryWorkspaceRouteD1();
     await migrateWorkspaceRouteD1(routeRegistry);
     const service = createInstallControlPlaneService({
       repository: createMemoryInstallControlPlaneRepository(),
     });
     let resetCalls = 0;
+    let resetError: string | undefined;
     const edge = createWorkspaceEdgeHandler(
       {
         WORKSPACE_ROUTE_REGISTRY: routeRegistry,
@@ -471,6 +472,9 @@ describe('Branch 6 internal dashboard integration', () => {
                   workspace_host: 'maya.consuelohq.com',
                   workspace_id: 'workspace_maya',
                 });
+                if (resetError) {
+                  return Response.json({ error: resetError }, { status: 409 });
+                }
                 return Response.json({ status: 'reset', nodes_removed: 1 });
               }
               return new Response('not found', { status: 404 });
@@ -506,6 +510,20 @@ describe('Branch 6 internal dashboard integration', () => {
     await expect(response.json()).resolves.toMatchObject({ status: 'reset' });
     expect(resetCalls).toBe(1);
 
+    resetError = 'enrollment_owner_not_found';
+    const authorityFailure = await edge(request());
+    expect(authorityFailure.status).toBe(409);
+    expect(authorityFailure.headers.get('cache-control')).toBe('no-store');
+    expect(authorityFailure.headers.get('x-content-type-options')).toBe('nosniff');
+    await expect(authorityFailure.json()).resolves.toEqual({
+      error: {
+        code: 'ENROLLMENT_OWNER_NOT_FOUND',
+        message: 'No enrollment owner was found for this workspace.',
+      },
+    });
+    expect(resetCalls).toBe(2);
+    resetError = undefined;
+
     const crossOrigin = await edge(new Request(request(), {
       headers: {
         cookie: '__Host-consuelo_os_session=target-session',
@@ -515,7 +533,7 @@ describe('Branch 6 internal dashboard integration', () => {
       },
     }));
     expect(crossOrigin.status).toBe(403);
-    expect(resetCalls).toBe(1);
+    expect(resetCalls).toBe(2);
 
     const wrongMethod = await edge(new Request(
       'https://internal.consuelohq.com/api/internal/os/v1/enrollment/reset',
@@ -559,7 +577,7 @@ describe('Branch 6 internal dashboard integration', () => {
         message: 'Enrollment reset payload exceeds the 4096 byte limit.',
       },
     });
-    expect(resetCalls).toBe(1);
+    expect(resetCalls).toBe(2);
   });
 
   it('accepts only short-lived signed canonical user-directory syncs on Device Authority', async () => {

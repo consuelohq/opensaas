@@ -252,6 +252,7 @@ reconcile_public_route() {
     return 1
   fi
   case "$output" in
+    *'"mcpReady":false'*) return 1 ;;
     *'"routeReady":true'*) return 0 ;;
     *) return 1 ;;
   esac

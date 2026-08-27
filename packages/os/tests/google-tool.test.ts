@@ -6,7 +6,6 @@ import {
   createGoogleService,
   GoogleError,
 } from '../tools/google/service';
-import { toolHandlers } from '../tools/google/handler';
 import type { ProviderProcess } from '../tools/deployment-provider/types';
 
 const successfulProcess = (calls: Array<{ command: string; args: string[] }>): ProviderProcess => ({
@@ -27,14 +26,6 @@ const successfulProcess = (calls: Array<{ command: string; args: string[] }>): P
 });
 
 describe('google tool service', () => {
-  it('executes the facade command from the installed runtime package root', () => {
-    expect(toolHandlers[0]?.command).toMatchObject({
-      script: 'google',
-      executionScope: 'runtime',
-      branchMode: 'none',
-    });
-  });
-
   it('uses the non-blocking auth status primitive for connection checks', async () => {
     const calls: Array<{ command: string; args: string[] }> = [];
     const service = createGoogleService({

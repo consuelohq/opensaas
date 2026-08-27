@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 
 import { Effect } from 'effect';
@@ -22,6 +22,7 @@ type GoogleWorkspaceNodeContext = {
 };
 
 type GoogleWorkspaceOAuthCredentials = {
+  accountEmail?: string;
   installed: {
     client_id: string;
     client_secret: string;
@@ -31,6 +32,33 @@ type GoogleWorkspaceOAuthCredentials = {
     redirect_uris: string[];
   };
 };
+
+const GOOGLE_OAUTH_DIGEST_FILE = 'google-oauth-client.sha256';
+
+function googleOAuthDigestPath(home: string): string {
+  const layout = resolveConsueloHomeLayout(home);
+  return path.join(layout.nodeDir, 'security', 'generated', GOOGLE_OAUTH_DIGEST_FILE);
+}
+
+function googleOAuthDigest(credentials: Omit<GoogleWorkspaceOAuthCredentials, 'accountEmail'>): string {
+  return createHash('sha256').update(JSON.stringify(credentials)).digest('hex');
+}
+
+function installedGoogleOAuthDigest(home: string): string | undefined {
+  try {
+    const digest = fs.readFileSync(googleOAuthDigestPath(home), 'utf8').trim();
+    return /^[a-f0-9]{64}$/.test(digest) ? digest : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function persistGoogleOAuthDigest(home: string, digest: string): void {
+  const digestPath = googleOAuthDigestPath(home);
+  fs.mkdirSync(path.dirname(digestPath), { recursive: true, mode: 0o700 });
+  fs.writeFileSync(digestPath, `${digest}\n`, { mode: 0o600 });
+  fs.chmodSync(digestPath, 0o600);
+}
 
 function requiredString(value: unknown, label: string): string {
   if (typeof value !== 'string' || !value.trim()) {
@@ -75,6 +103,16 @@ export function readGoogleWorkspaceNodeContext(home: string): GoogleWorkspaceNod
 
 export function googleWorkspaceAccount(home: string): string | undefined {
   return readGoogleWorkspaceNodeContext(home).accountEmail;
+}
+
+function persistGoogleWorkspaceAccount(home: string, accountEmail: string): void {
+  const layout = resolveConsueloHomeLayout(home);
+  const configPath = path.join(layout.nodeDir, 'security', 'generated', 'workspace-node-heartbeat.json');
+  const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8')) as Record<string, unknown>;
+  parsed.accountEmail = accountEmail;
+  fs.writeFileSync(configPath, `${JSON.stringify(parsed, null, 2)}
+`, { mode: 0o600 });
+  fs.chmodSync(configPath, 0o600);
 }
 
 function errorMessage(value: unknown, fallback: string): string {
@@ -142,7 +180,11 @@ export async function fetchGoogleWorkspaceOAuthCredentials(input: {
     throw new Error('The Google connection service returned invalid OAuth credentials.');
   }
   const record = installed as Record<string, unknown>;
+  const accountEmail = typeof (body as Record<string, unknown>).accountEmail === 'string'
+    ? (body as Record<string, unknown>).accountEmail.trim()
+    : '';
   return {
+    ...(accountEmail ? { accountEmail } : {}),
     installed: {
       client_id: requiredString(record.client_id, 'OAuth client ID'),
       client_secret: requiredString(record.client_secret, 'OAuth client secret'),
@@ -187,22 +229,32 @@ export async function ensureGoogleWorkspaceOAuthCredentials(input: {
 }): Promise<{ changed: boolean }> {
   try {
     const processRunner = input.process ?? createNodeProviderProcess();
-    if (await credentialsConfigured(processRunner, input.executable)) return { changed: false };
+    const context = readGoogleWorkspaceNodeContext(input.home);
+    const configured = await credentialsConfigured(processRunner, input.executable);
     const credentials = await fetchGoogleWorkspaceOAuthCredentials({
       home: input.home,
       fetchImpl: input.fetchImpl,
     });
+    if (!context.accountEmail && credentials.accountEmail) {
+      persistGoogleWorkspaceAccount(input.home, credentials.accountEmail);
+    }
+    const { accountEmail: _accountEmail, ...clientCredentials } = credentials;
+    const digest = googleOAuthDigest(clientCredentials);
+    if (configured && installedGoogleOAuthDigest(input.home) === digest) {
+      return { changed: false };
+    }
     const result = await processRunner.run({
       command: input.executable,
       args: ['--json', '--no-input', 'auth', 'credentials', 'set', '-'],
       cwd: process.cwd(),
       env: process.env,
-      stdin: JSON.stringify(credentials),
+      stdin: JSON.stringify(clientCredentials),
       timeoutMs: 30_000,
     }).pipe(Effect.runPromise);
     if (result.exitCode !== 0 || result.runtimeMissing || result.timedOut || result.cancelled) {
       throw new Error('Google OAuth client configuration failed.');
     }
+    persistGoogleOAuthDigest(input.home, digest);
     return { changed: true };
   } catch (error: unknown) {
     if (error instanceof Error) throw error;
