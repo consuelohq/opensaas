@@ -13,8 +13,13 @@ import type {
   TraceSitesDashboardSummary,
 } from './trace-sites-gateway-contract';
 import { redactTraceJson, redactTraceText } from './redaction';
-import { ensureTraceDatabaseSchema } from './trace-database-schema';
+import {
+  ensureTraceDatabaseSchema,
+  openTraceDatabase,
+  type TraceDatabase,
+} from './trace-database-schema';
 import { compileTraceHistorySearch } from './trace-search-query';
+import { estimateTraceCost } from './trace-cost-estimator';
 
 export type LocalTraceSitesReadBackendOptions = {
   dbPath: string;
@@ -173,8 +178,7 @@ async function readNewerTracePage(
 ): Promise<TraceSitesGatewayHistoryPage> {
   if (!existsSync(dbPath)) return { rows: [], nextCursor: input.cursor };
 
-  const { Database } = await import('bun:sqlite');
-  const db = new Database(dbPath, { readonly: true });
+  const db = openTraceDatabase(dbPath);
   try {
     const afterRowid = resolveHistoryAfterRowid(db, input.cursor);
     const pageSize = Math.max(1, Math.floor(input.limit));
@@ -204,8 +208,7 @@ async function readTraceHistoryPage(
 ): Promise<TraceSitesGatewayHistoryPage> {
   if (!existsSync(dbPath)) return { rows: [], nextCursor: null };
 
-  const { Database } = await import('bun:sqlite');
-  const db = new Database(dbPath, { readonly: true });
+  const db = openTraceDatabase(dbPath);
   try {
     const beforeRowid = resolveHistoryBeforeRowid(db, input.cursor);
     if (beforeRowid <= 1) return { rows: [], nextCursor: null };
@@ -239,8 +242,7 @@ async function readRecentTraceEvents(
     return { cursor: input.cursor, events: [] };
   }
 
-  const { Database } = await import('bun:sqlite');
-  const db = new Database(dbPath, { readonly: true });
+  const db = openTraceDatabase(dbPath);
   try {
     const afterRowid = cursorToRowid(input.cursor);
     const rows = db
@@ -323,6 +325,15 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
   );
   const rawResultJson = sanitizeTracePayloadJson(cleanString(row.result_json));
   const rawStderr = sanitizeLocalTraceText(cleanString(row.stderr));
+  const costEstimate = estimateTraceCost({
+    tool,
+    inputTokens,
+    outputTokens,
+    totalTokens: tokens,
+    rawInputJson,
+    rawResolvedInputJson,
+    rawResultJson,
+  });
   const requestedNodeId = cleanString(row.requested_node_id);
   const resolvedNodeId = cleanString(row.resolved_node_id);
   const resolvedNodeName = cleanString(row.resolved_node_name);
@@ -360,14 +371,24 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     tokens,
     inputTokens,
     outputTokens,
-    cost: 0,
-    costLabel: '$0.0000',
+    cost: costEstimate?.cost ?? 0,
+    costLabel: costEstimate?.costLabel ?? '—',
     trace: traceId,
     traceId,
     metadata: {
       rowid: row.rowid,
       source: cleanString(row.source),
       mcpTraceId: cleanString(row.mcp_trace_id),
+      ...(costEstimate
+        ? {
+            pricingModel: costEstimate.model,
+            pricingRateModel: costEstimate.rateModel,
+            pricingSource: costEstimate.pricingSource,
+            pricingProvider: costEstimate.provider,
+            pricingEstimated: true,
+            cachedInputTokens: costEstimate.cachedInputTokens,
+          }
+        : {}),
       ...(cleanString(row.work_session) ? { workSession: cleanString(row.work_session) } : {}),
       ...(cleanString(row.work_path)
         ? { workPath: sanitizeLocalTraceText(cleanString(row.work_path)) }
@@ -446,7 +467,7 @@ function sanitizeLocalTraceText(value: string): string {
 }
 
 function resolveHistoryBeforeRowid(
-  db: import('bun:sqlite').Database,
+  db: TraceDatabase,
   cursor: string,
 ): number {
   const numeric = Number(cursor);
@@ -469,7 +490,7 @@ function resolveHistoryBeforeRowid(
 }
 
 function resolveHistoryAfterRowid(
-  db: import('bun:sqlite').Database,
+  db: TraceDatabase,
   cursor: string,
 ): number {
   const numeric = Number(cursor);

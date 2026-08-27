@@ -193,6 +193,7 @@ const devices: InstallDashboardDeviceSummary[] = [
     nodeId: 'node_fixture_maya_macbook',
     userId: 'usr_fixture_01',
     workspaceId: 'ws_fixture_alpha',
+    workspaceHost: 'maya.consuelohq.com',
     displayName: 'Maya’s MacBook Pro',
     state: 'active',
     connectorStatus: 'connected',

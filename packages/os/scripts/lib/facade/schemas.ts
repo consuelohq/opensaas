@@ -199,6 +199,42 @@ export const MediaSvgInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
+export const MediaTranscribeInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  input: z.string().min(1),
+  mode: z.enum(['fixture', 'whisper.cpp', 'openai-whisper']).optional(),
+  fixtureText: optionalString,
+  language: optionalString,
+  model: optionalString,
+});
+
+
+const MediaScaffoldInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+});
+export const MediaAngleMeasureInput = MediaScaffoldInput;
+export const MediaAudioExtractInput = MediaScaffoldInput;
+export const MediaAudioNormalizeInput = MediaScaffoldInput;
+export const MediaBreakdownPlanInput = MediaScaffoldInput;
+export const MediaCameraMotionInput = MediaScaffoldInput;
+export const MediaClipSearchInput = MediaScaffoldInput;
+export const MediaComposeInput = MediaScaffoldInput;
+export const MediaDoctorInput = MediaScaffoldInput;
+export const MediaExportInput = MediaScaffoldInput;
+export const MediaFramesExtractInput = MediaScaffoldInput;
+export const MediaIngestInput = MediaScaffoldInput;
+export const MediaInstallInput = MediaScaffoldInput;
+export const MediaMotionTrackInput = MediaScaffoldInput;
+export const MediaObjectTrackInput = MediaScaffoldInput;
+export const MediaOverlayRenderInput = MediaScaffoldInput;
+export const MediaPoseEstimateInput = MediaScaffoldInput;
+export const MediaProbeInput = MediaScaffoldInput;
+export const MediaQaInput = MediaScaffoldInput;
+export const MediaSceneDetectInput = MediaScaffoldInput;
+export const MediaSportsScienceMetricsInput = MediaScaffoldInput;
+export const MediaTimelineValidateInput = MediaScaffoldInput;
 
 export const CodeRunInput = z.object({
   ...requestFields,
@@ -600,6 +636,7 @@ export const ExploreInput = z.object({
   limit: z.number().int().positive().optional(),
   changedOnly: z.boolean().optional(),
   reindex: z.boolean().optional(),
+  detail: z.enum(['compact', 'full']).optional(),
 });
 
 export const DecideNextInput = z.object({
@@ -687,6 +724,18 @@ export const GhInput = z.object({
   ...dryRunField,
   action: z.string().min(1),
   args: stringArray,
+});
+
+export const GoogleInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['status', 'connect', 'run']),
+  args: stringArray,
+  account: z.string().min(3).optional(),
+  mode: z.enum(['read', 'write']).optional(),
+  approved: z.boolean().optional(),
+  approvalReason: z.string().optional(),
+  timeoutMs: z.number().int().positive().max(10 * 60_000).optional(),
 });
 
 
@@ -1198,6 +1247,17 @@ export const LifecycleUpdateInput = z.object({
   ...requestFields,
   ...dryRunField,
   channel: z.enum(['stable', 'beta', 'canary', 'dev', 'nightly']).optional(),
+  version: z.string().regex(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/).optional(),
+});
+
+export const ReleaseInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  pr: z.number().int().positive(),
+  repo: z.string().min(1).optional(),
+  channel: z.enum(['dev', 'canary', 'beta', 'stable']).optional(),
+  mergeMethod: z.enum(['merge', 'squash', 'rebase']).optional(),
+  releaseOnly: z.boolean().optional(),
 });
 
 export const ServerInput = z.object({
@@ -1274,6 +1334,7 @@ export const MacPortInput = z.object({
 
 export const SubagentInput = z.object({
   ...requestFields,
+  ...dryRunField,
   action: z.enum(['run', 'start', 'status', 'wait', 'logs', 'cancel']).optional(),
   provider: z.enum(['codex', 'pi', 'opencode', 'grok']).optional(),
   model: optionalString,
@@ -1312,6 +1373,28 @@ export const schemaRegistry = {
   ArtifactsDigitalEguideInput,
   DailySchedulesPublishInput,
   MediaSvgInput,
+  MediaAngleMeasureInput,
+  MediaAudioExtractInput,
+  MediaAudioNormalizeInput,
+  MediaBreakdownPlanInput,
+  MediaCameraMotionInput,
+  MediaClipSearchInput,
+  MediaComposeInput,
+  MediaDoctorInput,
+  MediaExportInput,
+  MediaFramesExtractInput,
+  MediaIngestInput,
+  MediaInstallInput,
+  MediaMotionTrackInput,
+  MediaObjectTrackInput,
+  MediaOverlayRenderInput,
+  MediaPoseEstimateInput,
+  MediaProbeInput,
+  MediaQaInput,
+  MediaSceneDetectInput,
+  MediaSportsScienceMetricsInput,
+  MediaTimelineValidateInput,
+  MediaTranscribeInput,
   CodeRunInput,
   CodeCallInput,
   WorkflowIntentInput,
@@ -1353,6 +1436,7 @@ export const schemaRegistry = {
   PrReviewInput,
   AiReviewInput,
   GhInput,
+  GoogleInput,
   GithubInput,
   GitDiffInput,
   BrowserInput,
@@ -1404,6 +1488,7 @@ export const schemaRegistry = {
   RailwayRedeployInput,
   WebsiteDeployInput,
   LifecycleUpdateInput,
+  ReleaseInput,
   ServerInput,
   CheckFilesInput,
   EditFlowInput,
@@ -1434,6 +1519,28 @@ export const schemaTypeSignatures: Record<string, string> = {
   ArtifactsDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   DailySchedulesPublishInput: '{ kind: "security-scan" | "security-workpad" | "self-healing-workpad"; sourceFile?: string; content?: string; format?: "auto" | "json" | "markdown" | "text"; date?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaSvgInput: '{ action: \"create\" | \"inspect\" | \"render\" | \"measure\" | \"edit\" | \"verify\" | \"snapshot\" | \"restore\"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: \"png\"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: \"light\" | \"dark\" | \"no-preference\" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaAngleMeasureInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaAudioExtractInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaAudioNormalizeInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaBreakdownPlanInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaCameraMotionInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaClipSearchInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaComposeInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaDoctorInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaExportInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaFramesExtractInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaIngestInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaInstallInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaMotionTrackInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaObjectTrackInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaOverlayRenderInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaPoseEstimateInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaProbeInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaQaInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaSceneDetectInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaSportsScienceMetricsInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaTimelineValidateInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaTranscribeInput: '{ input: string; mode?: \"fixture\" | \"whisper.cpp\" | \"openai-whisper\"; fixtureText?: string; language?: string; model?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"artifacts\" | \"media\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1462,7 +1569,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   MemoryListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
   MemorySaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MemoryTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
-  ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
+  ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; detail?: \"compact\" | \"full\"; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
   ConfirmInput: '{ verify?: boolean; test?: string; requestId?: string; taskSession?: string }',
@@ -1475,6 +1582,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  GoogleInput: '{ action: "status" | "connect" | "run"; args?: string[]; account?: string; mode?: "read" | "write"; approved?: boolean; approvalReason?: string; timeoutMs?: number; requestId?: string; taskSession?: string }',
   GithubInput: '{ operation: \"pr.view\" | \"pr.checks\" | \"pr.reviews\" | \"pr.files\" | \"pr.diff\" | \"pr.list\" | \"pr.merge\" | \"branch.compare\" | \"repo.view\" | \"raw\"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: \"summary\" | \"review\" | \"merge\" | \"checks\" | \"files\" | \"full\"; fields?: string[]; limit?: number; state?: \"open\" | \"closed\" | \"merged\" | \"all\"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: \"merge\" | \"squash\" | \"rebase\"; rawArgs?: string[]; args?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GitDiffInput: '{ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1525,7 +1633,8 @@ export const schemaTypeSignatures: Record<string, string> = {
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  LifecycleUpdateInput: '{ channel?: "stable" | "beta" | "canary" | "dev" | "nightly"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  LifecycleUpdateInput: '{ channel?: "stable" | "beta" | "canary" | "dev" | "nightly"; version?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ReleaseInput: '{ pr: number; repo?: string; channel?: "dev" | "canary" | "beta" | "stable"; mergeMethod?: "merge" | "squash" | "rebase"; releaseOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ServerInput: '{ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CheckFilesInput: '{ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }',
   EditFlowInput: '{ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1536,7 +1645,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   MacListInput: '{ path?: string; depth?: number; requestId?: string; taskSession?: string }',
   MacProcessInput: '{ action: "list" | "kill"; pid?: number; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MacPortInput: '{ action: "check" | "find"; port?: number; requestId?: string; taskSession?: string }',
-  SubagentInput: '{ action?: "run" | "start" | "status" | "wait" | "logs" | "cancel"; provider?: "codex" | "pi" | "opencode" | "grok"; model?: string; reasoningEffort?: "minimal" | "low" | "medium" | "high" | "xhigh"; bundle?: "core" | "media"; policy?: "read" | "edit"; instructionPath?: string; cwd?: string; runId?: string; waitMs?: number; taskSession?: string; timeoutMs?: number; outputFormat?: "text" | "json"; workspaceOnly?: boolean | "preferred" | "strict"; requestId?: string }',
+  SubagentInput: '{ action?: "run" | "start" | "status" | "wait" | "logs" | "cancel"; provider?: "codex" | "pi" | "opencode" | "grok"; model?: string; reasoningEffort?: "minimal" | "low" | "medium" | "high" | "xhigh"; bundle?: "core" | "media"; policy?: "read" | "edit"; instructionPath?: string; cwd?: string; runId?: string; waitMs?: number; taskSession?: string; timeoutMs?: number; outputFormat?: "text" | "json"; workspaceOnly?: boolean | "preferred" | "strict"; dryRun?: boolean; requestId?: string }',
 };
 
 export const outputTypeSignatures: Record<string, string> = {

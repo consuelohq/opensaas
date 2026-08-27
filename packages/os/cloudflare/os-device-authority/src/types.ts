@@ -49,6 +49,7 @@ export type Grant = {
   devicePublicKeyThumbprint: string;
   lastPoll?: number;
   accountId?: string;
+  accountEmail?: string;
   accountAuthMethod?: StrongerAuthMethod;
   connectorToken?: string;
   connectorExpiresAt?: number;
@@ -331,6 +332,43 @@ export type McpOAuthRefreshToken = {
   issuedAt: number;
 };
 
+export type GitHubSourceControlRepository = {
+  id: number;
+  nameWithOwner: string;
+  defaultBranch: string;
+};
+
+export type GitHubSourceControlInstallState = {
+  state: string;
+  workspaceId: string;
+  workspaceHost: string;
+  nodeId: string;
+  returnPath: string;
+  expiresAt: number;
+};
+
+export type GitHubSourceControlConnection = {
+  connectionId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  installationId: number;
+  accountLogin: string;
+  repositorySelection: 'all' | 'selected';
+  repositories: GitHubSourceControlRepository[];
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type GitHubSourceControlHandoff = {
+  tokenHash: string;
+  connectionId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  nodeId: string;
+  returnPath: string;
+  expiresAt: number;
+};
+
 export type WorkspaceRouteRegistryBinding = WorkspaceRouteD1Database;
 export type DefaultSiteSnapshot = {
   key: string;
@@ -390,6 +428,18 @@ export type Store = {
     tokenHash: string,
   ): Promise<McpOAuthRefreshToken | undefined>;
   delMcpOAuthRefreshToken(tokenHash: string): Promise<void>;
+  putGitHubSourceControlInstallState(state: GitHubSourceControlInstallState): Promise<void>;
+  byGitHubSourceControlInstallState(state: string): Promise<GitHubSourceControlInstallState | undefined>;
+  delGitHubSourceControlInstallState(state: string): Promise<void>;
+  putGitHubSourceControlConnection(connection: GitHubSourceControlConnection): Promise<void>;
+  byGitHubSourceControlConnection(connectionId: string): Promise<GitHubSourceControlConnection | undefined>;
+  putGitHubSourceControlHandoff(handoff: GitHubSourceControlHandoff): Promise<void>;
+  consumeGitHubSourceControlHandoff(input: {
+    tokenHash: string;
+    workspaceId: string;
+    nodeId: string;
+    nowMs: number;
+  }): Promise<GitHubSourceControlHandoff | undefined>;
   putAccountWorkspace(workspace: AccountWorkspace): Promise<void>;
   byAccountWorkspace(accountId: string): Promise<AccountWorkspace | undefined>;
   resetWorkspaceEnrollment(input: {
@@ -541,6 +591,11 @@ export type Env = {
   OS_DEVICE_AUTH_ASSERTION_SECRET?: string;
   GOOGLE_OAUTH_CLIENT_ID?: string;
   GOOGLE_OAUTH_CLIENT_SECRET?: string;
+  GOOGLE_WORKSPACE_OAUTH_CLIENT_ID?: string;
+  GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET?: string;
+  GITHUB_APP_ID?: string;
+  GITHUB_APP_SLUG?: string;
+  GITHUB_APP_PRIVATE_KEY?: string;
   WORKSPACE_ROUTE_REGISTRY?: WorkspaceRouteRegistryBinding;
   WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?: string;
   OS_ENROLLMENT_RESET_SECRET?: string;
@@ -597,6 +652,7 @@ export type CheckoutTelemetryEvent = {
   errorCode?: string;
   durationMs?: number;
   cloudflareRayId?: string;
+  dedupeKey?: string;
 };
 
 export type CheckoutObservability = {
@@ -627,6 +683,11 @@ export type DeviceAuthorityRuntime = {
   approvalAssertionSecret?: string;
   googleOAuthClientId?: string;
   googleOAuthClientSecret?: string;
+  googleWorkspaceOAuthClientId?: string;
+  googleWorkspaceOAuthClientSecret?: string;
+  githubAppId?: string;
+  githubAppSlug?: string;
+  githubAppPrivateKey?: string;
   fetchImpl: typeof fetch;
   workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;

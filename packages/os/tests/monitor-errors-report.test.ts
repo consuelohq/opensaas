@@ -72,4 +72,55 @@ describe('monitor errors report trace selection', () => {
       await rm(home, { recursive: true, force: true });
     }
   });
+
+  it('does not let the latest deterministic caller failure absorb unrelated failures with the same tool and code', async () => {
+    const home = await mkdtemp(path.join(os.tmpdir(), 'consuelo-monitor-errors-'));
+    const env = { CONSUELO_HOME: home, CONSUELO_TRACE_DB: '', TRACE_DB: '' };
+    try {
+      for (let index = 0; index < 3; index += 1) {
+        expect(recordToolTraceSafely({
+          traceId: `trc_search_runtime_${index}`,
+          source: 'test',
+          tool: 'fs.search',
+          taskSession: `tsk_runtime_${index}`,
+          branch: `task/test/runtime-${index}`,
+          status: 'error',
+          ok: false,
+          code: 'COMMAND_FAILED',
+          stderr: 'error: search failed: ripgrep exited without a status',
+        }, { env })).toBe(true);
+      }
+      expect(recordToolTraceSafely({
+        traceId: 'trc_search_missing_path',
+        source: 'test',
+        tool: 'fs.search',
+        taskSession: 'tsk_caller',
+        branch: 'task/test/caller',
+        status: 'error',
+        ok: false,
+        code: 'COMMAND_FAILED',
+        stderr: 'error: search failed: rg: packages/os/missing: No such file or directory (os error 2)',
+      }, { env })).toBe(true);
+
+      const report = buildMonitorErrorsReport({ home, env });
+
+      expect(report.groups).toHaveLength(2);
+      expect(report.groups).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          classification: 'defect-candidate',
+          actionable: true,
+          occurrences: 3,
+        }),
+        expect.objectContaining({
+          traceId: 'trc_search_missing_path',
+          classification: 'caller-input',
+          actionable: false,
+          occurrences: 1,
+        }),
+      ]));
+      expect(report.groups.every((group) => !Object.hasOwn(group, 'stderr'))).toBe(true);
+    } finally {
+      await rm(home, { recursive: true, force: true });
+    }
+  });
 });

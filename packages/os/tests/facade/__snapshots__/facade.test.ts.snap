@@ -1037,6 +1037,23 @@ exports[`typed facade executor > returns a failure envelope for github 1`] = `
 }
 `;
 
+exports[`typed facade executor > returns a failure envelope for google 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a failure envelope for http 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -1363,14 +1380,16 @@ exports[`typed facade executor > returns a failure envelope for mac.write 1`] = 
 exports[`typed facade executor > returns a failure envelope for media.angle.measure 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaAngleMeasureInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1378,14 +1397,16 @@ exports[`typed facade executor > returns a failure envelope for media.angle.meas
 exports[`typed facade executor > returns a failure envelope for media.audio.extract 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaAudioExtractInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1393,14 +1414,16 @@ exports[`typed facade executor > returns a failure envelope for media.audio.extr
 exports[`typed facade executor > returns a failure envelope for media.audio.normalize 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaAudioNormalizeInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1408,14 +1431,16 @@ exports[`typed facade executor > returns a failure envelope for media.audio.norm
 exports[`typed facade executor > returns a failure envelope for media.breakdown.plan 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaBreakdownPlanInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1423,14 +1448,16 @@ exports[`typed facade executor > returns a failure envelope for media.breakdown.
 exports[`typed facade executor > returns a failure envelope for media.camera.motion 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaCameraMotionInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1438,14 +1465,16 @@ exports[`typed facade executor > returns a failure envelope for media.camera.mot
 exports[`typed facade executor > returns a failure envelope for media.clip.search 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaClipSearchInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1453,14 +1482,16 @@ exports[`typed facade executor > returns a failure envelope for media.clip.searc
 exports[`typed facade executor > returns a failure envelope for media.compose 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaComposeInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1468,14 +1499,16 @@ exports[`typed facade executor > returns a failure envelope for media.compose 1`
 exports[`typed facade executor > returns a failure envelope for media.doctor 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaDoctorInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1483,14 +1516,16 @@ exports[`typed facade executor > returns a failure envelope for media.doctor 1`]
 exports[`typed facade executor > returns a failure envelope for media.export 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaExportInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1498,14 +1533,16 @@ exports[`typed facade executor > returns a failure envelope for media.export 1`]
 exports[`typed facade executor > returns a failure envelope for media.frames.extract 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaFramesExtractInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1513,14 +1550,16 @@ exports[`typed facade executor > returns a failure envelope for media.frames.ext
 exports[`typed facade executor > returns a failure envelope for media.ingest 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaIngestInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1528,14 +1567,16 @@ exports[`typed facade executor > returns a failure envelope for media.ingest 1`]
 exports[`typed facade executor > returns a failure envelope for media.install 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaInstallInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1543,14 +1584,16 @@ exports[`typed facade executor > returns a failure envelope for media.install 1`
 exports[`typed facade executor > returns a failure envelope for media.motion.track 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaMotionTrackInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1558,14 +1601,16 @@ exports[`typed facade executor > returns a failure envelope for media.motion.tra
 exports[`typed facade executor > returns a failure envelope for media.object.track 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaObjectTrackInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1573,14 +1618,16 @@ exports[`typed facade executor > returns a failure envelope for media.object.tra
 exports[`typed facade executor > returns a failure envelope for media.overlay.render 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaOverlayRenderInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1588,14 +1635,16 @@ exports[`typed facade executor > returns a failure envelope for media.overlay.re
 exports[`typed facade executor > returns a failure envelope for media.pose.estimate 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaPoseEstimateInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1603,14 +1652,16 @@ exports[`typed facade executor > returns a failure envelope for media.pose.estim
 exports[`typed facade executor > returns a failure envelope for media.probe 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaProbeInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1618,14 +1669,16 @@ exports[`typed facade executor > returns a failure envelope for media.probe 1`] 
 exports[`typed facade executor > returns a failure envelope for media.qa 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaQaInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1633,14 +1686,16 @@ exports[`typed facade executor > returns a failure envelope for media.qa 1`] = `
 exports[`typed facade executor > returns a failure envelope for media.scene.detect 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaSceneDetectInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1665,14 +1720,16 @@ exports[`typed facade executor > returns a failure envelope for media.screenshot
 exports[`typed facade executor > returns a failure envelope for media.sports-science.metrics 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaSportsScienceMetricsInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1714,14 +1771,16 @@ exports[`typed facade executor > returns a failure envelope for media.svg.conver
 exports[`typed facade executor > returns a failure envelope for media.timeline.validate 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaTimelineValidateInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1729,14 +1788,16 @@ exports[`typed facade executor > returns a failure envelope for media.timeline.v
 exports[`typed facade executor > returns a failure envelope for media.transcribe 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaTranscribeInput",
+  "exitCode": 2,
+  "message": "command failed",
   "now": "1970-01-01T00:00:01.000Z",
   "ok": false,
-  "stderr": "",
+  "stderr": "boom",
   "traceId": "trc_abc123def456",
 }
 `;
@@ -1776,6 +1837,23 @@ exports[`typed facade executor > returns a failure envelope for monitor.errors 1
 `;
 
 exports[`typed facade executor > returns a failure envelope for prReview 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for release 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -1946,6 +2024,23 @@ exports[`typed facade executor > returns a failure envelope for sentry.trace 1`]
 `;
 
 exports[`typed facade executor > returns a failure envelope for server 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for session.start 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "COMMAND_FAILED",
@@ -3237,6 +3332,23 @@ exports[`typed facade executor > returns a success envelope for github 1`] = `
 }
 `;
 
+exports[`typed facade executor > returns a success envelope for google 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a success envelope for http 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -3563,13 +3675,15 @@ exports[`typed facade executor > returns a success envelope for mac.write 1`] = 
 exports[`typed facade executor > returns a success envelope for media.angle.measure 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaAngleMeasureInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3578,13 +3692,15 @@ exports[`typed facade executor > returns a success envelope for media.angle.meas
 exports[`typed facade executor > returns a success envelope for media.audio.extract 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaAudioExtractInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3593,13 +3709,15 @@ exports[`typed facade executor > returns a success envelope for media.audio.extr
 exports[`typed facade executor > returns a success envelope for media.audio.normalize 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaAudioNormalizeInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3608,13 +3726,15 @@ exports[`typed facade executor > returns a success envelope for media.audio.norm
 exports[`typed facade executor > returns a success envelope for media.breakdown.plan 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaBreakdownPlanInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3623,13 +3743,15 @@ exports[`typed facade executor > returns a success envelope for media.breakdown.
 exports[`typed facade executor > returns a success envelope for media.camera.motion 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaCameraMotionInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3638,13 +3760,15 @@ exports[`typed facade executor > returns a success envelope for media.camera.mot
 exports[`typed facade executor > returns a success envelope for media.clip.search 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaClipSearchInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3653,13 +3777,15 @@ exports[`typed facade executor > returns a success envelope for media.clip.searc
 exports[`typed facade executor > returns a success envelope for media.compose 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaComposeInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3668,13 +3794,15 @@ exports[`typed facade executor > returns a success envelope for media.compose 1`
 exports[`typed facade executor > returns a success envelope for media.doctor 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaDoctorInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3683,13 +3811,15 @@ exports[`typed facade executor > returns a success envelope for media.doctor 1`]
 exports[`typed facade executor > returns a success envelope for media.export 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaExportInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3698,13 +3828,15 @@ exports[`typed facade executor > returns a success envelope for media.export 1`]
 exports[`typed facade executor > returns a success envelope for media.frames.extract 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaFramesExtractInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3713,13 +3845,15 @@ exports[`typed facade executor > returns a success envelope for media.frames.ext
 exports[`typed facade executor > returns a success envelope for media.ingest 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaIngestInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3728,13 +3862,15 @@ exports[`typed facade executor > returns a success envelope for media.ingest 1`]
 exports[`typed facade executor > returns a success envelope for media.install 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaInstallInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3743,13 +3879,15 @@ exports[`typed facade executor > returns a success envelope for media.install 1`
 exports[`typed facade executor > returns a success envelope for media.motion.track 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaMotionTrackInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3758,13 +3896,15 @@ exports[`typed facade executor > returns a success envelope for media.motion.tra
 exports[`typed facade executor > returns a success envelope for media.object.track 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaObjectTrackInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3773,13 +3913,15 @@ exports[`typed facade executor > returns a success envelope for media.object.tra
 exports[`typed facade executor > returns a success envelope for media.overlay.render 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaOverlayRenderInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3788,13 +3930,15 @@ exports[`typed facade executor > returns a success envelope for media.overlay.re
 exports[`typed facade executor > returns a success envelope for media.pose.estimate 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaPoseEstimateInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3803,13 +3947,15 @@ exports[`typed facade executor > returns a success envelope for media.pose.estim
 exports[`typed facade executor > returns a success envelope for media.probe 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaProbeInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3818,13 +3964,15 @@ exports[`typed facade executor > returns a success envelope for media.probe 1`] 
 exports[`typed facade executor > returns a success envelope for media.qa 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaQaInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3833,13 +3981,15 @@ exports[`typed facade executor > returns a success envelope for media.qa 1`] = `
 exports[`typed facade executor > returns a success envelope for media.scene.detect 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaSceneDetectInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3865,13 +4015,15 @@ exports[`typed facade executor > returns a success envelope for media.screenshot
 exports[`typed facade executor > returns a success envelope for media.sports-science.metrics 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaSportsScienceMetricsInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3914,13 +4066,15 @@ exports[`typed facade executor > returns a success envelope for media.svg.conver
 exports[`typed facade executor > returns a success envelope for media.timeline.validate 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaTimelineValidateInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3929,13 +4083,15 @@ exports[`typed facade executor > returns a success envelope for media.timeline.v
 exports[`typed facade executor > returns a success envelope for media.transcribe 1`] = `
 {
   "apiVersion": "1.0.0",
-  "code": "VALIDATION_ERROR",
-  "data": null,
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
   "durationMs": 0,
-  "exitCode": 1,
-  "message": "missing input schema: MediaTranscribeInput",
+  "exitCode": 0,
+  "message": "command completed",
   "now": "1970-01-01T00:00:01.000Z",
-  "ok": false,
+  "ok": true,
   "stderr": "",
   "traceId": "trc_abc123def456",
 }
@@ -3976,6 +4132,23 @@ exports[`typed facade executor > returns a success envelope for monitor.errors 1
 `;
 
 exports[`typed facade executor > returns a success envelope for prReview 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for release 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",
@@ -4146,6 +4319,23 @@ exports[`typed facade executor > returns a success envelope for sentry.trace 1`]
 `;
 
 exports[`typed facade executor > returns a success envelope for server 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "now": "1970-01-01T00:00:01.000Z",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for session.start 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",

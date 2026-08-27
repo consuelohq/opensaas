@@ -46,7 +46,34 @@ function toolContracts(): Map<string, MonitorToolContract> {
   return contracts;
 }
 
-function aggregate(rows: TraceRow[]): MonitorTraceFailure[] {
+function toFailure(row: TraceRow): MonitorTraceFailure {
+  return {
+    traceId: row.trace_id,
+    ts: row.ts,
+    tool: row.tool,
+    code: row.code ?? row.status ?? 'UNKNOWN',
+    status: row.status ?? 'error',
+    ...(row.branch ? { branch: row.branch } : {}),
+    ...(row.task_session ? { taskSession: row.task_session } : {}),
+    ...(row.stderr ? { stderr: row.stderr } : {}),
+  };
+}
+
+function deterministicClassificationKey(
+  row: TraceRow,
+  contract: MonitorToolContract | undefined,
+): string {
+  const preliminary = classifyTraceFailure(toFailure(row), contract);
+  if (preliminary.classification === 'expected-policy' || preliminary.classification === 'caller-input') {
+    return `${preliminary.classification}\u0000${preliminary.reason}`;
+  }
+  return 'unclassified';
+}
+
+function aggregate(
+  rows: TraceRow[],
+  contracts: Map<string, MonitorToolContract>,
+): MonitorTraceFailure[] {
   const grouped = new Map<string, {
     latest: TraceRow;
     occurrences: number;
@@ -55,7 +82,7 @@ function aggregate(rows: TraceRow[]): MonitorTraceFailure[] {
   }>();
   for (const row of rows) {
     const code = (row.code ?? row.status ?? 'UNKNOWN').trim() || 'UNKNOWN';
-    const key = `${row.tool}\u0000${code}`;
+    const key = `${row.tool}\u0000${code}\u0000${deterministicClassificationKey(row, contracts.get(row.tool))}`;
     const existing = grouped.get(key);
     const next = existing ?? {
       latest: row,
@@ -107,7 +134,7 @@ export function buildMonitorErrorsReport(options: {
       LIMIT 10000
     `).all();
     const contracts = toolContracts();
-    const groups = aggregate(rows)
+    const groups = aggregate(rows, contracts)
       .map((failure) => classifyTraceFailure(failure, contracts.get(failure.tool)))
       .map(withoutRawStderr)
       .sort((left, right) => {

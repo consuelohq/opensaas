@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_b20d98d89455",
+  "tmuxSession": "opensaas-workspace-agents-fix-workspace-contract-gate-for-browser-release-b20d98d8",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
+  "branch": "task/workspace-agents/fix-workspace-contract-gate-for-browser-release",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-workspace-contract-gate-for-browser-release",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-workspace-contract-gate-for-browser-release",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2207,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2207",
+  "createdAt": "2026-08-26T05:42:50.807Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-workspace-contract-gate-for-browser-release/.task/workspace-agents/fix-workspace-contract-gate-for-browser-release/session.json"
+}

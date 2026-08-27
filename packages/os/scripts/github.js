@@ -2,7 +2,7 @@
 
 const { execFileSync } = require('child_process');
 const { DEFAULT_REPO, collectPrReview, createPrReviewJson } = require('./lib/pr-review-collector');
-const { resolveGitHubCli } = require('./lib/github');
+const { resolveGitHubCliPath } = require('./lib/github-cli.ts');
 
 const PRESET_FIELDS = {
   summary: ['number', 'title', 'url', 'headRefName', 'baseRefName', 'state'],
@@ -92,8 +92,7 @@ function requirePr(args) {
 function gh(args, options = {}) {
   const command = ['gh', ...args];
   if (options.dryRun) return { command, stdout: '', data: null };
-  const executable = resolveGitHubCli();
-  const stdout = execFileSync(executable, args, { encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 }).trim();
+  const stdout = execFileSync(resolveGitHubCliPath(), args, { encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 }).trim();
   return { command, stdout, data: parseMaybeJson(stdout) };
 }
 
@@ -475,7 +474,6 @@ function prFiles(args) {
 
 function prDiff(args) {
   const command = ['pr', 'diff', requirePr(args), '--repo', args.repo];
-  if (!args.full) command.push('--stat');
   const result = gh(command, { dryRun: args.dryRun });
   output(args.operation, args, result, { full: Boolean(args.full) });
 }

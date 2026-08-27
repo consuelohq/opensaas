@@ -9,6 +9,7 @@ import {
   traceGatewayScopeFromHeaders,
 } from '../scripts/lib/trace-sites-gateway-live-endpoints';
 import { createLocalTraceSitesReadBackend } from '../scripts/lib/trace-sites-local-read-backend';
+import { openTraceDatabase } from '../scripts/lib/trace-database-schema';
 import { createFixtureTraceSitesReadBackend } from '../scripts/lib/trace-sites-gateway-read-layer';
 import {
   type TraceSitesDashboardEvent,
@@ -53,6 +54,15 @@ const cachedSummary: TraceSitesDashboardSummary = {
   sourceModes: ['local-networked'],
 };
 
+const TRACE_HISTORY_INSERT_SQL = [
+  'INSERT INTO tool_traces (',
+  '  id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch,',
+  '  worktree, status, ok, code, exit_code, duration_ms, input_json,',
+  '  resolved_input_json, result_json, stderr, input_tokens, output_tokens,',
+  '  total_tokens',
+  ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+].join('\n');
+
 function request(path: string): Request {
   return new Request(`https://testing.consuelohq.com${path}`, {
     headers: {
@@ -71,8 +81,7 @@ function request(path: string): Request {
 }
 
 async function createHistoryFixtureDb(dbPath: string): Promise<void> {
-  const { Database } = await import('bun:sqlite');
-  const db = new Database(dbPath);
+  const db = openTraceDatabase(dbPath);
   db.exec(`
     CREATE TABLE tool_traces (
       id TEXT PRIMARY KEY,
@@ -98,14 +107,7 @@ async function createHistoryFixtureDb(dbPath: string): Promise<void> {
       total_tokens INTEGER
     );
   `);
-  const insert = db.prepare(`
-    INSERT INTO tool_traces (
-      id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch,
-      worktree, status, ok, code, exit_code, duration_ms, input_json,
-      resolved_input_json, result_json, stderr, input_tokens, output_tokens,
-      total_tokens
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
+  const insert = db.query(TRACE_HISTORY_INSERT_SQL);
   for (let index = 1; index <= 4; index += 1) {
     insert.run(
       `row_${index}`,
@@ -383,17 +385,9 @@ describe('Trace Sites gateway live endpoints', () => {
       },
     });
 
-    const { Database } = await import('bun:sqlite');
-    const db = new Database(dbPath);
+    const db = openTraceDatabase(dbPath);
     try {
-      db.prepare(`
-        INSERT INTO tool_traces (
-          id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch,
-          worktree, status, ok, code, exit_code, duration_ms, input_json,
-          resolved_input_json, result_json, stderr, input_tokens, output_tokens,
-          total_tokens
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
+      db.query(TRACE_HISTORY_INSERT_SQL).run(
         'row_5',
         '2026-07-11T00:00:05.000Z',
         'trc_history_5',
@@ -534,8 +528,7 @@ describe('Trace Sites gateway live endpoints', () => {
 describe('Trace Sites local trace backend adapter', () => {
   it('reads real local tool trace rows into Trace Sites dashboard events', async () => {
     const dbPath = join(tempDir, 'traces.db');
-    const { Database } = await import('bun:sqlite');
-    const db = new Database(dbPath);
+    const db = openTraceDatabase(dbPath);
     db.exec(`
       CREATE TABLE tool_traces (
         id TEXT,
@@ -593,8 +586,7 @@ describe('Trace Sites local trace backend adapter', () => {
   it('should migrate missing routing columns when rich history reads an older trace database', async () => {
     const dbPath = join(tempDir, 'legacy-history.db');
     await createHistoryFixtureDb(dbPath);
-    const { Database } = await import('bun:sqlite');
-    const before = new Database(dbPath, { readonly: true });
+    const before = openTraceDatabase(dbPath);
     const beforeColumns = (before.query('PRAGMA table_info(tool_traces)').all() as Array<{ name: string }>)
       .map((column) => column.name);
     before.close();
@@ -612,7 +604,7 @@ describe('Trace Sites local trace backend adapter', () => {
     });
 
     expect(page.rows.map((historyRow) => historyRow.recordId)).toEqual(['row_3', 'row_2']);
-    const after = new Database(dbPath, { readonly: true });
+    const after = openTraceDatabase(dbPath);
     const afterColumns = (after.query('PRAGMA table_info(tool_traces)').all() as Array<{ name: string }>)
       .map((column) => column.name);
     after.close();

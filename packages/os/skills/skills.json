@@ -100,6 +100,34 @@
       "subskills": []
     },
     {
+      "name": "google",
+      "title": "Google",
+      "description": "Use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through Consuelo OS with first-use Google authorization and saved account access.",
+      "trigger": "use when the user asks to read, search, create, edit, send, schedule, upload, or otherwise work with Google Workspace data in Gmail, Calendar, Drive, Docs, Sheets, or Contacts",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "skills/google/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "google-workspace",
+        "gmail",
+        "calendar",
+        "drive",
+        "docs",
+        "sheets",
+        "contacts"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
       "name": "handoff",
       "title": "Handoff",
       "description": "Use this skill when the user asks to create, read, update, search, summarize, or continue from handoff/context records so another agent or future session can pick up the work safely.",

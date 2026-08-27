@@ -475,7 +475,6 @@ function prFiles(args) {
 
 function prDiff(args) {
   const command = ['pr', 'diff', requirePr(args), '--repo', args.repo];
-  if (!args.full) command.push('--stat');
   const result = gh(command, { dryRun: args.dryRun });
   output(args.operation, args, result, { full: Boolean(args.full) });
 }

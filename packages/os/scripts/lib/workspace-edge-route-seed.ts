@@ -67,7 +67,6 @@ const SITE_SNAPSHOT_ROUTES: ReadonlyArray<{
   siteId: WorkspaceSiteSnapshotId;
 }> = [
   { pathPrefix: '/', siteId: 'launcher' },
-  { pathPrefix: '/artifacts', siteId: 'artifacts' },
   { pathPrefix: '/observability', siteId: 'traces' },
   { pathPrefix: '/observability/traces', siteId: 'traces' },
   { pathPrefix: '/traces', siteId: 'traces' },
@@ -281,6 +280,18 @@ const buildTraceGatewayRoutes = (): WorkspaceRouteD1Route[] => [
 const buildConfigurationGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
+    pathPrefix: '/gateway/configuration/source-control/github',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'configuration-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/configuration/*',
+      publicSiteRouteFamily: '/configuration/*',
+    },
+  },
+  {
+    surface: 'sites',
     pathPrefix: '/gateway/configuration/overlay',
     auth: 'workspace-session',
     status: 'active',
@@ -371,6 +382,18 @@ const buildEnvironmentGatewayRoutes = (): WorkspaceRouteD1Route[] => [
 const buildSecretGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
+    pathPrefix: '/gateway/secrets/install',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'secrets-sites-write-endpoints',
+      gatewayRouteFamily: '/gateway/secrets/*',
+      publicSiteRouteFamily: '/secrets/*',
+    },
+  },
+  {
+    surface: 'sites',
     pathPrefix: '/gateway/secrets',
     auth: 'workspace-session',
     status: 'active',
@@ -384,6 +407,18 @@ const buildSecretGatewayRoutes = (): WorkspaceRouteD1Route[] => [
 ];
 
 const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
+  {
+    surface: 'sites',
+    pathPrefix: '/artifacts',
+    auth: 'workspace-session',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'artifacts-sites-read-layer',
+      gatewayRouteFamily: '/gateway/artifacts/*',
+      publicSiteRouteFamily: '/artifacts/*',
+    },
+  },
   {
     surface: 'sites',
     pathPrefix: '/gateway/artifacts',

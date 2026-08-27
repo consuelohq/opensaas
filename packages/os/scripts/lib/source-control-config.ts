@@ -202,6 +202,15 @@ export type WorkspaceSourceControlConfigurationInput = {
   }>;
 };
 
+export type GitHubInstallationSourceControlInput = {
+  connectionRef: string;
+  repositories: Array<{
+    id: number;
+    nameWithOwner: string;
+    defaultBranch: string;
+  }>;
+};
+
 
 export function parseWorkspaceSourceControlConfiguration(
   value: unknown,
@@ -310,4 +319,49 @@ export function updateWorkspaceSourceControlConfiguration(input: {
   const snapshot = buildWorkspaceSourceControlSnapshot(next);
   writeYamlConfig(configPath, next, false);
   return snapshot;
+}
+
+export function updateWorkspaceSourceControlFromGitHubInstallation(input: {
+  home: string;
+  workspaceId: string;
+  installation: GitHubInstallationSourceControlInput;
+}): WorkspaceSourceControlSnapshot {
+  const workspaceId = trimmedRequired(input.workspaceId, 'workspace id');
+  const layout = resolveConsueloHomeLayout(input.home);
+  const configPath = layout.workspaceConfigPath(workspaceId);
+  const current = loadWorkspaceYamlConfig(configPath);
+  if (current.workspace.id !== workspaceId) {
+    throw new Error(`workspace configuration identity mismatch: expected ${workspaceId}`);
+  }
+  const connectionRef = trimmedRequired(input.installation.connectionRef, 'source-control connection');
+  const existingByRepository = new Map(
+    current.projects.map((project) => [
+      `${project.provider.trim().toLowerCase()}:${project.repo.trim().toLowerCase()}`,
+      project,
+    ]),
+  );
+  const repositories: WorkspaceSourceControlConfigurationInput['repositories'] =
+    input.installation.repositories.map((repository) => {
+      const nameWithOwner = trimmedRequired(repository.nameWithOwner, 'GitHub repository');
+      const existing = existingByRepository.get(`github:${nameWithOwner.toLowerCase()}`);
+      return {
+        id: existing?.id ?? `github-${repository.id}`,
+        ...(existing?.name ? { name: existing.name } : {}),
+        provider: 'github',
+        nameWithOwner,
+        defaultBranch: trimmedRequired(repository.defaultBranch, `default branch for ${nameWithOwner}`),
+        connectionRef,
+        codeRoots: [...(existing?.codeRoots ?? [])],
+      };
+    });
+  const authorizedIds = new Set(repositories.map((repository) => repository.id));
+  const currentDefault = current.defaults.project;
+  const defaultRepositoryId = currentDefault && authorizedIds.has(currentDefault)
+    ? currentDefault
+    : repositories[0]?.id ?? null;
+  return updateWorkspaceSourceControlConfiguration({
+    home: input.home,
+    workspaceId,
+    configuration: { defaultRepositoryId, repositories },
+  });
 }

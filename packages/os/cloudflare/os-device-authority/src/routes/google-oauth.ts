@@ -3,7 +3,10 @@ import type { Hono } from 'hono';
 import { TTL_MS } from '../constants';
 import { json, methodNotAllowed, page, text } from '../http';
 import { normalizeAuthReturnPath } from '../security/web-auth-contract';
-import { resolveCanonicalDeviceIdentity } from '../services/canonical-device-identity';
+import {
+  describeCanonicalDeviceIdentityDenial,
+  resolveCanonicalDeviceIdentity,
+} from '../services/canonical-device-identity';
 import {
   CloudFirstOnboardingError,
   resolveCanonicalWebUser,
@@ -28,6 +31,18 @@ import { registerApprovedWorkspaceRoute } from '../services/connectors';
 import { recordCanonicalInstallIdentity } from '../services/install-identity';
 import { finishMcpOAuthGoogleCallback } from '../services/mcp-oauth';
 import { accountNotFoundPage, completeWebGoogleLogin } from './web-auth';
+
+function deviceAuthorizationCorrelationId(request: Request): string {
+  const cloudflareRayId = request.headers.get('cf-ray')?.trim();
+  if (
+    cloudflareRayId &&
+    cloudflareRayId.length <= 128 &&
+    /^[A-Za-z0-9._:-]+$/.test(cloudflareRayId)
+  ) {
+    return cloudflareRayId;
+  }
+  return rand('device_auth', 12);
+}
 
 async function handleGoogleOAuthRequest(
   request: Request,
@@ -264,14 +279,23 @@ async function handleGoogleOAuthRequest(
       });
       if (canonicalIdentity.status === 'denied') {
         await input.store.delOAuthState(stateValue);
+        const denial = describeCanonicalDeviceIdentityDenial(
+          canonicalIdentity.reason,
+        );
+        const correlationId = deviceAuthorizationCorrelationId(request);
         return text(
           page({
             code: oauthState.userCode,
             origin,
-            error:
-              'This Google account is not ready for Consuelo OS. Sign in to Consuelo first, then retry device approval.',
+            error: `${denial.message} Error ${denial.code}. Reference ${correlationId}.`,
           }),
-          { status: 403 },
+          {
+            status: denial.status,
+            headers: {
+              'x-consuelo-error-code': denial.code,
+              'x-consuelo-correlation-id': correlationId,
+            },
+          },
         );
       }
       const accountId = canonicalIdentity.operatingAccountId;
@@ -279,6 +303,7 @@ async function handleGoogleOAuthRequest(
       grant.canonicalWorkspaceId = canonicalIdentity.canonicalWorkspaceId;
       grant.workspaceId = canonicalIdentity.canonicalWorkspaceId;
       grant.accountId = accountId;
+      grant.accountEmail = identity.email;
       grant.accountAuthMethod = 'google';
       if (canonicalIdentity.workspaceRoute) {
         assignGrantWorkspace({

@@ -36,6 +36,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | generation | 2 |
 | git | 1 |
 | github | 2 |
+| google | 1 |
 | http | 1 |
 | lifecycle | 2 |
 | linear | 8 |
@@ -43,6 +44,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | media | 25 |
 | memory | 1 |
 | observability | 1 |
+| release | 1 |
 | review | 4 |
 | security | 1 |
 | sentry | 7 |
@@ -1964,7 +1966,7 @@ a repo-aware decision search tool for coding agents. It answers where to spend a
 | Field | Value |
 | --- | --- |
 | Category | decision engine |
-| Signature | `workspace.explore({ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.explore({ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; detail?: "compact" &#124; "full"; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace explore` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 300000ms |
@@ -3187,6 +3189,73 @@ await workspace.call({
 }
 ```
 
+## google
+
+### workspace.google
+
+use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Google Workspace runtime; first use can open Google OAuth and saved authorization is reused
+
+| Field | Value |
+| --- | --- |
+| Category | google |
+| Signature | `workspace.google({ action: "status" &#124; "connect" &#124; "run"; args?: string[]; account?: string; mode?: "read" &#124; "write"; approved?: boolean; approvalReason?: string; timeoutMs?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace google` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 120000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "google",
+  "input": {
+    "action": "run",
+    "args": [
+      "gmail",
+      "search",
+      "newer_than:7d"
+    ],
+    "mode": "read"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## http
 
 ### workspace.http
@@ -3310,12 +3379,12 @@ await workspace.call({
 
 ### workspace.lifecycle.update
 
-update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater
+update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater; optionally require an exact released version
 
 | Field | Value |
 | --- | --- |
 | Category | lifecycle |
-| Signature | `workspace.lifecycle.update({ channel?: "stable" &#124; "beta" &#124; "canary" &#124; "dev" &#124; "nightly"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.lifecycle.update({ channel?: "stable" &#124; "beta" &#124; "canary" &#124; "dev" &#124; "nightly"; version?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace lifecycle.update` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 120000ms |
@@ -5903,6 +5972,68 @@ analyze the last 24 hours of canonical Consuelo OS tool traces and classify poli
 await workspace.call({
   "tool": "monitor.errors",
   "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## release
+
+### workspace.release
+
+release a Consuelo OS PR end-to-end: verify and merge it to main, wait for the exact merged SHA runtime publication, promote that exact immutable bundle through dev/canary/beta/stable as requested, then by default update this node to the exact released version and verify it; use when Ko says release, deploy this PR, release to canary, or release and update
+
+| Field | Value |
+| --- | --- |
+| Category | release |
+| Signature | `workspace.release({ pr: number; repo?: string; channel?: "dev" &#124; "canary" &#124; "beta" &#124; "stable"; mergeMethod?: "merge" &#124; "squash" &#124; "rebase"; releaseOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `workspace release` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 1200000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "release",
+  "input": {
+    "pr": 2185,
+    "channel": "canary"
+  }
 });
 ```
 

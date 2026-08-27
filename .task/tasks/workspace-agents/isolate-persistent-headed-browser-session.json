@@ -1,0 +1,20 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/isolate-persistent-headed-browser-session",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2194,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2194",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2194",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2194/isolate-persistent-headed-browser-session",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2194",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2194/isolate-persistent-headed-browser-session",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-isolate-persistent-headed-browser-session",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e64895e01c02",
+  "tmuxSession": "opensaas-workspace-agents-isolate-persistent-headed-browser-session-e64895e0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-isolate-persistent-headed-browser-session/.task/workspace-agents/isolate-persistent-headed-browser-session/session.json",
+  "createdAt": "2026-08-26T04:22:34.960Z"
+}

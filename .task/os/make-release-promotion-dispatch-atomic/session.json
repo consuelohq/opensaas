@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_728858eaffed",
+  "tmuxSession": "opensaas-os-make-release-promotion-dispatch-atomic-728858ea",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-release-promotion-dispatch-atomic",
+  "branch": "task/os/make-release-promotion-dispatch-atomic",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-release-promotion-dispatch-atomic",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-release-promotion-dispatch-atomic",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2226,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2226",
+  "createdAt": "2026-08-26T18:08:19.147Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-release-promotion-dispatch-atomic/.task/os/make-release-promotion-dispatch-atomic/session.json"
+}
