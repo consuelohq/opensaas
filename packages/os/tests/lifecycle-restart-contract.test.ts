@@ -23,6 +23,23 @@ describe('lifecycle restart parity', () => {
     expect(reload).toContain('startDirect();');
   });
 
+  it('refreshes managed Sites from the active runtime after successful service transitions', () => {
+    const reload = source('scripts/consuelo-reload.js');
+
+    expect(reload).toContain("const SITES_SCRIPT = path.join(OS_DIR, 'scripts', 'os.ts');");
+    expect(reload).toContain('function refreshManagedSitesBestEffort()');
+    expect(reload).toContain("[SITES_SCRIPT, 'sites', 'refresh', '--json']");
+    expect(reload).toMatch(
+      /case 'rolling-reload-now':[\s\S]*refreshManagedSitesBestEffort\(\);[\s\S]*break;/,
+    );
+    expect(reload).toMatch(
+      /case 'reload-now':[\s\S]*refreshManagedSitesBestEffort\(\);[\s\S]*break;/,
+    );
+    expect(reload).toMatch(
+      /case 'restart-now':[\s\S]*refreshManagedSitesBestEffort\(\);[\s\S]*break;/,
+    );
+  });
+
   it('preserves conflicting-label cleanup, TERM-to-KILL escalation, and bounded named health acceptance', () => {
     const reload = source('scripts/consuelo-reload.js');
 
