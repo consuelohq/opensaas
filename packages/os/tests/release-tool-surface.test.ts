@@ -23,6 +23,8 @@ describe('release tool surface', () => {
     });
     expect(release?.definition.description).toContain('release to canary');
     expect(release?.definition.description).toContain('exact released version');
+    expect(release?.definition.description).toContain('main-targeting review PR');
+    expect(Number(release?.definition.defaultTimeout)).toBeGreaterThanOrEqual(4 * 60 * 60_000);
   });
 
   it('validates PR, target channel, release-only, and merge method inputs', () => {

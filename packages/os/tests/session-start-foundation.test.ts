@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createMemoryDeviceGrantStore,
@@ -17,6 +17,9 @@ import {
 } from '../scripts/lib/mcp-gateway';
 import { inspectMcpNodeRoutingBody } from '../scripts/lib/mcp-node-routing';
 import { MCP_ROUTE_SOURCE_HEADER } from '../scripts/lib/mcp-node-routing';
+import { executeTool } from '../scripts/lib/facade/executor';
+import type { CommandPlan } from '../scripts/lib/facade/types';
+import { startTaskSession } from '../scripts/session-start';
 import { createDefaultNodeYamlConfig, resolveConsueloHomeLayout, writeYamlConfig } from '../scripts/lib/consuelo-home';
 import { createWorkSession, readWorkSession } from '../scripts/lib/work-session';
 import {
@@ -62,6 +65,10 @@ describe('session.start foundation', () => {
       inputSchema: 'SessionStartInput',
       sessionRequired: false,
       description: expect.stringMatching(/canonical/i),
+      command: {
+        script: 'session:start',
+        executionScope: 'runtime',
+      },
     });
     expect(definitions.get('task.start')).toMatchObject({
       description: expect.stringMatching(/compatibility alias/i),
@@ -92,6 +99,52 @@ describe('session.start foundation', () => {
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', workflow: 'media' }).success).toBe(false);
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', pr: 2036 }).success).toBe(false);
     expect(schema?.safeParse({ kind: 'work', path: '/tmp/example-work', title: 'not-allowed' }).success).toBe(false);
+  });
+
+  it('should execute session.start from the shipped OS runtime package', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('session.start', {
+      kind: 'work',
+      path: '/tmp/session-runtime-scope',
+    }, {
+      cwd: process.cwd(),
+      runner: async (plan) => {
+        plans.push(plan);
+        return {
+          stdout: JSON.stringify({ workSession: 'wrk_runtime_scope' }),
+          stderr: '',
+          exitCode: 0,
+        };
+      },
+      logMode: 'silent',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(plans).toHaveLength(1);
+    expect(realpathSync(plans[0].cwd)).toBe(realpathSync(join(process.cwd(), 'packages/os')));
+    expect(plans[0].args.slice(0, 3)).toEqual(['run', 'session:start', '--']);
+  });
+
+  it('should preserve the configured project cwd when runtime session.start delegates task creation', async () => {
+    const previousBun = (globalThis as { Bun?: unknown }).Bun;
+    const spawn = vi.fn().mockReturnValue({
+      exited: Promise.resolve(0),
+    });
+    (globalThis as { Bun?: unknown }).Bun = { spawn };
+    try {
+      await startTaskSession({
+        kind: 'task',
+        json: true,
+        forwarded: ['--area', 'workspace-agents', '--title', 'cwd regression', '--json'],
+      }, '/tmp/configured-project-checkout');
+
+      expect(spawn).toHaveBeenCalledTimes(1);
+      expect(spawn.mock.calls[0]?.[1]).toMatchObject({
+        cwd: '/tmp/configured-project-checkout',
+      });
+    } finally {
+      (globalThis as { Bun?: unknown }).Bun = previousBun;
+    }
   });
 
   it('should create metadata-only work sessions when starting ordinary work', () => {

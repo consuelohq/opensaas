@@ -847,6 +847,7 @@
         "outputSchema": "RawOutput",
         "command": {
           "script": "session:start",
+          "executionScope": "runtime",
           "branchMode": "none",
           "arguments": [
             {

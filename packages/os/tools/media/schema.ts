@@ -1275,6 +1275,8 @@ export const toolSchemas = [
       "inputSchema": "MediaTranscribeInput",
       "outputSchema": "MediaTranscript",
       "exampleInput": {
+        "input": "media/input.wav",
+        "mode": "fixture",
         "dryRun": true
       },
       "sessionRequired": false,

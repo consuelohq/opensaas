@@ -78,7 +78,7 @@ function configuredHandler(fetchImpl: typeof fetch) {
     now: () => nowMs,
     fetchImpl,
     githubAppId: '123456',
-    githubAppSlug: 'consuelo-source-control',
+    githubAppSlug: 'consuelo-os',
     githubAppPrivateKey: githubAppPrivateKey(),
   } as Parameters<typeof createOsDeviceAuthorityHandler>[0]);
 }
@@ -159,7 +159,7 @@ describe('GitHub source-control authority', () => {
     const startBody = await start.json() as { installUrl: string };
     const installUrl = new URL(startBody.installUrl);
     expect(installUrl.origin).toBe('https://github.com');
-    expect(installUrl.pathname).toBe('/apps/consuelo-source-control/installations/new');
+    expect(installUrl.pathname).toBe('/apps/consuelo-os/installations/new');
     const state = installUrl.searchParams.get('state');
     expect(state).toMatch(/^ghs_/);
 

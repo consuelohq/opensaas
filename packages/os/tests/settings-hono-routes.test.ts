@@ -222,7 +222,7 @@ describe('Hono Configuration routes', () => {
       const request = input instanceof Request ? input : new Request(input, init);
       authorityCalls.push(request.clone());
       return Response.json({
-        installUrl: 'https://github.com/apps/consuelo-source-control/installations/new?state=ghs_test',
+        installUrl: 'https://github.com/apps/consuelo-os/installations/new?state=ghs_test',
       });
     });
 
@@ -233,10 +233,18 @@ describe('Hono Configuration routes', () => {
       nonce: 'configuration-github-connect-nonce',
     }));
 
-    expect(response.status).toBe(302);
-    expect(response.headers.get('location')).toBe(
-      'https://github.com/apps/consuelo-source-control/installations/new?state=ghs_test',
-    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('content-type')).toContain('text/html');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    const html = await response.text();
+    expect(html).toContain('Opening GitHub…');
+    expect(html).toContain('https://github.com/apps/consuelo-os/installations/new?state=ghs_test');
+    expect(html).toContain('href="/diffs"');
+    expect(html).toContain('requestAnimationFrame');
+    expect(html).toContain('window.location.replace');
+    expect(html).not.toContain('Live trace activity');
+    expect(html).not.toContain('Workspace readiness');
     expect(authorityCalls).toHaveLength(1);
     expect(new URL(authorityCalls[0]!.url).pathname).toBe(
       '/workspace/source-control/github/install/start',
