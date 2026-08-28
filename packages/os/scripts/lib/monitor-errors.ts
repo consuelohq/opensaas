@@ -213,6 +213,38 @@ export function classifyTraceFailure(
   if (code === 'COMMAND_FAILED' && failure.stderr) {
     const stderr = failure.stderr.toLowerCase();
     if (
+      failure.tool === 'github' &&
+      (stderr.includes('cannot cancel a workflow run that is completed') ||
+        stderr.includes('cannot cancel a workflow run that has not been queued yet'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'GitHub rejected a workflow-cancel request because the workflow state did not permit cancellation',
+      );
+    }
+    if (failure.tool === 'release' && stderr.includes('release refuses failed check')) {
+      return classified(
+        failure,
+        'expected-policy',
+        false,
+        'release correctly refused to continue while a required verification check was failing',
+      );
+    }
+    if (
+      failure.tool === 'release' &&
+      stderr.includes('native lifecycle operation') &&
+      stderr.includes('is already active')
+    ) {
+      return classified(
+        failure,
+        'transient',
+        false,
+        'release reached the lifecycle concurrency guard while another native lifecycle operation was still active',
+      );
+    }
+    if (
       (failure.tool === 'fs.write' || failure.tool === 'fs.apply_patch' || failure.tool === 'fs.trash') &&
       (stderr.includes('path_outside_root') || stderr.includes('unsafe mutation path resolves outside allowed root'))
     ) {

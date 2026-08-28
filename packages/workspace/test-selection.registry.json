@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2676,
-    "mappedTestCount": 2596,
-    "unmappedTestCount": 80,
+    "testFileCount": 2677,
+    "mappedTestCount": 2598,
+    "unmappedTestCount": 79,
     "ruleCount": 76,
     "explicitRuleCount": 57,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 291,
+      "packages/os/tests": 292,
       "packages/workspace/tests": 69,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 582,
+      "test": 583,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -2854,11 +2854,16 @@
       "source": [
         "packages/workspace/scripts/stream-sync.js",
         "packages/workspace/scripts/lib/stream-sync-cleanup.js",
+        "packages/workspace/scripts/lib/git.js",
         "packages/os/scripts/stream-sync.js",
         "packages/os/scripts/lib/stream-sync-cleanup.js",
+        "packages/os/scripts/lib/git.js",
         "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
         "packages/workspace/tests/stream-sync-node-modules.test.js",
-        "packages/workspace/tests/stream-sync-repo-option.test.ts"
+        "packages/workspace/tests/stream-sync-repo-option.test.ts",
+        "packages/workspace/tests/task-push-local-sync.test.ts",
+        "packages/os/tests/task-push-local-sync.test.ts",
+        "packages/os/tests/git-fetch-origin-concurrency.test.ts"
       ],
       "tests": [
         {
@@ -2869,13 +2874,15 @@
             "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
             "packages/workspace/tests/stream-sync-node-modules.test.js",
             "packages/workspace/tests/stream-sync-repo-option.test.ts",
-            "packages/workspace/tests/task-push-local-sync.test.ts"
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/git-fetch-origin-concurrency.test.ts"
           ]
         }
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Stream synchronization changes must prove typed facade option compatibility, failed-merge cleanup, temporary worktree lifecycle, node_modules setup ordering, and shared Git task-push invariants without selecting the unrelated package-wide OS baseline.",
+      "reason": "Stream/context synchronization and shared Git helper changes must prove typed facade option compatibility, concurrent fetch recovery, failed-merge cleanup, temporary worktree lifecycle, node_modules setup ordering, and task-push invariants without selecting the unrelated package-wide OS baseline.",
       "origin": "explicit"
     },
     {
@@ -4706,6 +4713,11 @@
     },
     {
       "path": "packages/os/tests/generated-error-code-parity.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/git-fetch-origin-concurrency.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -16752,7 +16764,6 @@
     "packages/workspace/tests/task-meta.test.ts",
     "packages/workspace/tests/task-node-modules.test.js",
     "packages/workspace/tests/task-pr-repository-recovery.test.ts",
-    "packages/workspace/tests/task-push-local-sync.test.ts",
     "packages/workspace/tests/task-push-session.test.ts",
     "packages/workspace/tests/task-selection.test.js",
     "packages/workspace/tests/task-selector-pr-ref.test.js",

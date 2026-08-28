@@ -2158,11 +2158,16 @@
       "source": [
         "packages/workspace/scripts/stream-sync.js",
         "packages/workspace/scripts/lib/stream-sync-cleanup.js",
+        "packages/workspace/scripts/lib/git.js",
         "packages/os/scripts/stream-sync.js",
         "packages/os/scripts/lib/stream-sync-cleanup.js",
+        "packages/os/scripts/lib/git.js",
         "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
         "packages/workspace/tests/stream-sync-node-modules.test.js",
-        "packages/workspace/tests/stream-sync-repo-option.test.ts"
+        "packages/workspace/tests/stream-sync-repo-option.test.ts",
+        "packages/workspace/tests/task-push-local-sync.test.ts",
+        "packages/os/tests/task-push-local-sync.test.ts",
+        "packages/os/tests/git-fetch-origin-concurrency.test.ts"
       ],
       "tests": [
         {
@@ -2173,11 +2178,13 @@
             "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
             "packages/workspace/tests/stream-sync-node-modules.test.js",
             "packages/workspace/tests/stream-sync-repo-option.test.ts",
-            "packages/workspace/tests/task-push-local-sync.test.ts"
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/git-fetch-origin-concurrency.test.ts"
           ]
         }
       ],
-      "reason": "Stream synchronization changes must prove typed facade option compatibility, failed-merge cleanup, temporary worktree lifecycle, node_modules setup ordering, and shared Git task-push invariants without selecting the unrelated package-wide OS baseline."
+      "reason": "Stream/context synchronization and shared Git helper changes must prove typed facade option compatibility, concurrent fetch recovery, failed-merge cleanup, temporary worktree lifecycle, node_modules setup ordering, and task-push invariants without selecting the unrelated package-wide OS baseline."
     },
     {
       "id": "os-deployment-provider-adapters",

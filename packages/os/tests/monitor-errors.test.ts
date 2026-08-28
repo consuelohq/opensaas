@@ -173,6 +173,75 @@ describe('OS self-healing trace classification', () => {
     }
   });
 
+  it('keeps GitHub workflow-cancel operation-state rejections non-actionable without masking real wrapper failures', () => {
+    for (const stderr of [
+      'Cannot cancel a workflow run that is completed',
+      'gh: Cannot cancel a workflow run that has not been queued yet. (HTTP 409)',
+    ]) {
+      expect(
+        classifyTraceFailure(
+          failure({
+            tool: 'github',
+            code: 'COMMAND_FAILED',
+            occurrences: 4,
+            stderr,
+          }),
+          undefined,
+        ),
+      ).toMatchObject({ classification: 'caller-input', actionable: false });
+    }
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'github',
+          code: 'COMMAND_FAILED',
+          occurrences: 4,
+          stderr: 'error: github wrapper exited before invoking gh',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
+  it('keeps release safety and active-lifecycle preconditions out of the defect bucket', () => {
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'release',
+          code: 'COMMAND_FAILED',
+          occurrences: 3,
+          stderr: 'release refuses failed check Consuelo / verify',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'expected-policy', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'release',
+          code: 'COMMAND_FAILED',
+          occurrences: 3,
+          stderr: 'update local node to canary 0.1.84: {"error":{"code":"LIFECYCLE_FAILED","message":"native lifecycle operation native-example is already active"}}',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'transient', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'release',
+          code: 'COMMAND_FAILED',
+          occurrences: 3,
+          stderr: 'release orchestrator failed to parse its local state file',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
   it('keeps obvious caller-caused filesystem command failures out of the defect bucket', () => {
     expect(
       classifyTraceFailure(
