@@ -9,6 +9,14 @@ import { createReloadServiceController } from '../scripts/lib/lifecycle';
 const osRoot = resolve(import.meta.dirname, '..');
 const source = (path: string): string => readFileSync(resolve(osRoot, path), 'utf8');
 
+const switchCase = (contents: string, label: string): string => {
+  const start = contents.indexOf(`case '${label}':`);
+  if (start < 0) return '';
+  const remainder = contents.slice(start);
+  const nextCaseOffset = remainder.slice(1).search(/\n\s*(?:case '[^']+':|default:)/);
+  return nextCaseOffset < 0 ? remainder : remainder.slice(0, nextCaseOffset + 1);
+};
+
 describe('lifecycle restart parity', () => {
   it('preserves reply-safe detached reload and canonical launchd/direct execution', () => {
     const reload = source('scripts/consuelo-reload.js');
@@ -21,6 +29,22 @@ describe('lifecycle restart parity', () => {
     expect(reload).toContain('if (useLaunchd && existsSync(PLIST))');
     expect(reload).toContain('bootstrapLaunchAgent();');
     expect(reload).toContain('startDirect();');
+  });
+
+  it('should refresh managed Sites when service transitions succeed', () => {
+    const reload = source('scripts/consuelo-reload.js');
+
+    expect(reload).toContain("const SITES_SCRIPT = path.join(OS_DIR, 'scripts', 'os.ts');");
+    expect(reload).toContain(
+      "const BUN_EXECUTABLE = process.env.BUN_BIN || (process.versions.bun ? process.execPath : 'bun');",
+    );
+    expect(reload).toContain('function refreshManagedSitesBestEffort()');
+    expect(reload).toContain(
+      "execFileSync(BUN_EXECUTABLE, [SITES_SCRIPT, 'sites', 'refresh', '--json']",
+    );
+    expect(switchCase(reload, 'rolling-reload-now')).toContain('refreshManagedSitesBestEffort();');
+    expect(switchCase(reload, 'reload-now')).toContain('refreshManagedSitesBestEffort();');
+    expect(switchCase(reload, 'restart-now')).toContain('refreshManagedSitesBestEffort();');
   });
 
   it('preserves conflicting-label cleanup, TERM-to-KILL escalation, and bounded named health acceptance', () => {

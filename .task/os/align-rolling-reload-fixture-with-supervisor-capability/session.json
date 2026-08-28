@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_78445ee03dd6",
+  "tmuxSession": "opensaas-os-align-rolling-reload-fixture-with-supervisor-cap-78445ee0",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-rolling-reload-fixture-with-supervisor-capability",
+  "branch": "task/os/align-rolling-reload-fixture-with-supervisor-capability",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-align-rolling-reload-fixture-with-supervisor-capability",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-align-rolling-reload-fixture-with-supervisor-capability",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2247,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2247",
+  "createdAt": "2026-08-28T23:02:32.136Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-align-rolling-reload-fixture-with-supervisor-capability/.task/os/align-rolling-reload-fixture-with-supervisor-capability/session.json"
+}
