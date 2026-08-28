@@ -333,6 +333,27 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('keeps shared Git helper changes on focused synchronization contracts', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/git.js',
+      '--changed-file',
+      'packages/workspace/scripts/lib/git.js',
+      '--changed-file',
+      'packages/os/tests/git-fetch-origin-concurrency.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('workspace-stream-sync');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'Workspace stream sync contracts',
+    ]);
+  });
+
   it('uses focused bundled-skill contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

@@ -14,8 +14,23 @@ function runGitMaybe(args, options = {}) {
   }
 }
 
-function fetchOrigin(repoRoot) {
-  runGit(['fetch', 'origin', '--prune'], { cwd: repoRoot });
+function isConcurrentRemoteRefRace(error) {
+  const detail = `${error?.message || ''}\n${error?.stderr || ''}`.toLowerCase();
+  return detail.includes('incorrect old value provided') ||
+    (detail.includes('cannot lock ref') && detail.includes('but expected'));
+}
+
+function fetchOrigin(repoRoot, options = {}) {
+  const git = options.runGit || runGit;
+  try {
+    git(['fetch', 'origin', '--prune'], { cwd: repoRoot });
+  } catch (error) {
+    // Concurrent read-only stream/context calls can both fetch into the shared
+    // repository. Git rejects the loser of its remote-ref compare-and-swap;
+    // retry exactly that understood race once after the winning fetch lands.
+    if (!isConcurrentRemoteRefRace(error)) throw error;
+    git(['fetch', 'origin', '--prune'], { cwd: repoRoot });
+  }
 }
 
 function getCurrentBranch(cwd) {

@@ -1,0 +1,285 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/self-healing/daily-self-healing-2026-08-27",
+  "base": "origin/stream/self-healing",
+  "headSha": "104ea4cee95da834acf0e2913be7e8164d1daea1",
+  "changeHash": "453611a66baf027ec36b6a1cd7e01ba18872f6ed7e2b79ca3e882ce92c1b5381",
+  "changedFiles": [
+    "packages/os/scripts/lib/git.js",
+    "packages/os/scripts/lib/monitor-errors.ts",
+    "packages/os/tests/git-fetch-origin-concurrency.test.ts",
+    "packages/os/tests/monitor-errors.test.ts",
+    "packages/workspace/scripts/lib/git.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-28T01:29:05.002Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/self-healing/daily-self-healing-2026-08-27/current.json",
+        ".task/self-healing/daily-self-healing-2026-08-27/evidence-log.json",
+        ".task/self-healing/daily-self-healing-2026-08-27/read-log.json",
+        ".task/self-healing/daily-self-healing-2026-08-27/session.json",
+        ".task/self-healing/daily-self-healing-2026-08-27/verify.json",
+        ".task/self-healing/daily-self-healing-2026-08-27/workpad.md",
+        ".task/tasks/self-healing/daily-self-healing-2026-08-27.json",
+        "packages/os/scripts/lib/git.js",
+        "packages/os/scripts/lib/monitor-errors.ts",
+        "packages/os/tests/git-fetch-origin-concurrency.test.ts",
+        "packages/os/tests/monitor-errors.test.ts",
+        "packages/workspace/scripts/lib/git.js",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-self-healing-monitor",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Self-healing monitor selection and classification changes must prove the focused trace-selection and classification contracts without selecting the unrelated package-wide OS baseline.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/monitor-errors.ts",
+            "packages/os/tests/monitor-errors.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-stream-sync",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Stream/context synchronization and shared Git helper changes must prove typed facade option compatibility, concurrent fetch recovery, failed-merge cleanup, temporary worktree lifecycle, node_modules setup ordering, and task-push invariants without selecting the unrelated package-wide OS baseline.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/git.js",
+            "packages/os/tests/git-fetch-origin-concurrency.test.ts",
+            "packages/workspace/scripts/lib/git.js"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "OS self-healing monitor contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts",
+            "packages/os/tests/monitor-errors-report.test.ts"
+          ],
+          "ruleId": "os-self-healing-monitor",
+          "critical": true
+        },
+        {
+          "name": "Workspace stream sync contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-repo-option.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/git-fetch-origin-concurrency.test.ts"
+          ],
+          "ruleId": "workspace-stream-sync",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3530,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-daily-self-healing-2026-08-27\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m56 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3267\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1299\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m56 passed\u001b[39m\u001b[22m\u001b[90m (56)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:28:53\n\u001b[2m   Duration \u001b[22m 3.34s\u001b[2m (transform 14ms, setup 0ms, import 21ms, tests 3.27s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 62,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.59625ms)\n✔ parseCliArguments selects GraphQL generation mode (0.053583ms)\n✔ parseCliArguments selects migration generation mode (0.059708ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.0775ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.064416ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.049708ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.16225ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.613708ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.668708ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.082083ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.187458ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.288875ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.078916ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.08075ms)\n✔ server lint configuration resolves the existing workspace rules project (0.130125ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.070667ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.158166ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.063291ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.086542ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.157958ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.119417ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.107584ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 38.267416\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 109,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.07ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [0.61ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.04ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.03ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.03ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [103.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 412,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.262291ms)\n✔ the configured TypeORM wrapper resolves from the installed package (356.410708ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 388.561\n"
+        },
+        {
+          "name": "OS self-healing monitor contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/monitor-errors.test.ts",
+            "packages/os/tests/monitor-errors-report.test.ts"
+          ],
+          "ruleId": "os-self-healing-monitor",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 150,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/monitor-errors-report.test.ts:\n(pass) monitor errors report trace selection > uses the persisted ok bit rather than free-form status/code text to select failures [9.46ms]\n(pass) monitor errors report trace selection > preserves persisted stderr so classification can distinguish caller failures [4.78ms]\n(pass) monitor errors report trace selection > does not let the latest deterministic caller failure absorb unrelated failures with the same tool and code [7.20ms]\n\npackages/os/tests/monitor-errors.test.ts:\n(pass) OS self-healing trace classification > treats a required task session on a mutating tool as expected policy enforcement [0.02ms]\n(pass) OS self-healing trace classification > detects runtime/contract drift when an observed session error contradicts the current read-only tool contract\n(pass) OS self-healing trace classification > treats a stale optional task session as caller input rather than runtime drift\n(pass) OS self-healing trace classification > keeps safety blocks and validation errors out of the defect bucket unless current contracts contradict them [0.01ms]\n(pass) OS self-healing trace classification > keeps explicit MCP authentication and scope enforcement out of the defect bucket [0.02ms]\n(pass) OS self-healing trace classification > keeps work-session and filesystem containment enforcement non-actionable without masking unrelated permission failures [0.04ms]\n(pass) OS self-healing trace classification > keeps explicit code.call validation failures in the caller-input bucket\n(pass) OS self-healing trace classification > does not manufacture defects from recurring execution-wrapper child failures [0.02ms]\n(pass) OS self-healing trace classification > keeps GitHub workflow-cancel operation-state rejections non-actionable without masking real wrapper failures [0.02ms]\n(pass) OS self-healing trace classification > keeps release safety and active-lifecycle preconditions out of the defect bucket [0.02ms]\n(pass) OS self-healing trace classification > keeps obvious caller-caused filesystem command failures out of the defect bucket [0.05ms]\n(pass) OS self-healing trace classification > surfaces repeated command failures as defect candidates while keeping isolated timeouts transient [0.02ms]\n(pass) OS self-healing trace classification > summarizes classifications without equating every non-OK trace with a product defect [0.03ms]\n\n 16 pass\n 0 fail\n 52 expect() calls\nRan 16 tests across 2 files. [139.00ms]\n"
+        },
+        {
+          "name": "Workspace stream sync contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-conflict-cleanup.test.ts",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-repo-option.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/git-fetch-origin-concurrency.test.ts"
+          ],
+          "ruleId": "workspace-stream-sync",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7052,
+          "outputTail": "alse\"\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nSwitched to a new branch 'task/workspace-agents/example'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-stale-previous-CTOgeO/remote.git\n * [new branch]      task/workspace-agents/example -> task/workspace-agents/example\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-stale-previous-CTOgeO/local'...\ndone.\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-stale-previous-CTOgeO/remote.git\n   7e80e02..5d27948  task/workspace-agents/example -> task/workspace-agents/example\n(pass) task.push local branch synchronization > should fail closed without moving the local ref when previousSha no longer matches local refs [233.33ms]\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nSwitched to a new branch 'task/workspace-agents/example'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-raced-remote-sDUzJk/remote.git\n * [new branch]      task/workspace-agents/example -> task/workspace-agents/example\nCloning into '/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-raced-remote-sDUzJk/local'...\ndone.\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/task-push-sync-raced-remote-sDUzJk/remote.git\n   7e80e02..69d07e5  task/workspace-agents/example -> task/workspace-agents/example\n(pass) task.push local branch synchronization > should fail closed without moving the local ref when the fetched remote head differs from nextSha [326.61ms]\n(pass) task.push local branch synchronization > should guard post-publish local sync and hook dispatch failures when the remote branch has already advanced [0.13ms]\n(pass) task.push local branch synchronization > should print stream-promotion guidance when task-push succeeds without JSON output [0.04ms]\n\npackages/os/tests/git-fetch-origin-concurrency.test.ts:\n(pass) origin fetch concurrency recovery > os retries once when another fetch wins the remote-ref compare-and-swap [0.11ms]\n(pass) origin fetch concurrency recovery > os preserves unrelated fetch failures without retrying [0.04ms]\n(pass) origin fetch concurrency recovery > workspace retries once when another fetch wins the remote-ref compare-and-swap [0.03ms]\n(pass) origin fetch concurrency recovery > workspace preserves unrelated fetch failures without retrying\n\n 36 pass\n 0 fail\n 126 expect() calls\nRan 36 tests across 6 files. [7.05s]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
