@@ -12,6 +12,7 @@ const HEALTH = `http://127.0.0.1:${PORT}/health`;
 const OS_DIR = path.resolve(__dirname, '..');
 const START_SCRIPT = path.join(OS_DIR, 'scripts', 'start-consuelo-daemon.sh');
 const SITES_SCRIPT = path.join(OS_DIR, 'scripts', 'os.ts');
+const BUN_EXECUTABLE = process.env.BUN_BIN || (process.versions.bun ? process.execPath : 'bun');
 const MANAGED_SITES_REFRESH_TIMEOUT_MS = (() => {
   const seconds = Number(process.env.WORKSPACE_DAEMON_SITES_REFRESH_TIMEOUT_SECONDS || 15);
   return Number.isFinite(seconds) && seconds >= 1 ? Math.floor(seconds * 1000) : 15000;
@@ -42,7 +43,7 @@ function runBestEffort(command, args = []) {
 
 function refreshManagedSitesBestEffort() {
   try {
-    execFileSync(process.execPath, [SITES_SCRIPT, 'sites', 'refresh', '--json'], {
+    execFileSync(BUN_EXECUTABLE, [SITES_SCRIPT, 'sites', 'refresh', '--json'], {
       encoding: 'utf8',
       timeout: MANAGED_SITES_REFRESH_TIMEOUT_MS,
       stdio: ['ignore', 'ignore', 'pipe'],
