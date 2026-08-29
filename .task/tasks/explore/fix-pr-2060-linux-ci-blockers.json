@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/fix-pr-2060-linux-ci-blockers",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2285,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2285",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-fix-pr-2060-linux-ci-blockers",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e36b47b25899",
+  "tmuxSession": "opensaas-explore-fix-pr-2060-linux-ci-blockers-e36b47b2",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-fix-pr-2060-linux-ci-blockers/.task/session.json",
+  "createdAt": "2026-08-29T06:01:15.696Z"
+}

@@ -133,6 +133,8 @@ describe('OS device authority release contract', () => {
       'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET',
       'OS_MANAGED_CLOUD_PROVISIONER_SECRET',
       'OS_MANAGED_CLOUD_ENROLLMENT_SECRET',
+      'GITHUB_APP_CLIENT_ID',
+      'GITHUB_APP_CLIENT_SECRET',
     ]);
     expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
       { name: 'GOOGLE_OAUTH_CLIENT_ID', type: 'secret_text' },
@@ -141,6 +143,8 @@ describe('OS device authority release contract', () => {
       { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
               { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
               { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+      { name: 'GITHUB_APP_CLIENT_ID', type: 'secret_text' },
+      { name: 'GITHUB_APP_CLIENT_SECRET', type: 'secret_text' },
     ])).not.toThrow();
   });
 
@@ -154,6 +158,8 @@ describe('OS device authority release contract', () => {
       { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
       { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
       { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+      { name: 'GITHUB_APP_CLIENT_ID', type: 'secret_text' },
+      { name: 'GITHUB_APP_CLIENT_SECRET', type: 'secret_text' },
     ];
 
     expect(OPTIONAL_DEVICE_AUTHORITY_STRIPE_SECRETS).toEqual([
@@ -179,6 +185,8 @@ describe('OS device authority release contract', () => {
       { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
       { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
       { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+      { name: 'GITHUB_APP_CLIENT_ID', type: 'secret_text' },
+      { name: 'GITHUB_APP_CLIENT_SECRET', type: 'secret_text' },
     ];
 
     expect(OPTIONAL_DEVICE_AUTHORITY_SYNTHETIC_STRIPE_SECRETS).toEqual([
@@ -211,6 +219,8 @@ describe('OS device authority release contract', () => {
       { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
       { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
       { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+      { name: 'GITHUB_APP_CLIENT_ID', type: 'secret_text' },
+      { name: 'GITHUB_APP_CLIENT_SECRET', type: 'secret_text' },
     ];
     expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
       ...required,
@@ -228,6 +238,8 @@ describe('OS device authority release contract', () => {
       { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
       { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
       { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+      { name: 'GITHUB_APP_CLIENT_ID', type: 'secret_text' },
+      { name: 'GITHUB_APP_CLIENT_SECRET', type: 'secret_text' },
     ];
     expect(() => assertRequiredDeviceAuthorityWorkerSecrets([
       ...required,
@@ -322,6 +334,8 @@ describe('OS device authority release contract', () => {
                 { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
                 { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
                 { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+                { name: 'GITHUB_APP_CLIENT_ID', type: 'secret_text' },
+                { name: 'GITHUB_APP_CLIENT_SECRET', type: 'secret_text' },
               ]),
               stderr: '',
             };
@@ -369,6 +383,8 @@ describe('OS device authority release contract', () => {
               { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
               { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
               { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+              { name: 'GITHUB_APP_CLIENT_ID', type: 'secret_text' },
+              { name: 'GITHUB_APP_CLIENT_SECRET', type: 'secret_text' },
             ]),
             stderr: '',
           };
@@ -456,6 +472,8 @@ describe('OS device authority release contract', () => {
                 { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
                 { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
                 { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+                { name: 'GITHUB_APP_CLIENT_ID', type: 'secret_text' },
+                { name: 'GITHUB_APP_CLIENT_SECRET', type: 'secret_text' },
               ]),
               stderr: '',
             };
@@ -522,6 +540,8 @@ describe('OS device authority release contract', () => {
               { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
               { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
               { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+              { name: 'GITHUB_APP_CLIENT_ID', type: 'secret_text' },
+              { name: 'GITHUB_APP_CLIENT_SECRET', type: 'secret_text' },
             ]),
             stderr: '',
           };
@@ -628,6 +648,8 @@ describe('OS device authority release contract', () => {
                 { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET', type: 'secret_text' },
                 { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET', type: 'secret_text' },
                 { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET', type: 'secret_text' },
+                { name: 'GITHUB_APP_CLIENT_ID', type: 'secret_text' },
+                { name: 'GITHUB_APP_CLIENT_SECRET', type: 'secret_text' },
               ]),
               stderr: '',
             };

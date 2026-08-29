@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "status": "observational",
+  "action": "read",
+  "source": {
+    "traceTool": "fs.read",
+    "traceDateRange": [
+      "2026-07-13T05:33:30.114694+00:00",
+      "2026-07-29T17:02:43.435647+00:00"
+    ],
+    "totalRows": 1133,
+    "successfulRows": 970
+  },
+  "successfulRead": {
+    "aggregation": "empirical successful-read distribution; medians and nearest-rank upper quantiles",
+    "sampleCount": 970,
+    "medianDurationMs": 537,
+    "p90DurationMs": 1151,
+    "medianOutputTokens": 1992,
+    "p90OutputTokens": 9955,
+    "medianTotalTokens": 2031,
+    "p90TotalTokens": 10088,
+    "actionRisk": 0
+  },
+  "claim": "Observed successful fs.read acquisition costs from the local OpenWorkspace trace corpus. These aggregates describe resource cost only; they are not probabilities of obtaining useful information and are not a utility function."
+}

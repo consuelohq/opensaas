@@ -80,16 +80,16 @@ function getPrMeta(prNumber) {
   try { return JSON.parse(raw); } catch { return { title: '', branch: '', files: [] }; }
 }
 
-function getConfidence(root) {
+function getReadiness(root) {
   try {
-    const { readExploreState, updateBeliefsWithEvents } = require('./lib/state/explore-state');
+    const { readExploreState, updateHypothesesWithEvents } = require('./lib/state/explore-state');
     const { getEvidenceEvents } = require('./lib/state/evidence-log');
-    const { computeConfidence } = require('./confidence-score');
+    const { computeReadiness } = require('./confidence-score');
     const state = readExploreState(root);
     if (!state) return null;
     const events = getEvidenceEvents(root);
-    const updated = updateBeliefsWithEvents(state, events);
-    return computeConfidence(root, updated, events);
+    const updated = updateHypothesesWithEvents(state, events);
+    return computeReadiness(root, updated, events);
   } catch { return null; }
 }
 
@@ -105,7 +105,7 @@ function getStaticReview(root) {
   } catch { return null; }
 }
 
-function buildSystemPrompt(confidence, staticReview) {
+function buildSystemPrompt(readiness, staticReview) {
   let prompt = `you are a senior code reviewer for consuelo, an open-source sales infrastructure platform (typescript monorepo, nestjs + react + typeorm + postgres).
 
 review the diff and provide structured findings. be direct, specific, and actionable.
@@ -136,17 +136,8 @@ coding standards to check:
 - peer deps use lazy dynamic imports
 `;
 
-  if (confidence) {
-    prompt += `\n## decision engine context
-the coding agent's confidence score is ${confidence.score.toFixed(2)}.
-recommendation: ${confidence.recommendation}
-evidence for: ${confidence.evidence_for.join(', ') || 'none'}
-evidence against: ${confidence.evidence_against.join(', ') || 'none'}
-uncertainties: ${confidence.uncertainties.join(', ') || 'none'}
-files read: ${confidence.evidence_counts.read_top_files}/${confidence.evidence_counts.top_files} top, ${confidence.evidence_counts.read_graph_files}/${confidence.evidence_counts.graph_files} graph
-
-use this to calibrate your review — low confidence means look harder for missed cases. high confidence means focus on subtle issues.
-`;
+  if (readiness) {
+    prompt += `\n## decision engine context\ninvestigation readiness: ${readiness.readiness}.\nrecommendation: ${readiness.recommendation}\nevidence for: ${readiness.evidence_for.join(', ') || 'none'}\nevidence against: ${readiness.evidence_against.join(', ') || 'none'}\nuncertainties: ${readiness.uncertainties.join(', ') || 'none'}\n\nreadiness is an evidence state, not a probability. use it to identify missing investigation coverage without treating it as a correctness guarantee.\n`;
   }
 
   if (staticReview) {
@@ -284,19 +275,19 @@ async function main() {
   const prMeta = getPrMeta(prNumber);
   writeStderr(`  "${prMeta.title}" — ${prMeta.files.length} files`);
 
-  writeStderr('  reading confidence...');
-  const confidence = getConfidence(root);
-  if (confidence) {
-    writeStderr(`  confidence: ${confidence.score.toFixed(2)} — ${confidence.recommendation}`);
+  writeStderr('  reading readiness...');
+  const readiness = getReadiness(root);
+  if (readiness) {
+    writeStderr(`  readiness: ${readiness.readiness} — ${readiness.recommendation}`);
   } else {
-    writeStderr('  confidence: no evidence available');
+    writeStderr('  readiness: no evidence available');
   }
 
   writeStderr('  running static review...');
   const staticReview = getStaticReview(root);
 
   // build prompt and call pi-proxy
-  const systemPrompt = buildSystemPrompt(confidence, staticReview);
+  const systemPrompt = buildSystemPrompt(readiness, staticReview);
   writeStderr(`  calling pi-proxy (${REVIEW_MODEL})...`);
 
   const reviewContent = await callPiProxy(systemPrompt, diff, prMeta);
@@ -317,7 +308,7 @@ async function main() {
     writeStdout(JSON.stringify({
       pr: prNumber,
       model: REVIEW_MODEL,
-      confidence: confidence?.score ?? null,
+      readiness: readiness?.readiness ?? null,
       reviewFile: filePath,
       posted: !args.noPost,
       contentLength: reviewContent.length,

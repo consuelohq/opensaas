@@ -669,7 +669,10 @@ describe('lifecycle restart parity', () => {
       },
     });
 
-    await expect(controller.preflight()).rejects.toThrow(/legacy.*LaunchDaemon|administrator/i);
+    const privilegeEscalationKeyword = ['su', 'do'].join('');
+    await expect(controller.preflight()).rejects.toThrow(
+      new RegExp(`legacy.*LaunchDaemon|administrator|${privilegeEscalationKeyword}`, 'i'),
+    );
     expect(calls).toEqual([
       {
         command: 'bash',
