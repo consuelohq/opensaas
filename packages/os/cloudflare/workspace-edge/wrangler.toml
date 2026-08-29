@@ -22,3 +22,17 @@ migrations_dir = "migrations"
 [[r2_buckets]]
 binding = "SITES_SNAPSHOTS"
 bucket_name = "consuelo-sites-snapshots"
+
+[[ratelimits]]
+name = "OS_SEMANTIC_EMBEDDING_RATE_LIMITER"
+namespace_id = "27001"
+  [ratelimits.simple]
+  limit = 600
+  period = 60
+
+[[ratelimits]]
+name = "OS_SEMANTIC_EMBEDDING_IP_RATE_LIMITER"
+namespace_id = "27002"
+  [ratelimits.simple]
+  limit = 1200
+  period = 60

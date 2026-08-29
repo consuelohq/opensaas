@@ -108,6 +108,7 @@ export const toolHandlers = [
     "name": "explore",
     "command": {
       "script": "explore",
+      "executionScope": "runtime",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [

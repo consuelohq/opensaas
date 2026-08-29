@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/scripts/explore-bench.js",
+    "packages/os/tests/explore-bench.test.ts",
+    "packages/os/tools/decision-engine/handler.ts",
+    "packages/workspace/scripts/explore-bench.js"
+  ],
+  "updatedAt": "2026-08-29T04:28:46.943Z"
+}

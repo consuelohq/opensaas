@@ -1731,7 +1731,7 @@ await workspace.call({
 
 ### workspace.confidenceScore
 
-score confidence from evidence state
+report investigation readiness from hypothesis coverage and validation evidence
 
 | Field | Value |
 | --- | --- |
@@ -1847,7 +1847,7 @@ await workspace.call({
 
 ### workspace.decideNext
 
-recommend the next action from evidence state
+recommend the next evidence action from hypothesis support and readiness
 
 | Field | Value |
 | --- | --- |
@@ -1904,7 +1904,7 @@ await workspace.call({
 
 ### workspace.exploit
 
-select the highest-confidence editing target
+select the strongest supported dependency hypothesis as the editing target
 
 | Field | Value |
 | --- | --- |
