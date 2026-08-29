@@ -259,6 +259,39 @@ describe('Hono Configuration routes', () => {
     });
   });
 
+  it('starts GitHub authorization when legacy source-control defaults are invalid', async () => {
+    const invalidWorkspace = createDefaultWorkspaceYamlConfig({
+      workspaceId,
+      workspaceName: 'Configuration Hono',
+      workspaceSlug: 'configuration-hono',
+      workspaceHost: 'configuration-hono.consuelohq.com',
+    });
+    invalidWorkspace.defaults.project = 'missing-project';
+    writeYamlConfig(
+      resolveConsueloHomeLayout(home).workspaceConfigPath(workspaceId),
+      invalidWorkspace,
+      false,
+    );
+    let authorityBody: Record<string, unknown> | undefined;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      authorityBody = await request.clone().json() as Record<string, unknown>;
+      return Response.json({
+        authorizationUrl: 'https://github.com/login/oauth/authorize?client_id=Iv1.test&state=ghs_invalid_default',
+      });
+    });
+
+    const path = '/gateway/configuration/source-control/github/connect?return_to=%2Fdiffs';
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path,
+      nonce: 'configuration-github-invalid-default-nonce',
+    }));
+
+    expect(response.status).toBe(200);
+    expect(authorityBody).toMatchObject({ repositoryOwners: [] });
+  });
+
   it('propagates Manage GitHub access intent to Device Authority', async () => {
     let authorityBody: Record<string, unknown> | undefined;
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {

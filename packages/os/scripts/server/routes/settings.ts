@@ -175,11 +175,16 @@ export function createSettingsRoutes(): Hono {
       const returnPath = safeSourceControlReturnPath(requestUrl.searchParams.get('return_to'));
       const manageAccess = requestUrl.searchParams.get('mode') === 'manage';
       const workspacePath = workspaceSourceControlPath(home, workspaceId);
-      const repositoryOwners = fs.existsSync(workspacePath)
-        ? Array.from(new Set(buildWorkspaceSourceControlSnapshot(
+      let repositoryOwners: string[] = [];
+      if (fs.existsSync(workspacePath)) {
+        try {
+          repositoryOwners = Array.from(new Set(buildWorkspaceSourceControlSnapshot(
             loadWorkspaceYamlConfig(workspacePath),
-          ).repositories.map((repository) => repository.owner).filter(Boolean)))
-        : [];
+          ).repositories.map((repository) => repository.owner)));
+        } catch {
+          repositoryOwners = [];
+        }
+      }
       const { authorizationUrl } = await startGitHubSourceControlInstall({
         home,
         returnPath,
