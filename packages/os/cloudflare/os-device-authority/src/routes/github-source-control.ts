@@ -318,8 +318,13 @@ async function handleOAuthCallback(request: Request, runtime: DeviceAuthorityRun
     }
     const preferred = preferredInstallation(authorizedState, installations);
     if (preferred) {
+      const response = await completeGitHubInstallation(
+        runtime,
+        authorizedState,
+        preferred.installationId,
+      );
       await runtime.store.delGitHubSourceControlInstallState(stateValue);
-      return await completeGitHubInstallation(runtime, authorizedState, preferred.installationId);
+      return response;
     }
     if (installations.length > 0) {
       return new Response(renderInstallationChoice(runtime, authorizedState, installations), {

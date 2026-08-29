@@ -283,6 +283,60 @@ describe('GitHub source-control authority', () => {
     expect(installationReads).toBe(2);
   });
 
+  it('retains OAuth state until preferred installation completion succeeds', async () => {
+    let exchangeCount = 0;
+    let installationReads = 0;
+    const fetchImpl: typeof fetch = async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      const url = new URL(request.url);
+      if (url.origin === 'https://github.com' && url.pathname === '/login/oauth/access_token') {
+        exchangeCount += 1;
+        return Response.json({ access_token: 'github-completion-retry-user-token', token_type: 'bearer' });
+      }
+      if (url.pathname === '/user/installations' && request.method === 'GET') {
+        return Response.json({
+          total_count: 1,
+          installations: [{ id: 42, account: { login: 'consuelohq' }, repository_selection: 'all' }],
+        });
+      }
+      if (url.pathname === '/app/installations/42' && request.method === 'GET') {
+        installationReads += 1;
+        if (installationReads === 1) return new Response('temporary failure', { status: 503 });
+        return Response.json({ id: 42, account: { login: 'consuelohq' }, repository_selection: 'all' });
+      }
+      if (url.pathname === '/app/installations/42/access_tokens' && request.method === 'POST') {
+        return Response.json({
+          token: 'github-completion-retry-installation-token',
+          expires_at: '2026-08-26T00:55:00.000Z',
+        });
+      }
+      if (url.pathname === '/installation/repositories' && request.method === 'GET') {
+        return Response.json({
+          total_count: 1,
+          repositories: [{ id: 101, full_name: 'consuelohq/opensaas', default_branch: 'main' }],
+        });
+      }
+      return new Response('not found', { status: 404 });
+    };
+    const handler = configuredHandler(fetchImpl);
+    const start = await handler(signedNodeRequest(
+      '/workspace/source-control/github/install/start',
+      { returnPath: '/diffs', repositoryOwners: ['consuelohq'] },
+    ));
+    const state = new URL((await start.json() as { authorizationUrl: string }).authorizationUrl)
+      .searchParams.get('state');
+    const callbackUrl = `${origin}/workspace/source-control/github/oauth/callback?code=completion-retry-code&state=${encodeURIComponent(state ?? '')}`;
+
+    const first = await handler(new Request(callbackUrl));
+    expect(first.status).toBe(502);
+    const second = await handler(new Request(callbackUrl));
+
+    expect(second.status).toBe(302);
+    expect(new URL(second.headers.get('location') ?? '').searchParams.get('github_handoff')).toMatch(/^ghh_/);
+    expect(exchangeCount).toBe(1);
+    expect(installationReads).toBe(2);
+  });
+
   it('rejects a post-install installation id the authorized GitHub user cannot access', async () => {
     let userInstallationReads = 0;
     const fetchImpl: typeof fetch = async (input, init) => {
