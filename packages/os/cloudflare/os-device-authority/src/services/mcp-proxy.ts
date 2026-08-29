@@ -106,6 +106,11 @@ type CentralMcpFacadeOutcome = {
   workSession?: string;
 };
 
+const EXPLICIT_NODE_LIFECYCLE_RECOVERY_TOOLS = new Set([
+  'lifecycle.status',
+  'lifecycle.update',
+]);
+
 function isJsonObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -545,10 +550,25 @@ export async function proxyCentralMcpRequest(input: {
     }
     if (resolution.nodeId && resolvedNode) {
       const safeNode = safeWorkspaceNode(resolvedNode, input.nowMs);
+      if (safeNode.state === 'revoked') {
+        return centralMcpSafeError({
+          status: 404,
+          code: 'WORKSPACE_NODE_REVOKED',
+          message: 'The requested node has been revoked.',
+          details: { nodeId: resolution.nodeId },
+        });
+      }
       const strictReadiness = routeSource === 'explicit';
+      const lifecycleRecovery =
+        strictReadiness &&
+        routingInspection.facadeTool !== undefined &&
+        EXPLICIT_NODE_LIFECYCLE_RECOVERY_TOOLS.has(routingInspection.facadeTool);
       if (
-        safeNode.compatibility === 'incompatible'
-        || (strictReadiness && safeNode.compatibility !== 'compatible')
+        !lifecycleRecovery &&
+        (
+          safeNode.compatibility === 'incompatible'
+          || (strictReadiness && safeNode.compatibility !== 'compatible')
+        )
       ) {
         return centralMcpSafeError({
           status: 409,
@@ -563,8 +583,11 @@ export async function proxyCentralMcpRequest(input: {
         });
       }
       if (
-        safeNode.readiness === 'not_ready'
-        || (strictReadiness && safeNode.readiness !== 'ready')
+        !lifecycleRecovery &&
+        (
+          safeNode.readiness === 'not_ready'
+          || (strictReadiness && safeNode.readiness !== 'ready')
+        )
       ) {
         return centralMcpSafeError({
           status: 409,
