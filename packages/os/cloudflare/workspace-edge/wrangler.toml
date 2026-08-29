@@ -12,6 +12,9 @@ script_name = "consuelo-os-device-authority"
 pattern = "internal.consuelohq.com/*"
 zone_name = "consuelohq.com"
 [[routes]]
+pattern = "gateway.consuelohq.com/*"
+zone_name = "consuelohq.com"
+[[routes]]
 pattern = "*.consuelohq.com/*"
 zone_name = "consuelohq.com"
 [[d1_databases]]
