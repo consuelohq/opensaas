@@ -3,16 +3,24 @@ import type { Hono } from 'hono';
 import { json } from '../http';
 import {
   createGitHubInstallationToken,
+  exchangeGitHubUserAuthorizationCode,
   githubInstallationUrl,
+  githubUserAuthorizationUrl,
   GitHubSourceControlError,
   listGitHubInstallationRepositories,
+  listGitHubUserInstallations,
   readGitHubInstallation,
+  type GitHubInstallation,
 } from '../services/github-source-control';
 import {
   WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS,
   workspaceNodeId,
 } from '../services/nodes';
-import type { DeviceAuthorityRuntime, WorkspaceNode } from '../types';
+import type {
+  DeviceAuthorityRuntime,
+  GitHubSourceControlInstallState,
+  WorkspaceNode,
+} from '../types';
 import { b64Decode, hash, rand } from '../utils';
 
 const INSTALL_STATE_TTL_MS = 10 * 60_000;
@@ -43,6 +51,121 @@ function safeReturnPath(value: unknown): string {
     return `${parsed.pathname}${parsed.search}`;
   } catch {
     return '/configuration';
+  }
+}
+
+function repositoryOwners(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(value
+    .filter((owner): owner is string => typeof owner === 'string')
+    .map((owner) => owner.trim().toLowerCase())
+    .filter((owner) => /^[a-z0-9-]{1,100}$/.test(owner))))
+    .slice(0, 20);
+}
+
+async function activeInstallState(
+  runtime: DeviceAuthorityRuntime,
+  stateValue: string,
+): Promise<GitHubSourceControlInstallState | Response> {
+  try {
+    if (!stateValue) {
+      return errorResponse(400, 'GITHUB_INSTALL_STATE_REQUIRED', 'GitHub connection state is missing.');
+    }
+    const state = await runtime.store.byGitHubSourceControlInstallState(stateValue);
+    if (!state || runtime.now() >= state.expiresAt) {
+      if (state) await runtime.store.delGitHubSourceControlInstallState(stateValue);
+      return errorResponse(400, 'GITHUB_INSTALL_STATE_INVALID', 'The GitHub connection session expired. Start again from Consuelo.');
+    }
+    return state;
+  } catch (error: unknown) {
+    if (error instanceof GitHubSourceControlError) throw error;
+    throw new GitHubSourceControlError(
+      'GITHUB_INSTALL_STATE_UNAVAILABLE',
+      503,
+      'GitHub connection state is temporarily unavailable.',
+    );
+  }
+}
+
+function preferredInstallation(
+  state: GitHubSourceControlInstallState,
+  installations: GitHubInstallation[],
+): GitHubInstallation | undefined {
+  const owners = new Set(state.repositoryOwners.map((owner) => owner.toLowerCase()));
+  const matching = installations.filter((installation) => owners.has(installation.accountLogin.toLowerCase()));
+  if (matching.length === 1) return matching[0];
+  if (owners.size === 0 && installations.length === 1) return installations[0];
+  return undefined;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderInstallationChoice(
+  runtime: DeviceAuthorityRuntime,
+  state: GitHubSourceControlInstallState,
+  installations: GitHubInstallation[],
+): string {
+  const choices = installations.map((installation) => {
+    const url = new URL('/workspace/source-control/github/install/select', runtime.origin);
+    url.searchParams.set('state', state.state);
+    url.searchParams.set('installation_id', String(installation.installationId));
+    return `<li><a href="${escapeHtml(url.toString())}">${escapeHtml(installation.accountLogin)}</a></li>`;
+  }).join('');
+  const installUrl = githubInstallationUrl(runtime, state.state);
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Choose GitHub account - Consuelo OS</title></head><body><main><p>Consuelo OS</p><h1>Choose GitHub account</h1><p>Select the GitHub account whose repositories you want Consuelo Diffs to use.</p><ul>${choices}</ul><p><a href="${escapeHtml(installUrl)}">Install Consuelo OS on another account</a></p></main></body></html>`;
+}
+
+async function completeGitHubInstallation(
+  runtime: DeviceAuthorityRuntime,
+  state: GitHubSourceControlInstallState,
+  installationId: number,
+): Promise<Response> {
+  try {
+    const installation = await readGitHubInstallation(runtime, installationId);
+    const repositories = await listGitHubInstallationRepositories(runtime, installationId);
+    const connectionId = rand('ghc', 18);
+    await runtime.store.putGitHubSourceControlConnection({
+      connectionId,
+      workspaceId: state.workspaceId,
+      workspaceHost: state.workspaceHost,
+      installationId,
+      accountLogin: installation.accountLogin,
+      repositorySelection: installation.repositorySelection,
+      repositories,
+      createdAt: runtime.now(),
+      updatedAt: runtime.now(),
+    });
+    const handoff = rand('ghh', 24);
+    await runtime.store.putGitHubSourceControlHandoff({
+      tokenHash: await hash(handoff),
+      connectionId,
+      workspaceId: state.workspaceId,
+      workspaceHost: state.workspaceHost,
+      nodeId: state.nodeId,
+      returnPath: state.returnPath,
+      expiresAt: runtime.now() + HANDOFF_TTL_MS,
+    });
+    const target = new URL('/configuration', `https://${state.workspaceHost}`);
+    target.searchParams.set('github_handoff', handoff);
+    target.searchParams.set('return_to', state.returnPath);
+    return new Response(null, {
+      status: 302,
+      headers: { location: target.toString(), 'cache-control': 'no-store' },
+    });
+  } catch (error: unknown) {
+    if (error instanceof GitHubSourceControlError) throw error;
+    throw new GitHubSourceControlError(
+      'GITHUB_CONNECTION_PERSIST_FAILED',
+      503,
+      'GitHub source-control connection could not be saved.',
+    );
   }
 }
 
@@ -136,16 +259,114 @@ async function handleInstallStart(request: Request, runtime: DeviceAuthorityRunt
     if (auth instanceof Response) return auth;
     const workspaceId = workspaceNodeId(auth.node);
     const state = rand('ghs', 24);
-    const installUrl = githubInstallationUrl(runtime, state);
+    const oauthCodeVerifier = rand('ghv', 32);
+    // Validate the App identity/private key before the OAuth-specific configuration
+    // so deployments missing the whole GitHub integration keep the canonical error.
+    githubInstallationUrl(runtime, state);
     await runtime.store.putGitHubSourceControlInstallState({
       state,
       workspaceId,
       workspaceHost: auth.node.workspaceHost,
       nodeId: auth.node.nodeId,
       returnPath: safeReturnPath(auth.body.returnPath),
+      repositoryOwners: repositoryOwners(auth.body.repositoryOwners),
+      manageAccess: auth.body.manageAccess === true,
+      oauthCodeVerifier,
       expiresAt: runtime.now() + INSTALL_STATE_TTL_MS,
     });
-    return json({ installUrl });
+    return json({
+      authorizationUrl: githubUserAuthorizationUrl(
+        runtime,
+        state,
+        await hash(oauthCodeVerifier),
+      ),
+    });
+  } catch (error: unknown) {
+    return sourceControlError(error);
+  }
+}
+
+async function handleOAuthCallback(request: Request, runtime: DeviceAuthorityRuntime): Promise<Response> {
+  const url = new URL(request.url);
+  const stateValue = url.searchParams.get('state')?.trim() ?? '';
+  const code = url.searchParams.get('code')?.trim() ?? '';
+  try {
+    const state = await activeInstallState(runtime, stateValue);
+    if (state instanceof Response) return state;
+    let authorizedState = state;
+    let userAccessToken = state.githubUserAccessToken?.trim() ?? '';
+    if (!userAccessToken) {
+      userAccessToken = await exchangeGitHubUserAuthorizationCode(runtime, {
+        code,
+        codeVerifier: state.oauthCodeVerifier,
+      });
+      authorizedState = { ...state, githubUserAccessToken: userAccessToken };
+      // Persist immediately after the one-time code exchange. If GitHub's
+      // installation inventory is transiently unavailable, the callback can
+      // safely retry without attempting to consume the authorization code twice.
+      await runtime.store.putGitHubSourceControlInstallState(authorizedState);
+    }
+    const installations = await listGitHubUserInstallations(runtime, userAccessToken);
+    if (authorizedState.manageAccess) {
+      return new Response(null, {
+        status: 302,
+        headers: {
+          location: githubInstallationUrl(runtime, stateValue),
+          'cache-control': 'no-store',
+        },
+      });
+    }
+    const preferred = preferredInstallation(authorizedState, installations);
+    if (preferred) {
+      const response = await completeGitHubInstallation(
+        runtime,
+        authorizedState,
+        preferred.installationId,
+      );
+      await runtime.store.delGitHubSourceControlInstallState(stateValue);
+      return response;
+    }
+    if (installations.length > 0) {
+      return new Response(renderInstallationChoice(runtime, authorizedState, installations), {
+        status: 200,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+          'referrer-policy': 'no-referrer',
+          'x-content-type-options': 'nosniff',
+        },
+      });
+    }
+    return new Response(null, {
+      status: 302,
+      headers: {
+        location: githubInstallationUrl(runtime, stateValue),
+        'cache-control': 'no-store',
+      },
+    });
+  } catch (error: unknown) {
+    return sourceControlError(error);
+  }
+}
+
+async function handleInstallSelect(request: Request, runtime: DeviceAuthorityRuntime): Promise<Response> {
+  const url = new URL(request.url);
+  const stateValue = url.searchParams.get('state')?.trim() ?? '';
+  const installationId = Number(url.searchParams.get('installation_id'));
+  try {
+    const state = await activeInstallState(runtime, stateValue);
+    if (state instanceof Response) return state;
+    const userAccessToken = state.githubUserAccessToken?.trim() ?? '';
+    if (!userAccessToken) {
+      return errorResponse(400, 'GITHUB_USER_AUTHORIZATION_REQUIRED', 'Start the GitHub connection again from Consuelo.');
+    }
+    const installations = await listGitHubUserInstallations(runtime, userAccessToken);
+    if (!installations.some((installation) => installation.installationId === installationId)) {
+      return errorResponse(403, 'GITHUB_INSTALLATION_NOT_AUTHORIZED', 'The selected GitHub installation is not available to this user.');
+    }
+    const response = await completeGitHubInstallation(runtime, state, installationId);
+    await runtime.store.delGitHubSourceControlInstallState(stateValue);
+    return response;
   } catch (error: unknown) {
     return sourceControlError(error);
   }
@@ -155,48 +376,20 @@ async function handleInstallCallback(request: Request, runtime: DeviceAuthorityR
   const url = new URL(request.url);
   const stateValue = url.searchParams.get('state')?.trim() ?? '';
   const installationId = Number(url.searchParams.get('installation_id'));
-  if (!stateValue) {
-    return errorResponse(400, 'GITHUB_INSTALL_STATE_REQUIRED', 'GitHub connection state is missing.');
-  }
-  let state;
   try {
-    state = await runtime.store.byGitHubSourceControlInstallState(stateValue);
-    if (!state || runtime.now() >= state.expiresAt) {
-      if (state) await runtime.store.delGitHubSourceControlInstallState(stateValue);
-      return errorResponse(400, 'GITHUB_INSTALL_STATE_INVALID', 'The GitHub connection session expired. Start again from Consuelo.');
+    const state = await activeInstallState(runtime, stateValue);
+    if (state instanceof Response) return state;
+    const userAccessToken = state.githubUserAccessToken?.trim() ?? '';
+    if (!userAccessToken) {
+      return errorResponse(400, 'GITHUB_USER_AUTHORIZATION_REQUIRED', 'Start the GitHub connection again from Consuelo.');
     }
+    const installations = await listGitHubUserInstallations(runtime, userAccessToken);
+    if (!installations.some((installation) => installation.installationId === installationId)) {
+      return errorResponse(403, 'GITHUB_INSTALLATION_NOT_AUTHORIZED', 'The GitHub installation is not available to this user.');
+    }
+    const response = await completeGitHubInstallation(runtime, state, installationId);
     await runtime.store.delGitHubSourceControlInstallState(stateValue);
-    const installation = await readGitHubInstallation(runtime, installationId);
-    const repositories = await listGitHubInstallationRepositories(runtime, installationId);
-    const connectionId = rand('ghc', 18);
-    await runtime.store.putGitHubSourceControlConnection({
-      connectionId,
-      workspaceId: state.workspaceId,
-      workspaceHost: state.workspaceHost,
-      installationId,
-      accountLogin: installation.accountLogin,
-      repositorySelection: installation.repositorySelection,
-      repositories,
-      createdAt: runtime.now(),
-      updatedAt: runtime.now(),
-    });
-    const handoff = rand('ghh', 24);
-    await runtime.store.putGitHubSourceControlHandoff({
-      tokenHash: await hash(handoff),
-      connectionId,
-      workspaceId: state.workspaceId,
-      workspaceHost: state.workspaceHost,
-      nodeId: state.nodeId,
-      returnPath: state.returnPath,
-      expiresAt: runtime.now() + HANDOFF_TTL_MS,
-    });
-    const target = new URL('/configuration', `https://${state.workspaceHost}`);
-    target.searchParams.set('github_handoff', handoff);
-    target.searchParams.set('return_to', state.returnPath);
-    return new Response(null, {
-      status: 302,
-      headers: { location: target.toString(), 'cache-control': 'no-store' },
-    });
+    return response;
   } catch (error: unknown) {
     return sourceControlError(error);
   }
@@ -263,6 +456,10 @@ export function registerGitHubSourceControlRoutes(
 ): void {
   app.post('/workspace/source-control/github/install/start', (context) =>
     handleInstallStart(context.req.raw, runtime));
+  app.get('/workspace/source-control/github/oauth/callback', (context) =>
+    handleOAuthCallback(context.req.raw, runtime));
+  app.get('/workspace/source-control/github/install/select', (context) =>
+    handleInstallSelect(context.req.raw, runtime));
   app.get('/workspace/source-control/github/install/callback', (context) =>
     handleInstallCallback(context.req.raw, runtime));
   app.post('/workspace/source-control/github/install/claim', (context) =>
