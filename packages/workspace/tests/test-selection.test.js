@@ -712,6 +712,101 @@ describe('test selection registry', () => {
     );
   });
 
+  it('uses exclusive frontend config contracts instead of unrelated package suites', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/twenty-front/eslint.config.mjs',
+      '--changed-file',
+      'packages/twenty-ui/eslint.config.mjs',
+      '--changed-file',
+      'packages/eslint-rules/eslint.config.react.mjs',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('frontend-lint-config-contract');
+    expect(matchedRuleIds).not.toContain('twenty-front-project');
+    expect(matchedRuleIds).not.toContain('auto:twenty-front:test');
+    expect(matchedRuleIds).not.toContain('auto:twenty-ui:test');
+    expect(matchedRuleIds).not.toContain('auto:twenty-eslint-rules:test');
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'changed frontend lint helper tests',
+        'GitHub workflow policy tests',
+        'changed GitHub workflow security checks',
+        'changed frontend files lint',
+      ]),
+    );
+  });
+
+  it('keeps runtime source on the broader project suite alongside an exclusive config contract', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/twenty-front/eslint.config.mjs',
+      '--changed-file',
+      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const configRule = data.matchedRules.find(
+      (rule) => rule.id === 'frontend-lint-config-contract',
+    );
+    const projectRule = data.matchedRules.find(
+      (rule) => rule.id === 'twenty-front-project',
+    );
+
+    expect(configRule?.matchedFiles).toEqual([
+      'packages/twenty-front/eslint.config.mjs',
+    ]);
+    expect(projectRule?.matchedFiles).toEqual([
+      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
+    ]);
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'twenty-front test target',
+    );
+  });
+
+  it('uses the focused OS artifact contract for the metering manifest removal', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/artifacts-design.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('obsolete-metering-artifact-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'OS artifact manifest contract',
+    ]);
+  });
+
+  it('uses the focused native OS workflow contracts for Windows workflow assertions', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/windows-platform.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('native-os-workflow-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'native OS selector tests',
+      'native Windows workflow contracts',
+      'GitHub workflow policy tests',
+      'changed GitHub workflow security checks',
+    ]);
+  });
+
   it('uses the API package Jest configuration for API changes', () => {
     const result = run([
       'check',

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5e6052c6ebdc",
+  "tmuxSession": "opensaas-dialer-enforce-ghl-call-target-authorization-5e6052c6",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/enforce-ghl-call-target-authorization",
+  "branch": "task/dialer/enforce-ghl-call-target-authorization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-enforce-ghl-call-target-authorization",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-enforce-ghl-call-target-authorization",
+  "prNumber": 1815,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1815",
+  "createdAt": "2026-08-10T02:42:48.968Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-enforce-ghl-call-target-authorization/.task/dialer/enforce-ghl-call-target-authorization/session.json"
+}
