@@ -4,6 +4,7 @@ import { Hono } from 'hono';
 import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
+  type McpFacadeExecutionOptions,
 } from '../../lib/mcp-gateway';
 import { validateModernMcpHttpRequest } from '../../lib/mcp-protocol';
 import {
@@ -68,6 +69,7 @@ type McpRouteDependencies = {
     toolName: string,
     toolInput: Record<string, unknown>,
     routing?: TraceRoutingContext,
+    execution?: McpFacadeExecutionOptions,
   ) => Promise<unknown>;
 };
 
@@ -111,9 +113,9 @@ function trustedNodeRoutingContext(input: {
 
 const defaultDependencies: McpRouteDependencies = {
   getSteering: readGuardedLocalOsSteering,
-  executeFacadeTool: async (toolName, toolInput, routing) => {
+  executeFacadeTool: async (toolName, toolInput, routing, execution) => {
     try {
-      return await executeLocalOsFacadeTool(toolName, toolInput, routing);
+      return await executeLocalOsFacadeTool(toolName, toolInput, routing, execution);
     } catch (error: unknown) {
       logLocalOsServerError(
         'local_os.mcp_tool_execution_failed',
@@ -296,8 +298,10 @@ export function createMcpRoutes(
       });
       const result = await handleMcpGatewayJsonRpc(body, {
         getSteering: () => dependencies.getSteering(steeringCallerKey, nodeRouting),
-        executeFacadeTool: (toolName, toolInput) =>
-          dependencies.executeFacadeTool(toolName, toolInput, traceRouting),
+        executeFacadeTool: (toolName, toolInput, execution) =>
+          execution
+            ? dependencies.executeFacadeTool(toolName, toolInput, traceRouting, execution)
+            : dependencies.executeFacadeTool(toolName, toolInput, traceRouting),
       });
       const response = jsonResponse(result);
       if (session?.responseSessionId) {
