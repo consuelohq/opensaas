@@ -337,6 +337,113 @@ describe('GitHub source-control authority', () => {
     expect(installationReads).toBe(2);
   });
 
+  it('retains OAuth state until fresh-install callback completion succeeds', async () => {
+    let installationReads = 0;
+    const fetchImpl: typeof fetch = async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      const url = new URL(request.url);
+      if (url.origin === 'https://github.com' && url.pathname === '/login/oauth/access_token') {
+        return Response.json({ access_token: 'github-fresh-retry-user-token', token_type: 'bearer' });
+      }
+      if (url.pathname === '/user/installations' && request.method === 'GET') {
+        return Response.json({
+          total_count: 1,
+          installations: [{ id: 42, account: { login: 'consuelohq' }, repository_selection: 'selected' }],
+        });
+      }
+      if (url.pathname === '/app/installations/42' && request.method === 'GET') {
+        installationReads += 1;
+        if (installationReads === 1) return new Response('temporary failure', { status: 503 });
+        return Response.json({ id: 42, account: { login: 'consuelohq' }, repository_selection: 'selected' });
+      }
+      if (url.pathname === '/app/installations/42/access_tokens' && request.method === 'POST') {
+        return Response.json({ token: 'github-fresh-retry-installation-token', expires_at: '2026-08-26T00:55:00.000Z' });
+      }
+      if (url.pathname === '/installation/repositories' && request.method === 'GET') {
+        return Response.json({
+          total_count: 1,
+          repositories: [{ id: 101, full_name: 'consuelohq/opensaas', default_branch: 'main' }],
+        });
+      }
+      return new Response('not found', { status: 404 });
+    };
+    const handler = configuredHandler(fetchImpl);
+    const start = await handler(signedNodeRequest(
+      '/workspace/source-control/github/install/start',
+      { returnPath: '/diffs', manageAccess: true },
+    ));
+    const state = new URL((await start.json() as { authorizationUrl: string }).authorizationUrl)
+      .searchParams.get('state');
+    const oauthCallback = await handler(new Request(
+      `${origin}/workspace/source-control/github/oauth/callback?code=fresh-retry-code&state=${encodeURIComponent(state ?? '')}`,
+    ));
+    expect(oauthCallback.status).toBe(302);
+    const installCallbackUrl = `${origin}/workspace/source-control/github/install/callback?installation_id=42&setup_action=update&state=${encodeURIComponent(state ?? '')}`;
+
+    const first = await handler(new Request(installCallbackUrl));
+    expect(first.status).toBe(502);
+    const second = await handler(new Request(installCallbackUrl));
+
+    expect(second.status).toBe(302);
+    expect(new URL(second.headers.get('location') ?? '').searchParams.get('github_handoff')).toMatch(/^ghh_/);
+    expect(installationReads).toBe(2);
+  });
+
+  it('retains OAuth state until explicit installation selection completion succeeds', async () => {
+    let installationReads = 0;
+    const fetchImpl: typeof fetch = async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      const url = new URL(request.url);
+      if (url.origin === 'https://github.com' && url.pathname === '/login/oauth/access_token') {
+        return Response.json({ access_token: 'github-select-retry-user-token', token_type: 'bearer' });
+      }
+      if (url.pathname === '/user/installations' && request.method === 'GET') {
+        return Response.json({
+          total_count: 2,
+          installations: [
+            { id: 7, account: { login: 'kokayicobb' }, repository_selection: 'all' },
+            { id: 42, account: { login: 'consuelohq' }, repository_selection: 'selected' },
+          ],
+        });
+      }
+      if (url.pathname === '/app/installations/42' && request.method === 'GET') {
+        installationReads += 1;
+        if (installationReads === 1) return new Response('temporary failure', { status: 503 });
+        return Response.json({ id: 42, account: { login: 'consuelohq' }, repository_selection: 'selected' });
+      }
+      if (url.pathname === '/app/installations/42/access_tokens' && request.method === 'POST') {
+        return Response.json({ token: 'github-select-retry-installation-token', expires_at: '2026-08-26T00:55:00.000Z' });
+      }
+      if (url.pathname === '/installation/repositories' && request.method === 'GET') {
+        return Response.json({
+          total_count: 1,
+          repositories: [{ id: 101, full_name: 'consuelohq/opensaas', default_branch: 'main' }],
+        });
+      }
+      return new Response('not found', { status: 404 });
+    };
+    const handler = configuredHandler(fetchImpl);
+    const start = await handler(signedNodeRequest(
+      '/workspace/source-control/github/install/start',
+      { returnPath: '/diffs' },
+    ));
+    const state = new URL((await start.json() as { authorizationUrl: string }).authorizationUrl)
+      .searchParams.get('state');
+    const oauthCallback = await handler(new Request(
+      `${origin}/workspace/source-control/github/oauth/callback?code=select-retry-code&state=${encodeURIComponent(state ?? '')}`,
+    ));
+    expect(oauthCallback.status).toBe(200);
+    const selectUrl = `${origin}/workspace/source-control/github/install/select?installation_id=42&state=${encodeURIComponent(state ?? '')}`;
+
+    const first = await handler(new Request(selectUrl));
+    expect(first.status).toBe(502);
+    const second = await handler(new Request(selectUrl));
+
+    expect(second.status).toBe(302);
+    expect(new URL(second.headers.get('location') ?? '').searchParams.get('github_handoff')).toMatch(/^ghh_/);
+    expect(installationReads).toBe(2);
+  });
+
   it('rejects a post-install installation id the authorized GitHub user cannot access', async () => {
     let userInstallationReads = 0;
     const fetchImpl: typeof fetch = async (input, init) => {
