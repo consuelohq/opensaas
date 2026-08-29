@@ -80,14 +80,14 @@ live context: `cloud-1` is already installed on canary 0.1.93, but its authorita
 - `packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts`
 - `packages/os/scripts/lib/tool-scope-authorization.ts`
 - `packages/os/tests/workspace-node-registry-routing.test.ts`
-
-- 2026-08-29 07:33:56 apply-patch: `packages/os/tests/workspace-node-registry-routing.test.ts`
-- 2026-08-29 07:34:15 apply-patch: `packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts`
-
-- 2026-08-29 07:34:35 apply-patch: `.task/os/allow-lifecycle-update-recovery-for-stale-nodes/workpad.md`
+- `packages/workspace/scripts/task-push.js`
 
 ## workspace-owned: validation evidence
 
 - 2026-08-29 07:34:59 `review.run`: passed — OK
 - 2026-08-29 07:35:13 `verify`: passed — OK
 - 2026-08-29 07:36:46 `verify`: passed — OK
+- 2026-08-29 07:37:12 apply-patch: `packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts`
+- 2026-08-29 07:37:12 apply-patch: `packages/os/tests/workspace-node-registry-routing.test.ts`
+- 2026-08-29 07:37:41 `review.run`: passed — OK
+- 2026-08-29 07:37:51 `verify`: passed — OK
