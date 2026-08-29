@@ -114,6 +114,7 @@ Third Codex P1 is fixed locally. Next: strict review, canonical verify, publish 
 - Diff scope is limited to compact output projection + output contract test + task metadata.
 - 2026-08-29 08:14:11 `review.run`: passed — OK
 - 2026-08-29 08:14:54 `verify`: passed — OK
+- 2026-08-29 08:19:06 `verify`: passed — OK
 
 ## final gate
 
