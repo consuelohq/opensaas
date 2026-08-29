@@ -19,6 +19,7 @@ import type { Env, StateLike } from './types';
 
 export class OsDeviceGrantDurableObject {
   private handler: (request: Request) => Promise<Response>;
+  private store: DurableStore;
 
   constructor(state: StateLike, env: Env) {
     const installControlPlaneRepository =
@@ -48,8 +49,9 @@ export class OsDeviceGrantDurableObject {
           fetchImpl: (url, init) => globalThis.fetch(url, init),
         })
       : undefined;
+    this.store = new DurableStore(state.storage);
     this.handler = createOsDeviceAuthorityHandler({
-      store: new DurableStore(state.storage),
+      store: this.store,
       installControlPlaneRepository,
       installDiagnosticBundleStore,
       installTelemetryObserver,
@@ -110,6 +112,10 @@ export class OsDeviceGrantDurableObject {
 
   fetch(request: Request): Promise<Response> {
     return this.handler(request);
+  }
+
+  alarm(): Promise<void> {
+    return this.store.cleanupExpiredGitHubSourceControlInstallStates(Date.now());
   }
 }
 

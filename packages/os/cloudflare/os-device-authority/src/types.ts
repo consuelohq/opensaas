@@ -578,6 +578,9 @@ export type StorageTransactionLike = {
 };
 export type StorageLike = StorageTransactionLike & {
   list?<T>(options?: { prefix?: string }): Promise<Map<string, T>>;
+  getAlarm?(): Promise<number | null>;
+  setAlarm?(scheduledTime: number): Promise<void>;
+  deleteAlarm?(): Promise<void>;
   transaction?<T>(
     closure: (transaction: StorageTransactionLike) => Promise<T>,
   ): Promise<T>;
