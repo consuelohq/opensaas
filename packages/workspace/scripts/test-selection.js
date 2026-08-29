@@ -153,7 +153,10 @@ function matchesPattern(file, pattern) {
 }
 
 function commandKey(test) {
-  return JSON.stringify([test.cwd || '.', test.command]);
+  const cwdKey = Object.prototype.hasOwnProperty.call(test, 'cwd')
+    ? ['present', test.cwd]
+    : ['absent'];
+  return JSON.stringify([cwdKey, test.command]);
 }
 
 function normalizeRule(rule, source = 'explicit') {

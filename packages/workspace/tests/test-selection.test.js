@@ -1291,6 +1291,68 @@ describe('test selection registry', () => {
     }
   });
 
+  it('should preserve invalid cwd validation when suite de-duplication sees the same command', () => {
+    for (const [label, tests] of [
+      [
+        'valid-first',
+        [
+          { name: 'valid root suite', command: [process.execPath, '-e', 'process.exit(0)'] },
+          { name: 'invalid cwd suite', cwd: false, command: [process.execPath, '-e', 'process.exit(0)'] },
+        ],
+      ],
+      [
+        'invalid-first',
+        [
+          { name: 'invalid cwd suite', cwd: '', command: [process.execPath, '-e', 'process.exit(0)'] },
+          { name: 'valid root suite', command: [process.execPath, '-e', 'process.exit(0)'] },
+        ],
+      ],
+    ]) {
+      const registryPath = path.join(
+        os.tmpdir(),
+        `test-selection-cwd-dedupe-${label}-${Date.now()}.json`,
+      );
+      fs.writeFileSync(
+        registryPath,
+        JSON.stringify({
+          version: 1,
+          rules: [
+            {
+              id: `cwd-dedupe-${label}`,
+              source: ['packages/cwd-fixture/**'],
+              critical: true,
+              origin: 'test',
+              tests,
+            },
+          ],
+        }),
+      );
+
+      const result = run([
+        'check',
+        '--registry',
+        registryPath,
+        '--changed-file',
+        'packages/cwd-fixture/src/index.ts',
+        '--run',
+        '--json',
+      ]);
+      const data = JSON.parse(result.stdout);
+
+      expect(result.status, label).toBe(1);
+      expect(data.selectedSuites, label).toHaveLength(2);
+      expect(
+        data.runResults.find((runResult) => runResult.name === 'invalid cwd suite'),
+        label,
+      ).toMatchObject({
+        name: 'invalid cwd suite',
+        status: 'failed',
+        exitCode: null,
+        error: { code: 'INVALID_SUITE_CWD' },
+      });
+    }
+  });
+
   it('provisions OS package dependencies before selected OS suites on a clean checkout', () => {
     const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'test-selection-os-deps-'));
     const osRoot = path.join(repo, 'packages', 'os');
