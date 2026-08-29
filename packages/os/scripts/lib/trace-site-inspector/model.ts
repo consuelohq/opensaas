@@ -54,11 +54,30 @@ export function isBatchChild(row: TraceRecord | null | undefined): boolean {
 }
 
 export function branchName(row: TraceRecord | null | undefined): string {
-  for (const candidate of [row?.workPath, row?.branch, row?.taskSession, row?.workSession]) {
-    const value = clean(candidate);
-    if (value) return value;
-  }
+  const taskSession = sessionValue(row?.taskSession);
+  const workSession = sessionValue(row?.workSession);
+  if (taskSession && workSession) return `${taskSession} + ${workSession}`;
+  const workPath = sessionValue(row?.workPath);
+  if (workPath) return workPath;
+  const branch = sessionValue(row?.branch);
+  if (branch) return branch;
+  if (taskSession) return taskSession;
+  if (workSession) return workSession;
   return 'no-branch';
+}
+
+export function sessionDisplayName(row: TraceRecord | null | undefined): string {
+  const session = branchName(row);
+  const workPath = sessionValue(row?.workPath);
+  if (!workPath || session.includes(' + ')) return session;
+  const normalized = workPath.replaceAll('\\', '/').replace(/\/+$/, '');
+  return normalized.split('/').filter(Boolean).at(-1) || session;
+}
+
+function sessionValue(value: unknown): string {
+  const candidate = clean(value);
+  if (!candidate || candidate === 'no-branch' || candidate === '(no branch)') return '';
+  return candidate;
 }
 
 export function traceNodeId(row: TraceRecord | null | undefined): string {

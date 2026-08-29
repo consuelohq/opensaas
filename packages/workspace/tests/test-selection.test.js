@@ -522,6 +522,43 @@ describe('test selection registry', () => {
     )).toBe(true);
   });
 
+  it('uses focused MCP call-timeout envelope contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/mcp-gateway.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/mcp.ts',
+      '--changed-file',
+      'packages/os/scripts/server/services/call-service.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/executor.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/types.ts',
+      '--changed-file',
+      'packages/os/tests/mcp-gateway.test.ts',
+      '--changed-file',
+      'packages/os/tests/facade/facade.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-call-timeout-envelope');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS MCP call-timeout envelope contracts',
+      'OS MCP call-timeout facade contracts',
+    ]));
+    expect(suiteNames.some((name) =>
+      name === 'OS MCP call-timeout syntax contracts'
+      || name === 'OS MCP admission syntax contracts'
+      || name === 'OS ChatGPT node-routing syntax contracts'
+    )).toBe(true);
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -581,6 +618,8 @@ describe('test selection registry', () => {
       'packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts',
       '--changed-file',
       'packages/os/cloudflare/os-device-authority/src/services/connectors.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts',
       '--changed-file',
       'packages/os/scripts/lib/lifecycle/engine.ts',
       '--changed-file',
@@ -1320,6 +1359,23 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).toContain('os-script-parity-audit');
     expect(selectedSuiteNames).toContain('OS script parity audit contracts');
     expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('routes OS test-environment isolation changes to focused contracts without the broad package suite', () => {
+    for (const changedFile of [
+      'packages/os/vitest.config.ts',
+      'packages/os/tests/test-environment.ts',
+      'packages/os/tests/test-environment-contract.test.ts',
+    ]) {
+      const result = run(['check', '--changed-file', changedFile, '--json']);
+      const data = json(result);
+      const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+      const suites = data.selectedSuites.map((suite) => suite.name);
+
+      expect(matchedRuleIds).toContain('os-test-environment-isolation');
+      expect(suites).toContain('OS test-environment isolation contracts');
+      expect(suites).not.toContain('@consuelo/os package test');
+    }
   });
 
   it('routes work-session Code Call changes to focused authority tests', () => {

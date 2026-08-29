@@ -88,6 +88,13 @@ function writeLegacyWorkSessionMetadata(home: string, workPath: string): string 
   return workSession;
 }
 
+function isolatedTestEnv(home: string): NodeJS.ProcessEnv {
+  const env = { ...process.env, CONSUELO_HOME: home };
+  delete env.CONSUELO_TRACE_DB;
+  delete env.TRACE_DB;
+  return env;
+}
+
 afterEach(() => {
   while (tempRoots.length > 0) {
     const root = tempRoots.pop();
@@ -97,6 +104,7 @@ afterEach(() => {
 
 describe('work-session code.call authority', () => {
   it('rejects mixed task and work session authority before execution', async () => {
+    const home = tempRoot('consuelo-code-call-home-');
     const mainRepo = tempRoot('consuelo-code-call-main-');
     initRepo(mainRepo);
 
@@ -108,6 +116,7 @@ describe('work-session code.call authority', () => {
       code: 'print("should not run")',
     }, {
       cwd: mainRepo,
+      env: isolatedTestEnv(home),
       now: () => 1_000,
       randomUUID: () => TEST_UUID,
     });
@@ -131,7 +140,7 @@ describe('work-session code.call authority', () => {
       code: 'from pathlib import Path\nPath("created.txt").write_text("work-session")',
     }, {
       cwd: mainRepo,
-      env: { ...process.env, CONSUELO_HOME: home },
+      env: isolatedTestEnv(home),
       now: () => 1_000,
       randomUUID: () => TEST_UUID,
     });
@@ -155,7 +164,7 @@ describe('work-session code.call authority', () => {
       code: 'printf bash > created-bash.txt',
     }, {
       cwd: mainRepo,
-      env: { ...process.env, CONSUELO_HOME: home },
+      env: isolatedTestEnv(home),
       now: () => 1_000,
       randomUUID: () => TEST_UUID,
     });
@@ -178,7 +187,7 @@ describe('work-session code.call authority', () => {
       code: 'await Bun.write("created-bun.txt", "bun")',
     }, {
       cwd: mainRepo,
-      env: { ...process.env, CONSUELO_HOME: home },
+      env: isolatedTestEnv(home),
       now: () => 1_000,
       randomUUID: () => TEST_UUID,
     });
@@ -201,7 +210,7 @@ describe('work-session code.call authority', () => {
       code: 'print("should not run without containment")',
     }, {
       cwd: mainRepo,
-      env: { ...process.env, CONSUELO_HOME: home },
+      env: isolatedTestEnv(home),
       now: () => 1_000,
       randomUUID: () => TEST_UUID,
     });
@@ -224,7 +233,7 @@ describe('work-session code.call authority', () => {
       code: 'print("should not run")',
     }, {
       cwd: mainRepo,
-      env: { ...process.env, CONSUELO_HOME: home },
+      env: isolatedTestEnv(home),
       now: () => 1_000,
       randomUUID: () => TEST_UUID,
     });
@@ -245,6 +254,8 @@ describe('work-session code.call authority', () => {
     const env = { ...process.env, WORKSPACE_DAEMON_CONSUELO_HOME: home };
     delete env.CONSUELO_HOME;
     delete env.CONSUELO_OS_HOME;
+    delete env.CONSUELO_TRACE_DB;
+    delete env.TRACE_DB;
 
     const result = await executeTool('code.call', {
       workSession,
@@ -281,7 +292,7 @@ describe('work-session code.call authority', () => {
       code: `from pathlib import Path\nprint(Path(${JSON.stringify(secretPath)}).read_text())`,
     }, {
       cwd: mainRepo,
-      env: { ...process.env, CONSUELO_HOME: home },
+      env: isolatedTestEnv(home),
       now: () => 1_000,
       randomUUID: () => TEST_UUID,
     });
@@ -307,7 +318,7 @@ describe('work-session code.call authority', () => {
       code: `from pathlib import Path\nPath(${JSON.stringify(outsideFile)}).write_text("escaped")`,
     }, {
       cwd: mainRepo,
-      env: { ...process.env, CONSUELO_HOME: home },
+      env: isolatedTestEnv(home),
       now: () => 1_000,
       randomUUID: () => TEST_UUID,
     });
@@ -334,7 +345,7 @@ describe('work-session code.call authority', () => {
       code: 'from pathlib import Path\nPath("outside-link/escaped.txt").write_text("escaped")',
     }, {
       cwd: mainRepo,
-      env: { ...process.env, CONSUELO_HOME: home },
+      env: isolatedTestEnv(home),
       now: () => 1_000,
       randomUUID: () => TEST_UUID,
     });
@@ -359,7 +370,7 @@ describe('work-session code.call authority', () => {
       code: 'from pathlib import Path\nPath("should-not-exist.txt").write_text("no")',
     }, {
       cwd: mainRepo,
-      env: { ...process.env, CONSUELO_HOME: home },
+      env: isolatedTestEnv(home),
       now: () => 1_000,
       randomUUID: () => TEST_UUID,
     });

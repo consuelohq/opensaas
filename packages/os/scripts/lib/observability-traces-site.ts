@@ -22,17 +22,22 @@ export function resolveObservabilitySessionValue(row: Record<string, unknown>): 
   const metadata = row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
     ? row.metadata as Record<string, unknown>
     : {};
-  for (const value of [
-    row.workPath,
-    row.branch,
-    row.gitBranch,
-    row.taskSession,
-    row.workSession,
-    metadata.workPath,
-    metadata.branch,
-  ]) {
-    if (value !== undefined && value !== null && String(value).length > 0) return String(value);
-  }
+  const firstSessionValue = (...values: unknown[]): string => {
+    for (const value of values) {
+      const candidate = String(value ?? '').trim();
+      if (candidate && candidate !== 'no-branch' && candidate !== '(no branch)') return candidate;
+    }
+    return '';
+  };
+  const workPath = firstSessionValue(row.workPath, metadata.workPath);
+  if (workPath) return workPath;
+  const branch = firstSessionValue(row.branch, row.gitBranch, metadata.branch);
+  if (branch) return branch;
+  const taskSession = firstSessionValue(row.taskSession);
+  const workSession = firstSessionValue(row.workSession, metadata.workSession);
+  if (taskSession && workSession) return `${taskSession} + ${workSession}`;
+  if (taskSession) return taskSession;
+  if (workSession) return workSession;
   return 'no-branch';
 }
 

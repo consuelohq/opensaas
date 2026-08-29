@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/isolate-test-traces-and-clarify-session-observability",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2253,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2253",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2253",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2253/isolate-test-traces-and-clarify-session-observability",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2253",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2253/isolate-test-traces-and-clarify-session-observability",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-isolate-test-traces-and-clarify-session-observability",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_679e8c531f39",
+  "tmuxSession": "opensaas-os-isolate-test-traces-and-clarify-session-observab-679e8c53",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-isolate-test-traces-and-clarify-session-observability/.task/os/isolate-test-traces-and-clarify-session-observability/session.json",
+  "createdAt": "2026-08-29T00:06:13.084Z"
+}
