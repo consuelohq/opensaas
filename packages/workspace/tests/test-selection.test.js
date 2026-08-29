@@ -111,6 +111,7 @@ describe('test selection registry', () => {
     expect(rule).toBeDefined();
     expect(rule.source).toContain('packages/os/scripts/lib/trace-site-inspector/**');
     expect(rule.source).toContain('packages/os/scripts/lib/trace-cost-estimator.ts');
+    expect(rule.source).toContain('packages/os/scripts/lib/trace-session-identity.ts');
     expect(serialized).not.toContain('packages/workspace/scripts/trace-site-inspector');
     expect(serialized).not.toContain('packages/workspace/tests/trace-site-inspector');
     expect(serialized).not.toContain('trace-gateway-service.test.ts');
@@ -522,6 +523,43 @@ describe('test selection registry', () => {
     )).toBe(true);
   });
 
+  it('uses focused MCP call-timeout envelope contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/mcp-gateway.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/mcp.ts',
+      '--changed-file',
+      'packages/os/scripts/server/services/call-service.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/executor.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/types.ts',
+      '--changed-file',
+      'packages/os/tests/mcp-gateway.test.ts',
+      '--changed-file',
+      'packages/os/tests/facade/facade.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-call-timeout-envelope');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS MCP call-timeout envelope contracts',
+      'OS MCP call-timeout facade contracts',
+    ]));
+    expect(suiteNames.some((name) =>
+      name === 'OS MCP call-timeout syntax contracts'
+      || name === 'OS MCP admission syntax contracts'
+      || name === 'OS ChatGPT node-routing syntax contracts'
+    )).toBe(true);
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -581,6 +619,8 @@ describe('test selection registry', () => {
       'packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts',
       '--changed-file',
       'packages/os/cloudflare/os-device-authority/src/services/connectors.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts',
       '--changed-file',
       'packages/os/scripts/lib/lifecycle/engine.ts',
       '--changed-file',
@@ -710,6 +750,101 @@ describe('test selection registry', () => {
     expect(data.selectedSuites.map((suite) => suite.name)).toContain(
       'OS Vitest runtime regression contracts',
     );
+  });
+
+  it('uses exclusive frontend config contracts instead of unrelated package suites', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/twenty-front/eslint.config.mjs',
+      '--changed-file',
+      'packages/twenty-ui/eslint.config.mjs',
+      '--changed-file',
+      'packages/eslint-rules/eslint.config.react.mjs',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('frontend-lint-config-contract');
+    expect(matchedRuleIds).not.toContain('twenty-front-project');
+    expect(matchedRuleIds).not.toContain('auto:twenty-front:test');
+    expect(matchedRuleIds).not.toContain('auto:twenty-ui:test');
+    expect(matchedRuleIds).not.toContain('auto:twenty-eslint-rules:test');
+    expect(suiteNames).toEqual(
+      expect.arrayContaining([
+        'changed frontend lint helper tests',
+        'GitHub workflow policy tests',
+        'changed GitHub workflow security checks',
+        'changed frontend files lint',
+      ]),
+    );
+  });
+
+  it('keeps runtime source on the broader project suite alongside an exclusive config contract', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/twenty-front/eslint.config.mjs',
+      '--changed-file',
+      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const configRule = data.matchedRules.find(
+      (rule) => rule.id === 'frontend-lint-config-contract',
+    );
+    const projectRule = data.matchedRules.find(
+      (rule) => rule.id === 'twenty-front-project',
+    );
+
+    expect(configRule?.matchedFiles).toEqual([
+      'packages/twenty-front/eslint.config.mjs',
+    ]);
+    expect(projectRule?.matchedFiles).toEqual([
+      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
+    ]);
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'twenty-front test target',
+    );
+  });
+
+  it('uses the focused OS artifact contract for the metering manifest removal', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/artifacts-design.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('obsolete-metering-artifact-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'OS artifact manifest contract',
+    ]);
+  });
+
+  it('uses the focused native OS workflow contracts for Windows workflow assertions', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/windows-platform.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('native-os-workflow-contract');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'native OS selector tests',
+      'native Windows workflow contracts',
+      'GitHub workflow policy tests',
+      'changed GitHub workflow security checks',
+    ]);
   });
 
   it('uses the API package Jest configuration for API changes', () => {
@@ -982,6 +1117,38 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes partial-install recovery CLI changes through focused critical coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/bootstrap.sh',
+      '--changed-file',
+      'packages/os/scripts/install.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/install-state.ts',
+      '--changed-file',
+      'packages/os/tests/bootstrap-recovery-cli.test.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-command.test.ts',
+      '--json',
+    ]));
+
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const lifecycleSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-lifecycle-update-handoff',
+    );
+
+    expect(matchedRuleIds).toContain('os-lifecycle-update-handoff');
+    expect(matchedRuleIds).toContain('os-google-workspace');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(lifecycleSuite?.critical).toBe(true);
+    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
+      'packages/os/tests/bootstrap-recovery-cli.test.ts',
+      'packages/os/tests/lifecycle-command.test.ts',
+    ]));
+  });
+
   it('routes local OS response lifecycle changes through critical lifecycle coverage', () => {
     const data = json(run([
       'check',
@@ -1106,6 +1273,31 @@ describe('test selection registry', () => {
       'tests/launcher-local-customization.test.ts',
       'tests/internal-launcher-regressions.test.ts',
     ]));
+  });
+
+  it('keeps Artifacts and OS test-safety changes on focused critical suites', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/artifacts.ts',
+      '--changed-file',
+      'packages/os/tests/artifacts.test.ts',
+      '--changed-file',
+      'packages/os/tests/distribution/release-channels-cli.test.ts',
+      '--changed-file',
+      'packages/os/tests/legacy-system-daemons.test.ts',
+      '--changed-file',
+      'packages/os/tests/test-source-safety.test.ts',
+      '--json',
+    ]));
+    const ruleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(ruleIds).toContain('os-internal-workspace-shell');
+    expect(ruleIds).toContain('os-test-source-safety');
+    expect(ruleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toContain('OS internal workspace shell contracts');
+    expect(suiteNames).toContain('OS test source safety contracts');
   });
 
   it('routes gateway security and Caddy handoff changes through focused contracts instead of the broad OS package suite', () => {
@@ -1320,6 +1512,23 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).toContain('os-script-parity-audit');
     expect(selectedSuiteNames).toContain('OS script parity audit contracts');
     expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('routes OS test-environment isolation changes to focused contracts without the broad package suite', () => {
+    for (const changedFile of [
+      'packages/os/vitest.config.ts',
+      'packages/os/tests/test-environment.ts',
+      'packages/os/tests/test-environment-contract.test.ts',
+    ]) {
+      const result = run(['check', '--changed-file', changedFile, '--json']);
+      const data = json(result);
+      const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+      const suites = data.selectedSuites.map((suite) => suite.name);
+
+      expect(matchedRuleIds).toContain('os-test-environment-isolation');
+      expect(suites).toContain('OS test-environment isolation contracts');
+      expect(suites).not.toContain('@consuelo/os package test');
+    }
   });
 
   it('routes work-session Code Call changes to focused authority tests', () => {

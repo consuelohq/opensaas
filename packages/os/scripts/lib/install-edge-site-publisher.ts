@@ -50,6 +50,39 @@ const hash = (value: string) => createHash('sha256').update(value).digest('hex')
 const versionId = (value: string) => `sha256-${hash(value).slice(0, 16)}`;
 const host = (value: string) => value.trim().toLowerCase();
 const baseDomain = (value: string) => host(value).endsWith('.consuelohq.com') ? 'consuelohq.com' : host(value).split('.').slice(-2).join('.');
+
+function assertInstalledWorkspaceIdentity(input: PublishInput): void {
+  const authPath = path.join(input.home, 'node', 'security', 'generated', 'auth.json');
+  if (!fs.existsSync(authPath)) return;
+  let auth: unknown;
+  try {
+    auth = JSON.parse(fs.readFileSync(authPath, 'utf8'));
+  } catch {
+    throw new Error('installed OS auth identity is unreadable');
+  }
+  if (!auth || typeof auth !== 'object' || Array.isArray(auth)) {
+    throw new Error('installed OS auth identity is invalid');
+  }
+  const identity = auth as Record<string, unknown>;
+  const expected = {
+    workspaceId: typeof identity.workspaceId === 'string' ? identity.workspaceId.trim() : '',
+    workspaceSlug: typeof identity.workspaceSlug === 'string' ? identity.workspaceSlug.trim().toLowerCase() : '',
+    workspaceHost: typeof identity.workspaceHost === 'string' ? host(identity.workspaceHost) : '',
+  };
+  if (!expected.workspaceId || !expected.workspaceSlug || !expected.workspaceHost) {
+    throw new Error('installed OS auth identity is incomplete');
+  }
+  if (input.workspaceId.trim() !== expected.workspaceId) {
+    throw new Error('edge publication workspaceId does not match the installed OS auth identity');
+  }
+  if (input.workspaceSlug.trim().toLowerCase() !== expected.workspaceSlug) {
+    throw new Error('edge publication workspaceSlug does not match the installed OS auth identity');
+  }
+  if (host(input.workspaceHost) !== expected.workspaceHost) {
+    throw new Error('edge publication workspaceHost does not match the installed OS auth identity');
+  }
+}
+
 const clean = (value: unknown): unknown => {
   if (typeof value === 'string') return value.replace(forbiddenLogWords, '[redacted]');
   if (Array.isArray(value)) return value.map(clean);
@@ -80,6 +113,7 @@ function readSnapshotHtml(snapshotPath: string, siteName: string): string {
 }
 
 export function createWorkspaceEdgeSnapshotPlan(input: PublishInput): WorkspaceEdgeSnapshotPlan {
+  assertInstalledWorkspaceIdentity(input);
   const workspaceHost = host(input.workspaceHost);
   const sitesDir = path.join(input.home, 'sites');
   const sourceBySite = new Map<WorkspaceSiteSnapshotId, { html: string; snapshotPath: string; contentHash: string }>();

@@ -25,6 +25,7 @@ import {
 } from './lib/cli-ui';
 import {
   detectAgents,
+  materializeLifecycleCommand,
   provisionLocalOs,
   readLocalNodeIdentity,
   resolveOsHome,
@@ -88,6 +89,7 @@ type InstallOptions = {
   skipDaemons: boolean;
   skipAgents: boolean;
   home?: string;
+  recoveryPackageRoot?: string;
   mode?: OsMode;
   workspaceName?: string;
   workspaceHost?: string;
@@ -327,6 +329,40 @@ function maybeCreateWorkspaceBootstrap(
   });
 }
 
+function parseLifecycleCommandMaterializationArgs(argv: string[]): {
+  home?: string;
+  recoveryPackageRoot?: string;
+} | null {
+  if (argv[0] !== '--materialize-lifecycle-command') return null;
+
+  const options: { home?: string; recoveryPackageRoot?: string } = {};
+  const readValue = (flag: string, index: number): string => {
+    const value = argv[index + 1];
+    if (!value || value.startsWith('-')) {
+      throw new Error(`${flag} requires a value`);
+    }
+    return value;
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === '--materialize-lifecycle-command') continue;
+    if (arg === '--home') {
+      options.home = readValue('--home', index);
+      index += 1;
+      continue;
+    }
+    if (arg === '--recovery-package-root') {
+      options.recoveryPackageRoot = readValue('--recovery-package-root', index);
+      index += 1;
+      continue;
+    }
+    throw new Error(`unknown lifecycle materialization option: ${arg}`);
+  }
+
+  return options;
+}
+
 function parseArgs(argv: string[]): InstallOptions {
   const options: InstallOptions = {
     dryRun: false,
@@ -362,6 +398,9 @@ function parseArgs(argv: string[]): InstallOptions {
     else if (arg === '--skip-agents') options.skipAgents = true;
     else if (arg === '--home') {
       options.home = readValue('--home', index);
+      index += 1;
+    } else if (arg === '--recovery-package-root') {
+      options.recoveryPackageRoot = readValue('--recovery-package-root', index);
       index += 1;
     } else if (arg === '--mode') {
       const mode = readValue('--mode', index);
@@ -1389,7 +1428,17 @@ async function promptOptions(
 
 async function main(): Promise<void> {
   let diagnostics: InstallDiagnostics | null = null;
-  const parsedOptions = parseArgs(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  const lifecycleMaterialization = parseLifecycleCommandMaterializationArgs(argv);
+  if (lifecycleMaterialization) {
+    materializeLifecycleCommand(
+      resolveOsHome(lifecycleMaterialization.home),
+      false,
+      { recoveryPackageRoot: lifecycleMaterialization.recoveryPackageRoot },
+    );
+    return;
+  }
+  const parsedOptions = parseArgs(argv);
   const installId = resolveInstallerInstallId();
   const authorityOrigin =
     process.env.CONSUELO_OS_AUTHORITY_ORIGIN?.trim() ||
@@ -1488,6 +1537,7 @@ async function main(): Promise<void> {
     try {
       result = provisionLocalOs({
         home: options.home,
+        recoveryPackageRoot: options.recoveryPackageRoot,
         mode: options.mode ?? 'local',
         port: resolveLocalOsPortOverride(),
         dryRun: options.dryRun,

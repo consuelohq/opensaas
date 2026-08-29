@@ -1,0 +1,130 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/bust-leadconnector-embed-asset-caches",
+  "base": "origin/stream/dialer",
+  "headSha": "57b46e9d070c5ee4d2454d901595683fbe0d5316",
+  "changeHash": "798a6ceb1c06d7ca87bd89ae922857eab8cdb6b7aa927f506b127c64646f6462",
+  "changedFiles": [
+    "packages/lead-connector/scripts/build-embed.ts",
+    "packages/lead-connector/src/embed/embed-build.contract.test.ts"
+  ],
+  "verifiedAt": "2026-08-04T23:11:59.258Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/bust-leadconnector-embed-asset-caches/current.json",
+        ".task/dialer/bust-leadconnector-embed-asset-caches/session.json",
+        ".task/dialer/bust-leadconnector-embed-asset-caches/workpad.md",
+        ".task/tasks/dialer/bust-leadconnector-embed-asset-caches.json",
+        "packages/lead-connector/scripts/build-embed.ts",
+        "packages/lead-connector/src/embed/embed-build.contract.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/scripts/build-embed.ts",
+            "packages/lead-connector/src/embed/embed-build.contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/lead-connector:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/lead-connector.",
+          "matchedFiles": [
+            "packages/lead-connector/scripts/build-embed.ts",
+            "packages/lead-connector/src/embed/embed-build.contract.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/lead-connector",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/lead-connector:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 634,
+          "outputTail": "ition, opportunity snapshots, and child attempts in call detail [0.15ms]\n(pass) LeadConnector embed view > resolves root and admin to administration while reserving overlay paths for calling [0.02ms]\n(pass) LeadConnector embed view > renders the sidebar route as an operator workspace with callable CRM records [0.11ms]\n(pass) LeadConnector embed view > renders API-reported resource totals instead of capped loaded-array lengths [0.02ms]\n(pass) LeadConnector embed view > renders the mature queue-first call setup in a ready overlay [0.05ms]\n(pass) LeadConnector embed view > renders only target confirmation and next actions before a call starts [0.05ms]\n(pass) LeadConnector embed view > offers multiline dialing only after multiple targets are selected [0.03ms]\n(pass) LeadConnector embed view > renders a progressive starting state without future connected or wrap-up controls [0.02ms]\n(pass) LeadConnector embed view > focuses the human winner and summarizes losing legs while connected [0.02ms]\n(pass) LeadConnector embed view > returns a no-winner batch to the dialer without requiring a disposition [0.07ms]\n(pass) LeadConnector embed view > reveals wrap-up only after the call reaches a terminal state [0.02ms]\n\npackages/lead-connector/src/embed/click-to-call-runtime.test.ts:\n(pass) LeadConnector click-to-call runtime > anchors beside Smart Lists and relays supported Custom JS user context [26.72ms]\n(pass) LeadConnector click-to-call runtime > anchors beside the native Opportunities list control without duplication [4.92ms]\n\npackages/lead-connector/src/embed/embed-build.contract.test.ts:\n(pass) LeadConnector embed build > content-versions every application asset reference with its exact digest [24.88ms]\n\npackages/lead-connector/src/embed/architecture.contract.test.ts:\n(pass) LeadConnector browser architecture and branding > contains no forbidden branding or server/runtime dependencies in browser source and public assets [0.99ms]\n(pass) LeadConnector browser architecture and branding > builds a browser-only bundle without forbidden dependencies or branding [7.23ms]\n(pass) LeadConnector browser architecture and branding > targets the actual approved live or sandbox custom-page origin for click-to-call messages [0.08ms]\n(pass) LeadConnector browser architecture and branding > owns one route-aware launcher and one compact overlay iframe lifecycle [0.06ms]\n(pass) LeadConnector browser architecture and branding > authenticates the overlay through the supported Custom JS session context API [0.04ms]\n(pass) LeadConnector browser architecture and branding > anchors the launcher beside native Contacts and Opportunities controls [0.06ms]\n(pass) LeadConnector browser architecture and branding > publishes a separate wrapped Marketplace artifact while keeping the public script executable [0.18ms]\n(pass) LeadConnector browser architecture and branding > creates the iframe on demand and preserves a busy session across route changes [0.06ms]\n(pass) LeadConnector browser architecture and branding > keeps comma-separated selector literals safe for Marketplace editor persistence [0.16ms]\n(pass) LeadConnector browser architecture and branding > restarts the trusted parent bootstrap exchange when authentication is retried [0.03ms]\n\npackages/lead-connector/src/embed/agent-voice.test.ts:\n(pass) LeadConnector browser agent voice > gets microphone permission, registers the device, and resolves after the agent call is accepted [0.33ms]\n(pass) LeadConnector browser agent voice > rejects if the media call fails before acceptance and disconnects the partial leg [0.14ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.06ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.25ms]\n\n 89 pass\n 0 fail\n 755 expect() calls\nRan 89 tests across 18 files. [625.00ms]\n"
+        },
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/lead-connector",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/lead-connector:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5,
+          "outputTail": "eprecation.\n      --throw-deprecation             Determine whether or not deprecation warnings result in errors.\n      --title=<val>                   Set the process title\n      --zero-fill-buffers             Boolean to force Buffer.allocUnsafe(size) to be zero-filled.\n      --use-system-ca                 Use the system's trusted certificate authorities\n      --use-openssl-ca                Use OpenSSL's default CA store\n      --use-bundled-ca                Use bundled CA store\n      --redis-preconnect              Preconnect to $REDIS_URL at startup\n      --sql-preconnect                Preconnect to PostgreSQL at startup\n      --no-addons                     Throw an error if process.dlopen is called, and disable export condition \"node-addons\"\n      --unhandled-rejections=<val>    One of \"strict\", \"throw\", \"warn\", \"none\", or \"warn-with-error-code\"\n      --console-depth=<val>           Set the default depth for console.log object inspection (default: 2)\n      --user-agent=<val>              Set the default User-Agent header for HTTP requests\n      --cron-title=<val>              Title for cron execution mode\n      --cron-period=<val>             Cron period for cron execution mode\n      --main-fields=<val>             Main fields to lookup in package.json. Defaults to --target dependent\n      --preserve-symlinks             Preserve symlinks when resolving files\n      --preserve-symlinks-main        Preserve symlinks when resolving the main entry point\n      --extension-order=<val>         Defaults to: .tsx,.ts,.jsx,.js,.json\n      --tsconfig-override=<val>       Specify custom tsconfig.json. Default <d>$cwd<r>/tsconfig.json\n  -d, --define=<val>                  Substitute K:V while parsing, e.g. --define process.env.NODE_ENV:\"development\". Values are parsed as JSON.\n      --drop=<val>                    Remove function calls, e.g. --drop=console removes all console.* calls.\n      --feature=<val>                 Enable a feature flag for dead-code elimination, e.g. --feature=SUPER_SECRET\n  -l, --loader=<val>                  Parse files with .ext:loader, e.g. --loader .js:jsx. Valid loaders: js, jsx, ts, tsx, json, toml, text, file, wasm, napi\n      --no-macros                     Disable macros from being executed in the bundler, transpiler and runtime\n      --jsx-factory=<val>             Changes the function called when compiling JSX elements using the classic JSX runtime\n      --jsx-fragment=<val>            Changes the function called when compiling JSX fragments\n      --jsx-import-source=<val>       Declares the module specifier to be used for importing the jsx and jsxs factory functions. Default: \"react\"\n      --jsx-runtime=<val>             \"automatic\" (default) or \"classic\"\n      --jsx-side-effects              Treat JSX elements as having side effects (disable pure annotations)\n      --ignore-dce-annotations        Ignore tree-shaking annotations such as @__PURE__\n      --env-file=<val>                Load environment variables from the specified file(s)\n      --no-env-file                   Disable automatic loading of .env files\n      --cwd=<val>                     Absolute path to resolve files & entry points from. This just changes the process' cwd.\n  -c, --config=<val>                  Specify path to Bun config file. Default <d>$cwd<r>/bunfig.toml\n  -h, --help                          Display this menu and exit\n\nExamples:\n  Run a JavaScript or TypeScript file\n  bun run ./index.js\n  bun run ./index.tsx\n\n  Run a package.json script\n  bun run dev\n  bun run lint\n\nFull documentation is available at https://bun.com/docs/cli/run\n\npackage.json scripts (6 found):\n  $ bun run test\n    bun test src\n\n  $ bun run typecheck\n    tsc --noEmit\n\n  $ bun run build\n    tsc && bun run build:embed\n\n  $ bun run build:embed\n    bun ./scripts/build-embed.ts\n\n  $ bun run deploy:embed\n    bun run build:embed && wrangler deploy --config wrangler.jsonc\n\n  $ bun run configure:sandbox-menu\n    bun ./scripts/configure-sandbox-menu.ts\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

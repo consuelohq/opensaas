@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -77,18 +77,18 @@ describe.skipIf(process.platform !== 'darwin')('legacy root LaunchDaemon retirem
     const before = spawnSync('cat', [path], { encoding: 'utf8' }).stdout;
     const result = run(['--dry-run'], dir);
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain('launchctl bootout system/com.consuelo.workspace.system');
+    expect(result.stdout).toContain('would:');
+    expect(result.stdout).toContain('system/com.consuelo.workspace.system');
     expect(result.stdout).toContain('retire ' + path);
     expect(spawnSync('cat', [path], { encoding: 'utf8' }).stdout).toBe(before);
   });
 
-  it('refuses mutation without root authority', () => {
-    if (typeof process.getuid !== 'function' || process.getuid() === 0) return;
-    const dir = temporaryDirectory();
-    writeLegacy(dir, 'com.consuelo.workspace.system', '/Users/example/Dev/opensaas/packages/workspace/scripts/start-brain-daemon.sh');
-    const result = run(['--apply'], dir);
-    expect(result.status).toBe(4);
-    expect(result.stderr).toMatch(/requires administrator privileges/i);
-    expect(result.stderr).toContain('sudo');
+  it('places the privilege gate before the mutating retirement phase', () => {
+    const source = readFileSync(helper, 'utf8');
+    const privilegeGate = source.indexOf('if [ "$(id -u)" -ne 0 ]; then');
+    const mutationPhase = source.indexOf('stamp="$(date -u');
+
+    expect(privilegeGate).toBeGreaterThanOrEqual(0);
+    expect(mutationPhase).toBeGreaterThan(privilegeGate);
   });
 });

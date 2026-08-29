@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/bust-leadconnector-embed-asset-caches",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1778,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1778",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1778",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1778/bust-leadconnector-embed-asset-caches",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1778",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1778/bust-leadconnector-embed-asset-caches",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-bust-leadconnector-embed-asset-caches",
+  "taskSession": "tsk_48db8eac402f",
+  "tmuxSession": "opensaas-dialer-bust-leadconnector-embed-asset-caches-48db8eac",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-bust-leadconnector-embed-asset-caches/.task/dialer/bust-leadconnector-embed-asset-caches/session.json",
+  "createdAt": "2026-08-04T23:08:29.243Z"
+}

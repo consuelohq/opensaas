@@ -10,6 +10,7 @@ import {
 import {
   branchName,
   childTraceRecords,
+  sessionDisplayName,
   totalTokens,
 } from '../scripts/lib/trace-site-inspector/model';
 import {
@@ -57,8 +58,20 @@ describe('Trace Burn keyboard and row interaction contracts', () => {
 
   it('should fall through empty work paths when choosing the session label', () => {
     expect(branchName({ workPath: '', workSession: 'wrk_session_1' })).toBe('wrk_session_1');
+    expect(branchName({ branch: 'no-branch', workSession: 'wrk_session_1' })).toBe('wrk_session_1');
     expect(branchName({ workPath: '', branch: 'task/os/example', taskSession: 'tsk_1' })).toBe('task/os/example');
     expect(branchName({ workPath: 'Raycast Extension', workSession: 'wrk_session_2' })).toBe('Raycast Extension');
+    expect(branchName({ taskSession: 'tsk_conflict', workSession: 'wrk_conflict' })).toBe('tsk_conflict + wrk_conflict');
+  });
+
+  it('compacts work-session paths for the table while preserving full session identity separately', () => {
+    const row = {
+      workPath: '/private/var/folders/aa/bb/T/consuelo-work-session-fs-UF3Sz2/work',
+      workSession: 'wrk_session_2',
+    };
+    expect(branchName(row)).toBe('/private/var/folders/aa/bb/T/consuelo-work-session-fs-UF3Sz2/work');
+    expect(sessionDisplayName(row)).toBe('work');
+    expect(sessionDisplayName({ branch: 'task/os/example', taskSession: 'tsk_1' })).toBe('task/os/example');
   });
 
   it('maps sessions deterministically through a broad light/dark color preset ring', () => {
