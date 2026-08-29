@@ -441,6 +441,14 @@ export class DurableStore implements Store {
   async putGitHubSourceControlInstallState(state: GitHubSourceControlInstallState) {
     try {
       await this.storage.put(`gss:${state.state}`, state);
+      if (this.storage.setAlarm) {
+        const currentAlarm = this.storage.getAlarm
+          ? await this.storage.getAlarm()
+          : null;
+        if (currentAlarm === null || state.expiresAt < currentAlarm) {
+          await this.storage.setAlarm(state.expiresAt);
+        }
+      }
     } catch {
       throw new Error('github source-control install state write failed');
     }
@@ -457,6 +465,29 @@ export class DurableStore implements Store {
       await this.storage.delete(`gss:${state}`);
     } catch {
       throw new Error('github source-control install state delete failed');
+    }
+  }
+  async cleanupExpiredGitHubSourceControlInstallStates(nowMs: number) {
+    try {
+      if (!this.storage.list) return;
+      const states = await this.storage.list<GitHubSourceControlInstallState>({ prefix: 'gss:' });
+      let nextExpiresAt: number | undefined;
+      for (const [key, state] of states.entries()) {
+        if (state.expiresAt <= nowMs) {
+          await this.storage.delete(key);
+          continue;
+        }
+        if (nextExpiresAt === undefined || state.expiresAt < nextExpiresAt) {
+          nextExpiresAt = state.expiresAt;
+        }
+      }
+      if (nextExpiresAt !== undefined && this.storage.setAlarm) {
+        await this.storage.setAlarm(nextExpiresAt);
+      } else if (nextExpiresAt === undefined && this.storage.deleteAlarm) {
+        await this.storage.deleteAlarm();
+      }
+    } catch {
+      throw new Error('github source-control install state cleanup failed');
     }
   }
   async putGitHubSourceControlConnection(connection: GitHubSourceControlConnection) {

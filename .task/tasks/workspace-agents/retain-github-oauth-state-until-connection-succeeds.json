@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/retain-github-oauth-state-until-connection-succeeds",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2276,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2276",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-retain-github-oauth-state-until-connection-succeeds",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c8ccf4d8268e",
+  "tmuxSession": "opensaas-workspace-agents-retain-github-oauth-state-until-connection-succe-c8ccf4d8",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-retain-github-oauth-state-until-connection-succeeds/.task/session.json",
+  "createdAt": "2026-08-29T02:31:37.270Z"
+}

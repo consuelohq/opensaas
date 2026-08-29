@@ -5,8 +5,10 @@ import type {
 import { b64 } from '../utils';
 
 const GITHUB_API_ORIGIN = 'https://api.github.com';
+const GITHUB_WEB_ORIGIN = 'https://github.com';
 const GITHUB_API_VERSION = '2022-11-28';
 const MAX_REPOSITORY_PAGES = 20;
+const MAX_INSTALLATION_PAGES = 20;
 
 export class GitHubSourceControlError extends Error {
   constructor(
@@ -23,6 +25,11 @@ type GitHubAppConfig = {
   appId: string;
   appSlug: string;
   privateKey: string;
+};
+
+type GitHubOAuthConfig = {
+  clientId: string;
+  clientSecret: string;
 };
 
 export type GitHubInstallation = {
@@ -48,6 +55,19 @@ function requiredConfig(runtime: DeviceAuthorityRuntime): GitHubAppConfig {
     );
   }
   return { appId, appSlug, privateKey };
+}
+
+function requiredOAuthConfig(runtime: DeviceAuthorityRuntime): GitHubOAuthConfig {
+  const clientId = runtime.githubAppClientId?.trim() ?? '';
+  const clientSecret = runtime.githubAppClientSecret?.trim() ?? '';
+  if (!clientId || !clientSecret) {
+    throw new GitHubSourceControlError(
+      'GITHUB_APP_OAUTH_NOT_CONFIGURED',
+      503,
+      'GitHub user authorization is not configured for this Consuelo deployment.',
+    );
+  }
+  return { clientId, clientSecret };
 }
 
 function encodedJson(value: unknown): string {
@@ -163,6 +183,136 @@ export function githubInstallationUrl(runtime: DeviceAuthorityRuntime, state: st
   const url = new URL(`/apps/${encodeURIComponent(config.appSlug)}/installations/new`, 'https://github.com');
   url.searchParams.set('state', state);
   return url.toString();
+}
+
+export function githubUserAuthorizationUrl(
+  runtime: DeviceAuthorityRuntime,
+  state: string,
+  codeChallenge: string,
+): string {
+  const config = requiredOAuthConfig(runtime);
+  const url = new URL('/login/oauth/authorize', GITHUB_WEB_ORIGIN);
+  url.searchParams.set('client_id', config.clientId);
+  url.searchParams.set(
+    'redirect_uri',
+    new URL('/workspace/source-control/github/oauth/callback', runtime.origin).toString(),
+  );
+  url.searchParams.set('state', state);
+  url.searchParams.set('code_challenge', codeChallenge);
+  url.searchParams.set('code_challenge_method', 'S256');
+  return url.toString();
+}
+
+export async function exchangeGitHubUserAuthorizationCode(
+  runtime: DeviceAuthorityRuntime,
+  input: { code: string; codeVerifier: string },
+): Promise<string> {
+  const config = requiredOAuthConfig(runtime);
+  const code = input.code.trim();
+  const codeVerifier = input.codeVerifier.trim();
+  if (!code || !codeVerifier) {
+    throw new GitHubSourceControlError(
+      'GITHUB_USER_AUTHORIZATION_INVALID',
+      400,
+      'GitHub user authorization is invalid or incomplete.',
+    );
+  }
+  const body = new URLSearchParams({
+    client_id: config.clientId,
+    client_secret: config.clientSecret,
+    code,
+    redirect_uri: new URL('/workspace/source-control/github/oauth/callback', runtime.origin).toString(),
+    code_verifier: codeVerifier,
+  });
+  let response: Response;
+  try {
+    response = await runtime.fetchImpl(new Request(new URL('/login/oauth/access_token', GITHUB_WEB_ORIGIN), {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: body.toString(),
+    }));
+  } catch {
+    throw new GitHubSourceControlError(
+      'GITHUB_USER_AUTHORIZATION_UNAVAILABLE',
+      502,
+      'GitHub could not be reached while authorizing source control.',
+    );
+  }
+  let payload: Record<string, unknown>;
+  try {
+    payload = record(await response.json());
+  } catch {
+    payload = {};
+  }
+  const token = typeof payload.access_token === 'string' ? payload.access_token.trim() : '';
+  if (!response.ok || !token) {
+    throw new GitHubSourceControlError(
+      'GITHUB_USER_AUTHORIZATION_FAILED',
+      400,
+      'GitHub user authorization could not be completed.',
+    );
+  }
+  return token;
+}
+
+export async function listGitHubUserInstallations(
+  runtime: DeviceAuthorityRuntime,
+  userAccessToken: string,
+): Promise<GitHubInstallation[]> {
+  try {
+    const token = userAccessToken.trim();
+    if (!token) {
+      throw new GitHubSourceControlError(
+        'GITHUB_USER_AUTHORIZATION_REQUIRED',
+        400,
+        'GitHub user authorization is required to connect source control.',
+      );
+    }
+    const installations: GitHubInstallation[] = [];
+    for (let page = 1; page <= MAX_INSTALLATION_PAGES; page += 1) {
+      const response = await githubRequest(
+        runtime,
+        `/user/installations?per_page=100&page=${page}`,
+        { token },
+      );
+      const body = record(await response.json());
+      const pageInstallations = Array.isArray(body.installations) ? body.installations : [];
+      for (const value of pageInstallations) {
+        const installation = record(value);
+        const account = record(installation.account);
+        const installationId = typeof installation.id === 'number' ? installation.id : Number.NaN;
+        const accountLogin = typeof account.login === 'string' ? account.login.trim() : '';
+        const repositorySelection = installation.repository_selection === 'all' ? 'all' : 'selected';
+        if (!Number.isInteger(installationId) || installationId <= 0 || !accountLogin) {
+          throw new GitHubSourceControlError(
+            'GITHUB_USER_INSTALLATION_INVALID',
+            502,
+            'GitHub returned invalid installation authorization metadata.',
+          );
+        }
+        installations.push({ installationId, accountLogin, repositorySelection });
+      }
+      if (pageInstallations.length < 100) break;
+      if (page === MAX_INSTALLATION_PAGES) {
+        throw new GitHubSourceControlError(
+          'GITHUB_USER_INSTALLATION_LIMIT_EXCEEDED',
+          409,
+          'Too many GitHub installations are available to connect safely.',
+        );
+      }
+    }
+    return installations;
+  } catch (error: unknown) {
+    if (error instanceof GitHubSourceControlError) throw error;
+    throw new GitHubSourceControlError(
+      'GITHUB_USER_INSTALLATIONS_UNAVAILABLE',
+      502,
+      'GitHub user installations could not be loaded.',
+    );
+  }
 }
 
 export async function readGitHubInstallation(
