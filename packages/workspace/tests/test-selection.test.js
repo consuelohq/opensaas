@@ -1081,6 +1081,59 @@ describe('test selection registry', () => {
     });
   });
 
+  it('should reject an invalid cwd when the registry explicitly provides it', () => {
+    for (const [label, cwd] of [
+      ['false', false],
+      ['array', []],
+      ['blank', '   '],
+    ]) {
+      const registryPath = path.join(
+        os.tmpdir(),
+        `test-selection-invalid-cwd-${label}-${Date.now()}.json`,
+      );
+      fs.writeFileSync(
+        registryPath,
+        JSON.stringify({
+          version: 1,
+          rules: [
+            {
+              id: `invalid-cwd-${label}`,
+              source: ['packages/cwd-fixture/**'],
+              critical: true,
+              origin: 'test',
+              tests: [
+                {
+                  name: `invalid cwd ${label}`,
+                  cwd,
+                  command: [process.execPath, '-e', 'process.exit(0)'],
+                },
+              ],
+            },
+          ],
+        }),
+      );
+
+      const result = run([
+        'check',
+        '--registry',
+        registryPath,
+        '--changed-file',
+        'packages/cwd-fixture/src/index.ts',
+        '--run',
+        '--json',
+      ]);
+      const data = JSON.parse(result.stdout);
+
+      expect(result.status, label).toBe(1);
+      expect(data.runResults[0], label).toMatchObject({
+        name: `invalid cwd ${label}`,
+        status: 'failed',
+        exitCode: null,
+        error: { code: 'INVALID_SUITE_CWD' },
+      });
+    }
+  });
+
   it('fails timed out suite commands', () => {
     const registryPath = path.join(
       os.tmpdir(),

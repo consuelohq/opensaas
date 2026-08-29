@@ -1642,6 +1642,75 @@ describe('workspace node management and presence', () => {
     });
   });
 
+  it('should preserve reconciled route when provisioning bookkeeping fails', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const { memberKey } = await seedWorkspace(store);
+    const priorNode = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(priorNode).toBeDefined();
+    await store.putWorkspaceNode({
+      ...priorNode!,
+      connectorStatus: 'disconnected',
+      lastSeenAt: baseNow - heartbeatTtlMs * 3,
+    });
+    const routes = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routes);
+    store.markManagedCloudProvisioningReadyByNode = async () => {
+      throw new Error('provisioning bookkeeping unavailable');
+    };
+    const nowMs = baseNow + 1_000;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => nowMs,
+      workspaceRouteRegistry: routes,
+    });
+    const body = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: nowMs,
+      nonce: 'heartbeat-provisioning-bookkeeping-failure',
+      connectorStatus: 'connected',
+      capabilities: ['mcp', 'tools'],
+      osVersion: '0.1.85',
+      mcpProtocolVersion: '2026-07-28',
+      mcpReady: true,
+    });
+    const signature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: body,
+    });
+
+    const heartbeat = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': signature,
+        },
+        body,
+      }),
+    );
+
+    expect(heartbeat.status).toBe(500);
+    await expect(store.byWorkspaceNode(accountId, 'node-member')).resolves.toMatchObject({
+      connectorStatus: 'connected',
+      lastSeenAt: nowMs,
+      mcpReady: true,
+    });
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nodeId: 'node-member',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-member',
+      target: { connectorId: 'connector_node_member' },
+    });
+  });
+
   it('preserves a newer published launcher snapshot during signed heartbeat reconciliation', async () => {
     const store = createMemoryDeviceGrantStore();
     const { memberKey } = await seedWorkspace(store);
@@ -2151,7 +2220,7 @@ describe('multi-node connector routing', () => {
     expect(upstreams).toHaveLength(2);
   });
 
-  it('should consume routing nodeId without stale body headers when explicit routing rewrites the request', async () => {
+  it('should strip routing nodeId when explicit routing rewrites', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-sanitized-node-token', {
@@ -2209,7 +2278,7 @@ describe('multi-node connector routing', () => {
     expect(forwarded.params?.arguments?.nodeId).toBeUndefined();
   });
 
-  it('should reject a protocol-incompatible node when routing explicitly targets it', async () => {
+  it('should reject incompatible node when routing is explicit', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-incompatible-node-token', {
@@ -2266,7 +2335,7 @@ describe('multi-node connector routing', () => {
     expect(upstreamCalls).toBe(0);
   });
 
-  it('fails closed when routing resolves a node without an authoritative registry record', async () => {
+  it('should fail closed when routing lacks an authoritative registry record', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-missing-node-record-token', {
@@ -2277,14 +2346,14 @@ describe('multi-node connector routing', () => {
       requestedNodeId === 'node-member'
         ? undefined
         : readWorkspaceNode(requestedAccountId, requestedNodeId);
-    const db = createInMemoryWorkspaceRouteD1();
-    await seedRoutes(db);
+    const routeDatabase = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routeDatabase);
     let upstreamCalls = 0;
     const handler = createOsDeviceAuthorityHandler({
       store,
       origin,
       now: () => baseNow,
-      workspaceRouteRegistry: db,
+      workspaceRouteRegistry: routeDatabase,
       fetchImpl: async () => {
         upstreamCalls += 1;
         return Response.json({ ok: true });

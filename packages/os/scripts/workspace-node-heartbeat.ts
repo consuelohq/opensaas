@@ -73,7 +73,10 @@ export function heartbeatRuntimeStatus(input: {
   try {
     const paths = resolveLifecyclePaths(resolveOsHome(input.configPath, input.config));
     const manifest = JSON.parse(
-      fs.readFileSync(path.join(paths.currentLink, RUNTIME_BUNDLE_MANIFEST_PATH), 'utf8'),
+      fs.readFileSync(
+        path.join(paths.currentLink, RUNTIME_BUNDLE_MANIFEST_PATH),
+        'utf8',
+      ),
     ) as Record<string, unknown>;
     if (
       manifest.kind === 'consuelo-runtime-bundle'

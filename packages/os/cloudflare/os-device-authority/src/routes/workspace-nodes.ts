@@ -523,13 +523,6 @@ async function handleHeartbeat(
   }
   try {
     await runtime.store.putWorkspaceNode(updated);
-    if (
-      connectorStatus === 'connected'
-      && (!runtime.workspaceRouteRegistry || routeReady)
-      && workspaceNodeReadiness(updated, nowMs) === 'ready'
-    ) {
-      await runtime.store.markManagedCloudProvisioningReadyByNode({ nodeId, nowMs });
-    }
   } catch (error: unknown) {
     if (runtime.workspaceRouteRegistry) {
       await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
@@ -542,6 +535,13 @@ async function handleHeartbeat(
       });
     }
     throw error;
+  }
+  if (
+    connectorStatus === 'connected'
+    && (!runtime.workspaceRouteRegistry || routeReady)
+    && workspaceNodeReadiness(updated, nowMs) === 'ready'
+  ) {
+    await runtime.store.markManagedCloudProvisioningReadyByNode({ nodeId, nowMs });
   }
   const safeNode = safeWorkspaceNode(updated, nowMs);
   const connectorId = updated.connectorId?.trim();
