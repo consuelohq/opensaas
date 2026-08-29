@@ -2466,6 +2466,66 @@ describe('multi-node connector routing', () => {
     expect(forwardedTools).toEqual(['lifecycle.update']);
   });
 
+  it('should reject revoked node lifecycle recovery even when the route target is stale', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-revoked-lifecycle-recovery-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'mcp:call'],
+    });
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({
+      ...member!,
+      state: 'revoked',
+      connectorStatus: 'disconnected',
+      revokedAt: baseNow,
+      updatedAt: baseNow,
+    });
+    const routeDatabase = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routeDatabase);
+    let upstreamCalls = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routeDatabase,
+      fetchImpl: async () => {
+        upstreamCalls += 1;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-revoked-lifecycle-recovery-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 19,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'lifecycle.update',
+            input: { channel: 'canary', version: '0.1.93' },
+            nodeId: 'node-member',
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toMatchObject({
+      error: {
+        code: 'WORKSPACE_NODE_REVOKED',
+        nodeId: 'node-member',
+      },
+    });
+    expect(upstreamCalls).toBe(0);
+  });
+
   it('should fail closed when routing lacks an authoritative registry record', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
