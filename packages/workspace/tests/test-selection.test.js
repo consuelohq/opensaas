@@ -1749,6 +1749,25 @@ describe('test selection registry', () => {
     expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('routes fs search portability coverage to focused work-session contracts without the whole OS package suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/fs/search.ts',
+      '--changed-file',
+      'packages/os/tests/fs-search.test.ts',
+      '--changed-file',
+      'packages/workspace/scripts/lib/fs/search.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const selectedSuiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-work-session-fs');
+    expect(selectedSuiteNames).toContain('OS work-session filesystem authority contracts');
+    expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('routes script parity classification changes to the focused audit without the whole OS package suite', () => {
     const result = run([
       'check',
