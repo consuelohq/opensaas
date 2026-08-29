@@ -49,7 +49,7 @@ function node(input: {
 }
 
 describe('internal launcher regression contracts', () => {
-  it('keeps the owner route before configure and fits concise route copy without scrollbars', () => {
+  it('keeps the owner route before configure in a title-only responsive menu', () => {
     const html = renderWorkspaceChromeBar('overview', 'Overview', {
       extraSections: [
         {
@@ -69,18 +69,25 @@ describe('internal launcher regression contracts', () => {
         },
       ],
     });
-    const descriptions = [...html.matchAll(/<small>([^<]+)<\/small>/g)]
-      .map((match) => match[1].trim().split(/\s+/).length);
-
     expect(html.indexOf('data-custom-route-group="internal"'))
       .toBeLessThan(html.indexOf('data-route-group="Configure"'));
-    expect(descriptions.length).toBeGreaterThan(0);
-    expect(descriptions.every((count) => count >= 3 && count <= 4)).toBe(true);
+    expect(html).not.toContain('<small>');
+    expect(html).not.toContain('Workspace health and context.');
+    expect(html).not.toContain('Open private admin site.');
 
     const styles = workspaceRouteSwitcherStyles();
     const menuRule = styles.match(/\.workspace-route-menu\s*\{([^}]+)\}/)?.[1] ?? '';
-    expect(menuRule).toContain('overflow: hidden');
+    expect(menuRule).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
+    expect(menuRule).toContain('width: min(780px, calc(100vw - 28px))');
+    expect(menuRule).toContain('overflow: visible');
     expect(menuRule).not.toMatch(/overflow(?:-x|-y)?:\s*(?:auto|scroll)/);
+    expect(styles).toContain('.workspace-route-menu[hidden] { display: none !important; }');
+    expect(styles).toContain('@media (min-width: 1600px)');
+    expect(styles).toContain('width: min(1040px, calc(100vw - 48px))');
+    expect(styles).toContain('.workspace-route-primary-slot { grid-column: 1 / -1; padding-bottom: 0; border-bottom: 0; }');
+    expect(styles).toContain('.workspace-route-group { min-width: 0; display: grid; align-content: start; gap: 1px; padding-top: 0; border-top: 0; }');
+    expect(styles).not.toContain('border-top: 1px solid var(--workspace-menu-rule)');
+    expect(styles).not.toContain('border: 1px solid var(--workspace-menu-rule)');
     expect(styles).toContain('@media (max-height: 760px)');
     expect(styles).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
     expect(styles).toContain('zoom: .86');

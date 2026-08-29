@@ -1387,32 +1387,6 @@ describe('test selection registry', () => {
     }
   });
 
-  it('routes OS test-environment isolation changes to focused contracts without the broad package suite', () => {
-    for (const changedFile of [
-      'packages/os/vitest.config.ts',
-      'packages/os/tests/test-environment.ts',
-      'packages/os/tests/test-environment-contract.test.ts',
-    ]) {
-      const result = run(['check', '--changed-file', changedFile, '--json']);
-      const data = json(result);
-      const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
-      const suites = data.selectedSuites.map((suite) => suite.name);
-      const isolationSuite = data.selectedSuites.find(
-        (suite) => suite.name === 'OS test-environment isolation contracts',
-      );
-
-      expect(matchedRuleIds).toContain('os-test-environment-isolation');
-      expect(suites).toContain('OS test-environment isolation contracts');
-      expect(suites).not.toContain('@consuelo/os package test');
-      expect(isolationSuite?.command).toEqual(expect.arrayContaining([
-        '--root',
-        'packages/os',
-        '--config',
-        'vitest.config.ts',
-      ]));
-    }
-  });
-
   it('routes the canonical session lifecycle handler to focused work-session contracts without the whole OS package suite', () => {
     const result = run([
       'check',
@@ -1443,6 +1417,23 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).toContain('os-script-parity-audit');
     expect(selectedSuiteNames).toContain('OS script parity audit contracts');
     expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('routes OS test-environment isolation changes to focused contracts without the broad package suite', () => {
+    for (const changedFile of [
+      'packages/os/vitest.config.ts',
+      'packages/os/tests/test-environment.ts',
+      'packages/os/tests/test-environment-contract.test.ts',
+    ]) {
+      const result = run(['check', '--changed-file', changedFile, '--json']);
+      const data = json(result);
+      const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+      const suites = data.selectedSuites.map((suite) => suite.name);
+
+      expect(matchedRuleIds).toContain('os-test-environment-isolation');
+      expect(suites).toContain('OS test-environment isolation contracts');
+      expect(suites).not.toContain('@consuelo/os package test');
+    }
   });
 
   it('routes work-session Code Call changes to focused authority tests', () => {

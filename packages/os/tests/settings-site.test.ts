@@ -51,11 +51,12 @@ describe('configuration site', () => {
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/secrets"');
-    expect(html).toContain('>Overview</span><small>Workspace health and context.</small>');
+    expect(html).toContain('>Overview</span>');
+    expect(html).not.toContain('Workspace health and context.');
     expect(html).toContain('href="https://docs.consuelohq.com/"');
     expect(html).toContain('target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/"');
-    expect(html).toContain('>Artifacts</span><small>Browse generated agent work.</small>');
-    expect(html).toContain('>Code</span><small>Review code changes safely.</small>');
+    expect(html).toContain('>Artifacts</span>');
+    expect(html).toContain('>Code</span>');
     expect(html).toContain('data-route-group="Connect"');
     expect(html).toContain('>ChatGPT<');
     expect(html).toContain('href="https://chatgpt.com/plugins#settings/Connectors?create-connector=true&amp;redirectAfter=%2Fplugins"');
