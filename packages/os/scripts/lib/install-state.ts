@@ -141,7 +141,6 @@ export type ProvisionAction = {
     | 'preserve_file'
     | 'connect_agent'
     | 'skip_agent'
-    | 'seed_steering'
     | 'seed_skill'
     | 'seed_tool'
     | 'seed_operator'
