@@ -364,8 +364,9 @@ async function handleInstallSelect(request: Request, runtime: DeviceAuthorityRun
     if (!installations.some((installation) => installation.installationId === installationId)) {
       return errorResponse(403, 'GITHUB_INSTALLATION_NOT_AUTHORIZED', 'The selected GitHub installation is not available to this user.');
     }
+    const response = await completeGitHubInstallation(runtime, state, installationId);
     await runtime.store.delGitHubSourceControlInstallState(stateValue);
-    return await completeGitHubInstallation(runtime, state, installationId);
+    return response;
   } catch (error: unknown) {
     return sourceControlError(error);
   }
@@ -386,8 +387,9 @@ async function handleInstallCallback(request: Request, runtime: DeviceAuthorityR
     if (!installations.some((installation) => installation.installationId === installationId)) {
       return errorResponse(403, 'GITHUB_INSTALLATION_NOT_AUTHORIZED', 'The GitHub installation is not available to this user.');
     }
+    const response = await completeGitHubInstallation(runtime, state, installationId);
     await runtime.store.delGitHubSourceControlInstallState(stateValue);
-    return await completeGitHubInstallation(runtime, state, installationId);
+    return response;
   } catch (error: unknown) {
     return sourceControlError(error);
   }
