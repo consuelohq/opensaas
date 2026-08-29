@@ -1367,6 +1367,12 @@ describe('workspace node management and presence', () => {
     expect(
       (await store.byWorkspaceNode(accountId, 'node-member'))?.agents,
     ).toEqual(['codex', 'opencode']);
+    await expect(store.byWorkspaceNode(accountId, 'node-member')).resolves.toMatchObject({
+      osVersion: undefined,
+      bundleId: undefined,
+      mcpProtocolVersion: undefined,
+      mcpReady: undefined,
+    });
     expect((await handler(heartbeatRequest())).status).toBe(409);
 
     const onlineAgents = await handler(
