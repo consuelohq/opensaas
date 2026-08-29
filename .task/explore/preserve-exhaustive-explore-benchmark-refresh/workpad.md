@@ -81,6 +81,7 @@ no-test waiver: not applicable.
 
 - 2026-08-29 08:01:56 fs.write: `.task/explore/preserve-exhaustive-explore-benchmark-refresh/workpad.md`
 - 2026-08-29 08:06:39 fs.write: `.task/explore/preserve-exhaustive-explore-benchmark-refresh/workpad.md`
+- 2026-08-29 08:07:52 fs.write: `.task/explore/preserve-exhaustive-explore-benchmark-refresh/workpad.md`
 
 ## workspace-owned: files read
 
@@ -92,6 +93,8 @@ no-test waiver: not applicable.
 ## workspace-owned: validation evidence
 
 - 2026-08-29 08:06:29 `checkFiles`: passed — OK
+- 2026-08-29 08:07:05 `review.run`: passed — OK
+- 2026-08-29 08:07:45 `verify`: passed — OK
 
 ## implementation status
 
@@ -116,3 +119,16 @@ no-test waiver: not applicable.
 Implementation and focused validation are complete. Next: local task commit (required because this task was pre-synced to `stream/explore` with a merge commit), strict review, canonical verify, scoped branch push recovery, task promotion, then final PR #2300 CI/review and Canary release/live smoke.
 
 - 2026-08-29 08:06:39 append: `.task/explore/preserve-exhaustive-explore-benchmark-refresh/workpad.md`
+
+## final gate
+
+- Strict review: 0 issues / 0 blockers.
+- Canonical verify: full mode, passed, `publishValid=true`, DB risks/findings 0.
+- Codex P1 behavior is covered: benchmark refresh is exhaustive and fails closed on incomplete semantic hydration; interactive Explore remains bounded.
+- Non-blocking docs opportunity is inherited from the decision-engine tool contract already changed by the earlier hotfix; this follow-up does not add a new user-facing tool input/output surface.
+
+## publish recovery
+
+This task was intentionally synchronized with `origin/stream/explore` before production edits because the task bootstrap source was `main`. The task push facade cannot represent a local merge commit. Safest recovery: scoped Git push of the already-reviewed/verified merge ancestry to this task branch only, then return to `task.push` for final workspace-owned verify/workpad metadata and `task.pr` for promotion.
+
+- 2026-08-29 08:07:52 append: `.task/explore/preserve-exhaustive-explore-benchmark-refresh/workpad.md`
