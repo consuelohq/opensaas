@@ -80,3 +80,39 @@ no-test waiver: not applicable.
 ## workspace-owned: activity log
 
 - 2026-08-29 08:01:56 fs.write: `.task/explore/preserve-exhaustive-explore-benchmark-refresh/workpad.md`
+- 2026-08-29 08:06:39 fs.write: `.task/explore/preserve-exhaustive-explore-benchmark-refresh/workpad.md`
+
+## workspace-owned: files read
+
+- `packages/os/scripts/explore-bench.js`
+- `packages/os/scripts/lib/index/indexer.js`
+- `packages/os/tests/explore-bench.test.ts`
+- `packages/os/tests/explore-index-hydration-fallback.test.ts`
+
+## workspace-owned: validation evidence
+
+- 2026-08-29 08:06:29 `checkFiles`: passed — OK
+
+## implementation status
+
+- Added explicit `hydrateAll` semantic-hydration intent to the indexer without changing normal interactive Explore behavior.
+- `selectHydrationChunks` now treats `hydrateAll || reindex` as exhaustive vector hydration; ordinary interactive calls remain capped at 64 query-relevant chunks plus 32 changed chunks.
+- `explore-bench --refresh-index` now calls `ensureIndex({ hydrateAll: true, reindex: false })`, preserving changed-file refresh semantics while filling every missing semantic vector.
+- Benchmark refresh now fails closed when `embeddingFailure` is present or `chunksDeferred > 0`, so retrieval metrics cannot be emitted from a partial semantic index.
+- Exported `selectHydrationChunks` as a focused test/diagnostic seam.
+
+## validation evidence
+
+- Clean red before production edit: 3 intended failures only — no `hydrateAll` selection contract, benchmark refresh did not request exhaustive hydration, and benchmark refresh did not fail closed on incomplete hydration.
+- Focused green: `explore-bench.test.ts` + `explore-index-hydration-fallback.test.ts` = 12/12.
+- Direct selection diagnostic: bounded=32, exhaustive=50.
+- Full Explore science suite: 13 files / 92 tests green.
+- `checkFiles` passed for all four touched JS/TS files.
+- `git diff --check` clean.
+- Explicit changed-file selector is `pass` and selects only the critical `os-explore-retrieval-science` suite; no package-wide OS fallback.
+
+## current status
+
+Implementation and focused validation are complete. Next: local task commit (required because this task was pre-synced to `stream/explore` with a merge commit), strict review, canonical verify, scoped branch push recovery, task promotion, then final PR #2300 CI/review and Canary release/live smoke.
+
+- 2026-08-29 08:06:39 append: `.task/explore/preserve-exhaustive-explore-benchmark-refresh/workpad.md`

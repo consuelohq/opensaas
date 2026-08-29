@@ -311,10 +311,11 @@ function selectHydrationChunks(store, indexingResult, options = {}) {
     for (const row of store.searchChunksByText(terms, MAX_QUERY_HYDRATION_CHUNKS)) add(row);
   }
 
-  const changedLimit = options.reindex ? indexingResult.changedChunks.length : MAX_CHANGED_HYDRATION_CHUNKS;
+  const hydrateAll = Boolean(options.hydrateAll || options.reindex);
+  const changedLimit = hydrateAll ? indexingResult.changedChunks.length : MAX_CHANGED_HYDRATION_CHUNKS;
   for (const chunk of indexingResult.changedChunks.slice(0, changedLimit)) add(chunk);
 
-  if (options.reindex) {
+  if (hydrateAll) {
     for (const chunk of store.getChunksWithoutEmbeddings()) add(chunk);
   }
 
@@ -369,6 +370,7 @@ async function ensureIndex(options = {}) {
   });
 
   const chunksToEmbed = selectHydrationChunks(store, indexingResult, {
+    hydrateAll: options.hydrateAll,
     query: options.query,
     reindex: options.reindex,
   });
@@ -418,6 +420,7 @@ async function ensureIndex(options = {}) {
 
 module.exports = {
   ensureIndex,
+  selectHydrationChunks,
   getChangedFiles,
   getRemoteUrl,
   isIndexablePath,

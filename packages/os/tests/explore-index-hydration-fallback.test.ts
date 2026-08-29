@@ -1,5 +1,5 @@
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
@@ -59,6 +59,15 @@ function runExplore(input: { repo: string; home: string; gatewayUrl: string }): 
     });
   });
 }
+
+describe('Explore semantic index hydration selection', () => {
+  it('should select every missing vector only when exhaustive hydration is explicit', () => {
+    const source = readFileSync(new URL('../scripts/lib/index/indexer.js', import.meta.url), 'utf8');
+    expect(source).toContain('options.hydrateAll');
+    expect(source).toContain('getChunksWithoutEmbeddings()');
+    expect(source).toMatch(/module\.exports = \{[\s\S]*selectHydrationChunks/);
+  });
+});
 
 describe('Explore semantic index hydration availability', () => {
   it('should stop after the first failed hydration batch and continue with lexical retrieval', async () => {
