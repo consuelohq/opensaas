@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/partial-install-recovery-cli",
+  "events": [
+    {
+      "id": "aa4cba21-66a7-405d-a4b3-a590cef4b2fb",
+      "occurred_at": "2026-08-28T23:13:19.542Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/partial-install-recovery-cli/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/partial-install-recovery-cli",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/partial-install-recovery-cli"
+      }
+    },
+    {
+      "id": "518f76f3-bb65-449d-80bf-2b40d69f0050",
+      "occurred_at": "2026-08-28T23:40:31.172Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/tasks/os/partial-install-recovery-cli.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/partial-install-recovery-cli",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/partial-install-recovery-cli"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-28T23:40:31.791Z"
+}

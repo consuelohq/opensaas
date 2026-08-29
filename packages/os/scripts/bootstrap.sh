@@ -1678,6 +1678,38 @@ validate_onboarding_json() {
   fi
 }
 
+prepare_recovery_cli() {
+  local os_dir
+  os_dir="$(os_package_dir)" || {
+    if [ "$DRY_RUN" -eq 1 ]; then
+      log "dry-run: would materialize the Consuelo recovery CLI from the verified runtime"
+      return 0
+    fi
+    fail "Consuelo OS runtime package root is missing"
+  }
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would install $OS_HOME/bin/consuelo before onboarding"
+    return 0
+  fi
+
+  [ -f "$os_dir/scripts/install.ts" ] ||
+    fail "verified Consuelo OS runtime is missing the installer entrypoint"
+  CONSUELO_HOME="$OS_HOME" "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --materialize-lifecycle-command --home "$OS_HOME" --recovery-package-root "$os_dir"
+}
+
+recovery_cli_hint() {
+  [ -x "$OS_HOME/bin/consuelo" ] || return 0
+  printf '
+Recovery CLI is ready at %s.
+Open a new terminal, then run:
+  consuelo status
+  consuelo uninstall --dry-run --json
+To retry setup:
+  %s
+' "$OS_HOME/bin/consuelo" "$HOSTED_INSTALL_COMMAND"
+}
+
 run_onboarding() { # run_onboarding_json
   local os_dir
   os_dir="$(os_package_dir)" || {
@@ -1709,7 +1741,11 @@ run_onboarding() { # run_onboarding_json
     if [ "$SKIP_DAEMONS" -eq 1 ]; then
       install_args+=(--skip-daemons)
     fi
-    ONBOARDING_JSON="$("$BUN_BIN" --cwd "$os_dir" "${install_args[@]}")"
+    local install_status=0
+    ONBOARDING_JSON="$("$BUN_BIN" --cwd "$os_dir" "${install_args[@]}")" || install_status=$?
+    if [ "$install_status" -ne 0 ]; then
+      fail "Consuelo OS installer exited before onboarding completed (exit $install_status).$(recovery_cli_hint)"
+    fi
     if [ "$JSON" -eq 1 ]; then
       printf '%s\n' "$ONBOARDING_JSON"
     fi
@@ -1729,7 +1765,7 @@ run_onboarding() { # run_onboarding_json
     ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE" 2>/dev/null || true)"
     rm -f "$ONBOARDING_RESULT_FILE"
     if [ "$install_status" -ne 0 ]; then
-      fail "Consuelo OS installer exited before onboarding completed (exit $install_status)."
+      fail "Consuelo OS installer exited before onboarding completed (exit $install_status).$(recovery_cli_hint)"
     fi
     validate_onboarding_json "$ONBOARDING_JSON"
     if printf '%s' "$ONBOARDING_JSON" | grep -q '"installDaemons"[[:space:]]*:[[:space:]]*true'; then
@@ -1858,6 +1894,11 @@ ensure_command_on_path() {
   local bin_dir="$OS_HOME/bin"
   local rc_file=""
 
+  if [ "$DRY_RUN" -eq 1 ]; then
+    PATH_HINT="dry-run: would add $bin_dir to the supported shell profile"
+    return 0
+  fi
+
   case "$(basename "${SHELL:-}")" in
     zsh) rc_file="$HOME/.zshrc" ;;
     bash)
@@ -1932,10 +1973,11 @@ main() {
   install_verified_runtime
   persist_runtime_paths
   ensure_dependencies
+  prepare_recovery_cli
+  ensure_command_on_path
   run_onboarding
   activate_verified_runtime
   maybe_install_daemons
-  ensure_command_on_path
   print_success_summary
   open_workspace_launcher
   emit_json_summary

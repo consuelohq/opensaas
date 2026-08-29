@@ -629,6 +629,8 @@
         "packages/os/scripts/bootstrap.sh",
         "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
         "packages/os/tests/caddy-worker-pool-migration.test.ts",
+        "packages/os/tests/bootstrap-recovery-cli.test.ts",
+        "packages/os/tests/lifecycle-command.test.ts",
         "packages/os/tests/worker-pool-process.test.ts"
       ],
       "tests": [
@@ -658,6 +660,8 @@
             "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
             "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
             "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/bootstrap-recovery-cli.test.ts",
+            "packages/os/tests/lifecycle-command.test.ts",
             "packages/os/tests/worker-pool-process.test.ts"
           ]
         },

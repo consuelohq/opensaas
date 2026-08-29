@@ -1,0 +1,405 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/partial-install-recovery-cli",
+  "base": "HEAD",
+  "headSha": "2d6003550062733775febca3d39d4afa1265ea40",
+  "changeHash": "abad72050cfb1dfccedb2cd1456d7ea3f54e7e4b1520e425eabf6a0215c7472e",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/bootstrap-recovery-cli.test.ts",
+    "packages/os/tests/lifecycle-command.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-29T00:14:13.083Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/partial-install-recovery-cli/current.json",
+        ".task/os/partial-install-recovery-cli/evidence-log.json",
+        ".task/os/partial-install-recovery-cli/read-log.json",
+        ".task/os/partial-install-recovery-cli/session.json",
+        ".task/os/partial-install-recovery-cli/workpad.md",
+        ".task/tasks/os/partial-install-recovery-cli.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/tests/bootstrap-recovery-cli.test.ts",
+        "packages/os/tests/lifecycle-command.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-lifecycle-update-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/bootstrap.sh",
+            "packages/os/tests/bootstrap-recovery-cli.test.ts",
+            "packages/os/tests/lifecycle-command.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-google-workspace",
+          "critical": true,
+          "reason": "Google Workspace runtime, first-use OAuth, signed node bootstrap, tool policy, installer, and bundled-skill changes must prove the focused Google and shared OS contracts without selecting the historically noisy unrelated package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/scripts/install.ts",
+            "packages/os/scripts/lib/install-state.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/scripts/install.ts",
+            "packages/os/scripts/lib/install-state.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+            "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/bootstrap-recovery-cli.test.ts",
+            "packages/os/tests/lifecycle-command.test.ts",
+            "packages/os/tests/worker-pool-process.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS Google Workspace contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-gog.test.ts",
+            "tests/google-tool.test.ts",
+            "tests/google-skill.test.ts",
+            "tests/google-workspace-auth.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/install-state.test.ts",
+            "tests/tool-manifest.test.ts",
+            "tests/tool-package-layout.test.ts"
+          ],
+          "ruleId": "os-google-workspace",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7773,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-partial-install-recovery-cli\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m53 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 7293\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 2777\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m can restrict selection to the committed diff so CI ignores install-time workspace noise \u001b[33m 623\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m53 passed\u001b[39m\u001b[22m\u001b[90m (53)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:13:12\n\u001b[2m   Duration \u001b[22m 7.41s\u001b[2m (transform 22ms, setup 0ms, import 32ms, tests 7.29s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+            "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/bootstrap-recovery-cli.test.ts",
+            "packages/os/tests/lifecycle-command.test.ts",
+            "packages/os/tests/worker-pool-process.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 21811,
+          "outputTail": "onical rolling recovery rejects an unhealthy pool \u001b[33m 1616\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bootstrap a missing Caddy label when the HA ingress is unavailable \u001b[33m 869\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should open a recovery circuit when restart attempts exceed the bounded window \u001b[33m 1378\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should keep external health recovery scoped to the external launchd label \u001b[33m 1126\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject route registration when the routed MCP probe is not ready \u001b[33m 865\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/health-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5902\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a real in-flight response when the worker exits after draining \u001b[33m 1466\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a slow app response stream while a real Bun worker drains \u001b[33m 1706\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a real MCP tool call when the worker receives the graceful drain signal \u001b[33m 2710\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/worker-pool-process.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 20453\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m starts two real workers and replaces only the crashed slot \u001b[33m 13400\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reclaims orphaned workers when launchd restarts a killed supervisor \u001b[33m 7052\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m22 passed\u001b[39m\u001b[22m\u001b[90m (22)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m224 passed\u001b[39m\u001b[22m\u001b[90m (224)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:13:20\n\u001b[2m   Duration \u001b[22m 20.94s\u001b[2m (transform 9.91s, setup 0ms, import 18.42s, tests 48.40s, environment 2ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:24.267Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:24.278Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\",\\\"version\\\":\\\"1.2.3\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --version 1.2.3 --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:24.291Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:24.300Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:24.308Z\"}\n(node:86373) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:86667) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3192,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1644,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-partial-install-recovery-cli\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m720 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m711 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 134\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m711 skipped\u001b[39m\u001b[90m (720)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:13:44\n\u001b[2m   Duration \u001b[22m 1.22s\u001b[2m (transform 572ms, setup 0ms, import 952ms, tests 134ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:46.059Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:46.086Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:46.119Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:46.127Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:46.138Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:46.142Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:13:46.158Z\"}\n(node:87856) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS Google Workspace contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-gog.test.ts",
+            "tests/google-tool.test.ts",
+            "tests/google-skill.test.ts",
+            "tests/google-workspace-auth.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/install-state.test.ts",
+            "tests/tool-manifest.test.ts",
+            "tests/tool-package-layout.test.ts"
+          ],
+          "ruleId": "os-google-workspace",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 24687,
+          "outputTail": "xpired ChatGPT MCP credential during reprovisioning \u001b[33m 1991\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports existing generated security assets as existing on reprovision \u001b[33m 1170\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reuse the active workspace and node when reprovisioning without a new bootstrap \u001b[33m 1270\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject a noninteractive update when the active workspace conflicts with installed state \u001b[33m 1134\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m creates the approved local home shape and preserves existing config \u001b[33m 1581\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes approved node identity into flattened node config \u001b[33m 838\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes an OpenCode MCP config that exposes Consuelo tools \u001b[33m 680\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves credentials for previously configured agents during partial reconfiguration \u001b[33m 1919\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces expired local-agent credentials during reprovisioning \u001b[33m 1575\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes the canonical Artifacts site from persisted route-addressed artifacts \u001b[33m 1174\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user skills while refreshing the installed registry \u001b[33m 614\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m drops unknown legacy skill selections without mapping them to another skill \u001b[33m 586\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m installs every full-manifest tool even when only one skill is selected \u001b[33m 617\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user tools while refreshing the installed registry \u001b[33m 560\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes only selected bundled skills on fresh install \u001b[33m 516\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses default selected bundled skills when no selectedSkills option is provided \u001b[33m 540\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m configures Codex natively without writing a legacy sidecar or claiming verification \u001b[33m 667\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports intent and task hook runtime modules in doctor checks \u001b[33m 679\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m102 passed\u001b[39m\u001b[22m\u001b[90m (102)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:13:46\n\u001b[2m   Duration \u001b[22m 24.06s\u001b[2m (transform 8.42s, setup 0ms, import 11.71s, tests 24.85s, environment 24ms)\u001b[22m\n\n$ vitest run tests/managed-gog.test.ts tests/google-tool.test.ts tests/google-skill.test.ts tests/google-workspace-auth.test.ts tests/native-google-device-approval.test.ts tests/os-device-authority-worker.test.ts tests/install-state.test.ts tests/tool-manifest.test.ts tests/tool-package-layout.test.ts\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-partial-install-recovery-cli/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-partial-install-recovery-cli/packages/os/scripts/lib/managed-component-install.ts:316:17)\n      at provisionManagedComponentIndexes (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-partial-install-recovery-cli/packages/os/scripts/lib/managed-component-install.ts:480:20)\n      at provisionLocalOs (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-partial-install-recovery-cli/packages/os/scripts/lib/install-state.ts:1973:19)\n      at /Users/kokayi/.consuelo/node/tasks/worktrees/task-os-partial-install-recovery-cli/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 106,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.69975ms)\n✔ parseCliArguments selects GraphQL generation mode (0.062792ms)\n✔ parseCliArguments selects migration generation mode (0.056833ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.100833ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.071083ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.053792ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.210042ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.878333ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (1.524584ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.197834ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.382458ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.62875ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.18725ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.189875ms)\n✔ server lint configuration resolves the existing workspace rules project (1.316333ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.101292ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.168542ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.085708ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.093916ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.185834ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.122291ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.10525ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 61.478917\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 180,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.09ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [3.78ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.21ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.03ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [170.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1549,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.315333ms)\n✔ the configured TypeORM wrapper resolves from the installed package (1449.294292ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1505.838125\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

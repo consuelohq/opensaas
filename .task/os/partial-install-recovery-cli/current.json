@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/partial-install-recovery-cli",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2250,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2250",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2250",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2250/partial-install-recovery-cli",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2250",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2250/partial-install-recovery-cli",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-partial-install-recovery-cli",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_2f9b0add9e97",
+  "tmuxSession": "opensaas-os-partial-install-recovery-cli-2f9b0add",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-partial-install-recovery-cli/.task/os/partial-install-recovery-cli/session.json",
+  "createdAt": "2026-08-29T00:03:13.773Z"
+}
