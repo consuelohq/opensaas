@@ -282,12 +282,7 @@ function rowToDashboardEvent(
       ? `${input.workspaceId}:${input.nodeId}:${traceId}:${cursor}`
       : `${input.workspaceId}:${traceId}:${cursor}`,
     sourceMode: input.sourceMode,
-    branch:
-      sanitizeLocalTraceText(cleanString(row.work_path)) ||
-      cleanString(row.branch) ||
-      cleanString(row.task_session) ||
-      cleanString(row.work_session) ||
-      '(no branch)',
+    branch: traceSessionValue(row, '(no branch)'),
     tool: cleanString(row.tool) || 'unknown',
     inputTokens,
     outputTokens,
@@ -348,8 +343,7 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     time: cleanString(row.ts),
     name: tool,
     traceName: tool,
-    branch:
-      cleanString(row.branch) || cleanString(row.task_session) || 'no-branch',
+    branch: traceSessionValue(row, 'no-branch', false),
     taskSession: cleanString(row.task_session),
     worktree: sanitizeLocalTraceText(cleanString(row.worktree)),
     workSession: cleanString(row.work_session),
@@ -559,4 +553,21 @@ function numberValue(value: unknown): number {
 
 function cleanString(value: unknown): string {
   return String(value ?? '').trim();
+}
+
+function traceSessionValue(
+  row: TraceRow,
+  fallback: string,
+  preferWorkPath = true,
+): string {
+  if (preferWorkPath) {
+    const workPath = sanitizeLocalTraceText(cleanString(row.work_path));
+    if (workPath) return workPath;
+  }
+  const branch = cleanString(row.branch);
+  if (branch && branch !== 'no-branch' && branch !== '(no branch)') return branch;
+  const taskSession = cleanString(row.task_session);
+  const workSession = cleanString(row.work_session);
+  if (taskSession && workSession) return `${taskSession} + ${workSession}`;
+  return taskSession || workSession || fallback;
 }
