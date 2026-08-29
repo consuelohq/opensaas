@@ -1021,6 +1021,38 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes partial-install recovery CLI changes through focused critical coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/bootstrap.sh',
+      '--changed-file',
+      'packages/os/scripts/install.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/install-state.ts',
+      '--changed-file',
+      'packages/os/tests/bootstrap-recovery-cli.test.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-command.test.ts',
+      '--json',
+    ]));
+
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const lifecycleSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-lifecycle-update-handoff',
+    );
+
+    expect(matchedRuleIds).toContain('os-lifecycle-update-handoff');
+    expect(matchedRuleIds).toContain('os-google-workspace');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(lifecycleSuite?.critical).toBe(true);
+    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
+      'packages/os/tests/bootstrap-recovery-cli.test.ts',
+      'packages/os/tests/lifecycle-command.test.ts',
+    ]));
+  });
+
   it('routes local OS response lifecycle changes through critical lifecycle coverage', () => {
     const data = json(run([
       'check',
