@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/bypass-leadconnector-application-shell-cache",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1779,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1779",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1779",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1779/bypass-leadconnector-application-shell-cache",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1779",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1779/bypass-leadconnector-application-shell-cache",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-bypass-leadconnector-application-shell-cache",
+  "taskSession": "tsk_125c211ae1de",
+  "tmuxSession": "opensaas-dialer-bypass-leadconnector-application-shell-cache-125c211a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-bypass-leadconnector-application-shell-cache/.task/dialer/bypass-leadconnector-application-shell-cache/session.json",
+  "createdAt": "2026-08-04T23:16:56.212Z"
+}

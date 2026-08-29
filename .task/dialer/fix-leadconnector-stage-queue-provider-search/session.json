@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d6bf74257f6a",
+  "tmuxSession": "opensaas-dialer-fix-leadconnector-stage-queue-provider-search-d6bf7425",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-leadconnector-stage-queue-provider-search",
+  "branch": "task/dialer/fix-leadconnector-stage-queue-provider-search",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-leadconnector-stage-queue-provider-search",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-leadconnector-stage-queue-provider-search",
+  "prNumber": 1780,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1780",
+  "createdAt": "2026-08-04T23:47:13.874Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-leadconnector-stage-queue-provider-search/.task/dialer/fix-leadconnector-stage-queue-provider-search/session.json"
+}

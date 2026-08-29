@@ -457,7 +457,7 @@ export async function proxyCentralMcpRequest(input: {
       : routingInspection.workSession
         ? { sessionKind: 'work' as const, sessionId: routingInspection.workSession }
         : undefined;
-    const sessionAffinity = routedSession
+    let sessionAffinity = routedSession
       ? await input.store.byWorkspaceSessionAffinity({
           accountId: stored.accountId,
           workspaceHost: stored.workspaceHost,
@@ -508,6 +508,46 @@ export async function proxyCentralMcpRequest(input: {
         status: 404,
         code: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
       });
+    }
+
+    if (
+      sessionAffinity?.workspaceId &&
+      sessionAffinity.workspaceId !== resolution.workspaceId &&
+      resolution.nodeId === sessionAffinity.ownerNodeId
+    ) {
+      try {
+        const refreshed = sessionAffinity.sessionKind === 'task'
+          ? await input.store.claimWorkspaceTaskAffinity({
+              accountId: stored.accountId,
+              workspaceId: resolution.workspaceId,
+              workspaceHost: stored.workspaceHost,
+              taskSession: sessionAffinity.sessionId,
+              ownerNodeId: sessionAffinity.ownerNodeId,
+              createdAt: sessionAffinity.createdAt,
+              updatedAt: input.nowMs,
+              expiresAt: input.nowMs + WORKSPACE_SESSION_AFFINITY_TTL_MS,
+            })
+          : await input.store.claimWorkspaceSessionAffinity({
+              accountId: stored.accountId,
+              workspaceId: resolution.workspaceId,
+              workspaceHost: stored.workspaceHost,
+              sessionKind: sessionAffinity.sessionKind,
+              sessionId: sessionAffinity.sessionId,
+              ownerNodeId: sessionAffinity.ownerNodeId,
+              createdAt: sessionAffinity.createdAt,
+              updatedAt: input.nowMs,
+              expiresAt: input.nowMs + WORKSPACE_SESSION_AFFINITY_TTL_MS,
+            });
+        if (
+          refreshed.status !== 'conflict' &&
+          refreshed.affinity.ownerNodeId === resolution.nodeId &&
+          refreshed.affinity.workspaceId === resolution.workspaceId
+        ) {
+          sessionAffinity = refreshed.affinity;
+        }
+      } catch {
+        // Preserve the existing fail-closed workspace mismatch below when reconciliation fails.
+      }
     }
 
     if (
