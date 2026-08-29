@@ -531,6 +531,14 @@ bun run explore:benchmark -- --case explore-ranking --case explicit-search-scope
 bun run explore:benchmark -- --output-dir packages/os/explore-bench/reports --name explore-benchmark-snapshot --json
 ```
 
+The checked-in `e2-live-control` / `e2-live-challenger` frozen-vector A/B pair is produced by the dedicated generator, not by the CLI above. Run it from the repository root:
+
+```bash
+bun .task/explore/e2-retrieval-science-and-rank-fusion/bench/run-frozen-vector-ab.js
+```
+
+That generator freezes one query-vector set, evaluates the `HEAD` retriever as control and the working-tree retriever as challenger against the same index and case corpus, and writes paired JSON and Markdown reports under `packages/os/explore-bench/reports/`. Each JSON report contains `schemaVersion`, `generatedAt`, `durationMs`, `benchmark`, and `metadata`; the metadata records the retrieval surface, commit, case file, budget, depth, frozen index details, query-vector provenance/hashes, variant, retriever SHA, and `comparisonRunId`. A valid pair must keep the same `comparisonRunId`, query-vector hashes, index metadata, case file, budget, and depth across control and challenger.
+
 Benchmark labels live in `packages/os/explore-bench/cases.v1.json`. Treat reports as comparative evidence only after `validateBenchmarkEvidence` accepts them: an explicitly invalid report or a run with no ranked results is not a control, even if it contains numeric metrics. The historical `e2-live-control` artifact is intentionally marked invalid because its gateway failed and every ranking was empty; it is retained for provenance, not comparison. For valid control/challenger runs, use the same case file, budget, graph depth, and index configuration. The library-level `evaluateVoiShadowBenchmark` emits paired per-case E4-control/E5-policy relevance and required-node deltas for E6 evidence construction. It evaluates only `evaluable_shadow` E5 decisions, uses `shadow_recommendation` when E5 recommends a read, and uses the E4 control action when E5 abstains; it does not score `research_candidate` as though E5 had proposed it. Each emitted row carries the challenger configuration id. The retrieval benchmark CLI does not manufacture E5 policy decisions or silently populate the promotion artifact; `explore-promotion-evidence.v1.json` stays insufficient until one frozen challenger configuration, an explicit paired fixed-sample decision set, and an operational `shadowEvidence` snapshot are collected under the same configuration id and frozen. Mutable query/worktree evidence remains diagnostic only.
 
 ---

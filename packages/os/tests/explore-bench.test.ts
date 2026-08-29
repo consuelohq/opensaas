@@ -105,6 +105,11 @@ describe('OS ExploreBench retrieval metrics', () => {
       query: 'bad',
       labels: [{ path: 'a.ts', relevance: 4 }],
     }])).toThrow(/relevance/i);
+    expect(() => validateBenchmarkCases([{
+      id: 'required-zero',
+      query: 'required zero relevance',
+      labels: [{ path: 'required.ts', relevance: 0, required: true }],
+    }])).toThrow(/required label must have relevance > 0/i);
   });
 
   it('should compute Recall@k, required-node recall, MRR, and nDCG when evaluating curated labels', () => {
@@ -138,6 +143,22 @@ describe('OS ExploreBench retrieval metrics', () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('usage: bun run explore:benchmark');
+  });
+
+  it('should reject missing values when a value-taking benchmark CLI flag is last', () => {
+    const packageRoot = fileURLToPath(new URL('..', import.meta.url));
+    const flags = ['--cases', '--case', '--budget', '--depth', '--output-dir', '--name'];
+
+    for (const flag of flags) {
+      const result = spawnSync('bun', ['run', 'explore:benchmark', '--', flag], {
+        cwd: packageRoot,
+        encoding: 'utf8',
+        env: process.env,
+      });
+
+      expect(result.status, flag).not.toBe(0);
+      expect(result.stderr, flag).toContain(`missing value for ${flag}`);
+    }
   });
 
   it('should reject invalid or all-empty evidence when evaluating a benchmark comparator', () => {

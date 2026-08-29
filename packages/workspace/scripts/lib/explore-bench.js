@@ -136,7 +136,9 @@ function projectCompactExplorePayload(payload, options = {}) {
   const compactPayload = {
     query: payload?.query ?? null,
     budget: payload?.budget ?? null,
-    results: (payload?.results || []).map((result) => compactResult(result, maxConnections)),
+    results: (Array.isArray(payload?.results) ? payload.results : [])
+      .filter((result) => result && typeof result === 'object' && !Array.isArray(result))
+      .map((result) => compactResult(result, maxConnections)),
     source_routes: payload?.source_routes || [],
     index_stats: payload?.index_stats || {},
   };
