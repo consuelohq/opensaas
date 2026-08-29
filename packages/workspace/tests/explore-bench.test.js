@@ -155,6 +155,19 @@ describe('ExploreBench retrieval metrics and report contract', () => {
     },
   ];
 
+  it('should skip invalid result entries when compacting stored Explore payloads', () => {
+    const projected = projectCompactExplorePayload({
+      query: 'mixed stored payload',
+      budget: 1,
+      results: [null, 42, 'invalid', { path: 'packages/valid.ts', graph_connections: [] }],
+      source_routes: [],
+      index_stats: {},
+    });
+
+    expect(projected.payload.results).toHaveLength(1);
+    expect(projected.payload.results[0].path).toBe('packages/valid.ts');
+  });
+
   it('should reject duplicate ids or invalid relevance when validating benchmark labels', () => {
     expect(validateBenchmarkCases(benchmarkCases)).toEqual({
       caseCount: 2,

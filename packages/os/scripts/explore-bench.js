@@ -47,6 +47,14 @@ function printHelp() {
   writeStdout('  --help               show this help');
 }
 
+function requireOptionValue(argv, index, flag) {
+  const value = argv[index + 1];
+  if (typeof value !== 'string' || !value.trim() || value.startsWith('--')) {
+    throw new Error(`missing value for ${flag}`);
+  }
+  return value;
+}
+
 function parseArgs(argv) {
   const args = {
     budget: 10,
@@ -62,24 +70,42 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     switch (argument) {
-      case '--cases':
-        args.cases = path.resolve(argv[++index]);
+      case '--cases': {
+        const value = requireOptionValue(argv, index, argument);
+        index += 1;
+        args.cases = path.resolve(value);
         break;
-      case '--case':
-        args.caseIds.push(argv[++index]);
+      }
+      case '--case': {
+        const value = requireOptionValue(argv, index, argument);
+        index += 1;
+        args.caseIds.push(value);
         break;
-      case '--budget':
-        args.budget = Number.parseInt(argv[++index], 10);
+      }
+      case '--budget': {
+        const value = requireOptionValue(argv, index, argument);
+        index += 1;
+        args.budget = Number.parseInt(value, 10);
         break;
-      case '--depth':
-        args.depth = Number.parseInt(argv[++index], 10);
+      }
+      case '--depth': {
+        const value = requireOptionValue(argv, index, argument);
+        index += 1;
+        args.depth = Number.parseInt(value, 10);
         break;
-      case '--output-dir':
-        args.outputDir = path.resolve(argv[++index]);
+      }
+      case '--output-dir': {
+        const value = requireOptionValue(argv, index, argument);
+        index += 1;
+        args.outputDir = path.resolve(value);
         break;
-      case '--name':
-        args.name = argv[++index];
+      }
+      case '--name': {
+        const value = requireOptionValue(argv, index, argument);
+        index += 1;
+        args.name = value;
         break;
+      }
       case '--refresh-index':
         args.refreshIndex = true;
         break;

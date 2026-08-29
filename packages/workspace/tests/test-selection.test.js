@@ -672,7 +672,7 @@ describe('test selection registry', () => {
     expect(suiteNames).toContain('OS Explore retrieval science contracts');
   });
 
-  it('routes shared generated OS tool surfaces without waking lifecycle execution', () => {
+  it('routes shared generated OS tool surfaces through generated, lifecycle, and work-session contracts', () => {
     const data = json(run([
       'check',
       '--changed-file',
@@ -693,15 +693,20 @@ describe('test selection registry', () => {
     const suiteNames = data.selectedSuites.map((suite) => suite.name);
 
     expect(matchedRuleIds).toContain('os-tool-surface-generation');
-    expect(matchedRuleIds).not.toContain('os-lifecycle-update-handoff');
+    expect(matchedRuleIds).toContain('os-lifecycle-update-handoff');
+    expect(matchedRuleIds).toContain('os-work-session-fs');
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(suiteNames).toEqual([
       'OS tool surface generation contracts',
       'OS tool surface syntax contracts',
+      'OS lifecycle update handoff contracts',
+      'OS lifecycle facade snapshots',
+      'OS work-session filesystem authority contracts',
+      'OS task-session filesystem compatibility contracts',
     ]);
   });
 
-  it('treats OS script documentation as docs-only instead of selecting lifecycle execution', () => {
+  it('routes OS script documentation through release and lifecycle freshness contracts', () => {
     const result = run([
       'check',
       '--changed-file',
@@ -710,10 +715,19 @@ describe('test selection registry', () => {
     ]);
     const data = json(result);
     const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
 
-    expect(matchedRuleIds).not.toContain('os-lifecycle-update-handoff');
-    expect(data.selectedSuites).toEqual([]);
-    expect(data.zeroSuiteReason).toBe('changed files are docs or task metadata');
+    expect(matchedRuleIds).toContain('os-release-surface-freshness');
+    expect(matchedRuleIds).toContain('os-lifecycle-update-handoff');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'OS release freshness contracts',
+      'Workspace production release contracts',
+      'Workspace Edge release dry run',
+      'OS lifecycle update handoff contracts',
+      'OS lifecycle syntax contracts',
+      'OS lifecycle facade snapshots',
+    ]);
   });
 
   it('owns the legacy Workspace ExploreBench compatibility entrypoint with a focused suite', () => {
@@ -1585,7 +1599,7 @@ describe('test selection registry', () => {
     }
   });
 
-  it('does not treat generated workspace types as lifecycle behavior by themselves', () => {
+  it('routes generated workspace types through work-session and lifecycle contracts', () => {
     const result = run([
       'check',
       '--changed-file',

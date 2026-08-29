@@ -46,6 +46,9 @@ function validateBenchmarkCases(cases) {
       if (label.required != null && typeof label.required !== 'boolean') {
         throw new Error(`benchmark case ${benchmarkCase.id} required must be boolean`);
       }
+      if (label.required === true && label.relevance === 0) {
+        throw new Error(`benchmark case ${benchmarkCase.id} required label must have relevance > 0: ${label.path}`);
+      }
       if (label.role != null && (typeof label.role !== 'string' || !label.role.trim())) {
         throw new Error(`benchmark case ${benchmarkCase.id} role must be a non-empty string`);
       }
