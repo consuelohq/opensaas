@@ -27,6 +27,11 @@ type WorkspaceNodeHeartbeatFileConfig = WorkspaceNodeHeartbeatConfig & {
   connectorHealthUrl?: string;
 };
 
+type CachedHeartbeatEdgeAuth = {
+  connectorId: string;
+  signingSecret: string;
+};
+
 const CONNECTOR_HEALTH_TIMEOUT_MS = 5_000;
 const MCP_READINESS_TIMEOUT_MS = 5_000;
 
@@ -209,6 +214,48 @@ export function reconcileHeartbeatEdgeProxyAuth(input: {
   });
 }
 
+function cachedHeartbeatEdgeAuth(input: {
+  configPath: string;
+  config: WorkspaceNodeHeartbeatFileConfig;
+}): CachedHeartbeatEdgeAuth | null {
+  try {
+    const value = JSON.parse(
+      fs.readFileSync(path.join(path.dirname(input.configPath), 'auth.json'), 'utf8'),
+    ) as unknown;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    const stored = value as {
+      kind?: unknown;
+      workspaceId?: unknown;
+      edgeProxy?: {
+        version?: unknown;
+        nodeId?: unknown;
+        connectorId?: unknown;
+        signingSecret?: unknown;
+      };
+    };
+    const edgeProxy = stored.edgeProxy;
+    const connectorId = typeof edgeProxy?.connectorId === 'string'
+      ? edgeProxy.connectorId.trim()
+      : '';
+    const signingSecret = typeof edgeProxy?.signingSecret === 'string'
+      ? edgeProxy.signingSecret.trim()
+      : '';
+    if (
+      stored.kind !== 'consuelo-generated'
+      || stored.workspaceId !== input.config.workspaceId.trim()
+      || edgeProxy?.version !== 1
+      || edgeProxy.nodeId !== input.config.nodeId.trim()
+      || !connectorId
+      || !signingSecret
+    ) {
+      return null;
+    }
+    return { connectorId, signingSecret };
+  } catch {
+    return null;
+  }
+}
+
 export async function resolveHeartbeatConnectorStatus(input: {
   config: WorkspaceNodeHeartbeatFileConfig;
   fetchImpl?: typeof fetch;
@@ -273,22 +320,41 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
     });
     const runtimeStatus = heartbeatRuntimeStatus({ configPath, config });
     const mcpReadinessRequired = Boolean(config.connectorHealthUrl?.trim());
-    const result = await client.send(
-      mcpReadinessRequired
-        ? { ...runtimeStatus, mcpReady: false }
-        : runtimeStatus,
-    );
-    reconcileHeartbeatEdgeProxyAuth({ configPath, config, result });
-    const mcpReady = mcpReadinessRequired
-      ? await probeHeartbeatMcpReadiness({
+    let readinessResult: WorkspaceNodeHeartbeatResult;
+    let mcpReady: boolean | undefined;
+    if (!mcpReadinessRequired) {
+      readinessResult = await client.send(runtimeStatus);
+    } else {
+      const cachedEdgeAuth = cachedHeartbeatEdgeAuth({ configPath, config });
+      const cachedProbeReady = cachedEdgeAuth
+        ? await probeHeartbeatMcpReadiness({
+            config,
+            result: {
+              nodeId: config.nodeId,
+              presence: 'online',
+              routeReady: true,
+              connectorId: cachedEdgeAuth.connectorId,
+              edgeRequestSigningSecret: cachedEdgeAuth.signingSecret,
+            },
+            fetchImpl: input.fetchImpl,
+          })
+        : false;
+      if (cachedProbeReady) {
+        mcpReady = true;
+        readinessResult = await client.send({ ...runtimeStatus, mcpReady });
+        reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: readinessResult });
+      } else {
+        const recoveryResult = await client.send({ ...runtimeStatus, mcpReady: false });
+        reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: recoveryResult });
+        mcpReady = await probeHeartbeatMcpReadiness({
           config,
-          result,
+          result: recoveryResult,
           fetchImpl: input.fetchImpl,
-        })
-      : undefined;
-    const readinessResult = mcpReadinessRequired
-      ? await client.send({ ...runtimeStatus, mcpReady })
-      : result;
+        });
+        readinessResult = await client.send({ ...runtimeStatus, mcpReady });
+        reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: readinessResult });
+      }
+    }
     const acceptedResult = mcpReadinessRequired
       ? {
           ...readinessResult,
