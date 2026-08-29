@@ -483,22 +483,8 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'hooks'))).toBe(false);
     expect(existsSync(join(tempHome, 'bin', 'browser.open'))).toBe(true);
     expect(existsSync(join(tempHome, 'steering'))).toBe(false);
-    const visibleDialerSteering = join(
-      tempUserHome,
-      'Consuelo',
-      'Steering',
-      'dialer-AGENTS.md',
-    );
-    expect(first.actions).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          type: 'seed_steering',
-          path: visibleDialerSteering,
-          status: 'created',
-        }),
-      ]),
-    );
-    expect(existsSync(visibleDialerSteering)).toBe(true);
+    expect(first.actions.some((action: { path: string }) => action.path.endsWith(join('Steering', 'dialer-AGENTS.md')))).toBe(false);
+    expect(existsSync(join(tempUserHome, 'Consuelo', 'Steering', 'dialer-AGENTS.md'))).toBe(false);
     expect(first.actions.some((action: { path: string }) => action.path.endsWith(join('steering', 'decision.md')))).toBe(false);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'create_file' && action.path.endsWith(join('components', 'installed-skills.json')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('bin', 'status')) && action.status === 'created')).toBe(true);
@@ -510,7 +496,7 @@ describe('local OS install state', () => {
     // BUILT_INS.md was renamed to TOOLS.md, which also documents how to view and edit tools.
     expect(existsSync(join(tempUserHome, 'Consuelo', 'Tools', 'TOOLS.md'))).toBe(true);
     expect(existsSync(join(tempUserHome, 'Consuelo', 'Tools', 'BUILT_INS.md'))).toBe(false);
-    // Visible steering includes the system prompt and managed dialer instructions.
+    // Visible steering includes the system prompt; stream-scoped dialer instructions stay in stream context.
     const systemPrompt = join(tempUserHome, 'Consuelo', 'Steering', 'system.md');
     expect(existsSync(systemPrompt)).toBe(true);
     expect(existsSync(join(tempUserHome, 'Consuelo', 'Skills', 'skills.json'))).toBe(true);
@@ -583,15 +569,8 @@ describe('local OS install state', () => {
       process.stdout.write(JSON.stringify(result));
     `));
     expect(second.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'preserved')).toBe(true);
-    expect(second.actions).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          type: 'seed_steering',
-          path: visibleDialerSteering,
-          status: 'preserved',
-        }),
-      ]),
-    );
+    expect(second.actions.some((action: { path: string }) => action.path.endsWith(join('Steering', 'dialer-AGENTS.md')))).toBe(false);
+    expect(existsSync(join(tempUserHome, 'Consuelo', 'Steering', 'dialer-AGENTS.md'))).toBe(false);
     expect(readFileSync(userSteeringPath, 'utf8')).toContain('user-owned preferences');
     expect(existsSync(join(tempHome, 'steering'))).toBe(false);
   });
