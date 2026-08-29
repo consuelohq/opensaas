@@ -561,7 +561,7 @@ function configurationClientScript(): string {
         '<td>' + (isDefault ? '<strong>Default</strong>' : '<span class="muted">—</span>') + '</td>' +
         '<td><code>' + escapeHtml(repository.nameWithOwner || '') + '</code><br>' + status + '</td>' +
         '<td><code>' + escapeHtml(repository.defaultBranch || 'main') + '</code></td>' +
-        '<td>' + (repository.ready ? 'GitHub' : '<span class="muted">Reconnect GitHub</span>') + '</td>' +
+        '<td>' + (repository.ready ? 'GitHub' : '<span class="muted">Connect GitHub</span>') + '</td>' +
         '<td><div class="row-actions">' +
           (!isDefault ? '<button type="button" data-source-action="default">Make default</button>' : '<span class="muted">—</span>') +
           '</div></td>' +
@@ -590,14 +590,16 @@ function configurationClientScript(): string {
       if (rows) rows.innerHTML = currentSourceControl.repositories.length
         ? currentSourceControl.repositories.map(sourceControlRow).join('')
         : emptyRow(5, 'No GitHub repositories connected yet.');
-      setText('source-control-summary', currentSourceControl.repositories.length
+      const hasReadyRepositories = currentSourceControl.repositories.some((repository) => repository.ready === true);
+      setText('source-control-summary', hasReadyRepositories
         ? 'GitHub connected · ' + currentSourceControl.repositories.length + ' repositor' + (currentSourceControl.repositories.length === 1 ? 'y' : 'ies') + (currentSourceControl.configured ? ' ready' : ' selected')
-        : 'Connect GitHub to choose repositories');
+        : currentSourceControl.repositories.length
+          ? 'Connect GitHub to authorize repository access'
+          : 'Connect GitHub to choose repositories');
       const connect = byId('source-control-connect-github');
       if (connect) {
-        const hasRepositories = currentSourceControl.repositories.length > 0;
-        connect.textContent = hasRepositories ? 'Manage GitHub access' : 'Connect GitHub';
-        connect.setAttribute('href', hasRepositories
+        connect.textContent = hasReadyRepositories ? 'Manage GitHub access' : 'Connect GitHub';
+        connect.setAttribute('href', hasReadyRepositories
           ? '/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration&mode=manage'
           : '/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration');
       }
