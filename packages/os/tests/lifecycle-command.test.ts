@@ -12,7 +12,10 @@ import { join, resolve } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { materializeLifecycleCommand } from '../scripts/lib/install-state';
+import {
+  materializeLifecycleCommand,
+  provisionLocalOs,
+} from '../scripts/lib/install-state';
 
 let home: string;
 
@@ -83,6 +86,38 @@ describe('lifecycle command materialization', () => {
       },
     });
 
+    expect(invocation.trim().split('\n')).toEqual([
+      recoveryScript,
+      'status',
+      '--home',
+      home,
+      '--json',
+    ]);
+  });
+
+  it('keeps the verified recovery runtime pinned while onboarding provisioning runs', () => {
+    writeFakeBun();
+    const recoveryRoot = join(home, 'runtime', 'releases', 'verified-onboarding-recovery');
+    const recoveryScript = writeLifecycle(recoveryRoot);
+    materializeLifecycleCommand(home, false, {
+      recoveryPackageRoot: recoveryRoot,
+    });
+
+    provisionLocalOs({
+      home,
+      userHome: home,
+      mode: 'local',
+      recoveryPackageRoot: recoveryRoot,
+    });
+
+    const command = join(home, 'bin', 'consuelo');
+    const invocation = execFileSync(command, ['status', '--json'], {
+      encoding: 'utf8',
+      env: {
+        CONSUELO_HOME: home,
+        PATH: '/usr/bin:/bin',
+      },
+    });
     expect(invocation.trim().split('\n')).toEqual([
       recoveryScript,
       'status',

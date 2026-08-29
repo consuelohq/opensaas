@@ -127,6 +127,7 @@ export type OsConfig = {
 export type ProvisionOptions = {
   home?: string;
   userHome?: string;
+  recoveryPackageRoot?: string;
   mode?: OsMode;
   port?: number;
   dryRun?: boolean;
@@ -1723,7 +1724,9 @@ export function provisionLocalOs(
   }
 
   actions.push(...materializeVisibleUserRoot({ userRoot, dryRun }));
-  actions.push(...materializeLifecycleCommand(home, dryRun));
+  actions.push(...materializeLifecycleCommand(home, dryRun, {
+    recoveryPackageRoot: options.recoveryPackageRoot,
+  }));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {

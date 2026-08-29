@@ -31,6 +31,8 @@ describe('bootstrap partial-install recovery CLI', () => {
     expect(source).toContain('prepare_recovery_cli() {');
     expect(source).toContain('./scripts/install.ts --materialize-lifecycle-command');
     expect(source).toContain('--recovery-package-root "$os_dir"');
+    expect(source.match(/--recovery-package-root/g)).toHaveLength(3);
+    expect(source).toContain('finalize_recovery_cli() {');
     expect(source).toContain('recovery_cli_hint() {');
     expect(source).toContain('Recovery CLI is ready');
     expect(source).toContain('consuelo status');
@@ -46,6 +48,7 @@ describe('bootstrap partial-install recovery CLI', () => {
       'ensure_command_on_path',
       'run_onboarding',
       'activate_verified_runtime',
+      'finalize_recovery_cli',
       'maybe_install_daemons',
     ]);
   });
