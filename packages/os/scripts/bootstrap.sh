@@ -1617,7 +1617,7 @@ check_install_tty() {
 run_install_with_script_pty() {
   local os_dir="$1"
   local os_home="$2"
-  local install_args=(./scripts/install.ts --home "$os_home" --mode "${OS_MODE:-local}")
+  local install_args=(./scripts/install.ts --home "$os_home" --recovery-package-root "$os_dir" --mode "${OS_MODE:-local}")
   local script_output="/dev/null"
   local status=0
   if [ "$INSTALL_DAEMONS" -eq 1 ]; then
@@ -1698,6 +1698,19 @@ prepare_recovery_cli() {
   CONSUELO_HOME="$OS_HOME" "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --materialize-lifecycle-command --home "$OS_HOME" --recovery-package-root "$os_dir"
 }
 
+finalize_recovery_cli() {
+  if [ "$SOURCE_STATUS" != "verified" ]; then
+    return 0
+  fi
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would rematerialize the Consuelo lifecycle CLI from runtime/current after activation"
+    return 0
+  fi
+  [ -f "$RUNTIME_HOME/scripts/install.ts" ] ||
+    fail "activated Consuelo OS runtime is missing the installer entrypoint"
+  CONSUELO_HOME="$OS_HOME" "$BUN_BIN" --cwd "$RUNTIME_HOME" ./scripts/install.ts --materialize-lifecycle-command --home "$OS_HOME"
+}
+
 recovery_cli_hint() {
   [ -x "$OS_HOME/bin/consuelo" ] || return 0
   printf '
@@ -1734,7 +1747,7 @@ run_onboarding() { # run_onboarding_json
   fi
 
   if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ]; then
-    local install_args=(./scripts/install.ts --yes --json --home "$os_home" --mode "${OS_MODE:-local}")
+    local install_args=(./scripts/install.ts --yes --json --home "$os_home" --recovery-package-root "$os_dir" --mode "${OS_MODE:-local}")
     if [ "$INSTALL_DAEMONS" -eq 1 ]; then
       install_args+=(--install-daemons)
     fi
@@ -1977,6 +1990,7 @@ main() {
   ensure_command_on_path
   run_onboarding
   activate_verified_runtime
+  finalize_recovery_cli
   maybe_install_daemons
   print_success_summary
   open_workspace_launcher

@@ -89,6 +89,7 @@ type InstallOptions = {
   skipDaemons: boolean;
   skipAgents: boolean;
   home?: string;
+  recoveryPackageRoot?: string;
   mode?: OsMode;
   workspaceName?: string;
   workspaceHost?: string;
@@ -397,6 +398,9 @@ function parseArgs(argv: string[]): InstallOptions {
     else if (arg === '--skip-agents') options.skipAgents = true;
     else if (arg === '--home') {
       options.home = readValue('--home', index);
+      index += 1;
+    } else if (arg === '--recovery-package-root') {
+      options.recoveryPackageRoot = readValue('--recovery-package-root', index);
       index += 1;
     } else if (arg === '--mode') {
       const mode = readValue('--mode', index);
@@ -1533,6 +1537,7 @@ async function main(): Promise<void> {
     try {
       result = provisionLocalOs({
         home: options.home,
+        recoveryPackageRoot: options.recoveryPackageRoot,
         mode: options.mode ?? 'local',
         port: resolveLocalOsPortOverride(),
         dryRun: options.dryRun,
