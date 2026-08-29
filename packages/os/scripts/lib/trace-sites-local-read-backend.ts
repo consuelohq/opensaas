@@ -20,6 +20,7 @@ import {
 } from './trace-database-schema';
 import { compileTraceHistorySearch } from './trace-search-query';
 import { estimateTraceCost } from './trace-cost-estimator';
+import { resolveTraceSessionIdentity } from './trace-session-identity';
 
 export type LocalTraceSitesReadBackendOptions = {
   dbPath: string;
@@ -283,12 +284,7 @@ function rowToDashboardEvent(
       ? `${input.workspaceId}:${input.nodeId}:${traceId}:${cursor}`
       : `${input.workspaceId}:${traceId}:${cursor}`,
     sourceMode: input.sourceMode,
-    branch:
-      sanitizeLocalTraceText(cleanString(row.work_path)) ||
-      cleanString(row.branch) ||
-      cleanString(row.task_session) ||
-      cleanString(row.work_session) ||
-      '(no branch)',
+    branch: traceSessionValue(row, '(no branch)'),
     tool: cleanString(row.tool) || 'unknown',
     inputTokens,
     outputTokens,
@@ -349,8 +345,7 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     time: cleanString(row.ts),
     name: tool,
     traceName: tool,
-    branch:
-      cleanString(row.branch) || cleanString(row.task_session) || 'no-branch',
+    branch: traceSessionValue(row, 'no-branch'),
     taskSession: cleanString(row.task_session),
     worktree: sanitizeLocalTraceText(cleanString(row.worktree)),
     workSession: cleanString(row.work_session),
@@ -421,6 +416,19 @@ export function sanitizeTraceHistoryRowForTest(
   row: TraceRow,
 ): TraceSitesGatewayHistoryRow {
   return historyRowFromTraceRow(row);
+}
+
+export function sanitizeTraceDashboardEventForTest(
+  row: TraceRow,
+): TraceSitesDashboardEvent {
+  return rowToDashboardEvent(row, {
+    workspaceId: 'workspace_test',
+    workspaceHost: 'test.consuelohq.com',
+    site: 'trace',
+    sourceMode: 'local-networked',
+    cursor: '0',
+    limit: 1,
+  });
 }
 
 const TRACE_PRIVATE_PAYLOAD_FIELD_PATTERN = /^(?:(?:system|user|developer)?prompt|instructions?|messages|environment|env)$/i;
@@ -560,4 +568,16 @@ function numberValue(value: unknown): number {
 
 function cleanString(value: unknown): string {
   return String(value ?? '').trim();
+}
+
+function traceSessionValue(
+  row: TraceRow,
+  fallback: string,
+): string {
+  return resolveTraceSessionIdentity({
+    workPath: sanitizeLocalTraceText(cleanString(row.work_path)),
+    branch: cleanString(row.branch),
+    taskSession: cleanString(row.task_session),
+    workSession: cleanString(row.work_session),
+  }, fallback);
 }

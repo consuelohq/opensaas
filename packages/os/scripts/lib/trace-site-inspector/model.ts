@@ -1,3 +1,5 @@
+import { resolveTraceSessionIdentity } from '../trace-session-identity';
+
 export type TraceRecord = Record<string, unknown>;
 
 export type TraceChildRecord = TraceRecord & {
@@ -54,11 +56,26 @@ export function isBatchChild(row: TraceRecord | null | undefined): boolean {
 }
 
 export function branchName(row: TraceRecord | null | undefined): string {
-  for (const candidate of [row?.workPath, row?.branch, row?.taskSession, row?.workSession]) {
-    const value = clean(candidate);
-    if (value) return value;
-  }
-  return 'no-branch';
+  return resolveTraceSessionIdentity({
+    workPath: row?.workPath,
+    branch: row?.branch,
+    taskSession: row?.taskSession,
+    workSession: row?.workSession,
+  });
+}
+
+export function sessionDisplayName(row: TraceRecord | null | undefined): string {
+  const session = branchName(row);
+  const workPath = sessionValue(row?.workPath);
+  if (!workPath || session.includes(' + ')) return session;
+  const normalized = workPath.replaceAll('\\', '/').replace(/\/+$/, '');
+  return normalized.split('/').filter(Boolean).at(-1) || session;
+}
+
+function sessionValue(value: unknown): string {
+  const candidate = clean(value);
+  if (!candidate || candidate === 'no-branch' || candidate === '(no branch)') return '';
+  return candidate;
 }
 
 export function traceNodeId(row: TraceRecord | null | undefined): string {

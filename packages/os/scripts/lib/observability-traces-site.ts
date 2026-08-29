@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
+import { resolveTraceSessionIdentity } from './trace-session-identity';
 import {
   renderWorkspaceChromeBar,
   workspaceChromeClientScript,
@@ -22,18 +23,19 @@ export function resolveObservabilitySessionValue(row: Record<string, unknown>): 
   const metadata = row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
     ? row.metadata as Record<string, unknown>
     : {};
-  for (const value of [
-    row.workPath,
-    row.branch,
-    row.gitBranch,
-    row.taskSession,
-    row.workSession,
-    metadata.workPath,
-    metadata.branch,
-  ]) {
-    if (value !== undefined && value !== null && String(value).length > 0) return String(value);
-  }
-  return 'no-branch';
+  const firstSessionValue = (...values: unknown[]): string => {
+    for (const value of values) {
+      const candidate = String(value ?? '').trim();
+      if (candidate && candidate !== 'no-branch' && candidate !== '(no branch)') return candidate;
+    }
+    return '';
+  };
+  return resolveTraceSessionIdentity({
+    workPath: firstSessionValue(row.workPath, metadata.workPath),
+    branch: firstSessionValue(row.branch, row.gitBranch, metadata.branch),
+    taskSession: firstSessionValue(row.taskSession, metadata.taskSession),
+    workSession: firstSessionValue(row.workSession, metadata.workSession),
+  });
 }
 
 const productionHistoryTransport = `<script id="consuelo-trace-history-transport">
@@ -99,6 +101,8 @@ body{background:var(--trace-bg)!important;color:var(--trace-cream)!important}
   #tbmLiveTraceModal .trxToolIcon.success{color:#9ba77e!important}
 }
 </style>`;
+
+const traceThemeMetadata = `<meta name="color-scheme" content="light dark"><meta name="theme-color" content="#f4efe7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#080706" media="(prefers-color-scheme: dark)">`;
 
 const traceWorkspaceIntegrationStyle = `<style id="consuelo-trace-workspace-integration">
 #tbmLiveTraceModal[aria-hidden="false"]{display:flex!important;align-items:center!important;justify-content:center!important;padding:14px!important;overflow:hidden!important}
@@ -204,6 +208,7 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         const metadata = row && row.metadata && typeof row.metadata === 'object' ? row.metadata : {};
         return String(first(row && row.recordId, metadata.trace_id, metadata.id, metadata.rowid, row && row.traceId, row && row.idempotencyKey, row && row.id, '') || '');
       };
+      const resolveTraceSessionIdentity = ${resolveTraceSessionIdentity.toString()};
       const normalizeTraceRow = (row) => {
         const metadata = isObject(row.metadata) ? row.metadata : {};
         const input = summarize(first(row.input, row.inputSummary, row.request, row.args, row.resolvedInputObj));
@@ -214,7 +219,12 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         const cost = Number(first(row.cost, row.costUsd, row.totalCostUsd, row.total_cost_usd, 0) || 0);
         const status = String(first(row.status, row.success === false ? 'error' : 'success') || 'success');
         return Object.assign({}, row, {
-          branch: String(first(row.workPath, row.branch, row.gitBranch, row.taskSession, row.workSession, metadata.workPath, metadata.branch, 'no-branch') || 'no-branch'),
+          branch: resolveTraceSessionIdentity({
+            workPath: first(row.workPath, metadata.workPath),
+            branch: first(row.branch, row.gitBranch, metadata.branch),
+            taskSession: first(row.taskSession, metadata.taskSession),
+            workSession: first(row.workSession, metadata.workSession)
+          }),
           name: String(first(row.name, row.traceName, row.toolName, row.tool, 'unknown') || 'unknown'),
           code: String(first(row.code, row.kind, row.capability, '') || ''),
           status: status === 'ok' ? 'success' : status,
@@ -453,6 +463,13 @@ export function buildObservabilityTracesSite(
   chromeOptions: WorkspaceChromeOptions = {},
 ): string {
   let html = canonicalAsset('template.html');
+
+  html = replaceExactlyOnce(
+    html,
+    /<meta name="theme-color" content="#14120f" media="\(prefers-color-scheme: dark\)"><meta name="theme-color" content="#14120f">/i,
+    traceThemeMetadata,
+    'trace theme metadata',
+  );
 
   html = inlineStyle(
     html,

@@ -3,6 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  renderWorkspaceChromeBar,
+  workspaceChromeClientScript,
+  workspaceRouteSwitcherStyles,
+  workspaceWindowShellStyles,
+} from './workspace-chrome';
+
 export type ArtifactTemplate =
   | 'research'
   | 'spec'
@@ -447,11 +454,13 @@ function renderArtifactsIndex(catalog: ArtifactCatalog): string {
   <link rel="icon" type="image/png" href="${logoDataUri}" />
   <link rel="apple-touch-icon" href="${logoDataUri}" />
   <style>
-    :root { color-scheme: light; --paper:#f6efe4; --surface:#fff9f0; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-strong:#e98262; --accent-soft:#ead5bd; --shadow:0 18px 60px rgba(55,37,20,.14); }
-    @media (prefers-color-scheme: dark) { :root { color-scheme:dark; --paper:#0f0f0d; --surface:#191814; --ink:#f2eee6; --muted:#b5aea2; --quiet:#7e776d; --line:#37322b; --soft:#221f1a; --accent:#f0c66d; --accent-strong:#ff8b68; --accent-soft:#352a1c; --shadow:0 28px 90px rgba(0,0,0,.42); } }
+    :root { color-scheme: light; --paper:#f6efe4; --surface:#fff9f0; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-strong:#e98262; --accent-soft:#ead5bd; --shadow:0 18px 60px rgba(55,37,20,.14); --site-color-paper:var(--paper); --site-color-ink:var(--ink); --site-color-canvas:#e9e4dc; }
+    @media (prefers-color-scheme: dark) { :root { color-scheme:dark; --paper:#0f0f0d; --surface:#191814; --ink:#f2eee6; --muted:#b5aea2; --quiet:#7e776d; --line:#37322b; --soft:#221f1a; --accent:#f0c66d; --accent-strong:#ff8b68; --accent-soft:#352a1c; --shadow:0 28px 90px rgba(0,0,0,.42); --site-color-canvas:#0d0d0c; } }
     * { box-sizing:border-box; }
-    html { scroll-behavior:smooth; background:var(--paper); }
-    body { margin:0; font-family:"Geist Mono","Geist",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace; color:var(--ink); background:var(--paper); }
+    ${workspaceWindowShellStyles()}
+    ${workspaceRouteSwitcherStyles()}
+    html { scroll-behavior:smooth; }
+    body { font-family:"Geist Mono","Geist",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace; }
     ::selection { background:var(--accent-soft); color:var(--ink); }
     .shell { max-width:720px; margin:0 auto; padding:0 22px 40px; }
     .topbar { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--paper) 86%,transparent); backdrop-filter:blur(18px); }
@@ -481,24 +490,30 @@ function renderArtifactsIndex(catalog: ArtifactCatalog): string {
   </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="topbar">
-      <a class="brand" href="/artifacts">
-        <img data-consuelo-logo src="${logoDataUri}" alt="Consuelo" width="24" height="24" />
-        <span>Consuelo Artifacts</span>
-      </a>
-      <nav class="nav" aria-label="Primary"><a href="#recently-updated">Recently Updated</a><button type="button" data-search-toggle>Search</button></nav>
+  <div class="workspace-window" data-workspace-shell>
+    ${renderWorkspaceChromeBar('artifacts', 'Artifacts')}
+    <div class="workspace-view" data-workspace-view>
+      <div class="shell">
+        <div class="topbar">
+          <a class="brand" href="/artifacts">
+            <img data-consuelo-logo src="${logoDataUri}" alt="Consuelo" width="24" height="24" />
+            <span>Consuelo Artifacts</span>
+          </a>
+          <nav class="nav" aria-label="Primary"><a href="#recently-updated">Recently Updated</a><button type="button" data-search-toggle>Search</button></nav>
+        </div>
+        <header class="hero">
+          <h1>Artifacts</h1>
+          <p class="lead">Durable sites, guides, specifications, plans, reports, files, and generated outputs from Consuelo.</p>
+          <div class="filter-row" aria-label="Filters"><span class="filter-label">Filters:</span><button class="active" data-filter="all">All</button><button data-filter="website">Website</button><button data-filter="guide">Guide</button><button data-filter="spec">Spec</button><button data-filter="plan">Plan</button><button data-filter="uncategorized">Uncategorized</button></div>
+          <label class="search-row" hidden><span class="filter-label">Search:</span><input class="search-input" type="search" placeholder="filter artifacts" autocomplete="off" /></label>
+        </header>
+        <section class="section" id="recently-updated"><h2>Recently Updated</h2><div class="post-list" data-results>${cards || '<p class="empty">No artifacts published yet.</p>'}</div></section>
+        <footer>© ${new Date(catalog.updatedAt).getUTCFullYear() || new Date().getUTCFullYear()} Consuelo. All rights reserved.</footer>
+      </div>
     </div>
-    <header class="hero">
-      <h1>Artifacts</h1>
-      <p class="lead">Durable sites, guides, specifications, plans, reports, files, and generated outputs from Consuelo.</p>
-      <div class="filter-row" aria-label="Filters"><span class="filter-label">Filters:</span><button class="active" data-filter="all">All</button><button data-filter="website">Website</button><button data-filter="guide">Guide</button><button data-filter="spec">Spec</button><button data-filter="plan">Plan</button><button data-filter="uncategorized">Uncategorized</button></div>
-      <label class="search-row" hidden><span class="filter-label">Search:</span><input class="search-input" type="search" placeholder="filter artifacts" autocomplete="off" /></label>
-    </header>
-    <section class="section" id="recently-updated"><h2>Recently Updated</h2><div class="post-list" data-results>${cards || '<p class="empty">No artifacts published yet.</p>'}</div></section>
-    <footer>© ${new Date(catalog.updatedAt).getUTCFullYear() || new Date().getUTCFullYear()} Consuelo. All rights reserved.</footer>
   </div>
   <script type="application/json" id="artifact-search-data">${searchData}</script>
+  <script>${workspaceChromeClientScript()}</script>
   <script>
     const items = Array.from(document.querySelectorAll('.post-item'));
     const buttons = Array.from(document.querySelectorAll('[data-filter]'));

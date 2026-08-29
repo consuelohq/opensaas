@@ -14,6 +14,7 @@ import {
   dedupeTraceRows,
   isBatchChild,
   number,
+  sessionDisplayName,
   stableTraceKey,
   traceParentKey,
   totalTokens,
@@ -785,7 +786,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
   });
   appendCell(button, 'trxLatency', formatDuration(row.durationMs, row.latency));
   appendCell(button, 'trxTokens', formatCompact(totalTokens(row)));
-  appendCell(button, 'trxBranch', stripTaskPrefix(branch), (cell) => {
+  appendCell(button, 'trxBranch', stripTaskPrefix(sessionDisplayName(row)), (cell) => {
     setTraceTooltip(cell, branch);
     applySessionColor(cell, branch);
   });
@@ -839,7 +840,10 @@ function appendChildCells(
     formatDuration(child.durationMs, child.latency),
   );
   appendCell(button, 'trxTokens', formatCompact(totalTokens(child)));
-  appendCell(button, 'trxBranch', stripTaskPrefix(branch));
+  appendCell(button, 'trxBranch', stripTaskPrefix(sessionDisplayName(parent)), (cell) => {
+    setTraceTooltip(cell, branch);
+    applySessionColor(cell, branch);
+  });
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
     setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
   });

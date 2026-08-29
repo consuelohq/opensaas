@@ -220,6 +220,7 @@
         "packages/os/package.json",
         "packages/os/scripts/lib/observability-traces-site.ts",
         "packages/os/scripts/lib/trace-cost-estimator.ts",
+        "packages/os/scripts/lib/trace-session-identity.ts",
         "packages/os/scripts/lib/trace-site-inspector/**",
         "packages/os/scripts/lib/trace-sites-gateway-*.ts",
         "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
@@ -419,6 +420,7 @@
       "exclusive": true,
       "source": [
         "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
         "packages/os/scripts/lib/lifecycle/engine.ts",
         "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
         "packages/os/tests/cloudflare-d1-route-registry.test.ts",
@@ -629,6 +631,8 @@
         "packages/os/scripts/bootstrap.sh",
         "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
         "packages/os/tests/caddy-worker-pool-migration.test.ts",
+        "packages/os/tests/bootstrap-recovery-cli.test.ts",
+        "packages/os/tests/lifecycle-command.test.ts",
         "packages/os/tests/worker-pool-process.test.ts"
       ],
       "tests": [
@@ -658,6 +662,8 @@
             "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
             "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
             "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/bootstrap-recovery-cli.test.ts",
+            "packages/os/tests/lifecycle-command.test.ts",
             "packages/os/tests/worker-pool-process.test.ts"
           ]
         },
@@ -948,6 +954,52 @@
       "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests."
     },
     {
+      "id": "os-mcp-call-timeout-envelope",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/scripts/server/services/call-service.ts",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/lib/facade/types.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS MCP call-timeout envelope contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ]
+        },
+        {
+          "name": "OS MCP call-timeout facade contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "call execution timeout"
+          ]
+        },
+        {
+          "name": "OS MCP call-timeout syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "reason": "Public MCP call timeout is envelope execution metadata, not selected tool input; changes must prove transport separation, local facade deadline propagation, and syntax without selecting the historically red package-wide OS suite."
+    },
+    {
       "id": "os-device-approval-canonical-identity",
       "critical": true,
       "exclusive": true,
@@ -1071,6 +1123,7 @@
       "critical": true,
       "exclusive": true,
       "source": [
+        "packages/os/scripts/lib/artifacts.ts",
         "packages/os/scripts/lib/sites.ts",
         "packages/os/scripts/lib/settings-site.ts",
         "packages/os/scripts/lib/settings-snapshot.ts",
@@ -1078,6 +1131,7 @@
         "packages/os/scripts/lib/workspace-chrome.ts",
         "packages/os/scripts/lib/observability-traces-site.ts",
         "packages/os/tests/settings-site.test.ts",
+        "packages/os/tests/artifacts.test.ts",
         "packages/os/tests/launcher-nodes-materialization.test.ts",
         "packages/os/tests/observability-traces-site.test.ts",
         "packages/os/tests/sites-cli.test.ts",
@@ -1095,6 +1149,7 @@
             "packages/os",
             "test",
             "--no-file-parallelism",
+            "tests/artifacts.test.ts",
             "tests/settings-site.test.ts",
             "tests/launcher-nodes-materialization.test.ts",
             "tests/observability-traces-site.test.ts",
@@ -1114,6 +1169,33 @@
         }
       ],
       "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference."
+    },
+    {
+      "id": "os-test-source-safety",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tests/distribution/release-channels-cli.test.ts",
+        "packages/os/tests/legacy-system-daemons.test.ts",
+        "packages/os/tests/test-source-safety.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS test source safety contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/test-source-safety.test.ts",
+            "tests/code-call.test.ts",
+            "tests/legacy-system-daemons.test.ts",
+            "tests/lifecycle-restart-contract.test.ts",
+            "tests/distribution/release-channels-cli.test.ts"
+          ]
+        }
+      ],
+      "reason": "OS tests that exercise destructive-command guardrails, legacy daemon retirement, or release CLI safety must prove pure/static/dry-run behavior without selecting the entire OS package suite."
     },
     {
       "id": "os-managed-cloud-one-click-provisioning",
@@ -2034,6 +2116,33 @@
         }
       ],
       "reason": "Durable Grok/Codex orchestration, provider capabilities, active-run status, idempotency, and deadline behavior must prove the focused subagent contract without selecting the unrelated whole-OS package baseline."
+    },
+    {
+      "id": "os-test-environment-isolation",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/vitest.config.ts",
+        "packages/os/tests/test-environment.ts",
+        "packages/os/tests/test-environment-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS test-environment isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "--config",
+            "vitest.config.ts",
+            "tests/test-environment-contract.test.ts"
+          ]
+        }
+      ],
+      "reason": "OS test-runner configuration must redirect inherited operator trace persistence to a test-owned database without selecting the unrelated package-wide OS baseline."
     },
     {
       "id": "os-work-session-fs",

@@ -76,7 +76,8 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     const html = buildObservabilityTracesSite();
 
     expect(html).toContain('id="consuelo-trace-workspace-integration"');
-    expect(html).toContain('Inspect live tool traces.');
+    expect(html).toContain('<span>Tracing</span>');
+    expect(html).not.toContain('Inspect live tool traces.');
     expect(html).not.toContain('Inspect live agent and tool execution.');
     expect(html).toContain('#tbmLiveTraceModal[aria-hidden="false"]');
     expect(html).toContain('display:flex!important');
@@ -113,6 +114,10 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     const html = buildObservabilityTracesSite();
 
     expect(html).toContain('id="consuelo-trace-system-theme"');
+    expect(html).toContain('<meta name="color-scheme" content="light dark">');
+    expect(html).toContain('<meta name="theme-color" content="#f4efe7" media="(prefers-color-scheme: light)">');
+    expect(html).toContain('<meta name="theme-color" content="#080706" media="(prefers-color-scheme: dark)">');
+    expect(html).not.toContain('<meta name="theme-color" content="#14120f">');
     expect(html).toContain('--trace-bg:#f4efe7');
     expect(html).toContain('--trace-cream:#29251f');
     expect(html).toContain('--trace-muted:#756d63');
@@ -131,12 +136,14 @@ describe('Observability Traces canonical Trace Burn surface', () => {
       branch: 'task/workspace-agent/example',
       taskSession: 'tsk_example',
       workSession: 'wrk_example',
-    })).toBe('/Users/ko/Developer/raycast-extension');
+    })).toBe('tsk_example + wrk_example');
     expect(resolveObservabilitySessionValue({
       branch: 'task/workspace-agent/example',
       taskSession: 'tsk_example',
     })).toBe('task/workspace-agent/example');
     expect(resolveObservabilitySessionValue({ workSession: 'wrk_example' })).toBe('wrk_example');
+    expect(resolveObservabilitySessionValue({ branch: 'no-branch', workSession: 'wrk_example' })).toBe('wrk_example');
+    expect(resolveObservabilitySessionValue({ taskSession: 'tsk_conflict', workSession: 'wrk_conflict' })).toBe('tsk_conflict + wrk_conflict');
     expect(resolveObservabilitySessionValue({})).toBe('no-branch');
   });
 

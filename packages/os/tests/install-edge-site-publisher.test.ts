@@ -168,6 +168,25 @@ contractDescribe('install edge site publisher', () => {
     }
   });
 
+  it('rejects an edge publication identity that conflicts with the installed OS auth identity', async () => {
+    const publisher = await loadPublisher();
+    const home = makeHome();
+    const authPath = path.join(home, 'node', 'security', 'generated', 'auth.json');
+    fs.mkdirSync(path.dirname(authPath), { recursive: true });
+    fs.writeFileSync(authPath, JSON.stringify({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+    }), 'utf8');
+
+    expect(() => publisher.createWorkspaceEdgeSnapshotPlan({
+      home,
+      workspaceId: 'unrelated_application_workspace',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+    })).toThrow('edge publication workspaceId does not match the installed OS auth identity');
+  });
+
   it('uploads R2, upserts D1, warms the edge route, and returns install-safe metadata', async () => {
     const publisher = await loadPublisher();
     const home = makeHome();
