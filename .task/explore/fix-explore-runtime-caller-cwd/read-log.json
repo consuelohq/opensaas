@@ -1,6 +1,7 @@
 {
   "files": [
-    "packages/os/scripts/decide-next.js"
+    "packages/os/scripts/decide-next.js",
+    "packages/os/tests/explore-runtime-routing.test.ts"
   ],
-  "updatedAt": "2026-08-29T07:53:10.052Z"
+  "updatedAt": "2026-08-29T07:56:23.509Z"
 }

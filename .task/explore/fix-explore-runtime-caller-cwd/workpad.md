@@ -15,7 +15,10 @@ started: 2026-08-29
 
 ## files changed
 
-- none yet
+- `packages/os/scripts/confidence-score.js`
+- `packages/os/scripts/decide-next.js`
+- `packages/os/scripts/exploit.js`
+- `packages/os/tests/explore-runtime-routing.test.ts`
 
 ## key decisions
 
@@ -81,13 +84,18 @@ no-test waiver: not applicable.
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/os/scripts/confidence-score.js`
+- `packages/os/scripts/decide-next.js`
+- `packages/os/scripts/exploit.js`
+- `packages/os/tests/explore-runtime-routing.test.ts`
 
 ## workspace-owned: activity log
 
 - 2026-08-29 07:53:20 fs.write: `.task/explore/fix-explore-runtime-caller-cwd/workpad.md`
 - 2026-08-29 07:53:46 fs.write: `.task/explore/fix-explore-runtime-caller-cwd/workpad.md`
 - 2026-08-29 07:54:23 fs.write: `.task/explore/fix-explore-runtime-caller-cwd/workpad.md`
+- 2026-08-29 07:55:09 fs.write: `.task/explore/fix-explore-runtime-caller-cwd/workpad.md`
+- 2026-08-29 07:56:57 fs.write: `.task/explore/fix-explore-runtime-caller-cwd/workpad.md`
 
 ## validation evidence
 
@@ -116,3 +124,21 @@ Codex P1 is addressed locally. Next: strict review, canonical verify, push/merge
 - Ready to promote #2301 into `stream/explore` as the Codex P1 follow-up.
 
 - 2026-08-29 07:54:23 append: `.task/explore/fix-explore-runtime-caller-cwd/workpad.md`
+
+## merge recovery
+
+- `task.pr` could not merge #2301 because the task bootstrap started from `main` while the target `stream/explore` already contains #2297.
+- The task facade exposes no typed task-sync/rebase operation. Recovery will merge `origin/stream/explore` into this task worktree with scoped Git, inspect every non-metadata conflict, and preserve both #2297's runtime-scope contract and this task's caller-CWD contract. No blanket ours/theirs resolution.
+
+- 2026-08-29 07:55:09 append: `.task/explore/fix-explore-runtime-caller-cwd/workpad.md`
+
+## merge recovery validation
+
+- Merged `origin/stream/explore` into the task worktree using the scoped Git fallback because no typed task-sync/rebase surface exists.
+- Exactly one code conflict occurred: `packages/os/tests/explore-runtime-routing.test.ts`.
+- Resolved by preserving both #2297's runtime execution-scope contract and #2301's caller-repository preservation contract; no blanket ours/theirs choice.
+- Post-resolution routing test: 4/4 green.
+- Post-resolution full Explore science suite: 13 files / 89 tests green.
+- No conflict markers remain; `git diff --check` is clean.
+
+- 2026-08-29 07:56:57 append: `.task/explore/fix-explore-runtime-caller-cwd/workpad.md`
