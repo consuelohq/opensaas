@@ -1,8 +1,9 @@
 import { execFileSync } from 'node:child_process';
-import {
+import fs, {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -10,7 +11,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   materializeLifecycleCommand,
@@ -125,6 +126,37 @@ describe('lifecycle command materialization', () => {
       home,
       '--json',
     ]);
+  });
+
+  it('keeps the existing lifecycle wrapper intact when atomic replacement fails', () => {
+    writeFakeBun();
+    const originalRoot = join(home, 'runtime', 'releases', 'original-recovery');
+    writeLifecycle(originalRoot);
+    materializeLifecycleCommand(home, false, {
+      recoveryPackageRoot: originalRoot,
+    });
+    const command = join(home, 'bin', 'consuelo');
+    const originalSource = readFileSync(command, 'utf8');
+    const originalMode = statSync(command).mode & 0o777;
+
+    const replacementRoot = join(home, 'runtime', 'releases', 'replacement-recovery');
+    writeLifecycle(replacementRoot);
+    const rename = vi.spyOn(fs, 'renameSync').mockImplementationOnce(() => {
+      throw new Error('simulated atomic replacement interruption');
+    });
+    try {
+      expect(() => materializeLifecycleCommand(home, false, {
+        recoveryPackageRoot: replacementRoot,
+      })).toThrow('simulated atomic replacement interruption');
+    } finally {
+      rename.mockRestore();
+    }
+
+    expect(readFileSync(command, 'utf8')).toBe(originalSource);
+    expect(statSync(command).mode & 0o777).toBe(originalMode);
+    expect(readdirSync(join(home, 'bin')).filter((entry) =>
+      entry.startsWith('.consuelo-lifecycle-')
+    )).toEqual([]);
   });
 
   it('materializes the recovery command through the private installer entrypoint used by bootstrap', () => {
