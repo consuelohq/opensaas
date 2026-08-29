@@ -2151,7 +2151,7 @@ describe('multi-node connector routing', () => {
     expect(upstreams).toHaveLength(2);
   });
 
-  it('consumes the routing nodeId before forwarding while preserving timeout and domain nodeId input', async () => {
+  it('should consume routing nodeId without stale body headers when explicit routing rewrites the request', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-sanitized-node-token', {
@@ -2176,6 +2176,7 @@ describe('multi-node connector routing', () => {
       headers: {
         authorization: 'Bearer central-sanitized-node-token',
         'content-type': 'application/json',
+        'content-length': '9999',
       },
       body: JSON.stringify({
         jsonrpc: '2.0',
@@ -2196,6 +2197,7 @@ describe('multi-node connector routing', () => {
     expect(response.status).toBe(200);
     expect(upstreamRequest?.url).toBe('https://member.connector.test/mcp');
     expect(upstreamRequest?.headers.get('x-consuelo-node-id')).toBe('node-member');
+    expect(upstreamRequest?.headers.get('content-length')).toBeNull();
     const forwarded = await upstreamRequest!.clone().json() as {
       params?: { arguments?: Record<string, unknown> };
     };
@@ -2207,7 +2209,7 @@ describe('multi-node connector routing', () => {
     expect(forwarded.params?.arguments?.nodeId).toBeUndefined();
   });
 
-  it('rejects an explicitly targeted protocol-incompatible node before proxying the call', async () => {
+  it('should reject a protocol-incompatible node when routing explicitly targets it', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-incompatible-node-token', {
