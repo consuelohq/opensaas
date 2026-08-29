@@ -6,6 +6,7 @@
     "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
     "packages/os/cloudflare/workspace-edge/src/index.ts",
     "packages/os/cloudflare/workspace-edge/wrangler.toml",
+    "packages/os/docs/distribution/release-channels.md",
     "packages/os/docs/install-control-plane.md",
     "packages/os/package.json",
     "packages/os/scripts/lib/install-edge-site-publisher.ts",
@@ -22,5 +23,5 @@
     "packages/workspace/scripts/lib/paths.js",
     "packages/workspace/scripts/task-push.js"
   ],
-  "updatedAt": "2026-08-29T01:43:44.599Z"
+  "updatedAt": "2026-08-29T02:00:18.819Z"
 }

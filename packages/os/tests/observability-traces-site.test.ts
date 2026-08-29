@@ -126,7 +126,7 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('--ti-panel:#fff9f0');
     expect(html).toContain('.trxFilterPanel{background:var(--trace-panel)!important');
     expect(html).toContain('.trxFilterSearch{background:var(--trace-bg)!important');
-    expect(html).toContain('.tiCodeValue,#tbmLiveTraceModal .tiWorkpadValue{background:var(--trace-bg)!important');
+    expect(html).toContain('.tiCodeValue,#tbmLiveTraceModal .tiWorkpadValue,#tbmLiveTraceModal .tiRawJson,#tbmLiveTraceModal .tiValue-string{background:var(--trace-bg)!important;color:var(--ti-text)!important}');
     expect(html).toContain('@media (prefers-color-scheme: dark)');
     expect(html).toContain('--trace-bg:#080706');
     expect(html).toContain('--trace-cream:#f3ead3');

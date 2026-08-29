@@ -48,6 +48,7 @@ started: 2026-08-29
 - 2026-08-29 01:37:24 `verify`: passed — OK
 - 2026-08-29 01:37:46 `verify`: passed — OK
 - 2026-08-29 01:39:08 `verify`: passed — OK
+- 2026-08-29 02:00:17 `verify`: passed — OK
 
 ## key decisions
 
@@ -98,6 +99,7 @@ focused green evidence: 31 OS contracts and 53 test-selection contracts passed i
 - `packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts`
 - `packages/os/cloudflare/workspace-edge/src/index.ts`
 - `packages/os/cloudflare/workspace-edge/wrangler.toml`
+- `packages/os/docs/distribution/release-channels.md`
 - `packages/os/docs/install-control-plane.md`
 - `packages/os/package.json`
 - `packages/os/scripts/lib/internal-user-dashboard.ts`

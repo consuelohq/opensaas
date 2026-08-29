@@ -92,7 +92,7 @@ body{background:var(--trace-bg)!important;color:var(--trace-cream)!important}
 #tbmLiveTraceModal .trxFilterSearch{background:var(--trace-bg)!important;color:var(--ti-faint)!important}
 #tbmLiveTraceModal .trxHoverCard,#tbmLiveTraceModal .tiToolbar{background:color-mix(in srgb,var(--trace-panel) 96%,transparent)!important;color:var(--ti-text)!important}
 #tbmLiveTraceModal .tiModeSwitch,#tbmLiveTraceModal .tiSidebar{background:var(--trace-bg)!important}
-#tbmLiveTraceModal .tiCodeValue,#tbmLiveTraceModal .tiWorkpadValue{background:var(--trace-bg)!important;color:var(--ti-text)!important}
+#tbmLiveTraceModal .tiCodeValue,#tbmLiveTraceModal .tiWorkpadValue,#tbmLiveTraceModal .tiRawJson,#tbmLiveTraceModal .tiValue-string{background:var(--trace-bg)!important;color:var(--ti-text)!important}
 #tbmLiveTraceModal .trxHead>div:nth-child(3),#tbmLiveTraceModal .trxHead>div:nth-child(6),#tbmLiveTraceModal .trxHead>div:last-child{color:var(--trace-cream)!important}
 @media (prefers-color-scheme: dark){
   :root{color-scheme:dark;--trace-bg:#080706;--trace-panel:#12100d;--trace-panel-2:#15120e;--trace-cream:#f3ead3;--trace-row-text:#d8d0c1;--trace-muted:#a39a8b;--trace-line:rgba(243,234,211,.13);--trace-line-strong:rgba(243,234,211,.22);--trace-gold:#c6a15b;--trace-amber:#d8b36b;--trace-rust:#b9654c;--trace-hover:rgba(198,161,91,.075);--trace-selected:rgba(198,161,91,.14);--ti-bg:#080807;--ti-panel:#0d0c0a;--ti-panel-raised:#12110e;--ti-line:rgba(232,224,202,.12);--ti-line-strong:rgba(232,224,202,.2);--ti-text:#eee9dc;--ti-muted:#999285;--ti-faint:#6e695f;--ti-gold:#d7b56d;--ti-green:#9fbd8a;--ti-red:#ef765f;--ti-blue:#86a9d8}
