@@ -19,8 +19,8 @@ started: 2026-08-28
 
 ## files changed
 
-- packages/workspace/streams/dialer/AGENTS.md (already present; no content delta)
-- /Users/kokayi/Consuelo/Steering-archive/dialer-AGENTS.md (recoverable archive outside the repo)
+- `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
+
 
 ## key decisions
 
