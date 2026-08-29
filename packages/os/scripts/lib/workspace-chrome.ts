@@ -180,7 +180,7 @@ function renderRouteOption(
       ? 'workspace-route-option workspace-route-card'
       : 'workspace-route-option';
   const external = route.external ? ' target="_blank" rel="noopener noreferrer"' : '';
-  return `<a class="${className}" role="menuitem"${current}${external} href="${escapeHtml(route.href)}"><span>${escapeHtml(route.label)}</span><small>${escapeHtml(route.description)}</small></a>`;
+  return `<a class="${className}" role="menuitem"${current}${external} href="${escapeHtml(route.href)}"><span>${escapeHtml(route.label)}</span></a>`;
 }
 
 function renderRouteGroup(
@@ -200,7 +200,7 @@ function renderCustomRouteGroup(section: WorkspaceChromeSection): string {
     const external = resolved.external
       ? ' target="_blank" rel="noopener noreferrer"'
       : '';
-    return `<a class="workspace-route-option" role="menuitem"${external} href="${escapeHtml(resolved.href)}"><span>${escapeHtml(link.label)}</span><small>${escapeHtml(resolved.description)}</small></a>`;
+    return `<a class="workspace-route-option" role="menuitem"${external} href="${escapeHtml(resolved.href)}"><span>${escapeHtml(link.label)}</span></a>`;
   }).join('');
   return `<section class="workspace-route-group" data-custom-route-group="${escapeHtml(section.id)}"><p>${escapeHtml(section.label)}</p>${links}</section>`;
 }
@@ -309,41 +309,42 @@ export function workspaceRouteSwitcherStyles(): string {
     .workspace-route-trigger:hover, .workspace-route-trigger[aria-expanded="true"] { background: var(--workspace-menu-hover); }
     .workspace-route-trigger:focus-visible { outline: none; background: var(--workspace-menu-current); color: var(--workspace-menu-accent); box-shadow: inset 0 -2px 0 var(--workspace-menu-accent); }
     .workspace-route-chevron { font-size: 12px; transform: translateY(-1px); }
-    .workspace-route-menu { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 10px; width: min(780px, calc(100vw - 28px)); max-width: calc(100vw - 28px); overflow: visible; padding: 8px; border: 1px solid var(--workspace-menu-border); border-radius: 13px; background: var(--workspace-menu-bg); color: var(--workspace-menu-ink); box-shadow: var(--workspace-menu-shadow); backdrop-filter: blur(18px); text-align: left; }
-    .workspace-route-primary-slot { grid-column: 1 / -1; padding-bottom: 7px; border-bottom: 1px solid var(--workspace-menu-rule); }
-    .workspace-route-primary { grid-template-columns: 96px minmax(0, 1fr); }
-    .workspace-route-group { min-width: 0; display: grid; align-content: start; gap: 1px; padding-top: 7px; border-top: 1px solid var(--workspace-menu-rule); }
+    .workspace-route-menu { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 18px; width: min(780px, calc(100vw - 28px)); max-width: calc(100vw - 28px); overflow: visible; padding: 12px; border: 1px solid var(--workspace-menu-border); border-radius: 13px; background: var(--workspace-menu-bg); color: var(--workspace-menu-ink); box-shadow: var(--workspace-menu-shadow); backdrop-filter: blur(18px); text-align: left; }
+    .workspace-route-menu[hidden] { display: none; }
+    .workspace-route-primary-slot { grid-column: 1 / -1; padding-bottom: 0; border-bottom: 0; }
+    .workspace-route-primary { grid-template-columns: 1fr; }
+    .workspace-route-group { min-width: 0; display: grid; align-content: start; gap: 1px; padding-top: 0; border-top: 0; }
     .workspace-route-group + .workspace-route-group { margin-top: 0; }
     .workspace-route-group > p { margin: 2px 7px 4px; color: var(--workspace-menu-muted); font: 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .11em; text-transform: uppercase; }
-    .workspace-route-option { min-width: 0; display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 9px; align-items: baseline; padding: 7px; border-radius: 8px; color: var(--workspace-menu-ink); text-decoration: none; }
+    .workspace-route-option { min-width: 0; display: grid; grid-template-columns: 1fr; gap: 0; align-items: baseline; padding: 7px; border-radius: 8px; color: var(--workspace-menu-ink); text-decoration: none; }
     .workspace-route-option:hover, .workspace-route-option:focus-visible { background: var(--workspace-menu-hover); color: var(--workspace-menu-ink); outline: none; }
     .workspace-route-option[aria-current="page"] { color: var(--workspace-menu-accent); background: var(--workspace-menu-current); }
     .workspace-route-option span { min-width: 0; overflow-wrap: anywhere; font: 13px/1.25 Georgia, "Times New Roman", serif; }
-    .workspace-route-option small { color: var(--workspace-menu-muted); font: 10px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
     .workspace-route-group[data-route-group="Connect"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
     .workspace-route-group[data-route-group="Connect"] > p { grid-column: 1 / -1; }
-    .workspace-route-card { grid-template-columns: 1fr; gap: 3px; align-content: start; min-height: 56px; border: 1px solid var(--workspace-menu-rule); padding: 8px; }
+    .workspace-route-card { grid-template-columns: 1fr; gap: 0; align-content: start; min-height: 0; border: 0; padding: 7px; }
     .workspace-route-card span { font-size: 15px; }
+    @media (min-width: 1600px) {
+      .workspace-route-menu { width: min(1040px, calc(100vw - 48px)); }
+    }
     @media (max-height: 760px) and (min-width: 701px) {
       .workspace-route-menu { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 6px; padding: 5px; zoom: .86; }
       .workspace-route-primary-slot { padding-bottom: 4px; }
       .workspace-route-group { padding-top: 4px; }
       .workspace-route-group > p { margin: 1px 5px 2px; font-size: 9px; }
-      .workspace-route-option { grid-template-columns: 78px minmax(0, 1fr); gap: 5px; padding: 4px 5px; }
+      .workspace-route-option { grid-template-columns: 1fr; gap: 0; padding: 4px 5px; }
       .workspace-route-option span { font-size: 11px; }
-      .workspace-route-option small { font-size: 8px; line-height: 1.15; }
       .workspace-route-group[data-route-group="Connect"] { grid-template-columns: 1fr; gap: 2px; }
       .workspace-route-card { min-height: 0; padding: 4px; }
     }
     @media (max-width: 700px) {
       .workspace-route-menu { position: fixed; top: 52px; left: 50vw; right: auto; transform: translateX(-50%); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 7px; width: calc(100vw - 24px); max-width: 520px; overflow: visible; padding: 6px; }
       .workspace-route-trigger { max-width: min(170px, calc(100vw - 150px)); }
-      .workspace-route-primary { grid-template-columns: 74px minmax(0, 1fr); }
+      .workspace-route-primary { grid-template-columns: 1fr; }
       .workspace-route-group { padding-top: 5px; }
       .workspace-route-group > p { margin: 1px 5px 3px; font-size: 9px; }
       .workspace-route-option { grid-template-columns: 1fr; gap: 2px; padding: 5px; }
       .workspace-route-option span { font-size: clamp(11px, 3.2vw, 13px); }
-      .workspace-route-option small { font-size: 9px; line-height: 1.2; }
       .workspace-route-group[data-route-group="Connect"] { grid-template-columns: 1fr; gap: 3px; }
       .workspace-route-card { min-height: 0; padding: 5px; }
     }

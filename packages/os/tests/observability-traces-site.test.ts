@@ -76,7 +76,8 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     const html = buildObservabilityTracesSite();
 
     expect(html).toContain('id="consuelo-trace-workspace-integration"');
-    expect(html).toContain('Inspect live tool traces.');
+    expect(html).toContain('<span>Tracing</span>');
+    expect(html).not.toContain('Inspect live tool traces.');
     expect(html).not.toContain('Inspect live agent and tool execution.');
     expect(html).toContain('#tbmLiveTraceModal[aria-hidden="false"]');
     expect(html).toContain('display:flex!important');
