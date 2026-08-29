@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_2acdff2889b4",
+  "tmuxSession": "opensaas-os-fix-tracing-system-theme-and-launcher-menu-visib-2acdff28",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-tracing-system-theme-and-launcher-menu-visibility",
+  "branch": "task/os/fix-tracing-system-theme-and-launcher-menu-visibility",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-tracing-system-theme-and-launcher-menu-visibility",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-tracing-system-theme-and-launcher-menu-visibility",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2254,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2254",
+  "createdAt": "2026-08-28T23:49:13.319Z",
+  "tmuxCreated": false,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-tracing-system-theme-and-launcher-menu-visibility/.task/os/fix-tracing-system-theme-and-launcher-menu-visibility/session.json"
+}

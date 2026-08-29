@@ -100,6 +100,8 @@ body{background:var(--trace-bg)!important;color:var(--trace-cream)!important}
 }
 </style>`;
 
+const traceThemeMetadata = `<meta name="color-scheme" content="light dark"><meta name="theme-color" content="#f4efe7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#080706" media="(prefers-color-scheme: dark)">`;
+
 const traceWorkspaceIntegrationStyle = `<style id="consuelo-trace-workspace-integration">
 #tbmLiveTraceModal[aria-hidden="false"]{display:flex!important;align-items:center!important;justify-content:center!important;padding:14px!important;overflow:hidden!important}
 #tbmLiveTraceModal[aria-hidden="false"] .trxShell{width:calc(100vw - 28px)!important;max-width:none!important;height:calc(100dvh - 28px)!important;max-height:none!important;margin:0!important;grid-template-rows:38px minmax(0,1fr)!important}
@@ -453,6 +455,13 @@ export function buildObservabilityTracesSite(
   chromeOptions: WorkspaceChromeOptions = {},
 ): string {
   let html = canonicalAsset('template.html');
+
+  html = replaceExactlyOnce(
+    html,
+    /<meta name="theme-color" content="#14120f" media="\(prefers-color-scheme: dark\)"><meta name="theme-color" content="#14120f">/i,
+    traceThemeMetadata,
+    'trace theme metadata',
+  );
 
   html = inlineStyle(
     html,

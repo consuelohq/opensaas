@@ -113,6 +113,10 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     const html = buildObservabilityTracesSite();
 
     expect(html).toContain('id="consuelo-trace-system-theme"');
+    expect(html).toContain('<meta name="color-scheme" content="light dark">');
+    expect(html).toContain('<meta name="theme-color" content="#f4efe7" media="(prefers-color-scheme: light)">');
+    expect(html).toContain('<meta name="theme-color" content="#080706" media="(prefers-color-scheme: dark)">');
+    expect(html).not.toContain('<meta name="theme-color" content="#14120f">');
     expect(html).toContain('--trace-bg:#f4efe7');
     expect(html).toContain('--trace-cream:#29251f');
     expect(html).toContain('--trace-muted:#756d63');

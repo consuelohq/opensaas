@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-tracing-system-theme-and-launcher-menu-visibility",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2254,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2254",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2254",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2254/fix-tracing-system-theme-and-launcher-menu-visibility",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2254",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2254/fix-tracing-system-theme-and-launcher-menu-visibility",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-tracing-system-theme-and-launcher-menu-visibility",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_2acdff2889b4",
+  "tmuxSession": "opensaas-os-fix-tracing-system-theme-and-launcher-menu-visib-2acdff28",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-tracing-system-theme-and-launcher-menu-visibility/.task/os/fix-tracing-system-theme-and-launcher-menu-visibility/session.json",
+  "createdAt": "2026-08-28T23:49:13.322Z"
+}

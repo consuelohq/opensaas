@@ -79,7 +79,9 @@ describe('internal launcher regression contracts', () => {
 
     const styles = workspaceRouteSwitcherStyles();
     const menuRule = styles.match(/\.workspace-route-menu\s*\{([^}]+)\}/)?.[1] ?? '';
-    expect(menuRule).toContain('overflow: hidden');
+    expect(menuRule).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
+    expect(menuRule).toContain('width: min(780px, calc(100vw - 28px))');
+    expect(menuRule).toContain('overflow: visible');
     expect(menuRule).not.toMatch(/overflow(?:-x|-y)?:\s*(?:auto|scroll)/);
     expect(styles).toContain('@media (max-height: 760px)');
     expect(styles).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
