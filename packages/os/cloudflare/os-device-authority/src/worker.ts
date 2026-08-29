@@ -63,6 +63,8 @@ export class OsDeviceGrantDurableObject {
       githubAppId: env.GITHUB_APP_ID,
       githubAppSlug: env.GITHUB_APP_SLUG,
       githubAppPrivateKey: env.GITHUB_APP_PRIVATE_KEY,
+      githubAppClientId: env.GITHUB_APP_CLIENT_ID,
+      githubAppClientSecret: env.GITHUB_APP_CLIENT_SECRET,
       workspaceRouteRegistry: env.WORKSPACE_ROUTE_REGISTRY,
       workspaceConnectorProvisioner: createWorkspaceConnectorProvisionerFromEnv(
         env,

@@ -96,10 +96,10 @@ function escapeHtmlAttribute(value: string): string {
     .replaceAll('>', '&gt;');
 }
 
-function renderGitHubConnectHandoff(input: { installUrl: string; returnPath: string }): string {
-  const installHref = escapeHtmlAttribute(input.installUrl);
+function renderGitHubConnectHandoff(input: { targetUrl: string; returnPath: string }): string {
+  const installHref = escapeHtmlAttribute(input.targetUrl);
   const returnHref = escapeHtmlAttribute(input.returnPath);
-  const installUrlJson = JSON.stringify(input.installUrl).replaceAll('<', '\\u003c');
+  const installUrlJson = JSON.stringify(input.targetUrl).replaceAll('<', '\\u003c');
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -131,7 +131,7 @@ function renderGitHubConnectHandoff(input: { installUrl: string; returnPath: str
   <main aria-labelledby="github-handoff-title">
     <p class="identity">Consuelo OS</p>
     <h1 id="github-handoff-title">Opening GitHub…</h1>
-    <p class="copy">Choose the repositories Consuelo may access on GitHub. You’ll return to Consuelo when you’re done.</p>
+    <p class="copy">Authorize Consuelo OS on GitHub, then choose the repositories Consuelo may access. You’ll return here when you’re done.</p>
     <div class="actions">
       <a class="primary" href="${installHref}">Open GitHub</a>
       <a href="${returnHref}">Back to Consuelo</a>
@@ -173,8 +173,18 @@ export function createSettingsRoutes(): Hono {
       );
       if (home instanceof Response) return home;
       const returnPath = safeSourceControlReturnPath(requestUrl.searchParams.get('return_to'));
-      const { installUrl } = await startGitHubSourceControlInstall({ home, returnPath });
-      return new Response(renderGitHubConnectHandoff({ installUrl, returnPath }), {
+      const workspacePath = workspaceSourceControlPath(home, workspaceId);
+      const repositoryOwners = fs.existsSync(workspacePath)
+        ? Array.from(new Set(buildWorkspaceSourceControlSnapshot(
+            loadWorkspaceYamlConfig(workspacePath),
+          ).repositories.map((repository) => repository.owner).filter(Boolean)))
+        : [];
+      const { authorizationUrl } = await startGitHubSourceControlInstall({
+        home,
+        returnPath,
+        repositoryOwners,
+      });
+      return new Response(renderGitHubConnectHandoff({ targetUrl: authorizationUrl, returnPath }), {
         status: 200,
         headers: {
           'content-type': 'text/html; charset=utf-8',

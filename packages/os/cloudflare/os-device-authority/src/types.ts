@@ -344,6 +344,9 @@ export type GitHubSourceControlInstallState = {
   workspaceHost: string;
   nodeId: string;
   returnPath: string;
+  repositoryOwners: string[];
+  oauthCodeVerifier: string;
+  githubUserAccessToken?: string;
   expiresAt: number;
 };
 
@@ -596,6 +599,8 @@ export type Env = {
   GITHUB_APP_ID?: string;
   GITHUB_APP_SLUG?: string;
   GITHUB_APP_PRIVATE_KEY?: string;
+  GITHUB_APP_CLIENT_ID?: string;
+  GITHUB_APP_CLIENT_SECRET?: string;
   WORKSPACE_ROUTE_REGISTRY?: WorkspaceRouteRegistryBinding;
   WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?: string;
   OS_ENROLLMENT_RESET_SECRET?: string;
@@ -688,6 +693,8 @@ export type DeviceAuthorityRuntime = {
   githubAppId?: string;
   githubAppSlug?: string;
   githubAppPrivateKey?: string;
+  githubAppClientId?: string;
+  githubAppClientSecret?: string;
   fetchImpl: typeof fetch;
   workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;

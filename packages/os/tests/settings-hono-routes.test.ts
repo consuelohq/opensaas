@@ -216,13 +216,13 @@ describe('Hono Configuration routes', () => {
     });
   });
 
-  it('starts GitHub installation from Configuration without asking for connection bindings', async () => {
+  it('starts GitHub authorization from Configuration without asking for connection bindings', async () => {
     const authorityCalls: Request[] = [];
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
       const request = input instanceof Request ? input : new Request(input, init);
       authorityCalls.push(request.clone());
       return Response.json({
-        installUrl: 'https://github.com/apps/consuelo-os/installations/new?state=ghs_test',
+        authorizationUrl: 'https://github.com/login/oauth/authorize?client_id=Iv1.test&state=ghs_test',
       });
     });
 
@@ -239,7 +239,7 @@ describe('Hono Configuration routes', () => {
     expect(response.headers.get('cache-control')).toBe('no-store');
     const html = await response.text();
     expect(html).toContain('Opening GitHub…');
-    expect(html).toContain('https://github.com/apps/consuelo-os/installations/new?state=ghs_test');
+    expect(html).toContain('https://github.com/login/oauth/authorize?client_id=Iv1.test&amp;state=ghs_test');
     expect(html).toContain('href="/diffs"');
     expect(html).toContain('requestAnimationFrame');
     expect(html).toContain('window.location.replace');
