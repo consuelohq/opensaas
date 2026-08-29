@@ -116,6 +116,8 @@ Codex P1 is addressed locally. Next: strict review, canonical verify, push/merge
 - Green: focused runtime-routing test 3/3.
 - 2026-08-29 07:54:06 `review.run`: passed — OK
 - 2026-08-29 07:54:19 `verify`: passed — OK
+- 2026-08-29 07:57:13 `review.run`: passed — OK
+- 2026-08-29 07:57:55 `verify`: passed — OK
 
 ## final gate
 
