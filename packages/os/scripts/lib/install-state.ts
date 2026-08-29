@@ -618,9 +618,21 @@ export function materializeLifecycleCommand(
         ? 'created'
         : 'updated';
   if (!dryRun && existing !== source) {
-    fs.mkdirSync(path.dirname(commandPath), { recursive: true });
-    fs.writeFileSync(commandPath, source, { mode: 0o755 });
-    fs.chmodSync(commandPath, 0o755);
+    const commandDirectory = path.dirname(commandPath);
+    fs.mkdirSync(commandDirectory, { recursive: true });
+    const stagingDirectory = fs.mkdtempSync(path.join(commandDirectory, '.consuelo-lifecycle-'));
+    const stagedCommandPath = path.join(stagingDirectory, 'consuelo');
+    try {
+      fs.writeFileSync(stagedCommandPath, source, { mode: 0o755 });
+      fs.chmodSync(stagedCommandPath, 0o755);
+      fs.renameSync(stagedCommandPath, commandPath);
+    } finally {
+      try {
+        fs.rmSync(stagingDirectory, { recursive: true, force: true });
+      } catch {
+        // Best-effort cleanup must not mask the write/rename result.
+      }
+    }
   }
   return [{
     type: 'create_file',
