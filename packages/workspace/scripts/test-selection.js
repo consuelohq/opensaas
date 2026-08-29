@@ -370,9 +370,13 @@ function testSuiteTimeoutMs() {
 }
 
 function resolveSuiteCwd(root, suite) {
-  const configured = typeof suite.cwd === 'string' && suite.cwd.trim()
-    ? suite.cwd.trim()
-    : '.';
+  let configured = '.';
+  if (suite.cwd !== undefined) {
+    if (typeof suite.cwd !== 'string' || !suite.cwd.trim()) {
+      throw new Error('suite cwd must be a non-blank repository-relative string');
+    }
+    configured = suite.cwd.trim();
+  }
   const resolved = path.resolve(root, configured);
   const relative = path.relative(root, resolved);
   const escapesRoot = relative === '..'
