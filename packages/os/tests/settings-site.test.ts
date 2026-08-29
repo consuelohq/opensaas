@@ -118,6 +118,7 @@ describe('configuration site', () => {
     expect(html).toContain('id="source-control-repository-list"');
     expect(html).toContain('/gateway/configuration/source-control');
     expect(html).toContain('/gateway/configuration/source-control/github/connect');
+    expect(html).toContain('mode=manage');
     expect(html).toContain('/gateway/configuration/source-control/github/complete');
     expect(html).toContain('Connect GitHub');
     expect(html).not.toContain('id="source-control-form"');

@@ -255,6 +255,33 @@ describe('Hono Configuration routes', () => {
       workspaceId,
       nodeId: 'node_configuration_hono',
       returnPath: '/diffs',
+      manageAccess: false,
+    });
+  });
+
+  it('propagates Manage GitHub access intent to Device Authority', async () => {
+    let authorityBody: Record<string, unknown> | undefined;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      authorityBody = await request.clone().json() as Record<string, unknown>;
+      return Response.json({
+        authorizationUrl: 'https://github.com/login/oauth/authorize?client_id=Iv1.test&state=ghs_manage',
+      });
+    });
+
+    const path = '/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration&mode=manage';
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path,
+      nonce: 'configuration-github-manage-nonce',
+    }));
+
+    expect(response.status).toBe(200);
+    expect(authorityBody).toMatchObject({
+      workspaceId,
+      nodeId: 'node_configuration_hono',
+      returnPath: '/configuration',
+      manageAccess: true,
     });
   });
 

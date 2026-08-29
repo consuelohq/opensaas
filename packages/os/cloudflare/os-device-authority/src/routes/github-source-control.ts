@@ -270,6 +270,7 @@ async function handleInstallStart(request: Request, runtime: DeviceAuthorityRunt
       nodeId: auth.node.nodeId,
       returnPath: safeReturnPath(auth.body.returnPath),
       repositoryOwners: repositoryOwners(auth.body.repositoryOwners),
+      manageAccess: auth.body.manageAccess === true,
       oauthCodeVerifier,
       expiresAt: runtime.now() + INSTALL_STATE_TTL_MS,
     });
@@ -292,21 +293,34 @@ async function handleOAuthCallback(request: Request, runtime: DeviceAuthorityRun
   try {
     const state = await activeInstallState(runtime, stateValue);
     if (state instanceof Response) return state;
-    if (state.githubUserAccessToken) {
-      return errorResponse(409, 'GITHUB_USER_AUTHORIZATION_REPLAYED', 'GitHub user authorization was already completed.');
+    let authorizedState = state;
+    let userAccessToken = state.githubUserAccessToken?.trim() ?? '';
+    if (!userAccessToken) {
+      userAccessToken = await exchangeGitHubUserAuthorizationCode(runtime, {
+        code,
+        codeVerifier: state.oauthCodeVerifier,
+      });
+      authorizedState = { ...state, githubUserAccessToken: userAccessToken };
+      // Persist immediately after the one-time code exchange. If GitHub's
+      // installation inventory is transiently unavailable, the callback can
+      // safely retry without attempting to consume the authorization code twice.
+      await runtime.store.putGitHubSourceControlInstallState(authorizedState);
     }
-    const userAccessToken = await exchangeGitHubUserAuthorizationCode(runtime, {
-      code,
-      codeVerifier: state.oauthCodeVerifier,
-    });
     const installations = await listGitHubUserInstallations(runtime, userAccessToken);
-    const preferred = preferredInstallation(state, installations);
+    if (authorizedState.manageAccess) {
+      return new Response(null, {
+        status: 302,
+        headers: {
+          location: githubInstallationUrl(runtime, stateValue),
+          'cache-control': 'no-store',
+        },
+      });
+    }
+    const preferred = preferredInstallation(authorizedState, installations);
     if (preferred) {
       await runtime.store.delGitHubSourceControlInstallState(stateValue);
-      return await completeGitHubInstallation(runtime, state, preferred.installationId);
+      return await completeGitHubInstallation(runtime, authorizedState, preferred.installationId);
     }
-    const authorizedState = { ...state, githubUserAccessToken: userAccessToken };
-    await runtime.store.putGitHubSourceControlInstallState(authorizedState);
     if (installations.length > 0) {
       return new Response(renderInstallationChoice(runtime, authorizedState, installations), {
         status: 200,
