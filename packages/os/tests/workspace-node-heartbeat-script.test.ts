@@ -216,6 +216,94 @@ describe('workspace node heartbeat script', () => {
     });
   });
 
+  it('should probe before publishing readiness when cached edge auth is available', async () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-heartbeat-steady-ready-'));
+    try {
+      const security = createGatewaySecurityConfig({
+        home,
+        workspaceId: 'workspace_123',
+        workspaceSlug: 'workspace-123',
+        workspaceHost: 'workspace-123.consuelohq.com',
+      });
+      const configPath = path.join(
+        path.dirname(security.generatedAuthPath),
+        'workspace-node-heartbeat.json',
+      );
+      const keys = generateWorkspaceDeviceKeyPair();
+      const config = {
+        authorityOrigin: 'https://os.consuelohq.com',
+        workspaceId: 'workspace_123',
+        nodeId: 'node_home',
+        connectorStatus: 'connected' as const,
+        connectorHealthUrl:
+          'https://c-0123456789abcdef0123456789abcdef.consuelohq.com/health',
+        capabilities: ['mcp'],
+        publicKeyJwk: keys.publicKeyJwk,
+        signingKeyJwk: keys.signingKeyJwk,
+      };
+      fs.writeFileSync(configPath, JSON.stringify(config));
+      reconcileHeartbeatEdgeProxyAuth({
+        configPath,
+        config,
+        result: {
+          nodeId: 'node_home',
+          presence: 'online',
+          routeReady: true,
+          connectorId: 'connector_home',
+          edgeRequestSigningSecret: 'wen_cached_heartbeat_secret',
+        },
+      });
+      const requests: string[] = [];
+      const heartbeatBodies: Array<Record<string, unknown>> = [];
+
+      const result = await sendWorkspaceNodeHeartbeatFromConfig(configPath, {
+        detectAgents: () => [],
+        fetchImpl: async (request) => {
+          const url = typeof request === 'string' ? request : request.url;
+          requests.push(url);
+          if (url.endsWith('/health')) return new Response('ok');
+          if (url.endsWith('/mcp')) {
+            return Response.json({
+              jsonrpc: '2.0',
+              id: 'watchdog-readiness-request',
+              result: { tools: [] },
+            });
+          }
+          if (url.endsWith('/workspace/nodes/heartbeat')) {
+            const heartbeatRequest = request instanceof Request ? request : new Request(request);
+            heartbeatBodies.push(
+              await heartbeatRequest.clone().json() as Record<string, unknown>,
+            );
+            return Response.json({
+              nodeId: 'node_home',
+              presence: 'online',
+              routeReady: true,
+              connectorId: 'connector_home',
+              edgeRequestSigningSecret: 'wen_cached_heartbeat_secret',
+            });
+          }
+          throw new Error(`unexpected heartbeat request: ${url}`);
+        },
+      });
+
+      expect(requests).toEqual([
+        'https://c-0123456789abcdef0123456789abcdef.consuelohq.com/health',
+        'https://c-0123456789abcdef0123456789abcdef.consuelohq.com/mcp',
+        'https://os.consuelohq.com/workspace/nodes/heartbeat',
+      ]);
+      expect(heartbeatBodies).toHaveLength(1);
+      expect(heartbeatBodies[0]).toMatchObject({ mcpReady: true });
+      expect(result).toMatchObject({
+        nodeId: 'node_home',
+        presence: 'online',
+        routeReady: true,
+        mcpReady: true,
+      });
+    } finally {
+      fs.rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('fails closed when the authority route is registered but routed MCP is unavailable', async () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-heartbeat-mcp-readiness-'));
     try {
