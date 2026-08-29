@@ -38,9 +38,9 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('data-show-filters');
     expect(html).toContain('data-trace-count');
     expect(html).toContain(
-      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Session</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Cost</div></div>',
+      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Session</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     );
-    expect(html).not.toContain('<div>Status</div>');
+    expect(html).toContain('<div>Status</div>');
     expect(html).toContain('consuelo-trace-node-observability');
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).toContain('aria-label="Workspace routes"');
@@ -93,14 +93,15 @@ describe('Observability Traces canonical Trace Burn surface', () => {
       '#tbmLiveTraceModal .trxTable{width:max-content!important;max-width:none!important;padding-right:18px!important;',
     );
     expect(html).toContain(
-      '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) minmax(350px,.96fr) minmax(350px,.96fr) 150px 180px 92px!important}',
+      '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) minmax(350px,.96fr) minmax(350px,.96fr) 150px 180px 78px 92px!important}',
     );
     expect(html).toContain(
       '@media(max-width:760px){#tbmLiveTraceModal[aria-hidden="false"]{padding:0!important;',
     );
     expect(html).toContain(
-      '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:1550px!important;grid-template-columns:34px 108px 150px 78px 76px 260px 240px 240px 140px 140px 84px!important}',
+      '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:1620px!important;grid-template-columns:34px 108px 150px 78px 76px 260px 240px 240px 140px 140px 70px 84px!important}',
     );
+    expect(html).toContain('#tbmLiveTraceModal .trxBody{transition:none!important}');
     expect(html).toContain(
       '#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxRail{display:block!important;position:fixed!important;',
     );
@@ -121,6 +122,11 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('--trace-bg:#f4efe7');
     expect(html).toContain('--trace-cream:#29251f');
     expect(html).toContain('--trace-muted:#756d63');
+    expect(html).toContain('--ti-bg:#f4efe7');
+    expect(html).toContain('--ti-panel:#fff9f0');
+    expect(html).toContain('.trxFilterPanel{background:var(--trace-panel)!important');
+    expect(html).toContain('.trxFilterSearch{background:var(--trace-bg)!important');
+    expect(html).toContain('.tiCodeValue,#tbmLiveTraceModal .tiWorkpadValue{background:var(--trace-bg)!important');
     expect(html).toContain('@media (prefers-color-scheme: dark)');
     expect(html).toContain('--trace-bg:#080706');
     expect(html).toContain('--trace-cream:#f3ead3');
@@ -128,6 +134,13 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('.trxToolName,#tbmLiveTraceModal .trxCost');
     expect(html).toContain('--branch-color-light');
     expect(html).toContain('--branch-color-dark');
+
+    const virtualListSource = readFileSync(
+      resolve(osTraceInspectorDir, 'virtual-list-browser.ts'),
+      'utf8',
+    );
+    expect(virtualListSource).toContain('badge.className = `trxStatus ${status}`');
+    expect(virtualListSource).not.toContain('marker.hidden = true');
   });
 
   it('projects task branches and work filesystem paths into the same Session value', () => {
