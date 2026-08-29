@@ -2394,7 +2394,8 @@
         "script": "confidence-score",
         "branchMode": "none",
         "jsonFlag": "--json",
-        "arguments": []
+        "arguments": [],
+        "executionScope": "runtime"
       },
       "exampleInput": {},
       "sessionRequired": false
@@ -2541,7 +2542,8 @@
             "flag": "--mark-irrelevant",
             "kind": "value"
           }
-        ]
+        ],
+        "executionScope": "runtime"
       },
       "exampleInput": {},
       "sessionRequired": false
@@ -3333,7 +3335,8 @@
             "flag": "--target",
             "kind": "value"
           }
-        ]
+        ],
+        "executionScope": "runtime"
       },
       "exampleInput": {},
       "sessionRequired": false

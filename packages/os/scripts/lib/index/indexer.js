@@ -3,12 +3,14 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const { chunkFile, contentHash } = require('./chunker');
-const { embedText } = require('./embedder');
+const { embedTexts } = require('./embedder');
+const { getEmbeddingConfig, PROVIDER_LOCAL } = require('./embedding-config');
 const { buildGraph } = require('./graph-builder');
 const { createStore, sha256 } = require('./store');
 const { getCurrentBranch, runGitMaybe } = require('../git');
 const { resolveGitRoot } = require('../paths');
 const { findTaskMeta } = require('../task-meta');
+const { buildLexicalSearchTerms } = require('../search/retrieval-policy');
 
 const INDEXABLE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.json', '.md']);
 const EXCLUDE_DIRS = new Set([
@@ -32,6 +34,9 @@ const EXCLUDE_DIRS = new Set([
   '.task',
 ]);
 const EXCLUDE_FILE_NAMES = new Set(['package-lock.json', 'yarn.lock']);
+const MAX_QUERY_HYDRATION_CHUNKS = 64;
+const MAX_CHANGED_HYDRATION_CHUNKS = 32;
+const MAX_GATEWAY_EMBEDDING_BATCH_SIZE = 32;
 
 function writeStderr(value = '') {
   process.stderr.write(`${value}\n`);
@@ -139,47 +144,70 @@ function readFileContent(repoRoot, filePath) {
 }
 
 async function indexChunkEmbeddings(store, chunks, options) {
-  const batchSize = getEmbeddingConcurrency();
+  const batchSize = getEmbeddingBatchSize();
   let embeddedCount = 0;
   let skippedCount = 0;
   let processedCount = 0;
 
   if (chunks.length > 0 && !options.json) {
-    writeStderr(`indexing: embedding ${chunks.length} missing/changed chunks...`);
+    writeStderr(`indexing: embedding ${chunks.length} query-relevant/changed chunks...`);
   }
 
   for (let index = 0; index < chunks.length; index += batchSize) {
     const batch = chunks.slice(index, index + batchSize);
-    const results = await Promise.all(batch.map(async (chunk) => {
-      try {
-        let vector = store.getCachedEmbedding(chunk.contentHash);
-        if (!vector) {
-          vector = await embedText(chunk.content, { kind: 'document' });
-          store.setCachedEmbedding(chunk.contentHash, vector);
-        }
+    const uncached = [];
 
-        store.insertChunkEmbedding(chunk.id, vector);
-        return { ok: true };
-      } catch {
-        if (!options.json) {
-          writeStderr(`warning: embedding failed for ${chunk.filePath}:${chunk.startLine}`);
-        }
-        return { ok: false };
+    for (const chunk of batch) {
+      const cached = store.getCachedEmbedding(chunk.contentHash);
+      if (cached) {
+        store.insertChunkEmbedding(chunk.id, cached);
+        embeddedCount += 1;
+      } else {
+        uncached.push(chunk);
       }
-    }));
-
-    for (const result of results) {
-      if (result.ok) embeddedCount += 1;
-      else skippedCount += 1;
     }
-    processedCount += batch.length;
 
+    if (uncached.length > 0) {
+      try {
+        const vectors = await embedTexts(uncached.map((chunk) => chunk.content), { kind: 'document' });
+        for (let vectorIndex = 0; vectorIndex < uncached.length; vectorIndex += 1) {
+          const chunk = uncached[vectorIndex];
+          const vector = vectors[vectorIndex];
+          if (!vector) throw new Error('embedding provider returned an incomplete batch');
+          store.setCachedEmbedding(chunk.contentHash, vector);
+          store.insertChunkEmbedding(chunk.id, vector);
+          embeddedCount += 1;
+        }
+      } catch (error /* unknown */) {
+        skippedCount += uncached.length;
+        processedCount += batch.length;
+        const message = error instanceof Error ? error.message : String(error);
+        if (!options.json) {
+          writeStderr(`warning: semantic hydration paused after provider failure: ${message}`);
+        }
+        return {
+          embeddedCount,
+          skippedCount,
+          deferredCount: Math.max(0, chunks.length - processedCount),
+          failure: message,
+        };
+      }
+    }
+
+    processedCount += batch.length;
     if (processedCount % 100 < batchSize && !options.json) {
       writeStderr(`indexing: ${processedCount}/${options.totalChunks} chunks processed (${embeddedCount} embedded, ${skippedCount} skipped)...`);
     }
   }
 
-  return { embeddedCount, skippedCount };
+  return { embeddedCount, skippedCount, deferredCount: 0, failure: null };
+}
+
+function getEmbeddingBatchSize() {
+  const config = getEmbeddingConfig();
+  return config.provider === PROVIDER_LOCAL
+    ? getEmbeddingConcurrency()
+    : MAX_GATEWAY_EMBEDDING_BATCH_SIZE;
 }
 
 function getEmbeddingConcurrency() {
@@ -256,6 +284,43 @@ function collectAllIndexedContents(repoRoot, filePaths) {
   return fileContents;
 }
 
+function toHydrationChunk(row) {
+  return {
+    id: Number(row.id ?? row.chunkId),
+    filePath: row.filePath ?? row.file_path,
+    seq: Number(row.seq ?? 0),
+    startLine: Number(row.startLine ?? row.start_line ?? 1),
+    endLine: Number(row.endLine ?? row.end_line ?? row.startLine ?? row.start_line ?? 1),
+    type: row.type ?? row.chunkType ?? row.chunk_type,
+    name: row.name ?? null,
+    content: row.content,
+    contentHash: row.contentHash ?? row.content_hash ?? contentHash(row.content),
+  };
+}
+
+function selectHydrationChunks(store, indexingResult, options = {}) {
+  const selected = new Map();
+  const add = (row) => {
+    const chunk = toHydrationChunk(row);
+    if (!Number.isFinite(chunk.id) || store.hasChunkEmbedding(chunk.id)) return;
+    selected.set(chunk.id, chunk);
+  };
+
+  if (options.query && typeof store.searchChunksByText === 'function') {
+    const terms = buildLexicalSearchTerms(options.query);
+    for (const row of store.searchChunksByText(terms, MAX_QUERY_HYDRATION_CHUNKS)) add(row);
+  }
+
+  const changedLimit = options.reindex ? indexingResult.changedChunks.length : MAX_CHANGED_HYDRATION_CHUNKS;
+  for (const chunk of indexingResult.changedChunks.slice(0, changedLimit)) add(chunk);
+
+  if (options.reindex) {
+    for (const chunk of store.getChunksWithoutEmbeddings()) add(chunk);
+  }
+
+  return Array.from(selected.values());
+}
+
 async function ensureIndex(options = {}) {
   const repoRoot = resolveGitRoot(options.cwd || process.cwd());
   const remoteUrl = getRemoteUrl(repoRoot);
@@ -303,31 +368,12 @@ async function ensureIndex(options = {}) {
     json: options.json,
   });
 
-  const chunksToEmbedById = new Map();
-  for (const chunk of indexingResult.changedChunks) {
-    chunksToEmbedById.set(chunk.id, chunk);
-  }
-  for (const chunk of store.getChunksWithoutEmbeddings()) {
-    chunksToEmbedById.set(chunk.id, {
-      id: Number(chunk.id),
-      filePath: chunk.file_path,
-      seq: Number(chunk.seq),
-      startLine: Number(chunk.start_line),
-      endLine: Number(chunk.end_line),
-      type: chunk.chunk_type,
-      name: chunk.name,
-      content: chunk.content,
-      contentHash: chunk.content_hash,
-    });
-  }
-
-  const chunksToEmbed = Array.from(chunksToEmbedById.values()).sort((left, right) => {
-    const fileComparison = left.filePath.localeCompare(right.filePath);
-    return fileComparison || left.seq - right.seq;
+  const chunksToEmbed = selectHydrationChunks(store, indexingResult, {
+    query: options.query,
+    reindex: options.reindex,
   });
   const totalChunks = chunksToEmbed.length;
   const embeddingResult = await indexChunkEmbeddings(store, chunksToEmbed, {
-    full,
     json: options.json,
     totalChunks,
   });
@@ -364,6 +410,8 @@ async function ensureIndex(options = {}) {
     filesSkipped: indexingResult.skippedFiles,
     chunksEmbedded: embeddingResult.embeddedCount,
     chunksSkipped: embeddingResult.skippedCount,
+    chunksDeferred: embeddingResult.deferredCount,
+    embeddingFailure: embeddingResult.failure,
     stats: store.getStats(),
   };
 }

@@ -195,6 +195,8 @@ function toJsonResult(args, results, indexResult) {
       cache_root: indexResult.stats.cacheRoot,
       files_indexed: indexResult.filesIndexed,
       chunks_embedded: indexResult.chunksEmbedded,
+      chunks_deferred: indexResult.chunksDeferred || 0,
+      embedding_status: indexResult.embeddingFailure ? 'degraded' : 'ready',
     },
   };
 }
@@ -273,6 +275,7 @@ async function main() {
     indexResult = await ensureIndex({
       cwd: process.env.CONSUELO_TOOL_CALLER_CWD || process.cwd(),
       json: args.json,
+      query: args.question,
       reindex: args.reindex,
     });
     results = await retrieve(indexResult.store, indexResult.repoRoot, args.question, {
