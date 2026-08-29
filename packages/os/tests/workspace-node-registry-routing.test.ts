@@ -2264,6 +2264,58 @@ describe('multi-node connector routing', () => {
     expect(upstreamCalls).toBe(0);
   });
 
+  it('fails closed when routing resolves a node without an authoritative registry record', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-missing-node-record-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'tool:*:read'],
+    });
+    const readWorkspaceNode = store.byWorkspaceNode.bind(store);
+    store.byWorkspaceNode = async (requestedAccountId, requestedNodeId) =>
+      requestedNodeId === 'node-member'
+        ? undefined
+        : readWorkspaceNode(requestedAccountId, requestedNodeId);
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    let upstreamCalls = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async () => {
+        upstreamCalls += 1;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-missing-node-record-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 16,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: { tool: 'status', input: {}, nodeId: 'node-member' },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: {
+        code: 'WORKSPACE_NODE_NOT_READY',
+        nodeId: 'node-member',
+      },
+    });
+    expect(upstreamCalls).toBe(0);
+  });
+
   it('should add a safe workspace node directory when central get_steering is requested', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
