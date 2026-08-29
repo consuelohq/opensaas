@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/allow-lifecycle-update-recovery-for-stale-nodes",
+  "events": [
+    {
+      "id": "9af1e607-7b85-4a9c-ac3e-2a63b82fa273",
+      "occurred_at": "2026-08-29T07:32:56.035Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/allow-lifecycle-update-recovery-for-stale-nodes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/allow-lifecycle-update-recovery-for-stale-nodes"
+      }
+    },
+    {
+      "id": "c4b8d985-17ee-4dff-8b20-c97d45dba44f",
+      "occurred_at": "2026-08-29T07:33:01.263Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/allow-lifecycle-update-recovery-for-stale-nodes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/allow-lifecycle-update-recovery-for-stale-nodes"
+      }
+    },
+    {
+      "id": "4ce31d1b-cbd4-4614-8738-f53345b115a6",
+      "occurred_at": "2026-08-29T07:33:11.893Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/allow-lifecycle-update-recovery-for-stale-nodes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/allow-lifecycle-update-recovery-for-stale-nodes"
+      }
+    },
+    {
+      "id": "317cec28-aeec-48d1-9546-82e37e616c3c",
+      "occurred_at": "2026-08-29T07:33:17.565Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/allow-lifecycle-update-recovery-for-stale-nodes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/allow-lifecycle-update-recovery-for-stale-nodes"
+      }
+    },
+    {
+      "id": "a6fb895a-498a-4000-9824-0ca7b978d79c",
+      "occurred_at": "2026-08-29T07:33:50.793Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/tool-scope-authorization.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/allow-lifecycle-update-recovery-for-stale-nodes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/allow-lifecycle-update-recovery-for-stale-nodes"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T07:33:50.876Z"
+}

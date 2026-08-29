@@ -2407,6 +2407,65 @@ describe('multi-node connector routing', () => {
     expect(upstreamCalls).toBe(0);
   });
 
+  it('should allow lifecycle update recovery when explicit node compatibility is stale', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-lifecycle-recovery-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'mcp:call', 'tool:*:read'],
+    });
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({
+      ...member!,
+      osVersion: undefined,
+      bundleId: undefined,
+      mcpProtocolVersion: undefined,
+      mcpReady: undefined,
+    });
+    const routeDatabase = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routeDatabase);
+    const forwardedTools: string[] = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routeDatabase,
+      fetchImpl: async (request) => {
+        const forwarded = await (request instanceof Request ? request : new Request(request))
+          .clone()
+          .json() as { params?: { arguments?: { tool?: unknown } } };
+        if (typeof forwarded.params?.arguments?.tool === 'string') {
+          forwardedTools.push(forwarded.params.arguments.tool);
+        }
+        return Response.json({ ok: true });
+      },
+    });
+    const call = async (id: number, tool: string) => handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-lifecycle-recovery-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: { tool, input: {}, nodeId: 'node-member' },
+        },
+      }),
+    }));
+
+    const blocked = await call(17, 'status');
+    expect(blocked.status).toBe(409);
+    expect(forwardedTools).toEqual([]);
+
+    const recovery = await call(18, 'lifecycle.update');
+    expect(recovery.status).toBe(200);
+    expect(forwardedTools).toEqual(['lifecycle.update']);
+  });
+
   it('should fail closed when routing lacks an authoritative registry record', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
