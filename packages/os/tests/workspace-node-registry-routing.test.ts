@@ -65,6 +65,10 @@ const node = (input: {
     platform: 'darwin',
     architecture: 'arm64',
     channel: 'stable',
+    osVersion: '0.1.85',
+    bundleId: `bundle-${input.nodeId}`,
+    mcpProtocolVersion: '2026-07-28',
+    mcpReady: true,
     connectorId: input.connectorId,
     capabilities: ['mcp', 'tools'],
     connectorStatus: 'connected',
@@ -2145,6 +2149,119 @@ describe('multi-node connector routing', () => {
     }));
     expect(foreign.status).toBe(404);
     expect(upstreams).toHaveLength(2);
+  });
+
+  it('consumes the routing nodeId before forwarding while preserving timeout and domain nodeId input', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-sanitized-node-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'tool:*:read'],
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    let upstreamRequest: Request | undefined;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        upstreamRequest = request instanceof Request ? request : new Request(request);
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-sanitized-node-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 14,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'status',
+            nodeId: 'node-member',
+            timeout: 45_000,
+            input: { nodeId: 'domain-node-id', value: 'keep-me' },
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(upstreamRequest?.url).toBe('https://member.connector.test/mcp');
+    expect(upstreamRequest?.headers.get('x-consuelo-node-id')).toBe('node-member');
+    const forwarded = await upstreamRequest!.clone().json() as {
+      params?: { arguments?: Record<string, unknown> };
+    };
+    expect(forwarded.params?.arguments).toMatchObject({
+      tool: 'status',
+      timeout: 45_000,
+      input: { nodeId: 'domain-node-id', value: 'keep-me' },
+    });
+    expect(forwarded.params?.arguments?.nodeId).toBeUndefined();
+  });
+
+  it('rejects an explicitly targeted protocol-incompatible node before proxying the call', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-incompatible-node-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'tool:*:read'],
+    });
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({
+      ...member!,
+      osVersion: '0.1.70',
+      mcpProtocolVersion: '2024-11-05',
+      mcpReady: true,
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    let upstreamCalls = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async () => {
+        upstreamCalls += 1;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-incompatible-node-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 15,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: { tool: 'status', input: {}, nodeId: 'node-member' },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: {
+        code: 'WORKSPACE_NODE_UPDATE_REQUIRED',
+        nodeId: 'node-member',
+        osVersion: '0.1.70',
+        requiredProtocolVersion: '2026-07-28',
+      },
+    });
+    expect(upstreamCalls).toBe(0);
   });
 
   it('should add a safe workspace node directory when central get_steering is requested', async () => {

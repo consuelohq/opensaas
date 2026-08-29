@@ -21,7 +21,12 @@ const sessionToken = 'workspace-session-nodes-ui';
 const csrfToken = 'csrf-nodes-ui';
 const internalSecret = 'workspace-edge-node-ui-secret';
 
-const node = (input: { nodeId: string; name: string; role: 'home' | 'member' }): WorkspaceNode => ({
+const node = (input: {
+  nodeId: string;
+  name: string;
+  role: 'home' | 'member';
+  mcpReady?: boolean;
+}): WorkspaceNode => ({
   accountId,
   workspaceId,
   workspaceSlug: 'nodes-ui',
@@ -33,6 +38,10 @@ const node = (input: { nodeId: string; name: string; role: 'home' | 'member' }):
   platform: input.role === 'home' ? 'darwin' : 'linux',
   architecture: input.role === 'home' ? 'arm64' : 'x64',
   channel: 'stable',
+  osVersion: '0.1.85',
+  bundleId: `bundle-${input.nodeId}`,
+  mcpProtocolVersion: '2026-07-28',
+  mcpReady: input.mcpReady ?? true,
   connectorId: input.nodeId === 'node-home' ? 'connector_home' : 'connector_cloud',
   connectorStatus: 'connected',
   capabilities: ['mcp', 'tools'],
@@ -71,7 +80,7 @@ const pricingPolicy: ManagedCloudPricingPolicy = {
   platformOperationsReserveMicros: 5_000_000,
 };
 
-async function fixture(input: { pricing?: boolean } = {}) {
+async function fixture(input: { pricing?: boolean; cloudReady?: boolean } = {}) {
   const store = createMemoryDeviceGrantStore();
   const routeDb = createInMemoryWorkspaceRouteD1();
   await migrateWorkspaceRouteD1(routeDb);
@@ -80,7 +89,12 @@ async function fixture(input: { pricing?: boolean } = {}) {
     homeNodeId: 'node-home', defaultNodeId: 'node-home', updatedAt: nowMs,
   });
   await store.putWorkspaceNode(node({ nodeId: 'node-home', name: 'Ko Mac', role: 'home' }));
-  await store.putWorkspaceNode(node({ nodeId: 'node-cloud', name: 'Cloud', role: 'member' }));
+  await store.putWorkspaceNode(node({
+    nodeId: 'node-cloud',
+    name: 'Cloud',
+    role: 'member',
+    mcpReady: input.cloudReady ?? true,
+  }));
   await store.putWorkspaceBrowserSession({
     tokenHash: await hash(sessionToken), accountId, workspaceId, workspaceHost, csrfToken,
     issuedAt: nowMs, expiresAt: nowMs + 60_000,
@@ -119,6 +133,9 @@ describe('launcher Nodes workspace-session control plane', () => {
     const serialized = JSON.stringify(payload);
     expect(serialized).toContain('Ko Mac');
     expect(serialized).toContain('Cloud');
+    expect(serialized).toContain('0.1.85');
+    expect(serialized).toContain('"readiness":"ready"');
+    expect(serialized).toContain('"compatibility":"compatible"');
     expect(serialized).not.toMatch(/devicePublicKey|thumbprint|secret|token|machineType|providerCost/i);
   });
 
@@ -144,6 +161,28 @@ describe('launcher Nodes workspace-session control plane', () => {
     await expect(store.byAccountWorkspace(accountId)).resolves.toMatchObject({ defaultNodeId: 'node-cloud' });
     const resolved = await resolveWorkspaceRouteFromD1(routeDb, { host: workspaceHost, path: '/mcp', nowMs });
     expect(resolved).toMatchObject({ allowed: true, nodeId: 'node-cloud' });
+  });
+
+  it('refuses to make a present but execution-not-ready node the workspace default', async () => {
+    const { edge, cookie, store } = await fixture({ cloudReady: false });
+    const response = await edge(new Request(`https://${workspaceHost}/gateway/nodes/default`, {
+      method: 'POST',
+      headers: {
+        cookie,
+        'content-type': 'application/json',
+        origin: `https://${workspaceHost}`,
+        'x-consuelo-csrf-token': csrfToken,
+      },
+      body: JSON.stringify({ nodeId: 'node-cloud' }),
+    }));
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'WORKSPACE_NODE_NOT_READY' },
+    });
+    await expect(store.byAccountWorkspace(accountId)).resolves.toMatchObject({
+      defaultNodeId: 'node-home',
+    });
   });
 
   it('returns public cloud plan/region quotes without provider or margin internals', async () => {
