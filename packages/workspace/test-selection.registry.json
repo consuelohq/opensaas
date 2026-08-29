@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2674,
-    "mappedTestCount": 2589,
+    "testFileCount": 2676,
+    "mappedTestCount": 2591,
     "unmappedTestCount": 85,
     "ruleCount": 75,
     "explicitRuleCount": 56,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 293,
+      "packages/os/tests": 295,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 579,
+      "test": 581,
       "spec": 152,
       "tests-dir": 8,
       "other": 7,
@@ -1288,6 +1288,8 @@
         "packages/os/scripts/bootstrap.sh",
         "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
         "packages/os/tests/caddy-worker-pool-migration.test.ts",
+        "packages/os/tests/bootstrap-recovery-cli.test.ts",
+        "packages/os/tests/lifecycle-command.test.ts",
         "packages/os/tests/worker-pool-process.test.ts"
       ],
       "tests": [
@@ -1317,6 +1319,8 @@
             "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
             "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
             "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/bootstrap-recovery-cli.test.ts",
+            "packages/os/tests/lifecycle-command.test.ts",
             "packages/os/tests/worker-pool-process.test.ts"
           ]
         },
@@ -4285,6 +4289,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/bootstrap-recovery-cli.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/bootstrap-release-verifier-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4851,6 +4860,11 @@
     },
     {
       "path": "packages/os/tests/legacy-system-daemons.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/lifecycle-command.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

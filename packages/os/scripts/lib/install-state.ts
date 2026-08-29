@@ -540,9 +540,14 @@ function materializeVisibleUserRoot(input: {
   return actions;
 }
 
-function materializeLifecycleCommand(
+function shellSingleQuoted(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
+
+export function materializeLifecycleCommand(
   home: string,
   dryRun: boolean,
+  options: { recoveryPackageRoot?: string } = {},
 ): ProvisionAction[] {
   const commandPath = path.join(home, 'bin', 'consuelo');
   const source = [
@@ -551,6 +556,7 @@ function materializeLifecycleCommand(
     'OS_HOME="${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"',
     'BUN_EXECUTABLE="${BUN_BIN:-}"',
     'PACKAGE_ROOT="${CONSUELO_OS_PACKAGE_ROOT:-}"',
+    `RECOVERY_PACKAGE_ROOT=${shellSingleQuoted(options.recoveryPackageRoot?.trim() ?? '')}`,
     'if [ -f "$OS_HOME/.env" ]; then',
     '  while IFS= read -r line || [ -n "$line" ]; do',
     '    case "$line" in',
@@ -564,6 +570,8 @@ function materializeLifecycleCommand(
     '  LIFECYCLE_SCRIPT="$PACKAGE_ROOT/scripts/lifecycle.ts"',
     'elif [ -f "$OS_HOME/runtime/current/scripts/lifecycle.ts" ]; then',
     '  LIFECYCLE_SCRIPT="$OS_HOME/runtime/current/scripts/lifecycle.ts"',
+    'elif [ -n "$RECOVERY_PACKAGE_ROOT" ] && [ -f "$RECOVERY_PACKAGE_ROOT/scripts/lifecycle.ts" ]; then',
+    '  LIFECYCLE_SCRIPT="$RECOVERY_PACKAGE_ROOT/scripts/lifecycle.ts"',
     'fi',
     'if [ ! -f "$LIFECYCLE_SCRIPT" ]; then',
     '  echo "OS lifecycle runtime is not installed. Run: curl -fsSL https://install.consuelohq.com/os | bash" >&2',
