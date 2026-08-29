@@ -224,7 +224,7 @@ every script below follows this format: purpose → usage → helpers → failur
 
 ### fs — safe file operations
 
-wraps bat (read), rg (search), eza/fd when available (list), xh (http), trash (delete). list/list-find fall back to built-in Node filesystem traversal when eza or fd is unavailable, so the typed filesystem surface stays usable on clean Linux nodes and CI. no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
+wraps bat (read), rg when available (search), eza/fd when available (list), xh (http), trash (delete). search falls back to built-in Node regex/file traversal when rg is unavailable; list/list-find do the same when eza or fd is unavailable, so the typed filesystem surface stays usable on clean Linux nodes and CI. no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
 
 **read**
 
@@ -246,6 +246,8 @@ bun run fs -- search "pattern" packages/ --files       # filenames only
 bun run fs -- search "pattern" packages/ --json        # structured json
 bun run fs -- search "pattern" packages/ --max-results 5  # cap matches
 ```
+
+`fs search` prefers ripgrep for speed. If `rg` is not installed, it automatically uses the portable filesystem search backend while preserving regex matching, path/include filters, context, result limits, files-only behavior, and then-read output. Missing `rg` is therefore not a tool failure; real ripgrep errors still fail rather than being hidden.
 
 **list**
 
