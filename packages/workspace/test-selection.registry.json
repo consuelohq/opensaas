@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2676,
-    "mappedTestCount": 2591,
+    "testFileCount": 2675,
+    "mappedTestCount": 2590,
     "unmappedTestCount": 85,
     "ruleCount": 75,
     "explicitRuleCount": 56,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 295,
+      "packages/os/tests": 294,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 581,
+      "test": 580,
       "spec": 152,
       "tests-dir": 8,
       "other": 7,
@@ -1580,7 +1580,8 @@
         "packages/os/scripts/lib/mcp-gateway.ts",
         "packages/os/scripts/os.ts",
         "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/os-get-steering-trace.test.ts"
+        "packages/os/tests/os-get-steering-trace.test.ts",
+        "packages/os/scripts/lib/mcp-node-routing.ts"
       ],
       "tests": [
         {
@@ -1900,7 +1901,8 @@
         "packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts",
         "packages/os/scripts/lib/managed-cloud-public-pricing.ts",
         "packages/os/scripts/lib/nodes-site.ts",
-        "packages/os/tests/managed-cloud-public-pricing.test.ts"
+        "packages/os/tests/managed-cloud-public-pricing.test.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/nodes.ts"
       ],
       "tests": [
         {
@@ -2039,57 +2041,62 @@
       "tests": [
         {
           "name": "OS native lifecycle node discovery contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/native-lifecycle-endpoint.test.ts",
+            "tests/native-lifecycle-endpoint.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS node heartbeat script contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "tests/workspace-node-heartbeat-script.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS operator login contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/operator-login.test.ts",
+            "tests/operator-login.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS node heartbeat client contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+            "tests/workspace-node-heartbeat-client.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS workspace node routing contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/workspace-node-registry-routing.test.ts",
+            "tests/workspace-node-registry-routing.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
@@ -5845,11 +5852,6 @@
     },
     {
       "path": "packages/os/tests/verify-run-state.test.js",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/visible-dialer-steering.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
