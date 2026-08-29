@@ -83,6 +83,7 @@ no-test waiver: not applicable.
 
 - 2026-08-29 08:24:19 fs.write: `.task/explore/make-explore-degradation-status-truthful/workpad.md`
 - 2026-08-29 08:26:01 fs.write: `.task/explore/make-explore-degradation-status-truthful/workpad.md`
+- 2026-08-29 08:27:18 fs.write: `.task/explore/make-explore-degradation-status-truthful/workpad.md`
 
 ## workspace-owned: files read
 
@@ -95,6 +96,8 @@ no-test waiver: not applicable.
 ## workspace-owned: validation evidence
 
 - 2026-08-29 08:25:52 `checkFiles`: passed — OK
+- 2026-08-29 08:26:25 `review.run`: passed — OK
+- 2026-08-29 08:27:10 `verify`: passed — OK
 
 ## implementation status
 
@@ -116,3 +119,16 @@ no-test waiver: not applicable.
 Both final Codex P2 findings are fixed locally with behavior coverage. Next: commit the task delta on top of the pre-synced stream, strict review, canonical verify, publish #2304 into `stream/explore`, then rerun the final PR #2300 CI/Codex gate before Canary release and live baselines.
 
 - 2026-08-29 08:26:01 append: `.task/explore/make-explore-degradation-status-truthful/workpad.md`
+
+## final gate
+
+- Strict review: 0 issues / 0 blockers.
+- Canonical verify: full mode, passed, `publishValid=true`, DB risks/findings 0.
+- Full Explore critical suite: 13 files / 94 tests green.
+- Final Codex P2 coverage is explicit: failed hydration batches contribute to deferred count, and query-time semantic fallback reports top-level degraded status.
+
+## publish recovery
+
+This task was pre-synchronized with `origin/stream/explore` before edits because task bootstrap started from `main`; the local history therefore contains legitimate merge ancestry the task GitHub-API push path cannot encode. Publish the already-reviewed/verified commit to this task branch with scoped Git, then let `task.push` persist the final verification/workpad metadata and `task.pr` perform stream promotion.
+
+- 2026-08-29 08:27:18 append: `.task/explore/make-explore-degradation-status-truthful/workpad.md`
