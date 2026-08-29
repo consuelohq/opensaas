@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_125c211ae1de",
+  "tmuxSession": "opensaas-dialer-bypass-leadconnector-application-shell-cache-125c211a",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/bypass-leadconnector-application-shell-cache",
+  "branch": "task/dialer/bypass-leadconnector-application-shell-cache",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-bypass-leadconnector-application-shell-cache",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-bypass-leadconnector-application-shell-cache",
+  "prNumber": 1779,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1779",
+  "createdAt": "2026-08-04T23:16:56.211Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-bypass-leadconnector-application-shell-cache/.task/dialer/bypass-leadconnector-application-shell-cache/session.json"
+}

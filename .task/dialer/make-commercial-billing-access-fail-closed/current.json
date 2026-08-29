@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/make-commercial-billing-access-fail-closed",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1809,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1809",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1809",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1809/make-commercial-billing-access-fail-closed",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1809",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1809/make-commercial-billing-access-fail-closed",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-make-commercial-billing-access-fail-closed",
+  "taskSession": "tsk_8b2462df6fd6",
+  "tmuxSession": "opensaas-dialer-make-commercial-billing-access-fail-closed-8b2462df",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-make-commercial-billing-access-fail-closed/.task/dialer/make-commercial-billing-access-fail-closed/session.json",
+  "createdAt": "2026-08-10T01:41:14.706Z"
+}
