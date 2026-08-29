@@ -13,7 +13,11 @@ import {
   createWorkspaceNodeHeartbeatClient,
   type WorkspaceNodeHeartbeatConfig,
   type WorkspaceNodeHeartbeatResult,
+  type WorkspaceNodeHeartbeatRuntimeStatus,
 } from './lib/workspace-node-heartbeat-client';
+import { MODERN_MCP_PROTOCOL_VERSION } from './lib/mcp-protocol';
+import { RUNTIME_BUNDLE_MANIFEST_PATH } from './lib/distribution/runtime-bundle';
+import { resolveLifecyclePaths } from './lib/lifecycle/paths';
 import { reconcileGatewayWorkspaceEdgeProxyAuth } from './lib/security-gateway';
 import { createWorkspaceEdgeNodeHeaders } from './lib/workspace-edge-node-auth';
 import { writeStoredWorkspaceNodeSnapshot } from './lib/workspace-node-snapshot-cache';
@@ -21,6 +25,11 @@ import { writeStoredWorkspaceNodeSnapshot } from './lib/workspace-node-snapshot-
 type WorkspaceNodeHeartbeatFileConfig = WorkspaceNodeHeartbeatConfig & {
   osHome?: string;
   connectorHealthUrl?: string;
+};
+
+type CachedHeartbeatEdgeAuth = {
+  connectorId: string;
+  signingSecret: string;
 };
 
 const CONNECTOR_HEALTH_TIMEOUT_MS = 5_000;
@@ -57,6 +66,38 @@ function resolveOsHome(
   const explicit = config.osHome?.trim();
   if (explicit) return path.resolve(explicit);
   return path.resolve(path.dirname(configPath), '..', '..', '..');
+}
+
+export function heartbeatRuntimeStatus(input: {
+  configPath: string;
+  config: WorkspaceNodeHeartbeatFileConfig;
+}): WorkspaceNodeHeartbeatRuntimeStatus {
+  const status: WorkspaceNodeHeartbeatRuntimeStatus = {
+    mcpProtocolVersion: MODERN_MCP_PROTOCOL_VERSION,
+  };
+  try {
+    const paths = resolveLifecyclePaths(resolveOsHome(input.configPath, input.config));
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        path.join(paths.currentLink, RUNTIME_BUNDLE_MANIFEST_PATH),
+        'utf8',
+      ),
+    ) as Record<string, unknown>;
+    if (
+      manifest.kind === 'consuelo-runtime-bundle'
+      && typeof manifest.version === 'string'
+      && manifest.version.trim()
+      && typeof manifest.bundleId === 'string'
+      && manifest.bundleId.trim()
+    ) {
+      status.osVersion = manifest.version.trim();
+      status.bundleId = manifest.bundleId.trim();
+    }
+  } catch {
+    // Release identity is telemetry. Protocol identity remains authoritative even if a
+    // partially installed or test runtime does not expose a current bundle manifest.
+  }
+  return status;
 }
 
 export function verifiedHeartbeatAgentNames(input: {
@@ -173,6 +214,48 @@ export function reconcileHeartbeatEdgeProxyAuth(input: {
   });
 }
 
+function cachedHeartbeatEdgeAuth(input: {
+  configPath: string;
+  config: WorkspaceNodeHeartbeatFileConfig;
+}): CachedHeartbeatEdgeAuth | null {
+  try {
+    const value = JSON.parse(
+      fs.readFileSync(path.join(path.dirname(input.configPath), 'auth.json'), 'utf8'),
+    ) as unknown;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    const stored = value as {
+      kind?: unknown;
+      workspaceId?: unknown;
+      edgeProxy?: {
+        version?: unknown;
+        nodeId?: unknown;
+        connectorId?: unknown;
+        signingSecret?: unknown;
+      };
+    };
+    const edgeProxy = stored.edgeProxy;
+    const connectorId = typeof edgeProxy?.connectorId === 'string'
+      ? edgeProxy.connectorId.trim()
+      : '';
+    const signingSecret = typeof edgeProxy?.signingSecret === 'string'
+      ? edgeProxy.signingSecret.trim()
+      : '';
+    if (
+      stored.kind !== 'consuelo-generated'
+      || stored.workspaceId !== input.config.workspaceId.trim()
+      || edgeProxy?.version !== 1
+      || edgeProxy.nodeId !== input.config.nodeId.trim()
+      || !connectorId
+      || !signingSecret
+    ) {
+      return null;
+    }
+    return { connectorId, signingSecret };
+  } catch {
+    return null;
+  }
+}
+
 export async function resolveHeartbeatConnectorStatus(input: {
   config: WorkspaceNodeHeartbeatFileConfig;
   fetchImpl?: typeof fetch;
@@ -235,27 +318,54 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
       agents,
       fetchImpl: input.fetchImpl,
     });
-    const result = await client.send();
-    reconcileHeartbeatEdgeProxyAuth({ configPath, config, result });
+    const runtimeStatus = heartbeatRuntimeStatus({ configPath, config });
     const mcpReadinessRequired = Boolean(config.connectorHealthUrl?.trim());
-    const mcpReady = mcpReadinessRequired
-      ? await probeHeartbeatMcpReadiness({
+    let readinessResult: WorkspaceNodeHeartbeatResult;
+    let mcpReady: boolean | undefined;
+    if (!mcpReadinessRequired) {
+      readinessResult = await client.send(runtimeStatus);
+    } else {
+      const cachedEdgeAuth = cachedHeartbeatEdgeAuth({ configPath, config });
+      const cachedProbeReady = cachedEdgeAuth
+        ? await probeHeartbeatMcpReadiness({
+            config,
+            result: {
+              nodeId: config.nodeId,
+              presence: 'online',
+              routeReady: true,
+              connectorId: cachedEdgeAuth.connectorId,
+              edgeRequestSigningSecret: cachedEdgeAuth.signingSecret,
+            },
+            fetchImpl: input.fetchImpl,
+          })
+        : false;
+      if (cachedProbeReady) {
+        mcpReady = true;
+        readinessResult = await client.send({ ...runtimeStatus, mcpReady });
+        reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: readinessResult });
+      } else {
+        const recoveryResult = await client.send({ ...runtimeStatus, mcpReady: false });
+        reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: recoveryResult });
+        mcpReady = await probeHeartbeatMcpReadiness({
           config,
-          result,
+          result: recoveryResult,
           fetchImpl: input.fetchImpl,
-        })
-      : undefined;
+        });
+        readinessResult = await client.send({ ...runtimeStatus, mcpReady });
+        reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: readinessResult });
+      }
+    }
     const acceptedResult = mcpReadinessRequired
       ? {
-          ...result,
-          routeReady: result.routeReady && mcpReady === true,
+          ...readinessResult,
+          routeReady: readinessResult.routeReady && mcpReady === true,
           mcpReady,
         }
-      : result;
-    if (result.workspace) {
+      : readinessResult;
+    if (readinessResult.workspace) {
       writeStoredWorkspaceNodeSnapshot({
         home: resolveOsHome(configPath, config),
-        workspace: result.workspace,
+        workspace: readinessResult.workspace,
         expectedWorkspaceId: config.workspaceId,
         expectedCurrentNodeId: config.nodeId,
       });

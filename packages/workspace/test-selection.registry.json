@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2686,
-    "mappedTestCount": 2601,
+    "testFileCount": 2687,
+    "mappedTestCount": 2602,
     "unmappedTestCount": 85,
     "ruleCount": 78,
     "explicitRuleCount": 59,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 304,
+      "packages/os/tests": 305,
       "packages/workspace/tests": 66,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 591,
+      "test": 592,
       "spec": 152,
       "tests-dir": 8,
       "other": 7,
@@ -984,6 +984,7 @@
         "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
         "packages/os/scripts/lib/explore-bench.js",
         "packages/os/scripts/lib/index/embedding-gateway.js",
+        "packages/os/scripts/lib/index/indexer.js",
         "packages/os/scripts/lib/index/store.js",
         "packages/os/scripts/lib/search/**",
         "packages/os/scripts/lib/state/explore-calibration.v1.json",
@@ -1004,6 +1005,7 @@
         "packages/os/tests/explore-promotion-gate.test.ts",
         "packages/os/tests/explore-retrieval-policy.test.ts",
         "packages/os/tests/explore-retriever-fallback.test.ts",
+        "packages/os/tests/explore-index-hydration-fallback.test.ts",
         "packages/os/tests/explore-runtime-routing.test.ts",
         "packages/os/tests/explore-voi-policy.test.ts",
         "packages/os/tests/semantic-embedding-edge-gateway.test.ts",
@@ -1023,6 +1025,7 @@
             "test",
             "tests/explore-retrieval-policy.test.ts",
             "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
             "tests/explore-bench.test.ts",
             "tests/explore-output-contract.test.ts",
             "tests/explore-hypothesis-model.test.ts",
@@ -1717,7 +1720,8 @@
         "packages/os/scripts/lib/mcp-gateway.ts",
         "packages/os/scripts/os.ts",
         "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/os-get-steering-trace.test.ts"
+        "packages/os/tests/os-get-steering-trace.test.ts",
+        "packages/os/scripts/lib/mcp-node-routing.ts"
       ],
       "tests": [
         {
@@ -2037,7 +2041,8 @@
         "packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts",
         "packages/os/scripts/lib/managed-cloud-public-pricing.ts",
         "packages/os/scripts/lib/nodes-site.ts",
-        "packages/os/tests/managed-cloud-public-pricing.test.ts"
+        "packages/os/tests/managed-cloud-public-pricing.test.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/nodes.ts"
       ],
       "tests": [
         {
@@ -2176,57 +2181,62 @@
       "tests": [
         {
           "name": "OS native lifecycle node discovery contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/native-lifecycle-endpoint.test.ts",
+            "tests/native-lifecycle-endpoint.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS node heartbeat script contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "tests/workspace-node-heartbeat-script.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS operator login contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/operator-login.test.ts",
+            "tests/operator-login.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS node heartbeat client contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+            "tests/workspace-node-heartbeat-client.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS workspace node routing contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/workspace-node-registry-routing.test.ts",
+            "tests/workspace-node-registry-routing.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
@@ -4753,6 +4763,11 @@
     },
     {
       "path": "packages/os/tests/explore-hypothesis-model.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/explore-index-hydration-fallback.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

@@ -523,6 +523,28 @@ describe('test selection registry', () => {
     )).toBe(true);
   });
 
+
+  it('should route cloud execution support files to focused critical suites when changed independently', () => {
+    for (const [changedFile, expectedRule] of [
+      [
+        'packages/os/cloudflare/os-device-authority/src/services/nodes.ts',
+        'os-managed-cloud-one-click-provisioning',
+      ],
+      [
+        'packages/os/scripts/lib/mcp-node-routing.ts',
+        'os-chatgpt-node-routing-facade',
+      ],
+    ]) {
+      const data = json(run(['check', '--changed-file', changedFile, '--json']));
+      expect(data.matchedRules.map((rule) => rule.id), changedFile).toContain(
+        expectedRule,
+      );
+      expect(data.selectedSuites.map((suite) => suite.name), changedFile).not.toContain(
+        '@consuelo/os package test',
+      );
+    }
+  });
+
   it('uses focused MCP call-timeout envelope contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -1161,6 +1183,174 @@ describe('test selection registry', () => {
 
     expect(data.failedSuites).toHaveLength(0);
     expect(data.runResults[0]?.status).toBe('passed');
+  });
+
+
+  it('should run a suite from its declared cwd when the registry sets cwd', () => {
+    const registryPath = path.join(
+      os.tmpdir(),
+      `test-selection-cwd-${Date.now()}.json`,
+    );
+    const expectedCwd = path.join(process.cwd(), 'packages/workspace');
+    fs.writeFileSync(
+      registryPath,
+      JSON.stringify({
+        version: 1,
+        rules: [
+          {
+            id: 'suite-cwd-rule',
+            source: ['packages/cwd-fixture/**'],
+            critical: true,
+            origin: 'test',
+            tests: [
+              {
+                name: 'suite cwd fixture',
+                cwd: 'packages/workspace',
+                command: [
+                  process.execPath,
+                  '-e',
+                  `if (process.cwd() !== ${JSON.stringify(expectedCwd)}) process.exit(1)`,
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const result = run([
+      'check',
+      '--registry',
+      registryPath,
+      '--changed-file',
+      'packages/cwd-fixture/src/index.ts',
+      '--run',
+      '--json',
+    ]);
+    const data = JSON.parse(result.stdout);
+
+    expect(result.status).toBe(0);
+    expect(data.failedSuites).toHaveLength(0);
+    expect(data.runResults[0]).toMatchObject({
+      name: 'suite cwd fixture',
+      cwd: 'packages/workspace',
+      status: 'passed',
+    });
+  });
+
+  it('should reject an invalid cwd when the registry explicitly provides it', () => {
+    for (const [label, cwd] of [
+      ['false', false],
+      ['array', []],
+      ['blank', '   '],
+    ]) {
+      const registryPath = path.join(
+        os.tmpdir(),
+        `test-selection-invalid-cwd-${label}-${Date.now()}.json`,
+      );
+      fs.writeFileSync(
+        registryPath,
+        JSON.stringify({
+          version: 1,
+          rules: [
+            {
+              id: `invalid-cwd-${label}`,
+              source: ['packages/cwd-fixture/**'],
+              critical: true,
+              origin: 'test',
+              tests: [
+                {
+                  name: `invalid cwd ${label}`,
+                  cwd,
+                  command: [process.execPath, '-e', 'process.exit(0)'],
+                },
+              ],
+            },
+          ],
+        }),
+      );
+
+      const result = run([
+        'check',
+        '--registry',
+        registryPath,
+        '--changed-file',
+        'packages/cwd-fixture/src/index.ts',
+        '--run',
+        '--json',
+      ]);
+      const data = JSON.parse(result.stdout);
+
+      expect(result.status, label).toBe(1);
+      expect(data.runResults[0], label).toMatchObject({
+        name: `invalid cwd ${label}`,
+        status: 'failed',
+        exitCode: null,
+        error: { code: 'INVALID_SUITE_CWD' },
+      });
+    }
+  });
+
+  it('should preserve invalid cwd validation when suite de-duplication sees the same command', () => {
+    for (const [label, tests] of [
+      [
+        'valid-first',
+        [
+          { name: 'valid root suite', command: [process.execPath, '-e', 'process.exit(0)'] },
+          { name: 'invalid cwd suite', cwd: false, command: [process.execPath, '-e', 'process.exit(0)'] },
+        ],
+      ],
+      [
+        'invalid-first',
+        [
+          { name: 'invalid cwd suite', cwd: '', command: [process.execPath, '-e', 'process.exit(0)'] },
+          { name: 'valid root suite', command: [process.execPath, '-e', 'process.exit(0)'] },
+        ],
+      ],
+    ]) {
+      const registryPath = path.join(
+        os.tmpdir(),
+        `test-selection-cwd-dedupe-${label}-${Date.now()}.json`,
+      );
+      fs.writeFileSync(
+        registryPath,
+        JSON.stringify({
+          version: 1,
+          rules: [
+            {
+              id: `cwd-dedupe-${label}`,
+              source: ['packages/cwd-fixture/**'],
+              critical: true,
+              origin: 'test',
+              tests,
+            },
+          ],
+        }),
+      );
+
+      const result = run([
+        'check',
+        '--registry',
+        registryPath,
+        '--changed-file',
+        'packages/cwd-fixture/src/index.ts',
+        '--run',
+        '--json',
+      ]);
+      const data = JSON.parse(result.stdout);
+
+      expect(result.status, label).toBe(1);
+      expect(data.selectedSuites, label).toHaveLength(2);
+      expect(
+        data.runResults.find((runResult) => runResult.name === 'invalid cwd suite'),
+        label,
+      ).toMatchObject({
+        name: 'invalid cwd suite',
+        status: 'failed',
+        exitCode: null,
+        error: { code: 'INVALID_SUITE_CWD' },
+      });
+    }
   });
 
   it('provisions OS package dependencies before selected OS suites on a clean checkout', () => {
