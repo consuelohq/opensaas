@@ -4,6 +4,25 @@ import { sanitizeTraceHistoryRowForTest } from '../scripts/lib/trace-sites-local
 import { estimateTraceCost } from '../scripts/lib/trace-cost-estimator';
 
 describe('trace history redaction boundary', () => {
+  it('keeps work-session-only history rows addressable instead of manufacturing no-branch', () => {
+    const row = sanitizeTraceHistoryRowForTest({
+      rowid: 99,
+      id: 'row_work_only',
+      ts: '2026-08-28T23:00:00.000Z',
+      trace_id: 'trc_work_only',
+      source: 'facade',
+      tool: 'fs.write',
+      work_session: 'wrk_only_session',
+      status: 'error',
+      ok: 0,
+      code: 'WORK_SESSION_NOT_FOUND',
+      exit_code: 1,
+    });
+
+    expect(row.branch).toBe('wrk_only_session');
+    expect(row.workSession).toBe('wrk_only_session');
+  });
+
   it('keeps safe inspector metadata while redacting credentials, prompts, environment values, and local user paths', () => {
     const row = sanitizeTraceHistoryRowForTest({
       rowid: 1,

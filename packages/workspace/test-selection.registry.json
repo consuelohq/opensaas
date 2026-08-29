@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2671,
-    "mappedTestCount": 2586,
+    "testFileCount": 2673,
+    "mappedTestCount": 2588,
     "unmappedTestCount": 85,
-    "ruleCount": 70,
-    "explicitRuleCount": 51,
+    "ruleCount": 71,
+    "explicitRuleCount": 52,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 290,
+      "packages/os/tests": 292,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,10 +635,10 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 577,
+      "test": 578,
       "spec": 152,
+      "tests-dir": 8,
       "other": 7,
-      "tests-dir": 7,
       "integration": 2,
       "e2e": 1
     }
@@ -2568,6 +2568,30 @@
       "critical": true,
       "exclusive": true,
       "reason": "Durable Grok/Codex orchestration, provider capabilities, active-run status, idempotency, and deadline behavior must prove the focused subagent contract without selecting the unrelated whole-OS package baseline.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-test-environment-isolation",
+      "source": [
+        "packages/os/vitest.config.ts",
+        "packages/os/tests/test-environment.ts",
+        "packages/os/tests/test-environment-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS test-environment isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/test-environment-contract.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "OS test-runner configuration must redirect inherited operator trace persistence to a test-owned database without selecting the unrelated package-wide OS baseline.",
       "origin": "explicit"
     },
     {
@@ -5524,6 +5548,16 @@
       "path": "packages/os/tests/task-worktree-gc-scheduler.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/test-environment-contract.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/test-environment.ts",
+      "group": "packages/os/tests",
+      "kind": "tests-dir"
     },
     {
       "path": "packages/os/tests/tool-manifest.test.ts",

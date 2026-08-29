@@ -1880,6 +1880,29 @@
       "reason": "Durable Grok/Codex orchestration, provider capabilities, active-run status, idempotency, and deadline behavior must prove the focused subagent contract without selecting the unrelated whole-OS package baseline."
     },
     {
+      "id": "os-test-environment-isolation",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/vitest.config.ts",
+        "packages/os/tests/test-environment.ts",
+        "packages/os/tests/test-environment-contract.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS test-environment isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/test-environment-contract.test.ts"
+          ]
+        }
+      ],
+      "reason": "OS test-runner configuration must redirect inherited operator trace persistence to a test-owned database without selecting the unrelated package-wide OS baseline."
+    },
+    {
       "id": "os-work-session-fs",
       "critical": true,
       "exclusive": true,

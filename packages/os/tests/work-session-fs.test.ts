@@ -53,13 +53,16 @@ function makeWorkSession(root: string, workPath: string) {
 }
 
 function options(home: string, cwd = process.cwd(), extraEnv: NodeJS.ProcessEnv = {}) {
+  const env = {
+    ...process.env,
+    CONSUELO_HOME: home,
+    ...extraEnv,
+  };
+  delete env.CONSUELO_TRACE_DB;
+  delete env.TRACE_DB;
   return {
     cwd,
-    env: {
-      ...process.env,
-      CONSUELO_HOME: home,
-      ...extraEnv,
-    },
+    env,
     logMode: 'silent' as const,
   };
 }
