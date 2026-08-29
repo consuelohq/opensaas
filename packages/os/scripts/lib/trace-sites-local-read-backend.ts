@@ -12,7 +12,14 @@ import type {
   TraceSitesDashboardEvent,
   TraceSitesDashboardSummary,
 } from './trace-sites-gateway-contract';
-import { redactText, redactTraceJson } from './redaction';
+import { redactTraceJson, redactTraceText } from './redaction';
+import {
+  ensureTraceDatabaseSchema,
+  openTraceDatabase,
+  type TraceDatabase,
+} from './trace-database-schema';
+import { compileTraceHistorySearch } from './trace-search-query';
+import { estimateTraceCost } from './trace-cost-estimator';
 
 export type LocalTraceSitesReadBackendOptions = {
   dbPath: string;
@@ -33,6 +40,13 @@ type TraceRow = {
   task_session?: string | null;
   branch?: string | null;
   worktree?: string | null;
+  work_session?: string | null;
+  work_path?: string | null;
+  requested_node_id?: string | null;
+  resolved_node_id?: string | null;
+  resolved_node_name?: string | null;
+  default_node_id?: string | null;
+  route_source?: string | null;
   status?: string | null;
   ok?: number | null;
   code?: string | null;
@@ -59,6 +73,13 @@ const TRACE_HISTORY_PAGE_SQL = [
   '  task_session,',
   '  branch,',
   '  worktree,',
+  '  work_session,',
+  '  work_path,',
+  '  requested_node_id,',
+  '  resolved_node_id,',
+  '  resolved_node_name,',
+  '  default_node_id,',
+  '  route_source,',
   '  status,',
   '  ok,',
   '  code,',
@@ -98,6 +119,8 @@ const RECENT_TRACE_EVENTS_SQL = [
   '  tool,',
   '  task_session,',
   '  branch,',
+  '  work_session,',
+  '  work_path,',
   '  status,',
   '  code,',
   '  exit_code,',
@@ -113,6 +136,12 @@ const RECENT_TRACE_EVENTS_SQL = [
 export function createLocalTraceSitesReadBackend(
   options: LocalTraceSitesReadBackendOptions,
 ): TraceSitesGatewayReadBackendAdapter {
+  let schemaReady = false;
+  const prepareExistingDatabaseForRead = (): void => {
+    if (schemaReady || !existsSync(options.dbPath)) return;
+    ensureTraceDatabaseSchema(options.dbPath);
+    schemaReady = true;
+  };
   return {
     resolveHealth() {
       return {
@@ -123,12 +152,15 @@ export function createLocalTraceSitesReadBackend(
       };
     },
     readRecentEvents(input) {
+      prepareExistingDatabaseForRead();
       return readRecentTraceEvents(options.dbPath, input);
     },
     readHistoryPage(input) {
+      prepareExistingDatabaseForRead();
       return readTraceHistoryPage(options.dbPath, input);
     },
     readNewerPage(input) {
+      prepareExistingDatabaseForRead();
       return readNewerTracePage(options.dbPath, input);
     },
     readCachedAggregate(): TraceSitesGatewayCachedAggregate {
@@ -146,14 +178,18 @@ async function readNewerTracePage(
 ): Promise<TraceSitesGatewayHistoryPage> {
   if (!existsSync(dbPath)) return { rows: [], nextCursor: input.cursor };
 
-  const { Database } = await import('bun:sqlite');
-  const db = new Database(dbPath, { readonly: true });
+  const db = openTraceDatabase(dbPath);
   try {
     const afterRowid = resolveHistoryAfterRowid(db, input.cursor);
     const pageSize = Math.max(1, Math.floor(input.limit));
+    const search = compileTraceHistorySearch(input.query ?? '');
+    const sql = TRACE_NEWER_PAGE_SQL.replace(
+      'WHERE rowid > ?',
+      `WHERE rowid > ? AND ${search.sql}`,
+    );
     const rows = db
-      .query(TRACE_NEWER_PAGE_SQL)
-      .all(afterRowid, pageSize) as TraceRow[];
+      .query(sql)
+      .all(afterRowid, ...search.values, pageSize) as TraceRow[];
     const nextCursor = rows.length
       ? rowidToCursor(rows[rows.length - 1].rowid)
       : rowidToCursor(afterRowid);
@@ -172,15 +208,19 @@ async function readTraceHistoryPage(
 ): Promise<TraceSitesGatewayHistoryPage> {
   if (!existsSync(dbPath)) return { rows: [], nextCursor: null };
 
-  const { Database } = await import('bun:sqlite');
-  const db = new Database(dbPath, { readonly: true });
+  const db = openTraceDatabase(dbPath);
   try {
     const beforeRowid = resolveHistoryBeforeRowid(db, input.cursor);
     if (beforeRowid <= 1) return { rows: [], nextCursor: null };
     const pageSize = Math.max(1, Math.floor(input.limit));
+    const search = compileTraceHistorySearch(input.query ?? '');
+    const sql = TRACE_HISTORY_PAGE_SQL.replace(
+      'WHERE rowid < ?',
+      `WHERE rowid < ? AND ${search.sql}`,
+    );
     const rows = db
-      .query(TRACE_HISTORY_PAGE_SQL)
-      .all(beforeRowid, pageSize + 1) as TraceRow[];
+      .query(sql)
+      .all(beforeRowid, ...search.values, pageSize + 1) as TraceRow[];
     const pageRows = rows.slice(0, pageSize);
     return {
       rows: pageRows.map(historyRowFromTraceRow),
@@ -202,8 +242,7 @@ async function readRecentTraceEvents(
     return { cursor: input.cursor, events: [] };
   }
 
-  const { Database } = await import('bun:sqlite');
-  const db = new Database(dbPath, { readonly: true });
+  const db = openTraceDatabase(dbPath);
   try {
     const afterRowid = cursorToRowid(input.cursor);
     const rows = db
@@ -245,7 +284,11 @@ function rowToDashboardEvent(
       : `${input.workspaceId}:${traceId}:${cursor}`,
     sourceMode: input.sourceMode,
     branch:
-      cleanString(row.branch) || cleanString(row.task_session) || '(no branch)',
+      sanitizeLocalTraceText(cleanString(row.work_path)) ||
+      cleanString(row.branch) ||
+      cleanString(row.task_session) ||
+      cleanString(row.work_session) ||
+      '(no branch)',
     tool: cleanString(row.tool) || 'unknown',
     inputTokens,
     outputTokens,
@@ -282,6 +325,20 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
   );
   const rawResultJson = sanitizeTracePayloadJson(cleanString(row.result_json));
   const rawStderr = sanitizeLocalTraceText(cleanString(row.stderr));
+  const costEstimate = estimateTraceCost({
+    tool,
+    inputTokens,
+    outputTokens,
+    totalTokens: tokens,
+    rawInputJson,
+    rawResolvedInputJson,
+    rawResultJson,
+  });
+  const requestedNodeId = cleanString(row.requested_node_id);
+  const resolvedNodeId = cleanString(row.resolved_node_id);
+  const resolvedNodeName = cleanString(row.resolved_node_name);
+  const defaultNodeId = cleanString(row.default_node_id);
+  const routeSource = cleanString(row.route_source);
   const resultMessage = resultMessageFromJson(rawResultJson);
   const batchResults =
     tool === 'batch' ? batchResultsFromJson(rawResultJson) : [];
@@ -296,6 +353,15 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
       cleanString(row.branch) || cleanString(row.task_session) || 'no-branch',
     taskSession: cleanString(row.task_session),
     worktree: sanitizeLocalTraceText(cleanString(row.worktree)),
+    workSession: cleanString(row.work_session),
+    workPath: sanitizeLocalTraceText(cleanString(row.work_path)),
+    ...(requestedNodeId ? { requestedNodeId } : {}),
+    ...(resolvedNodeId ? { resolvedNodeId, nodeId: resolvedNodeId } : {}),
+    ...(resolvedNodeName
+      ? { resolvedNodeName, nodeName: resolvedNodeName }
+      : {}),
+    ...(defaultNodeId ? { defaultNodeId } : {}),
+    ...(routeSource ? { routeSource } : {}),
     status: success ? 'success' : cleanString(row.status) || 'error',
     ok: success,
     code: cleanString(row.code) || (success ? 'OK' : 'ERROR'),
@@ -305,14 +371,33 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     tokens,
     inputTokens,
     outputTokens,
-    cost: 0,
-    costLabel: '$0.0000',
+    cost: costEstimate?.cost ?? 0,
+    costLabel: costEstimate?.costLabel ?? '—',
     trace: traceId,
     traceId,
     metadata: {
       rowid: row.rowid,
       source: cleanString(row.source),
       mcpTraceId: cleanString(row.mcp_trace_id),
+      ...(costEstimate
+        ? {
+            pricingModel: costEstimate.model,
+            pricingRateModel: costEstimate.rateModel,
+            pricingSource: costEstimate.pricingSource,
+            pricingProvider: costEstimate.provider,
+            pricingEstimated: true,
+            cachedInputTokens: costEstimate.cachedInputTokens,
+          }
+        : {}),
+      ...(cleanString(row.work_session) ? { workSession: cleanString(row.work_session) } : {}),
+      ...(cleanString(row.work_path)
+        ? { workPath: sanitizeLocalTraceText(cleanString(row.work_path)) }
+        : {}),
+      ...(requestedNodeId ? { requestedNodeId } : {}),
+      ...(resolvedNodeId ? { resolvedNodeId } : {}),
+      ...(resolvedNodeName ? { resolvedNodeName } : {}),
+      ...(defaultNodeId ? { defaultNodeId } : {}),
+      ...(routeSource ? { routeSource } : {}),
     },
     input: compactPayload(rawResolvedInputJson || rawInputJson),
     output: resultMessage || compactPayload(rawResultJson) || rawStderr,
@@ -338,7 +423,7 @@ export function sanitizeTraceHistoryRowForTest(
   return historyRowFromTraceRow(row);
 }
 
-const TRACE_PRIVATE_FIELD_PATTERN = /(?:prompt|instruction|messages?|environment|env|authorization|password|passphrase|secret|token|api[_-]?key|cookie|credential|private[_-]?key|client[_-]?secret|session|jwt)/i;
+const TRACE_PRIVATE_PAYLOAD_FIELD_PATTERN = /^(?:(?:system|user|developer)?prompt|instructions?|messages|environment|env)$/i;
 
 function sanitizeTracePayloadJson(value: string): string {
   if (!value) return '';
@@ -357,7 +442,7 @@ function scrubPrivateTraceFields(
   key: string | undefined,
   seen: WeakSet<object>,
 ): unknown {
-  if (key && TRACE_PRIVATE_FIELD_PATTERN.test(key)) return '[REDACTED_SECRET]';
+  if (key && TRACE_PRIVATE_PAYLOAD_FIELD_PATTERN.test(key)) return '[REDACTED_SECRET]';
   if (typeof value === 'string') return sanitizeLocalTraceText(value);
   if (value === null || value === undefined || typeof value !== 'object') {
     return value;
@@ -376,13 +461,13 @@ function scrubPrivateTraceFields(
 }
 
 function sanitizeLocalTraceText(value: string): string {
-  return redactText(value)
+  return redactTraceText(value)
     .replace(/\/Users\/[^/\s"']+/g, '/Users/[user]')
     .replace(/\/home\/[^/\s"']+/g, '/home/[user]');
 }
 
 function resolveHistoryBeforeRowid(
-  db: import('bun:sqlite').Database,
+  db: TraceDatabase,
   cursor: string,
 ): number {
   const numeric = Number(cursor);
@@ -405,7 +490,7 @@ function resolveHistoryBeforeRowid(
 }
 
 function resolveHistoryAfterRowid(
-  db: import('bun:sqlite').Database,
+  db: TraceDatabase,
   cursor: string,
 ): number {
   const numeric = Number(cursor);

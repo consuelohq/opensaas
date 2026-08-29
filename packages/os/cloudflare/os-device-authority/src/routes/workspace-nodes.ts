@@ -7,6 +7,7 @@ import {
 import { deriveWorkspaceEdgeNodeSecret } from '../../../../scripts/lib/workspace-edge-node-auth';
 import { json } from '../http';
 import { normalizeWorkspaceAgentNames } from '../services/agents';
+import { reconcileWorkspaceRouteState } from '../services/connectors';
 import {
   safeWorkspaceNode,
   WORKSPACE_NODE_HEARTBEAT_TTL_MS,
@@ -23,6 +24,13 @@ import type {
 } from '../types';
 import { b64Decode, hasGrantedScope, hash } from '../utils';
 import { bearerToken } from '../services/mcp-proxy';
+import { authenticateInternalWorkspaceSession } from './web-auth';
+import { buildManagedCloudPublicCatalog } from '../services/managed-cloud-pricing';
+import {
+  publicManagedCloudProvisioningJob,
+  type ManagedCloudProvisioningJob,
+} from '../../../../scripts/lib/managed-cloud-provisioning';
+import type { ManagedCloudPlanId, ManagedCloudRegionId } from '../../../../scripts/lib/managed-cloud-pricing';
 
 const jsonHeaders = { 'cache-control': 'no-store' } as const;
 
@@ -109,7 +117,7 @@ async function authenticateWorkspaceMember(
   }
 }
 
-async function persistDefaultNode(input: {
+export async function persistDefaultNode(input: {
   runtime: DeviceAuthorityRuntime;
   workspace: AccountWorkspace;
   nodeId: string;
@@ -342,6 +350,22 @@ async function handleHeartbeat(
     body.connectorStatus === 'disconnected'
       ? body.connectorStatus
       : undefined;
+  const normalizedPlatformField = (value: unknown): string | undefined => {
+    if (typeof value !== 'string') return undefined;
+    const normalized = value.trim().toLowerCase();
+    return /^[a-z0-9._-]{1,32}$/.test(normalized) ? normalized : undefined;
+  };
+  const hasPlatform = Object.hasOwn(body, 'platform');
+  const platform = normalizedPlatformField(body.platform);
+  const hasArchitecture = Object.hasOwn(body, 'architecture');
+  const architecture = normalizedPlatformField(body.architecture);
+  if ((hasPlatform && !platform) || (hasArchitecture && !architecture)) {
+    return errorResponse(
+      400,
+      'INVALID_HEARTBEAT_PLATFORM',
+      'Heartbeat platform and architecture must use safe platform identifiers.',
+    );
+  }
   const capabilities = Array.isArray(body.capabilities)
     ? [
         ...new Set(
@@ -406,22 +430,59 @@ async function handleHeartbeat(
     ...node,
     capabilities,
     ...(hasAgents ? { agents } : {}),
+    ...(platform ? { platform } : {}),
+    ...(architecture ? { architecture } : {}),
     connectorStatus,
     lastSeenAt: nowMs,
     updatedAt: nowMs,
   };
+  let routeReady = false;
   if (runtime.workspaceRouteRegistry) {
-    await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
-      hostname: node.workspaceHost,
-      nodeId,
-      connectorStatus,
-      state: 'active',
-      lastSeenAt: nowMs,
-      heartbeatTtlMs: WORKSPACE_NODE_HEARTBEAT_TTL_MS,
-    });
+    const workspace = await runtime.store.byAccountWorkspace(node.accountId);
+    if (!workspace || workspace.workspaceHost !== node.workspaceHost) {
+      return serviceUnavailableResponse();
+    }
+    const nodes = await runtime.store.listWorkspaceNodes(node.accountId);
+    const desiredNodes = nodes.map((candidate) =>
+      candidate.nodeId === nodeId ? updated : candidate,
+    );
+    try {
+      const reconciliation = await reconcileWorkspaceRouteState({
+        routeRegistry: runtime.workspaceRouteRegistry,
+        workspace,
+        nodes: desiredNodes,
+        currentNodeId: nodeId,
+        nowMs,
+        defaultSiteSnapshot: runtime.defaultSiteSnapshot,
+      });
+      routeReady = reconciliation.routeReady;
+      if (reconciliation.defaultNodeChanged) {
+        await runtime.store.putAccountWorkspace({
+          ...workspace,
+          defaultNodeId: reconciliation.defaultNodeId,
+          updatedAt: nowMs,
+        });
+      }
+    } catch {
+      return errorResponse(
+        503,
+        'WORKSPACE_ROUTE_RECONCILIATION_FAILED',
+        'Workspace connector route state could not be reconciled.',
+      );
+    }
+    if (connectorStatus === 'connected' && !routeReady) {
+      return errorResponse(
+        503,
+        'WORKSPACE_ROUTE_NOT_READY',
+        'Workspace connector route is not ready for this node.',
+      );
+    }
   }
   try {
     await runtime.store.putWorkspaceNode(updated);
+    if (connectorStatus === 'connected' && (!runtime.workspaceRouteRegistry || routeReady)) {
+      await runtime.store.markManagedCloudProvisioningReadyByNode({ nodeId, nowMs });
+    }
   } catch (error: unknown) {
     if (runtime.workspaceRouteRegistry) {
       await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
@@ -437,9 +498,22 @@ async function handleHeartbeat(
   }
   const safeNode = safeWorkspaceNode(updated, nowMs);
   const connectorId = updated.connectorId?.trim();
+  const workspace = await runtime.store.byAccountWorkspace(updated.accountId);
+  const workspaceSnapshot = workspace && workspace.workspaceHost === updated.workspaceHost
+    ? launcherWorkspaceNodeListPayload({
+        workspace,
+        nodes: (await runtime.store.listWorkspaceNodes(updated.accountId)).map((candidate) =>
+          candidate.nodeId === updated.nodeId ? updated : candidate,
+        ),
+        nowMs,
+        currentNodeId: nodeId,
+      })
+    : undefined;
   return json(
     {
       ...safeNode,
+      routeReady,
+      ...(workspaceSnapshot ? { workspace: workspaceSnapshot } : {}),
       ...(runtime.workspaceEdgeInternalSigningSecret?.trim() && connectorId
         ? {
             edgeRequestSigningSecret: deriveWorkspaceEdgeNodeSecret({
@@ -455,11 +529,181 @@ async function handleHeartbeat(
   );
 }
 
+function launcherWorkspaceNodeListPayload(input: {
+  workspace: AccountWorkspace;
+  nodes: WorkspaceNode[];
+  nowMs: number;
+  currentNodeId?: string;
+}) {
+  const payload = workspaceNodeListPayload(input);
+  const sanitize = (node: typeof payload.nodes[number]) => {
+    const { publicKeyThumbprint: _thumbprint, connectorId: _connectorId, ...safe } = node;
+    return safe;
+  };
+  return {
+    ...payload,
+    currentNode: payload.currentNode ? sanitize(payload.currentNode) : null,
+    nodes: payload.nodes.map(sanitize),
+  };
+}
+
+async function handleInternalNodeList(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  try {
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, { requireWorkspaceId: false });
+    if (!auth.ok) return auth.response;
+    const workspace = await runtime.store.byAccountWorkspace(auth.session.accountId);
+    if (!workspace || workspace.workspaceHost !== auth.session.workspaceHost) {
+      return errorResponse(403, 'WORKSPACE_ACCESS_DENIED', 'The workspace is not available to this session.');
+    }
+    const nodes = await runtime.store.listWorkspaceNodes(auth.session.accountId);
+    return json(
+      launcherWorkspaceNodeListPayload({ workspace, nodes, nowMs: runtime.now() }),
+      { headers: jsonHeaders },
+    );
+  } catch {
+    return serviceUnavailableResponse();
+  }
+}
+
+async function handleInternalNodePricing(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  try {
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, { requireWorkspaceId: false });
+    if (!auth.ok) return auth.response;
+    const workspace = await runtime.store.byAccountWorkspace(auth.session.accountId);
+    if (!workspace || workspace.workspaceHost !== auth.session.workspaceHost) {
+      return errorResponse(403, 'WORKSPACE_ACCESS_DENIED', 'The workspace is not available to this session.');
+    }
+    return json(
+      buildManagedCloudPublicCatalog(
+        runtime.managedCloudPricing,
+        new URL(request.url).searchParams.get('region'),
+      ),
+      { headers: jsonHeaders },
+    );
+  } catch {
+    return serviceUnavailableResponse();
+  }
+}
+
+const managedCloudId = (prefix: 'mcpj' | 'node'): string =>
+  `${prefix}_${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
+
+async function handleInternalCreateProvisioning(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  try {
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, { requireCsrf: true, requireWorkspaceId: false });
+    if (!auth.ok) return auth.response;
+    const workspace = await runtime.store.byAccountWorkspace(auth.session.accountId);
+    if (!workspace || workspace.workspaceHost !== auth.session.workspaceHost) {
+      return errorResponse(403, 'WORKSPACE_ACCESS_DENIED', 'The workspace is not available to this session.');
+    }
+    const body = await readJsonObject(request);
+    const planId = typeof body?.planId === 'string' ? body.planId.trim() as ManagedCloudPlanId : '' as ManagedCloudPlanId;
+    const region = typeof body?.region === 'string' ? body.region.trim() as ManagedCloudRegionId : '' as ManagedCloudRegionId;
+    const pricingVersion = typeof body?.pricingVersion === 'string' ? body.pricingVersion.trim() : '';
+    const idempotencyKey = typeof body?.idempotencyKey === 'string' ? body.idempotencyKey.trim() : '';
+    if (!runtime.managedCloudPricing) {
+      return errorResponse(503, 'MANAGED_CLOUD_PRICING_UNAVAILABLE', 'Managed cloud pricing is temporarily unavailable.');
+    }
+    const catalog = buildManagedCloudPublicCatalog(runtime.managedCloudPricing, region);
+    const quote = catalog.quotes.find((candidate) => candidate.plan.id === planId && candidate.region.id === region);
+    if (!catalog.regions.some((candidate) => candidate.id === region) || !catalog.plans.some((candidate) => candidate.id === planId) || !quote) {
+      return errorResponse(400, 'MANAGED_CLOUD_PLAN_INVALID', 'Choose an available cloud plan and region.');
+    }
+    if (!pricingVersion || pricingVersion !== quote.pricingVersion) {
+      return errorResponse(409, 'MANAGED_CLOUD_PRICING_CHANGED', 'Cloud pricing changed. Refresh the current monthly price before creating this node.');
+    }
+    if (idempotencyKey.length < 8 || idempotencyKey.length > 128) {
+      return errorResponse(400, 'MANAGED_CLOUD_IDEMPOTENCY_INVALID', 'A valid provisioning request identifier is required.');
+    }
+    const workspaceId = workspace.workspaceId?.trim();
+    if (!workspaceId) {
+      return errorResponse(409, 'WORKSPACE_ID_UNAVAILABLE', 'This workspace is not ready for managed cloud provisioning yet.');
+    }
+    const nowMs = runtime.now();
+    const job: ManagedCloudProvisioningJob = {
+      jobId: managedCloudId('mcpj'), accountId: auth.session.accountId,
+      workspaceId, workspaceSlug: workspace.workspaceSlug, workspaceHost: workspace.workspaceHost,
+      nodeId: managedCloudId('node'), nodeName: 'Cloud', planId, region, pricingVersion: quote.pricingVersion,
+      monthlyPriceCents: quote.monthlyPriceCents, currency: quote.currency, idempotencyKey, status: 'requested', createdAt: nowMs, updatedAt: nowMs,
+    };
+    const created = await runtime.store.createManagedCloudProvisioningJob(job);
+    if (created.status === 'active-conflict') {
+      return json({ error: { code: 'MANAGED_CLOUD_PROVISIONING_ACTIVE', message: 'A cloud node is already being created for this workspace.' }, job: publicManagedCloudProvisioningJob(created.job) }, { status: 409, headers: jsonHeaders });
+    }
+    return json({ job: publicManagedCloudProvisioningJob(created.job) }, { status: created.status === 'created' ? 202 : 200, headers: jsonHeaders });
+  } catch {
+    return serviceUnavailableResponse();
+  }
+}
+
+async function handleInternalProvisioningStatus(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  try {
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, { requireWorkspaceId: false });
+    if (!auth.ok) return auth.response;
+    const workspace = await runtime.store.byAccountWorkspace(auth.session.accountId);
+    const jobId = new URL(request.url).searchParams.get('job_id')?.trim() ?? '';
+    const job = jobId ? await runtime.store.byManagedCloudProvisioningJob(jobId) : undefined;
+    if (!workspace || workspace.workspaceHost !== auth.session.workspaceHost || !job || job.accountId !== auth.session.accountId || job.workspaceHost !== workspace.workspaceHost) {
+      return errorResponse(404, 'MANAGED_CLOUD_PROVISIONING_NOT_FOUND', 'The provisioning request was not found.');
+    }
+    return json({ job: publicManagedCloudProvisioningJob(job) }, { headers: jsonHeaders });
+  } catch {
+    return serviceUnavailableResponse();
+  }
+}
+
+async function handleInternalSelectDefault(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  try {
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, { requireCsrf: true, requireWorkspaceId: false });
+    if (!auth.ok) return auth.response;
+    const workspace = await runtime.store.byAccountWorkspace(auth.session.accountId);
+    const body = await readJsonObject(request);
+    const nodeId = typeof body?.nodeId === 'string' ? body.nodeId.trim() : '';
+    const node = workspace && nodeId
+      ? await runtime.store.byWorkspaceNode(auth.session.accountId, nodeId)
+      : undefined;
+    if (
+      !workspace ||
+      workspace.workspaceHost !== auth.session.workspaceHost ||
+      !node ||
+      node.workspaceHost !== workspace.workspaceHost ||
+      (node.state ?? 'active') !== 'active' ||
+      safeWorkspaceNode(node, runtime.now()).presence !== 'online'
+    ) {
+      return errorResponse(404, 'WORKSPACE_NODE_NOT_AVAILABLE', 'The requested online node was not found.');
+    }
+    await persistDefaultNode({ runtime, workspace, nodeId });
+    return json({ defaultNodeId: nodeId }, { headers: jsonHeaders });
+  } catch {
+    return serviceUnavailableResponse();
+  }
+}
+
 export function registerWorkspaceNodeRoutes(
   app: Hono,
   runtime: DeviceAuthorityRuntime,
 ): void {
   app.get('/workspace/nodes', (context) => handleList(context.req.raw, runtime));
+  app.get('/internal/workspace/nodes', (context) => handleInternalNodeList(context.req.raw, runtime));
+  app.get('/internal/workspace/nodes/pricing', (context) => handleInternalNodePricing(context.req.raw, runtime));
+  app.post('/internal/workspace/nodes/provision', (context) => handleInternalCreateProvisioning(context.req.raw, runtime));
+  app.get('/internal/workspace/nodes/provisioning', (context) => handleInternalProvisioningStatus(context.req.raw, runtime));
+  app.post('/internal/workspace/nodes/default', (context) => handleInternalSelectDefault(context.req.raw, runtime));
   app.post('/workspace/nodes/default', (context) =>
     handleSelectDefault(context.req.raw, runtime),
   );

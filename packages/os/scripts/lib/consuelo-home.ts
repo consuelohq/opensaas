@@ -6,18 +6,77 @@ import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { z } from 'zod';
 
 const DEFAULT_CONSUELO_HOME = '~/.consuelo';
-const DEFAULT_PROJECT_ID = 'opensaas';
-const DEFAULT_PROJECT_REPO = 'consuelohq/opensaas';
 const DEFAULT_BRANCH = 'main';
+
+const sourceControlCodeRootSchema = z.string().min(1).transform((value) => value.trim()).refine((value) => {
+  const normalized = value;
+  if (
+    normalized === '.'
+    || normalized.startsWith('/')
+    || normalized.endsWith('/')
+    || normalized.includes('\\')
+  ) {
+    return false;
+  }
+  return normalized.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..');
+}, 'code root must be a repository-relative path without dot segments');
 
 const projectSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).optional(),
   repo: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/),
   defaultBranch: z.string().min(1).default(DEFAULT_BRANCH),
+  provider: z.string().min(1).default('github'),
+  connectionRef: z.string().min(1).optional(),
+  codeRoots: z.array(sourceControlCodeRootSchema).optional(),
   localPaths: z.record(z.string(), z.string()).optional(),
   worktreeRoot: z.union([z.string(), z.record(z.string(), z.string())]).optional(),
 }).strict();
+
+function isSafeLauncherHref(value: string): boolean {
+  if (value.startsWith('/')) {
+    return !value.startsWith('//') && !value.includes('\\');
+  }
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && url.username === '' && url.password === '';
+  } catch {
+    return false;
+  }
+}
+
+const launcherLinkSchema = z.object({
+  label: z.string().trim().min(1).max(80),
+  href: z.string().trim().min(1).max(2048).refine(
+    isSafeLauncherHref,
+    'href must be an HTTPS URL or safe root-relative path',
+  ),
+}).strict();
+
+const launcherSectionSchema = z.object({
+  id: z.string().trim().regex(
+    /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/,
+    'id must be a lowercase slug without leading or trailing hyphens',
+  ),
+  label: z.string().trim().min(1).max(80),
+  links: z.array(launcherLinkSchema).min(1).max(20),
+}).strict();
+
+const launcherConfigSchema = z.object({
+  extraSections: z.array(launcherSectionSchema).max(12).default([]),
+}).strict().superRefine((value, context) => {
+  const ids = new Set<string>();
+  value.extraSections.forEach((section, index) => {
+    if (ids.has(section.id)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['extraSections', index, 'id'],
+        message: `duplicate launcher section id: ${section.id}`,
+      });
+    }
+    ids.add(section.id);
+  });
+});
 
 const workspaceYamlConfigSchema = z.object({
   version: z.literal(1),
@@ -62,6 +121,7 @@ const globalYamlConfigSchema = z.object({
       }).strict(),
     ]).default({ mode: 'on' }),
   }).strict().default({ channel: 'stable', notifications: { mode: 'on' } }),
+  launcher: launcherConfigSchema.optional(),
 }).strict();
 
 const nodeYamlConfigSchema = z.object({
@@ -79,6 +139,8 @@ const nodeYamlConfigSchema = z.object({
 }).strict();
 
 export type ConsueloProjectConfig = z.infer<typeof projectSchema>;
+export type ConsueloLauncherLinkConfig = z.infer<typeof launcherLinkSchema>;
+export type ConsueloLauncherSectionConfig = z.infer<typeof launcherSectionSchema>;
 export type ConsueloWorkspaceYamlConfig = z.infer<typeof workspaceYamlConfigSchema>;
 export type ConsueloGlobalYamlConfig = z.infer<typeof globalYamlConfigSchema>;
 export type ConsueloNodeYamlConfig = z.infer<typeof nodeYamlConfigSchema>;
@@ -197,10 +259,17 @@ function formatValidationError(filePath: string, error: z.ZodError): Error {
   return new Error(`${path.basename(filePath)} failed validation: ${issues}`);
 }
 
-export function loadWorkspaceYamlConfig(filePath: string): ConsueloWorkspaceYamlConfig {
-  const result = workspaceYamlConfigSchema.safeParse(parseYamlFile(filePath));
-  if (!result.success) throw formatValidationError(filePath, result.error);
+export function validateWorkspaceYamlConfig(
+  value: unknown,
+  sourceName = 'workspace.yaml',
+): ConsueloWorkspaceYamlConfig {
+  const result = workspaceYamlConfigSchema.safeParse(value);
+  if (!result.success) throw formatValidationError(sourceName, result.error);
   return result.data;
+}
+
+export function loadWorkspaceYamlConfig(filePath: string): ConsueloWorkspaceYamlConfig {
+  return validateWorkspaceYamlConfig(parseYamlFile(filePath), filePath);
 }
 
 export function loadGlobalYamlConfig(filePath: string): ConsueloGlobalYamlConfig {
@@ -298,15 +367,9 @@ export function createDefaultWorkspaceYamlConfig(input: {
       host: input.workspaceHost,
     },
     defaults: {
-      project: DEFAULT_PROJECT_ID,
       node: 'local',
     },
-    projects: [{
-      id: DEFAULT_PROJECT_ID,
-      name: 'OpenSaaS',
-      repo: DEFAULT_PROJECT_REPO,
-      defaultBranch: DEFAULT_BRANCH,
-    }],
+    projects: [],
     routing: {},
     policy: { allowedAgents: [] },
     sites: {},

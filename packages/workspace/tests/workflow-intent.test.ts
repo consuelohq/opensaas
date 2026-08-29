@@ -76,9 +76,14 @@ describe('Workspace workflow intent bundles', () => {
     const task = workflowById(bundles, 'task');
 
     expect(task.roles).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'workpad.write']));
-    expect(toolNames(task)).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'fs.write']));
+    expect(toolNames(task)).toEqual(expect.arrayContaining(['session.start', 'task.start', 'task.pr', 'fs.write']));
     expect(task.subscriptions).toEqual(
-      expect.arrayContaining([expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ event: 'tool.preInvoke', tool: 'session.start' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'session.start' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.push' }),
+      ]),
     );
 
     expect(bundles.workflows.map((workflow) => workflow.id)).toEqual(['task']);
@@ -117,41 +122,80 @@ describe('Workspace workflow intent bundles', () => {
     }));
     expect(result.hookResult).toEqual(expect.objectContaining({
       workflow: 'task',
-      stage: 'post-task-start-guidance',
+      stage: 'workpad-bootstrap',
       contextInjection: expect.objectContaining({
         taskSession: 'tsk_real_task',
         worktreePath: '/tmp/intent-architecture',
       }),
     }));
-    expect(result.hookResult?.suggestedNextAction.tool).toBe('batch');
+    expect(result.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(result.hookResult?.requiredNextAction.input).toEqual(expect.objectContaining({ append: true, mkdirs: true }));
+    expect(result.hookResult?.requiredNextAction.input.content).toContain('## Test-first contract');
   });
 
-  test('should expose task.start as the sole public task workflow entrypoint', () => {
+  test('should expose session.start as canonical while retaining task.start compatibility', () => {
     const full = readManifest();
     const core = readCoreManifest().tools;
-    const startEntry = full.find((tool) => tool.name === 'task.start');
-    const coreStartEntry = core.find((tool) => tool.name === 'task.start');
+    const sessionEntry = full.find((tool) => tool.name === 'session.start');
+    const taskAlias = full.find((tool) => tool.name === 'task.start');
+    const coreSessionEntry = core.find((tool) => tool.name === 'session.start');
 
     expect(full.map((tool) => tool.name)).not.toContain('task.intent');
     expect(core.map((tool) => tool.name)).not.toContain('task.intent');
-    expect(startEntry).toEqual(expect.objectContaining({
-      name: 'task.start',
-      methodPath: ['task', 'start'],
-      description: "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
-      workflowRole: 'task.start',
-      command: expect.objectContaining({ script: 'task:start' }),
+    expect(sessionEntry).toEqual(expect.objectContaining({
+      name: 'session.start',
+      methodPath: ['session', 'start'],
+      category: 'session lifecycle',
+      command: expect.objectContaining({ script: 'session:start' }),
+      description: expect.stringMatching(/canonical/i),
     }));
-    expect(coreStartEntry).toEqual(expect.objectContaining({
-      name: 'task.start',
+    const sessionArguments = (sessionEntry?.command as { arguments?: Array<{ source?: string; flag?: string }> })?.arguments ?? [];
+    expect(sessionArguments).toContainEqual(expect.objectContaining({ source: 'description', flag: '--description' }));
+    expect(sessionArguments).toContainEqual(expect.objectContaining({ source: 'createStream', flag: '--create-stream' }));
+    expect(coreSessionEntry).toEqual(expect.objectContaining({
+      name: 'session.start',
       core: true,
       definition: expect.objectContaining({
-        name: 'task.start',
-        methodPath: ['task', 'start'],
-        description: "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+        methodPath: ['session', 'start'],
       }),
     }));
-    const commandArguments = (startEntry?.command as { arguments?: Array<{ source?: string; flag?: string }> })?.arguments ?? [];
-    expect(commandArguments).toContainEqual(expect.objectContaining({ source: 'workflow', flag: '--workflow' }));
+    expect(taskAlias).toEqual(expect.objectContaining({
+      name: 'task.start',
+      description: expect.stringMatching(/compatibility alias/i),
+      command: expect.objectContaining({ script: 'task:start' }),
+    }));
+    const sessionStartSchema = getInputSchema('SessionStartInput');
+    expect(sessionStartSchema).not.toBeNull();
+    if (!sessionStartSchema) throw new Error('SessionStartInput schema is unavailable');
+    expect(sessionStartSchema.parse({
+      kind: 'task', area: 'workspace-agents', title: 'canonical task start',
+    })).toMatchObject({ kind: 'task' });
+    const canonicalTask = sessionStartSchema.parse({
+      kind: 'task',
+      area: 'workspace-agents',
+      title: 'canonical task start',
+      workflow: 'task',
+      description: 'kept description',
+      bodyFile: '/tmp/body.md',
+      startFrom: 'stream',
+      createStream: true,
+    });
+    expect(canonicalTask).toMatchObject({
+      kind: 'task',
+      title: 'canonical task start',
+      description: 'kept description',
+      createStream: true,
+    });
+
+    expect(sessionStartSchema.parse({
+      kind: 'work', path: '/tmp/example-work-root',
+    })).toMatchObject({ kind: 'work' });
+    expect(() => sessionStartSchema.parse({
+      kind: 'work', path: '/tmp/example-work-root', area: 'workspace-agents',
+    })).toThrow();
+    expect(() => sessionStartSchema.parse({
+      kind: 'task', area: 'workspace-agents', path: '/tmp/should-not-be-accepted',
+    })).toThrow();
   });
 
   test('should accept workflow selection through the combined task.start input', () => {
@@ -232,12 +276,12 @@ describe('Workspace workflow intent bundles', () => {
     expect(b.hookResult?.contextInjection).toEqual(
       expect.objectContaining({ taskSession: 'tsk_b', worktreePath: '/tmp/worktree-b' }),
     );
-    expect(a.hookResult?.suggestedNextAction.tool).toBe('batch');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('code.call');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('explore');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('Bun structured repo scanner');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('Python targeted file/snippet ownership read');
-    expect(b.hookResult?.suggestedNextAction.tool).toBe('batch');
+    expect(a.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(a.hookResult?.requiredNextAction.taskSession).toBe('tsk_a');
+    expect(a.hookResult?.requiredNextAction.input.path).toContain('agent-a/workpad.md');
+    expect(b.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(b.hookResult?.requiredNextAction.taskSession).toBe('tsk_b');
+    expect(b.hookResult?.requiredNextAction.input.path).toContain('agent-b/workpad.md');
   });
 
   test('should not expose a separate task-intent package command', () => {

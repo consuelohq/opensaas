@@ -553,12 +553,21 @@ describe('DialerCallStartService', () => {
       releaseLockByNumber: jest.fn(),
       isNumberAvailable: jest.fn().mockResolvedValue(true),
     };
+    let observedCallerIdPool: string[] = [];
     const mockDialer = {
       listNumbers: jest.fn().mockResolvedValue([
         {
           phoneNumber: '+12025550123',
+          isPrimary: true,
         },
       ]),
+      resolveCallerId: jest.fn().mockImplementation((_options, numberPool) => {
+        observedCallerIdPool = numberPool.numbers.map(
+          (number: { phoneNumber: string }) => number.phoneNumber,
+        );
+
+        return Promise.resolve({ callerIdNumber: '+12025550123' });
+      }),
       parallel: {
         initiateGroup: jest.fn().mockResolvedValue({
           groupId: 'pg_product',
@@ -610,6 +619,16 @@ describe('DialerCallStartService', () => {
     expect(result.status).toBe('dialing');
     expect(result.twilioGroupId).toBe('pg_product');
     expect(mockDialer.listNumbers).toHaveBeenCalled();
+    expect(mockDialer.resolveCallerId).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: '+14155552671',
+        localPresence: true,
+      }),
+      expect.objectContaining({
+        primaryNumber: expect.objectContaining({ phoneNumber: '+12025550123' }),
+      }),
+    );
+    expect(observedCallerIdPool).toEqual(['+12025550123']);
     expect(mockDialer.parallel.initiateGroup).toHaveBeenCalledWith(
       expect.objectContaining({
         customerNumbers: ['+14155552671'],

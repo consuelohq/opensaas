@@ -4,10 +4,17 @@ export type LauncherLocalAgent = {
   status: 'not_detected' | 'detected' | 'configured' | 'approval_required' | 'verified' | 'failed' | 'unsupported';
 };
 
+export type LauncherExtraSection = {
+  id: string;
+  label: string;
+  links: ReadonlyArray<{ label: string; href: string }>;
+};
+
 export type LauncherOnboardingOptions = {
   mcpUrl: string;
   workspaceHostname?: string | null;
   localAgents?: LauncherLocalAgent[];
+  extraSections?: ReadonlyArray<LauncherExtraSection>;
 };
 
 const CHATGPT_CONNECTORS_URL = 'https://chatgpt.com/apps#settings/Connectors';
@@ -57,7 +64,6 @@ function workspaceHref(hostname: string | null, pathname: string): string {
 
 function workspaceLauncherLinks(hostname: string | null) {
   return [
-    { label: 'Go to market', href: workspaceHref(hostname, '/gtm') },
     { label: 'Artifacts', href: workspaceHref(hostname, '/artifacts') },
     { label: 'Observability', href: workspaceHref(hostname, '/observability') },
     { label: 'Code review', href: workspaceHref(hostname, '/diffs') },
@@ -90,8 +96,17 @@ function navLinks(items: ReadonlyArray<{ label: string; href: string }>): string
     .join('')}</ul>`;
 }
 
+function extraLauncherSections(sections: ReadonlyArray<LauncherExtraSection>): string {
+  return sections.map((section) => `        <section class="section" data-launcher-section="${escapeHtml(section.id)}">
+          <h2 class="section-title">${escapeHtml(section.label)}</h2>
+          ${navLinks(section.links)}
+        </section>
+`).join('');
+}
+
 export function renderLauncherOnboarding(options: LauncherOnboardingOptions): string {
   const localAgents = options.localAgents ?? [];
+  const extraSections = options.extraSections ?? [];
   const workspaceHostname = normalizeWorkspaceHostname(options.workspaceHostname);
   const escapedMcpUrl = escapeHtml(options.mcpUrl);
 
@@ -143,10 +158,11 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
     p { margin: 0; font-size: clamp(18px, 1.8vw, 24px); line-height: 1.5; }
     a { color: inherit; text-decoration-color: color-mix(in srgb, var(--site-color-accent) 70%, transparent); text-underline-offset: 4px; }
     a:hover { color: var(--site-color-accent); }
-    .url-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: 10px; max-width: 820px; }
-    code { display: flex; align-items: center; min-width: 0; padding: 14px 15px; border: 1px solid var(--site-color-line-strong); background: var(--site-color-surface); color: var(--site-color-ink); overflow-x: auto; white-space: nowrap; font: 13px/1.4 var(--site-font-mono); }
-    button { border: 1px solid var(--site-color-ink); background: var(--site-color-ink); color: var(--site-color-paper); padding: 0 18px; min-width: 86px; cursor: pointer; }
-    button:focus-visible { outline: 3px solid var(--site-color-accent); outline-offset: 2px; }
+    .url-copy { display: flex; width: 100%; max-width: 820px; min-width: 0; min-height: 50px; align-items: center; justify-content: space-between; gap: 16px; overflow: hidden; border: 1px solid var(--site-color-ink); border-radius: 0; background: var(--site-color-surface); box-shadow: 3px 3px 0 var(--site-color-line-strong); color: var(--site-color-ink); padding: 14px 15px; cursor: pointer; text-align: left; transform: translate(-1px, -1px); transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 140ms ease; }
+    .url-copy code { min-width: 0; overflow: hidden; color: inherit; font: 13px/1.4 var(--site-font-mono); letter-spacing: 0; text-overflow: ellipsis; white-space: nowrap; }
+    .url-copy span { flex: 0 0 auto; color: inherit; font: 700 11px/1 var(--site-font-mono); letter-spacing: 0.04em; }
+    .url-copy:hover, .url-copy:focus-visible { background: var(--site-color-ink); box-shadow: 1px 1px 0 var(--site-color-line-strong); color: var(--site-color-paper); transform: translate(0, 0); }
+    .url-copy:focus-visible { outline: 3px solid var(--site-color-accent); outline-offset: 3px; }
     .meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 34px; max-width: 760px; }
     .meta-item { display: grid; gap: 6px; }
     .meta-label, .section-title { color: var(--site-color-muted); font-size: 11px; line-height: 1.2; }
@@ -168,8 +184,7 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
       main { grid-template-columns: 1fr; }
       .content { gap: 54px; }
       .panel { border-left: 0; border-top: 1px solid var(--site-color-line); }
-      .url-row, .meta-grid { grid-template-columns: 1fr; }
-      button { min-height: 44px; }
+      .meta-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -180,10 +195,10 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
       <div class="hero">
         <h1>Welcome to Consuelo OS</h1>
         <p>Here is the URL to connect <a href="${CHATGPT_CONNECTORS_URL}" target="_blank" rel="noopener noreferrer">ChatGPT</a> to your workspace.</p>
-        <div class="url-row">
+        <button class="url-copy" type="button" aria-label="Copy MCP URL" data-copy-mcp>
           <code id="mcp-url">${escapedMcpUrl}</code>
-          <button type="button" aria-label="Copy MCP URL" data-copy-target="mcp-url">Copy</button>
-        </div>
+          <span data-copy-label aria-live="polite">COPY</span>
+        </button>
         <dl class="meta-grid" aria-label="Consuelo OS details">
           <div class="meta-item"><dt class="meta-label">Contact</dt><dd class="meta-value"><a href="mailto:support@consuelohq.com">support@consuelohq.com</a></dd></div>
           <div class="meta-item"><dt class="meta-label">Location</dt><dd class="meta-value">USA</dd></div>
@@ -202,7 +217,7 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
           <h2 class="section-title">Sites</h2>
           ${navLinks(workspaceLauncherLinks(workspaceHostname))}
         </section>
-        <section class="section">
+${extraLauncherSections(extraSections)}        <section class="section">
           <h2 class="section-title">Guides and Tips</h2>
           ${navLinks(launcherLinks.guides)}
         </section>
@@ -226,18 +241,31 @@ export function renderLauncherOnboarding(options: LauncherOnboardingOptions): st
     </aside>
   </main>
   <script>
-    document.querySelector('[data-copy-target="mcp-url"]')?.addEventListener('click', async () => {
+    const copyButton = document.querySelector('[data-copy-mcp]');
+    const label = copyButton?.querySelector('[data-copy-label]');
+    copyButton?.addEventListener('click', async () => {
       const value = document.getElementById('mcp-url')?.textContent ?? '';
+      if (!navigator.clipboard) {
+        copyButton.setAttribute('data-copy-status', 'failed');
+        return;
+      }
       try {
         await navigator.clipboard.writeText(value);
       } catch {
-        document.querySelector('[data-copy-target="mcp-url"]')?.setAttribute('data-copy-status', 'failed');
+        copyButton.setAttribute('data-copy-status', 'failed');
+        return;
       }
+      copyButton.setAttribute('data-copy-status', 'copied');
+      if (label instanceof HTMLElement) label.textContent = 'COPIED';
+      window.setTimeout(() => {
+        copyButton.removeAttribute('data-copy-status');
+        if (label instanceof HTMLElement) label.textContent = 'COPY';
+      }, 1500);
     });
 
     const launcherWorkspaceHost = ${JSON.stringify(workspaceHostname)};
     const workspaceHost = window.location.hostname.toLowerCase();
-    if (launcherWorkspaceHost && workspaceHost === launcherWorkspaceHost) {
+    if (!launcherWorkspaceHost || workspaceHost === launcherWorkspaceHost) {
       const agentStatusUrl = new URL('https://os.consuelohq.com/workspace/agents');
       agentStatusUrl.searchParams.set('workspace_host', workspaceHost);
       fetch(agentStatusUrl.toString(), {

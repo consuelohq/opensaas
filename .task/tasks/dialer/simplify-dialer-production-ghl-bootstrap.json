@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/simplify-dialer-production-ghl-bootstrap",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1966,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1966",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1966",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1966/simplify-dialer-production-ghl-bootstrap",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1966",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1966/simplify-dialer-production-ghl-bootstrap",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-simplify-dialer-production-ghl-bootstrap",
+  "taskSession": "tsk_351036f273dd",
+  "tmuxSession": "opensaas-dialer-simplify-dialer-production-ghl-bootstrap-351036f2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-simplify-dialer-production-ghl-bootstrap/.task/dialer/simplify-dialer-production-ghl-bootstrap/session.json",
+  "createdAt": "2026-08-14T20:32:55.332Z"
+}

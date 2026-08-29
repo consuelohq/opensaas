@@ -1,4 +1,5 @@
 import { redactJson } from '../redaction';
+import { currentTraceRoutingContext } from '../trace-routing-context';
 import { recordToolTraceSafely, type TraceEnvironment } from '../trace-persistence';
 import type { ToolCapabilities } from './types';
 
@@ -30,6 +31,8 @@ export function logToolExecution(entry: {
   branch?: string;
   taskSession?: string;
   worktree?: string;
+  workSession?: string;
+  workPath?: string;
   mcpTraceId?: string;
   command: string;
   implementationCommand?: string;
@@ -77,6 +80,8 @@ export function logToolExecution(entry: {
     taskSession: entry.taskSession,
     branch: entry.branch,
     worktree: entry.worktree,
+    workSession: entry.workSession,
+    workPath: entry.workPath,
     status: entry.ok ? 'ok' : 'error',
     ok: entry.ok,
     code: entry.code,
@@ -89,5 +94,6 @@ export function logToolExecution(entry: {
     inputTokens: entry.inputTokens,
     outputTokens: entry.outputTokens,
     totalTokens: entry.totalTokens,
+    routing: currentTraceRoutingContext(),
   }, { env: entry.env });
 }

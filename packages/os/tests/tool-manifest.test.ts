@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
@@ -5,7 +6,7 @@ import { join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildToolManifest, generateToolManifest } from '../scripts/generate-tool-manifest';
-import { getInputSchema, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
+import { getInputSchema, outputTypeSignatures, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 import { runToolSearch } from '../scripts/tools-search';
 
 type JsonObject = Record<string, unknown>;
@@ -24,13 +25,14 @@ type SearchResult = {
 
 const packageRoot = join(import.meta.dirname, '..');
 const baselineDefinitions = (JSON.parse(readFileSync(join(import.meta.dirname, 'fixtures/tool-package-baseline.json'), 'utf8')) as { definitions: JsonObject[] }).definitions;
-const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
+const expectedCodeCallDescription = "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
 
 const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
-  'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
-  'task.start': "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+  'fs.trash': 'move files to trash inside an authorized task worktree or work-session directory',
+  'session.start': 'Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.',
+  'task.start': 'Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.',
 } as const;
 const removedCoreToolNames = [
   'context',
@@ -80,6 +82,8 @@ const retainedCoreToolNames = [
   'fs.apply_patch',
   'fs.trash',
   'github',
+  'google',
+  'session.start',
   'task.start',
   'review.run',
   'stream.context',
@@ -245,11 +249,11 @@ describe('tool manifest generator', () => {
     const registry = buildToolManifest({ write: false });
     const generatedDefinitions = registry.full.tools.map((entry) => entry.definition);
     expect(generatedDefinitions).toEqual(baselineDefinitions);
-    expect(registry.full.tools).toHaveLength(154);
+    expect(registry.full.tools).toHaveLength(baselineDefinitions.length);
     expect(registry.report.oldRegularToolCount).toBe(0);
-    expect(registry.report.oldDevToolCount).toBe(154);
+    expect(registry.report.oldDevToolCount).toBe(baselineDefinitions.length);
     expect(registry.report.duplicateNames).toEqual([]);
-    expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'media.svg.convert']));
+    expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'google', 'media.svg.convert']));
     expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
     expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });
@@ -357,6 +361,46 @@ describe('tool manifest generator', () => {
     expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain(`task.${'exec'}`);
   });
 
+  it('should keep task.pr facade input and command mapping aligned when the CLI exposes the workpad escape hatch', () => {
+    // Arrange
+    const schema = getInputSchema('TaskPrInput');
+    const registry = buildToolManifest({ write: false });
+    const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    const generatedTypes = readFileSync(join(import.meta.dirname, '../src/generated/workspace.d.ts'), 'utf8');
+    const taskPrSource = readFileSync(join(packageRoot, 'scripts/task-pr.js'), 'utf8');
+
+    // Act
+    const parsed = schema.safeParse({ ackWorkpadIncomplete: true, repo: 'example/private-repo' });
+    const argumentsList = taskPr?.definition.command?.arguments;
+    const cli = spawnSync(process.execPath, [join(packageRoot, 'scripts/task-pr.js'), '--ack-workpad-incomplete', '--help'], {
+      cwd: packageRoot,
+      encoding: 'utf8',
+    });
+
+    // Assert
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true, repo: 'example/private-repo' }));
+    expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(schemaTypeSignatures.TaskPrInput).toContain('repo?: string');
+    expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('repo?: string');
+    expect(argumentsList).toContainEqual({
+      source: 'ackWorkpadIncomplete',
+      flag: '--ack-workpad-incomplete',
+      kind: 'boolean',
+    });
+    expect(argumentsList).toContainEqual({
+      source: 'repo',
+      flag: '--repo',
+      kind: 'value',
+    });
+    expect(cli.status).toBe(0);
+    expect(cli.stdout).toContain('--ack-workpad-incomplete');
+    expect(taskPrSource).toContain("const { assertWorkpadReady } = require('./lib/task-workpad');");
+    expect(taskPrSource).toContain('ackIncomplete: args.ackWorkpadIncomplete');
+  });
+
   it('keeps OS task start wired to the OS runtime surface', () => {
     const registry = buildToolManifest({ write: false });
     const startEntry = registry.full.tools.find((entry) => entry.name === 'task.start');
@@ -413,6 +457,14 @@ describe('tool manifest generator', () => {
     expect(generatedWorkspace).toContain('patchText?: string');
     expect(generatedWorkspace).not.toContain('fs.patch');
     expect(generatedClient).toContain('createWorkspaceClient');
+  });
+
+  it('exposes subagent token usage in generated TypeScript surfaces', () => {
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+    const expectedUsage = 'usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }';
+
+    expect(outputTypeSignatures.SubagentOutput).toContain(expectedUsage);
+    expect(generatedWorkspace).toContain(expectedUsage);
   });
 
   it('publishes one non-core provider-neutral deployment surface and generated client types', () => {
@@ -496,7 +548,7 @@ describe('tool manifest generator', () => {
 
   it('keeps the generated catalog limited to canonical facade packages', () => {
     const registry = buildToolManifest({ write: false });
-    expect(registry.full.tools).toHaveLength(154);
+    expect(registry.full.tools).toHaveLength(baselineDefinitions.length);
     expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
     expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });

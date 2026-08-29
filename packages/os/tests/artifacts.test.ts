@@ -8,6 +8,7 @@ import {
   importLegacyArtifactArchive,
   publishArtifact,
   readArtifactCatalog,
+  reconcileArtifactCurrentTree,
   rollbackArtifact,
 } from '../scripts/lib/artifacts';
 
@@ -128,6 +129,69 @@ describe('Consuelo Artifacts', () => {
     expect(rolledBack.artifact.versionCount).toBe(3);
     expect(rolledBack.version.restoredFromVersionId).toBe(first.artifact.currentVersionId);
     expect(readFileSync(rolledBack.version.localPath, 'utf8')).toContain('Rollback one');
+  });
+
+  it('rebuilds missing nested current artifacts from immutable current versions', () => {
+    const child = publishArtifact({
+      home,
+      target: writeHtml('repair-child.html', '<h1>Nested child</h1>'),
+      path: '/daily-schedules/2026-08-25/self-healing',
+      title: 'Nested child',
+      category: 'daily-schedule:self-healing-workpad',
+      template: 'uncategorized',
+      now: '2026-08-26T02:00:00.000Z',
+    });
+    publishArtifact({
+      home,
+      target: writeHtml('repair-parent.html', '<h1>Daily Schedules</h1>'),
+      path: '/daily-schedules',
+      title: 'Daily Schedules',
+      category: 'daily-schedules',
+      template: 'website',
+      now: '2026-08-26T02:01:00.000Z',
+    });
+
+    const childCurrent = join(
+      home,
+      'artifacts',
+      'current',
+      'daily-schedules',
+      '2026-08-25',
+      'self-healing',
+    );
+    rmSync(childCurrent, { recursive: true, force: true });
+    expect(existsSync(join(childCurrent, 'index.html'))).toBe(false);
+
+    expect(reconcileArtifactCurrentTree(home)).toBe(2);
+    expect(readFileSync(join(childCurrent, 'index.html'), 'utf8')).toContain('Nested child');
+    expect(readFileSync(child.version.localPath, 'utf8')).toContain('Nested child');
+  });
+
+  it('keeps all Daily Schedules descendants off the main Artifacts index', () => {
+    publishArtifact({
+      home,
+      target: writeHtml('legacy-daily-report.html', '<h1>Legacy daily report</h1>'),
+      path: '/daily-schedules/2026-08-17/self-healing-report',
+      title: 'Legacy daily report',
+      category: 'daily-schedules',
+      template: 'uncategorized',
+      now: '2026-08-26T02:10:00.000Z',
+    });
+    publishArtifact({
+      home,
+      target: writeHtml('daily-index.html', '<h1>Daily Schedules</h1>'),
+      path: '/daily-schedules',
+      title: 'Daily Schedules',
+      category: 'daily-schedules',
+      template: 'website',
+      now: '2026-08-26T02:11:00.000Z',
+    });
+
+    const indexHtml = readFileSync(join(home, 'sites', 'artifacts', 'index.html'), 'utf8');
+    expect(indexHtml).toContain('href="/artifacts/daily-schedules"');
+    expect(indexHtml).not.toContain(
+      'href="/artifacts/daily-schedules/2026-08-17/self-healing-report"',
+    );
   });
 
   it('imports the legacy Office archive once with catalog and file parity', () => {

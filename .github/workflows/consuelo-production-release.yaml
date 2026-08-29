@@ -18,9 +18,15 @@ on:
           - docs
           - website
           - os
+          - os-device-auth
           - dialer
       migrate_mcp_origin_waf:
         description: Migrate the managed OS MCP rules to the canonical connector-origin hostname class.
+        required: false
+        default: false
+        type: boolean
+      reconcile_mcp_ingress_policy:
+        description: Reconcile the managed OS/workspace MCP source-IP rules with the current security policy.
         required: false
         default: false
         type: boolean
@@ -136,7 +142,7 @@ jobs:
     needs: [deploy-docs, deploy-website]
     if: >-
       always() &&
-      (github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'os') &&
+      (github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'os' || inputs.target == 'os-device-auth') &&
       (needs.deploy-docs.result == 'success' || needs.deploy-docs.result == 'skipped') &&
       (needs.deploy-website.result == 'success' || needs.deploy-website.result == 'skipped')
     environment: consuelo / production
@@ -155,22 +161,6 @@ jobs:
 
       - name: Install Wrangler
         run: bun install --global wrangler@4.105.0
-
-      - name: Sync Consuelo OS connector provisioning secret
-        run: |
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN"
-            exit 1
-          fi
-          if [ -z "${CLOUDFLARE_OS_PROVISIONING_API_TOKEN:-}" ]; then
-            echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_PROVISIONING_API_TOKEN"
-            exit 1
-          fi
-          printf '%s' "${CLOUDFLARE_OS_PROVISIONING_API_TOKEN}" |
-            wrangler secret put CLOUDFLARE_API_TOKEN --config packages/os/cloudflare/os-device-authority/wrangler.toml
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
-          CLOUDFLARE_OS_PROVISIONING_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_PROVISIONING_API_TOKEN }}
 
       - name: Release Consuelo OS
         run: |
@@ -192,14 +182,47 @@ jobs:
             echo "::error::Missing OS release trust anchors (CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS or signing key id + public key)"
             exit 1
           fi
-          bun run os:release
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" || "${{ inputs.target }}" != "os-device-auth" ]]; then
+            if [ -z "${CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN:-}" ]; then
+              echo "::error::Missing GitHub Actions secret CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN"
+              exit 1
+            fi
+            CLOUDFLARE_API_TOKEN="${CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN}" \
+              wrangler d1 execute consuelo-workspace-route-registry \
+                --remote \
+                --config packages/os/cloudflare/workspace-edge/wrangler.toml \
+                --command "SELECT 1 AS ok" >/dev/null
+          fi
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.target }}" == "os-device-auth" ]]; then
+            bun run os:release -- --device-auth-only
+          else
+            bun run os:release
+          fi
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN }}
+          OS_MANAGED_CLOUD_PROVISIONER_SECRET: ${{ secrets.OS_MANAGED_CLOUD_PROVISIONER_SECRET }}
           CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
           CONSUELO_OS_RELEASE_SIGNING_KEY_ID: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_KEY_ID }}
           CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY: ${{ vars.CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY }}
           CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS: ${{ vars.CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS }}
+
+      - name: Sync Consuelo OS connector provisioning secret
+        run: |
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN"
+            exit 1
+          fi
+          if [ -z "${CLOUDFLARE_OS_PROVISIONING_API_TOKEN:-}" ]; then
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_OS_PROVISIONING_API_TOKEN"
+            exit 1
+          fi
+          printf '%s' "${CLOUDFLARE_OS_PROVISIONING_API_TOKEN}" |
+            wrangler secret put CLOUDFLARE_API_TOKEN --config packages/os/cloudflare/os-device-authority/wrangler.toml
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CLOUDFLARE_OS_PROVISIONING_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_PROVISIONING_API_TOKEN }}
 
       - name: Migrate managed OS MCP connector-origin WAF class
         if: github.event_name == 'workflow_dispatch' && inputs.migrate_mcp_origin_waf
@@ -214,6 +237,23 @@ jobs:
           CLOUDFLARE_ZONE_ID: 3787f63d39977227bc1cb346e0d67dc9
           OS_DEVICE_AUTH_BASE_DOMAIN: consuelohq.com
 
+      - name: Reconcile managed OS MCP ingress policy
+        if: github.event_name == 'workflow_dispatch' && inputs.reconcile_mcp_ingress_policy
+        run: |
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error::Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID"
+            exit 1
+          fi
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error::Missing GitHub Actions secret CLOUDFLARE_WAF_API_TOKEN"
+            exit 1
+          fi
+          bun packages/os/scripts/provision-managed-os-mcp-ingress-policy.ts --base-domain consuelohq.com --json
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WAF_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: 3787f63d39977227bc1cb346e0d67dc9
+          CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME: mcp_allowed_ips
   release-dialer:
     name: Consuelo / dialer production release
     needs: dialer-changes
@@ -255,9 +295,7 @@ jobs:
           RAILWAY_DIALER_PUBLIC_ORIGIN: ${{ vars.RAILWAY_DIALER_PUBLIC_ORIGIN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
-          LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN: ${{ secrets.LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN }}
-          LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID }}
-          LEADCONNECTOR_PRODUCTION_LOCATION_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_LOCATION_ID }}
+          LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256: ${{ vars.LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 }}
           LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
         run: |
           set -euo pipefail
@@ -269,15 +307,21 @@ jobs:
             RAILWAY_DIALER_PUBLIC_ORIGIN \
             CLOUDFLARE_ACCOUNT_ID \
             CLOUDFLARE_API_TOKEN \
-            LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN \
-            LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID \
-            LEADCONNECTOR_PRODUCTION_LOCATION_ID \
+            LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 \
             LEADCONNECTOR_PRODUCTION_EMBED_URL; do
             if [[ -z "${!name:-}" ]]; then
               echo "::error::Missing dialer production deployment setting: ${name}"
               exit 1
             fi
           done
+
+      - name: Verify approved Marketplace bootstrap source
+        env:
+          LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256: ${{ vars.LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 }}
+        run: >-
+          bun packages/lead-connector/scripts/verify-marketplace-bootstrap.ts
+          packages/lead-connector/dist/embed-app/consuelo-lead-connector-click-to-call.marketplace-loader.html
+          > "$RUNNER_TEMP/leadconnector-marketplace-bootstrap.json"
 
       - name: Link Railway release target
         env:
@@ -365,23 +409,13 @@ jobs:
           bun packages/lead-connector/scripts/verify-production-edge.ts
           > "$RUNNER_TEMP/leadconnector-edge.json"
 
-      - name: Reconcile GoHighLevel Custom Menu
-        env:
-          LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN: ${{ secrets.LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN }}
-          LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID }}
-          LEADCONNECTOR_PRODUCTION_LOCATION_ID: ${{ vars.LEADCONNECTOR_PRODUCTION_LOCATION_ID }}
-          LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
-        run: >-
-          bun packages/lead-connector/scripts/configure-production-menu.ts
-          > "$RUNNER_TEMP/leadconnector-menu.json"
-
       - name: Write dialer release manifest
         run: >-
           bun packages/dialer-server/scripts/write-release-manifest.ts
           --railway "$RUNNER_TEMP/railway-deployment.json"
           --cloudflare "$RUNNER_TEMP/cloudflare-deployment.json"
           --edge "$RUNNER_TEMP/leadconnector-edge.json"
-          --custom-menu "$RUNNER_TEMP/leadconnector-menu.json"
+          --launcher-bootstrap "$RUNNER_TEMP/leadconnector-marketplace-bootstrap.json"
           --smoke "$RUNNER_TEMP/dialer-smoke.json"
           --build-marker packages/lead-connector/dist/embed-app/build-marker.json
           --output "$RUNNER_TEMP/dialer-release-manifest.json"
@@ -397,4 +431,4 @@ jobs:
       - name: Publish dialer release summary
         run: |
           echo "### Consuelo Dialer production release" >> "$GITHUB_STEP_SUMMARY"
-          jq -r '"- Git SHA: `\(.gitSha)`\n- Railway deployment: `\(.railway.deploymentId)` (`\(.railway.status)`)\n- Cloudflare version: `\(.cloudflare.versionId)`\n- GHL Custom Menu: `\(.customMenu.customMenuId)` read-back=`\(.customMenu.readBackVerified)`\n- Safe smoke: `\(.smoke.ok)`"' "$RUNNER_TEMP/dialer-release-manifest.json" >> "$GITHUB_STEP_SUMMARY"
+          jq -r '"- Git SHA: `\(.gitSha)`\n- Railway deployment: `\(.railway.deploymentId)` (`\(.railway.status)`)\n- Cloudflare version: `\(.cloudflare.versionId)`\n- Marketplace bootstrap SHA-256: `\(.launcherBootstrap.sha256)` (one-time install)\n- Safe smoke: `\(.smoke.ok)`"' "$RUNNER_TEMP/dialer-release-manifest.json" >> "$GITHUB_STEP_SUMMARY"

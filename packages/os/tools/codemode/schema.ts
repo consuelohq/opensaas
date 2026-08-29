@@ -13,6 +13,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired",
@@ -25,7 +26,7 @@ export const toolSchemas = [
         "code",
         "call"
       ],
-      "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
+      "description": "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
       "category": "codemode",
       "underlying": "os code.call",
       "capabilities": {
@@ -37,6 +38,9 @@ export const toolSchemas = [
       "defaultTimeout": 180000,
       "inputSchema": "CodeCallInput",
       "outputSchema": "CodeCallOutput",
+      "search": {
+        "keywords": ["structured", "multi", "summarize", "summary", "packet", "bounded", "transform", "transformation", "rewrite", "codemod", "codegen", "generate", "python", "bun", "bash", "test", "tests", "typecheck", "syntax", "cli", "reproduction", "diagnostic", "json", "script", "scripts", "package", "packages"]
+      },
       "exampleInput": {
         "language": "bun",
         "mode": "read",

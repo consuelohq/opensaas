@@ -142,6 +142,34 @@ function compactSkill(skill: JsonObject): JsonObject {
   return compact;
 }
 
+function portableSkillMetadata(skillDir: string, skillName: string): JsonObject {
+  const skill = readJsonObject(path.join(skillDir, 'skill.json'));
+  const entrypoint =
+    typeof skill.entrypoint === 'string' && skill.entrypoint.trim()
+      ? skill.entrypoint.trim()
+      : 'SKILL.md';
+  const load = isJsonObject(skill.load) ? skill.load : {};
+  return {
+    ...skill,
+    entrypoint,
+    load: {
+      ...load,
+      type: typeof load.type === 'string' ? load.type : 'resource',
+      path: `skills/${skillName}/${entrypoint}`,
+    },
+  };
+}
+
+function portableSkillTree(skillDir: string, skillName: string): ComponentTree {
+  const content = treeFromDirectory(skillDir);
+  content['skill.json'] = `${JSON.stringify(
+    portableSkillMetadata(skillDir, skillName),
+    null,
+    2,
+  )}\n`;
+  return content;
+}
+
 function bundledSkillId(skillDir: string): string {
   const metadata = readJsonObject(path.join(skillDir, 'skill.json'));
   return typeof metadata.name === 'string' && metadata.name.trim()
@@ -345,7 +373,8 @@ export function provisionManagedComponentIndexes(input: {
 
   for (const skillDir of listBundledSkillDirs()) {
     const id = bundledSkillId(skillDir);
-    const content = treeFromDirectory(skillDir);
+    const metadata = portableSkillMetadata(skillDir, id);
+    const content = portableSkillTree(skillDir, id);
     const sourcePath = packageRelative(skillDir);
     const source: ManagedComponentSource = {
       id,
@@ -363,7 +392,7 @@ export function provisionManagedComponentIndexes(input: {
         ownership: 'bundled-managed',
         sourcePath,
         contentHash: hashComponentTree(content),
-        ...compactSkill(readJsonObject(path.join(skillDir, 'skill.json'))),
+        ...compactSkill(metadata),
       });
       if (input.dryRun) {
         actions.push({

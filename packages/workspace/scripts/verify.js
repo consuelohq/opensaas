@@ -31,6 +31,7 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --base <ref>           compare against ref (default: task branch stamp base, then stream, then origin/main)');
+  writeStdout('  --committed-only-tests select tests only from base...HEAD; ignore install/workspace noise');
   writeStdout('  --debug-skip-review   debug only: skip review; never writes publish-valid stamp');
   writeStdout('  --debug-skip-db       debug only: skip db guardrails; never writes publish-valid stamp');
   writeStdout('  --db-warn-only        debug only: report db guard errors as warnings; never publish-valid');
@@ -50,6 +51,7 @@ function parseArgs(argv) {
     review: true,
     reviewArgs: [],
     stamp: true,
+    committedOnlyTests: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -62,6 +64,7 @@ function parseArgs(argv) {
     const [flag, inlineValue] = rawArgument.split('=', 2);
     const knownFlags = [
       '--base',
+      '--committed-only-tests',
       '--db-warn-only',
       '--debug-skip-db',
       '--debug-skip-review',
@@ -76,6 +79,7 @@ function parseArgs(argv) {
     }
     const isBooleanFlag = [
       '--db-warn-only',
+      '--committed-only-tests',
       '--help',
       '--json',
       '--debug-skip-db',
@@ -109,6 +113,9 @@ function parseArgs(argv) {
         break;
       case '--db-warn-only':
         args.dbWarnOnly = true;
+        break;
+      case '--committed-only-tests':
+        args.committedOnlyTests = true;
         break;
       case '--no-stamp':
         args.stamp = false;
@@ -234,6 +241,7 @@ function readChangedFiles(repoRoot, base) {
 }
 
 const REVIEW_STDERR_LIMIT = 4000;
+const REGISTRY_FAILURE_OUTPUT_LIMIT = 2000;
 
 function compactText(text, limit = REVIEW_STDERR_LIMIT) {
   const value = String(text || '');
@@ -242,6 +250,19 @@ function compactText(text, limit = REVIEW_STDERR_LIMIT) {
     chars: value.length,
     truncated: value.length > limit,
   };
+}
+
+function compactRegistryFailureOutput(text) {
+  const value = String(text || '')
+    .replace(/\u001b\[[0-9;]*m/g, '')
+    .replace(/gh[ops]_[A-Za-z0-9_]+/g, '<redacted-token>')
+    .trim();
+  if (!value) return [];
+
+  const tail = value.length > REGISTRY_FAILURE_OUTPUT_LIMIT
+    ? `... truncated ${value.length - REGISTRY_FAILURE_OUTPUT_LIMIT} chars\n${value.slice(-REGISTRY_FAILURE_OUTPUT_LIMIT)}`
+    : value;
+  return tail.split(/\r?\n/).filter(Boolean);
 }
 
 function countFindings(value) {
@@ -313,8 +334,11 @@ function runReview(repoRoot, base, args) {
 }
 
 
-function runTestSelection(repoRoot, base) {
-  const result = spawnSync('bun', ['packages/workspace/scripts/test-selection.js', 'check', '--base', base, '--run', '--json'], {
+function runTestSelection(repoRoot, base, args) {
+  const selectionArgs = ['packages/workspace/scripts/test-selection.js', 'check', '--base', base];
+  if (args.committedOnlyTests) selectionArgs.push('--committed-only');
+  selectionArgs.push('--run', '--json');
+  const result = spawnSync('bun', selectionArgs, {
     cwd: repoRoot,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -400,6 +424,19 @@ function createBecause(result) {
     const matched = Array.isArray(selection.matchedRules) ? selection.matchedRules.map((rule) => rule.id).join(', ') : '';
     if (suiteCount > 0) {
       lines.push(`registry selected ${suiteCount} suite${suiteCount === 1 ? '' : 's'}${matched ? ` from ${matched}` : ''} and ${result.testSelection.passed ? 'passed' : 'failed'}`);
+      const registryFailures = Array.isArray(selection.failedSuites)
+        ? selection.failedSuites
+        : [];
+      for (const failure of registryFailures) {
+        const name = failure && failure.name ? String(failure.name) : 'unnamed suite';
+        const exitCode = Number.isInteger(failure && failure.exitCode)
+          ? failure.exitCode
+          : 'unknown';
+        lines.push(`registry failure: ${name} (exit ${exitCode})`);
+        for (const outputLine of compactRegistryFailureOutput(failure && failure.outputTail)) {
+          lines.push(`registry output: ${outputLine}`);
+        }
+      }
     } else if (selection.zeroSuiteReason) {
       lines.push(`registry selected 0 suites because ${selection.zeroSuiteReason}`);
     } else {
@@ -512,7 +549,7 @@ async function main() {
   const files = readChangedFiles(repoRoot, base);
   const headSha = getRefSha(repoRoot, 'HEAD');
   const review = runReview(repoRoot, base, args);
-  const testSelection = runTestSelection(repoRoot, base);
+  const testSelection = runTestSelection(repoRoot, base, args);
   const db = createDbResult(files, args);
   const passed = review.passed && testSelection.passed && db.passed;
   const mode = review.skipped || db.skipped || args.dbWarnOnly ? 'partial' : 'full';

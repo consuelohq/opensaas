@@ -21,9 +21,18 @@ describe('launcher onboarding', () => {
     expect(html).toContain('to your workspace.');
     expect(html).toContain('href="https://chatgpt.com/apps#settings/Connectors"');
     expect(html).toContain('>ChatGPT</a>');
+    expect(html).toContain('<button class="url-copy" type="button" aria-label="Copy MCP URL" data-copy-mcp>');
     expect(html).toContain('<code id="mcp-url">https://kokayi.consuelohq.com/mcp</code>');
-    expect(html).toContain('type="button"');
-    expect(html).toContain('aria-label="Copy MCP URL"');
+    expect(html).toContain('<span data-copy-label aria-live="polite">COPY</span>');
+    expect(html).toContain("document.querySelector('[data-copy-mcp]')");
+    expect(html).toContain('if (!navigator.clipboard)');
+    expect(html).toContain('await navigator.clipboard.writeText(value)');
+    expect(html).toContain("label.textContent = 'COPIED'");
+    expect(html).toContain("label.textContent = 'COPY'");
+    expect(html).toContain('}, 1500);');
+    expect(html).toContain('.url-copy:hover, .url-copy:focus-visible');
+    expect(html).not.toContain('data-copy-target="mcp-url"');
+    expect(html).not.toContain('<div class="url-row">');
     expect(html).toContain('support@consuelohq.com');
     expect(html).toContain('USA');
     expect(html).toContain('Online');
@@ -37,10 +46,9 @@ describe('launcher onboarding', () => {
     expect(html).not.toContain('href="/configuration"');
     expect(html).not.toContain('<h2 class="section-title">Settings</h2>');
     expect(html).toContain('Sites');
-    expect(html).toContain('Go to market');
+    expect(html).not.toContain('Go to market');
     expect(html).toContain('Artifacts');
     expect(html).toContain('Observability');
-    expect(html).toContain('href="https://internal.consuelohq.com/gtm"');
     expect(html).toContain('href="https://internal.consuelohq.com/artifacts"');
     expect(html).toContain('href="https://internal.consuelohq.com/observability"');
     expect(html).toContain('href="https://internal.consuelohq.com/diffs"');
@@ -102,18 +110,62 @@ describe('launcher onboarding', () => {
     expect(html).toContain('data-agent-fallback');
   });
 
+  it('renders escaped local launcher sections after Sites and before Guides', () => {
+    const html = renderLauncherOnboarding({
+      mcpUrl: 'https://os.consuelohq.com/mcp',
+      workspaceHostname: 'internal.consuelohq.com',
+      extraSections: [{
+        id: 'internal',
+        label: 'Internal <ops>',
+        links: [{
+          label: 'Users & installs <private>',
+          href: 'https://internal.consuelohq.com/users?view=a&scope=b',
+        }],
+      }],
+    });
+
+    expect(html).toContain('<h2 class="section-title">Internal &lt;ops&gt;</h2>');
+    expect(html).toContain('Users &amp; installs &lt;private&gt;');
+    expect(html).toContain('href="https://internal.consuelohq.com/users?view=a&amp;scope=b"');
+    expect(html).not.toContain('Internal <ops>');
+    expect(html).not.toContain('Users & installs <private>');
+
+    const sitesIndex = html.indexOf('<h2 class="section-title">Sites</h2>');
+    const internalIndex = html.indexOf('<h2 class="section-title">Internal &lt;ops&gt;</h2>');
+    const guidesIndex = html.indexOf('<h2 class="section-title">Guides and Tips</h2>');
+    expect(internalIndex).toBeGreaterThan(sitesIndex);
+    expect(guidesIndex).toBeGreaterThan(internalIndex);
+  });
+
   it('derives every product link from an arbitrary authenticated customer workspace', () => {
     const html = renderLauncherOnboarding({
       mcpUrl: 'https://os.consuelohq.com/mcp',
       workspaceHostname: 'acme.consuelohq.com',
     });
 
-    for (const path of ['/gtm', '/artifacts', '/observability', '/diffs']) {
+    for (const path of ['/artifacts', '/observability', '/diffs']) {
       expect(html).toContain(`href="https://acme.consuelohq.com${path}"`);
     }
+    expect(html).not.toContain('href="https://acme.consuelohq.com/gtm"');
     expect(html).not.toContain('internal.consuelohq.com');
     expect(html).not.toContain('sites.consuelohq.com');
     expect(html).not.toContain('app.consuelohq.com');
+  });
+
+  it('renders a host-neutral release snapshot that resolves live workspace state from the request host', () => {
+    const html = renderLauncherOnboarding({
+      mcpUrl: 'https://os.consuelohq.com/mcp',
+      workspaceHostname: null,
+      localAgents: [],
+    });
+
+    expect(html).toContain('href="/artifacts"');
+    expect(html).toContain('href="/observability"');
+    expect(html).toContain('href="/diffs"');
+    expect(html).not.toContain('testing.consuelohq.com');
+    expect(html).toContain('const launcherWorkspaceHost = null');
+    expect(html).toContain('if (!launcherWorkspaceHost || workspaceHost === launcherWorkspaceHost)');
+    expect(html).toContain("agentStatusUrl.searchParams.set('workspace_host', workspaceHost)");
   });
 
   it('rejects non-workspace hosts instead of generating a global fallback', () => {

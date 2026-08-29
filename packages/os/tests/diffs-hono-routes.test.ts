@@ -1,0 +1,337 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  resolveConsueloHomeLayout,
+  stringifyYamlConfig,
+  type ConsueloWorkspaceYamlConfig,
+} from '../scripts/lib/consuelo-home';
+import {
+  createGatewaySecurityConfig,
+  issueAgentAppToken,
+  signMachineRequest,
+  type AgentAppToken,
+  type GatewaySecurityConfig,
+} from '../scripts/lib/security-gateway';
+import { generateWorkspaceDeviceKeyPair } from '../scripts/lib/workspace-device-login-client';
+import { handleRequest } from '../scripts/server/app';
+
+const workspaceId = 'wrk_diffs_hono';
+let home = '';
+let config: GatewaySecurityConfig;
+let token: AgentAppToken;
+
+function configuredWorkspace(projects: ConsueloWorkspaceYamlConfig['projects'] = [{
+  id: 'app',
+  name: 'App',
+  repo: 'acme/app',
+  defaultBranch: 'main',
+  provider: 'github',
+  connectionRef: 'github-app:primary',
+}]): ConsueloWorkspaceYamlConfig {
+  return {
+    version: 1,
+    workspace: {
+      id: workspaceId,
+      name: 'Diffs Workspace',
+      slug: 'diffs-workspace',
+      host: 'diffs-workspace.consuelohq.com',
+    },
+    defaults: { ...(projects.length > 0 ? { project: projects[0]!.id } : {}), node: 'local' },
+    projects,
+    routing: {},
+    policy: { allowedAgents: [] },
+    sites: {},
+    agents: { defaults: [] },
+  };
+}
+
+function writeWorkspace(value: ConsueloWorkspaceYamlConfig): void {
+  const workspacePath = resolveConsueloHomeLayout(home).workspaceConfigPath(workspaceId);
+  mkdirSync(dirname(workspacePath), { recursive: true });
+  writeFileSync(workspacePath, stringifyYamlConfig(value), 'utf8');
+}
+
+function signedRequest(input: {
+  method: 'GET' | 'POST';
+  path: string;
+  body?: string;
+  token?: AgentAppToken;
+  nonce?: string;
+}): Request {
+  const body = input.body ?? '';
+  const activeToken = input.token ?? token;
+  const signed = signMachineRequest({
+    config,
+    token: activeToken,
+    method: input.method,
+    path: input.path,
+    body,
+    timestamp: new Date().toISOString(),
+    nonce: input.nonce ?? crypto.randomUUID(),
+  });
+  return new Request(`http://127.0.0.1:46321${input.path}`, {
+    method: input.method,
+    headers: signed.headers,
+    body: input.method === 'POST' ? body : undefined,
+  });
+}
+
+beforeEach(() => {
+  home = mkdtempSync(join(tmpdir(), 'consuelo-diffs-hono-'));
+  writeWorkspace(configuredWorkspace());
+  config = createGatewaySecurityConfig({
+    home,
+    workspaceId,
+    workspaceSlug: 'diffs-workspace',
+    workspaceHost: 'diffs-workspace.consuelohq.com',
+  });
+  token = issueAgentAppToken({
+    config,
+    callerId: 'caller_diffs_hono',
+    appId: 'app_diffs_hono',
+    subjectId: 'subject_diffs_hono',
+    deviceId: 'device_diffs_hono',
+    connectorId: 'connector_diffs_hono',
+    connectionId: 'connection_diffs_hono',
+    scopes: ['route:/gateway/diffs:read', 'route:/gateway/diffs:write'],
+    expiresInSeconds: 300,
+  });
+  process.env.CONSUELO_HOME = home;
+  process.env.CONSUELO_OS_HOME = home;
+  process.env.CONSUELO_OS_AUTH_CONFIG = config.generatedAuthPath;
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  delete process.env.CONSUELO_HOME;
+  delete process.env.CONSUELO_OS_HOME;
+  delete process.env.CONSUELO_OS_AUTH_CONFIG;
+  if (home) rmSync(home, { recursive: true, force: true });
+  home = '';
+});
+
+describe('Hono Diffs routes', () => {
+  it('uses a managed GitHub installation credential without exposing it to the browser', async () => {
+    writeWorkspace(configuredWorkspace([{
+      id: 'app',
+      name: 'App',
+      repo: 'acme/app',
+      defaultBranch: 'main',
+      provider: 'github',
+      connectionRef: 'github-installation:ghc_primary',
+    }]));
+    const keyPair = generateWorkspaceDeviceKeyPair();
+    const layout = resolveConsueloHomeLayout(home);
+    const heartbeatDir = join(layout.nodeDir, 'security', 'generated');
+    mkdirSync(heartbeatDir, { recursive: true });
+    writeFileSync(join(heartbeatDir, 'workspace-node-heartbeat.json'), JSON.stringify({
+      authorityOrigin: 'https://os.consuelohq.com',
+      workspaceId,
+      nodeId: 'node_diffs_hono',
+      connectorStatus: 'connected',
+      capabilities: [],
+      publicKeyJwk: keyPair.publicKeyJwk,
+      signingKeyJwk: keyPair.signingKeyJwk,
+    }), 'utf8');
+
+    const calls: Request[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      calls.push(request.clone());
+      const url = new URL(request.url);
+      if (url.origin === 'https://os.consuelohq.com') {
+        expect(url.pathname).toBe('/workspace/source-control/github/token');
+        expect(request.headers.get('x-consuelo-node-signature')).toBeTruthy();
+        return Response.json({
+          token: 'managed-installation-token',
+          expiresAt: '2099-01-01T00:00:00.000Z',
+        });
+      }
+      if (url.href === 'https://api.github.com/graphql') {
+        expect(request.headers.get('authorization')).toBe('Bearer managed-installation-token');
+        return Response.json({
+          data: {
+            repository: {
+              openPullRequests: { pageInfo: { hasNextPage: false }, nodes: [] },
+              recentPullRequests: { pageInfo: { hasNextPage: false }, nodes: [] },
+            },
+          },
+        });
+      }
+      return new Response('not found', { status: 404 });
+    });
+
+    const path = '/gateway/diffs/repositories/acme/app/pulls';
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path,
+      nonce: 'managed-github-diffs-nonce',
+    }));
+
+    expect(response.status).toBe(200);
+    const text = await response.text();
+    expect(text).not.toContain('managed-installation-token');
+    expect(JSON.parse(text)).toMatchObject({
+      repo: { owner: 'acme', repo: 'app' },
+      pulls: [],
+    });
+    expect(calls.map((request) => request.url)).toEqual([
+      'https://os.consuelohq.com/workspace/source-control/github/token',
+      'https://api.github.com/graphql',
+    ]);
+  });
+  it('serves the signed workspace source-control snapshot without credential values', async () => {
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/gateway/diffs/configuration',
+      nonce: 'diffs-config-nonce',
+    }));
+    expect(response.status).toBe(200);
+    const text = await response.text();
+    expect(text).not.toContain('credentialValue');
+    expect(text).not.toContain('github-secret');
+    expect(JSON.parse(text)).toMatchObject({
+      ok: true,
+      snapshot: {
+        configured: true,
+        defaultRepositoryId: 'app',
+        repositories: [{
+          id: 'app',
+          provider: 'github',
+          nameWithOwner: 'acme/app',
+          connectionRef: 'github-app:primary',
+          ready: true,
+        }],
+      },
+    });
+  });
+
+  it('rejects repository locators outside the workspace configuration', async () => {
+    const allowed = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/gateway/diffs/repositories/acme/app',
+      nonce: 'diffs-allowed-repo-nonce',
+    }));
+    expect(allowed.status).toBe(200);
+
+    const denied = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/gateway/diffs/repositories/other/private',
+      nonce: 'diffs-denied-repo-nonce',
+    }));
+    expect(denied.status).toBe(404);
+    await expect(denied.json()).resolves.toMatchObject({
+      ok: false,
+      error: { code: 'SOURCE_CONTROL_REPOSITORY_NOT_CONFIGURED' },
+    });
+  });
+
+  it('serves the existing Diffs UI through the authenticated workspace route', async () => {
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/diffs',
+      nonce: 'diffs-page-nonce',
+    }));
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('Consuelo Diffs');
+    expect(html).toContain('/gateway/diffs/repositories/acme/app/pulls');
+    expect(html).not.toContain('consuelohq/opensaas');
+    expect(html).not.toContain('diffs.consuelohq.com');
+  });
+
+  it('renders an explicit setup state when source control is not configured', async () => {
+    writeWorkspace(configuredWorkspace([]));
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/diffs',
+      nonce: 'diffs-unconfigured-page-nonce',
+    }));
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('Connect GitHub');
+    expect(html).toContain('/gateway/configuration/source-control/github/connect?return_to=%2Fdiffs');
+    expect(html).toContain('Choose repositories on GitHub');
+    expect(html).not.toContain('connection binding');
+    expect(html).not.toContain('opensaas');
+  });
+
+  it('keeps write operations behind the distinct Diffs write scope', async () => {
+    const readOnlyToken = issueAgentAppToken({
+      config,
+      callerId: 'caller_diffs_read_only',
+      appId: 'app_diffs_read_only',
+      subjectId: 'subject_diffs_read_only',
+      deviceId: 'device_diffs_read_only',
+      connectorId: 'connector_diffs_read_only',
+      connectionId: 'connection_diffs_read_only',
+      scopes: ['route:/gateway/diffs:read'],
+      expiresInSeconds: 300,
+    });
+    const response = await handleRequest(signedRequest({
+      method: 'POST',
+      path: '/gateway/diffs/write/repositories/acme/app/pull/1/merge',
+      token: readOnlyToken,
+      nonce: 'diffs-read-only-write-nonce',
+    }));
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'MISSING_SCOPE' },
+    });
+  });
+
+  it('binds signed Diffs requests to the full path including query parameters', async () => {
+    const signed = signedRequest({
+      method: 'GET',
+      path: '/gateway/diffs/configuration?view=one',
+      nonce: 'diffs-query-signature-nonce',
+    });
+    const valid = await handleRequest(signed);
+    expect(valid.status).toBe(200);
+
+    const tampered = new Request('http://127.0.0.1:46321/gateway/diffs/configuration?view=two', {
+      headers: signed.headers,
+    });
+    const denied = await handleRequest(tampered);
+    expect(denied.status).toBe(401);
+  });
+
+  it('reports a missing repository connection separately from a missing repository', async () => {
+    writeWorkspace(configuredWorkspace([{
+      id: 'app',
+      name: 'App',
+      repo: 'acme/app',
+      defaultBranch: 'main',
+      provider: 'github',
+    }]));
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/gateway/diffs/repositories/acme/app',
+      nonce: 'diffs-missing-connection-nonce',
+    }));
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      error: { code: 'SOURCE_CONTROL_CONNECTION_REQUIRED' },
+    });
+  });
+
+  it('preserves nested repository-relative paths in Diffs tree routes', async () => {
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/diffs/acme/app/tree/main/src/nested/file.ts',
+      nonce: 'diffs-nested-tree-path-nonce',
+    }));
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('src/nested/file.ts');
+  });
+
+  it('requires signed Diffs access', async () => {
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/gateway/diffs/configuration'));
+    expect(response.status).toBe(401);
+  });
+});

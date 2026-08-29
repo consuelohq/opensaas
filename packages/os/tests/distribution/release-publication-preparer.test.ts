@@ -45,11 +45,14 @@ function createRuntimeSource(root: string): string {
     'scripts/os.ts': 'export const osFixture = true;\n',
     'scripts/native-lifecycle-operation.ts':
       'export const nativeLifecycleOperationFixture = true;\n',
+    'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
     'scripts/server/main.ts': 'export const serverFixture = true;\n',
+    'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
     'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
     'scripts/managed-components.ts': 'export const managedComponentsCliFixture = true;\n',
     'scripts/lib/managed-components.ts': 'export const managedComponentsFixture = true;\n',
     'scripts/lib/managed-component-install.ts': 'export const managedComponentInstallFixture = true;\n',
+    'scripts/lib/subagent/runner.ts': 'export const subagentRunnerFixture = true;\n',
     'manifests/generated/tool.manifest.json': '{"version":1,"kind":"consuelo-os-tool-manifest","tools":[]}\n',
     'manifests/generated/core.manifest.json': '{"version":1,"kind":"consuelo-os-core-manifest","tools":[]}\n',
     'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',
@@ -139,6 +142,9 @@ describe('release publication preparer', () => {
         architecture: bundle.architecture,
         archiveDigest: bundle.archiveDigest,
         bundleId: bundle.bundleId,
+        ...(bundle.manifest.capabilities
+          ? { capabilities: [...bundle.manifest.capabilities] }
+          : {}),
         platform: bundle.platform,
         releaseFingerprint: bundle.manifest.releaseFingerprint,
         sourceCommit: bundle.manifest.sourceCommit,

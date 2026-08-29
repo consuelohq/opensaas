@@ -123,6 +123,9 @@ declare const workspace: {
     projects: (input: { limit?: number; cursor?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     trace: (input: { traceId: string; project?: string; query?: string; statsPeriod?: string; dataset?: string; field?: string[]; cursor?: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
+  session: {
+    start: (input: ({ kind: "task"; stream?: string; area?: string; title: string; workflow?: "task"; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string } | { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })) => Promise<ToolResult<({ sessionKind: "task"; taskSession: string; taskBranch: string; worktreePath: string; [key: string]: unknown } | { sessionKind: "work"; workSession: string; ownerNodeId: string; path: string; [key: string]: unknown })>>;
+  };
   stream: {
     cleanup: (input: { apply?: boolean; keep?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     context: (input: { area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
@@ -138,9 +141,9 @@ declare const workspace: {
     finish: (input: { branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     init: (input: { area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     merge: (input: { pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    pr: (input: { branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    pr: (input: { branch?: string; repo?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; ackWorkpadIncomplete?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     prs: (input: { branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    push: (input: { branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    push: (input: { branch?: string; repo?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     start: (input: { stream?: string; area?: string; title: string; workflow?: "task"; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   taskMeta: {

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d87f53190895",
+  "tmuxSession": "opensaas-os-sync-os-stream-with-main-after-worker-drain-fix-d87f5319",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-os-stream-with-main-after-worker-drain-fix",
+  "branch": "task/os/sync-os-stream-with-main-after-worker-drain-fix",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-after-worker-drain-fix",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-after-worker-drain-fix",
+  "prNumber": 2106,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2106",
+  "createdAt": "2026-08-16T02:55:57.803Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-after-worker-drain-fix/.task/os/sync-os-stream-with-main-after-worker-drain-fix/session.json"
+}

@@ -1,9 +1,174 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
+import {
+  renderWorkspaceChromeBar,
+  workspaceChromeClientScript,
+  workspaceRouteSwitcherStyles,
+  type WorkspaceChromeOptions,
+} from './workspace-chrome';
+
+const canonicalAssetDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../assets/vendor/observability-traces-v38',
+);
+
+const canonicalAsset = (name: string): string =>
+  fs.readFileSync(path.join(canonicalAssetDir, name), 'utf8');
+
+export function resolveObservabilitySessionValue(row: Record<string, unknown>): string {
+  const metadata = row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+    ? row.metadata as Record<string, unknown>
+    : {};
+  for (const value of [
+    row.workPath,
+    row.branch,
+    row.gitBranch,
+    row.taskSession,
+    row.workSession,
+    metadata.workPath,
+    metadata.branch,
+  ]) {
+    if (value !== undefined && value !== null && String(value).length > 0) return String(value);
+  }
+  return 'no-branch';
+}
+
+const productionHistoryTransport = `<script id="consuelo-trace-history-transport">
+(()=>{const historyRoute='/gateway/traces/recent';const snapshotRoute='/trace-burn-intelligence/live-traces.json';const snapshotUrl=historyRoute+'?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true';const allowed=(url)=>url===snapshotRoute||url===historyRoute||url.startsWith(historyRoute+'?');window.__consueloTraceHistoryTransport={fetchJson(url){if(!allowed(url))return Promise.reject(new Error('Trace history route is not allowed.'));const requestUrl=url===snapshotRoute?snapshotUrl:url;return fetch(requestUrl,{cache:'no-store',credentials:'same-origin',headers:{accept:'application/json'}}).then(response=>response.json().then(payload=>{if(!response.ok||payload?.ok===false)throw new Error(payload?.error?.message||'Trace history request failed.');return url===snapshotRoute?(payload?.data??{rows:[],failures:[]}):payload;}));}};})();
+</script>`;
+
+const workspaceNavigation = `<script id="consuelo-trace-workspace-navigation">
+${workspaceChromeClientScript().replaceAll('</script', '<\/script')}
+</script>`;
+
+const workspaceRouteStyle = `<style id="consuelo-workspace-route-switcher">
+${workspaceRouteSwitcherStyles().replaceAll('</style', '<\/style')}
+</style>`;
+
+const nodeObservabilityStyle = `<style id="consuelo-trace-node-observability">
+#tbmLiveTraceModal .trxNode{min-width:0;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+#tbmLiveTraceModal .trxNodeName{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--trace-row-text,#d8d0c1)}
+#tbmLiveTraceModal .trxNodeRoute{display:block;font:10px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--trace-muted,#918a7f);text-transform:uppercase;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(min-width:761px){
+  #tbmLiveTraceModal .trxTable{min-width:2080px!important}
+  #tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:2080px!important;grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) minmax(350px,.96fr) minmax(350px,.96fr) 150px 180px 92px!important}
+  #tbmLiveTraceModal .trxSkeletonRows{min-width:2080px!important}
+  #tbmLiveTraceModal .trxSkeletonRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) minmax(350px,.96fr) minmax(350px,.96fr) 150px 180px 92px!important}
+}
+@media(max-width:760px){
+  #tbmLiveTraceModal.open .trxTable,#tbmLiveTraceModal.open .trxHead,#tbmLiveTraceModal.open .trxRow{min-width:1690px!important}
+  #tbmLiveTraceModal.open .trxHead,#tbmLiveTraceModal.open .trxRow{grid-template-columns:34px 140px 156px 82px 76px minmax(280px,1fr) minmax(270px,.9fr) minmax(270px,.9fr) 140px 150px 86px!important}
+  #tbmLiveTraceModal .trxSkeletonRows,#tbmLiveTraceModal .trxSkeletonRow{min-width:1690px!important}
+  #tbmLiveTraceModal .trxSkeletonRow{grid-template-columns:34px 140px 156px 82px 76px minmax(280px,1fr) minmax(270px,.9fr) minmax(270px,.9fr) 140px 150px 86px!important}
+}
+</style>`;
+
+const traceSystemThemeStyle = `<style id="consuelo-trace-system-theme">
+:root{color-scheme:light;--trace-bg:#f4efe7;--trace-panel:#fff9f0;--trace-panel-2:#eee6da;--trace-cream:#29251f;--trace-row-text:#453f37;--trace-muted:#756d63;--trace-line:rgba(41,37,31,.12);--trace-line-strong:rgba(41,37,31,.20);--trace-gold:#8d672d;--trace-amber:#8a6026;--trace-rust:#a44225;--trace-hover:rgba(141,103,45,.08);--trace-selected:rgba(141,103,45,.14)}
+html{background:var(--trace-bg)!important;color-scheme:light!important}
+body{background:var(--trace-bg)!important;color:var(--trace-cream)!important}
+#tbmLiveTraceModal{background:rgba(41,37,31,.14)!important}
+#tbmLiveTraceModal .trxShell,#tbmLiveTraceModal .trxBody,#tbmLiveTraceModal .trxTablePane{background:var(--trace-bg)!important;color:var(--trace-cream)!important;border-color:var(--trace-line)!important}
+#tbmLiveTraceModal .trxChrome,#tbmLiveTraceModal .trxToolbar,#tbmLiveTraceModal .trxFooter,#tbmLiveTraceModal .trxHead{background:var(--trace-panel-2)!important;border-color:var(--trace-line)!important;color:var(--trace-muted)!important}
+#tbmLiveTraceModal .trxRow{background:var(--trace-bg)!important;color:var(--trace-row-text)!important;border-color:var(--trace-line)!important}
+#tbmLiveTraceModal .trxRow:hover{background:var(--trace-hover)!important}
+#tbmLiveTraceModal .trxRow.selected{background:var(--trace-selected)!important;box-shadow:inset 3px 0 0 var(--trace-gold)!important}
+#tbmLiveTraceModal .trxToolName,#tbmLiveTraceModal .trxCost{color:var(--trace-cream)!important}
+#tbmLiveTraceModal .trxLatency,#tbmLiveTraceModal .trxTokens,#tbmLiveTraceModal .trxJson{color:var(--trace-muted)!important}
+#tbmLiveTraceModal .trxBranch{color:var(--branch-color-light,var(--trace-cream))!important;text-shadow:none!important}
+#tbmLiveTraceModal .trxTraceId{color:var(--trace-muted)!important}
+#tbmLiveTraceModal .trxCost{color:var(--trace-amber)!important;font-weight:600!important}
+#tbmLiveTraceModal .trxToolIcon.success{color:#687a53!important}
+#tbmLiveTraceModal .trxRow:has(.trxStatus.error) .trxToolName,#tbmLiveTraceModal .trxRow:has(.trxStatus.error) .trxToolCell,#tbmLiveTraceModal .trxRow:has(.trxStatus.error) .trxToolIcon{color:var(--trace-rust)!important}
+#tbmLiveTraceModal .trxRail,#tbmLiveTraceModal .trxRailInner,#tbmLiveTraceModal .lfThreadRail,#tbmLiveTraceModal .lfTyped,#tbmLiveTraceModal .lfRunHeader,#tbmLiveTraceModal .lfTabs{background:var(--trace-panel)!important;border-color:var(--trace-line)!important;color:var(--trace-row-text)!important}
+#tbmLiveTraceModal .trxPanel,#tbmLiveTraceModal .trxFilterBtn,#tbmLiveTraceModal .trxStep,#tbmLiveTraceModal .lfSection,#tbmLiveTraceModal .lfOpNode{background:rgba(41,37,31,.035)!important;border-color:var(--trace-line)!important;color:var(--trace-row-text)!important}
+#tbmLiveTraceModal .trxSearch,#tbmLiveTraceModal .trxWindow,#tbmLiveTraceModal .trxBtn,#tbmLiveTraceModal .trxPagerInput,#tbmLiveTraceModal .trxPagerBtn,#tbmLiveTraceModal .trxNativeDate,#tbmLiveTraceModal .trxDateRange input{background:var(--trace-panel)!important;border-color:var(--trace-line-strong)!important;color:var(--trace-cream)!important}
+#tbmLiveTraceModal .trxHead>div:nth-child(3),#tbmLiveTraceModal .trxHead>div:nth-child(6),#tbmLiveTraceModal .trxHead>div:last-child{color:var(--trace-cream)!important}
+@media (prefers-color-scheme: dark){
+  :root{color-scheme:dark;--trace-bg:#080706;--trace-panel:#12100d;--trace-panel-2:#15120e;--trace-cream:#f3ead3;--trace-row-text:#d8d0c1;--trace-muted:#a39a8b;--trace-line:rgba(243,234,211,.13);--trace-line-strong:rgba(243,234,211,.22);--trace-gold:#c6a15b;--trace-amber:#d8b36b;--trace-rust:#b9654c;--trace-hover:rgba(198,161,91,.075);--trace-selected:rgba(198,161,91,.14)}
+  html{background:var(--trace-bg)!important;color-scheme:dark!important}
+  body{background:var(--trace-bg)!important;color:var(--trace-cream)!important}
+  #tbmLiveTraceModal{background:#000000a3!important}
+  #tbmLiveTraceModal .trxBranch{color:var(--branch-color-dark,var(--trace-row-text))!important;text-shadow:0 0 18px color-mix(in srgb,var(--branch-color-dark,var(--trace-row-text)) 22%,transparent)!important}
+  #tbmLiveTraceModal .trxToolName{color:var(--trace-row-text)!important}
+  #tbmLiveTraceModal .trxLatency,#tbmLiveTraceModal .trxTokens,#tbmLiveTraceModal .trxJson{color:var(--trace-muted)!important}
+  #tbmLiveTraceModal .trxCost{color:#f0d18a!important}
+  #tbmLiveTraceModal .trxToolIcon.success{color:#9ba77e!important}
+}
+</style>`;
+
+const traceWorkspaceIntegrationStyle = `<style id="consuelo-trace-workspace-integration">
+#tbmLiveTraceModal[aria-hidden="false"]{display:flex!important;align-items:center!important;justify-content:center!important;padding:14px!important;overflow:hidden!important}
+#tbmLiveTraceModal[aria-hidden="false"] .trxShell{width:calc(100vw - 28px)!important;max-width:none!important;height:calc(100dvh - 28px)!important;max-height:none!important;margin:0!important;grid-template-rows:38px minmax(0,1fr)!important}
+#tbmLiveTraceModal .trxChrome[data-workspace-chrome]{position:relative!important;z-index:200!important;overflow:visible!important}
+#tbmLiveTraceModal .trxChrome[data-workspace-chrome] .workspace-route-control{overflow:visible!important}
+#tbmLiveTraceModal .workspace-route-menu{z-index:220!important}
+#tbmLiveTraceModal .trxBody{min-width:0!important;min-height:0!important;overflow:hidden!important}
+#tbmLiveTraceModal .trxTablePane{min-width:0!important;max-width:100%!important;min-height:0!important;overflow:hidden!important}
+#tbmLiveTraceModal .trxTableScroll{width:100%!important;max-width:100%!important;min-width:0!important;overflow:auto!important;overscroll-behavior:contain!important;scroll-padding-inline-end:18px!important}
+#tbmLiveTraceModal .trxTable{width:max-content!important;max-width:none!important;padding-right:18px!important;box-sizing:content-box!important}
+#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{grid-template-columns:34px 112px 176px 82px 82px minmax(360px,1.1fr) minmax(350px,.96fr) minmax(350px,.96fr) 150px 180px 92px!important}
+#tbmLiveTraceModal .trxHead{align-items:center!important}
+@media(max-width:760px){#tbmLiveTraceModal[aria-hidden="false"]{padding:0!important;align-items:stretch!important;justify-content:stretch!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell{width:100%!important;max-width:100%!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;border-radius:0!important;border:0!important;grid-template-rows:38px minmax(0,1fr)!important}#tbmLiveTraceModal .trxBody{grid-row:2!important}#tbmLiveTraceModal .trxTable,#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:1550px!important}#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:1550px!important;grid-template-columns:34px 108px 150px 78px 76px 260px 240px 240px 140px 140px 84px!important}#tbmLiveTraceModal .trxHead{height:34px!important;min-height:34px!important}#tbmLiveTraceModal .trxHead>div{height:34px!important;min-height:34px!important;padding:0 10px!important;display:flex!important;align-items:center!important}#tbmLiveTraceModal .trxHead>div:nth-child(2){font-size:13px!important;line-height:1.1!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxTablePane{width:100%!important;max-width:100%!important;min-width:0!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxResizer{display:none!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxRail{display:block!important;position:fixed!important;inset:auto 0 0!important;width:100vw!important;max-width:100vw!important;height:min(82dvh,760px)!important;max-height:calc(100dvh - 56px)!important;z-index:10020!important;border:1px solid var(--trace-line-strong)!important;border-bottom:0!important;border-radius:22px 22px 0 0!important;background:var(--trace-bg)!important;box-shadow:0 -24px 80px rgba(41,37,31,.22)!important;transform:none!important;translate:none!important;overflow:hidden!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxRailInner{height:100%!important;max-width:100vw!important;min-width:0!important;overflow-x:hidden!important;overflow-y:auto!important;padding-top:28px!important}#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .tiInspector{width:100%!important;max-width:100%!important;margin:0!important}}
+</style>`;
+
+const privateWorkspaceSessionRecovery = `<script id="consuelo-private-workspace-session-recovery">
+${PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT.replaceAll('</script', '<\\/script')}
+</script>`;
+
+function replaceExactlyOnce(
+  html: string,
+  pattern: RegExp,
+  replacement: string,
+  label: string,
+): string {
+  const matches = html.match(new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`)) ?? [];
+  if (matches.length !== 1) {
+    throw new Error(`Canonical Trace Burn template expected exactly one ${label}; found ${matches.length}.`);
+  }
+  return html.replace(pattern, () => replacement);
+}
+
+function inlineStyle(html: string, sourceHref: string, id: string, css: string): string {
+  return replaceExactlyOnce(
+    html,
+    new RegExp(`<link\\s+rel=["']stylesheet["']\\s+href=["']${escapeRegExp(sourceHref)}["']\\s*\\/?>(?:</link>)?`, 'i'),
+    `<style id="${id}">${css.replaceAll('</style', '<\\/style')}</style>`,
+    sourceHref,
+  );
+}
+
+function inlineScript(
+  html: string,
+  sourceSrc: string,
+  id: string,
+  javascript: string,
+  module = false,
+): string {
+  const type = module ? ' type="module"' : '';
+  return replaceExactlyOnce(
+    html,
+    new RegExp(`<script(?:\\s+type=["']module["'])?\\s+src=["']${escapeRegExp(sourceSrc)}["']\\s*><\\/script>`, 'i'),
+    `<script id="${id}"${type}>${javascript.replaceAll('</script', '<\\/script')}</script>`,
+    sourceSrc,
+  );
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
     (function mountObservabilityTraces() {
       const root = document.querySelector('[data-observability-app]') || document.body;
       const feedUrl = root.dataset.feedUrl || '/gateway/traces/recent';
       const summaryUrl = root.dataset.summaryUrl || '/gateway/traces/summary';
       const eventsUrl = root.dataset.eventsUrl || '/gateway/traces/events';
+      const TRACE_PREFETCH_KEY = 'consuelo:tracing-prefetch:v1';
+      const TRACE_PREFETCH_MAX_AGE_MS = 20000;
       const fallbackFeed = { meta: { generatedAt: new Date(0).toISOString(), rowCount: 0, failureCount: 0, tokens: 0, cost: 0 }, rows: [], failures: [] };
       const escapeHtml = (value) => String(value == null ? '' : value).replace(/[&<>\"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char] || char);
       const first = (...values) => values.find((value) => value !== undefined && value !== null && String(value).length > 0);
@@ -49,7 +214,7 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         const cost = Number(first(row.cost, row.costUsd, row.totalCostUsd, row.total_cost_usd, 0) || 0);
         const status = String(first(row.status, row.success === false ? 'error' : 'success') || 'success');
         return Object.assign({}, row, {
-          branch: String(first(row.branch, row.gitBranch, row.taskSession, metadata.branch, 'no-branch') || 'no-branch'),
+          branch: String(first(row.workPath, row.branch, row.gitBranch, row.taskSession, row.workSession, metadata.workPath, metadata.branch, 'no-branch') || 'no-branch'),
           name: String(first(row.name, row.traceName, row.toolName, row.tool, 'unknown') || 'unknown'),
           code: String(first(row.code, row.kind, row.capability, '') || ''),
           status: status === 'ok' ? 'success' : status,
@@ -83,6 +248,22 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
           rows,
           failures: Array.isArray(data.failures) ? data.failures : []
         };
+      };
+      const readPrefetchedTraceFeed = () => {
+        try {
+          const raw = sessionStorage.getItem(TRACE_PREFETCH_KEY);
+          sessionStorage.removeItem(TRACE_PREFETCH_KEY);
+          if (!raw) return null;
+          const cached = JSON.parse(raw);
+          if (!cached || typeof cached !== 'object') return null;
+          if (Date.now() - Number(cached.savedAt || 0) > TRACE_PREFETCH_MAX_AGE_MS) return null;
+          if (!cached.payload || typeof cached.payload !== 'object') return null;
+          const feed = normalizeGatewayFeed(cached.payload, {});
+          return Array.isArray(feed.rows) && feed.rows.length ? feed : null;
+        } catch {
+          try { sessionStorage.removeItem(TRACE_PREFETCH_KEY); } catch {}
+          return null;
+        }
       };
       const createState = (feed) => {
         const rows = (feed.rows || []).map(normalizeTraceRow);
@@ -123,7 +304,9 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         });
       };
       const pageRows = (rows, page, pageSize) => rows.slice((page - 1) * pageSize, page * pageSize);
-      let state = createState(fallbackFeed);
+      const prefetchedFeed = readPrefetchedTraceFeed();
+      let state = createState(prefetchedFeed || fallbackFeed);
+      if (prefetchedFeed) state.liveState = 'prefetched';
       const modal = root.querySelector('[data-trace-modal]');
       const shell = root.querySelector('.trace-shell');
       const set = (selector, text) => { const el = root.querySelector(selector); if (el) el.textContent = text; };
@@ -140,7 +323,7 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         if (!container) return;
         const branchButtons = countBy(state.rows, 'branch').slice(0, 10).map(([branch, count]) => '<button class="filter-chip" data-filter-branch="' + escapeHtml(branch) + '"><span>' + escapeHtml(branch) + '</span><b>' + count + '</b></button>').join('');
         const toolButtons = countBy(state.rows, 'tool').slice(0, 10).map(([tool, count]) => '<button class="filter-chip" data-filter-tool="' + escapeHtml(tool) + '"><span>' + escapeHtml(tool) + '</span><b>' + count + '</b></button>').join('');
-        container.innerHTML = '<p class="eyebrow">Branches / task sessions</p>' + branchButtons + '<p class="eyebrow tools-label">Tools</p>' + toolButtons;
+        container.innerHTML = '<p class="eyebrow">Sessions</p>' + branchButtons + '<p class="eyebrow tools-label">Tools</p>' + toolButtons;
       };
       const renderRows = () => {
         const body = root.querySelector('[data-trace-rows]');
@@ -266,177 +449,91 @@ export function buildObservabilityTracesClientScript(): string {
   return OBSERVABILITY_TRACES_CLIENT_SCRIPT;
 }
 
-export function buildObservabilityTracesSite(): string {
-  return String.raw`<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Traces - Observability</title>
-  <meta name="description" content="Consuelo Observability traces cockpit." />
-  <style>
-    :root {
-      --bg: #050403;
-      --panel: #11100d;
-      --panel-2: #171510;
-      --line: rgba(243, 234, 211, 0.14);
-      --text: #f2ead6;
-      --muted: #a69b82;
-      --amber: #d7b35e;
-      --green: #9fb583;
-      --red: #d46f52;
-      --trace-time-col: 92px;
-      color-scheme: dark;
-    }
-    * { box-sizing: border-box; }
-    html { min-height: 100%; background: var(--bg); }
-    body.observability-page { margin: 0; min-height: 100vh; background: radial-gradient(circle at 50% -20%, rgba(215,179,94,.12), transparent 34%), var(--bg); color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-    button, input { font: inherit; color: inherit; }
-    button { cursor: pointer; }
-    .dashboard { max-width: 1420px; margin: 0 auto; padding: 28px; }
-    .hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: end; margin-bottom: 24px; }
-    .eyebrow { text-transform: uppercase; letter-spacing: .18em; color: var(--muted); font-weight: 700; font-size: 12px; }
-    h1 { margin: 6px 0 10px; font: 700 clamp(38px, 7vw, 96px)/.86 Georgia, serif; letter-spacing: -.06em; }
-    .hero p { max-width: 820px; color: var(--muted); line-height: 1.55; }
-    .observability-nav { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-    .nav-chip, .live-pill, .chrome-button { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 10px 14px; color: var(--green); box-shadow: inset 0 1px rgba(255,255,255,.06); text-decoration: none; }
-    .nav-chip[aria-current="page"] { color: var(--amber); background: rgba(215,179,94,.08); }
-    .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-    .card { border: 1px solid var(--line); background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.012)), var(--panel); border-radius: 18px; padding: 18px; min-height: 138px; }
-    .card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .14em; }
-    .card strong { display: block; margin-top: 12px; font-size: 34px; letter-spacing: -.05em; }
-    .card span:last-child { color: var(--muted); font-size: 12px; }
-    .launch-card { margin-top: 14px; border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(135deg, rgba(215,179,94,.09), rgba(159,181,131,.04)), var(--panel); padding: 18px; display: flex; justify-content: space-between; gap: 18px; align-items: center; }
-    .launch-card p { color: var(--muted); margin: 4px 0 0; max-width: 720px; line-height: 1.45; }
-    .trace-modal { position: fixed; inset: 0; display: none; place-items: center; padding: 24px; background: rgba(0,0,0,.72); z-index: 100; }
-    .trace-modal.open { display: grid; }
-    .trace-shell { width: min(1180px, 94vw); height: min(720px, 88vh); border: 1px solid var(--line); background: #090806; border-radius: 16px; overflow: hidden; box-shadow: 0 36px 120px rgba(0,0,0,.7); display: grid; grid-template-rows: 42px 58px minmax(0, 1fr) 38px; }
-    .trace-chrome { display: grid; grid-template-columns: 120px 1fr auto; align-items: center; border-bottom: 1px solid var(--line); padding: 0 10px; background: #14120e; }
-    .dots { display: flex; gap: 8px; }
-    .dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--red); }
-    .dots span:nth-child(2) { background: var(--amber); }
-    .dots span:nth-child(3) { background: #70aa67; }
-    .trace-title { text-align: center; color: var(--muted); letter-spacing: .04em; }
-    .trace-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) 142px auto; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
-    .trace-toolbar input, .trace-window { border: 1px solid var(--line); background: #0d0c09; border-radius: 12px; padding: 0 12px; min-width: 0; }
-    .trace-window { display: grid; place-items: center; color: var(--amber); }
-    .trace-body { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 38%); }
-    .trace-table-wrap { min-width: 0; overflow: auto; border-right: 1px solid var(--line); }
-    .trace-table { min-width: 1560px; }
-    .trace-head, .trace-row { display: grid; grid-template-columns: 42px var(--trace-time-col) 56px 132px 218px 250px 292px 88px 84px 88px; align-items: center; }
-    .trace-head { position: sticky; top: 0; z-index: 2; background: #14120e; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--line); }
-    .trace-head span, .trace-row span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 12px 10px; }
-    .trace-row { width: 100%; border: 0; border-bottom: 1px solid rgba(243,234,211,.09); background: transparent; text-align: left; }
-    .trace-row:hover, .trace-row.selected { background: rgba(215,179,94,.1); }
-    .check { width: 16px; height: 16px; margin-left: 10px; border: 1px solid rgba(243,234,211,.35); border-radius: 4px; padding: 0 !important; }
-    .mono { font-variant-numeric: tabular-nums; }
-    .tool { color: var(--amber); }
-    .status.success { color: var(--green); }
-    .status.error { color: var(--red); }
-    .trace-rail { min-width: 0; background: #0d0c09; overflow: auto; }
-    .trace-inspector { min-height: 100%; padding: 18px; }
-    .panel-title span { display: block; color: var(--muted); text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: 800; }
-    .panel-title h2 { margin: 4px 0; font: 800 22px/1 Georgia, serif; }
-    .panel-title p { color: var(--muted); margin: 0 0 16px; line-height: 1.4; }
-    .filter-chip { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; border: 1px solid var(--line); background: var(--panel); border-radius: 10px; margin-bottom: 8px; padding: 10px 12px; text-align: left; }
-    .filter-chip span { overflow-wrap: anywhere; }
-    .tools-label { margin-top: 18px; }
-    .trace-detail-tabs { display: flex; gap: 18px; margin: 14px 0; border-bottom: 1px solid var(--line); }
-    .trace-detail-tabs button { background: none; border: 0; padding: 0 0 10px; color: var(--muted); }
-    .trace-detail-tabs .active { color: var(--text); border-bottom: 2px solid var(--amber); }
-    .payload { border: 1px solid rgba(243,234,211,.1); background: #12100d; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
-    .payload h3 { margin: 0; padding: 10px 12px; font-size: 13px; background: rgba(255,255,255,.04); }
-    .payload pre { margin: 0; padding: 12px; max-height: 260px; overflow: auto; white-space: pre-wrap; color: #e8deca; font-size: 12px; line-height: 1.5; }
-    .trace-footer { display: flex; gap: 14px; align-items: center; padding: 0 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
-    .trace-footer input { width: 52px; height: 26px; text-align: center; border: 1px solid var(--line); background: #15130f; border-radius: 8px; }
-    .trace-footer button { border: 1px solid var(--line); background: #15130f; border-radius: 8px; width: 28px; height: 26px; }
-    .empty-state { padding: 28px; color: var(--muted); }
-    @media (max-width: 760px) {
-      .dashboard { padding: 18px; }
-      .hero { grid-template-columns: 1fr; }
-      .kpis { grid-template-columns: 1fr 1fr; }
-      .launch-card { align-items: flex-start; flex-direction: column; }
-      .trace-modal.open { padding: 0; place-items: stretch; }
-      .trace-shell { width: 100vw; height: 100dvh; max-width: none; max-height: none; border-radius: 0; border: 0; grid-template-rows: 42px 58px minmax(0, 1fr) 42px; }
-      .trace-body { grid-template-columns: 1fr; }
-      .trace-rail { display: none; }
-      .trace-shell[data-mobile-detail="true"] .trace-table-wrap { display: none; }
-      .trace-shell[data-mobile-detail="true"] .trace-rail { display: block; }
-      .trace-toolbar { grid-template-columns: 1fr; }
-      .trace-window { min-height: 36px; }
-      .trace-footer { overflow: auto; }
-    }
-  </style>
-</head>
-<body class="observability-page">
-  <main class="dashboard" data-observability-app data-feed-url="/gateway/traces/recent" data-summary-url="/gateway/traces/summary" data-events-url="/gateway/traces/events">
-    <section class="hero">
-      <div>
-        <div class="eyebrow">Observability</div>
-        <h1>Traces</h1>
-        <p>Live traces are the first Observability module: real trace rows, raw payloads, token burn, failures, and tool pressure in one lightweight OS surface.</p>
-        <nav class="observability-nav" aria-label="Observability sections">
-          <a class="nav-chip" aria-current="page" href="/observability/traces">Traces</a>
-          <span class="nav-chip" aria-disabled="true">Runs</span>
-          <span class="nav-chip" aria-disabled="true">Costs</span>
-          <span class="nav-chip" aria-disabled="true">Failures</span>
-        </nav>
-      </div>
-      <button class="live-pill" type="button" data-testid="trace-launcher" data-open-traces>● Live traces</button>
-    </section>
-    <section class="kpis" aria-label="Observability trace summary">
-      <article class="card"><span class="label">Trace rows</span><strong data-kpi="trace-count">0</strong><span data-feed-health>waiting for gateway traces</span></article>
-      <article class="card"><span class="label">Failures</span><strong data-kpi="failure-count">0</strong><span>from current gateway window</span></article>
-      <article class="card"><span class="label">Token burn</span><strong data-kpi="tokens">0</strong><span>input + output tokens</span></article>
-      <article class="card"><span class="label">Estimated cost</span><strong data-kpi="cost">$0.00</strong><span>gateway trace estimate</span></article>
-    </section>
-    <section class="launch-card" aria-label="Current Observability module">
-      <div>
-        <div class="eyebrow">Current module</div>
-        <h2>Live tracing cockpit</h2>
-        <p>The broader Observability dashboard can grow here. Today, this launches the polished Traces module while preserving \`/observability\` as the overall surface.</p>
-      </div>
-      <button class="live-pill" type="button" data-open-traces>Open traces</button>
-    </section>
-    <section class="trace-modal" data-trace-modal aria-label="Traces">
-      <div class="trace-shell" data-mode="list">
-        <header class="trace-chrome">
-          <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
-          <div class="trace-title">Traces</div>
-          <button class="chrome-button" type="button" data-show-filters>filters</button>
-        </header>
-        <div class="trace-toolbar">
-          <input data-search placeholder="Search traces..." aria-label="Search traces" />
-          <div class="trace-window" data-trace-window>gateway</div>
-          <button class="chrome-button" type="button" data-close-traces>close</button>
-        </div>
-        <div class="trace-body">
-          <section class="trace-table-wrap" aria-label="Trace table">
-            <div class="trace-table">
-              <div class="trace-head">
-                <span></span><span>Time</span><span>Type</span><span>Tool name</span><span>Branch</span><span>Input</span><span>Output</span><span>Tokens</span><span>Cost</span><span>Latency</span>
-              </div>
-              <div data-trace-rows><div class="empty-state">Loading gateway traces...</div></div>
-            </div>
-          </section>
-          <aside class="trace-rail" aria-label="Trace details">
-            <div class="trace-inspector" data-inspector></div>
-          </aside>
-        </div>
-        <footer class="trace-footer">
-          <span><b data-trace-count>0</b> traces</span>
-          <span>Rows per page <b>100</b></span>
-          <span>Page <input data-page-input value="1" aria-label="Page" /> of <b data-page-count>1</b></span>
-          <button type="button" data-prev-page>‹</button>
-          <button type="button" data-next-page>›</button>
-          <span data-live-state>stale</span>
-        </footer>
-      </div>
-    </section>
-  </main>
-  <script>
-${OBSERVABILITY_TRACES_CLIENT_SCRIPT}
-  </script>
-</body>
-</html>`;
+export function buildObservabilityTracesSite(
+  chromeOptions: WorkspaceChromeOptions = {},
+): string {
+  let html = canonicalAsset('template.html');
+
+  html = inlineStyle(
+    html,
+    '/trace-burn-intelligence/_astro/index@_@astro.footerclock.css',
+    'trace-burn-v38-base',
+    canonicalAsset('base.css'),
+  );
+  html = inlineStyle(
+    html,
+    '/trace-burn-intelligence/_astro/trace-mobile-scroll-fix-v9.css',
+    'trace-burn-v38-mobile',
+    canonicalAsset('mobile.css'),
+  );
+  html = inlineStyle(
+    html,
+    '/trace-burn-intelligence/_astro/trace-inspector-v38.css',
+    'trace-burn-v38-inspector',
+    canonicalAsset('inspector.css'),
+  );
+
+  html = replaceExactlyOnce(
+    html,
+    /<\/head>/i,
+    `${nodeObservabilityStyle}${traceWorkspaceIntegrationStyle}${traceSystemThemeStyle}${workspaceRouteStyle}${privateWorkspaceSessionRecovery}</head>`,
+    'document head close',
+  );
+
+  html = replaceExactlyOnce(
+    html,
+    /<div class="trxChrome">\s*<div class="trxDots">[\s\S]*?<div class="trxChromeActions">[\s\S]*?<\/div>\s*<\/div>\s*<div class="trxBody">/i,
+    `${renderWorkspaceChromeBar('tracing', 'Tracing', chromeOptions)} <div class="trxBody">`,
+    'workspace chrome',
+  );
+
+  html = replaceExactlyOnce(
+    html,
+    /<div class="trxHead"><div><\/div><div>Time<\/div><div>Tool<\/div><div>Latency<\/div><div>Tokens<\/div><div>Branch<\/div><div>Input<\/div><div>Output<\/div><div>Trace<\/div><div>Status<\/div><div>Cost<\/div><\/div>/i,
+    '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Session</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Cost</div></div>',
+    'trace table header',
+  );
+
+  html = inlineScript(
+    html,
+    '/trace-burn-intelligence/_astro/trace-table-overview-v22.js',
+    'trace-burn-v38-table-overview',
+    canonicalAsset('table-overview.js'),
+    true,
+  );
+  html = inlineScript(
+    html,
+    '/trace-burn-intelligence/_astro/vendor-gsap-3.15.0.min.js',
+    'trace-burn-v38-gsap',
+    canonicalAsset('gsap.js'),
+  );
+  html = inlineScript(
+    html,
+    '/trace-burn-intelligence/_astro/trace-gsap-scroll-v6.js',
+    'trace-burn-v38-scroll',
+    canonicalAsset('scroll.js'),
+  );
+  html = inlineScript(
+    html,
+    '/trace-burn-intelligence/_astro/trace-inspector-v38.js',
+    'trace-burn-v38-inspector-runtime',
+    canonicalAsset('inspector.js'),
+    true,
+  );
+
+  html = replaceExactlyOnce(
+    html,
+    /<script\s+id=["']consuelo-trace-history-transport["'][^>]*>[\s\S]*?<\/script>/i,
+    productionHistoryTransport,
+    'trusted trace history transport',
+  );
+
+  html = replaceExactlyOnce(
+    html,
+    /<\/body>/i,
+    `${workspaceNavigation}</body>`,
+    'document body close',
+  );
+
+  return html;
 }

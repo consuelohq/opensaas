@@ -88,7 +88,10 @@ describe('OS workflow intent bundles', () => {
     expect(task.roles).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'workpad.write']));
     expect(toolNames(task)).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'fs.write']));
     expect(task.subscriptions).toEqual(
-      expect.arrayContaining([expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.push' }),
+      ]),
     );
 
     expect(artifacts.aliases).toEqual([]);
@@ -129,13 +132,15 @@ describe('OS workflow intent bundles', () => {
     }));
     expect(result.hookResult).toEqual(expect.objectContaining({
       workflow: 'task',
-      stage: 'post-task-start-guidance',
+      stage: 'workpad-bootstrap',
       contextInjection: expect.objectContaining({
         taskSession: 'tsk_real_task',
         worktreePath: '/tmp/intent-architecture',
       }),
     }));
-    expect(result.hookResult?.suggestedNextAction.tool).toBe('batch');
+    expect(result.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(result.hookResult?.requiredNextAction.input).toEqual(expect.objectContaining({ append: true, mkdirs: true }));
+    expect(result.hookResult?.requiredNextAction.input.content).toContain('## Test-first contract');
   });
 
   test('should use a branch-shaped task handle when task intent has not started a task yet', () => {
@@ -154,7 +159,7 @@ describe('OS workflow intent bundles', () => {
     expect(result.hookEvent).toEqual(expect.objectContaining({ taskSession: 'task/os/intent-architecture' }));
   });
 
-  test('should expose task.start as the sole public task workflow entrypoint', () => {
+  test('should expose task.start as the compatibility public task workflow entrypoint', () => {
     const full = readManifest();
     const core = readCoreManifest().tools;
     const startEntry = full.find((tool) => tool.name === 'task.start');
@@ -165,7 +170,7 @@ describe('OS workflow intent bundles', () => {
     expect(startEntry).toEqual(expect.objectContaining({
       name: 'task.start',
       methodPath: ['task', 'start'],
-      description: "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+      description: 'Compatibility alias for session.start({ kind: "task" }). Existing callers remain supported; new agents should prefer session.start for task creation.',
       workflowRole: 'task.start',
       command: expect.objectContaining({ script: 'task:start' }),
     }));
@@ -175,7 +180,7 @@ describe('OS workflow intent bundles', () => {
       definition: expect.objectContaining({
         name: 'task.start',
         methodPath: ['task', 'start'],
-        description: "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+        description: 'Compatibility alias for session.start({ kind: "task" }). Existing callers remain supported; new agents should prefer session.start for task creation.',
       }),
     }));
     const commandArguments = (startEntry?.command as { arguments?: Array<{ source?: string; flag?: string }> })?.arguments ?? [];
@@ -282,12 +287,12 @@ describe('OS workflow intent bundles', () => {
     expect(b.hookResult?.contextInjection).toEqual(
       expect.objectContaining({ taskSession: 'tsk_b', worktreePath: '/tmp/worktree-b' }),
     );
-    expect(a.hookResult?.suggestedNextAction.tool).toBe('batch');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('code.call');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('explore');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('Bun structured repo scanner');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('Python targeted file/snippet ownership read');
-    expect(b.hookResult?.suggestedNextAction.tool).toBe('batch');
+    expect(a.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(a.hookResult?.requiredNextAction.taskSession).toBe('tsk_a');
+    expect(a.hookResult?.requiredNextAction.input.path).toContain('agent-a/workpad.md');
+    expect(b.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(b.hookResult?.requiredNextAction.taskSession).toBe('tsk_b');
+    expect(b.hookResult?.requiredNextAction.input.path).toContain('agent-b/workpad.md');
   });
 
   test('should reject unknown actions when invoking task-intent CLI', () => {

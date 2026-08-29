@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
 import type { LifecycleServiceController } from '../lifecycle/types';
@@ -156,7 +156,7 @@ export function resolveLinuxPlatformPaths(home: string, environment: NodeJS.Proc
     home: resolvedHome,
     systemdUserDir,
     unitPath: join(systemdUserDir, UNIT_NAME),
-    runtimeEntryPath: join(resolvedHome, 'runtime', 'current', 'scripts', 'server', 'main.ts'),
+    runtimeEntryPath: join(resolvedHome, 'runtime', 'current', 'scripts', 'server', 'supervisor.ts'),
     runsDir: join(resolvedHome, 'node', 'runs'),
     logsDir: join(resolvedHome, 'node', 'logs'),
     sessionStatePath: join(resolvedHome, 'node', 'runs', 'linux-session-process.json'),
@@ -179,6 +179,7 @@ export function renderSystemdUserUnit(input: { home: string; bunExecutable: stri
     'Type=simple',
     `Environment="CONSUELO_HOME=${systemdEscape(paths.home)}"`,
     `ExecStart="${systemdEscape(resolve(input.bunExecutable))}" "${systemdEscape(paths.runtimeEntryPath)}"`,
+    `ExecReload="${systemdEscape(resolve(input.bunExecutable))}" "${systemdEscape(join(paths.home, 'runtime', 'current', 'scripts', 'consuelo-reload.js'))}" rolling-reload-now`,
     'Restart=on-failure',
     'RestartSec=2',
     'UMask=0077',
@@ -331,12 +332,46 @@ function commandError(command: LinuxCommand, result: LinuxCommandResult): Error 
   return new Error(`${command.executable} ${command.args.join(' ')} failed: ${detail}`);
 }
 
+function installedLinuxRestartableSidecarUnits(systemdUserDir: string): {
+  restartUnits: string[];
+  heartbeatServiceInstalled: boolean;
+} {
+  if (!existsSync(systemdUserDir)) {
+    return { restartUnits: [], heartbeatServiceInstalled: false };
+  }
+  const names = new Set(readdirSync(systemdUserDir));
+  // Cloudflared is transport-critical ingress. Keep it alive while the OS
+  // worker service rotates so an existing MCP connection has a path to the
+  // surviving/restarted worker pool.
+  const restartUnits = [
+    ...(names.has('consuelo-node-heartbeat.timer')
+      ? ['consuelo-node-heartbeat.timer']
+      : []),
+    ...['consuelo-portless.service', 'consuelo-watchdog.service', 'consuelo-availability.service']
+      .filter((name) => names.has(name)),
+  ];
+  return {
+    restartUnits,
+    heartbeatServiceInstalled: names.has('consuelo-node-heartbeat.service'),
+  };
+}
 function readSessionPid(path: string): number | undefined {
   try {
     const parsed = JSON.parse(readFileSync(path, 'utf8')) as { pid?: unknown };
     return typeof parsed.pid === 'number' && Number.isInteger(parsed.pid) && parsed.pid > 0 ? parsed.pid : undefined;
   } catch {
     return undefined;
+  }
+}
+
+function supportsRuntimeCurrentRollingReload(paths: LinuxPlatformPaths): boolean {
+  try {
+    const snapshot = JSON.parse(
+      readFileSync(join(paths.runsDir, 'os-worker-pool.json'), 'utf8'),
+    ) as { supportsRuntimeCurrentRollingReload?: unknown };
+    return snapshot.supportsRuntimeCurrentRollingReload === true;
+  } catch {
+    return false;
   }
 }
 
@@ -456,23 +491,54 @@ export function createLinuxPlatformAdapter(input: {
         throw new Error(`Linux service installation failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
       }
     },
-    async restart() {
+    async restart(options = {}) {
       try {
         await preflight();
         if ((await activeManager()) === 'systemd-user') {
-          if (!existsSync(paths.unitPath)) {
-            writePrivateFile(paths.unitPath, renderSystemdUserUnit({ home: paths.home, bunExecutable }));
-            for (const command of [
-              { executable: 'systemctl', args: ['--user', 'daemon-reload'], environment },
-              { executable: 'systemctl', args: ['--user', 'enable', '--now', UNIT_NAME], environment },
-            ]) {
-              const result = await run(command);
-              if (result.exitCode !== 0) throw commandError(command, result);
-            }
-          } else {
-            const command = { executable: 'systemctl', args: ['--user', 'restart', UNIT_NAME], environment };
+          const unitExisted = existsSync(paths.unitPath);
+          writePrivateFile(paths.unitPath, renderSystemdUserUnit({ home: paths.home, bunExecutable }));
+          const gateways = installedLinuxRestartableSidecarUnits(paths.systemdUserDir);
+          const reload = {
+            executable: 'systemctl',
+            args: ['--user', 'daemon-reload'],
+            environment,
+          };
+          const reloaded = await run(reload);
+          if (reloaded.exitCode !== 0) throw commandError(reload, reloaded);
+          const canRollCurrentRuntime = unitExisted && supportsRuntimeCurrentRollingReload(paths);
+          const osCommand = unitExisted
+            ? { executable: 'systemctl', args: ['--user', canRollCurrentRuntime ? 'reload' : 'restart', UNIT_NAME], environment }
+            : { executable: 'systemctl', args: ['--user', 'enable', '--now', UNIT_NAME], environment };
+          const osResult = await run(osCommand);
+          if (osResult.exitCode !== 0 && canRollCurrentRuntime && options.allowDestructiveFallback) {
+            const fallback = { executable: 'systemctl', args: ['--user', 'restart', UNIT_NAME], environment };
+            const fallbackResult = await run(fallback);
+            if (fallbackResult.exitCode !== 0) throw commandError(fallback, fallbackResult);
+          } else if (osResult.exitCode !== 0) {
+            throw commandError(osCommand, osResult);
+          }
+          for (const unit of gateways.restartUnits) {
+            const command = {
+              executable: 'systemctl',
+              args: ['--user', 'restart', unit],
+              environment,
+            };
             const result = await run(command);
             if (result.exitCode !== 0) throw commandError(command, result);
+            if (
+              unit === 'consuelo-node-heartbeat.timer'
+              && gateways.heartbeatServiceInstalled
+            ) {
+              const heartbeat = {
+                executable: 'systemctl',
+                args: ['--user', 'start', 'consuelo-node-heartbeat.service'],
+                environment,
+              };
+              const heartbeatResult = await run(heartbeat);
+              if (heartbeatResult.exitCode !== 0) {
+                throw commandError(heartbeat, heartbeatResult);
+              }
+            }
           }
           return;
         }

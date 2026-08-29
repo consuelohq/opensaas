@@ -18,11 +18,11 @@ describe('Bun product server contract', () => {
       scripts: Record<string, string>;
     };
 
-    expect(packageJson.scripts['server:run']).toBe('bun ./scripts/server/main.ts');
+    expect(packageJson.scripts['server:run']).toBe('bun ./scripts/server/supervisor.ts');
     expect(packageJson.scripts['smoke:server']).toBe('bun ./scripts/server/main.ts');
 
     const daemon = source('scripts/start-consuelo-daemon.sh');
-    expect(daemon).toContain('exec "$bun_bin" "$root_dir/scripts/server/main.ts"');
+    expect(daemon).toContain('exec "$bun_bin" "$root_dir/scripts/server/supervisor.ts"');
     expect(daemon).not.toMatch(/\bpython(?:3)?\b|server\.py/);
 
     const reload = source('scripts/consuelo-reload.js');
@@ -70,7 +70,7 @@ describe('Bun product server contract', () => {
       'process.env.CONSUELO_OS_DAEMON_PROCESS = \'1\';';
     expect(server).toContain(daemonProcessMarker);
     expect(server.indexOf(daemonProcessMarker)).toBeLessThan(
-      server.indexOf('createLocalOsApp(config)'),
+      server.indexOf('createLocalOsApp(config, { workerState })'),
     );
     expect(server).toContain('Bun.serve({');
     expect(server).toContain("hostname: '127.0.0.1'");
@@ -158,7 +158,7 @@ describe('Bun product server contract', () => {
 
     expect(dockerfile).toContain('FROM oven/bun:');
     expect(dockerfile).toContain('EXPOSE 46321');
-    expect(dockerfile).toContain('CMD ["bun", "./scripts/server/main.ts"]');
+    expect(dockerfile).toContain('CMD ["bun", "./scripts/server/supervisor.ts"]');
     expect(dockerfile).not.toContain('server.py');
   });
 });

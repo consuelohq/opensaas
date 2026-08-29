@@ -12,9 +12,12 @@
     "release:railway": "bun ./scripts/railway-deployment.ts",
     "release:rollback-railway": "bun ./scripts/rollback-production.ts",
     "release:manifest": "bun ./scripts/write-release-manifest.ts",
+    "db:migrate": "bun ./scripts/migrate-database.ts",
     "validate:local-runtime": "bun ./scripts/validate-local-runtime.ts",
     "validate:provider-test": "bun ./scripts/validate-provider-test.ts",
-    "validate:groq-transcription": "bun ./scripts/validate-groq-transcription.ts"
+    "validate:groq-transcription": "bun ./scripts/validate-groq-transcription.ts",
+    "lab:local": "bun ./scripts/local-dialer-lab.ts",
+    "lab:verify": "CONSUELO_RUN_LOCAL_DIALER_LAB_INTEGRATION=1 bun test ./src/lab/local-dialer-lab.integration.test.ts"
   },
   "dependencies": {
     "@consuelo/dialer": "workspace:*",

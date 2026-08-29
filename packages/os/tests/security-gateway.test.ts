@@ -106,6 +106,8 @@ type GatewayModule = {
     workspaceId: string;
     workspaceSlug: string;
     workspaceHost: string;
+    upstreamPort?: number;
+    upstreamPorts?: number[];
   }) => GatewaySecurityConfig | Promise<GatewaySecurityConfig>;
   issueAgentAppToken: (input: {
     config: GatewaySecurityConfig;
@@ -174,6 +176,7 @@ type GatewayModule = {
   renderCaddyGatewayConfig: (input: {
     workspaceHost: string;
     upstream: { host: string; port: number };
+    upstreams?: Array<{ host: string; port: number }>;
     mtls?: { enabled: boolean; caFile: string };
   }) => string;
   createPublicRouteRegistry: (input: {
@@ -1075,18 +1078,77 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).toContain('X-Content-Type-Options "nosniff"');
     expect(caddyfile).toContain('Referrer-Policy "no-referrer"');
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850 {');
-    expect(caddyfile).toContain('header_up -X-Consuelo-Edge-Signature');
+    expect(caddyfile).not.toContain('header_up -X-Consuelo-Edge-Signature');
+    expect(caddyfile).not.toContain('header_up -X-Consuelo-Surface');
+    expect(caddyfile).not.toContain('header_up -X-Consuelo-Connector-Id');
+    expect(caddyfile).toContain('header_up -X-Consuelo-Edge-Cache-Authority');
     expect(caddyfile).toContain('header_up -X-Consuelo-Route');
     expect(caddyfile).not.toContain('header_up X-Forwarded-Host');
     expect(caddyfile).not.toContain('header_up X-Forwarded-Proto');
     expect(caddyfile).toContain('dial_timeout 5s');
-    expect(caddyfile).toContain('response_header_timeout 15s');
-    expect(caddyfile).toContain('read_timeout 60s');
-    expect(caddyfile).toContain('write_timeout 60s');
+    expect(caddyfile).not.toContain('response_header_timeout');
+    expect(caddyfile).not.toContain('read_timeout');
+    expect(caddyfile).not.toContain('write_timeout');
     expect(caddyfile).not.toContain('client_auth');
     expect(caddyfile).not.toContain('reverse_proxy 0.0.0.0:8850');
     expect(caddyfile).not.toContain('reverse_proxy :8850');
     expect(caddyfile).not.toContain('MCP_BEARER_TOKEN');
+  });
+
+  it('renders a private worker pool with round-robin readiness checks and conservative retrying', async () => {
+    const gateway = await loadGatewayModule();
+    const caddyfile = gateway.renderCaddyGatewayConfig({
+      workspaceHost: 'acme.consuelohq.com',
+      upstream: { host: '127.0.0.1', port: 8850 },
+      upstreams: [
+        { host: '127.0.0.1', port: 8850 },
+        { host: '127.0.0.1', port: 8851 },
+      ],
+    });
+
+    expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850 127.0.0.1:8851 {');
+    expect(caddyfile).toContain('lb_policy round_robin');
+    expect(caddyfile).toContain('health_uri /ready');
+    expect(caddyfile).toContain('handle /health {');
+    expect(caddyfile).toContain('health_interval 2s');
+    expect(caddyfile).toContain('health_timeout 1s');
+    expect(caddyfile).toContain('lb_try_duration 10s');
+    expect(caddyfile).toContain('lb_try_interval 100ms');
+    expect(caddyfile).not.toContain('response_header_timeout');
+    expect(caddyfile).not.toContain('read_timeout');
+    expect(caddyfile).not.toContain('write_timeout');
+    expect(caddyfile).not.toContain('lb_retry_match');
+
+    expect(() => gateway.renderCaddyGatewayConfig({
+      workspaceHost: 'acme.consuelohq.com',
+      upstream: { host: '127.0.0.1', port: 8850 },
+      upstreams: [
+        { host: '127.0.0.1', port: 8850 },
+        { host: '0.0.0.0', port: 8851 },
+      ],
+    })).toThrow(/private localhost/i);
+
+    expect(() => gateway.renderCaddyGatewayConfig({
+      workspaceHost: 'acme.consuelohq.com',
+      upstream: { host: '127.0.0.1', port: 65_536 },
+    })).toThrow(/port/i);
+  });
+
+  it('provisions every configured worker port into the generated Caddy pool', async () => {
+    const gateway = await loadGatewayModule();
+    await gateway.createGatewaySecurityConfig({
+      home: tempHome,
+      workspaceId: 'workspace-pool',
+      workspaceSlug: 'pool',
+      workspaceHost: 'pool.consuelohq.com',
+      upstreamPort: 47000,
+      upstreamPorts: [47000, 47001, 47002],
+    });
+
+    const caddyfile = readFileSync(join(tempHome, 'caddy', 'Caddyfile'), 'utf8');
+    expect(caddyfile).toContain(
+      'reverse_proxy 127.0.0.1:47000 127.0.0.1:47001 127.0.0.1:47002 {',
+    );
   });
 
   it('should reject mTLS when Caddy ingress uses a plaintext loopback listener', async () => {
@@ -1411,15 +1473,20 @@ describe('Consuelo OS public gateway security contract', () => {
     })).toMatchObject({ ok: false, status: 401, error: { code: 'TOKEN_ROTATED' } });
   });
 
-  it('uses the resolved OS port in generated Caddy config', () => {
+  it('uses the resolved OS worker ports in generated Caddy config', () => {
     readJsonFromBun<JsonObject>(`
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
       const result = provisionLocalOs({ mode: 'local', port: 8999 });
       process.stdout.write(JSON.stringify(result));
-    `);
+    `, {
+      CONSUELO_OS_WORKER_COUNT: '3',
+      CONSUELO_OS_WORKER_BASE_PORT: '8999',
+    });
 
     const caddyfile = readFileSync(join(tempHome, 'node', 'caddy', 'Caddyfile'), 'utf8');
-    expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8999');
+    expect(caddyfile).toContain(
+      'reverse_proxy 127.0.0.1:8999 127.0.0.1:9000 127.0.0.1:9001 {',
+    );
     expect(caddyfile).not.toContain('reverse_proxy 127.0.0.1:8850');
   });
 

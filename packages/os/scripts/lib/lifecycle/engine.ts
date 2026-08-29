@@ -1,6 +1,7 @@
 import { rmSync } from 'node:fs';
 
 import { Effect } from 'effect';
+import { missingRequiredRuntimeRecoveryCapabilities } from '../distribution/runtime-bundle';
 
 import {
   loadLifecyclePreferences,
@@ -41,6 +42,7 @@ import {
 import { removeLifecycleManagedContent } from './uninstall';
 import type {
   LifecycleEngine,
+  LifecycleConnectorReadiness,
   LifecycleHealthAcceptance,
   LifecycleHooks,
   LifecycleMigrationRunner,
@@ -71,6 +73,7 @@ export type LifecycleEngineDependencies = {
     | (() => Record<string, string>);
   service: LifecycleServiceController;
   health: LifecycleHealthAcceptance;
+  connectorReadiness?: LifecycleConnectorReadiness;
   connectivity?: LifecycleHealthAcceptance;
   migration?: LifecycleMigrationRunner;
   runtime?: LifecycleRuntimeMaterializer;
@@ -266,6 +269,31 @@ export function createLifecycleEngine(
     });
   };
 
+  const acceptConnectorReadiness = async (
+    emit: ReturnType<typeof emitter>,
+  ): Promise<void> => {
+    if (!dependencies.connectorReadiness) return;
+    emit('connector-readiness');
+    let ready = false;
+    try {
+      ready = await dependencies.connectorReadiness.accept();
+    } catch (error: unknown) {
+      throw asLifecycleError(
+        error,
+        'CONNECTOR_READINESS_FAILED',
+        'public connector readiness acceptance failed',
+        'connector-readiness',
+      );
+    }
+    if (!ready) {
+      throw lifecycleError(
+        'CONNECTOR_READINESS_FAILED',
+        'public connector routing was not accepted after local health',
+        { phase: 'connector-readiness' },
+      );
+    }
+  };
+
   const pruneAfterCommit = (
     emit: ReturnType<typeof emitter>,
     options: {
@@ -300,6 +328,20 @@ export function createLifecycleEngine(
         message: failure.message,
       });
       return { retainedBundleIds: [], removedBundleIds: [] };
+    }
+  };
+
+  const reconcileAcceptedReleaseUserState = (releasePath: string): void => {
+    try {
+      if (dependencies.visibleUserRoot) {
+        reconcileManagedUserContentForRelease({
+          releasePath,
+          userRoot: dependencies.visibleUserRoot,
+        });
+      }
+      ensureNodeEncryptionKeyForHome(home);
+    } catch (_error: unknown) {
+      // Reported by the next doctor run rather than failing an accepted release.
     }
   };
 
@@ -353,6 +395,8 @@ export function createLifecycleEngine(
           operationId: input.operationId,
           expectedBundleId: input.manifest.bundleId,
           waitForCompletion: true,
+          allowDestructiveFallback: !input.previousReleasePath,
+          runtimeRoot: input.nextReleasePath,
         });
       } catch (error: unknown) {
         throw asLifecycleError(
@@ -374,6 +418,7 @@ export function createLifecycleEngine(
           version: input.manifest.version,
         },
       );
+      await acceptConnectorReadiness(input.emit);
       // Reconcile visible user content only once the release is health-accepted.
       //
       // Doing this straight after activation wrote the catalog, skills index, and example from a
@@ -382,17 +427,7 @@ export function createLifecycleEngine(
       // behind the optional afterActivate hook, because nothing supplies that hook and it would
       // silently never run. Failures here must not fail the release: the runtime is already live
       // and usable without this content.
-      try {
-        if (dependencies.visibleUserRoot) {
-          reconcileManagedUserContentForRelease({
-            releasePath: input.nextReleasePath,
-            userRoot: dependencies.visibleUserRoot,
-          });
-        }
-        ensureNodeEncryptionKeyForHome(home);
-      } catch (_error: unknown) {
-        // Reported by the next doctor run rather than failing an accepted release.
-      }
+      reconcileAcceptedReleaseUserState(input.nextReleasePath);
       clearLifecycleActivationJournal(home);
     } catch (error: unknown) {
       if (dependencies.hooks?.onActivationFailure) {
@@ -419,6 +454,8 @@ export function createLifecycleEngine(
             operationId: `${input.operationId}-rollback`,
             expectedBundleId: previousManifest.bundleId,
             waitForCompletion: true,
+            allowDestructiveFallback: true,
+            runtimeRoot: input.previousReleasePath,
           });
           input.emit('rollback', {
             bundleId: previousManifest.bundleId,
@@ -435,6 +472,7 @@ export function createLifecycleEngine(
               version: previousManifest.version,
             },
           );
+          await acceptConnectorReadiness(input.emit);
           clearLifecycleActivationJournal(home);
           pruneAfterCommit(input.emit, { automatic: true, emitSuccess: true });
         } else {
@@ -442,9 +480,11 @@ export function createLifecycleEngine(
           clearLifecycleActivationJournal(home);
         }
       } catch (rollbackError: unknown) {
+        const activationMessage = error instanceof Error ? error.message : String(error);
+        const rollbackMessage = rollbackError instanceof Error ? rollbackError.message : String(rollbackError);
         throw lifecycleError(
           'ACTIVATION_FAILED',
-          `runtime activation failed and rollback was not accepted: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`,
+          `runtime activation failed: ${activationMessage}; rollback was not accepted: ${rollbackMessage}`,
           { phase: 'health', cause: { error, rollbackError } },
         );
       }
@@ -495,7 +535,7 @@ export function createLifecycleEngine(
       }
 
       if (!updateAvailable && current.kind === 'valid') {
-        if (input.operation === 'install') {
+        if (input.operation === 'install' || input.operation === 'update') {
           yield* tryPromise({
             try: () => dependencies.service.preflight(),
             code: 'SERVICE_PREFLIGHT_FAILED',
@@ -509,6 +549,7 @@ export function createLifecycleEngine(
                 operationId,
                 expectedBundleId: release.bundleId,
                 waitForCompletion: true,
+                runtimeRoot: current.currentReleasePath,
               }),
             code: 'SERVICE_RESTART_FAILED',
             message: 'failed to reconcile Consuelo services',
@@ -525,6 +566,18 @@ export function createLifecycleEngine(
             message: 'Consuelo service health reconciliation failed',
             phase: 'health-check',
           });
+        }
+        yield* tryPromise({
+          try: () => acceptConnectorReadiness(input.emit),
+          code: 'CONNECTOR_READINESS_FAILED',
+          message: 'public connector readiness reconciliation failed',
+          phase: 'connector-readiness',
+        });
+        const currentReleasePath = current.currentReleasePath;
+        if (currentReleasePath) {
+          yield* Effect.sync(() =>
+            reconcileAcceptedReleaseUserState(currentReleasePath),
+          );
         }
         input.emit('complete', {
           changed: false,
@@ -816,22 +869,47 @@ export function createLifecycleEngine(
           'restart requires an installed Consuelo OS',
         );
       }
-      emit('service-restart', { replySafe: true });
+      const operationId = nextOperationId();
+      emit('service-preflight', { reconcile: true });
       try {
-        await dependencies.service.restart();
+        await dependencies.service.preflight();
+      } catch (error: unknown) {
+        throw asLifecycleError(
+          error,
+          'SERVICE_PREFLIGHT_FAILED',
+          'Consuelo service preflight failed',
+          'service-preflight',
+        );
+      }
+      emit('service-restart', { waitForCompletion: true });
+      try {
+        await dependencies.service.restart({
+          operationId,
+          expectedBundleId: state.kind === 'valid' ? state.currentBundleId : undefined,
+          waitForCompletion: true,
+          runtimeRoot: state.kind === 'valid' ? state.currentReleasePath : undefined,
+        });
       } catch (error: unknown) {
         throw asLifecycleError(
           error,
           'SERVICE_RESTART_FAILED',
-          'failed to schedule Consuelo service restart',
+          'failed to restart Consuelo services',
           'service-restart',
         );
       }
-      emit('complete', { changed: true, scheduled: true });
+      await acceptHealth(
+        emit,
+        { operationId, nextReleasePath: state.kind === 'valid' ? state.currentReleasePath : undefined },
+        state.kind === 'valid'
+          ? { bundleId: state.currentBundleId, version: state.currentVersion }
+          : undefined,
+      );
+      await acceptConnectorReadiness(emit);
+      emit('complete', { changed: true, scheduled: false, localHealthy: true, connectorReady: true });
       return {
         operation: 'restart',
         changed: true,
-        detail: { scheduled: true },
+        detail: { scheduled: false, localHealthy: true, connectorReady: true },
       };
     },
 
@@ -852,6 +930,16 @@ export function createLifecycleEngine(
               'REPAIR_FAILED',
               'valid runtime state is missing its release identity',
               { phase: 'inspect' },
+            );
+          }
+          const missingCapabilities = missingRequiredRuntimeRecoveryCapabilities(
+            state.manifest.capabilities,
+          );
+          if (missingCapabilities.length > 0) {
+            throw lifecycleError(
+              'RUNTIME_CAPABILITY_MISMATCH',
+              `installed runtime is missing recovery capability ${missingCapabilities[0]}; update is required before repair`,
+              { phase: 'repair-scan' },
             );
           }
           const operationId = nextOperationId();
@@ -898,6 +986,8 @@ export function createLifecycleEngine(
                     operationId,
                     expectedBundleId: state.currentBundleId,
                     waitForCompletion: true,
+                    allowDestructiveFallback: true,
+                    runtimeRoot: state.currentReleasePath,
                   }),
                 code: 'SERVICE_RESTART_FAILED',
                 message: 'failed to restart Consuelo services after repair',
@@ -920,6 +1010,12 @@ export function createLifecycleEngine(
                 message: 'repaired runtime health acceptance failed',
                 phase: 'health',
               });
+              yield* tryPromise({
+                try: () => acceptConnectorReadiness(emit),
+                code: 'CONNECTOR_READINESS_FAILED',
+                message: 'repaired runtime public connector readiness failed',
+                phase: 'connector-readiness',
+              });
               emit('complete', {
                 changed: true,
                 reason: 'runtime dependencies and service state repaired',
@@ -929,7 +1025,7 @@ export function createLifecycleEngine(
                 changed: true,
                 version: state.currentVersion,
                 bundleId: state.currentBundleId,
-                detail: { repaired: ['dependencies', 'migrations', 'service'] },
+                detail: { repaired: ['dependencies', 'migrations', 'service', 'connector'] },
               } satisfies LifecycleOperationResult;
             }),
           );

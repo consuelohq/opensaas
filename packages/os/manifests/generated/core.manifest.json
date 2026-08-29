@@ -57,7 +57,7 @@
       "source": "codemode",
       "sourcePath": "packages/os/tools/codemode/manifest.ts",
       "category": "codemode",
-      "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
+      "description": "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
       "core": true,
       "definition": {
         "name": "code.call",
@@ -65,7 +65,7 @@
           "code",
           "call"
         ],
-        "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
+        "description": "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
         "category": "codemode",
         "underlying": "os code.call",
         "capabilities": {
@@ -77,6 +77,37 @@
         "defaultTimeout": 180000,
         "inputSchema": "CodeCallInput",
         "outputSchema": "CodeCallOutput",
+        "search": {
+          "keywords": [
+            "structured",
+            "multi",
+            "summarize",
+            "summary",
+            "packet",
+            "bounded",
+            "transform",
+            "transformation",
+            "rewrite",
+            "codemod",
+            "codegen",
+            "generate",
+            "python",
+            "bun",
+            "bash",
+            "test",
+            "tests",
+            "typecheck",
+            "syntax",
+            "cli",
+            "reproduction",
+            "diagnostic",
+            "json",
+            "script",
+            "scripts",
+            "package",
+            "packages"
+          ]
+        },
         "command": {
           "script": "code-call",
           "branchMode": "none",
@@ -205,6 +236,11 @@
               "kind": "boolean"
             },
             {
+              "source": "detail",
+              "flag": "--detail",
+              "kind": "value"
+            },
+            {
               "source": "reindex",
               "flag": "--reindex",
               "kind": "boolean"
@@ -224,7 +260,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+      "description": "apply an anchored patch inside an authorized task worktree or work-session directory",
       "core": true,
       "definition": {
         "name": "fs.apply_patch",
@@ -232,7 +268,7 @@
           "fs",
           "apply_patch"
         ],
-        "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+        "description": "apply an anchored patch inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.apply_patch",
         "capabilities": {
@@ -244,6 +280,15 @@
         "defaultTimeout": 30000,
         "inputSchema": "FsApplyPatchInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "anchored",
+            "patch",
+            "hunk",
+            "apply",
+            "edit"
+          ]
+        },
         "command": {
           "script": "task:fs",
           "subcommand": "apply-patch",
@@ -277,7 +322,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "An agent safe file deletion path. Prefered over rm rf",
+      "description": "move files to trash inside an authorized task worktree or work-session directory",
       "core": true,
       "definition": {
         "name": "fs.trash",
@@ -285,7 +330,7 @@
           "fs",
           "trash"
         ],
-        "description": "An agent safe file deletion path. Prefered over rm rf",
+        "description": "move files to trash inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.trash",
         "capabilities": {
@@ -343,6 +388,24 @@
         "defaultTimeout": 120000,
         "inputSchema": "GithubInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "gh"
+          ],
+          "keywords": [
+            "coderabbit",
+            "codex",
+            "openai",
+            "chatgpt",
+            "qodo",
+            "pull request",
+            "pr review",
+            "reviews",
+            "comments",
+            "feedback",
+            "checks"
+          ]
+        },
         "command": {
           "script": "github",
           "branchMode": "none",
@@ -449,6 +512,107 @@
         "exampleInput": {
           "operation": "pr.reviews",
           "pr": 436
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "google",
+      "kind": "facade-tool",
+      "source": "google",
+      "sourcePath": "packages/os/tools/google/manifest.ts",
+      "category": "google",
+      "description": "use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Google Workspace runtime; first use can open Google OAuth and saved authorization is reused",
+      "core": true,
+      "definition": {
+        "name": "google",
+        "methodPath": [
+          "google"
+        ],
+        "description": "use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Google Workspace runtime; first use can open Google OAuth and saved authorization is reused",
+        "category": "google",
+        "underlying": "workspace google",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "GoogleInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "google",
+            "gmail",
+            "calendar",
+            "drive",
+            "docs",
+            "sheets",
+            "contacts"
+          ],
+          "keywords": [
+            "email",
+            "mail",
+            "event",
+            "document",
+            "spreadsheet",
+            "contact",
+            "workspace"
+          ]
+        },
+        "command": {
+          "script": "google",
+          "branchMode": "none",
+          "executionScope": "runtime",
+          "arguments": [
+            {
+              "source": "action",
+              "flag": "--action",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "args",
+              "flag": "--arg",
+              "kind": "commandArray"
+            },
+            {
+              "source": "account",
+              "flag": "--account",
+              "kind": "value"
+            },
+            {
+              "source": "mode",
+              "flag": "--mode",
+              "kind": "value"
+            },
+            {
+              "source": "approved",
+              "flag": "--approved",
+              "kind": "boolean"
+            },
+            {
+              "source": "approvalReason",
+              "flag": "--approval-reason",
+              "kind": "value"
+            },
+            {
+              "source": "timeoutMs",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "action": "run",
+          "args": [
+            "gmail",
+            "search",
+            "newer_than:7d"
+          ],
+          "mode": "read"
         },
         "sessionRequired": false
       }
@@ -656,6 +820,90 @@
       }
     },
     {
+      "name": "session.start",
+      "kind": "facade-tool",
+      "source": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "category": "session lifecycle",
+      "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+      "core": true,
+      "definition": {
+        "name": "session.start",
+        "methodPath": [
+          "session",
+          "start"
+        ],
+        "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+        "category": "session lifecycle",
+        "underlying": "os session.start",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 60000,
+        "inputSchema": "SessionStartInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "session:start",
+          "executionScope": "runtime",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "kind",
+              "flag": "--kind",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "path",
+              "flag": "--path",
+              "kind": "value"
+            },
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value"
+            },
+            {
+              "source": "stream",
+              "flag": "--stream",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "bodyFile",
+              "flag": "--body-file",
+              "kind": "value"
+            },
+            {
+              "source": "startFrom",
+              "flag": "--start-from",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "kind": "task",
+          "stream": "stream/workspace-agent",
+          "title": "example task",
+          "workflow": "task"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "stream.context",
       "kind": "facade-tool",
       "source": "stream",
@@ -773,7 +1021,7 @@
       "source": "task-lifecycle",
       "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
       "category": "task lifecycle",
-      "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+      "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
       "core": true,
       "definition": {
         "name": "task.start",
@@ -781,7 +1029,7 @@
           "task",
           "start"
         ],
-        "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+        "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
         "category": "task lifecycle",
         "underlying": "os task.start",
         "capabilities": {
@@ -909,7 +1157,7 @@
       "source": "tool-discovery",
       "sourcePath": "packages/os/tools/tool-discovery/manifest.ts",
       "category": "tooling",
-      "description": "search workspace tools by intent and return ranked usage guidance",
+      "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
       "core": true,
       "definition": {
         "name": "tools.search",
@@ -917,9 +1165,9 @@
           "tools",
           "search"
         ],
-        "description": "search workspace tools by intent and return ranked usage guidance",
+        "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
         "category": "tooling",
-        "underlying": "workspace tools.search",
+        "underlying": "Consuelo OS tools.search",
         "capabilities": {
           "readOnly": true,
           "mutating": false,
@@ -931,6 +1179,7 @@
         "outputSchema": "ToolsSearchOutput",
         "command": {
           "script": "tools:search",
+          "executionScope": "runtime",
           "branchMode": "none",
           "jsonFlag": "--json",
           "arguments": [
@@ -960,9 +1209,9 @@
               "kind": "boolean"
             },
             {
-              "source": "noDocs",
-              "flag": "--no-docs",
-              "kind": "boolean"
+              "source": "detail",
+              "flag": "--detail",
+              "kind": "value"
             }
           ]
         },

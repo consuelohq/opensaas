@@ -163,6 +163,11 @@ export const toolHandlers = [
           "kind": "value"
         },
         {
+          "source": "repo",
+          "flag": "--repo",
+          "kind": "value"
+        },
+        {
           "source": "taskOnly",
           "flag": "--task-only",
           "kind": "boolean"
@@ -181,6 +186,11 @@ export const toolHandlers = [
           "source": "bodyTemplate",
           "flag": "--body-template",
           "kind": "value"
+        },
+        {
+          "source": "ackWorkpadIncomplete",
+          "flag": "--ack-workpad-incomplete",
+          "kind": "boolean"
         },
         {
           "source": "pr",
@@ -235,6 +245,11 @@ export const toolHandlers = [
           "kind": "value"
         },
         {
+          "source": "repo",
+          "flag": "--repo",
+          "kind": "value"
+        },
+        {
           "source": "taskSession",
           "flag": "--task-session",
           "kind": "value"
@@ -273,6 +288,58 @@ export const toolHandlers = [
         {
           "source": "github",
           "flag": "--github",
+          "kind": "value"
+        }
+      ],
+      "jsonFlag": "--json"
+    }
+  },
+  {
+    "name": "session.start",
+    "command": {
+      "script": "session:start",
+      "executionScope": "runtime",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "kind",
+          "flag": "--kind",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "path",
+          "flag": "--path",
+          "kind": "value"
+        },
+        {
+          "source": "area",
+          "flag": "--area",
+          "kind": "value"
+        },
+        {
+          "source": "stream",
+          "flag": "--stream",
+          "kind": "value"
+        },
+        {
+          "source": "title",
+          "flag": "--title",
+          "kind": "value"
+        },
+        {
+          "source": "workflow",
+          "flag": "--workflow",
+          "kind": "value"
+        },
+        {
+          "source": "bodyFile",
+          "flag": "--body-file",
+          "kind": "value"
+        },
+        {
+          "source": "startFrom",
+          "flag": "--start-from",
           "kind": "value"
         }
       ],

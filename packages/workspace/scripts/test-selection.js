@@ -259,11 +259,16 @@ function changedFiles(root, args) {
   if (explicit.length) return explicit;
   const base = valueFor(args, 'base') || 'origin/main';
   const committed = spawnSync('git', ['diff', '--name-only', `${base}...HEAD`], { cwd: root, encoding: 'utf8' });
-  const working = spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' });
-  const staged = spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' });
-  const untracked = spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' });
   const files = new Set();
-  for (const result of [committed, working, staged, untracked]) {
+  const results = [committed];
+  if (!args['committed-only']) {
+    results.push(
+      spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' }),
+      spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' }),
+      spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }),
+    );
+  }
+  for (const result of results) {
     if (result.status !== 0) continue;
     for (const line of result.stdout.split(/\r?\n/)) if (line.trim()) files.add(line.trim());
   }
@@ -284,40 +289,55 @@ function docsOnly(files) {
 }
 
 function sourceCodeFiles(files) {
-  return files.filter((file) => /\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml)$/i.test(file) && !file.startsWith('.task/'));
+  return files.filter((file) => /\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|sh|bash|zsh)$/i.test(file) && !file.startsWith('.task/'));
 }
 
 function select(registry, files) {
+  const matches = registry.rules
+    .map((rule) => ({
+      rule,
+      matchedFiles: files.filter((file) =>
+        rule.source.some((pattern) => matchesPattern(file, pattern)),
+      ),
+    }))
+    .filter((entry) => entry.matchedFiles.length > 0);
+  const explicitCriticalFiles = new Set(
+    matches
+      .filter(
+        ({ rule }) => rule.origin === 'explicit' && rule.critical === true,
+      )
+      .flatMap(({ matchedFiles }) => matchedFiles),
+  );
   const matchedRules = [];
   const suites = [];
   const seen = new Set();
-  const exclusivelyOwnedFiles = new Set();
+  const exclusivelyOwnedFiles = new Set(
+    matches
+      .filter(({ rule }) => rule.exclusive === true)
+      .flatMap(({ matchedFiles }) => matchedFiles),
+  );
 
-  for (const rule of registry.rules) {
-    if (!rule.exclusive) continue;
-    for (const file of files) {
-      if (rule.source.some((pattern) => matchesPattern(file, pattern))) {
-        exclusivelyOwnedFiles.add(file);
-      }
-    }
-  }
-
-  for (const rule of registry.rules) {
-    const candidateFiles = rule.exclusive
-      ? files
-      : files.filter((file) => !exclusivelyOwnedFiles.has(file));
-    const matchedFiles = candidateFiles.filter((file) =>
-      rule.source.some((pattern) => matchesPattern(file, pattern)),
-    );
+  for (const { rule, matchedFiles: rawMatchedFiles } of matches) {
+    const matchedFiles = rule.exclusive
+      ? rawMatchedFiles
+      : rawMatchedFiles.filter((file) => !exclusivelyOwnedFiles.has(file));
     if (matchedFiles.length === 0) continue;
     matchedRules.push({
       id: rule.id,
       critical: rule.critical,
-      exclusive: rule.exclusive,
+      ...(rule.exclusive ? { exclusive: true } : {}),
       reason: rule.reason,
       matchedFiles,
       origin: rule.origin,
     });
+    const autoPackageCodeFiles =
+      rule.origin === 'auto' && rule.id.endsWith(':package-test')
+        ? sourceCodeFiles(matchedFiles)
+        : [];
+    const fullyCoveredByExplicitCriticalRule =
+      autoPackageCodeFiles.length > 0 &&
+      autoPackageCodeFiles.every((file) => explicitCriticalFiles.has(file));
+    if (fullyCoveredByExplicitCriticalRule) continue;
     for (const test of rule.tests) {
       const key = commandKey(test.command);
       if (seen.has(key)) continue;
@@ -386,7 +406,7 @@ function parseArgs(argv) {
     const raw = rest[i];
     if (!raw.startsWith('--')) { args._.push(raw); continue; }
     const [key, inline] = raw.slice(2).split('=', 2);
-    if (['json', 'run', 'no-run'].includes(key)) args[key] = true;
+    if (['json', 'run', 'no-run', 'committed-only'].includes(key)) args[key] = true;
     else {
       const value = inline !== undefined ? inline : rest[++i];
       if (args[key] === undefined) args[key] = value;

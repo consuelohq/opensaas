@@ -66,6 +66,9 @@ function renderDts(): string {
 
   return [
     'export type ErrorCode =',
+    '  | "CAPABILITY_NOT_SUPPORTED"',
+    '  | "WAIT_TIMEOUT"',
+    '  | "IDEMPOTENCY_CONFLICT"',
     '  | "OK"',
     '  | "VALIDATION_ERROR"',
     '  | "AMBIGUOUS_TASK_SELECTION"',
@@ -74,6 +77,9 @@ function renderDts(): string {
     '  | "TIMEOUT"',
     '  | "PARSE_ERROR"',
     '  | "NOT_FOUND"',
+    '  | "TASK_SESSION_REQUIRED"',
+    '  | "TASK_SESSION_NOT_FOUND"',
+    '  | "WORK_SESSION_NOT_FOUND"',
     '  | "DRY_RUN";',
     '',
     'export type ToolResult<TData = unknown> = {',

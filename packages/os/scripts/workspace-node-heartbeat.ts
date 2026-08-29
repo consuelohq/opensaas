@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -14,6 +15,8 @@ import {
   type WorkspaceNodeHeartbeatResult,
 } from './lib/workspace-node-heartbeat-client';
 import { reconcileGatewayWorkspaceEdgeProxyAuth } from './lib/security-gateway';
+import { createWorkspaceEdgeNodeHeaders } from './lib/workspace-edge-node-auth';
+import { writeStoredWorkspaceNodeSnapshot } from './lib/workspace-node-snapshot-cache';
 
 type WorkspaceNodeHeartbeatFileConfig = WorkspaceNodeHeartbeatConfig & {
   osHome?: string;
@@ -21,6 +24,7 @@ type WorkspaceNodeHeartbeatFileConfig = WorkspaceNodeHeartbeatConfig & {
 };
 
 const CONNECTOR_HEALTH_TIMEOUT_MS = 5_000;
+const MCP_READINESS_TIMEOUT_MS = 5_000;
 
 function parseConfigPath(args: string[]): string {
   const index = args.indexOf('--config');
@@ -82,6 +86,70 @@ function normalizeConnectorHealthUrl(value: string): URL {
     throw new Error('workspace node heartbeat connector health URL is invalid');
   }
   return url;
+}
+
+export async function probeHeartbeatMcpReadiness(input: {
+  config: WorkspaceNodeHeartbeatFileConfig;
+  result: WorkspaceNodeHeartbeatResult;
+  fetchImpl?: typeof fetch;
+  now?: () => number;
+  createNonce?: () => string;
+}): Promise<boolean> {
+  const healthUrl = input.config.connectorHealthUrl?.trim();
+  if (!healthUrl || input.result.routeReady !== true) return false;
+  const connectorId = input.result.connectorId?.trim();
+  const signingSecret = input.result.edgeRequestSigningSecret?.trim();
+  if (!connectorId || !signingSecret) return false;
+
+  try {
+    const mcpUrl = normalizeConnectorHealthUrl(healthUrl);
+    mcpUrl.pathname = '/mcp';
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'watchdog-' + (input.createNonce ?? randomUUID)(),
+      method: 'tools/list',
+    });
+    const timestamp = String((input.now ?? Date.now)());
+    const nonce = (input.createNonce ?? randomUUID)();
+    const signedHeaders = createWorkspaceEdgeNodeHeaders({
+      signingSecret,
+      workspaceId: input.config.workspaceId,
+      nodeId: input.config.nodeId,
+      connectorId,
+      surface: 'os',
+      method: 'POST',
+      pathWithSearch: '/mcp',
+      body,
+      timestamp,
+      nonce,
+    });
+    const response = await (input.fetchImpl ?? globalThis.fetch)(
+      new Request(mcpUrl, {
+        method: 'POST',
+        headers: {
+          ...signedHeaders,
+          accept: 'application/json',
+          'content-type': 'application/json',
+        },
+        body,
+        signal: AbortSignal.timeout(MCP_READINESS_TIMEOUT_MS),
+      }),
+    );
+    if (!response.ok) return false;
+    const payload = await response.json() as unknown;
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      return false;
+    }
+    const result = (payload as { result?: unknown }).result;
+    return Boolean(
+      result
+      && typeof result === 'object'
+      && !Array.isArray(result)
+      && Array.isArray((result as { tools?: unknown }).tools),
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function reconcileHeartbeatEdgeProxyAuth(input: {
@@ -151,6 +219,17 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
       config,
       fetchImpl: input.fetchImpl,
     });
+    // Do not turn a transient public-health failure during restart into an authority-side
+    // disconnect. Heartbeat TTL will classify a sustained outage if the connector stays down.
+    if (connectorStatus === 'disconnected') {
+      return {
+        nodeId: config.nodeId,
+        presence: 'offline' as const,
+        routeReady: false,
+        skipped: true as const,
+        reason: 'connector_health_failed' as const,
+      };
+    }
     const client = createWorkspaceNodeHeartbeatClient({
       config: { ...config, connectorStatus },
       agents,
@@ -158,7 +237,30 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
     });
     const result = await client.send();
     reconcileHeartbeatEdgeProxyAuth({ configPath, config, result });
-    return result;
+    const mcpReadinessRequired = Boolean(config.connectorHealthUrl?.trim());
+    const mcpReady = mcpReadinessRequired
+      ? await probeHeartbeatMcpReadiness({
+          config,
+          result,
+          fetchImpl: input.fetchImpl,
+        })
+      : undefined;
+    const acceptedResult = mcpReadinessRequired
+      ? {
+          ...result,
+          routeReady: result.routeReady && mcpReady === true,
+          mcpReady,
+        }
+      : result;
+    if (result.workspace) {
+      writeStoredWorkspaceNodeSnapshot({
+        home: resolveOsHome(configPath, config),
+        workspace: result.workspace,
+        expectedWorkspaceId: config.workspaceId,
+        expectedCurrentNodeId: config.nodeId,
+      });
+    }
+    return acceptedResult;
   } catch (error: unknown) {
     if (error instanceof Error) throw error;
     throw new Error('workspace node heartbeat failed', { cause: error });
@@ -170,7 +272,15 @@ async function main(): Promise<void> {
     parseConfigPath(process.argv.slice(2)),
   );
   process.stdout.write(
-    `${JSON.stringify({ nodeId: result.nodeId, presence: result.presence })}\n`,
+    `${JSON.stringify({
+      nodeId: result.nodeId,
+      presence: result.presence,
+      routeReady: result.routeReady,
+      ...('mcpReady' in result ? { mcpReady: result.mcpReady } : {}),
+      ...('skipped' in result && result.skipped
+        ? { skipped: true, reason: result.reason }
+        : {}),
+    })}\n`,
   );
 }
 

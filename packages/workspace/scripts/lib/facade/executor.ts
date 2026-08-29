@@ -11,7 +11,9 @@ import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-r
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
 import { getInputSchema } from './schemas';
+import { resolveBrowserConfig } from '../browser/config';
 import { executeCodeCall } from '../code-call/runtime';
+import { nodeResourceLockPath, withNodeResourceLock } from '../node-resource-lock';
 import type { CodeCallInput } from '../code-call/types';
 import { executeSubagent } from '../subagent/runtime';
 
@@ -30,6 +32,9 @@ import type {
 const require = createRequire(import.meta.url);
 const { resolvePrRefNumber } = require('../pr-ref');
 const { syncTddEvidence, syncTestSelectionEvidence, syncValidationEvidence } = require('../task-workpad');
+const { recoverDurableTaskSession } = require('../task-session');
+const { readDurableTaskSessionMetadata, touchDurableTaskSessionMetadata } = require('../task-registry');
+const { getTaskWorktreeRoot } = require('../paths');
 
 export const manifestEntries = manifestJson as ToolManifestEntry[];
 
@@ -46,6 +51,22 @@ type TaskSessionMetadata = {
 type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
+
+function refreshTaskSessionActivity(
+  entry: ToolManifestEntry,
+  resolution: TaskSessionResolution | null,
+  result: ToolResult<unknown>,
+  input: ToolInput,
+  env: NodeJS.ProcessEnv,
+): void {
+  if (!entry.capabilities.mutating || !resolution?.ok || !result.ok || input.dryRun === true) return;
+  try {
+    const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+    touchDurableTaskSessionMetadata(resolution.metadata.taskSession, home ? { home } : {});
+  } catch (error: unknown) {
+    process.stderr.write(`warning: failed to refresh durable task activity ${resolution.metadata.taskSession}: ${getErrorMessage(error)}\n`);
+  }
+}
 
 const MAX_LOG_COMMAND_CHARS = 4000;
 
@@ -230,7 +251,10 @@ export async function executeTool<TData = unknown>(
       requestId,
       options,
     });
-    if (internalResult) return internalResult;
+    if (internalResult) {
+      refreshTaskSessionActivity(entry, taskSessionResolution, internalResult as ToolResult<unknown>, scopedInput, env);
+      return internalResult;
+    }
 
     const branchResolution = resolveBranchIfNeeded(entry, scopedInput, cwd, env, options);
     if (!branchResolution.ok) {
@@ -274,7 +298,13 @@ export async function executeTool<TData = unknown>(
     }
 
     const timeoutMs = getTimeoutMs(entry, commandInput);
-    const runResult = await runWithRetry(entry, plan, timeoutMs, runner);
+    const runResult = (toolName === 'browser' || toolName.startsWith('browser.'))
+      ? await withNodeResourceLock({
+        lockPath: nodeResourceLockPath(resolveBrowserConfig(env).profilePath),
+        operationId: `browser:${toolName}`,
+        waitTimeoutMs: timeoutMs,
+      }, () => runWithRetry(entry, plan, timeoutMs, runner))
+      : await runWithRetry(entry, plan, timeoutMs, runner);
     const cleanStderr = stripCommandEcho(runResult.stderr);
     if (runResult.timedOut) {
       const result = createToolResult({
@@ -321,6 +351,7 @@ export async function executeTool<TData = unknown>(
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
       };
       maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
+      refreshTaskSessionActivity(entry, taskSessionResolution, result as ToolResult<unknown>, commandInput, env);
       logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
       return result;
     }
@@ -339,6 +370,7 @@ export async function executeTool<TData = unknown>(
       now: options.now,
     });
     maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
+    refreshTaskSessionActivity(entry, taskSessionResolution, result as ToolResult<unknown>, commandInput, env);
     logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
     return result;
   } catch (error: unknown) {
@@ -499,20 +531,24 @@ function compactReviewData(data: unknown): unknown {
   const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
   const testResults = asArray(data.testResults);
   const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  const documentationCheckRan = Object.prototype.hasOwnProperty.call(data, 'documentationOpportunities');
+  const documentationOpportunities = asArray(data.documentationOpportunities);
+  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (documentationCheckRan) checksRun.push('documentation_opportunities');
+  if (testResults.length > 0) checksRun.push('tests');
   return {
     schema: 'review.summary.v1',
     base: data.base,
     branch: data.branch,
     files: data.files,
     affectedProjects: data.affectedProjects,
-    checksRun: testResults.length > 0
-      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'tests']
-      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance'],
+    checksRun,
     summary: {
       yourIssues: yours.length,
       preExistingIssues: preExisting.length,
       failedTestSuites: failedSuites.length,
       blockingIssues: yours.length + failedSuites.length,
+      documentationOpportunities: documentationOpportunities.length,
     },
     mustFixTotal: yours.length,
     mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
@@ -525,6 +561,7 @@ function compactReviewData(data: unknown): unknown {
       preExisting: summarizeFacadeFindings(preExisting).byFile,
     },
     preExistingDigest: summarizeFacadeFindings(preExisting),
+    documentationOpportunities: documentationOpportunities.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
     testSummary: {
       totalSuites: testResults.length,
       passedSuites: testResults.length - failedSuites.length,
@@ -812,6 +849,28 @@ function addSessionCandidates(candidates: Array<{ path: string; warn: boolean }>
 }
 
 function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.ProcessEnv): TaskSessionMetadata | null {
+  try {
+    const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+    const registryOptions = home ? { home } : {};
+    const durable = readDurableTaskSessionMetadata(taskSession, registryOptions);
+    const durableWorktree = durable?.worktreePath || durable?.worktree;
+    if (
+      durable
+      && durable.status === 'active'
+      && typeof durableWorktree === 'string'
+      && fs.existsSync(durableWorktree)
+      && isTaskSessionMetadata(durable, taskSession)
+    ) {
+      return durable;
+    }
+    if (durable) {
+      const recovered = recoverDurableTaskSession(taskSession, registryOptions);
+      if (recovered && isTaskSessionMetadata(recovered, taskSession)) return recovered;
+    }
+  } catch (error: unknown) {
+    process.stderr.write(`warning: failed to recover durable task session ${taskSession}: ${getErrorMessage(error)}\n`);
+  }
+
   const candidates: Array<{ path: string; warn: boolean }> = [];
   addSessionCandidates(candidates, cwd, true);
 
@@ -819,8 +878,13 @@ function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.P
     addSessionCandidates(candidates, env.TASK_WORKTREE, true);
   }
 
-  const absoluteWorktreeRoot = getWorktreeRoot(env);
-  if (fs.existsSync(absoluteWorktreeRoot)) {
+  const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+  const taskWorktreeRoots = Array.from(new Set([
+    getTaskWorktreeRoot(undefined, env),
+    getWorktreeRoot(env),
+  ].filter((value): value is string => typeof value === 'string' && value.length > 0)));
+  for (const absoluteWorktreeRoot of taskWorktreeRoots) {
+    if (!fs.existsSync(absoluteWorktreeRoot)) continue;
     for (const name of fs.readdirSync(absoluteWorktreeRoot)) {
       if (!name.startsWith('task-')) continue;
       addSessionCandidates(candidates, path.join(absoluteWorktreeRoot, name), false);

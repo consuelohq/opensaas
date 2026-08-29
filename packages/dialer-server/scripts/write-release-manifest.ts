@@ -25,10 +25,10 @@ const edge = readJson<{
   javascriptSha256: string;
   cssSha256: string;
 }>('edge');
-const customMenu = readJson<{
-  customMenuId: string;
-  readBackVerified: boolean;
-}>('custom-menu');
+const launcherBootstrap = readJson<{
+  sha256: string;
+  installationMode: 'one-time';
+}>('launcher-bootstrap');
 const smoke = readJson<{
   ok: boolean;
   checks: Array<{
@@ -55,7 +55,10 @@ const manifest = {
       javascriptSha256: edge.javascriptSha256,
       cssSha256: edge.cssSha256,
     },
-    customMenu,
+    launcherBootstrap: {
+      sha256: launcherBootstrap.sha256,
+      installationMode: launcherBootstrap.installationMode,
+    },
     smoke,
   }),
   releasedAt: new Date().toISOString(),

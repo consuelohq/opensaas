@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_98ef6922d061",
+  "tmuxSession": "opensaas-os-normalize-enrollment-reset-proxy-errors-98ef6922",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/normalize-enrollment-reset-proxy-errors",
+  "branch": "task/os/normalize-enrollment-reset-proxy-errors",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-normalize-enrollment-reset-proxy-errors",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-normalize-enrollment-reset-proxy-errors",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2198,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2198",
+  "createdAt": "2026-08-26T04:53:50.519Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-normalize-enrollment-reset-proxy-errors/.task/os/normalize-enrollment-reset-proxy-errors/session.json"
+}

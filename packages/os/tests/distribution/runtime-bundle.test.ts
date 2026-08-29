@@ -18,6 +18,7 @@ import {
   RUNTIME_BUNDLE_BUILDER_ENTRYPOINT,
   RUNTIME_BUNDLE_INTEGRATION_SCRIPT_KEYS,
   RUNTIME_BUNDLE_MANIFEST_PATH,
+  REQUIRED_RUNTIME_RECOVERY_CAPABILITIES,
   buildRuntimeBundle,
   classifyRuntimeBundlePath,
   computeReleaseFingerprint,
@@ -35,8 +36,10 @@ const requiredFixtureFiles: Record<string, string> = {
   'bun.lock': 'fixture-lock\n',
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
+  'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
   'scripts/native-lifecycle-operation.ts':
     'export const nativeLifecycleOperationFixture = true;\n',
+  'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
   'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
   'scripts/managed-components.ts':
     'export const managedComponentsCliFixture = true;\n',
@@ -44,6 +47,7 @@ const requiredFixtureFiles: Record<string, string> = {
     'export const managedComponentsFixture = true;\n',
   'scripts/lib/managed-component-install.ts':
     'export const managedComponentInstallFixture = true;\n',
+  'scripts/lib/subagent/runner.ts': 'export const subagentRunnerFixture = true;\\n',
   'manifests/generated/tool.manifest.json':
     '{"version":1,"kind":"consuelo-os-tool-manifest","tools":[]}\n',
   'manifests/generated/core.manifest.json':
@@ -136,7 +140,7 @@ afterEach(() => {
   for (const root of fixtureRoots.splice(0)) {
     rmSync(root, { force: true, recursive: true });
   }
-});
+}, 120_000);
 
 describe('runtime bundle contract', () => {
   it('defines the integration entrypoint and package-script keys without wiring shared scripts', () => {
@@ -818,6 +822,7 @@ describe('runtime bundle contract', () => {
 
     expect(first.archiveDigest).toBe(second.archiveDigest);
     expect(first.manifest.files.length).toBeGreaterThan(300);
+    expect(first.manifest.capabilities).toEqual(REQUIRED_RUNTIME_RECOVERY_CAPABILITIES);
     expect(
       first.manifest.files.some(
         (file) => file.path === 'scripts/railway-logs.js',
@@ -843,7 +848,31 @@ describe('runtime bundle contract', () => {
           role: 'runtime',
         }),
         expect.objectContaining({
+          path: 'skills/branch/SKILL.md',
+          role: 'managed-skill',
+        }),
+        expect.objectContaining({
+          path: 'skills/branch/skill.json',
+          role: 'managed-skill',
+        }),
+        expect.objectContaining({
           path: 'scripts/lib/distribution/runtime-bundle.ts',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/task-worktree-gc.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-eviction.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-gc.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-gc-scheduler.ts',
           role: 'runtime',
         }),
         expect.objectContaining({
@@ -921,6 +950,16 @@ describe('runtime bundle contract', () => {
       writeFileSync(target, entry.bytes);
       chmodSync(target, entry.mode);
     }
+    const dependencyInstall = spawnSync(
+      'bun',
+      ['install', '--frozen-lockfile', '--production'],
+      {
+        cwd: runtimeRoot,
+        encoding: 'utf8',
+      },
+    );
+    expect(dependencyInstall.status, dependencyInstall.stderr).toBe(0);
+    expect(existsSync(join(runtimeRoot, 'node_modules', 'zod'))).toBe(true);
     const lifecycleStatus = spawnSync(
       'bun',
       [

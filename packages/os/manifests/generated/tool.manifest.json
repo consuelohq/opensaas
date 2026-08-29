@@ -108,7 +108,7 @@
       "label": "task-lifecycle",
       "kind": "facade-tool",
       "path": "packages/os/tools/task-lifecycle/manifest.ts",
-      "entryCount": 11
+      "entryCount": 12
     },
     {
       "label": "tool-discovery",
@@ -127,6 +127,42 @@
       "kind": "facade-tool",
       "path": "packages/os/tools/deployment-provider/manifest.ts",
       "entryCount": 8
+    },
+    {
+      "label": "lifecycle",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/lifecycle/manifest.ts",
+      "entryCount": 2
+    },
+    {
+      "label": "security",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/security/manifest.ts",
+      "entryCount": 1
+    },
+    {
+      "label": "monitor",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/monitor/manifest.ts",
+      "entryCount": 1
+    },
+    {
+      "label": "daily-schedules",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/daily-schedules/manifest.ts",
+      "entryCount": 1
+    },
+    {
+      "label": "release",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/release/manifest.ts",
+      "entryCount": 1
+    },
+    {
+      "label": "google",
+      "kind": "facade-tool",
+      "path": "packages/os/tools/google/manifest.ts",
+      "entryCount": 1
     }
   ],
   "tools": [
@@ -208,6 +244,7 @@
           "script": "artifacts",
           "subcommand": "check",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -248,6 +285,7 @@
           "script": "artifacts",
           "subcommand": "generate-demo",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -306,6 +344,7 @@
           "script": "artifacts",
           "subcommand": "generate-digital-eguide",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -369,6 +408,7 @@
           "script": "artifacts",
           "subcommand": "generate-email",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -427,6 +467,7 @@
           "script": "artifacts",
           "subcommand": "generate-image-brief",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -485,6 +526,7 @@
           "script": "artifacts",
           "subcommand": "generate-motion-frame",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -543,6 +585,7 @@
           "script": "artifacts",
           "subcommand": "generate-website",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -601,6 +644,7 @@
           "script": "artifacts",
           "subcommand": "get-design-system",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -641,6 +685,7 @@
           "script": "artifacts",
           "subcommand": "list-design-systems",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -681,6 +726,7 @@
           "script": "artifacts",
           "subcommand": "list-skills",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -721,6 +767,7 @@
           "script": "artifacts",
           "subcommand": "od:build",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -763,6 +810,7 @@
           "script": "artifacts",
           "subcommand": "publish",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -842,6 +890,7 @@
           "script": "artifacts",
           "subcommand": "railway:check",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -882,6 +931,7 @@
           "script": "artifacts",
           "subcommand": "refresh",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -930,6 +980,7 @@
           "script": "artifacts",
           "subcommand": "render-hyperframes",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": [
@@ -988,6 +1039,7 @@
           "script": "artifacts",
           "subcommand": "run",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -1030,6 +1082,7 @@
           "script": "artifacts",
           "subcommand": "ui:bg",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -1072,6 +1125,7 @@
           "script": "artifacts",
           "subcommand": "ui:logs",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -1112,6 +1166,7 @@
           "script": "artifacts",
           "subcommand": "ui:status",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -1152,6 +1207,7 @@
           "script": "artifacts",
           "subcommand": "ui:stop",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -1194,6 +1250,7 @@
           "script": "artifacts",
           "subcommand": "upstream-status",
           "branchMode": "none",
+          "executionScope": "runtime",
           "jsonFlag": "--json",
           "dryRunFlag": "--dry-run",
           "arguments": []
@@ -2731,7 +2788,7 @@
       "source": "codemode",
       "sourcePath": "packages/os/tools/codemode/manifest.ts",
       "category": "codemode",
-      "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
+      "description": "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
       "core": true,
       "definition": {
         "name": "code.call",
@@ -2739,7 +2796,7 @@
           "code",
           "call"
         ],
-        "description": "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
+        "description": "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.",
         "category": "codemode",
         "underlying": "os code.call",
         "capabilities": {
@@ -2751,6 +2808,37 @@
         "defaultTimeout": 180000,
         "inputSchema": "CodeCallInput",
         "outputSchema": "CodeCallOutput",
+        "search": {
+          "keywords": [
+            "structured",
+            "multi",
+            "summarize",
+            "summary",
+            "packet",
+            "bounded",
+            "transform",
+            "transformation",
+            "rewrite",
+            "codemod",
+            "codegen",
+            "generate",
+            "python",
+            "bun",
+            "bash",
+            "test",
+            "tests",
+            "typecheck",
+            "syntax",
+            "cli",
+            "reproduction",
+            "diagnostic",
+            "json",
+            "script",
+            "scripts",
+            "package",
+            "packages"
+          ]
+        },
         "command": {
           "script": "code-call",
           "branchMode": "none",
@@ -2993,6 +3081,76 @@
       }
     },
     {
+      "name": "dailySchedules.publish",
+      "kind": "facade-tool",
+      "source": "daily-schedules",
+      "sourcePath": "packages/os/tools/daily-schedules/manifest.ts",
+      "category": "artifacts",
+      "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
+      "core": false,
+      "definition": {
+        "name": "dailySchedules.publish",
+        "methodPath": [
+          "dailySchedules",
+          "publish"
+        ],
+        "description": "publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index",
+        "category": "artifacts",
+        "underlying": "Consuelo durable artifact catalog",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "DailySchedulesPublishInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "daily-schedules",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "kind",
+              "flag": "--kind",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "sourceFile",
+              "flag": "--source-file",
+              "kind": "value"
+            },
+            {
+              "source": "content",
+              "flag": "--content",
+              "kind": "value"
+            },
+            {
+              "source": "format",
+              "flag": "--format",
+              "kind": "value"
+            },
+            {
+              "source": "date",
+              "flag": "--date",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "kind": "security-workpad",
+          "sourceFile": "/tmp/security-workpad.md"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "decideNext",
       "kind": "facade-tool",
       "source": "decision-engine",
@@ -3074,6 +3232,13 @@
         "defaultTimeout": 120000,
         "inputSchema": "DeploymentContextInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "railway",
+            "vercel",
+            "cloudflare"
+          ]
+        },
         "command": {
           "script": "deployment",
           "internal": "deployment",
@@ -3133,6 +3298,19 @@
         "defaultTimeout": 900000,
         "inputSchema": "DeploymentDeployInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "deploy",
+            "redeploy",
+            "promote",
+            "deployment"
+          ],
+          "domainAliases": [
+            "railway",
+            "vercel",
+            "cloudflare"
+          ]
+        },
         "command": {
           "script": "deployment",
           "internal": "deployment",
@@ -3240,6 +3418,13 @@
         "defaultTimeout": 120000,
         "inputSchema": "DeploymentDetectInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "railway",
+            "vercel",
+            "cloudflare"
+          ]
+        },
         "command": {
           "script": "deployment",
           "internal": "deployment",
@@ -3287,6 +3472,13 @@
         "defaultTimeout": 120000,
         "inputSchema": "DeploymentEnvironmentInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "railway",
+            "vercel",
+            "cloudflare"
+          ]
+        },
         "command": {
           "script": "deployment",
           "internal": "deployment",
@@ -3392,6 +3584,13 @@
         "defaultTimeout": 120000,
         "inputSchema": "DeploymentListInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "railway",
+            "vercel",
+            "cloudflare"
+          ]
+        },
         "command": {
           "script": "deployment",
           "internal": "deployment",
@@ -3477,6 +3676,13 @@
         "defaultTimeout": 180000,
         "inputSchema": "DeploymentLogsInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "railway",
+            "vercel",
+            "cloudflare"
+          ]
+        },
         "command": {
           "script": "deployment",
           "internal": "deployment",
@@ -3581,6 +3787,30 @@
         "defaultTimeout": 120000,
         "inputSchema": "DeploymentRawInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "railway",
+            "vercel",
+            "cloudflare",
+            "r2",
+            "d1",
+            "wrangler",
+            "worker",
+            "workers"
+          ],
+          "entities": [
+            "r2",
+            "object",
+            "objects",
+            "bucket",
+            "buckets",
+            "d1",
+            "database",
+            "query",
+            "worker",
+            "workers"
+          ]
+        },
         "command": {
           "script": "deployment",
           "internal": "deployment",
@@ -3654,6 +3884,13 @@
         "defaultTimeout": 120000,
         "inputSchema": "DeploymentStatusInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "railway",
+            "vercel",
+            "cloudflare"
+          ]
+        },
         "command": {
           "script": "deployment",
           "internal": "deployment",
@@ -3906,6 +4143,11 @@
               "kind": "boolean"
             },
             {
+              "source": "detail",
+              "flag": "--detail",
+              "kind": "value"
+            },
+            {
               "source": "reindex",
               "flag": "--reindex",
               "kind": "boolean"
@@ -3925,7 +4167,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+      "description": "apply an anchored patch inside an authorized task worktree or work-session directory",
       "core": true,
       "definition": {
         "name": "fs.apply_patch",
@@ -3933,7 +4175,7 @@
           "fs",
           "apply_patch"
         ],
-        "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+        "description": "apply an anchored patch inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.apply_patch",
         "capabilities": {
@@ -3945,6 +4187,15 @@
         "defaultTimeout": 30000,
         "inputSchema": "FsApplyPatchInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "anchored",
+            "patch",
+            "hunk",
+            "apply",
+            "edit"
+          ]
+        },
         "command": {
           "script": "task:fs",
           "subcommand": "apply-patch",
@@ -3998,6 +4249,15 @@
         "defaultTimeout": 30000,
         "inputSchema": "FsListInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "entities": [
+            "directory",
+            "directories",
+            "folder",
+            "folders",
+            "tree"
+          ]
+        },
         "command": {
           "script": "task:fs",
           "subcommand": "list",
@@ -4069,6 +4329,15 @@
         "defaultTimeout": 30000,
         "inputSchema": "FsReadInput",
         "outputSchema": "FsReadOutput",
+        "search": {
+          "entities": [
+            "file",
+            "files",
+            "line",
+            "lines",
+            "contents"
+          ]
+        },
         "command": {
           "script": "task:fs",
           "subcommand": "read",
@@ -4173,6 +4442,16 @@
         "defaultTimeout": 30000,
         "inputSchema": "FsSearchInput",
         "outputSchema": "FsSearchOutput",
+        "search": {
+          "keywords": [
+            "grep",
+            "ripgrep",
+            "rg",
+            "pattern",
+            "contents",
+            "codebase"
+          ]
+        },
         "command": {
           "script": "task:fs",
           "subcommand": "search",
@@ -4241,7 +4520,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "An agent safe file deletion path. Prefered over rm rf",
+      "description": "move files to trash inside an authorized task worktree or work-session directory",
       "core": true,
       "definition": {
         "name": "fs.trash",
@@ -4249,7 +4528,7 @@
           "fs",
           "trash"
         ],
-        "description": "An agent safe file deletion path. Prefered over rm rf",
+        "description": "move files to trash inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.trash",
         "capabilities": {
@@ -4288,7 +4567,7 @@
       "source": "filesystem",
       "sourcePath": "packages/os/tools/filesystem/manifest.ts",
       "category": "filesystem",
-      "description": "write a file in a task worktree",
+      "description": "write a file inside an authorized task worktree or work-session directory",
       "core": false,
       "definition": {
         "name": "fs.write",
@@ -4296,7 +4575,7 @@
           "fs",
           "write"
         ],
-        "description": "write a file in a task worktree",
+        "description": "write a file inside an authorized task worktree or work-session directory",
         "category": "filesystem",
         "underlying": "workspace fs.write",
         "capabilities": {
@@ -4641,6 +4920,24 @@
         "defaultTimeout": 120000,
         "inputSchema": "GithubInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "gh"
+          ],
+          "keywords": [
+            "coderabbit",
+            "codex",
+            "openai",
+            "chatgpt",
+            "qodo",
+            "pull request",
+            "pr review",
+            "reviews",
+            "comments",
+            "feedback",
+            "checks"
+          ]
+        },
         "command": {
           "script": "github",
           "branchMode": "none",
@@ -4752,6 +5049,107 @@
       }
     },
     {
+      "name": "google",
+      "kind": "facade-tool",
+      "source": "google",
+      "sourcePath": "packages/os/tools/google/manifest.ts",
+      "category": "google",
+      "description": "use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Google Workspace runtime; first use can open Google OAuth and saved authorization is reused",
+      "core": true,
+      "definition": {
+        "name": "google",
+        "methodPath": [
+          "google"
+        ],
+        "description": "use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Google Workspace runtime; first use can open Google OAuth and saved authorization is reused",
+        "category": "google",
+        "underlying": "workspace google",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "GoogleInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "domainAliases": [
+            "google",
+            "gmail",
+            "calendar",
+            "drive",
+            "docs",
+            "sheets",
+            "contacts"
+          ],
+          "keywords": [
+            "email",
+            "mail",
+            "event",
+            "document",
+            "spreadsheet",
+            "contact",
+            "workspace"
+          ]
+        },
+        "command": {
+          "script": "google",
+          "branchMode": "none",
+          "executionScope": "runtime",
+          "arguments": [
+            {
+              "source": "action",
+              "flag": "--action",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "args",
+              "flag": "--arg",
+              "kind": "commandArray"
+            },
+            {
+              "source": "account",
+              "flag": "--account",
+              "kind": "value"
+            },
+            {
+              "source": "mode",
+              "flag": "--mode",
+              "kind": "value"
+            },
+            {
+              "source": "approved",
+              "flag": "--approved",
+              "kind": "boolean"
+            },
+            {
+              "source": "approvalReason",
+              "flag": "--approval-reason",
+              "kind": "value"
+            },
+            {
+              "source": "timeoutMs",
+              "flag": "--timeout-ms",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "action": "run",
+          "args": [
+            "gmail",
+            "search",
+            "newer_than:7d"
+          ],
+          "mode": "read"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "http",
       "kind": "facade-tool",
       "source": "http",
@@ -4805,6 +5203,132 @@
         "exampleInput": {
           "method": "get",
           "url": "https://example.com"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "lifecycle.status",
+      "kind": "facade-tool",
+      "source": "lifecycle",
+      "sourcePath": "packages/os/tools/lifecycle/manifest.ts",
+      "category": "lifecycle",
+      "description": "check Consuelo OS lifecycle and runtime status, including the latest durable update operation",
+      "core": false,
+      "definition": {
+        "name": "lifecycle.status",
+        "methodPath": [
+          "lifecycle",
+          "status"
+        ],
+        "description": "check Consuelo OS lifecycle and runtime status, including the latest durable update operation",
+        "category": "lifecycle",
+        "underlying": "workspace lifecycle.status",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 60000,
+        "inputSchema": "EmptyInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "consuelo",
+            "os",
+            "runtime",
+            "release",
+            "lifecycle",
+            "status",
+            "update status",
+            "upgrade status"
+          ],
+          "entities": [
+            "consuelo os",
+            "runtime release",
+            "lifecycle operation"
+          ]
+        },
+        "command": {
+          "script": "lifecycle",
+          "executionScope": "runtime",
+          "subcommand": "status",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": []
+        },
+        "exampleInput": {},
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "lifecycle.update",
+      "kind": "facade-tool",
+      "source": "lifecycle",
+      "sourcePath": "packages/os/tools/lifecycle/manifest.ts",
+      "category": "lifecycle",
+      "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater; optionally require an exact released version",
+      "core": false,
+      "definition": {
+        "name": "lifecycle.update",
+        "methodPath": [
+          "lifecycle",
+          "update"
+        ],
+        "description": "update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater; optionally require an exact released version",
+        "category": "lifecycle",
+        "underlying": "workspace lifecycle.update",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "LifecycleUpdateInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "consuelo",
+            "os",
+            "runtime",
+            "release",
+            "lifecycle",
+            "update",
+            "upgrade",
+            "updater",
+            "install latest",
+            "exact version",
+            "pin version"
+          ],
+          "entities": [
+            "consuelo os",
+            "runtime release",
+            "lifecycle updater"
+          ]
+        },
+        "command": {
+          "script": "lifecycle",
+          "executionScope": "runtime",
+          "subcommand": "update",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "channel",
+              "flag": "--channel",
+              "kind": "value"
+            },
+            {
+              "source": "version",
+              "flag": "--version",
+              "kind": "value"
+            }
+          ]
+        },
+        "exampleInput": {
+          "channel": "stable"
         },
         "sessionRequired": false
       }
@@ -5071,6 +5595,14 @@
         "defaultTimeout": 60000,
         "inputSchema": "LinearSearchInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "ticket",
+            "tickets",
+            "issue search",
+            "find issues"
+          ]
+        },
         "command": {
           "script": "linear",
           "subcommand": "search",
@@ -7040,6 +7572,8 @@
           "arguments": []
         },
         "exampleInput": {
+          "input": "media/input.wav",
+          "mode": "fixture",
           "dryRun": true
         },
         "sessionRequired": false,
@@ -7184,6 +7718,41 @@
       }
     },
     {
+      "name": "monitor.errors",
+      "kind": "facade-tool",
+      "source": "monitor",
+      "sourcePath": "packages/os/tools/monitor/manifest.ts",
+      "category": "observability",
+      "description": "analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates",
+      "core": false,
+      "definition": {
+        "name": "monitor.errors",
+        "methodPath": [
+          "monitor",
+          "errors"
+        ],
+        "description": "analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates",
+        "category": "observability",
+        "underlying": "Consuelo canonical OS trace database and current OS tool contracts",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 120000,
+        "inputSchema": "EmptyInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "monitor:errors",
+          "branchMode": "optional",
+          "arguments": []
+        },
+        "exampleInput": {},
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "prReview",
       "kind": "facade-tool",
       "source": "review",
@@ -7208,6 +7777,9 @@
         "defaultTimeout": 120000,
         "inputSchema": "PrReviewInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "hidden": true
+        },
         "command": {
           "script": "pr-review",
           "branchMode": "none",
@@ -7226,6 +7798,93 @@
         },
         "exampleInput": {
           "pr": 225
+        },
+        "sessionRequired": false
+      }
+    },
+    {
+      "name": "release",
+      "kind": "facade-tool",
+      "source": "release",
+      "sourcePath": "packages/os/tools/release/manifest.ts",
+      "category": "release",
+      "description": "release a Consuelo OS main-targeting review PR end-to-end: pass the stream review PR that targets main, not a task PR that targets a stream; verify and merge it to main, wait for the exact merged SHA runtime publication, promote that exact immutable bundle through dev/canary/beta/stable as requested, then by default update this node to the exact released version and verify it; use when Ko says release, deploy this PR, release to canary, or release and update",
+      "core": false,
+      "definition": {
+        "name": "release",
+        "methodPath": [
+          "release"
+        ],
+        "description": "release a Consuelo OS main-targeting review PR end-to-end: pass the stream review PR that targets main, not a task PR that targets a stream; verify and merge it to main, wait for the exact merged SHA runtime publication, promote that exact immutable bundle through dev/canary/beta/stable as requested, then by default update this node to the exact released version and verify it; use when Ko says release, deploy this PR, release to canary, or release and update",
+        "category": "release",
+        "underlying": "workspace release",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 14400000,
+        "inputSchema": "ReleaseInput",
+        "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "release",
+            "deploy this pr",
+            "release to canary",
+            "release to beta",
+            "release to production",
+            "release to stable",
+            "release and update",
+            "ship pr",
+            "promote runtime",
+            "update local after release",
+            "consuelo os release"
+          ],
+          "entities": [
+            "Consuelo OS",
+            "runtime release",
+            "release channel",
+            "GitHub PR"
+          ]
+        },
+        "command": {
+          "script": "release",
+          "executionScope": "runtime",
+          "branchMode": "none",
+          "jsonFlag": "--json",
+          "arguments": [
+            {
+              "source": "pr",
+              "flag": "--pr",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "repo",
+              "flag": "--repo",
+              "kind": "value"
+            },
+            {
+              "source": "channel",
+              "flag": "--channel",
+              "kind": "value"
+            },
+            {
+              "source": "mergeMethod",
+              "flag": "--merge-method",
+              "kind": "value"
+            },
+            {
+              "source": "releaseOnly",
+              "flag": "--release-only",
+              "kind": "boolean"
+            }
+          ]
+        },
+        "exampleInput": {
+          "pr": 2185,
+          "channel": "canary"
         },
         "sessionRequired": false
       }
@@ -7400,6 +8059,41 @@
         },
         "sessionRequired": true,
         "workflowRole": "validation.review"
+      }
+    },
+    {
+      "name": "security.scan",
+      "kind": "facade-tool",
+      "source": "security",
+      "sourcePath": "packages/os/tools/security/manifest.ts",
+      "category": "security",
+      "description": "run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths",
+      "core": false,
+      "definition": {
+        "name": "security.scan",
+        "methodPath": [
+          "security",
+          "scan"
+        ],
+        "description": "run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths",
+        "category": "security",
+        "underlying": "Consuelo defensive repository security scanners",
+        "capabilities": {
+          "readOnly": true,
+          "mutating": false,
+          "deterministic": false,
+          "safeToRetry": true
+        },
+        "defaultTimeout": 900000,
+        "inputSchema": "EmptyInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "security:scan",
+          "branchMode": "optional",
+          "arguments": []
+        },
+        "exampleInput": {},
+        "sessionRequired": false
       }
     },
     {
@@ -7866,6 +8560,90 @@
       }
     },
     {
+      "name": "session.start",
+      "kind": "facade-tool",
+      "source": "task-lifecycle",
+      "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
+      "category": "session lifecycle",
+      "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+      "core": true,
+      "definition": {
+        "name": "session.start",
+        "methodPath": [
+          "session",
+          "start"
+        ],
+        "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+        "category": "session lifecycle",
+        "underlying": "os session.start",
+        "capabilities": {
+          "readOnly": false,
+          "mutating": true,
+          "deterministic": false,
+          "safeToRetry": false
+        },
+        "defaultTimeout": 60000,
+        "inputSchema": "SessionStartInput",
+        "outputSchema": "RawOutput",
+        "command": {
+          "script": "session:start",
+          "executionScope": "runtime",
+          "branchMode": "none",
+          "arguments": [
+            {
+              "source": "kind",
+              "flag": "--kind",
+              "kind": "value",
+              "required": true
+            },
+            {
+              "source": "path",
+              "flag": "--path",
+              "kind": "value"
+            },
+            {
+              "source": "area",
+              "flag": "--area",
+              "kind": "value"
+            },
+            {
+              "source": "stream",
+              "flag": "--stream",
+              "kind": "value"
+            },
+            {
+              "source": "title",
+              "flag": "--title",
+              "kind": "value"
+            },
+            {
+              "source": "workflow",
+              "flag": "--workflow",
+              "kind": "value"
+            },
+            {
+              "source": "bodyFile",
+              "flag": "--body-file",
+              "kind": "value"
+            },
+            {
+              "source": "startFrom",
+              "flag": "--start-from",
+              "kind": "value"
+            }
+          ],
+          "jsonFlag": "--json"
+        },
+        "exampleInput": {
+          "kind": "task",
+          "stream": "stream/workspace-agent",
+          "title": "example task",
+          "workflow": "task"
+        },
+        "sessionRequired": false
+      }
+    },
+    {
       "name": "status",
       "kind": "facade-tool",
       "source": "utilities",
@@ -8117,14 +8895,14 @@
       "source": "subagent",
       "sourcePath": "packages/os/tools/subagent/manifest.ts",
       "category": "subagent",
-      "description": "run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.",
+      "description": "run or start a subagent from an instruction handoff. Write the handoff to OS tmp first under the canonical opensaas-handoffs root; model and reasoning selection are provider-specific and surfaced explicitly. Edit self-bootstrap may call task.start first, or an existing taskSession may be supplied. task.push publishes only the task branch. task.pr merges to the stream and must not be called when the handoff says stop after push. status/wait/logs attach to an existing run and never spawn; cancel targets runId. requestId makes retries idempotent. Provider capability limitations are returned explicitly and never silently weakened. Return one compact trace-style summary with traceId, files read, files edited, tools called, and token usage.",
       "core": false,
       "definition": {
         "name": "subagent",
         "methodPath": [
           "subagent"
         ],
-        "description": "run a subagent with a tmp instruction file. use only when the user asks for subagents. always get alignment on what model and harness, and tell the user the options if they did not specify. core steering is applied by default; media steering replaces core steering only when explicitly flagged. always write instructions to tmp first and call the subagent to read the tmp. always read your handoff skill to learn how to properly prompt another agent. return one compact trace-style summary with traceId, files read, files edited, and tools called.",
+        "description": "run or start a subagent from an instruction handoff. Write the handoff to OS tmp first under the canonical opensaas-handoffs root; model and reasoning selection are provider-specific and surfaced explicitly. Edit self-bootstrap may call task.start first, or an existing taskSession may be supplied. task.push publishes only the task branch. task.pr merges to the stream and must not be called when the handoff says stop after push. status/wait/logs attach to an existing run and never spawn; cancel targets runId. requestId makes retries idempotent. Provider capability limitations are returned explicitly and never silently weakened. Return one compact trace-style summary with traceId, files read, files edited, tools called, and token usage.",
         "category": "subagent",
         "underlying": "workspace subagent",
         "capabilities": {
@@ -8133,7 +8911,7 @@
           "deterministic": false,
           "safeToRetry": false
         },
-        "defaultTimeout": 300000,
+        "defaultTimeout": 900000,
         "inputSchema": "SubagentInput",
         "outputSchema": "SubagentOutput",
         "command": {
@@ -8142,10 +8920,13 @@
           "arguments": []
         },
         "exampleInput": {
-          "provider": "grok",
-          "bundle": "media",
-          "policy": "read",
-          "instructionPath": "/tmp/ko-social.md",
+          "action": "start",
+          "provider": "codex",
+          "model": "gpt-5.6-luna",
+          "reasoningEffort": "xhigh",
+          "policy": "edit",
+          "instructionPath": "/tmp/opensaas-handoffs/repair.md",
+          "requestId": "req_repair_once",
           "outputFormat": "json"
         },
         "sessionRequired": false,
@@ -8526,6 +9307,11 @@
               "kind": "value"
             },
             {
+              "source": "repo",
+              "flag": "--repo",
+              "kind": "value"
+            },
+            {
               "source": "taskOnly",
               "flag": "--task-only",
               "kind": "boolean"
@@ -8544,6 +9330,11 @@
               "source": "bodyTemplate",
               "flag": "--body-template",
               "kind": "value"
+            },
+            {
+              "source": "ackWorkpadIncomplete",
+              "flag": "--ack-workpad-incomplete",
+              "kind": "boolean"
             },
             {
               "source": "pr",
@@ -8593,6 +9384,13 @@
         "defaultTimeout": 120000,
         "inputSchema": "BranchInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "links",
+            "pr links",
+            "pull request links"
+          ]
+        },
         "command": {
           "script": "task:prs",
           "branchMode": "required",
@@ -8659,6 +9457,11 @@
               "kind": "value"
             },
             {
+              "source": "repo",
+              "flag": "--repo",
+              "kind": "value"
+            },
+            {
               "source": "taskSession",
               "flag": "--task-session",
               "kind": "value"
@@ -8718,7 +9521,7 @@
       "source": "task-lifecycle",
       "sourcePath": "packages/os/tools/task-lifecycle/manifest.ts",
       "category": "task lifecycle",
-      "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+      "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
       "core": true,
       "definition": {
         "name": "task.start",
@@ -8726,7 +9529,7 @@
           "task",
           "start"
         ],
-        "description": "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+        "description": "Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.",
         "category": "task lifecycle",
         "underlying": "os task.start",
         "capabilities": {
@@ -8889,7 +9692,7 @@
       "source": "tool-discovery",
       "sourcePath": "packages/os/tools/tool-discovery/manifest.ts",
       "category": "tooling",
-      "description": "search workspace tools by intent and return ranked usage guidance",
+      "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
       "core": true,
       "definition": {
         "name": "tools.search",
@@ -8897,9 +9700,9 @@
           "tools",
           "search"
         ],
-        "description": "search workspace tools by intent and return ranked usage guidance",
+        "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
         "category": "tooling",
-        "underlying": "workspace tools.search",
+        "underlying": "Consuelo OS tools.search",
         "capabilities": {
           "readOnly": true,
           "mutating": false,
@@ -8911,6 +9714,7 @@
         "outputSchema": "ToolsSearchOutput",
         "command": {
           "script": "tools:search",
+          "executionScope": "runtime",
           "branchMode": "none",
           "jsonFlag": "--json",
           "arguments": [
@@ -8940,9 +9744,9 @@
               "kind": "boolean"
             },
             {
-              "source": "noDocs",
-              "flag": "--no-docs",
-              "kind": "boolean"
+              "source": "detail",
+              "flag": "--detail",
+              "kind": "value"
             }
           ]
         },
@@ -9029,6 +9833,16 @@
         "defaultTimeout": 300000,
         "inputSchema": "WaitInput",
         "outputSchema": "RawOutput",
+        "search": {
+          "keywords": [
+            "timed",
+            "polling",
+            "sleep",
+            "delay",
+            "seconds",
+            "backoff"
+          ]
+        },
         "command": {
           "script": "wait",
           "branchMode": "none",

@@ -14,7 +14,9 @@ import { dirname, join, relative, resolve } from 'node:path';
 
 import {
   inspectRuntimeBundleArchive,
+  missingRequiredRuntimeRecoveryCapabilities,
   verifyRuntimeBundleArchive,
+  type RuntimeRecoveryCapability,
   type RuntimeBundleManifest,
 } from '../distribution/runtime-bundle';
 import { lifecycleError } from './errors';
@@ -206,6 +208,19 @@ function resolveReleaseManifestPayload(
       'release manifest archiveDigest must use sha256',
     );
   }
+  const capabilities = Array.isArray(selected.capabilities)
+    ? selected.capabilities.filter(
+        (capability): capability is RuntimeRecoveryCapability =>
+          typeof capability === 'string',
+      )
+    : [];
+  const missingCapabilities = missingRequiredRuntimeRecoveryCapabilities(capabilities);
+  if (missingCapabilities.length > 0) {
+    throw lifecycleError(
+      'RUNTIME_CAPABILITY_MISMATCH',
+      `signed release is missing required runtime recovery capability ${missingCapabilities[0]}`,
+    );
+  }
   const releaseObjectPattern = new RegExp(
     `^bundles/${selected.bundleId}/[A-Za-z0-9._+-]+\\.tar\\.gz(?:\\.sig)?$`,
   );
@@ -224,6 +239,7 @@ function resolveReleaseManifestPayload(
     releaseFingerprint: payload.releaseFingerprint,
     publishedAt: payload.promotedAt,
     sourceCommit: payload.sourceCommit,
+    capabilities,
   };
 }
 
@@ -344,11 +360,33 @@ export function verifyDownloadedRuntimeBundle(
   if (
     manifest.bundleId !== release.bundleId ||
     manifest.version !== release.version ||
-    manifest.releaseFingerprint !== release.releaseFingerprint
+    manifest.releaseFingerprint !== release.releaseFingerprint ||
+    manifest.sourceCommit !== release.sourceCommit
   ) {
     throw lifecycleError(
       'BUNDLE_VERIFY_FAILED',
       'runtime bundle identity does not match signed release manifest',
+    );
+  }
+  const manifestCapabilities = manifest.capabilities ?? [];
+  const missingCapabilities = missingRequiredRuntimeRecoveryCapabilities(
+    manifestCapabilities,
+  );
+  if (missingCapabilities.length > 0) {
+    throw lifecycleError(
+      'RUNTIME_CAPABILITY_MISMATCH',
+      `runtime bundle is missing required recovery capability ${missingCapabilities[0]}`,
+    );
+  }
+  if (
+    manifestCapabilities.length !== release.capabilities.length ||
+    manifestCapabilities.some(
+      (capability, index) => capability !== release.capabilities[index],
+    )
+  ) {
+    throw lifecycleError(
+      'RUNTIME_CAPABILITY_MISMATCH',
+      'runtime bundle recovery capabilities do not match signed release manifest',
     );
   }
   const expectedPlatform = target.platform ?? process.platform;

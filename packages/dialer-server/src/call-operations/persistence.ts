@@ -25,9 +25,16 @@ const SCHEMA_STATEMENTS = [
     transcription_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     transcription_language TEXT,
     transcript_retention_days INTEGER NOT NULL DEFAULT 30 CHECK (transcript_retention_days > 0),
+    avg_deal_value NUMERIC,
+    avg_close_rate NUMERIC,
+    cost_per_attempt NUMERIC,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`,
+  `ALTER TABLE dialer_workspace_settings
+    ADD COLUMN IF NOT EXISTS avg_deal_value NUMERIC,
+    ADD COLUMN IF NOT EXISTS avg_close_rate NUMERIC,
+    ADD COLUMN IF NOT EXISTS cost_per_attempt NUMERIC`,
   `CREATE TABLE IF NOT EXISTS dialer_call_sessions (
     id TEXT NOT NULL,
     workspace_id TEXT NOT NULL,

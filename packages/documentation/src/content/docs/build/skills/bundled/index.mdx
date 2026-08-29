@@ -1,0 +1,27 @@
+---
+title: Skill Templates
+description: Review the exact bundled Consuelo skill templates and enable the ones you want to use.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/skills.json
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The template list is generated from the current bundled skill registry.
+---
+
+Review the exact bundled skill instructions before enabling them.
+
+| Skill | Description | Enable |
+| --- | --- | --- |
+| [Artifacts](/build/skills/bundled/artifacts/) | Canonical orchestration skill for creating, validating, publishing, finding, and revising durable Consuelo artifacts such as sites, guides, specifications, plans, reports, demos, emails, images, and motion outputs. | `consuelo add skill artifacts` |
+| [Branch](/build/skills/bundled/branch/) | Turn large phases, epics, migrations, or planning sessions into a dependency graph of compact work IDs so focused chats and agents can manage context, execute safe sequential and parallel lanes, and rejoin through one required finalization node. | `consuelo add skill branch` |
+| [Browser](/build/skills/bundled/browser/) | use for known-url browser work, rendered-page extraction, authenticated pages, live UI verification, Interact with docs and JS-heavy pages, screenshots, accessibility snapshots, and browser evidence. use when provided a URL to inspect, test or verify a webpage or UI, needs scraping/fetching from, wants screenshots or truth, or  pages that require clicking, filling, login state, tabs, accordions, or auth. use built-in web search for discovery first, and use browser known-url, use togther. | `consuelo add skill browser` |
+| [Debugger](/build/skills/bundled/debugger/) | Use this OS skill for runtime debugging across browser behavior, deployment logs, error tracking, analytics, and code evidence. Invoke it for bug triage, incidents, post-merge validation, frontend regressions, worker or queue issues, telephony flows, observability checks, and reconciling runtime truth with code assumptions. | `consuelo add skill debugger` |
+| [Handoff](/build/skills/bundled/handoff/) | Use this skill when the user asks to create, read, update, search, summarize, or continue from handoff/context records so another agent or future session can pick up the work safely. | `consuelo add skill handoff` |
+| [Research Ingest](/build/skills/bundled/research-ingest/) | use this skill when ko sends a youtube, podcast, article, paper, pdf, media link, or local source and wants to learn from it, discuss it, turn it into notes, compare it with other sources, or save it as durable research. this skill governs the research ingest workflow: run the workspace research ingest tool, create packet/extracted/manifest artifacts, automatically save their full text to memory, then reason from the saved bundle. use for research packets, source ingestion, podcast/video learning, durable memory, and follow-up analysis from ingested sources.. | `consuelo add skill research-ingest` |
+| [Senior Engineer](/build/skills/bundled/senior-engineer/) | Use this skill for any coding, debugging, refactoring, architecture, validation, or task in the repository. This skill is the default engineering mode. Invoke it whenever the assistant is expected to read code, change code, diagnose a bug, design an implementation plan, review a diff, run tests, validate behavior, or prepare a PR. | `consuelo add skill senior-engineer` |
+| [Sites](/build/skills/bundled/sites/) | Use this skill for Consuelo OS site delivery infrastructure: launcher pages, typed pages, traces, diffs, settings, and the static delivery layer used by Consuelo Artifacts. | `consuelo add skill sites` |
+| [Skill Creator](/build/skills/bundled/skill-creator/) | Use this OS operator skill when creating, migrating, editing, validating, or reviewing opensaas/Consuelo OS skills. It turns skill workflows into repo-backed skill folders, skill.json metadata, migration fixtures, replacement allowlists, registry generation, install seeding, and tests, with exact-copy guardrails unless Ko explicitly approves a rewrite. | `consuelo add skill skill-creator` |
+| [Task](/build/skills/bundled/task/) | Use this skill for any opensaas task lifecycle work: starting a task, researching, editing, publishing, creating the stream review PR, handling task metadata conflicts, or cleaning up. It enforces stream.context → task.start → task.push → task.pr → task.finish, explicit branch usage, verified tool results, metadata-only conflict rules, and reporting the stream/&lt;area&gt; → main review PR instead of the intermediate task PR. | `consuelo add skill task` |
+| [Teach](/build/skills/bundled/teach/) | Use this skill when the user asks the OS agent to teach them a daily deep idea, create an AI-seeded learning guide, ingest a research source for teaching, or publish a durable Sites guide that explains one transferable concept. It coordinates research ingest, typed guide rendering, Sites publishing, and optional teach state updates. | `consuelo add skill teach` |

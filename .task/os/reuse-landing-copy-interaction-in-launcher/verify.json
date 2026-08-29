@@ -1,0 +1,308 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/reuse-landing-copy-interaction-in-launcher",
+  "base": "origin/stream/os",
+  "headSha": "71a6f75c96caee811d604f4e756dba1768b213f8",
+  "changeHash": "fed6efed2cf6fa174b9db76842d24a0a4d825fc0c63897e6583125b7f630fc65",
+  "changedFiles": [
+    "packages/consuelo-website/src/pages/os/launcher.astro",
+    "packages/os/scripts/lib/launcher-onboarding.ts",
+    "packages/os/tests/launcher-astro-source.test.ts",
+    "packages/os/tests/launcher-onboarding.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-14T00:11:53.275Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/reuse-landing-copy-interaction-in-launcher/current.json",
+        ".task/os/reuse-landing-copy-interaction-in-launcher/evidence-log.json",
+        ".task/os/reuse-landing-copy-interaction-in-launcher/read-log.json",
+        ".task/os/reuse-landing-copy-interaction-in-launcher/session.json",
+        ".task/os/reuse-landing-copy-interaction-in-launcher/workpad.md",
+        ".task/tasks/os/reuse-landing-copy-interaction-in-launcher.json",
+        "packages/consuelo-website/src/pages/os/launcher.astro",
+        "packages/os/scripts/lib/launcher-onboarding.ts",
+        "packages/os/tests/launcher-astro-source.test.ts",
+        "packages/os/tests/launcher-onboarding.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-launcher-copy-interaction",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Launcher onboarding copy-interaction changes must prove generated UI behavior, Sites materialization, and Astro source validity without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/consuelo-website/src/pages/os/launcher.astro",
+            "packages/os/scripts/lib/launcher-onboarding.ts",
+            "packages/os/tests/launcher-astro-source.test.ts",
+            "packages/os/tests/launcher-onboarding.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS launcher copy interaction contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/launcher-onboarding.test.ts",
+            "tests/launcher-astro-source.test.ts"
+          ],
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true
+        },
+        {
+          "name": "OS launcher Sites materialization contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/sites-cli.test.ts",
+            "-t",
+            "launcher"
+          ],
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true
+        },
+        {
+          "name": "Consuelo website launcher Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ],
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1997,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reuse-landing-copy-interaction-in-launcher\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m28 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1694\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 840\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m28 passed\u001b[39m\u001b[22m\u001b[90m (28)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:11:42\n\u001b[2m   Duration \u001b[22m 1.78s\u001b[2m (transform 13ms, setup 0ms, import 19ms, tests 1.69s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS launcher copy interaction contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/launcher-onboarding.test.ts",
+            "tests/launcher-astro-source.test.ts"
+          ],
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 341,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reuse-landing-copy-interaction-in-launcher/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/launcher-astro-source.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-onboarding.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:11:44\n\u001b[2m   Duration \u001b[22m 102ms\u001b[2m (transform 31ms, setup 0ms, import 42ms, tests 5ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/launcher-onboarding.test.ts tests/launcher-astro-source.test.ts\n"
+        },
+        {
+          "name": "OS launcher Sites materialization contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/sites-cli.test.ts",
+            "-t",
+            "launcher"
+          ],
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 604,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reuse-landing-copy-interaction-in-launcher/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/sites-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m6 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[33m 372\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m6 skipped\u001b[39m\u001b[90m (9)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:11:44\n\u001b[2m   Duration \u001b[22m 454ms\u001b[2m (transform 15ms, setup 0ms, import 21ms, tests 372ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/sites-cli.test.ts -t launcher\n"
+        },
+        {
+          "name": "Consuelo website launcher Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ],
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7454,
+          "outputTail": "essing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m100\u001b[0m <script type=\"application/ld+json\" set:html={JSON.stringify(structuredData)} />\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/components/blocks/CTA/BasicDark.astro\u001b[0m:\u001b[93m20\u001b[0m:\u001b[93m1\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(6133): \u001b[0m'badge' is declared but its value is never read.\n\n\u001b[7m20\u001b[0m import badge from '../../../assets/badge.svg'\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[96msrc/components/blocks/CTA/BasicDark.astro\u001b[0m:\u001b[93m15\u001b[0m:\u001b[93m1\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(6133): \u001b[0m'Image' is declared but its value is never read.\n\n\u001b[7m15\u001b[0m import { Image } from 'astro:assets'\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/components/blocks/head/Header.astro\u001b[0m:\u001b[93m64\u001b[0m:\u001b[93m11\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m64\u001b[0m   <script define:vars={{ sentryDsn }}>\n\u001b[7m  \u001b[0m \u001b[93m          ~~~~~~~~~~~\u001b[0m\n\u001b[96msrc/components/blocks/head/Header.astro\u001b[0m:\u001b[93m45\u001b[0m:\u001b[93m11\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m45\u001b[0m   <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m          ~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/components/home/HomeHero.astro\u001b[0m:\u001b[93m64\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m64\u001b[0m <script define:vars={{ INSTALL_COMMAND, copyLabel: heroCopy.copyLabel }}>\n\u001b[7m  \u001b[0m \u001b[93m        ~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/components/site/SiteFooter.astro\u001b[0m:\u001b[93m47\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m47\u001b[0m <script define:vars={{ siteLinks }}>\n\u001b[7m  \u001b[0m \u001b[93m        ~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/layouts/MarketingLayout.astro\u001b[0m:\u001b[93m88\u001b[0m:\u001b[93m15\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m88\u001b[0m       <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\nResult (197 files): \n- 0 errors\n- 0 warnings\n- 24 hints\n\n$ astro check\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 74,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgenerated✔ parseCliArguments resolves comparison SHAs (0.6365ms)\n✔ parseCliArguments selects GraphQL generation mode (0.058666ms)\n✔ parseCliArguments selects migration generation mode (0.040708ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.08475ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.073875ms)\n✔ buildNxArguments scopes lint and typecheck through changed files (0.056541ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.273625ms)\n✔ runChangedServerTask executes Nx for server runtime changes (0.142833ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.08425ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.202292ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.080167ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.099541ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.221083ms)\nℹ tests 13\nℹ suites 0\nℹ pass 13\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 43.213334\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 144,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.10ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [2.52ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.05ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [137.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 610,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.323208ms)\n✔ the configured TypeORM wrapper resolves from the installed package (541.3575ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 579.854625\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

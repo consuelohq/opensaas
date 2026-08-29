@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/restructure-public-docs-navigation-and-memory",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1858,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1858",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1858",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1858/restructure-public-docs-navigation-and-memory",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1858",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1858/restructure-public-docs-navigation-and-memory",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-restructure-public-docs-navigation-and-memory",
+  "taskSession": "tsk_9966dcb697a8",
+  "tmuxSession": "opensaas-workspace-agents-restructure-public-docs-navigation-and-memory-9966dcb6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-restructure-public-docs-navigation-and-memory/.task/workspace-agents/restructure-public-docs-navigation-and-memory/session.json",
+  "createdAt": "2026-08-12T00:15:39.888Z"
+}

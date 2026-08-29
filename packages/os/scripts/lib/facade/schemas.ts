@@ -5,6 +5,10 @@ const requestFields = {
   taskSession: z.string().min(1).optional(),
 };
 
+const workSessionField = {
+  workSession: z.string().min(1).optional(),
+};
+
 const dryRunField = {
   dryRun: z.boolean().optional(),
 };
@@ -99,6 +103,20 @@ export const ArtifactsDigitalEguideInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
+export const DailySchedulesPublishInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  kind: z.enum(['security-scan', 'security-workpad', 'self-healing-workpad']),
+  sourceFile: optionalString,
+  content: z.string().optional(),
+  format: z.enum(['auto', 'json', 'markdown', 'text']).optional(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  title: optionalString,
+}).refine((input) => Boolean(input.sourceFile) !== (input.content !== undefined), {
+  message: 'provide exactly one of sourceFile or content',
+  path: ['sourceFile'],
+});
+
 const SvgRenderOptions = z.object({
   format: z.enum(['png']).optional(),
   width: z.number().int().positive().optional(),
@@ -180,6 +198,42 @@ export const MediaSvgInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
+export const MediaTranscribeInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  input: z.string().min(1),
+  mode: z.enum(['fixture', 'whisper.cpp', 'openai-whisper']).optional(),
+  fixtureText: optionalString,
+  language: optionalString,
+  model: optionalString,
+});
+
+
+const MediaScaffoldInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+});
+export const MediaAngleMeasureInput = MediaScaffoldInput;
+export const MediaAudioExtractInput = MediaScaffoldInput;
+export const MediaAudioNormalizeInput = MediaScaffoldInput;
+export const MediaBreakdownPlanInput = MediaScaffoldInput;
+export const MediaCameraMotionInput = MediaScaffoldInput;
+export const MediaClipSearchInput = MediaScaffoldInput;
+export const MediaComposeInput = MediaScaffoldInput;
+export const MediaDoctorInput = MediaScaffoldInput;
+export const MediaExportInput = MediaScaffoldInput;
+export const MediaFramesExtractInput = MediaScaffoldInput;
+export const MediaIngestInput = MediaScaffoldInput;
+export const MediaInstallInput = MediaScaffoldInput;
+export const MediaMotionTrackInput = MediaScaffoldInput;
+export const MediaObjectTrackInput = MediaScaffoldInput;
+export const MediaOverlayRenderInput = MediaScaffoldInput;
+export const MediaPoseEstimateInput = MediaScaffoldInput;
+export const MediaProbeInput = MediaScaffoldInput;
+export const MediaQaInput = MediaScaffoldInput;
+export const MediaSceneDetectInput = MediaScaffoldInput;
+export const MediaSportsScienceMetricsInput = MediaScaffoldInput;
+export const MediaTimelineValidateInput = MediaScaffoldInput;
 
 export const CodeRunInput = z.object({
   ...requestFields,
@@ -197,6 +251,7 @@ export const CodeCallInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+  workSession: z.string().min(1).optional(),
   language: z.string().min(1),
   code: z.string().min(1).optional(),
   codeFile: optionalString,
@@ -213,6 +268,9 @@ export const CodeCallInput = z.object({
 }).refine((input) => !(input.stdin !== undefined && input.stdinFile), {
   message: 'provide at most one of stdin or stdinFile',
   path: ['stdin'],
+}).refine((input) => !(input.taskSession && input.workSession), {
+  message: 'provide taskSession or workSession, not both',
+  path: ['workSession'],
 });
 
 export const WorkflowIntentInput = z.object({
@@ -245,11 +303,11 @@ export const BatchInput = z.object({
 export const ToolsSearchInput = z.object({
   ...requestFields,
   query: z.string().min(1),
-  limit: z.number().int().positive().max(30).optional(),
+  limit: z.number().int().positive().max(5).optional(),
   category: optionalString,
   readOnly: z.boolean().optional(),
   mutating: z.boolean().optional(),
-  noDocs: z.boolean().optional(),
+  detail: z.enum(['compact', 'full']).optional(),
 }).refine((input) => !(input.readOnly && input.mutating), {
   message: 'readOnly and mutating cannot both be true',
   path: ['mutating'],
@@ -309,6 +367,7 @@ export const FsListInput = z.object({
 
 export const FsWriteInput = z.object({
   ...requestFields,
+  ...workSessionField,
   ...dryRunField,
   ...branchField,
   path: z.string().min(1),
@@ -339,6 +398,7 @@ export const FsWriteInput = z.object({
 
 export const FsApplyPatchInput = z.object({
   ...requestFields,
+  ...workSessionField,
   ...dryRunField,
   ...branchField,
   patchText: z.string().optional(),
@@ -359,6 +419,7 @@ export const FsHttpInput = z.object({
 
 export const FsTrashInput = z.object({
   ...requestFields,
+  ...workSessionField,
   ...dryRunField,
   ...branchField,
   path: z.string().min(1),
@@ -381,6 +442,35 @@ export const TaskStartInput = z.object({
   path: ['area'],
 });
 
+const SessionTaskStartInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  kind: z.literal('task'),
+  area: optionalString,
+  stream: optionalString,
+  title: z.string().min(1),
+  workflow: z.enum(['task']).optional(),
+  description: optionalString,
+  bodyFile: optionalString,
+  startFrom: z.enum(['main', 'stream']).optional(),
+  createStream: z.boolean().optional(),
+}).strict().refine((input) => Boolean(input.area || input.stream), {
+  message: 'provide area or stream',
+  path: ['area'],
+});
+
+const SessionWorkStartInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  kind: z.literal('work'),
+  path: z.string().min(1),
+}).strict();
+
+export const SessionStartInput = z.union([
+  SessionTaskStartInput,
+  SessionWorkStartInput,
+]);
+
 export const TaskInitInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -395,6 +485,7 @@ export const TaskPushInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+  repo: optionalString,
   pr: prRefInput.optional(),
   github: optionalString,
   message: z.string().min(1),
@@ -408,10 +499,12 @@ export const TaskPrInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+  repo: optionalString,
   taskOnly: z.boolean().optional(),
   draft: z.boolean().optional(),
   ready: z.boolean().optional(),
   bodyTemplate: optionalString,
+  ackWorkpadIncomplete: z.boolean().optional(),
   pr: prRefInput.optional(),
   github: optionalString,
 });
@@ -542,6 +635,7 @@ export const ExploreInput = z.object({
   limit: z.number().int().positive().optional(),
   changedOnly: z.boolean().optional(),
   reindex: z.boolean().optional(),
+  detail: z.enum(['compact', 'full']).optional(),
 });
 
 export const DecideNextInput = z.object({
@@ -629,6 +723,18 @@ export const GhInput = z.object({
   ...dryRunField,
   action: z.string().min(1),
   args: stringArray,
+});
+
+export const GoogleInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['status', 'connect', 'run']),
+  args: stringArray,
+  account: z.string().min(3).optional(),
+  mode: z.enum(['read', 'write']).optional(),
+  approved: z.boolean().optional(),
+  approvalReason: z.string().optional(),
+  timeoutMs: z.number().int().positive().max(10 * 60_000).optional(),
 });
 
 
@@ -1136,6 +1242,23 @@ export const WebsiteDeployInput = z.object({
   buildOnly: z.boolean().optional(),
 });
 
+export const LifecycleUpdateInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  channel: z.enum(['stable', 'beta', 'canary', 'dev', 'nightly']).optional(),
+  version: z.string().regex(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/).optional(),
+});
+
+export const ReleaseInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  pr: z.number().int().positive(),
+  repo: z.string().min(1).optional(),
+  channel: z.enum(['dev', 'canary', 'beta', 'stable']).optional(),
+  mergeMethod: z.enum(['merge', 'squash', 'rebase']).optional(),
+  releaseOnly: z.boolean().optional(),
+});
+
 export const ServerInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -1210,15 +1333,32 @@ export const MacPortInput = z.object({
 
 export const SubagentInput = z.object({
   ...requestFields,
-  provider: z.enum(['codex', 'pi', 'opencode', 'grok']),
+  ...dryRunField,
+  action: z.enum(['run', 'start', 'status', 'wait', 'logs', 'cancel']).optional(),
+  provider: z.enum(['codex', 'pi', 'opencode', 'grok']).optional(),
   model: optionalString,
+  reasoningEffort: z.enum(['minimal', 'low', 'medium', 'high', 'xhigh']).optional(),
   bundle: z.enum(['core', 'media']).optional(),
   policy: z.enum(['read', 'edit']).optional(),
-  instructionPath: z.string().min(1),
+  instructionPath: optionalString,
   cwd: optionalString,
+  runId: optionalString,
+  waitMs: z.number().int().nonnegative().max(1_800_000).optional(),
   timeoutMs: z.number().int().positive().max(1_800_000).optional(),
   outputFormat: z.enum(['text', 'json']).optional(),
   workspaceOnly: z.union([z.boolean(), z.enum(['preferred', 'strict'])]).optional(),
+}).superRefine((input, ctx) => {
+  const action = input.action || 'run';
+  if (action === 'run' || action === 'start') {
+    if (!input.provider) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['provider'], message: 'provider is required for run/start' });
+    if (!input.instructionPath) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['instructionPath'], message: 'instructionPath is required for run/start' });
+  }
+  if (action === 'status' || action === 'wait' || action === 'logs' || action === 'cancel') {
+    if (!input.runId) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['runId'], message: 'runId is required for attachment actions' });
+  }
+  if (input.waitMs !== undefined && action !== 'wait') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['waitMs'], message: 'waitMs is only valid for wait' });
+  }
 });
 
 export const schemaRegistry = {
@@ -1230,7 +1370,30 @@ export const schemaRegistry = {
   ArtifactsUiInput,
   ArtifactsSessionInput,
   ArtifactsDigitalEguideInput,
+  DailySchedulesPublishInput,
   MediaSvgInput,
+  MediaAngleMeasureInput,
+  MediaAudioExtractInput,
+  MediaAudioNormalizeInput,
+  MediaBreakdownPlanInput,
+  MediaCameraMotionInput,
+  MediaClipSearchInput,
+  MediaComposeInput,
+  MediaDoctorInput,
+  MediaExportInput,
+  MediaFramesExtractInput,
+  MediaIngestInput,
+  MediaInstallInput,
+  MediaMotionTrackInput,
+  MediaObjectTrackInput,
+  MediaOverlayRenderInput,
+  MediaPoseEstimateInput,
+  MediaProbeInput,
+  MediaQaInput,
+  MediaSceneDetectInput,
+  MediaSportsScienceMetricsInput,
+  MediaTimelineValidateInput,
+  MediaTranscribeInput,
   CodeRunInput,
   CodeCallInput,
   WorkflowIntentInput,
@@ -1244,6 +1407,7 @@ export const schemaRegistry = {
   FsHttpInput,
   HttpInput: FsHttpInput,
   FsTrashInput,
+  SessionStartInput,
   TaskStartInput,
   TaskInitInput,
   TaskPushInput,
@@ -1271,6 +1435,7 @@ export const schemaRegistry = {
   PrReviewInput,
   AiReviewInput,
   GhInput,
+  GoogleInput,
   GithubInput,
   GitDiffInput,
   BrowserInput,
@@ -1321,6 +1486,8 @@ export const schemaRegistry = {
   RailwayLogsInput,
   RailwayRedeployInput,
   WebsiteDeployInput,
+  LifecycleUpdateInput,
+  ReleaseInput,
   ServerInput,
   CheckFilesInput,
   EditFlowInput,
@@ -1349,24 +1516,48 @@ export const schemaTypeSignatures: Record<string, string> = {
   ArtifactsUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   ArtifactsSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
   ArtifactsDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  DailySchedulesPublishInput: '{ kind: "security-scan" | "security-workpad" | "self-healing-workpad"; sourceFile?: string; content?: string; format?: "auto" | "json" | "markdown" | "text"; date?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MediaSvgInput: '{ action: \"create\" | \"inspect\" | \"render\" | \"measure\" | \"edit\" | \"verify\" | \"snapshot\" | \"restore\"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: \"png\"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: \"light\" | \"dark\" | \"no-preference\" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaAngleMeasureInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaAudioExtractInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaAudioNormalizeInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaBreakdownPlanInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaCameraMotionInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaClipSearchInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaComposeInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaDoctorInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaExportInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaFramesExtractInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaIngestInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaInstallInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaMotionTrackInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaObjectTrackInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaOverlayRenderInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaPoseEstimateInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaProbeInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaQaInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaSceneDetectInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaSportsScienceMetricsInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaTimelineValidateInput: '{ dryRun?: boolean; requestId?: string; taskSession?: string }',
+  MediaTranscribeInput: '{ input: string; mode?: \"fixture\" | \"whisper.cpp\" | \"openai-whisper\"; fixtureText?: string; language?: string; model?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  CodeCallInput: '{ language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: \"read\" | \"edit\" | \"verify\"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
   CodeRunInput: '{ code: string; mode?: \"read\" | \"edit\" | \"verify\"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WorkflowIntentInput: '{ action: \"start\" | \"dispatch\"; workflow?: \"task\" | \"artifacts\" | \"media\"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BatchInput: '{ steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }',
+  ToolsSearchInput: '{ query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; detail?: \"compact\" | \"full\"; requestId?: string; taskSession?: string }',
   FsReadInput: '({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; full?: boolean; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number; full?: boolean }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; full?: never; branch?: string; requestId?: string; taskSession?: string })',
   FsSearchInput: '{ pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
-  FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  FsApplyPatchInput: '{ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
+  FsApplyPatchInput: '{ patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
+  SessionStartInput: '({ kind: "task"; stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string } | { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })',
   TaskStartInput: '{ stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; description?: string; pr?: string | number; github?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskPushInput: '{ branch?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskPrInput: '{ branch?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskPushInput: '{ branch?: string; repo?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskPrInput: '{ branch?: string; repo?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; ackWorkpadIncomplete?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskMergeInput: '{ pr?: string | number; github?: string; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1377,7 +1568,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   MemoryListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
   MemorySaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MemoryTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
-  ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
+  ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; detail?: \"compact\" | \"full\"; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
   ConfirmInput: '{ verify?: boolean; test?: string; requestId?: string; taskSession?: string }',
@@ -1390,6 +1581,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  GoogleInput: '{ action: "status" | "connect" | "run"; args?: string[]; account?: string; mode?: "read" | "write"; approved?: boolean; approvalReason?: string; timeoutMs?: number; requestId?: string; taskSession?: string }',
   GithubInput: '{ operation: \"pr.view\" | \"pr.checks\" | \"pr.reviews\" | \"pr.files\" | \"pr.diff\" | \"pr.list\" | \"pr.merge\" | \"branch.compare\" | \"repo.view\" | \"raw\"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: \"summary\" | \"review\" | \"merge\" | \"checks\" | \"files\" | \"full\"; fields?: string[]; limit?: number; state?: \"open\" | \"closed\" | \"merged\" | \"all\"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: \"merge\" | \"squash\" | \"rebase\"; rawArgs?: string[]; args?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GitDiffInput: '{ branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1440,6 +1632,8 @@ export const schemaTypeSignatures: Record<string, string> = {
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  LifecycleUpdateInput: '{ channel?: "stable" | "beta" | "canary" | "dev" | "nightly"; version?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ReleaseInput: '{ pr: number; repo?: string; channel?: "dev" | "canary" | "beta" | "stable"; mergeMethod?: "merge" | "squash" | "rebase"; releaseOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   ServerInput: '{ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CheckFilesInput: '{ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }',
   EditFlowInput: '{ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1450,7 +1644,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   MacListInput: '{ path?: string; depth?: number; requestId?: string; taskSession?: string }',
   MacProcessInput: '{ action: "list" | "kill"; pid?: number; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   MacPortInput: '{ action: "check" | "find"; port?: number; requestId?: string; taskSession?: string }',
-  SubagentInput: '{ provider: "codex" | "pi" | "opencode" | "grok"; model?: string; bundle?: "core" | "media"; policy?: "read" | "edit"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; outputFormat?: "text" | "json"; workspaceOnly?: boolean | "preferred" | "strict"; requestId?: string }',
+  SubagentInput: '{ action?: "run" | "start" | "status" | "wait" | "logs" | "cancel"; provider?: "codex" | "pi" | "opencode" | "grok"; model?: string; reasoningEffort?: "minimal" | "low" | "medium" | "high" | "xhigh"; bundle?: "core" | "media"; policy?: "read" | "edit"; instructionPath?: string; cwd?: string; runId?: string; waitMs?: number; taskSession?: string; timeoutMs?: number; outputFormat?: "text" | "json"; workspaceOnly?: boolean | "preferred" | "strict"; dryRun?: boolean; requestId?: string }',
 };
 
 export const outputTypeSignatures: Record<string, string> = {
@@ -1462,7 +1656,7 @@ export const outputTypeSignatures: Record<string, string> = {
   TaskCurrentOutput: '{ branch: string; area: string; prNumber?: number; worktree: string } | null',
   TaskPinOutput: '{ branch: string }',
   TaskEnsureSyncedOutput: '{ synced: boolean; branch: string; area: string; behind?: number; action?: string }',
-  SubagentOutput: '{ provider: "codex" | "pi" | "opencode" | "grok"; model?: string; bundle: "core" | "media"; outputFormat: "text" | "json"; mode: "work"; policy: "read" | "edit"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary?: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }',
-  ToolsSearchOutput: '{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: \"high\" | \"medium\" | \"low\"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record<string, number>; description?: string; capabilities: Record<string, unknown>; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; docs?: { heading: string; snippet: string; source: string }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string | Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }',
+  SubagentOutput: '{ action?: "run" | "start" | "status" | "wait" | "logs" | "cancel"; runId?: string; requestId?: string; provider: "codex" | "pi" | "opencode" | "grok"; model?: string; reasoningEffort?: "minimal" | "low" | "medium" | "high" | "xhigh"; bundle: "core" | "media"; outputFormat: "text" | "json"; mode: "work"; policy: "read" | "edit"; status: "starting" | "running" | "completed" | "failed" | "cancelled" | "completion_unknown" | "not_configured" | "not_supported" | "timed_out"; capabilities?: { modelSelection: boolean; reasoningEffort: boolean; strictWorkspaceOnly: boolean; edit: boolean; detachedExecution: boolean }; unsupportedCapabilities?: string[]; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary?: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }',
+  ToolsSearchOutput: '{ query: string; confidence: \"high\" | \"medium\" | \"low\"; ambiguous: boolean; retrievalMode: \"exact\" | \"deterministic\" | \"semantic-fallback\" | \"abstain\"; recommended?: string; matches: Array<{ name: string; category?: string; description?: string; capabilities: { readOnly: boolean; mutating: boolean }; inputSignature?: string; sessionRequired?: boolean }>; diagnostics?: Record<string, unknown> }',
 };
 

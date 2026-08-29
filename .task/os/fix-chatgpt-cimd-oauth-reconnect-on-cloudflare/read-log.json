@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/tests/operator-oauth-client.test.ts",
+    "packages/os/tests/os-device-authority-release-contract.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-14T22:37:41.759Z"
+}

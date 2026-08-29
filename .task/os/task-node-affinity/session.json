@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_04ae093beb6c",
+  "tmuxSession": "opensaas-os-task-node-affinity-04ae093b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/task-node-affinity",
+  "branch": "task/os/task-node-affinity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-task-node-affinity",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-task-node-affinity",
+  "prNumber": 1888,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1888",
+  "createdAt": "2026-08-12T14:07:16.344Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-task-node-affinity/.task/os/task-node-affinity/session.json"
+}

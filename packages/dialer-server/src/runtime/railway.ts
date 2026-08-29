@@ -29,7 +29,6 @@ import {
   createLeadConnectorUserContextDecoderLayer,
   createLeadConnectorWebhookVerifierLayer,
   createPersistentLeadConnectorStoreLayer,
-  initializeLeadConnectorPersistence,
   liveLeadConnectorClockLayer,
   liveLeadConnectorRandomLayer,
   type LeadConnectorCache,
@@ -51,6 +50,7 @@ import {
   createPostgresCallOperationsRepository,
   initializeCallOperationsPersistence,
 } from '../call-operations/persistence';
+import { migrateDialerDatabase } from '../database/migrations';
 import type { LeadConnectorApplicationLayer } from '../lead-connector-application';
 import { loadDialerPlanCatalog } from '../plans/catalog';
 import {
@@ -59,7 +59,6 @@ import {
   resolveTwilioProviderCredentials,
 } from './twilio-provider-mode';
 import {
-  initializeLeadConnectorDialerLearning,
   recordLeadConnectorAttemptTelemetry,
 } from './lead-connector-learning';
 import { rankPredictiveLeadConnectorTargets } from './predictive-target-ranking';
@@ -289,7 +288,7 @@ export const createRailwayLeadConnectorApplicationLayer = async (
       environment,
       resources,
     );
-    await initializeLeadConnectorPersistence(resolved.database);
+    await migrateDialerDatabase(resolved.database);
     const scopes = commaSeparated(environment.LEADCONNECTOR_SCOPES);
     if (scopes.length === 0)
       throw new Error('LEADCONNECTOR_SCOPES is required');
@@ -338,7 +337,7 @@ export const createRailwayCallOperationsApplication = async (
       ? null
       : await createSharedResources(environment);
     const database = resources.database ?? shared!.database;
-    await initializeCallOperationsPersistence(database);
+    await migrateDialerDatabase(database);
     const repository = createPostgresCallOperationsRepository(database);
     const recovered = await Effect.runPromise(
       repository.recoverInterruptedTranscriptions(),
@@ -773,7 +772,7 @@ export const createRailwayDialerApplicationLayers = async (
     const redis = resources.redis ?? shared!.redis;
     const database = resources.database ?? shared?.database ?? null;
     if (database) {
-      await initializeLeadConnectorDialerLearning(database);
+      await migrateDialerDatabase(database);
     }
     const runtime = createDialerRuntime(environment, redis);
     const publicUrl = required(environment, 'DIALER_SERVER_PUBLIC_URL').replace(

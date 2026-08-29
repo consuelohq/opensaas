@@ -26,14 +26,17 @@ import { provisionLocalOs } from '../scripts/lib/install-state';
 import { writeYamlConfig } from '../scripts/lib/consuelo-home';
 import {
   acquireLifecycleLock,
+  activateRuntimeRelease,
   createBunRuntimeMaterializer,
   createHttpHealthAcceptance,
   createLifecycleProgressEmitter,
   createLifecycleEngine,
   inspectLifecycleInstallState,
   loadLifecyclePreferences,
+  materializeRuntimeBundleDownload,
   writeLifecycleActivationJournal,
   noOpLifecycleMigrationRunner,
+  stageVerifiedRuntimeBundle,
   verifySignedReleaseManifest,
   type LifecycleEngine,
   type LifecycleRuntimeMaterializer,
@@ -54,11 +57,25 @@ const requiredRuntimePaths = [
   'bun.lock',
   'scripts/os.ts',
   'scripts/native-lifecycle-operation.ts',
+  'scripts/retire-legacy-system-daemons.sh',
   'scripts/server/main.ts',
+  'scripts/server/supervisor.ts',
+  'scripts/server/routes/mcp.ts',
+  'scripts/lib/mcp-protocol.ts',
+  'scripts/lib/mcp-gateway.ts',
+  'scripts/lib/worker-pool.ts',
+  'scripts/lib/security-gateway.ts',
+  'scripts/consuelo-reload.js',
+  'scripts/workspace-watchdog.sh',
+  'scripts/lib/lifecycle/connector-readiness.ts',
+  'scripts/workspace-node-heartbeat.ts',
+  'scripts/lib/workspace-node-heartbeat-client.ts',
   'scripts/lib/install-state.ts',
+  'scripts/lib/subagent/runner.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
   'scripts/lib/managed-component-install.ts',
+  'scripts/lib/subagent/runner.ts',
   'manifests/generated/tool.manifest.json',
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
@@ -77,11 +94,12 @@ let bundle100: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 let bundle110: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 let bundle190: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 let bundle1100: Awaited<ReturnType<typeof buildRuntimeBundle>>;
+let legacyRecoveryBundle: Awaited<ReturnType<typeof buildRuntimeBundle>>;
 
 function runtimeReleaseDirectoryFor(
   bundle: Awaited<ReturnType<typeof buildRuntimeBundle>>,
 ): string {
-  return runtimeReleaseDirectoryName(bundle.manifest.bundleId, 'darwin');
+  return runtimeReleaseDirectoryName(bundle.manifest.bundleId, process.platform);
 }
 
 function runtimeReleaseTargetFor(
@@ -101,40 +119,54 @@ beforeAll(async () => {
   privateKey = pair.privateKey;
   publicKeyPem = pair.publicKey.export({ type: 'spki', format: 'pem' }).toString();
   bundle100 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-100',
     sourceRoot: osRoot,
     version: '1.0.0',
   });
   bundle110 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-110',
     sourceRoot: osRoot,
     version: '1.1.0',
   });
   bundle190 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-190',
     sourceRoot: osRoot,
     version: '1.9.0',
   });
   bundle1100 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-1100',
     sourceRoot: osRoot,
     version: '1.10.0',
+  });
+  legacyRecoveryBundle = await buildRuntimeBundle({
+    architecture: 'arm64',
+    includePaths: requiredRuntimePaths.filter(
+      (runtimePath) =>
+        runtimePath !== 'scripts/lib/lifecycle/connector-readiness.ts' &&
+        runtimePath !== 'scripts/workspace-node-heartbeat.ts' &&
+        runtimePath !== 'scripts/lib/workspace-node-heartbeat-client.ts',
+    ),
+    minimumUpdaterVersion: '1.0.0',
+    platform: process.platform,
+    sourceCommit: 'fixture-legacy-recovery',
+    sourceRoot: osRoot,
+    version: '0.9.0',
   });
 });
 
@@ -159,6 +191,7 @@ function signedManifest(
     releaseFingerprint: bundle.manifest.releaseFingerprint,
     publishedAt: '2026-07-23T00:00:00.000Z',
     sourceCommit: bundle.manifest.sourceCommit,
+    capabilities: [...(bundle.manifest.capabilities ?? [])],
     ...overrides,
   };
   const payload = {
@@ -170,6 +203,7 @@ function signedManifest(
       architecture: process.arch,
       archiveDigest: resolved.bundleDigest,
       bundleId: resolved.bundleId,
+      capabilities: resolved.capabilities,
       cloudflareObjectKey: resolved.bundleUrl,
       githubAssetName: `consuelo-os-runtime-${resolved.version}.tar.gz`,
       platform: process.platform,
@@ -236,17 +270,21 @@ function createEngine(input: {
   events?: LifecycleProgressEvent[];
   now?: () => Date;
   serviceFailure?: Error;
+  serviceFailures?: Error[];
   health?: boolean | boolean[];
   connectivity?: boolean;
+  publicReadiness?: boolean;
   stagingFailure?: Error;
   onboarding?: () => Promise<void>;
   runtime?: LifecycleRuntimeMaterializer;
+  visibleUserRoot?: string;
 } = {}): LifecycleEngine & { serviceOperations: string[]; onboardingCalls: number } {
   const events = input.events ?? [];
   const serviceOperations: string[] = [];
   let onboardingCalls = 0;
   const bundle = input.bundle ?? bundle100;
   let healthIndex = 0;
+  let serviceRestartIndex = 0;
   const engine = createLifecycleEngine({
     home: tempHome,
     now: input.now,
@@ -259,6 +297,9 @@ function createEngine(input: {
       },
       async restart() {
         serviceOperations.push('restart');
+        const sequencedFailure = input.serviceFailures?.[serviceRestartIndex];
+        serviceRestartIndex += 1;
+        if (sequencedFailure) throw sequencedFailure;
         if (input.serviceFailure) throw input.serviceFailure;
       },
     },
@@ -281,12 +322,21 @@ function createEngine(input: {
         },
       },
     }),
+    ...(input.publicReadiness === undefined ? {} : {
+      connectorReadiness: {
+        async accept() {
+          serviceOperations.push('connector-readiness');
+          return input.publicReadiness ?? true;
+        },
+      },
+    }),
     hooks: {
       async beforeStage() {
         if (input.stagingFailure) throw input.stagingFailure;
       },
     },
     runtime: input.runtime,
+    visibleUserRoot: input.visibleUserRoot,
     onboarding: input.onboarding ?? (async () => {
       onboardingCalls += 1;
       writeInstalledIdentity();
@@ -408,6 +458,23 @@ describe('unified lifecycle engine', () => {
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
+  it('preserves the original activation failure when automatic rollback also fails', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const update = createEngine({
+      bundle: bundle110,
+      serviceFailures: [
+        new Error('candidate worker handoff failed'),
+        new Error('rollback reconciliation failed'),
+      ],
+    });
+
+    await expect(update.update({ channel: 'dev', yes: true })).rejects.toThrow(
+      /runtime activation failed: .*candidate worker handoff failed.*rollback was not accepted: .*rollback reconciliation failed/,
+    );
+    expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
+    expect(update.serviceOperations.filter((operation) => operation === 'restart')).toHaveLength(2);
+  });
+
   it('supports check-only updates without downloading, activating, or restarting', async () => {
     const initial = createEngine({ bundle: bundle100 });
     await initial.install({ channel: 'dev' });
@@ -457,6 +524,58 @@ describe('unified lifecycle engine', () => {
     expect(check.serviceOperations).toEqual([]);
   });
 
+  it('reconciles connector-backed hosted state when update is already current', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const current = createEngine({ bundle: bundle100, publicReadiness: true });
+
+    await expect(current.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.0.0',
+    });
+
+    expect(current.serviceOperations).toEqual([
+      'preflight',
+      'restart',
+      'health',
+      'connector-readiness',
+    ]);
+  });
+
+  it('reconciles release-managed user content when update is already current', async () => {
+    const visibleUserRoot = join(tempHome, 'visible-user');
+    await createEngine({ bundle: bundle100, visibleUserRoot }).install({ channel: 'dev' });
+    const managedExample = join(visibleUserRoot, 'Steering', 'example-system.md');
+    const expected = readFileSync(managedExample, 'utf8');
+    writeFileSync(managedExample, 'stale managed content\n');
+    const current = createEngine({
+      bundle: bundle100,
+      publicReadiness: true,
+      visibleUserRoot,
+    });
+
+    await expect(current.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.0.0',
+    });
+
+    expect(readFileSync(managedExample, 'utf8')).toBe(expected);
+  });
+
+  it('keeps current-version check-only updates free of hosted reconciliation side effects', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const current = createEngine({ bundle: bundle100, publicReadiness: true });
+
+    await expect(current.update({ channel: 'dev', check: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.0.0',
+    });
+
+    expect(current.serviceOperations).toEqual([]);
+  });
+
   it('finalizes an interrupted candidate that is already current and healthy', async () => {
     await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
     await createEngine({ bundle: bundle110 }).update({ channel: 'dev', yes: true });
@@ -476,7 +595,12 @@ describe('unified lifecycle engine', () => {
 
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
     expect(existsSync(join(tempHome, 'runtime', 'activation.json'))).toBe(false);
-    expect(recovery.serviceOperations).toEqual(['health']);
+    expect(recovery.serviceOperations).toEqual([
+      'health',
+      'preflight',
+      'restart',
+      'health',
+    ]);
   });
 
   it('re-inspects post-recovery state before applying an interrupted unhealthy candidate', async () => {
@@ -541,6 +665,59 @@ describe('unified lifecycle engine', () => {
 
     await expect(engine.update({ channel: 'dev' })).rejects.toMatchObject({ code: 'MANIFEST_SIGNATURE_INVALID' });
     expect(existsSync(join(tempHome, 'runtime', 'current'))).toBe(false);
+  });
+
+  it('rejects a signed release when its source commit disagrees with the verified runtime archive', async () => {
+    writeInstalledIdentity();
+    const manifest = signedManifest(bundle100, {
+      sourceCommit: 'different-signed-source-commit',
+    });
+    const engine = createEngine({ source: sourceFor(bundle100, manifest) });
+
+    await expect(engine.update({ channel: 'dev' })).rejects.toMatchObject({
+      code: 'BUNDLE_VERIFY_FAILED',
+    });
+    expect(existsSync(join(tempHome, 'runtime', 'current'))).toBe(false);
+  });
+
+  it('rejects a signed release that omits any required runtime recovery capability', () => {
+    const capabilities = [...(bundle100.manifest.capabilities ?? [])];
+    capabilities.shift();
+    const manifest = signedManifest(bundle100, { capabilities });
+
+    expect(() =>
+      verifySignedReleaseManifest(
+        manifest,
+        { [releaseKeyId]: publicKeyPem },
+        { platform: process.platform, architecture: process.arch },
+      ),
+    ).toThrowError(
+      expect.objectContaining({ code: 'RUNTIME_CAPABILITY_MISMATCH' }),
+    );
+  });
+
+  it('refuses to repair a valid installed runtime that predates required recovery capabilities', async () => {
+    writeInstalledIdentity();
+    const operationId = 'legacy-recovery-runtime';
+    const archivePath = materializeRuntimeBundleDownload({
+      home: tempHome,
+      operationId,
+      bytes: legacyRecoveryBundle.archiveBytes,
+    });
+    const { releasePath } = stageVerifiedRuntimeBundle({
+      home: tempHome,
+      operationId,
+      archivePath,
+      manifest: legacyRecoveryBundle.manifest,
+    });
+    activateRuntimeRelease({ home: tempHome, releasePath, operationId });
+    const engine = createEngine({ bundle: bundle100 });
+
+    await expect(engine.repair()).rejects.toMatchObject({
+      code: 'RUNTIME_CAPABILITY_MISMATCH',
+      phase: 'repair-scan',
+    });
+    expect(engine.serviceOperations).toEqual([]);
   });
 
   it('rejects signed manifests with malformed platform collections using structured errors', () => {
@@ -746,13 +923,48 @@ describe('unified lifecycle engine', () => {
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle100));
   });
 
-  it('restarts only the service adapter and never invokes onboarding', async () => {
+  it('restarts the service, waits for local health, and never invokes onboarding', async () => {
     writeInstalledIdentity();
     const engine = createEngine();
 
-    await expect(engine.restart()).resolves.toMatchObject({ operation: 'restart', changed: true });
+    await expect(engine.restart()).resolves.toMatchObject({
+      operation: 'restart',
+      changed: true,
+      detail: { scheduled: false, localHealthy: true, connectorReady: true },
+    });
     expect(engine.onboardingCalls).toBe(0);
-    expect(engine.serviceOperations).toEqual(['restart']);
+    expect(engine.serviceOperations).toEqual(['preflight', 'restart', 'health']);
+  });
+
+  it('fails restart closed when the public MCP connector is not ready after local health', async () => {
+    writeInstalledIdentity();
+    const engine = createEngine({ publicReadiness: false });
+
+    await expect(engine.restart()).rejects.toMatchObject({
+      code: 'CONNECTOR_READINESS_FAILED',
+    });
+    expect(engine.serviceOperations).toEqual([
+      'preflight',
+      'restart',
+      'health',
+      'connector-readiness',
+    ]);
+  });
+
+  it('fails repair closed when the public MCP connector remains unavailable', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const repair = createEngine({ publicReadiness: false });
+
+    await expect(repair.repair()).rejects.toMatchObject({
+      code: 'CONNECTOR_READINESS_FAILED',
+    });
+    expect(repair.serviceOperations).toEqual([
+      'preflight',
+      'restart',
+      'health',
+      'connector-readiness',
+    ]);
   });
 
   it('reports reply-safe restart scheduling failures as typed lifecycle errors', async () => {
@@ -824,6 +1036,29 @@ describe('unified lifecycle engine', () => {
     });
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
     expect(update.serviceOperations).toContain('connectivity');
+  });
+
+  it('preserves local launcher customization across a runtime update', async () => {
+    const initial = createEngine({ bundle: bundle100 });
+    await initial.install({ channel: 'dev' });
+    const configPath = join(tempHome, 'consuelo.yaml');
+    const configWithLauncher = `${readFileSync(configPath, 'utf8').trimEnd()}\nlauncher:\n  extraSections:\n    - id: internal\n      label: Internal\n      links:\n        - label: Users & installs\n          href: https://internal.consuelohq.com/users\n`;
+    writeFileSync(configPath, configWithLauncher, { mode: 0o600 });
+
+    const update = createEngine({ bundle: bundle110 });
+    await expect(update.update({ channel: 'dev' })).resolves.toMatchObject({
+      operation: 'update',
+      changed: true,
+      version: bundle110.manifest.version,
+    });
+
+    expect(readFileSync(configPath, 'utf8')).toBe(configWithLauncher);
+
+    await update.setChannel('canary');
+    const afterChannelChange = readFileSync(configPath, 'utf8');
+    expect(afterChannelChange).toContain('channel: canary');
+    expect(afterChannelChange).toContain('launcher:');
+    expect(afterChannelChange).toContain('href: https://internal.consuelohq.com/users');
   });
 
   it('persists channel and notification preferences and expires snooze at read time', async () => {
@@ -933,9 +1168,28 @@ describe('unified lifecycle engine', () => {
     });
   });
 
-  it('rejects a synchronous self-hosted update before lifecycle activation', async () => {
+  it('hands a self-hosted update to the durable lifecycle worker before activation', async () => {
     const engine = createEngine();
-    const update = vi.spyOn(engine, 'update');
+    const update = vi.spyOn(engine, 'update').mockResolvedValue({
+      operation: 'update',
+      changed: false,
+      updateAvailable: true,
+      version: '1.5.0',
+      bundleId: 'bundle-1.5.0',
+    });
+    const launch = vi.fn(async () => ({
+      accepted: true as const,
+      operationId: 'daemon-update-1',
+    }));
+    const read = vi.fn(() => ({
+      schemaVersion: 1 as const,
+      operationId: 'daemon-update-1',
+      kind: 'update' as const,
+      phase: 'queued' as const,
+      updatedAt: '2026-08-13T18:00:00.000Z',
+      targetVersion: '1.5.0',
+      channel: 'dev' as const,
+    }));
     const stdout: string[] = [];
     const stderr: string[] = [];
 
@@ -946,50 +1200,266 @@ describe('unified lifecycle engine', () => {
         environment: {
           XPC_SERVICE_NAME: 'com.consuelo.system',
         },
+        operationLauncher: { launch, read },
         stdout: (value) => stdout.push(value),
         stderr: (value) => stderr.push(value),
       },
     );
 
-    expect(exitCode).toBe(1);
-    expect(update).not.toHaveBeenCalled();
-    expect(stdout).toEqual([]);
-    expect(JSON.parse(stderr.join(''))).toMatchObject({
+    expect(exitCode).toBe(0);
+    expect(stderr).toEqual([]);
+    expect(update).toHaveBeenCalledWith({
+      channel: 'dev',
+      check: true,
+      yes: true,
+    });
+    expect(launch).toHaveBeenCalledWith({
+      kind: 'update',
+      targetVersion: '1.5.0',
+      channel: 'dev',
+    });
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
       schemaVersion: 1,
       command: 'update',
-      ok: false,
-      error: {
-        message: expect.stringContaining('separate lifecycle process'),
+      ok: true,
+      result: {
+        operation: 'update',
+        changed: false,
+        version: '1.5.0',
+        detail: {
+          detached: true,
+          accepted: true,
+          operationId: 'daemon-update-1',
+        },
       },
     });
   });
 
-  it('should reject a synchronous update when inherited daemon context survives launchd rewriting XPC_SERVICE_NAME', async () => {
+  it('hands a same-version self-hosted update to the durable worker for gateway reconciliation', async () => {
     const engine = createEngine();
-    const update = vi.spyOn(engine, 'update');
+    const update = vi.spyOn(engine, 'update').mockResolvedValue({
+      operation: 'update',
+      changed: false,
+      updateAvailable: false,
+      version: '1.5.0',
+      bundleId: 'bundle-1.5.0',
+    });
+    const launch = vi.fn(async () => ({
+      accepted: true as const,
+      operationId: 'daemon-update-reconcile-1',
+    }));
+    const stdout: string[] = [];
     const stderr: string[] = [];
 
     const exitCode = await runLifecycleCli(
       ['update', '--channel', 'dev', '--yes', '--json'],
       {
         engine,
-        environment: {
-          CONSUELO_OS_DAEMON_PROCESS: '1',
-          XPC_SERVICE_NAME: '0',
-        },
-        stdout: vi.fn(),
+        environment: { XPC_SERVICE_NAME: 'com.consuelo.system' },
+        operationLauncher: { launch, read: () => undefined },
+        stdout: (value) => stdout.push(value),
         stderr: (value) => stderr.push(value),
       },
     );
 
-    expect(exitCode).toBe(1);
-    expect(update).not.toHaveBeenCalled();
-    expect(JSON.parse(stderr.join(''))).toMatchObject({
+    expect(exitCode).toBe(0);
+    expect(stderr).toEqual([]);
+    expect(update).toHaveBeenCalledWith({
+      channel: 'dev',
+      check: true,
+      yes: true,
+    });
+    expect(launch).toHaveBeenCalledWith({
+      kind: 'update',
+      targetVersion: '1.5.0',
+      channel: 'dev',
+    });
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
       command: 'update',
-      ok: false,
-      error: {
-        code: 'DAEMON_MUTATION_NOT_ALLOWED',
-        message: expect.stringContaining('separate lifecycle process'),
+      ok: true,
+      result: {
+        operation: 'update',
+        changed: false,
+        version: '1.5.0',
+        detail: {
+          detached: true,
+          accepted: true,
+          operationId: 'daemon-update-reconcile-1',
+        },
+      },
+    });
+  });
+
+  it('hands a self-hosted restart to the durable lifecycle worker before disruption', async () => {
+    const engine = createEngine();
+    const restart = vi.spyOn(engine, 'restart').mockRejectedValue(
+      new Error('inline restart must not run inside the active daemon'),
+    );
+    const launch = vi.fn(async () => ({
+      accepted: true as const,
+      operationId: 'daemon-restart-1',
+    }));
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+
+    const exitCode = await runLifecycleCli(['restart', '--json'], {
+      engine,
+      environment: {
+        CONSUELO_OS_DAEMON_PROCESS: '1',
+      },
+      operationLauncher: { launch, read: () => undefined },
+      stdout: (value) => stdout.push(value),
+      stderr: (value) => stderr.push(value),
+    });
+
+    expect(exitCode).toBe(0);
+    expect(stderr).toEqual([]);
+    expect(restart).not.toHaveBeenCalled();
+    expect(launch).toHaveBeenCalledWith({ kind: 'restart' });
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
+      schemaVersion: 1,
+      command: 'restart',
+      ok: true,
+      result: {
+        operation: 'restart',
+        changed: true,
+        detail: {
+          detached: true,
+          accepted: true,
+          operationId: 'daemon-restart-1',
+        },
+      },
+    });
+  });
+
+  it('keeps terminal lifecycle restart synchronous outside the active daemon', async () => {
+    const engine = createEngine();
+    const restart = vi.spyOn(engine, 'restart').mockResolvedValue({
+      operation: 'restart',
+      changed: true,
+    });
+    const launch = vi.fn();
+    const stdout: string[] = [];
+
+    const exitCode = await runLifecycleCli(['restart', '--json'], {
+      engine,
+      environment: {},
+      operationLauncher: { launch, read: () => undefined },
+      stdout: (value) => stdout.push(value),
+      stderr: () => {},
+    });
+
+    expect(exitCode).toBe(0);
+    expect(restart).toHaveBeenCalledTimes(1);
+    expect(launch).not.toHaveBeenCalled();
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
+      command: 'restart',
+      ok: true,
+      result: { operation: 'restart', changed: true },
+    });
+  });
+
+  it('should hand off an update when inherited daemon context survives launchd rewriting XPC_SERVICE_NAME', async () => {
+    const engine = createEngine();
+    const update = vi.spyOn(engine, 'update').mockResolvedValue({
+      operation: 'update',
+      changed: false,
+      updateAvailable: true,
+      version: '1.6.0',
+      bundleId: 'bundle-1.6.0',
+    });
+    const launch = vi.fn(async () => ({
+      accepted: true as const,
+      operationId: 'daemon-update-2',
+    }));
+    const stderr: string[] = [];
+    const stdout: string[] = [];
+
+    const exitCode = await runLifecycleCli(
+      ['update', '--yes', '--json'],
+      {
+        engine,
+        environment: {
+          CONSUELO_OS_DAEMON_PROCESS: '1',
+          XPC_SERVICE_NAME: '0',
+        },
+        operationLauncher: { launch, read: () => undefined },
+        stdout: (value) => stdout.push(value),
+        stderr: (value) => stderr.push(value),
+      },
+    );
+
+    expect(exitCode).toBe(0);
+    expect(stderr).toEqual([]);
+    expect(update).toHaveBeenCalledWith({
+      channel: undefined,
+      check: true,
+      yes: true,
+    });
+    expect(launch).toHaveBeenCalledWith({
+      kind: 'update',
+      targetVersion: '1.6.0',
+    });
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
+      command: 'update',
+      ok: true,
+      result: {
+        detail: {
+          detached: true,
+          operationId: 'daemon-update-2',
+        },
+      },
+    });
+  });
+
+  it('includes the durable lifecycle operation in JSON status', async () => {
+    const engine = createEngine();
+    vi.spyOn(engine, 'status').mockResolvedValue({
+      operation: 'status',
+      changed: false,
+      installState: 'valid',
+      version: '1.5.0',
+      bundleId: 'bundle-1.5.0',
+      preferences: { channel: 'canary', notifications: { mode: 'on' } },
+    });
+    const stdout: string[] = [];
+
+    const exitCode = await runLifecycleCli(['status', '--json'], {
+      engine,
+      operationLauncher: {
+        launch: vi.fn(),
+        read: () => ({
+          schemaVersion: 1,
+          operationId: 'daemon-update-1',
+          kind: 'update',
+          phase: 'succeeded',
+          updatedAt: '2026-08-13T18:00:30.000Z',
+          targetVersion: '1.5.0',
+          channel: 'canary',
+          resultingVersion: '1.5.0',
+          resultingBundleId: 'bundle-1.5.0',
+        }),
+      },
+      stdout: (value) => stdout.push(value),
+      stderr: vi.fn(),
+    });
+
+    expect(exitCode).toBe(0);
+    expect(JSON.parse(stdout.join(''))).toMatchObject({
+      command: 'status',
+      ok: true,
+      result: {
+        detail: {
+          lifecycleOperation: {
+            operationId: 'daemon-update-1',
+            kind: 'update',
+            phase: 'succeeded',
+            targetVersion: '1.5.0',
+            channel: 'canary',
+            resultingVersion: '1.5.0',
+            resultingBundleId: 'bundle-1.5.0',
+          },
+        },
       },
     });
   });
@@ -1387,7 +1857,7 @@ describe('lifecycle transaction hardening regressions', () => {
     await expect(repair.repair()).resolves.toMatchObject({
       operation: 'repair',
       changed: true,
-      detail: { repaired: ['dependencies', 'migrations', 'service'] },
+      detail: { repaired: ['dependencies', 'migrations', 'service', 'connector'] },
     });
     expect(materialized).toEqual([
       runtimeReleasePathFor(bundle100),

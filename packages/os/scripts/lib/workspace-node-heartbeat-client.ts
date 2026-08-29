@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
 import type { AgentName } from './local-agent-connectivity';
+import {
+  parseWorkspaceNodeSnapshot,
+  type WorkspaceNodeSnapshot,
+} from './workspace-node-snapshot-cache';
 
 import {
   createDevicePublicKeyProof,
@@ -31,8 +35,10 @@ export type WorkspaceNodeHeartbeatConfig = {
 export type WorkspaceNodeHeartbeatResult = {
   nodeId: string;
   presence: 'online' | 'stale' | 'offline';
+  routeReady: boolean;
   connectorId?: string;
   edgeRequestSigningSecret?: string;
+  workspace?: WorkspaceNodeSnapshot;
 };
 
 export type WorkspaceNodeHeartbeatClient = {
@@ -126,10 +132,12 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
   }
   const nodeId = (payload as { nodeId?: unknown }).nodeId;
   const presence = (payload as { presence?: unknown }).presence;
+  const routeReady = (payload as { routeReady?: unknown }).routeReady === true;
   const connectorId = (payload as { connectorId?: unknown }).connectorId;
   const edgeRequestSigningSecret = (
     payload as { edgeRequestSigningSecret?: unknown }
   ).edgeRequestSigningSecret;
+  const rawWorkspace = (payload as { workspace?: unknown }).workspace;
   if (
     typeof nodeId !== 'string' ||
     !['online', 'stale', 'offline'].includes(String(presence))
@@ -148,12 +156,16 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
   return {
     nodeId,
     presence: presence as WorkspaceNodeHeartbeatResult['presence'],
+    routeReady,
     ...(hasConnector && hasSecret
       ? {
           connectorId: connectorId.trim(),
           edgeRequestSigningSecret: edgeRequestSigningSecret.trim(),
         }
       : {}),
+    ...(rawWorkspace === undefined
+      ? {}
+      : { workspace: parseWorkspaceNodeSnapshot(rawWorkspace) }),
   };
 }
 
@@ -183,6 +195,8 @@ export function createWorkspaceNodeHeartbeatClient(input: {
         timestamp: now(),
         nonce: requiredString(createNonce(), 'nonce'),
         connectorStatus: config.connectorStatus,
+        platform: process.platform,
+        architecture: process.arch,
         capabilities: config.capabilities,
         // Inside the signed payload, so the authority can trust the key it is asked to publish.
         ...(config.encryptionPublicKeyJwk

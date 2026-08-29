@@ -291,6 +291,36 @@ export const FsTrashInput = z.object({
   path: z.string().min(1),
 });
 
+
+const SessionTaskStartInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  kind: z.literal('task'),
+  area: optionalString,
+  stream: optionalString,
+  title: z.string().min(1),
+  workflow: z.enum(['task']).optional(),
+  description: optionalString,
+  bodyFile: optionalString,
+  startFrom: z.enum(['main', 'stream']).optional(),
+  createStream: z.boolean().optional(),
+}).strict().refine((input) => Boolean(input.area || input.stream), {
+  message: 'provide area or stream',
+  path: ['area'],
+});
+
+const SessionWorkStartInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  kind: z.literal('work'),
+  path: z.string().min(1),
+}).strict();
+
+export const SessionStartInput = z.union([
+  SessionTaskStartInput,
+  SessionWorkStartInput,
+]);
+
 export const TaskStartInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -320,6 +350,7 @@ export const TaskPushInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+  repo: optionalString,
   message: z.string().min(1),
   changed: z.boolean().optional(),
   files: stringArray,
@@ -331,10 +362,12 @@ export const TaskPrInput = z.object({
   ...requestFields,
   ...dryRunField,
   ...branchField,
+  repo: optionalString,
   taskOnly: z.boolean().optional(),
   draft: z.boolean().optional(),
   ready: z.boolean().optional(),
   bodyTemplate: optionalString,
+  ackWorkpadIncomplete: z.boolean().optional(),
 });
 
 export const TaskMergeInput = z.object({
@@ -1044,6 +1077,7 @@ export const schemaRegistry = {
   FsHttpInput,
   HttpInput: FsHttpInput,
   FsTrashInput,
+  SessionStartInput,
   TaskStartInput,
   TaskInitInput,
   TaskPushInput,
@@ -1147,10 +1181,11 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  SessionStartInput: '({ kind: "task"; stream?: string; area?: string; title: string; workflow?: "task"; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string } | { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })',
   TaskStartInput: '{ stream?: string; area?: string; title: string; workflow?: "task"; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; createStream?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskPushInput: '{ branch?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  TaskPrInput: '{ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskPushInput: '{ branch?: string; repo?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  TaskPrInput: '{ branch?: string; repo?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; ackWorkpadIncomplete?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskMergeInput: '{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; tddPhase?: "red" | "green" | "post"; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1229,6 +1264,7 @@ export const schemaTypeSignatures: Record<string, string> = {
 
 export const outputTypeSignatures: Record<string, string> = {
   RawOutput: '{ raw?: string; [key: string]: unknown } | null',
+  SessionStartOutput: '({ sessionKind: \"task\"; taskSession: string; taskBranch: string; worktreePath: string; [key: string]: unknown } | { sessionKind: \"work\"; workSession: string; ownerNodeId: string; path: string; [key: string]: unknown })',
   BatchOutput: '{ results: Array<ToolResult<unknown>>; completed: number }',
   FsReadOutput: '({ type: "text-full"; path: string; mime: string; encoding: "utf8"; sizeBytes: number; lines: number; content: string } | { type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-full"; path: string; mime: string; encoding: "utf8"; sizeBytes: number; lines: number; content: string } | { type: "text-page"; path: string; mime: "text/plain"; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: "NOT_FOUND" | "IS_DIRECTORY" | "PATH_OUTSIDE_ROOT" | "SYMLINK_OUTSIDE_ROOT" | "OFFSET_OUT_OF_RANGE" | "INVALID_RANGE" | "INVALID_UTF8" | "MEDIA_TOO_LARGE" | "READ_FAILED"; path?: string; message: string } }> }',
   FsSearchOutput: '{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: unknown } | { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: unknown }> }',

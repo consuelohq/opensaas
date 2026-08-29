@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/tests/distribution/runtime-bundle.test.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-13T22:14:35.038Z"
+}

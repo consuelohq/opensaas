@@ -23,6 +23,7 @@ import {
   type ReleaseEvidence,
   type ReleaseState,
 } from '../../scripts/lib/distribution/release-channels';
+import { REQUIRED_RUNTIME_RECOVERY_CAPABILITIES } from '../../scripts/lib/distribution/runtime-bundle';
 
 const SOURCE_COMMIT = '0123456789abcdef0123456789abcdef01234567';
 const FINGERPRINT = `sha256:${'1'.repeat(64)}`;
@@ -67,6 +68,7 @@ function bundle(
     architecture,
     archiveDigest,
     bundleId,
+    capabilities: [...REQUIRED_RUNTIME_RECOVERY_CAPABILITIES],
     platform,
     releaseFingerprint,
     sourceCommit,
@@ -87,6 +89,7 @@ function bundle(
     manifest: {
       architecture,
       bundleId,
+      capabilities: [...REQUIRED_RUNTIME_RECOVERY_CAPABILITIES],
       platform,
       releaseFingerprint,
       schemaVersion: 1,
@@ -299,6 +302,20 @@ describe('Consuelo OS release channels', () => {
     expect(() => verifyReleaseStateConsensus(result.state, result.input.bundleId)).not.toThrow();
   });
 
+  it('rejects publication when a platform bundle lacks required recovery capabilities', () => {
+    const bundles = completeBundles();
+    bundles[0] = {
+      ...bundles[0],
+      manifest: {
+        ...bundles[0].manifest,
+        capabilities: REQUIRED_RUNTIME_RECOVERY_CAPABILITIES.slice(1),
+      },
+    };
+    expect(() => publish(createEmptyReleaseState(), { bundles })).toThrow(
+      'runtime bundle is missing required recovery capability',
+    );
+  });
+
   it('keeps channel schemaVersion independent from runtime SemVer', () => {
     const result = publish(createEmptyReleaseState(), { version: '42.7.9' });
     const manifest = result.state.channels.dev;
@@ -372,6 +389,79 @@ describe('Consuelo OS release channels', () => {
       from: 'dev',
       to: 'beta',
     }, { now: NOW, signer: dev.signer })).toThrow('illegal channel transition: dev -> beta');
+  });
+
+  it('can promote an exact verified bundle from source-channel history after the source pointer advances', () => {
+    const first = publish(createEmptyReleaseState());
+    const second = publish(first.state, {
+      version: '1.2.4',
+      releaseFingerprint: NEXT_FINGERPRINT,
+      sourceCommit: 'fedcba9876543210fedcba9876543210fedcba98',
+      now: '2026-07-24T00:00:00.000Z',
+    });
+
+    const promoted = promoteReleaseChannel(second.state, {
+      bundleId: first.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T01:00:00.000Z', signer: second.signer });
+
+    expect(promoted.state.channels.canary?.payload).toMatchObject({
+      bundleId: first.input.bundleId,
+      sourceChannel: 'dev',
+      version: '1.2.3',
+    });
+    expect(promoted.state.audit.at(-1)).toMatchObject({
+      action: 'promote',
+      bundleId: first.input.bundleId,
+      fromChannel: 'dev',
+    });
+  });
+
+  it('never turns historical-source promotion into an implicit rollback of the target channel', () => {
+    const first = publish(createEmptyReleaseState());
+    const firstCanary = promoteReleaseChannel(first.state, {
+      bundleId: first.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: NOW, signer: first.signer });
+    const second = publish(firstCanary.state, {
+      version: '1.2.4',
+      releaseFingerprint: NEXT_FINGERPRINT,
+      sourceCommit: 'fedcba9876543210fedcba9876543210fedcba98',
+      now: '2026-07-24T00:00:00.000Z',
+    });
+    const secondCanary = promoteReleaseChannel(second.state, {
+      bundleId: second.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T00:10:00.000Z', signer: second.signer });
+
+    expect(() => promoteReleaseChannel(secondCanary.state, {
+      bundleId: first.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T01:00:00.000Z', signer: second.signer })).toThrow(
+      'promotion would move canary backwards from 1.2.4 to 1.2.3; use rollback for an intentional downgrade',
+    );
+  });
+
+  it('rejects a historical-source promotion when the exact bundle never occupied that source channel', () => {
+    const first = publish(createEmptyReleaseState());
+    const unrelatedBundle = `sha256:${'9'.repeat(64)}`;
+    const tampered = structuredClone(first.state);
+    tampered.releases[unrelatedBundle] = {
+      ...tampered.releases[first.input.bundleId],
+      bundleId: unrelatedBundle,
+    };
+
+    expect(() => promoteReleaseChannel(tampered, {
+      bundleId: unrelatedBundle,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T01:00:00.000Z', signer: first.signer })).toThrow(
+      'verified immutable release does not exist in source channel dev history',
+    );
   });
 
   it('requires explicit stable approval and a manual stable deployment environment', () => {
