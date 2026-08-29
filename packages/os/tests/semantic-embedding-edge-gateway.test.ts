@@ -108,7 +108,7 @@ function request(
 }
 
 describe('Consuelo hosted Explore embedding gateway', () => {
-  it('requires the provider secret and both Cloudflare rate-limit bindings at deploy time', () => {
+  it('should require the provider secret and both Cloudflare rate-limit bindings when deploying the hosted embedding gateway', () => {
     const wrangler = readFileSync(
       new URL('../cloudflare/workspace-edge/wrangler.toml', import.meta.url),
       'utf8',
@@ -122,7 +122,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     expect(wrangler).toMatch(/period\s*=\s*60/);
   });
 
-  it('handles the global gateway hostname before workspace hostname lookup', async () => {
+  it('should handle the global gateway hostname before workspace lookup when a gateway request arrives', async () => {
     const gateway = await createGateway();
 
     const response = await gateway.handler(request());
@@ -136,7 +136,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     expect(gateway.ipLimiter.keys).toEqual(['ip:203.0.113.7']);
   });
 
-  it('keeps the shared OpenRouter key server-side and forces the approved embedding request', async () => {
+  it('should keep the shared OpenRouter key server-side and force approved embeddings when forwarding a request', async () => {
     const gateway = await createGateway({ openRouterApiKey: 'never-return-this-key' });
 
     const response = await gateway.handler(request());
@@ -154,7 +154,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     expect(responseText).not.toContain('never-return-this-key');
   });
 
-  it('rejects arbitrary models and never forwards them upstream', async () => {
+  it('should reject arbitrary models without forwarding upstream when an unsupported model is requested', async () => {
     const gateway = await createGateway();
     const payload = { ...gatewayPayload(), model: 'openai/gpt-5' };
 
@@ -171,7 +171,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     expect(gateway.fetchEmbeddingUpstream).not.toHaveBeenCalled();
   });
 
-  it('does not expose any other OpenRouter-compatible route on the gateway hostname', async () => {
+  it('should expose no other OpenRouter-compatible route when the gateway receives a non-embedding path', async () => {
     const gateway = await createGateway();
 
     const response = await gateway.handler(new Request('https://gateway.consuelohq.com/v1/chat/completions', {
@@ -184,7 +184,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     expect(gateway.fetchEmbeddingUpstream).not.toHaveBeenCalled();
   });
 
-  it('requires POST for the one public embedding route', async () => {
+  it('should require POST when the public embedding route is called', async () => {
     const gateway = await createGateway();
     const response = await gateway.handler(new Request(GATEWAY_URL, { method: 'GET' }));
 
@@ -193,7 +193,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     expect(gateway.fetchEmbeddingUpstream).not.toHaveBeenCalled();
   });
 
-  it('rate-limits by server-observed client identity before spending provider money', async () => {
+  it('should rate-limit by server-observed client identity when provider spend would occur', async () => {
     const gateway = await createGateway({ installAllowed: false });
 
     const response = await gateway.handler(request());
@@ -203,7 +203,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     expect(gateway.fetchEmbeddingUpstream).not.toHaveBeenCalled();
   });
 
-  it('does not let callers rotate install ids to rotate the primary spend bucket', async () => {
+  it('should keep the primary spend bucket stable when callers rotate install ids', async () => {
     const gateway = await createGateway();
     const rotatedInstallId = 'ins_00000000-0000-4000-8000-000000000002';
 
@@ -219,7 +219,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     ]);
   });
 
-  it('bounds a hung embedding provider request with an abort timeout', async () => {
+  it('should abort a hung provider request when the embedding deadline expires', async () => {
     const installLimiter = rateLimiter();
     const ipLimiter = rateLimiter();
     const controller = new AbortController();

@@ -76,7 +76,7 @@ async function withFailingSemanticEmbedding<T>(run: (retrieve: Function) => Prom
 }
 
 describe('OS Explore E2 lexical fallback integration', () => {
-  it('returns lexical results when semantic embedding is unavailable', async () => {
+  it('should return lexical results when semantic embedding is unavailable', async () => {
     const store = fakeStore([
       {
         chunkId: 1,
@@ -117,7 +117,7 @@ describe('OS Explore E2 lexical fallback integration', () => {
     expect(results[0].scoreParts.preFusionHeuristicScore).toBe(0);
   });
 
-  it('hard-filters an explicit path scope before returning lexical results', async () => {
+  it('should hard-filter an explicit path scope when returning lexical results', async () => {
     const store = fakeStore([
       {
         chunkId: 1,
@@ -153,7 +153,7 @@ describe('OS Explore E2 lexical fallback integration', () => {
     ]);
   });
 
-  it('returns semantic results when lexical retrieval fails independently', async () => {
+  it('should return semantic results when lexical retrieval fails independently', async () => {
     const store = fakeStore([]);
     store.searchChunks = () => [{
       chunkId: 1,

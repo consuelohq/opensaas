@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe('Explore hosted embedding install identity', () => {
-  it('persists one pseudonymous install id for ordinary interactive Explore processes', () => {
+  it('should persist one pseudonymous install id when interactive Explore processes create identity', () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-embedding-id-'));
     createdHomes.push(home);
 
@@ -69,7 +69,7 @@ describe('Explore hosted embedding install identity', () => {
     });
   });
 
-  it('prefers an inherited installer identity without rewriting it', () => {
+  it('should prefer an inherited installer identity when one is available', () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-embedding-id-'));
     createdHomes.push(home);
     const inherited = 'ins_11111111-1111-4111-8111-111111111111';
@@ -84,7 +84,7 @@ describe('Explore hosted embedding install identity', () => {
     });
   });
 
-  it('keeps a process-stable ephemeral identity when persistence is unavailable', () => {
+  it('should keep a process-stable ephemeral identity when persistence is unavailable', () => {
     const root = mkdtempSync(join(tmpdir(), 'consuelo-embedding-id-'));
     createdHomes.push(root);
     const blockedHome = join(root, 'blocked-home');
