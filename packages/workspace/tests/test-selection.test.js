@@ -1163,6 +1163,86 @@ describe('test selection registry', () => {
     expect(data.runResults[0]?.status).toBe('passed');
   });
 
+  it('provisions OS package dependencies before selected OS suites on a clean checkout', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'test-selection-os-deps-'));
+    const osRoot = path.join(repo, 'packages', 'os');
+    const fakeBin = path.join(repo, 'fake-bin');
+    const registryPath = path.join(repo, 'registry.json');
+    const logPath = path.join(repo, 'bun-calls.jsonl');
+
+    try {
+      fs.mkdirSync(osRoot, { recursive: true });
+      fs.mkdirSync(fakeBin, { recursive: true });
+      fs.writeFileSync(
+        path.join(osRoot, 'package.json'),
+        JSON.stringify({ dependencies: { 'tree-sitter': '0.25.0' } }),
+      );
+      fs.writeFileSync(
+        registryPath,
+        JSON.stringify({
+          version: 1,
+          rules: [
+            {
+              id: 'os-clean-checkout',
+              source: ['packages/os/src/**'],
+              critical: true,
+              origin: 'test',
+              tests: [
+                {
+                  name: 'clean OS suite',
+                  command: ['bun', '--cwd', 'packages/os', 'test', 'tests/example.test.ts'],
+                },
+              ],
+            },
+          ],
+        }),
+      );
+      const fakeBun = path.join(fakeBin, 'bun');
+      fs.writeFileSync(
+        fakeBun,
+        `#!/usr/bin/env node\nconst fs = require('node:fs');\nfs.appendFileSync(process.env.TEST_SELECTION_FAKE_BUN_LOG, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }) + '\\n');\n`,
+      );
+      fs.chmodSync(fakeBun, 0o755);
+
+      const result = run(
+        [
+          'check',
+          '--registry',
+          registryPath,
+          '--changed-file',
+          'packages/os/src/index.ts',
+          '--run',
+          '--json',
+        ],
+        {
+          cwd: repo,
+          env: {
+            PATH: `${fakeBin}:${process.env.PATH || ''}`,
+            TEST_SELECTION_FAKE_BUN_LOG: logPath,
+          },
+        },
+      );
+      const data = json(result);
+      const calls = fs.readFileSync(logPath, 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line));
+
+      expect(data.failedSuites).toHaveLength(0);
+      expect(fs.realpathSync(calls[0].cwd)).toBe(fs.realpathSync(osRoot));
+      expect(calls[0].args).toEqual(['install', '--frozen-lockfile']);
+      expect(fs.realpathSync(calls[1].cwd)).toBe(fs.realpathSync(repo));
+      expect(calls[1].args).toEqual([
+        '--cwd',
+        'packages/os',
+        'test',
+        'tests/example.test.ts',
+      ]);
+    } finally {
+      fs.rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
   it('fails timed out suite commands', () => {
     const registryPath = path.join(
       os.tmpdir(),
@@ -1642,6 +1722,22 @@ describe('test selection registry', () => {
       'check',
       '--changed-file',
       'packages/os/tools/task-lifecycle/handler.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const selectedSuiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-work-session-fs');
+    expect(selectedSuiteNames).toContain('OS work-session filesystem authority contracts');
+    expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('routes fs list portability coverage to focused work-session contracts without the whole OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/fs-list-portability.test.ts',
       '--json',
     ]);
     const data = json(result);
