@@ -220,6 +220,7 @@
         "packages/os/package.json",
         "packages/os/scripts/lib/observability-traces-site.ts",
         "packages/os/scripts/lib/trace-cost-estimator.ts",
+        "packages/os/scripts/lib/trace-session-identity.ts",
         "packages/os/scripts/lib/trace-site-inspector/**",
         "packages/os/scripts/lib/trace-sites-gateway-*.ts",
         "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
@@ -2010,7 +2011,11 @@
             "x",
             "vitest",
             "run",
-            "packages/os/tests/test-environment-contract.test.ts"
+            "--root",
+            "packages/os",
+            "--config",
+            "vitest.config.ts",
+            "tests/test-environment-contract.test.ts"
           ]
         }
       ],

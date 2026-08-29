@@ -1,3 +1,5 @@
+import { resolveTraceSessionIdentity } from '../trace-session-identity';
+
 export type TraceRecord = Record<string, unknown>;
 
 export type TraceChildRecord = TraceRecord & {
@@ -54,16 +56,12 @@ export function isBatchChild(row: TraceRecord | null | undefined): boolean {
 }
 
 export function branchName(row: TraceRecord | null | undefined): string {
-  const taskSession = sessionValue(row?.taskSession);
-  const workSession = sessionValue(row?.workSession);
-  if (taskSession && workSession) return `${taskSession} + ${workSession}`;
-  const workPath = sessionValue(row?.workPath);
-  if (workPath) return workPath;
-  const branch = sessionValue(row?.branch);
-  if (branch) return branch;
-  if (taskSession) return taskSession;
-  if (workSession) return workSession;
-  return 'no-branch';
+  return resolveTraceSessionIdentity({
+    workPath: row?.workPath,
+    branch: row?.branch,
+    taskSession: row?.taskSession,
+    workSession: row?.workSession,
+  });
 }
 
 export function sessionDisplayName(row: TraceRecord | null | undefined): string {

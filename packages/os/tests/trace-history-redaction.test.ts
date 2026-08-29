@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { sanitizeTraceHistoryRowForTest } from '../scripts/lib/trace-sites-local-read-backend';
+import {
+  sanitizeTraceDashboardEventForTest,
+  sanitizeTraceHistoryRowForTest,
+} from '../scripts/lib/trace-sites-local-read-backend';
 import { estimateTraceCost } from '../scripts/lib/trace-cost-estimator';
 
 describe('trace history redaction boundary', () => {
@@ -24,7 +27,7 @@ describe('trace history redaction boundary', () => {
   });
 
   it('keeps safe inspector metadata while redacting credentials, prompts, environment values, and local user paths', () => {
-    const row = sanitizeTraceHistoryRowForTest({
+    const sourceRow = {
       rowid: 1,
       id: 'row_secret',
       ts: '2026-07-23T20:00:00.000Z',
@@ -66,11 +69,14 @@ describe('trace history redaction boundary', () => {
       input_tokens: 10,
       output_tokens: 20,
       total_tokens: 30,
-    });
+    };
+    const row = sanitizeTraceHistoryRowForTest(sourceRow);
+    const dashboardEvent = sanitizeTraceDashboardEventForTest(sourceRow);
 
     const serialized = JSON.stringify(row);
     expect(row.taskSession).toBe('tsk_safe_session');
-    expect(row.branch).toBe('task/os-web/safe-traces');
+    expect(row.branch).toBe('tsk_safe_session + wrk_safe_session');
+    expect(dashboardEvent.branch).toBe('tsk_safe_session + wrk_safe_session');
     expect(row.traceId).toBe('trc_safe_identity');
     expect(row.worktree).toBe('/Users/[user]/Dev/private-worktree');
     expect(row.workSession).toBe('wrk_safe_session');
