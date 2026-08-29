@@ -218,6 +218,7 @@ export async function centralMcpProxyRequest(input: {
     headers.delete('x-consuelo-node-id');
     headers.delete(MCP_NODE_CONTEXT_HEADER);
     headers.delete(MCP_ROUTE_SOURCE_HEADER);
+    if (input.body !== undefined) headers.delete('content-length');
 
     headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
     headers.set('x-consuelo-hostname', input.resolution.hostname);
