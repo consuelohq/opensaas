@@ -239,6 +239,10 @@ describe('Hono Diffs routes', () => {
     expect(response.status).toBe(200);
     const html = await response.text();
     expect(html).toContain('Consuelo Diffs');
+    expect(html).toContain('data-workspace-shell');
+    expect(html).toContain('data-workspace-chrome');
+    expect(html).toContain('aria-current="page" href="/diffs"');
+    expect(html).toContain('.workspace-route-menu[hidden]');
     expect(html).toContain('/gateway/diffs/repositories/acme/app/pulls');
     expect(html).not.toContain('consuelohq/opensaas');
     expect(html).not.toContain('diffs.consuelohq.com');
@@ -254,6 +258,9 @@ describe('Hono Diffs routes', () => {
     expect(response.status).toBe(200);
     const html = await response.text();
     expect(html).toContain('Connect GitHub');
+    expect(html).toContain('data-workspace-shell');
+    expect(html).toContain('data-workspace-chrome');
+    expect(html).toContain('aria-current="page" href="/diffs"');
     expect(html).toContain('/gateway/configuration/source-control/github/connect?return_to=%2Fdiffs');
     expect(html).toContain('Choose repositories on GitHub');
     expect(html).not.toContain('connection binding');
@@ -327,7 +334,11 @@ describe('Hono Diffs routes', () => {
       nonce: 'diffs-nested-tree-path-nonce',
     }));
     expect(response.status).toBe(200);
-    expect(await response.text()).toContain('src/nested/file.ts');
+    const html = await response.text();
+    expect(html).toContain('src/nested/file.ts');
+    expect(html).toContain('data-workspace-shell');
+    expect(html).toContain('data-workspace-chrome');
+    expect(html).toContain('aria-current="page" href="/diffs"');
   });
 
   it('requires signed Diffs access', async () => {

@@ -81,7 +81,7 @@ describe('internal launcher regression contracts', () => {
     expect(menuRule).toContain('width: min(780px, calc(100vw - 28px))');
     expect(menuRule).toContain('overflow: visible');
     expect(menuRule).not.toMatch(/overflow(?:-x|-y)?:\s*(?:auto|scroll)/);
-    expect(styles).toContain('.workspace-route-menu[hidden] { display: none; }');
+    expect(styles).toContain('.workspace-route-menu[hidden] { display: none !important; }');
     expect(styles).toContain('@media (min-width: 1600px)');
     expect(styles).toContain('width: min(1040px, calc(100vw - 48px))');
     expect(styles).toContain('.workspace-route-primary-slot { grid-column: 1 / -1; padding-bottom: 0; border-bottom: 0; }');

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
+import { resolveTraceSessionIdentity } from './trace-session-identity';
 import {
   renderWorkspaceChromeBar,
   workspaceChromeClientScript,
@@ -29,16 +30,12 @@ export function resolveObservabilitySessionValue(row: Record<string, unknown>): 
     }
     return '';
   };
-  const workPath = firstSessionValue(row.workPath, metadata.workPath);
-  if (workPath) return workPath;
-  const branch = firstSessionValue(row.branch, row.gitBranch, metadata.branch);
-  if (branch) return branch;
-  const taskSession = firstSessionValue(row.taskSession);
-  const workSession = firstSessionValue(row.workSession, metadata.workSession);
-  if (taskSession && workSession) return `${taskSession} + ${workSession}`;
-  if (taskSession) return taskSession;
-  if (workSession) return workSession;
-  return 'no-branch';
+  return resolveTraceSessionIdentity({
+    workPath: firstSessionValue(row.workPath, metadata.workPath),
+    branch: firstSessionValue(row.branch, row.gitBranch, metadata.branch),
+    taskSession: firstSessionValue(row.taskSession, metadata.taskSession),
+    workSession: firstSessionValue(row.workSession, metadata.workSession),
+  });
 }
 
 const productionHistoryTransport = `<script id="consuelo-trace-history-transport">
@@ -211,6 +208,7 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         const metadata = row && row.metadata && typeof row.metadata === 'object' ? row.metadata : {};
         return String(first(row && row.recordId, metadata.trace_id, metadata.id, metadata.rowid, row && row.traceId, row && row.idempotencyKey, row && row.id, '') || '');
       };
+      const resolveTraceSessionIdentity = ${resolveTraceSessionIdentity.toString()};
       const normalizeTraceRow = (row) => {
         const metadata = isObject(row.metadata) ? row.metadata : {};
         const input = summarize(first(row.input, row.inputSummary, row.request, row.args, row.resolvedInputObj));
@@ -221,7 +219,12 @@ const OBSERVABILITY_TRACES_CLIENT_SCRIPT = String.raw`
         const cost = Number(first(row.cost, row.costUsd, row.totalCostUsd, row.total_cost_usd, 0) || 0);
         const status = String(first(row.status, row.success === false ? 'error' : 'success') || 'success');
         return Object.assign({}, row, {
-          branch: String(first(row.workPath, row.branch, row.gitBranch, row.taskSession, row.workSession, metadata.workPath, metadata.branch, 'no-branch') || 'no-branch'),
+          branch: resolveTraceSessionIdentity({
+            workPath: first(row.workPath, metadata.workPath),
+            branch: first(row.branch, row.gitBranch, metadata.branch),
+            taskSession: first(row.taskSession, metadata.taskSession),
+            workSession: first(row.workSession, metadata.workSession)
+          }),
           name: String(first(row.name, row.traceName, row.toolName, row.tool, 'unknown') || 'unknown'),
           code: String(first(row.code, row.kind, row.capability, '') || ''),
           status: status === 'ok' ? 'success' : status,

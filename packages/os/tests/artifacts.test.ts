@@ -58,6 +58,9 @@ describe('Consuelo Artifacts', () => {
     expect(html).toContain('<meta name="description"');
     expect(html).toContain('<link rel="canonical" href="/artifacts"');
     expect(html).toContain('data-consuelo-logo');
+    expect(html).toContain('data-workspace-shell');
+    expect(html).toContain('data-workspace-chrome');
+    expect(html).toContain('aria-current="page" href="/artifacts"');
     expect(html).toContain('<h1>Artifacts</h1>');
     expect(html).toContain('Recently Updated');
     expect(html).toContain('/artifacts/specs/os-artifacts');

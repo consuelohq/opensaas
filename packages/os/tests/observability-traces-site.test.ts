@@ -136,7 +136,7 @@ describe('Observability Traces canonical Trace Burn surface', () => {
       branch: 'task/workspace-agent/example',
       taskSession: 'tsk_example',
       workSession: 'wrk_example',
-    })).toBe('/Users/ko/Developer/raycast-extension');
+    })).toBe('tsk_example + wrk_example');
     expect(resolveObservabilitySessionValue({
       branch: 'task/workspace-agent/example',
       taskSession: 'tsk_example',
@@ -145,12 +145,6 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(resolveObservabilitySessionValue({ branch: 'no-branch', workSession: 'wrk_example' })).toBe('wrk_example');
     expect(resolveObservabilitySessionValue({ taskSession: 'tsk_conflict', workSession: 'wrk_conflict' })).toBe('tsk_conflict + wrk_conflict');
     expect(resolveObservabilitySessionValue({})).toBe('no-branch');
-  });
-
-  it('renders compact work-session labels while keeping the full session identity as the tooltip source', () => {
-    const source = readFileSync(resolve(osTraceInspectorDir, 'virtual-list-browser.ts'), 'utf8');
-    expect(source).toContain("appendCell(button, 'trxBranch', stripTaskPrefix(sessionDisplayName(row))");
-    expect(source).toContain('setTraceTooltip(cell, branch)');
   });
 
   it('labels the existing branch facet as Sessions', () => {

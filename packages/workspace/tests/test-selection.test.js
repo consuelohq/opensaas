@@ -111,6 +111,7 @@ describe('test selection registry', () => {
     expect(rule).toBeDefined();
     expect(rule.source).toContain('packages/os/scripts/lib/trace-site-inspector/**');
     expect(rule.source).toContain('packages/os/scripts/lib/trace-cost-estimator.ts');
+    expect(rule.source).toContain('packages/os/scripts/lib/trace-session-identity.ts');
     expect(serialized).not.toContain('packages/workspace/scripts/trace-site-inspector');
     expect(serialized).not.toContain('packages/workspace/tests/trace-site-inspector');
     expect(serialized).not.toContain('trace-gateway-service.test.ts');
@@ -1021,6 +1022,38 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes partial-install recovery CLI changes through focused critical coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/bootstrap.sh',
+      '--changed-file',
+      'packages/os/scripts/install.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/install-state.ts',
+      '--changed-file',
+      'packages/os/tests/bootstrap-recovery-cli.test.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-command.test.ts',
+      '--json',
+    ]));
+
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const lifecycleSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-lifecycle-update-handoff',
+    );
+
+    expect(matchedRuleIds).toContain('os-lifecycle-update-handoff');
+    expect(matchedRuleIds).toContain('os-google-workspace');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(lifecycleSuite?.critical).toBe(true);
+    expect(lifecycleSuite?.command).toEqual(expect.arrayContaining([
+      'packages/os/tests/bootstrap-recovery-cli.test.ts',
+      'packages/os/tests/lifecycle-command.test.ts',
+    ]));
+  });
+
   it('routes local OS response lifecycle changes through critical lifecycle coverage', () => {
     const data = json(run([
       'check',
@@ -1145,6 +1178,31 @@ describe('test selection registry', () => {
       'tests/launcher-local-customization.test.ts',
       'tests/internal-launcher-regressions.test.ts',
     ]));
+  });
+
+  it('keeps Artifacts and OS test-safety changes on focused critical suites', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/artifacts.ts',
+      '--changed-file',
+      'packages/os/tests/artifacts.test.ts',
+      '--changed-file',
+      'packages/os/tests/distribution/release-channels-cli.test.ts',
+      '--changed-file',
+      'packages/os/tests/legacy-system-daemons.test.ts',
+      '--changed-file',
+      'packages/os/tests/test-source-safety.test.ts',
+      '--json',
+    ]));
+    const ruleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(ruleIds).toContain('os-internal-workspace-shell');
+    expect(ruleIds).toContain('os-test-source-safety');
+    expect(ruleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toContain('OS internal workspace shell contracts');
+    expect(suiteNames).toContain('OS test source safety contracts');
   });
 
   it('routes gateway security and Caddy handoff changes through focused contracts instead of the broad OS package suite', () => {
