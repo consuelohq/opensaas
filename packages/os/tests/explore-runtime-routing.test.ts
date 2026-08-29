@@ -42,6 +42,13 @@ describe('installed Explore facade routing', () => {
     expect(plans[0]?.env.CONSUELO_TOOL_CALLER_CWD).toBe('/tmp/unrelated-caller-repository');
   });
 
+  it('preserves the caller repository for installed runtime policy tools', () => {
+    for (const script of ['confidence-score.js', 'decide-next.js', 'exploit.js']) {
+      const source = readFileSync(new URL('../scripts/' + script, import.meta.url), 'utf8');
+      expect(source).toContain('resolveGitRoot(process.env.CONSUELO_TOOL_CALLER_CWD || process.cwd())');
+    }
+  });
+
   it('passes the caller repository cwd from the runtime process into index construction', () => {
     const source = readFileSync(new URL('../scripts/explore.js', import.meta.url), 'utf8');
 
