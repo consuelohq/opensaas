@@ -345,6 +345,7 @@ export type GitHubSourceControlInstallState = {
   nodeId: string;
   returnPath: string;
   repositoryOwners: string[];
+  manageAccess: boolean;
   oauthCodeVerifier: string;
   githubUserAccessToken?: string;
   expiresAt: number;

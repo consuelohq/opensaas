@@ -173,6 +173,7 @@ export function createSettingsRoutes(): Hono {
       );
       if (home instanceof Response) return home;
       const returnPath = safeSourceControlReturnPath(requestUrl.searchParams.get('return_to'));
+      const manageAccess = requestUrl.searchParams.get('mode') === 'manage';
       const workspacePath = workspaceSourceControlPath(home, workspaceId);
       const repositoryOwners = fs.existsSync(workspacePath)
         ? Array.from(new Set(buildWorkspaceSourceControlSnapshot(
@@ -183,6 +184,7 @@ export function createSettingsRoutes(): Hono {
         home,
         returnPath,
         repositoryOwners,
+        manageAccess,
       });
       return new Response(renderGitHubConnectHandoff({ targetUrl: authorizationUrl, returnPath }), {
         status: 200,

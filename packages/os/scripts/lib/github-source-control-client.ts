@@ -148,6 +148,7 @@ export async function startGitHubSourceControlInstall(input: {
   home: string;
   returnPath: string;
   repositoryOwners?: string[];
+  manageAccess?: boolean;
   fetchImpl?: typeof fetch;
 }): Promise<{ authorizationUrl: string }> {
   try {
@@ -157,6 +158,7 @@ export async function startGitHubSourceControlInstall(input: {
       {
         returnPath: input.returnPath,
         repositoryOwners: Array.isArray(input.repositoryOwners) ? input.repositoryOwners : [],
+        manageAccess: input.manageAccess === true,
       },
       input.fetchImpl,
     );
