@@ -92,7 +92,7 @@ const cases: BenchmarkCase[] = [
 ];
 
 describe('OS ExploreBench retrieval metrics', () => {
-  it('validates cases and rejects duplicate ids or invalid relevance', () => {
+  it('should reject duplicate ids or invalid relevance when validating benchmark cases', () => {
     expect(validateBenchmarkCases(cases)).toEqual({
       caseCount: 2,
       labeledCaseCount: 1,
@@ -107,7 +107,7 @@ describe('OS ExploreBench retrieval metrics', () => {
     }])).toThrow(/relevance/i);
   });
 
-  it('computes Recall@k, required-node recall, MRR, and nDCG from curated labels', () => {
+  it('should compute Recall@k, required-node recall, MRR, and nDCG when evaluating curated labels', () => {
     const report = evaluateBenchmark(cases, new Map([
       ['auth-owner', [
         { path: 'src/auth.test.ts' },
@@ -128,7 +128,7 @@ describe('OS ExploreBench retrieval metrics', () => {
     expect(report.metrics.ndcgAtK['5']).toBeLessThanOrEqual(1);
   });
 
-  it('keeps the benchmark CLI syntactically executable', () => {
+  it('should remain syntactically executable when the benchmark CLI source is checked', () => {
     const packageRoot = fileURLToPath(new URL('..', import.meta.url));
     const result = spawnSync('bun', ['run', 'explore:benchmark', '--', '--help'], {
       cwd: packageRoot,
@@ -140,7 +140,7 @@ describe('OS ExploreBench retrieval metrics', () => {
     expect(result.stdout).toContain('usage: bun run explore:benchmark');
   });
 
-  it('rejects explicitly invalid or all-empty benchmark evidence as a comparator', () => {
+  it('should reject invalid or all-empty evidence when evaluating a benchmark comparator', () => {
     expect(() => validateBenchmarkEvidence({
       valid: false,
       invalidReason: 'retrieval gateway failed during the run',
@@ -169,7 +169,7 @@ describe('OS ExploreBench retrieval metrics', () => {
     })).toEqual({ caseCount: 1, evaluatedCaseCount: 1, rankedCaseCount: 1 });
   });
 
-  it('scores E5 shadow actions against curated labels without inventing counterfactual outcomes', () => {
+  it('should score E5 shadow actions without inventing counterfactual outcomes when curated labels exist', () => {
     const report = evaluateVoiShadowBenchmark(cases, new Map([
       ['auth-owner', {
         status: 'evaluable_shadow',
@@ -200,7 +200,7 @@ describe('OS ExploreBench retrieval metrics', () => {
       requiredHitDelta: 1,
     }]);
   });
-  it('scores the E5 policy action, falling back to E4 on abstention and excluding non-evaluable studies', () => {
+  it('should fall back to E4 and exclude non-evaluable studies when the E5 policy abstains', () => {
     const abstained = evaluateVoiShadowBenchmark([cases[0]], new Map([
       ['auth-owner', {
         status: 'evaluable_shadow',

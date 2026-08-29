@@ -19,7 +19,7 @@ const {
 } = require('../scripts/lib/explore-bench.js');
 
 describe('ExploreBench evidence and payload analysis', () => {
-  it('deduplicates evidence events by stable id before tool adoption counts', () => {
+  it('should deduplicate evidence events by stable id when counting tool adoption', () => {
     const events = [
       { id: 'a', action: 'explore' },
       { id: 'a', action: 'explore' },
@@ -42,7 +42,7 @@ describe('ExploreBench evidence and payload analysis', () => {
     });
   });
 
-  it('summarizes distributions with explicit interpolation-free nearest-rank quantiles', () => {
+  it('should use interpolation-free nearest-rank quantiles when summarizing distributions', () => {
     expect(summarizeDistribution([1, 2, 3, 4, 100])).toEqual({
       count: 5,
       min: 1,
@@ -63,7 +63,7 @@ describe('ExploreBench evidence and payload analysis', () => {
     });
   });
 
-  it('attributes serialized payload bytes by top-level result field', () => {
+  it('should attribute serialized payload bytes by top-level field when measuring results', () => {
     const results = [
       {
         path: 'packages/a.ts',
@@ -89,7 +89,7 @@ describe('ExploreBench evidence and payload analysis', () => {
     expect(measured.fields.reduce((sum, entry) => sum + entry.bytes, 0)).toBe(measured.totalValueBytes);
   });
 
-  it('projects a compact packet without mutating the original Explore payload', () => {
+  it('should project a compact packet without mutation when reducing an Explore payload', () => {
     const payload = {
       query: 'auth routing',
       budget: 2,
@@ -155,7 +155,7 @@ describe('ExploreBench retrieval metrics and report contract', () => {
     },
   ];
 
-  it('validates benchmark labels and rejects duplicate ids or invalid relevance', () => {
+  it('should reject duplicate ids or invalid relevance when validating benchmark labels', () => {
     expect(validateBenchmarkCases(benchmarkCases)).toEqual({
       caseCount: 2,
       labeledCaseCount: 1,
@@ -174,7 +174,7 @@ describe('ExploreBench retrieval metrics and report contract', () => {
     }])).toThrow(/relevance/i);
   });
 
-  it('computes Recall@k, required-node recall, MRR, and nDCG from curated labels only', () => {
+  it('should compute Recall@k, required-node recall, MRR, and nDCG when evaluating curated labels only', () => {
     const report = evaluateBenchmark(benchmarkCases, new Map([
       ['case-a', [
         { path: 'packages/auth.test.ts' },
@@ -198,7 +198,7 @@ describe('ExploreBench retrieval metrics and report contract', () => {
     expect(report.metrics.ndcgAtK['5']).toBeLessThanOrEqual(1);
   });
 
-  it('builds a sanitized aggregate report without embedding raw trace payloads', () => {
+  it('should sanitize the aggregate report when raw trace payloads are present', () => {
     const traceRows = [
       {
         tool: 'explore',
@@ -242,7 +242,7 @@ describe('ExploreBench retrieval metrics and report contract', () => {
     expect(serialized).not.toContain('another raw query');
   });
 
-  it('delegates the legacy Workspace ExploreBench CLI to the canonical OS benchmark', () => {
+  it('should delegate the legacy Workspace ExploreBench CLI when benchmark help is requested', () => {
     const result = spawnSync('bun', ['packages/workspace/scripts/explore-bench.js', '--help'], {
       cwd: repoRoot,
       encoding: 'utf8',
@@ -253,7 +253,7 @@ describe('ExploreBench retrieval metrics and report contract', () => {
     expect(result.stdout).toContain('usage: bun run explore:benchmark');
   });
 
-  it('preserves the canonical benchmark root cause through the legacy CLI surface', () => {
+  it('should preserve the canonical benchmark root cause when the legacy Workspace CLI fails', () => {
     const result = spawnSync('bun', [
       'packages/workspace/scripts/explore-bench.js',
       '--definitely-invalid',

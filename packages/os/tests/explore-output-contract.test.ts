@@ -266,7 +266,7 @@ function richPayload(): RichExplorePayload {
 }
 
 describe('Explore compact response contract', () => {
-  it('keeps result order and actionable dependency context while dropping diagnostic bulk', () => {
+  it('should keep ranked order and actionable dependency context when compacting rich output', () => {
     const rich = richPayload();
     const before = structuredClone(rich);
     const compact = formatExploreOutput(rich, 'compact') as {
@@ -372,12 +372,12 @@ describe('Explore compact response contract', () => {
     expect(rich).toEqual(before);
   });
 
-  it('preserves the exact rich object for explicit full detail', () => {
+  it('should preserve the exact rich object when full detail is requested', () => {
     const rich = richPayload();
     expect(formatExploreOutput(rich, 'full')).toBe(rich);
   });
 
-  it('cuts a representative rich payload by at least half without dropping ranked results', () => {
+  it('should cut a representative rich payload by at least half when compact detail is used', () => {
     const rich = richPayload();
     const compact = formatExploreOutput(rich, 'compact');
     const fullBytes = Buffer.byteLength(JSON.stringify(rich));
@@ -389,13 +389,13 @@ describe('Explore compact response contract', () => {
 });
 
 describe('Explore typed facade detail contract', () => {
-  it('accepts only compact or full detail modes', () => {
+  it('should accept only compact or full modes when validating detail', () => {
     expect(ExploreInput.safeParse({ query: 'workspace facade', detail: 'compact' }).success).toBe(true);
     expect(ExploreInput.safeParse({ query: 'workspace facade', detail: 'full' }).success).toBe(true);
     expect(ExploreInput.safeParse({ query: 'workspace facade', detail: 'debug' }).success).toBe(false);
   });
 
-  it('forwards detail to the Explore CLI', () => {
+  it('should forward detail when building Explore CLI arguments', () => {
     const exploreHandler = toolHandlers.find((handler) => handler.name === 'explore');
     expect(exploreHandler?.command.arguments).toContainEqual({
       source: 'detail',
