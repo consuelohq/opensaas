@@ -87,6 +87,65 @@ function safeSourceControlReturnPath(value: string | null): string {
   }
 }
 
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function renderGitHubConnectHandoff(input: { installUrl: string; returnPath: string }): string {
+  const installHref = escapeHtmlAttribute(input.installUrl);
+  const returnHref = escapeHtmlAttribute(input.returnPath);
+  const installUrlJson = JSON.stringify(input.installUrl).replaceAll('<', '\\u003c');
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Opening GitHub · Consuelo OS</title>
+  <style>
+    :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #fff; color: #111; }
+    main { width: min(100% - 40px, 520px); padding: 48px 0; }
+    .identity { margin: 0 0 18px; font-size: 12px; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(32px, 8vw, 54px); line-height: .98; letter-spacing: -.045em; }
+    .copy { margin: 22px 0 0; max-width: 42ch; font-size: 16px; line-height: 1.55; color: #5b5b5b; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+    a { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; padding: 0 16px; border: 1px solid #d7d7d7; border-radius: 8px; color: inherit; text-decoration: none; font-size: 14px; font-weight: 600; }
+    a.primary { background: #111; border-color: #111; color: #fff; }
+    .status { margin: 16px 0 0; font-size: 12px; color: #777; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #0b0b0b; color: #f5f5f5; }
+      .copy, .status { color: #aaa; }
+      a { border-color: #353535; }
+      a.primary { background: #f5f5f5; border-color: #f5f5f5; color: #111; }
+    }
+  </style>
+</head>
+<body>
+  <main aria-labelledby="github-handoff-title">
+    <p class="identity">Consuelo OS</p>
+    <h1 id="github-handoff-title">Opening GitHub…</h1>
+    <p class="copy">Choose the repositories Consuelo may access on GitHub. You’ll return to Consuelo when you’re done.</p>
+    <div class="actions">
+      <a class="primary" href="${installHref}">Open GitHub</a>
+      <a href="${returnHref}">Back to Consuelo</a>
+    </div>
+    <p class="status" aria-live="polite">GitHub will open automatically.</p>
+  </main>
+  <script>
+    const installUrl = ${installUrlJson};
+    requestAnimationFrame(() => requestAnimationFrame(() => window.location.replace(installUrl)));
+  </script>
+</body>
+</html>`;
+}
+
 export function createSettingsRoutes(): Hono {
   const app = new Hono();
 
@@ -115,9 +174,14 @@ export function createSettingsRoutes(): Hono {
       if (home instanceof Response) return home;
       const returnPath = safeSourceControlReturnPath(requestUrl.searchParams.get('return_to'));
       const { installUrl } = await startGitHubSourceControlInstall({ home, returnPath });
-      return new Response(null, {
-        status: 302,
-        headers: { location: installUrl, 'cache-control': 'no-store' },
+      return new Response(renderGitHubConnectHandoff({ installUrl, returnPath }), {
+        status: 200,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+          'referrer-policy': 'no-referrer',
+          'x-content-type-options': 'nosniff',
+        },
       });
     } catch (error: unknown) {
       return jsonResponse({
