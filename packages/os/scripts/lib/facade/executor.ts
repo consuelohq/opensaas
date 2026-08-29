@@ -372,7 +372,8 @@ export async function executeTool<TData = unknown>(
       return result as ToolResult<TData>;
     }
 
-    const internalResult = await executeInternalTool<TData>(entry, scopedInput, {
+    const internalInput = resolveInternalExecutionInput(entry, scopedInput, options);
+    const internalResult = await executeInternalTool<TData>(entry, internalInput, {
       cwd,
       env,
       rawInput: input,
@@ -1035,7 +1036,7 @@ async function executeInternalTool<TData>(
       cwd: resolveWorkspaceCommandCwd(context.cwd, 'stream:context'),
       env: { ...context.env },
     };
-    const runResult = await context.runner(plan, entry.defaultTimeout);
+    const runResult = await context.runner(plan, getTimeoutMs(entry, input, context.options));
     const data = parseStdout(runResult.stdout, true).data as Record<string, unknown> | null;
     const aheadBehind = data && typeof data === 'object' ? data.aheadBehind as Record<string, unknown> | undefined : undefined;
     const behind = typeof aheadBehind?.behind === 'number' ? aheadBehind.behind : undefined;
@@ -1378,6 +1379,19 @@ function getTimeoutMs(
   if (typeof input.timeout === 'number') return input.timeout;
   if (typeof input.timeoutMs === 'number') return input.timeoutMs;
   return entry.defaultTimeout;
+}
+
+export function resolveInternalExecutionInput(
+  entry: ToolManifestEntry,
+  input: ToolInput,
+  options: ExecuteToolOptions = {},
+): ToolInput {
+  const internal = entry.command.internal;
+  if (internal !== 'deployment' && internal !== 'subagent') return input;
+  return {
+    ...input,
+    timeoutMs: getTimeoutMs(entry, input, options),
+  };
 }
 
 async function runWithRetry(
