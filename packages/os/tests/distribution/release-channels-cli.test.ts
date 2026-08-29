@@ -15,6 +15,17 @@ import {
 } from '../../scripts/lib/distribution/release-channel-provider';
 
 const roots: string[] = [];
+const bunExecutable = spawnSync('which', ['bun'], { encoding: 'utf8' }).stdout.trim();
+
+function isolatedReleaseCliEnvironment(overrides: Record<string, string> = {}): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {
+    PATH: '/usr/bin:/bin',
+  };
+  for (const key of ['HOME', 'TMPDIR'] as const) {
+    if (process.env[key]) env[key] = process.env[key];
+  }
+  return { ...env, ...overrides };
+}
 
 function tempRoot(): string {
   const root = mkdtempSync(join(tmpdir(), 'consuelo-release-channels-'));
@@ -23,10 +34,11 @@ function tempRoot(): string {
 }
 
 function runCli(args: string[], env: Record<string, string> = {}) {
+  if (!bunExecutable) throw new Error('bun executable is required for release CLI tests');
   const result = spawnSync(
-    'bun',
+    bunExecutable,
     [resolve(import.meta.dirname, '../../scripts/release-channels.ts'), ...args],
-    { encoding: 'utf8', env: { ...process.env, ...env } },
+    { encoding: 'utf8', env: isolatedReleaseCliEnvironment(env) },
   );
   return {
     exitCode: result.status,
@@ -40,6 +52,25 @@ afterEach(() => {
 });
 
 describe('release channel CLI', () => {
+  it('never inherits release-provider credentials into CLI subprocess tests', () => {
+    const env = isolatedReleaseCliEnvironment();
+
+    for (const key of [
+      'CLOUDFLARE_ACCOUNT_ID',
+      'CLOUDFLARE_OS_RELEASE_API_TOKEN',
+      'CONSUELO_OS_RELEASE_R2_BUCKET',
+      'CONSUELO_OS_RELEASE_SIGNING_KEY_ID',
+      'CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY',
+      'CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY',
+      'CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS',
+      'GH_TOKEN',
+      'GITHUB_REPOSITORY',
+      'GITHUB_TOKEN',
+    ]) {
+      expect(env[key]).toBeUndefined();
+    }
+  });
+
   it('plans an unchanged dev fingerprint as a successful no-op without credentials', () => {
     const root = tempRoot();
     const statePath = join(root, 'state.json');
@@ -87,25 +118,15 @@ describe('release channel CLI', () => {
     });
   });
 
-  it('requires an explicit expected revision for every apply command', () => {
-    const root = tempRoot();
-    const statePath = join(root, 'state.json');
-    writeFileSync(statePath, JSON.stringify(createEmptyReleaseState()));
-    const bundleId = `sha256:${'a'.repeat(64)}`;
-    const commands = [
-      ['publish', '--channel', 'dev', '--state', statePath, '--apply', '--json'],
-      ['promote', '--from', 'dev', '--to', 'canary', '--bundle', bundleId, '--state', statePath, '--apply', '--json'],
-      ['rollback-channel', '--channel', 'canary', '--bundle', bundleId, '--state', statePath, '--apply', '--json'],
-    ];
+  it('keeps the expected-revision guard ahead of mutation execution without invoking apply mode', () => {
+    const source = readFileSync(resolve(import.meta.dirname, '../../scripts/release-channels.ts'), 'utf8');
+    const revisionRead = source.indexOf("integerFlag(parsed, 'expected-revision')");
+    const missingRevisionGuard = source.indexOf("mode === 'apply' && revision === undefined", revisionRead);
+    const guardError = source.indexOf('--expected-revision is required with --apply', missingRevisionGuard);
 
-    for (const args of commands) {
-      const result = runCli(args);
-      expect(result.exitCode).toBe(1);
-      expect(JSON.parse(result.stderr.toString())).toMatchObject({
-        ok: false,
-        error: '--expected-revision is required with --apply',
-      });
-    }
+    expect(revisionRead).toBeGreaterThanOrEqual(0);
+    expect(missingRevisionGuard).toBeGreaterThan(revisionRead);
+    expect(guardError).toBeGreaterThan(missingRevisionGuard);
   });
 
   it('fails closed when a mutating command has no release signing credentials', () => {

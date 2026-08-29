@@ -1,6 +1,8 @@
 export type WorkspaceSurfaceId =
   | 'overview'
   | 'tracing'
+  | 'artifacts'
+  | 'diffs'
   | 'nodes'
   | 'tools'
   | 'secrets'
@@ -23,7 +25,7 @@ export type WorkspaceChromeOptions = {
 };
 
 type WorkspaceRouteGroup = 'Observe' | 'Configure' | 'Connect' | 'Guides' | null;
-type WorkspaceRouteId = WorkspaceSurfaceId | 'artifacts' | 'diffs' | 'chatgpt-connect' | 'claude-connect';
+type WorkspaceRouteId = WorkspaceSurfaceId | 'chatgpt-connect' | 'claude-connect';
 type WorkspaceRoute = {
   id: WorkspaceRouteId;
   label: string;
@@ -310,6 +312,7 @@ export function workspaceRouteSwitcherStyles(): string {
     .workspace-route-trigger:focus-visible { outline: none; background: var(--workspace-menu-current); color: var(--workspace-menu-accent); box-shadow: inset 0 -2px 0 var(--workspace-menu-accent); }
     .workspace-route-chevron { font-size: 12px; transform: translateY(-1px); }
     .workspace-route-menu { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px; width: min(680px, calc(100vw - 28px)); max-width: calc(100vw - 28px); overflow: hidden; padding: 8px; border: 1px solid var(--workspace-menu-border); border-radius: 13px; background: var(--workspace-menu-bg); color: var(--workspace-menu-ink); box-shadow: var(--workspace-menu-shadow); backdrop-filter: blur(18px); text-align: left; }
+    .workspace-route-menu[hidden] { display: none !important; }
     .workspace-route-primary-slot { grid-column: 1 / -1; padding-bottom: 7px; border-bottom: 1px solid var(--workspace-menu-rule); }
     .workspace-route-primary { grid-template-columns: 96px minmax(0, 1fr); }
     .workspace-route-group { min-width: 0; display: grid; align-content: start; gap: 1px; padding-top: 7px; border-top: 1px solid var(--workspace-menu-rule); }

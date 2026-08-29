@@ -1071,6 +1071,7 @@
       "critical": true,
       "exclusive": true,
       "source": [
+        "packages/os/scripts/lib/artifacts.ts",
         "packages/os/scripts/lib/sites.ts",
         "packages/os/scripts/lib/settings-site.ts",
         "packages/os/scripts/lib/settings-snapshot.ts",
@@ -1078,6 +1079,7 @@
         "packages/os/scripts/lib/workspace-chrome.ts",
         "packages/os/scripts/lib/observability-traces-site.ts",
         "packages/os/tests/settings-site.test.ts",
+        "packages/os/tests/artifacts.test.ts",
         "packages/os/tests/launcher-nodes-materialization.test.ts",
         "packages/os/tests/observability-traces-site.test.ts",
         "packages/os/tests/sites-cli.test.ts",
@@ -1095,6 +1097,7 @@
             "packages/os",
             "test",
             "--no-file-parallelism",
+            "tests/artifacts.test.ts",
             "tests/settings-site.test.ts",
             "tests/launcher-nodes-materialization.test.ts",
             "tests/observability-traces-site.test.ts",
@@ -1114,6 +1117,33 @@
         }
       ],
       "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference."
+    },
+    {
+      "id": "os-test-source-safety",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tests/distribution/release-channels-cli.test.ts",
+        "packages/os/tests/legacy-system-daemons.test.ts",
+        "packages/os/tests/test-source-safety.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS test source safety contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/test-source-safety.test.ts",
+            "tests/code-call.test.ts",
+            "tests/legacy-system-daemons.test.ts",
+            "tests/lifecycle-restart-contract.test.ts",
+            "tests/distribution/release-channels-cli.test.ts"
+          ]
+        }
+      ],
+      "reason": "OS tests that exercise destructive-command guardrails, legacy daemon retirement, or release CLI safety must prove pure/static/dry-run behavior without selecting the entire OS package suite."
     },
     {
       "id": "os-managed-cloud-one-click-provisioning",

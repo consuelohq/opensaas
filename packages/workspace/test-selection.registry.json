@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2673,
-    "mappedTestCount": 2588,
+    "testFileCount": 2674,
+    "mappedTestCount": 2589,
     "unmappedTestCount": 85,
-    "ruleCount": 73,
-    "explicitRuleCount": 54,
+    "ruleCount": 74,
+    "explicitRuleCount": 55,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 292,
+      "packages/os/tests": 293,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 578,
+      "test": 579,
       "spec": 152,
       "tests-dir": 8,
       "other": 7,
@@ -1738,6 +1738,7 @@
     {
       "id": "os-internal-workspace-shell",
       "source": [
+        "packages/os/scripts/lib/artifacts.ts",
         "packages/os/scripts/lib/sites.ts",
         "packages/os/scripts/lib/settings-site.ts",
         "packages/os/scripts/lib/settings-snapshot.ts",
@@ -1745,6 +1746,7 @@
         "packages/os/scripts/lib/workspace-chrome.ts",
         "packages/os/scripts/lib/observability-traces-site.ts",
         "packages/os/tests/settings-site.test.ts",
+        "packages/os/tests/artifacts.test.ts",
         "packages/os/tests/launcher-nodes-materialization.test.ts",
         "packages/os/tests/observability-traces-site.test.ts",
         "packages/os/tests/sites-cli.test.ts",
@@ -1762,6 +1764,7 @@
             "packages/os",
             "test",
             "--no-file-parallelism",
+            "tests/artifacts.test.ts",
             "tests/settings-site.test.ts",
             "tests/launcher-nodes-materialization.test.ts",
             "tests/observability-traces-site.test.ts",
@@ -1783,6 +1786,34 @@
       "critical": true,
       "exclusive": true,
       "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-test-source-safety",
+      "source": [
+        "packages/os/tests/distribution/release-channels-cli.test.ts",
+        "packages/os/tests/legacy-system-daemons.test.ts",
+        "packages/os/tests/test-source-safety.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS test source safety contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/test-source-safety.test.ts",
+            "tests/code-call.test.ts",
+            "tests/legacy-system-daemons.test.ts",
+            "tests/lifecycle-restart-contract.test.ts",
+            "tests/distribution/release-channels-cli.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "OS tests that exercise destructive-command guardrails, legacy daemon retirement, or release CLI safety must prove pure/static/dry-run behavior without selecting the entire OS package suite.",
       "origin": "explicit"
     },
     {
@@ -5614,6 +5645,11 @@
       "path": "packages/os/tests/test-environment.ts",
       "group": "packages/os/tests",
       "kind": "tests-dir"
+    },
+    {
+      "path": "packages/os/tests/test-source-safety.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
     },
     {
       "path": "packages/os/tests/tool-manifest.test.ts",

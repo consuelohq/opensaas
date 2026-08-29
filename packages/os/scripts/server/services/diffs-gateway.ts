@@ -39,6 +39,12 @@ import {
   type RequiredWorkspaceSourceControlRepository,
   type WorkspaceSourceControlSnapshot,
 } from '../../lib/source-control-config';
+import {
+  renderWorkspaceChromeBar,
+  workspaceChromeClientScript,
+  workspaceRouteSwitcherStyles,
+  workspaceWindowShellStyles,
+} from '../../lib/workspace-chrome';
 import type { AuthenticatedMcpPrincipal } from '../security/authenticated-principal';
 
 const DIFFS_PROVIDER_SCRIPT_ID = 'diffs-github-provider';
@@ -46,6 +52,43 @@ const READ_CACHE_TTL_MS = 30_000;
 const CODE_CACHE_TTL_MS = 5 * 60_000;
 const PRODUCT_READ_CACHE_MAX_ENTRIES = 256;
 const GITHUB_MUTATION_TIMEOUT_MS = 15_000;
+
+function renderWorkspaceDiffsDocument(html: string): string {
+  const bodyMatch = /<body\b[^>]*>/i.exec(html);
+  const headClose = html.toLowerCase().lastIndexOf('</head>');
+  const bodyClose = html.toLowerCase().lastIndexOf('</body>');
+  if (!bodyMatch || headClose < 0 || bodyClose < 0) {
+    throw new DiffsGatewayError(
+      'DIFFS_RENDER_INVALID',
+      500,
+      'Consuelo Diffs could not render inside the workspace shell.',
+    );
+  }
+
+  const shellStyles = `
+    :root { --site-color-paper:var(--paper,#faf7f2); --site-color-ink:var(--ink,#1c1a17); --site-color-canvas:#e9e4dc; }
+    @media (prefers-color-scheme: dark) { :root { --site-color-canvas:#0d0d0c; } }
+    ${workspaceWindowShellStyles()}
+    ${workspaceRouteSwitcherStyles()}
+    .workspace-diffs-view { min-width:0; min-height:0; }
+    body.review-page .workspace-window { height:calc(100dvh - 28px); min-height:0; }
+    body.review-page .workspace-diffs-view { height:100%; display:grid; grid-template-rows:auto minmax(0,1fr); overflow:hidden; }
+    body.review-page .workspace-diffs-view > .layout { height:auto; min-height:0; }
+    @media (max-width:900px) { body.review-page .workspace-window { height:100dvh; } }
+  `;
+  const styleTag = `<style id="consuelo-diffs-workspace-shell">${shellStyles.replaceAll('</style', '<\\/style')}</style>`;
+  const chromeScript = `<script id="consuelo-diffs-workspace-chrome">${workspaceChromeClientScript().replaceAll('</script', '<\\/script')}</script>`;
+
+  let framed = `${html.slice(0, headClose)}${styleTag}${html.slice(headClose)}`;
+  const framedBodyMatch = /<body\b[^>]*>/i.exec(framed);
+  if (!framedBodyMatch) {
+    throw new DiffsGatewayError('DIFFS_RENDER_INVALID', 500, 'Consuelo Diffs body is unavailable.');
+  }
+  const bodyOpenEnd = framedBodyMatch.index + framedBodyMatch[0].length;
+  framed = `${framed.slice(0, bodyOpenEnd)}<div class="workspace-window" data-workspace-shell>${renderWorkspaceChromeBar('diffs', 'Code')}<div class="workspace-view workspace-diffs-view" data-workspace-view>${framed.slice(bodyOpenEnd)}`;
+  const framedBodyClose = framed.toLowerCase().lastIndexOf('</body>');
+  return `${framed.slice(0, framedBodyClose)}</div></div>${chromeScript}${framed.slice(framedBodyClose)}`;
+}
 
 export class DiffsGatewayError extends Error {
   readonly code: string;
@@ -569,7 +612,9 @@ export function renderDiffsIndex(input: {
   const snapshot = buildWorkspaceSourceControlSnapshot(config);
   if (!snapshot.configured && !input.owner && !input.repo) return renderSourceControlSetupPage();
   const repository = requireRepository(config, input.owner, input.repo);
-  return renderIndexPage(repositoryLocator(repository), null, '', productRenderOptions(repository));
+  return renderWorkspaceDiffsDocument(
+    renderIndexPage(repositoryLocator(repository), null, '', productRenderOptions(repository)),
+  );
 }
 
 export function renderDiffsReview(input: {
@@ -582,11 +627,13 @@ export function renderDiffsReview(input: {
   const home = requireHome(input.home);
   const workspaceId = requiredWorkspaceId(input.principal);
   const repository = requireRepository(loadWorkspace(home, workspaceId), input.owner, input.repo);
-  return renderReviewPage(
-    { ...repositoryLocator(repository), number: input.number },
-    null,
-    '',
-    productRenderOptions(repository),
+  return renderWorkspaceDiffsDocument(
+    renderReviewPage(
+      { ...repositoryLocator(repository), number: input.number },
+      null,
+      '',
+      productRenderOptions(repository),
+    ),
   );
 }
 
@@ -602,11 +649,13 @@ export function renderDiffsCode(input: {
   const workspaceId = requiredWorkspaceId(input.principal);
   const repository = requireRepository(loadWorkspace(home, workspaceId), input.owner, input.repo);
   const codePath = requireWorkspaceSourceControlCodePath(repository, input.path);
-  return renderCodeBrowserPage(
-    repositoryLocator(repository),
-    input.ref,
-    codePath,
-    productRenderOptions(repository),
+  return renderWorkspaceDiffsDocument(
+    renderCodeBrowserPage(
+      repositoryLocator(repository),
+      input.ref,
+      codePath,
+      productRenderOptions(repository),
+    ),
   );
 }
 
@@ -622,31 +671,33 @@ export function renderDiffsHistory(input: {
   const workspaceId = requiredWorkspaceId(input.principal);
   const repository = requireRepository(loadWorkspace(home, workspaceId), input.owner, input.repo);
   const codePath = requireWorkspaceSourceControlCodePath(repository, input.path);
-  return renderHistoryPage(
-    repositoryLocator(repository),
-    input.ref,
-    codePath,
-    productRenderOptions(repository),
+  return renderWorkspaceDiffsDocument(
+    renderHistoryPage(
+      repositoryLocator(repository),
+      input.ref,
+      codePath,
+      productRenderOptions(repository),
+    ),
   );
 }
 
 export function renderSourceControlSetupPage(): string {
-  return `<!doctype html>
+  return renderWorkspaceDiffsDocument(`<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Consuelo Diffs · Connect GitHub</title>
   <style>
-    :root{color-scheme:light dark;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#faf7f2;color:#1c1a17}
-    @media(prefers-color-scheme:dark){:root{background:#0f0f0d;color:#f7efe7}}
+    :root{color-scheme:light dark;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;--paper:#faf7f2;--ink:#1c1a17;background:var(--paper);color:var(--ink)}
+    @media(prefers-color-scheme:dark){:root{--paper:#0f0f0d;--ink:#f7efe7}}
     *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:32px}
-    main{width:min(720px,100%);border:1px solid color-mix(in srgb,currentColor 20%,transparent);padding:clamp(28px,6vw,64px)}
+    main{width:min(720px,calc(100% - 48px));margin:clamp(48px,10vh,120px) auto;border:1px solid color-mix(in srgb,currentColor 20%,transparent);padding:clamp(28px,6vw,64px)}
     p{line-height:1.6;max-width:60ch}a{color:inherit;text-underline-offset:4px}code{font:inherit}.button{display:inline-block;margin-top:8px;padding:10px 14px;border:1px solid currentColor;text-decoration:none}
   </style>
 </head>
 <body><main><p>Consuelo Diffs</p><h1>Connect GitHub</h1><p>Choose repositories on GitHub, then Consuelo will bring you back here with the selected repositories ready for Diffs.</p><a class="button" href="/gateway/configuration/source-control/github/connect?return_to=%2Fdiffs">Connect GitHub</a></main></body>
-</html>`;
+</html>`);
 }
 
 export function clearDiffsGatewayCacheForTests(): void {

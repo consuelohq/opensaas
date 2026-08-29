@@ -1108,6 +1108,31 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('keeps Artifacts and OS test-safety changes on focused critical suites', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/artifacts.ts',
+      '--changed-file',
+      'packages/os/tests/artifacts.test.ts',
+      '--changed-file',
+      'packages/os/tests/distribution/release-channels-cli.test.ts',
+      '--changed-file',
+      'packages/os/tests/legacy-system-daemons.test.ts',
+      '--changed-file',
+      'packages/os/tests/test-source-safety.test.ts',
+      '--json',
+    ]));
+    const ruleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(ruleIds).toContain('os-internal-workspace-shell');
+    expect(ruleIds).toContain('os-test-source-safety');
+    expect(ruleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toContain('OS internal workspace shell contracts');
+    expect(suiteNames).toContain('OS test source safety contracts');
+  });
+
   it('routes gateway security and Caddy handoff changes through focused contracts instead of the broad OS package suite', () => {
     const data = json(run([
       'check',
@@ -1337,7 +1362,6 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).toContain('os-script-parity-audit');
     expect(selectedSuiteNames).toContain('OS script parity audit contracts');
     expect(selectedSuiteNames).not.toContain('@consuelo/os package test');
-  });
   });
 
   it('routes work-session Code Call changes to focused authority tests', () => {
