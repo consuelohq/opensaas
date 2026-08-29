@@ -18,6 +18,7 @@ describe('Cloudflare Worker release readiness', () => {
               stdout: JSON.stringify([
                 { name: 'CONSUELO_EDGE_SIGNING_SECRET' },
                 { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET' },
+                { name: 'OPENROUTER_API_KEY' },
               ]),
               stderr: '',
             }
